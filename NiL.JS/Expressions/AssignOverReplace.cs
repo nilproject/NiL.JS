@@ -14,10 +14,10 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var oldContainer = second.tempContainer;
-            second.tempContainer = first.EvaluateForAssing(context);
+            second.tempContainer = first.EvaluateForWrite(context);
             var res = second.tempContainer;
             try
             {
@@ -30,12 +30,12 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             // do nothing
         }

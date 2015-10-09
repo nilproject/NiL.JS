@@ -49,15 +49,15 @@ namespace NiL.JS.Expressions
             this.threads = threads;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref threads[0], depth, variables, state | _BuildState.Conditional | _BuildState.InExpression, message, statistic, opts);
-            Parser.Build(ref threads[1], depth, variables, state | _BuildState.Conditional | _BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref threads[0], depth, variables, state | BuildState.Conditional | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref threads[1], depth, variables, state | BuildState.Conditional | BuildState.InExpression, message, statistic, opts);
             base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && first is ConstantNotation)
             {
@@ -96,7 +96,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             for (var i = threads.Length; i-- > 0; )

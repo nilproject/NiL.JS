@@ -65,7 +65,7 @@ namespace NiL.JS.Expressions
             return x.ToString();
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             //lock (this)
             {
@@ -81,7 +81,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (!res)

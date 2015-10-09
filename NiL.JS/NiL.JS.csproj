@@ -228,6 +228,7 @@
     <Compile Include="BaseLibrary\Int8Array.cs" />
     <Compile Include="BaseLibrary\TypedArray.cs" />
     <Compile Include="Core\BinaryTree.cs" />
+    <Compile Include="Core\CustomCodeFragment.cs" />
     <Compile Include="Core\Functions\BindedFunction.cs" />
     <Compile Include="Core\CatchContext.cs" />
     <Compile Include="Core\CompiledNode.cs" />

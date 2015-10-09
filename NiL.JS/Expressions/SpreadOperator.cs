@@ -29,12 +29,12 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             throw new NotImplementedException();
         }
 
-        internal override NiL.JS.Core.JSValue EvaluateForAssing(NiL.JS.Core.Context context)
+        internal protected override JSValue EvaluateForWrite(NiL.JS.Core.Context context)
         {
             throw new NotImplementedException();
         }
@@ -44,10 +44,10 @@ namespace NiL.JS.Expressions
             return new CodeNode[] { first };
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             CodeNode f = first;
-            var res =  first.Build(ref f, depth, variables, state, message, statistic, opts);
+            var res = first.Build(ref f, depth, variables, state, message, statistic, opts);
             first = f as Expression ?? first;
             return res;
         }

@@ -760,10 +760,10 @@ namespace NiL.JS.BaseLibrary
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function (" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
             var fs = FunctionNotation.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
-            if (fs.IsParsed && code.Length == index)
+            if (fs.isParsed && code.Length == index)
             {
-                Parser.Build(ref fs.Statement, 0, new Dictionary<string, VariableDescriptor>(), context.strict ? _BuildState.Strict : _BuildState.None, null, null, Options.Default);
-                creator = fs.Statement as FunctionNotation;
+                Parser.Build(ref fs.node, 0, new Dictionary<string, VariableDescriptor>(), context.strict ? BuildState.Strict : BuildState.None, null, null, Options.Default);
+                creator = fs.node as FunctionNotation;
             }
             else
                 ExceptionsHelper.Throw(new SyntaxError("Unknown syntax error"));

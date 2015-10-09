@@ -1,9 +1,18 @@
 ﻿
 namespace NiL.JS.Core
 {
-    internal struct ParseResult
+    public struct ParseResult
     {
-        public bool IsParsed;
-        public CodeNode Statement;
+        internal bool isParsed;
+        internal CodeNode node;
+
+        public bool IsParsed { get { return isParsed; } }
+        public CodeNode Node { get { return node; } }
+
+        public ParseResult(bool parsed, CodeNode codeNode)
+        {
+            node = codeNode;
+            isParsed = parsed;
+        }
     }
 }

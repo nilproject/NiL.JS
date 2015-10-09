@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var t = (uint)Tools.JSObjectToInt32(first.Evaluate(context));
             if (t <= int.MaxValue)

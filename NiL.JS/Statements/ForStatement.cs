@@ -47,11 +47,11 @@ namespace NiL.JS.Statements
             if (state.Code[i] != ';')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
-            var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i).Statement;
+            var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i).node;
             if (state.Code[i] != ';')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
-            var post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i).Statement;
+            var post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i).node;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
@@ -74,8 +74,8 @@ namespace NiL.JS.Statements
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new ForStatement()
+                isParsed = true,
+                node = new ForStatement()
                 {
                     body = body,
                     condition = condition,
@@ -88,7 +88,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             if (init != null)
             {
@@ -164,7 +164,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref init, 1, variables, state, message, statistic, opts);
             if ((opts & Options.SuppressUselessStatementsElimination) == 0
@@ -172,14 +172,14 @@ namespace NiL.JS.Statements
                 && !(init as VariableDefineStatement).isConst
                 && (init as VariableDefineStatement).initializators.Length == 1)
                 init = (init as VariableDefineStatement).initializators[0];
-            Parser.Build(ref condition, 2, variables, state | _BuildState.InLoop | _BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | BuildState.InLoop | BuildState.InExpression, message, statistic, opts);
             if (post != null)
             {
-                Parser.Build(ref post, 1, variables, state | _BuildState.Conditional | _BuildState.InLoop | _BuildState.InExpression, message, statistic, opts);
+                Parser.Build(ref post, 1, variables, state | BuildState.Conditional | BuildState.InLoop | BuildState.InExpression, message, statistic, opts);
                 if (post == null && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | BuildState.Conditional | BuildState.InLoop, message, statistic, opts);
             if (condition == null)
                 condition = new ConstantNotation(NiL.JS.BaseLibrary.Boolean.True);
             else if ((condition is Expressions.Expression)
@@ -252,7 +252,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (init != null)
                 init.Optimize(ref init, owner, message, opts, statistic);

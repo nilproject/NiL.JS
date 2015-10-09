@@ -31,8 +31,8 @@ namespace NiL.JS.Statements
             {
                 return new ParseResult()
                 {
-                    IsParsed = true,
-                    Statement = new SinglelineComment(state.Code.Substring(index + 2, end - index - 2))
+                    isParsed = true,
+                    node = new SinglelineComment(state.Code.Substring(index + 2, end - index - 2))
                     {
                         Length = i - index,
                         Position = index
@@ -52,7 +52,7 @@ namespace NiL.JS.Statements
             Text = text;
         }
 
-        internal override NiL.JS.Core.JSValue Evaluate(NiL.JS.Core.Context context)
+        internal protected override JSValue Evaluate(NiL.JS.Core.Context context)
         {
             return null;
         }

@@ -65,7 +65,7 @@ namespace NiL.JS.Expressions
                 if (Parser.Validate(state.Code, "set ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set).Statement as FunctionNotation;
+                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set).node as FunctionNotation;
                     if (!flds.ContainsKey(setter.Name))
                     {
                         var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
@@ -86,7 +86,7 @@ namespace NiL.JS.Expressions
                 else if (Parser.Validate(state.Code, "get ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get).Statement as FunctionNotation;
+                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get).node as FunctionNotation;
                     if (!flds.ContainsKey(getter.Name))
                     {
                         var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
@@ -132,7 +132,7 @@ namespace NiL.JS.Expressions
                     if (state.Code[i] != ':')
                         return new ParseResult();
                     do i++; while (char.IsWhiteSpace(state.Code[i]));
-                    var initializator = ExpressionTree.Parse(state, ref i, false).Statement;
+                    var initializator = ExpressionTree.Parse(state, ref i, false).node;
                     CodeNode aei = null;
                     if (flds.TryGetValue(fieldName, out aei))
                     {
@@ -154,8 +154,8 @@ namespace NiL.JS.Expressions
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new ObjectNotation(flds)
+                isParsed = true,
+                node = new ObjectNotation(flds)
                 {
                     Position = pos,
                     Length = index - pos
@@ -163,7 +163,7 @@ namespace NiL.JS.Expressions
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var res = JSObject.CreateObject(false);
             if (fields.Length == 0)
@@ -192,7 +192,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
@@ -201,16 +201,16 @@ namespace NiL.JS.Expressions
                 if ((values[i] is ConstantNotation) && ((values[i] as ConstantNotation).value.valueType == JSValueType.Property))
                 {
                     var gs = (values[i] as ConstantNotation).value.oValue as CodeNode[];
-                    Parser.Build(ref gs[0], 1, variables, state | _BuildState.InExpression, message, statistic, opts);
-                    Parser.Build(ref gs[1], 1, variables, state | _BuildState.InExpression, message, statistic, opts);
+                    Parser.Build(ref gs[0], 1, variables, state | BuildState.InExpression, message, statistic, opts);
+                    Parser.Build(ref gs[1], 1, variables, state | BuildState.InExpression, message, statistic, opts);
                 }
                 else
-                    Parser.Build(ref values[i], 2, variables, state | _BuildState.InExpression, message, statistic, opts);
+                    Parser.Build(ref values[i], 2, variables, state | BuildState.InExpression, message, statistic, opts);
             }
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             for (var i = Initializators.Length; i-- > 0; )
             {

@@ -50,16 +50,16 @@ namespace NiL.JS.Expressions
             this.value = value;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             return value;
         }
 
-        internal override NiL.JS.Core.JSValue EvaluateForAssing(NiL.JS.Core.Context context)
+        internal protected override JSValue EvaluateForWrite(NiL.JS.Core.Context context)
         {
             if (value == JSValue.undefined)
                 return value;
-            return base.EvaluateForAssing(context);
+            return base.EvaluateForWrite(context);
         }
 
         protected override CodeNode[] getChildsImpl()
@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 

@@ -230,7 +230,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var f = first.Evaluate(context);
             var temp = tempContainer;
@@ -261,7 +261,7 @@ namespace NiL.JS.Expressions
             return Check(tempContainer, s, !trueMore);
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             baseOptimize(ref _this, owner, message, opts, statistic);
             if (_this == this)

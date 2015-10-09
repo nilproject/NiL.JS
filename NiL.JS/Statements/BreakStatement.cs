@@ -34,8 +34,8 @@ namespace NiL.JS.Statements
             state.breaksCount++;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new BreakStatement()
+                isParsed = true,
+                node = new BreakStatement()
                 {
                     label = label,
                     Position = pos,
@@ -44,7 +44,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             context.abort = AbortType.Break;
             context.abortInfo = label;

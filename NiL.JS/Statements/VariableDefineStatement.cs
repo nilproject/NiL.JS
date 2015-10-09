@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
                 this.source = source;
             }
 
-            internal override JSValue Evaluate(Context context)
+            internal protected override JSValue Evaluate(Context context)
             {
                 var res = source.Evaluate(context);
                 var v = variable.Evaluate(context);
@@ -36,16 +36,16 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override JSValue EvaluateForAssing(Context context)
+            internal protected override JSValue EvaluateForWrite(Context context)
             {
-                var res = source.EvaluateForAssing(context);
+                var res = source.EvaluateForWrite(context);
                 var v = variable.Evaluate(context);
                 if ((v.attributes & JSValueAttributesInternal.SystemObject) == 0)
                     v.attributes &= ~JSValueAttributesInternal.ReadOnly;
                 return res;
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+            internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
             {
                 var v = variable as CodeNode;
                 var res = variable.Build(ref v, depth, variables, state, message, statistic, opts);
@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+            internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
             {
                 var v = variable as CodeNode;
                 variable.Optimize(ref v, owner, message, opts, statistic);
@@ -158,7 +158,7 @@ namespace NiL.JS.Statements
                     if (i == state.Code.Length)
                         ExceptionsHelper.Throw((new SyntaxError("Unexpected end of line in variable defenition.")));
                     VariableReference accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth };
-                    Expression source = ExpressionTree.Parse(state, ref i, false).Statement as Expression;
+                    Expression source = ExpressionTree.Parse(state, ref i, false).node as Expression;
                     if (isConst)
                         source = new AllowWriteCN(accm, source);
                     initializator.Add(
@@ -199,8 +199,8 @@ namespace NiL.JS.Statements
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new VariableDefineStatement(names.ToArray(), inits, isConst, state.functionsDepth)
+                isParsed = true,
+                node = new VariableDefineStatement(names.ToArray(), inits, isConst, state.functionsDepth)
                 {
                     Position = pos,
                     Length = index - pos
@@ -208,7 +208,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             for (int i = 0; i < initializators.Length; i++)
             {
@@ -227,7 +227,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -283,7 +283,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             for (int i = 0; i < initializators.Length; i++)
             {

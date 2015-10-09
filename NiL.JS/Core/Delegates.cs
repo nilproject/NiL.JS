@@ -2,9 +2,9 @@
 
 namespace NiL.JS.Core
 {
-    internal delegate ParseResult ParseDelegate(ParsingState state, ref int position);
+    public delegate ParseResult ParseDelegate(ParsingState state, ref int position);
 
-    internal delegate bool ValidateDelegate(string code, int position);
+    public delegate bool ValidateDelegate(string code, int position);
 
     public delegate JSValue ExternalFunctionDelegate(JSValue thisBind, Arguments args);
 

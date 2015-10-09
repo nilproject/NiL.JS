@@ -33,8 +33,8 @@ namespace NiL.JS.Statements
             state.continiesCount++;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new ContinueStatement()
+                isParsed = true,
+                node = new ContinueStatement()
                 {
                     label = label,
                     Position = pos,
@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             context.abort = AbortType.Continue;
             context.abortInfo = label;

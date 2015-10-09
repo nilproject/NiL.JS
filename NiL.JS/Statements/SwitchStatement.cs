@@ -45,7 +45,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "switch (", ref i) && !Parser.Validate(state.Code, "switch(", ref i))
                 return new ParseResult();
             while (char.IsWhiteSpace(state.Code[i])) i++;
-            var image = ExpressionTree.Parse(state, ref i).Statement;
+            var image = ExpressionTree.Parse(state, ref i).node;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do i++; while (char.IsWhiteSpace(state.Code[i]));
@@ -65,7 +65,7 @@ namespace NiL.JS.Statements
                     {
                         i += 4;
                         while (char.IsWhiteSpace(state.Code[i])) i++;
-                        var sample = ExpressionTree.Parse(state, ref i).Statement;
+                        var sample = ExpressionTree.Parse(state, ref i).node;
                         if (state.Code[i] != ':')
                             ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         i++;
@@ -106,8 +106,8 @@ namespace NiL.JS.Statements
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new SwitchStatement(body.ToArray())
+                isParsed = true,
+                node = new SwitchStatement(body.ToArray())
                 {
                     functions = funcs.ToArray(),
                     cases = cases.ToArray(),
@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             if (functions != null)
                 throw new InvalidOperationException();
@@ -151,13 +151,13 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
-            Parser.Build(ref image, 2, variables, state | _BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref image, 2, variables, state | BuildState.InExpression, message, statistic, opts);
             for (int i = 0; i < lines.Length; i++)
-                Parser.Build(ref lines[i], 1, variables, state | _BuildState.Conditional, message, statistic, opts);
+                Parser.Build(ref lines[i], 1, variables, state | BuildState.Conditional, message, statistic, opts);
             for (int i = 0; functions != null && i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
@@ -203,7 +203,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             image.Optimize(ref image, owner, message, opts, statistic);
             for (var i = 1; i < cases.Length; i++)

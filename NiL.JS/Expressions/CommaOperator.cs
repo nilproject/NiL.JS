@@ -28,7 +28,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             JSValue temp = null;
             temp = first.Evaluate(context);
@@ -43,7 +43,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
@@ -54,8 +54,8 @@ namespace NiL.JS.Expressions
                 _this = first;
                 return true;
             }
-            Parser.Build(ref first, depth + 1, variables, state | _BuildState.InExpression, message, statistic, opts);
-            Parser.Build(ref second, depth + 1, variables, state | _BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, state | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref second, depth + 1, variables, state | BuildState.InExpression, message, statistic, opts);
             return false;
         }
 

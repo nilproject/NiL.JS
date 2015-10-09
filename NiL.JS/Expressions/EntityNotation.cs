@@ -21,7 +21,7 @@ namespace NiL.JS.Expressions
             get { return owner.name; }
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             return owner.Evaluate(context);
         }
@@ -63,14 +63,14 @@ namespace NiL.JS.Expressions
             reference = new EntityReference(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return false;
         }
 
-        internal virtual void Register(Dictionary<string, VariableDescriptor> variables, _BuildState state)
+        internal virtual void Register(Dictionary<string, VariableDescriptor> variables, BuildState state)
         {
-            if ((state & _BuildState.InExpression) == 0 && name != null) // имя не задано только для случая Function("<some string>")
+            if ((state & BuildState.InExpression) == 0 && name != null) // имя не задано только для случая Function("<some string>")
             {
                 VariableDescriptor desc = null;
                 if (!variables.TryGetValue(name, out desc) || desc == null)

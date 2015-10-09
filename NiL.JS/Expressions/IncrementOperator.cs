@@ -61,14 +61,14 @@ namespace NiL.JS.Expressions
                 throw new ArgumentNullException("op");
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             // Если это постинкремент, то second не будут равен нулю.
             // first всегда содержит узел, из которого нужно получать пременную
             // Определяем тип операции по вторичным признакам.
             Function setter = null;
             JSValue res = null;
-            var val = first.EvaluateForAssing(context);
+            var val = first.EvaluateForWrite(context);
             Arguments args = null;
             if (val.valueType == JSValueType.Property)
             {
@@ -178,11 +178,11 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
-            Parser.Build(ref first, depth + 1, variables, state | _BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, state | BuildState.InExpression, message, statistic, opts);
             if (depth <= 1 && second != null)
                 second = null;
             var f = first as VariableReference ?? ((first is GetValueForAssignmentOperator) ? (first as GetValueForAssignmentOperator).Source as VariableReference : null);
@@ -194,7 +194,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var vr = first as VariableReference;
             if (vr != null && vr.descriptor.isDefined)

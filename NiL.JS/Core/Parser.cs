@@ -6,135 +6,135 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Core
 {
-    internal static class Parser
+    internal class Rule
     {
-        private class _Rule
+        public ValidateDelegate Validate;
+        public ParseDelegate Parse;
+
+        public Rule(string token, ParseDelegate parseDel)
         {
-            public ValidateDelegate Validate;
-            public ParseDelegate Parse;
-
-            public _Rule(string token, ParseDelegate parseDel)
-            {
-                this.Validate = (string code, int pos) => Parser.Validate(code, token, pos);
-                this.Parse = parseDel;
-            }
-
-            public _Rule(ValidateDelegate valDel, ParseDelegate parseDel)
-            {
-                this.Validate = valDel;
-                this.Parse = parseDel;
-            }
+            this.Validate = (string code, int pos) => Parser.Validate(code, token, pos);
+            this.Parse = parseDel;
         }
 
-        private static _Rule[][] rules = new _Rule[][]
+        public Rule(ValidateDelegate valDel, ParseDelegate parseDel)
+        {
+            this.Validate = valDel;
+            this.Parse = parseDel;
+        }
+    }
+
+    public static class Parser
+    {
+        private static List<Rule>[] rules = new List<Rule>[]
         {
             // 0
-            new _Rule[] // Общий
+            new List<Rule> // Общий
             {                
-                new _Rule("[", ExpressionTree.Parse),
-                new _Rule("{", CodeBlock.Parse),
-                new _Rule("var ", VariableDefineStatement.Parse),
-                new _Rule("const ", VariableDefineStatement.Parse),
-                new _Rule("if", IfElseStatement.Parse),
-                new _Rule("for", ForOfStatement.Parse),
-                new _Rule("for", ForInStatement.Parse),
-                new _Rule("for", ForStatement.Parse),
-                new _Rule("while", WhileStatement.Parse),
-                new _Rule("return", ReturnStatement.Parse),
-                new _Rule("function", FunctionNotation.Parse),
-                new _Rule("class", ClassNotation.Parse),
-                new _Rule("switch", SwitchStatement.Parse),
-                new _Rule("with", WithStatement.Parse),
-                new _Rule("do", DoWhileStatement.Parse),
-                new _Rule("(", ExpressionTree.Parse),
-                new _Rule("+", ExpressionTree.Parse),
-                new _Rule("-", ExpressionTree.Parse),
-                new _Rule("!", ExpressionTree.Parse),
-                new _Rule("~", ExpressionTree.Parse),
-                new _Rule("true", ExpressionTree.Parse),
-                new _Rule("false", ExpressionTree.Parse),
-                new _Rule("null", ExpressionTree.Parse),
-                new _Rule("this", ExpressionTree.Parse),
-                new _Rule("typeof", ExpressionTree.Parse),
-                new _Rule("try", TryCatchStatement.Parse),
-                new _Rule("new", ExpressionTree.Parse),
-                new _Rule("delete", ExpressionTree.Parse),
-                new _Rule("void", ExpressionTree.Parse),
-                new _Rule("yield", ExpressionTree.Parse),
-                new _Rule("break", BreakStatement.Parse),
-                new _Rule("continue", ContinueStatement.Parse),
-                new _Rule("throw", ThrowStatement.Parse),
-                new _Rule(ValidateName, LabeledStatement.Parse),
-                new _Rule(ValidateName, ExpressionTree.Parse),
-                new _Rule(ValidateValue, ExpressionTree.Parse),
-                new _Rule("debugger", DebuggerStatement.Parse)
+                new Rule("[", ExpressionTree.Parse),
+                new Rule("{", CodeBlock.Parse),
+                new Rule("var ", VariableDefineStatement.Parse),
+                new Rule("const ", VariableDefineStatement.Parse),
+                new Rule("if", IfElseStatement.Parse),
+                new Rule("for", ForOfStatement.Parse),
+                new Rule("for", ForInStatement.Parse),
+                new Rule("for", ForStatement.Parse),
+                new Rule("while", WhileStatement.Parse),
+                new Rule("return", ReturnStatement.Parse),
+                new Rule("function", FunctionNotation.Parse),
+                new Rule("class", ClassNotation.Parse),
+                new Rule("switch", SwitchStatement.Parse),
+                new Rule("with", WithStatement.Parse),
+                new Rule("do", DoWhileStatement.Parse),
+                new Rule("(", ExpressionTree.Parse),
+                new Rule("+", ExpressionTree.Parse),
+                new Rule("-", ExpressionTree.Parse),
+                new Rule("!", ExpressionTree.Parse),
+                new Rule("~", ExpressionTree.Parse),
+                new Rule("true", ExpressionTree.Parse),
+                new Rule("false", ExpressionTree.Parse),
+                new Rule("null", ExpressionTree.Parse),
+                new Rule("this", ExpressionTree.Parse),
+                new Rule("typeof", ExpressionTree.Parse),
+                new Rule("try", TryCatchStatement.Parse),
+                new Rule("new", ExpressionTree.Parse),
+                new Rule("delete", ExpressionTree.Parse),
+                new Rule("void", ExpressionTree.Parse),
+                new Rule("yield", ExpressionTree.Parse),
+                new Rule("break", BreakStatement.Parse),
+                new Rule("continue", ContinueStatement.Parse),
+                new Rule("throw", ThrowStatement.Parse),
+                new Rule(ValidateName, LabeledStatement.Parse),
+                new Rule(ValidateName, ExpressionTree.Parse),
+                new Rule(ValidateValue, ExpressionTree.Parse),
+                new Rule("debugger", DebuggerStatement.Parse)
             },
             // 1
-            new _Rule[] // Для операторов
+            new List<Rule> // Для операторов
             {
-                new _Rule("[", ExpressionTree.Parse),
-                new _Rule("{", ExpressionTree.Parse),
-                new _Rule("function", ExpressionTree.Parse),
-                new _Rule("class", ExpressionTree.Parse),
-                new _Rule("(", ExpressionTree.Parse),
-                new _Rule("+", ExpressionTree.Parse),
-                new _Rule("-", ExpressionTree.Parse),
-                new _Rule("!", ExpressionTree.Parse),
-                new _Rule("~", ExpressionTree.Parse),
-                new _Rule("(", ExpressionTree.Parse),
-                new _Rule("true", ExpressionTree.Parse),
-                new _Rule("false", ExpressionTree.Parse),
-                new _Rule("null", ExpressionTree.Parse),
-                new _Rule("this", ExpressionTree.Parse),
-                new _Rule("typeof", ExpressionTree.Parse),
-                new _Rule("new", ExpressionTree.Parse),
-                new _Rule("delete", ExpressionTree.Parse),
-                new _Rule("void", ExpressionTree.Parse),
-                new _Rule("yield", ExpressionTree.Parse),
-                new _Rule(ValidateName, ExpressionTree.Parse),
-                new _Rule(ValidateValue, ExpressionTree.Parse),
+                new Rule("[", ExpressionTree.Parse),
+                new Rule("{", ExpressionTree.Parse),
+                new Rule("function", ExpressionTree.Parse),
+                new Rule("class", ExpressionTree.Parse),
+                new Rule("(", ExpressionTree.Parse),
+                new Rule("+", ExpressionTree.Parse),
+                new Rule("-", ExpressionTree.Parse),
+                new Rule("!", ExpressionTree.Parse),
+                new Rule("~", ExpressionTree.Parse),
+                new Rule("(", ExpressionTree.Parse),
+                new Rule("true", ExpressionTree.Parse),
+                new Rule("false", ExpressionTree.Parse),
+                new Rule("null", ExpressionTree.Parse),
+                new Rule("this", ExpressionTree.Parse),
+                new Rule("typeof", ExpressionTree.Parse),
+                new Rule("new", ExpressionTree.Parse),
+                new Rule("delete", ExpressionTree.Parse),
+                new Rule("void", ExpressionTree.Parse),
+                new Rule("yield", ExpressionTree.Parse),
+                new Rule(ValidateName, ExpressionTree.Parse),
+                new Rule(ValidateValue, ExpressionTree.Parse),
             },
             // 2
-            new _Rule[] // Для операторов №2
+            new List<Rule> // Для операторов №2
             {
-                new _Rule("[", ArrayNotation.Parse),
-                new _Rule("{", ObjectNotation.Parse),
-                new _Rule("function", FunctionNotation.Parse),
-                new _Rule("class", ClassNotation.Parse),
+                new Rule("[", ArrayNotation.Parse),
+                new Rule("{", ObjectNotation.Parse),
+                new Rule("function", FunctionNotation.Parse),
+                new Rule("class", ClassNotation.Parse),
             },
             // 3
-            new _Rule[] // Для for
+            new List<Rule> // Для for
             {
-                new _Rule("const ", VariableDefineStatement.Parse),
-                new _Rule("var ", VariableDefineStatement.Parse),
-                new _Rule("(", ExpressionTree.Parse),
-                new _Rule("+", ExpressionTree.Parse),
-                new _Rule("-", ExpressionTree.Parse),
-                new _Rule("!", ExpressionTree.Parse),
-                new _Rule("~", ExpressionTree.Parse),
-                new _Rule("function", ExpressionTree.Parse),
-                new _Rule("class", ClassNotation.Parse),
-                new _Rule("(", ExpressionTree.Parse),
-                new _Rule("true", ExpressionTree.Parse),
-                new _Rule("false", ExpressionTree.Parse),
-                new _Rule("null", ExpressionTree.Parse),
-                new _Rule("this", ExpressionTree.Parse),
-                new _Rule("typeof", ExpressionTree.Parse),
-                new _Rule("new", ExpressionTree.Parse),
-                new _Rule("delete", ExpressionTree.Parse),
-                new _Rule("void", ExpressionTree.Parse),
-                new _Rule("yield", ExpressionTree.Parse),
-                new _Rule(ValidateName, ExpressionTree.Parse),
-                new _Rule(ValidateValue, ExpressionTree.Parse),
+                new Rule("const ", VariableDefineStatement.Parse),
+                new Rule("var ", VariableDefineStatement.Parse),
+                new Rule("(", ExpressionTree.Parse),
+                new Rule("+", ExpressionTree.Parse),
+                new Rule("-", ExpressionTree.Parse),
+                new Rule("!", ExpressionTree.Parse),
+                new Rule("~", ExpressionTree.Parse),
+                new Rule("function", ExpressionTree.Parse),
+                new Rule("class", ClassNotation.Parse),
+                new Rule("(", ExpressionTree.Parse),
+                new Rule("true", ExpressionTree.Parse),
+                new Rule("false", ExpressionTree.Parse),
+                new Rule("null", ExpressionTree.Parse),
+                new Rule("this", ExpressionTree.Parse),
+                new Rule("typeof", ExpressionTree.Parse),
+                new Rule("new", ExpressionTree.Parse),
+                new Rule("delete", ExpressionTree.Parse),
+                new Rule("void", ExpressionTree.Parse),
+                new Rule("yield", ExpressionTree.Parse),
+                new Rule(ValidateName, ExpressionTree.Parse),
+                new Rule(ValidateValue, ExpressionTree.Parse),
             }
         };
 
-        internal static bool Validate(string code, string patern, int index)
+        public static bool Validate(string code, string patern, int index)
         {
             return Validate(code, patern, ref index);
         }
 
-        internal static bool Validate(string code, string patern, ref int index)
+        public static bool Validate(string code, string patern, ref int index)
         {
             int i = 0;
             int j = index;
@@ -168,22 +168,27 @@ namespace NiL.JS.Core
             return true;
         }
 
-        internal static bool ValidateName(string code, int index)
+        public static bool ValidateName(string code, int index)
         {
             return ValidateName(code, ref index, true, true, false);
         }
 
-        internal static bool ValidateName(string code, ref int index, bool strict)
+        public static bool ValidateName(string code, ref int index)
+        {
+            return ValidateName(code, ref index, true, true, false);
+        }
+
+        public static bool ValidateName(string code, ref int index, bool strict)
         {
             return ValidateName(code, ref index, true, true, strict);
         }
 
-        internal static bool ValidateName(string name, int index, bool reserveControl, bool allowEscape, bool strict)
+        public static bool ValidateName(string name, int index, bool reserveControl, bool allowEscape, bool strict)
         {
             return ValidateName(name, ref index, reserveControl, allowEscape, strict);
         }
 
-        internal static bool ValidateName(string code, ref int index, bool reserveControl, bool allowEscape, bool strict)
+        public static bool ValidateName(string code, ref int index, bool reserveControl, bool allowEscape, bool strict)
         {
             int j = index;
             if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
@@ -271,13 +276,13 @@ namespace NiL.JS.Core
             return true;
         }
 
-        internal static bool ValidateNumber(string code, ref int index)
+        public static bool ValidateNumber(string code, ref int index)
         {
             double fictive = 0.0;
             return Tools.ParseNumber(code, ref index, out fictive, 0, Tools.ParseNumberOptions.AllowFloat | Tools.ParseNumberOptions.AllowAutoRadix);
         }
 
-        internal static bool ValidateRegex(string code, ref int index, bool except)
+        public static bool ValidateRegex(string code, ref int index, bool except)
         {
             int j = index;
             if (code[j] == '/')
@@ -367,7 +372,7 @@ namespace NiL.JS.Core
             return false;
         }
 
-        internal static bool ValidateString(string code, ref int index, bool @throw)
+        public static bool ValidateString(string code, ref int index, bool @throw)
         {
             int j = index;
             if (j + 1 < code.Length && ((code[j] == '\'') || (code[j] == '"')))
@@ -400,12 +405,12 @@ namespace NiL.JS.Core
             return false;
         }
 
-        internal static bool ValidateValue(string code, int index)
+        public static bool ValidateValue(string code, int index)
         {
             return ValidateValue(code, ref index);
         }
 
-        internal static bool ValidateValue(string code, ref int index)
+        public static bool ValidateValue(string code, ref int index)
         {
             int j = index;
             if (code[j] == '/')
@@ -443,7 +448,7 @@ namespace NiL.JS.Core
                 || (c == '.');
         }
 
-        internal static bool isIdentificatorTerminator(char c)
+        public static bool isIdentificatorTerminator(char c)
         {
             return c == ' '
                 || Tools.isLineTerminator(c)
@@ -476,13 +481,13 @@ namespace NiL.JS.Core
             }
             if (index >= state.Code.Length)
                 return null;
-            for (int i = 0; i < rules[ruleset].Length; i++)
+            for (int i = 0; i < rules[ruleset].Count; i++)
             {
                 if (rules[ruleset][i].Validate(state.Code, index))
                 {
                     var pr = rules[ruleset][i].Parse(state, ref index);
-                    if (pr.IsParsed)
-                        return pr.Statement;
+                    if (pr.isParsed)
+                        return pr.node;
                 }
             }
             var cord = CodeCoordinates.FromTextPosition(state.Code, sindex, 0);
@@ -491,12 +496,13 @@ namespace NiL.JS.Core
             return null;
         }
 
-        internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            while (s != null && s.Build(ref s, depth, variables, state, message, statistic, opts)) ;
+            while (s != null && s.Build(ref s, depth, variables, state, message, statistic, opts))
+                ;
         }
 
-        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             CodeNode t = s;
             Build(ref t, depth, variables, state, message, statistic, opts);
@@ -506,6 +512,25 @@ namespace NiL.JS.Core
                 return;
             }
             s = t as Expression ?? new ExpressionWrapper(t);
+        }
+
+        public static void DefineCustomCodeFragment(Type type)
+        {
+            if (type == null)
+                ExceptionsHelper.ThrowArgumentNull("type");
+            if (!typeof(CodeNode).IsAssignableFrom(type))
+                throw new ArgumentException("type must be sub-class of " + typeof(CodeNode).Name);
+
+            var validateDelegate = type.GetMethod("Validate", new[] { typeof(string), typeof(int) });
+            if (validateDelegate == null || validateDelegate.ReturnType != typeof(bool))
+                throw new ArgumentException("type must contain static method \"Validate\" which get String and Int32 and returns Boolean");
+            var parserDelegate = type.GetMethod("Parse", new[] { typeof(ParsingState), typeof(int).MakeByRefType() });
+            if (parserDelegate == null || parserDelegate.ReturnType != typeof(ParseResult))
+                throw new ArgumentException("type must contain static method \"Parse\" which get " + typeof(ParsingState).Name + " and Int32 by reference and returns " + typeof(ParseResult).Name);
+
+            rules[0].Insert(rules[0].Count - 4, new Rule(
+                validateDelegate.CreateDelegate(typeof(ValidateDelegate)) as ValidateDelegate,
+                parserDelegate.CreateDelegate(typeof(ParseDelegate)) as ParseDelegate));
         }
     }
 }

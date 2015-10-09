@@ -60,7 +60,7 @@ namespace NiL.JS.Core.Functions
             return TypeProxy.GetPrototype(typeof(Function));
         }
 
-        public override NiL.JS.Core.JSValue Invoke(NiL.JS.Core.JSValue thisBind, NiL.JS.Core.Arguments args)
+        public override JSValue  Invoke(JSValue  thisBind, NiL.JS.Core.Arguments args)
         {
             int l = args == null ? 0 : args.length;
             object[] cargs = null;

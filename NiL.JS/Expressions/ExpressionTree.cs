@@ -372,7 +372,7 @@ namespace NiL.JS.Statements
                 position = i;
                 var threads = new Expression[]
                     {
-                        (Expression)ExpressionTree.Parse(state, ref i, true, false, false, true, false, false).Statement,
+                        (Expression)ExpressionTree.Parse(state, ref i, true, false, false, true, false, false).node,
                         null
                     };
                 if (state.Code[i] != ':')
@@ -381,7 +381,7 @@ namespace NiL.JS.Statements
                     i++;
                 while (char.IsWhiteSpace(state.Code[i]));
                 first = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
-                threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration).Statement;
+                threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration).node;
                 first.Length = i - first.Position;
             }
             else if (Parser.ValidateName(state.Code, ref i, state.strict) || Parser.Validate(state.Code, "this", ref i))
@@ -475,7 +475,7 @@ namespace NiL.JS.Statements
                                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
-                                first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
+                                first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).node;
                                 if (((first as GetMemberOperator) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -490,7 +490,7 @@ namespace NiL.JS.Statements
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
+                                var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).node;
                                 first = new Expressions.ToNumberOperator(f) { Position = index, Length = i - index };
                             }
                             break;
@@ -505,7 +505,7 @@ namespace NiL.JS.Statements
                                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
-                                first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
+                                first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).node;
                                 if (((first as GetMemberOperator) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -520,7 +520,7 @@ namespace NiL.JS.Statements
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
                                     i++;
-                                var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
+                                var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).node;
                                 first = new Expressions.NegationOperator(f) { Position = index, Length = i - index };
                             }
                             break;
@@ -530,7 +530,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.LogicalNegationOperator((Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement) { Position = index, Length = i - index };
+                            first = new Expressions.LogicalNegationOperator((Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).node) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -543,7 +543,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).Statement;
+                            first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration).node;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -558,7 +558,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).node;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -573,7 +573,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.CommaOperator((Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement, new ConstantNotation(JSValue.undefined)) { Position = index, Length = i - index };
+                            first = new Expressions.CommaOperator((Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).node, new ConstantNotation(JSValue.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -587,7 +587,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, false, true, true, true, false, forEnumeration).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, true, true, false, forEnumeration).node;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -609,7 +609,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).node;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -629,7 +629,7 @@ namespace NiL.JS.Statements
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).Statement;
+                            first = (Expression)Parse(state, ref i, false, true, false, true, false, forEnumeration).node;
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -648,7 +648,7 @@ namespace NiL.JS.Statements
                     do
                         i++;
                     while (char.IsWhiteSpace(state.Code[i]));
-                    var temp = (Expression)ExpressionTree.Parse(state, ref i, false).Statement;
+                    var temp = (Expression)ExpressionTree.Parse(state, ref i, false).node;
                     if (first == null)
                         first = temp;
                     else
@@ -1095,7 +1095,7 @@ namespace NiL.JS.Statements
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
                             int startPos = i;
-                            mname = (Expression)ExpressionTree.Parse(state, ref i, true, false, false, true, false, false).Statement;
+                            mname = (Expression)ExpressionTree.Parse(state, ref i, true, false, false, true, false, false).node;
                             //if (forEnumeration) // why?! (o_O)
                             //    return new ParseResult();
                             if (mname == null)
@@ -1142,7 +1142,7 @@ namespace NiL.JS.Statements
                                 }
                                 if (i + 1 == state.Code.Length)
                                     ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line"));
-                                args.Add((Expression)ExpressionTree.Parse(state, ref i, false).Statement);
+                                args.Add((Expression)ExpressionTree.Parse(state, ref i, false).node);
                                 if (args[args.Count - 1] == null)
                                     ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
                             }
@@ -1220,7 +1220,7 @@ namespace NiL.JS.Statements
                     i++;
                 while (state.Code.Length > i && char.IsWhiteSpace(state.Code[i]));
                 if (state.Code.Length > i)
-                    second = (Expression)ExpressionTree.Parse(state, ref i, processComma, false, false, false, type == OperationType.Ternary, forEnumeration).Statement;
+                    second = (Expression)ExpressionTree.Parse(state, ref i, processComma, false, false, false, type == OperationType.Ternary, forEnumeration).node;
             }
             Expression res = null;
             if (first == second && first == null)
@@ -1281,12 +1281,12 @@ namespace NiL.JS.Statements
             state.InExpression--;
             return new ParseResult()
             {
-                Statement = res,
-                IsParsed = true
+                node = res,
+                isParsed = true
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             throw new InvalidOperationException();
         }
@@ -1301,7 +1301,7 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Type = Type;
             _this = fastImpl;

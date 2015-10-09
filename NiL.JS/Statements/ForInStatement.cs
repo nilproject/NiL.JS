@@ -100,15 +100,15 @@ namespace NiL.JS.Statements
             {
                 do i++; while (char.IsWhiteSpace(state.Code[i]));
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
-                if (!defVal.IsParsed)
+                if (!defVal.isParsed)
                     return defVal;
                 NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
                 exp = new AssignmentOperator(
                     exp,
-                    (NiL.JS.Expressions.Expression)defVal.Statement)
+                    (NiL.JS.Expressions.Expression)defVal.node)
                     {
                         Position = res.variable.Position,
-                        Length = defVal.Statement.EndPosition - res.variable.Position
+                        Length = defVal.node.EndPosition - res.variable.Position
                     };
                 if (res.variable == exp.first.first)
                     res.variable = exp;
@@ -143,12 +143,12 @@ namespace NiL.JS.Statements
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = res
+                isParsed = true,
+                node = res
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var s = source.Evaluate(context);
             JSValue v = null;
@@ -158,7 +158,7 @@ namespace NiL.JS.Statements
                 v = (variable as AssignmentOperator).first.Evaluate(context);
             }
             else
-                v = variable.EvaluateForAssing(context);
+                v = variable.EvaluateForWrite(context);
             if (!s.IsDefined
                 || (s.valueType >= JSValueType.Object && s.oValue == null)
                 || body == null)
@@ -300,16 +300,16 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref variable, 2, variables, state | _BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref variable, 2, variables, state | BuildState.InExpression, message, statistic, opts);
             var tvar = variable as VariableDefineStatement;
             if (tvar != null)
                 variable = tvar.initializators[0];
             if (variable is AssignmentOperator)
                 ((variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
-            Parser.Build(ref source, 2, variables, state | _BuildState.InExpression, message, statistic, opts);
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | _BuildState.Conditional | _BuildState.InLoop, message, statistic, opts);
+            Parser.Build(ref source, 2, variables, state | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | BuildState.Conditional | BuildState.InLoop, message, statistic, opts);
             if (variable is Expressions.CommaOperator)
             {
                 if ((variable as Expressions.CommaOperator).SecondOperand != null)
@@ -324,7 +324,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             source.Optimize(ref source, owner, message, opts, statistic);
             if (body != null)

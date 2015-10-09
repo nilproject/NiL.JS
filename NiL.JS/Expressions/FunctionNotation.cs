@@ -190,7 +190,7 @@ namespace NiL.JS.Expressions
                 descriptor.references.Add(this);
             }
 
-            internal override JSValue Evaluate(Context context)
+            internal protected override JSValue Evaluate(Context context)
             {
                 throw new InvalidOperationException();
             }
@@ -277,7 +277,7 @@ namespace NiL.JS.Expressions
                             i++;
                         }
                         else if ((code[i] != '(') && (!char.IsWhiteSpace(code[i])))
-                            return new ParseResult() { IsParsed = false };
+                            return new ParseResult() { isParsed = false };
                         break;
                     }
                 case FunctionType.Get:
@@ -285,7 +285,7 @@ namespace NiL.JS.Expressions
                         if (!Parser.Validate(code, "get", ref i))
                             return new ParseResult();
                         if ((!char.IsWhiteSpace(code[i])))
-                            return new ParseResult() { IsParsed = false };
+                            return new ParseResult() { isParsed = false };
                         break;
                     }
                 case FunctionType.Set:
@@ -293,7 +293,7 @@ namespace NiL.JS.Expressions
                         if (!Parser.Validate(code, "set", ref i))
                             return new ParseResult();
                         if ((!char.IsWhiteSpace(code[i])))
-                            return new ParseResult() { IsParsed = false };
+                            return new ParseResult() { isParsed = false };
                         break;
                     }
                 case FunctionType.Method:
@@ -380,7 +380,7 @@ namespace NiL.JS.Expressions
                 state.AllowBreak.Push(false);
                 state.AllowContinue.Push(false);
                 state.AllowDirectives = true;
-                body = CodeBlock.Parse(state, ref i).Statement as CodeBlock;
+                body = CodeBlock.Parse(state, ref i).node as CodeBlock;
             }
             finally
             {
@@ -445,7 +445,7 @@ namespace NiL.JS.Expressions
                             break;
                         else if (code[i] == ',')
                             do i++; while (char.IsWhiteSpace(code[i]));
-                        args.Add((Expression)ExpressionTree.Parse(state, ref i, false).Statement);
+                        args.Add((Expression)ExpressionTree.Parse(state, ref i, false).node);
                     }
                     i++;
                     index = i;
@@ -454,8 +454,8 @@ namespace NiL.JS.Expressions
                         ExceptionsHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
                     return new ParseResult()
                     {
-                        IsParsed = true,
-                        Statement = new Expressions.CallOperator(func, args.ToArray())
+                        isParsed = true,
+                        node = new Expressions.CallOperator(func, args.ToArray())
                     };
                 }
                 else
@@ -471,12 +471,12 @@ namespace NiL.JS.Expressions
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = func
+                isParsed = true,
+                node = func
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             return MakeFunction(context);
         }
@@ -516,7 +516,7 @@ namespace NiL.JS.Expressions
             return new Function(context, this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             if (body.builded)
                 return false;
@@ -524,7 +524,7 @@ namespace NiL.JS.Expressions
                 stats.ContainsInnerFunction = true;
             codeContext = state;
 
-            if ((state & _BuildState.InLoop) != 0 && message != null)
+            if ((state & BuildState.InLoop) != 0 && message != null)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), Strings.FunctionInLoop);
 
             var bodyCode = body as CodeNode;
@@ -536,7 +536,7 @@ namespace NiL.JS.Expressions
                 parameters[i].isDefined = true;
             }
             statistic.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
-            bodyCode.Build(ref bodyCode, 0, nvars, state & ~(_BuildState.Conditional | _BuildState.InExpression | _BuildState.InEval), message, statistic, opts);
+            bodyCode.Build(ref bodyCode, 0, nvars, state & ~(BuildState.Conditional | BuildState.InExpression | BuildState.InEval), message, statistic, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
@@ -607,7 +607,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var bd = body as CodeNode;
             body.Optimize(ref bd, this, message, opts, this.statistic);

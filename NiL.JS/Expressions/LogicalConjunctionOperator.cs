@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var left = first.Evaluate(context);
             if (!(bool)left)
@@ -36,11 +36,11 @@ namespace NiL.JS.Expressions
                 return second.Evaluate(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (message != null && depth <= 1)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use logical operator as a conditional statement");
-            return base.Build(ref _this, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
+            return base.Build(ref _this, depth, variables, state | BuildState.Conditional, message, statistic, opts);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

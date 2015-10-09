@@ -35,7 +35,7 @@ namespace NiL.JS.Expressions
         {
             get;
         }
-        internal _BuildState codeContext;
+        internal BuildState codeContext;
 
         internal Expression first;
         internal Expression second;
@@ -81,10 +81,10 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
-            state = state | _BuildState.InExpression;
+            state = state | BuildState.InExpression;
 
             Parser.Build(ref first, depth + 1, variables, state, message, statistic, opts);
             Parser.Build(ref second, depth + 1, variables, state, message, statistic, opts);
@@ -121,7 +121,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             baseOptimize(ref _this, owner, message, opts, statistic);
         }

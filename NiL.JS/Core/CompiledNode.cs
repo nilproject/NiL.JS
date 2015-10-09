@@ -110,7 +110,7 @@ namespace NiL.JS.Core
             return original.Childs;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             if (compiledTree == null)
             {
@@ -153,17 +153,17 @@ namespace NiL.JS.Core
             return result;
         }
 
-        internal override JSValue EvaluateForAssing(Context context)
+        internal protected override JSValue EvaluateForWrite(Context context)
         {
-            return original.EvaluateForAssing(context);
+            return original.EvaluateForWrite(context);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return original.Build(ref _this, depth, variables, state, message, statistic, opts);
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             original.Optimize(ref _this, owner, message, opts, statistic);
         }

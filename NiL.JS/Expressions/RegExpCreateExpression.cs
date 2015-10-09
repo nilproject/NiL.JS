@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             return new RegExp(pattern, flags);
         }

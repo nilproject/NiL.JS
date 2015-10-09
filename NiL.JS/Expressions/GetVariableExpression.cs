@@ -17,7 +17,7 @@ namespace NiL.JS.Expressions
         {
         }
 
-        internal override JSValue EvaluateForAssing(Context context)
+        internal protected override JSValue EvaluateForWrite(Context context)
         {
             var res = context.caller._arguments;
             if (res is Arguments)
@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var res = context.caller._arguments;
             return res;
@@ -62,7 +62,7 @@ namespace NiL.JS.Expressions
             this.variableName = name;
         }
 
-        internal override JSValue EvaluateForAssing(Context context)
+        internal protected override JSValue EvaluateForWrite(Context context)
         {
             if (context.strict || forceThrow)
             {
@@ -76,7 +76,7 @@ namespace NiL.JS.Expressions
             return descriptor.Get(context, true, defineDepth);
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, defineDepth);
             switch (res.valueType)
@@ -124,7 +124,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
@@ -159,7 +159,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             if ((opts & Options.SuppressConstantPropogation) == 0
@@ -184,7 +184,7 @@ namespace NiL.JS.Expressions
 
                         if (assigns[i].Position > Position)
                         {
-                            if ((codeContext & _BuildState.InLoop) != 0 && ((assigns[i] as Expression).codeContext & _BuildState.InLoop) != 0)
+                            if ((codeContext & BuildState.InLoop) != 0 && ((assigns[i] as Expression).codeContext & BuildState.InLoop) != 0)
                             // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
                             {
                                 // оптимизация не применяется
@@ -209,7 +209,7 @@ namespace NiL.JS.Expressions
                         }
                     }
                     var assign = lastAssign as AssignmentOperator;
-                    if (assign != null && (assign.codeContext & _BuildState.Conditional) == 0 && assign.second is ConstantNotation)
+                    if (assign != null && (assign.codeContext & BuildState.Conditional) == 0 && assign.second is ConstantNotation)
                     {
                         _this = assign.second;
                     }

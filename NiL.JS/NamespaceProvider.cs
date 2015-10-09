@@ -77,10 +77,10 @@ namespace NiL.JS
                 unions = new Dictionary<string, GenericType>();
         }
 
-        internal protected override JS.Core.JSValue GetMember(JSValue nameObj, bool create, bool own)
+        internal protected override JSValue GetMember(JSValue nameObj, bool create, bool own)
         {
             var name = nameObj.ToString();
-            JS.Core.JSValue res = null;
+            JSValue res = null;
             if (childs.TryGetValue(name, out res))
                 return res;
             string reqname = Namespace + "." + name;

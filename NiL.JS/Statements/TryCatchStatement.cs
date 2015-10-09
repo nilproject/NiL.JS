@@ -37,7 +37,7 @@ namespace NiL.JS.Statements
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != '{')
                 ExceptionsHelper.Throw((new SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            var b = CodeBlock.Parse(state, ref i).Statement;
+            var b = CodeBlock.Parse(state, ref i).node;
             while (char.IsWhiteSpace(state.Code[i]))
                 i++;
             CodeNode cb = null;
@@ -64,7 +64,7 @@ namespace NiL.JS.Statements
                 state.functionsDepth++;
                 try
                 {
-                    cb = CodeBlock.Parse(state, ref i).Statement;
+                    cb = CodeBlock.Parse(state, ref i).node;
                 }
                 finally
                 {
@@ -81,7 +81,7 @@ namespace NiL.JS.Statements
                     i++;
                 if (state.Code[i] != '{')
                     ExceptionsHelper.Throw((new SyntaxError("Invalid finally block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                f = CodeBlock.Parse(state, ref i).Statement;
+                f = CodeBlock.Parse(state, ref i).node;
             }
             if (cb == null && f == null)
                 ExceptionsHelper.Throw((new SyntaxError("try block must contain 'catch' or/and 'finally' block")));
@@ -89,8 +89,8 @@ namespace NiL.JS.Statements
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new TryCatchStatement()
+                isParsed = true,
+                node = new TryCatchStatement()
                 {
                     body = (CodeBlock)b,
                     catchBody = (CodeBlock)cb,
@@ -235,7 +235,7 @@ namespace NiL.JS.Statements
             return Expression.Block(new[] { except }, impl);
         }*/
 #endif
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             Exception except = null;
             try
@@ -358,12 +358,12 @@ namespace NiL.JS.Statements
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsTry = true;
             CodeNode b = null;
-            Parser.Build(ref body, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | BuildState.Conditional, message, statistic, opts);
             if (catchBody != null)
             {
                 this.@catch = true;
@@ -372,7 +372,7 @@ namespace NiL.JS.Statements
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
                 b = catchBody as CodeNode;
-                Parser.Build(ref b, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
+                Parser.Build(ref b, depth, variables, state | BuildState.Conditional, message, statistic, opts);
                 catchBody = b != null ? b as CodeBlock ?? new CodeBlock(new CodeNode[] { b }, catchBody.strict) { Position = catchBody.Position, Length = catchBody.Length } : null;
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
@@ -399,7 +399,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             CodeNode b = null;
             body.Optimize(ref body, owner, message, opts, statistic);

@@ -15,6 +15,7 @@ Licensed under BSD 3-Clause License.
 * Compiler as a Service (CaaS).
 * Integrated static analyser.
 * Integrated debugger ("For developers" version).
+* You can extend syntax with your own statements (see examples).
 * 99% of Sputnik tests passed.
 
 ## Sample

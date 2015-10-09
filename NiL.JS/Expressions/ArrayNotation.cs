@@ -48,7 +48,7 @@ namespace NiL.JS.Expressions
                 if (state.Code[i] == ',')
                     elms.Add(null);
                 else
-                    elms.Add((Expression)ExpressionTree.Parse(state, ref i, false).Statement);
+                    elms.Add((Expression)ExpressionTree.Parse(state, ref i, false).node);
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] == ',')
@@ -65,8 +65,8 @@ namespace NiL.JS.Expressions
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new ArrayNotation()
+                isParsed = true,
+                node = new ArrayNotation()
                 {
                     elements = elms.ToArray(),
                     Position = pos,
@@ -98,7 +98,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             return impl(context, elements);
         }
@@ -108,16 +108,16 @@ namespace NiL.JS.Expressions
             return elements;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
             for (int i = 0; i < elements.Length; i++)
-                Parser.Build(ref elements[i], 2, variables, state | _BuildState.InExpression, message, statistic, opts);
+                Parser.Build(ref elements[i], 2, variables, state | BuildState.InExpression, message, statistic, opts);
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             for (var i = elements.Length; i-- > 0; )
             {

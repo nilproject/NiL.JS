@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             this.node = node;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             return node.Evaluate(context);
         }
@@ -37,11 +37,11 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
-            return node.Build(ref node, depth, variables, state | _BuildState.InExpression, message, statistic, opts);
+            return node.Build(ref node, depth, variables, state | BuildState.InExpression, message, statistic, opts);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace NiL.JS.Core
 {
-    internal sealed class ParsingState
+    public sealed class ParsingState
     {
         public int AllowReturn;
         public readonly Stack<bool> AllowBreak;
@@ -43,7 +43,7 @@ namespace NiL.JS.Core
         }
     }
 
-    internal sealed class FunctionStatistics
+    public sealed class FunctionStatistics
     {
         public bool UseGetMember;
         public bool UseCall;

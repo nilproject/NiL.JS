@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override Core.JSValue Evaluate(Core.Context context)
+        internal protected override JSValue Evaluate(Core.Context context)
         {
             int itemp;
             long ltemp;

@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var left = (uint)Tools.JSObjectToInt32(first.Evaluate(context));
             var t = left >> Tools.JSObjectToInt32(second.Evaluate(context));
@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
             return tempContainer;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             var res = base.Build(ref _this, depth,variables, state, message, statistic, opts);
             if (!res && _this == this)

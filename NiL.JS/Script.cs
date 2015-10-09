@@ -79,7 +79,7 @@ namespace NiL.JS
                 throw new ArgumentNullException();
             Code = code;
             int i = 0;
-            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code, messageCallback), ref i).Statement;
+            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code, messageCallback), ref i).node;
             if (i < code.Length)
                 throw new System.ArgumentException("Invalid char");
             CompilerMessageCallback icallback = messageCallback != null ? (level, cord, message) =>
@@ -87,7 +87,7 @@ namespace NiL.JS
                     messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message);
                 } : null as CompilerMessageCallback;
             var stat = new FunctionStatistics();
-            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), _BuildState.None, icallback, stat, options);
+            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), BuildState.None, icallback, stat, options);
             var body = root as CodeBlock;
             Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
             Context.thisBind = new GlobalObject(Context);

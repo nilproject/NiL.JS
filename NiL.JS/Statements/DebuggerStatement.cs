@@ -18,8 +18,8 @@ namespace NiL.JS.Statements
             i ^= index;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new DebuggerStatement()
+                isParsed = true,
+                node = new DebuggerStatement()
                 {
                     Position = i,
                     Length = index - i
@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
 #if DEV
             if (!context.debugging)
@@ -50,7 +50,7 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsDebugger = true;

@@ -184,8 +184,8 @@ namespace NiL.JS.Statements
             body.Reverse();
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new CodeBlock(body.ToArray(), (state.strict ^= strictSwitch) || strictSwitch)
+                isParsed = true,
+                node = new CodeBlock(body.ToArray(), (state.strict ^= strictSwitch) || strictSwitch)
                 {
                     variables = emptyVariables,
                     Position = startPos,
@@ -198,7 +198,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var ls = lines;
             for (int i = ls.Length; i-- > 0; )
@@ -267,7 +267,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (builded)
                 return false;
@@ -277,7 +277,7 @@ namespace NiL.JS.Statements
                 var fe = lines[i] as EntityNotation;
                 if (fe != null)
                 {
-                    Parser.Build(ref lines[i], (state & _BuildState.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? _BuildState.Strict : _BuildState.None), message, statistic, opts);
+                    Parser.Build(ref lines[i], (state & BuildState.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? BuildState.Strict : BuildState.None), message, statistic, opts);
                     if (fe.Hoist)
                     {
                         lines[i] = null;
@@ -297,7 +297,7 @@ namespace NiL.JS.Statements
                         if (unreachable && message != null)
                             message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position, lines[i].Length), "Unreachable code detected.");
                         var cn = lines[i];
-                        Parser.Build(ref cn, (state & _BuildState.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? _BuildState.Strict : _BuildState.None), message, statistic, opts);
+                        Parser.Build(ref cn, (state & BuildState.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? BuildState.Strict : BuildState.None), message, statistic, opts);
                         lines[i] = cn;
                         unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement || cn is ThrowStatement;
                     }
@@ -370,7 +370,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (localVariables != null)
                 for (var i = 0; i < localVariables.Length; i++)

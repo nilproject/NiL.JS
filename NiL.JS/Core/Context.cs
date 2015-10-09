@@ -536,13 +536,13 @@ namespace NiL.JS.Core
                 string c = Tools.RemoveComments(code, 0);
                 var ps = new ParsingState(c, code, null);
                 ps.strict = strict;
-                var cb = CodeBlock.Parse(ps, ref i).Statement;
+                var cb = CodeBlock.Parse(ps, ref i).node;
                 var body = cb as CodeBlock;
                 bool leak = !(strict || body.strict);
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Build(ref cb, 0, vars, (strict ? _BuildState.Strict : _BuildState.None) | _BuildState.InEval, null, null, Options.Default);
+                Parser.Build(ref cb, 0, vars, (strict ? BuildState.Strict : BuildState.None) | BuildState.InEval, null, null, Options.Default);
                 Context context = null;
                 if (leak)
                     context = this;

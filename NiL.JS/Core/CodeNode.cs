@@ -11,7 +11,7 @@ using NiL.JS.Core.JIT;
 namespace NiL.JS.Core
 {
     [Flags]
-    internal enum _BuildState
+    public enum BuildState
     {
         None = 0,
         Strict = 1,
@@ -30,7 +30,7 @@ namespace NiL.JS.Core
     {
         private static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
 #if !PORTABLE
-        internal static readonly MethodInfo EvaluateForAssignMethod = typeof(CodeNode).GetMethod("EvaluateForAssing", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
+        internal static readonly MethodInfo EvaluateForAssignMethod = typeof(CodeNode).GetMethod("EvaluateForWrite", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
         internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
 
 #if !NET35
@@ -38,7 +38,7 @@ namespace NiL.JS.Core
         {
             return System.Linq.Expressions.Expression.Call(
                 System.Linq.Expressions.Expression.Constant(this),
-                this.GetType().GetMethod(forAssign ? "EvaluateForAssing" : "Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                this.GetType().GetMethod(forAssign ? "EvaluateForWrite" : "Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
                 JITHelpers.ContextParameter
                 );
         }
@@ -52,28 +52,31 @@ namespace NiL.JS.Core
         private CodeNode[] childs;
         public CodeNode[] Childs { get { return childs ?? (childs = getChildsImpl() ?? emptyCodeNodeArray); } }
 
-        protected abstract CodeNode[] getChildsImpl();
+        protected virtual CodeNode[] getChildsImpl()
+        {
+            return new CodeNode[0];
+        }
 
-        internal virtual JSValue EvaluateForAssing(NiL.JS.Core.Context context)
+        internal protected virtual JSValue EvaluateForWrite(NiL.JS.Core.Context context)
         {
             ExceptionsHelper.Throw(new ReferenceError("Invalid left-hand side in assignment."));
             return null;
         }
 
-        internal abstract JSValue Evaluate(Context context);
+        internal protected abstract JSValue Evaluate(Context context);
 
         /// <summary>
         /// Заставляет объект перестроить своё содержимое перед началом выполнения.
         /// </summary>
-        /// <param name="_this">Ссылка на экземпляр, для которого происходит вызов функции</param>
+        /// <param name="self">Ссылка на экземпляр, для которого происходит вызов функции</param>
         /// <param name="depth">Глубина погружения в выражении</param>
         /// <returns>true если были внесены изменения и требуется повторный вызов функции</returns>
-        internal virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected virtual bool Build(ref CodeNode self, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return false;
         }
 
-        internal virtual void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected virtual void Optimize(ref CodeNode self, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
 
         }
@@ -83,6 +86,9 @@ namespace NiL.JS.Core
             return null;
         }
 #endif
-        public abstract T Visit<T>(Visitor<T> visitor);
+        public virtual T Visit<T>(Visitor<T> visitor)
+        {
+            return default(T);
+        }
     }
 }

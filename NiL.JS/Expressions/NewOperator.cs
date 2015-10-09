@@ -39,7 +39,7 @@ namespace NiL.JS.Expressions
                 throw new InvalidOperationException();
             }
 
-            internal override JSValue Evaluate(Context context)
+            internal protected override JSValue Evaluate(Context context)
             {
                 JSValue ctor = source.Evaluate(context);
                 if (ctor.valueType != JSValueType.Function && !(ctor.valueType == JSValueType.Object && ctor.oValue is Function))
@@ -71,7 +71,7 @@ namespace NiL.JS.Expressions
                 return visitor.Visit(source);
             }
 
-            internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+            internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
             {
                 return source.Build(ref source, depth, variables, state, message, statistic, opts);
             }
@@ -109,7 +109,7 @@ namespace NiL.JS.Expressions
             this.first = new CallOperator(thisSetter = new ThisSetter(first), arguments);
         }
 
-        internal override NiL.JS.Core.JSValue Evaluate(NiL.JS.Core.Context context)
+        internal protected override JSValue Evaluate(NiL.JS.Core.Context context)
         {
             var prevTB = thisSetter.lastThisBind;
             try
@@ -126,7 +126,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (message != null && depth <= 1)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use NewOperator for side effect");

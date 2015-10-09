@@ -22,7 +22,7 @@ namespace NiL.JS.Statements
             this.body = body;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
 #if DEV
             if (context.debugging)
@@ -59,7 +59,7 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);
@@ -102,7 +102,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "if (", ref i) && !Parser.Validate(state.Code, "if(", ref i))
                 return new ParseResult();
             while (char.IsWhiteSpace(state.Code[i])) i++;
-            var condition = (Expression)ExpressionTree.Parse(state, ref i).Statement;
+            var condition = (Expression)ExpressionTree.Parse(state, ref i).node;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
@@ -142,8 +142,8 @@ namespace NiL.JS.Statements
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new IfElseStatement()
+                isParsed = true,
+                node = new IfElseStatement()
                 {
                     body = body,
                     condition = condition,
@@ -154,7 +154,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
 #if DEV
             if (context.debugging)
@@ -196,11 +196,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref condition, 2, variables, state | _BuildState.InExpression, message, statistic, opts);
-            Parser.Build(ref body, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
-            Parser.Build(ref elseBody, depth, variables, state | _BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref elseBody, depth, variables, state | BuildState.Conditional, message, statistic, opts);
 
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
@@ -234,7 +234,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);

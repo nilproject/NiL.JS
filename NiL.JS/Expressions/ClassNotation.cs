@@ -95,7 +95,7 @@ namespace NiL.JS.Expressions
                 if (Parser.Validate(state.Code, "set ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set).Statement as FunctionNotation;
+                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set).node as FunctionNotation;
                     if (!flds.ContainsKey(setter.Name))
                     {
                         var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
@@ -116,7 +116,7 @@ namespace NiL.JS.Expressions
                 else if (Parser.Validate(state.Code, "get ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get).Statement as FunctionNotation;
+                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get).node as FunctionNotation;
                     if (!flds.ContainsKey(getter.Name))
                     {
                         var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
@@ -156,7 +156,7 @@ namespace NiL.JS.Expressions
                     if (fieldName == "constructor")
                         explicitCtor = true;
                     i = s;
-                    var initializator = FunctionNotation.Parse(state, ref i, FunctionType.Method).Statement as FunctionNotation;
+                    var initializator = FunctionNotation.Parse(state, ref i, FunctionType.Method).node as FunctionNotation;
                     if (initializator == null)
                         ExceptionsHelper.Throw(new SyntaxError());
                     flds[fieldName] = initializator;
@@ -171,18 +171,18 @@ namespace NiL.JS.Expressions
                     ctorCode = "constructor(...args) { super(...args); }";
                 else
                     ctorCode = "constructor(...args) { }";
-                flds["constructor"] = FunctionNotation.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex).Statement;
+                flds["constructor"] = FunctionNotation.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex).node;
             }
             index = i + 1;
-            return new ParseResult() { IsParsed = true, Statement = new ClassNotation(name, bce, flds) };
+            return new ParseResult() { isParsed = true, node = new ClassNotation(name, bce, flds) };
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return base.Build(ref _this, depth, variables, state, message, statistic, opts);
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             throw new NotImplementedException();
         }

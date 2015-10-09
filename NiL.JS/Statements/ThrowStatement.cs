@@ -40,8 +40,8 @@ namespace NiL.JS.Statements
             index = i;
             return new ParseResult()
             {
-                IsParsed = true,
-                Statement = new ThrowStatement(b)
+                isParsed = true,
+                node = new ThrowStatement(b)
                 {
                     Position = pos,
                     Length = index - pos
@@ -49,7 +49,7 @@ namespace NiL.JS.Statements
             };
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             ExceptionsHelper.Throw(body == null ? JSValue.undefined : body.Evaluate(context));
             return null;
@@ -65,13 +65,13 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref body, 2, variables, state | _BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref body, 2, variables, state | BuildState.InExpression, message, statistic, opts);
             return false;
         }
 
-        internal override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (body != null)
                 body.Optimize(ref body, owner, message, opts, statistic);

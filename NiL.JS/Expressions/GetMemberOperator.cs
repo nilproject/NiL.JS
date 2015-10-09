@@ -32,7 +32,7 @@ namespace NiL.JS.Expressions
         {
         }
 
-        internal override JSValue EvaluateForAssing(Context context)
+        internal protected override JSValue EvaluateForWrite(Context context)
         {
             JSValue res = null;
             JSValue source = null;
@@ -48,7 +48,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             JSValue res = null;
             JSValue source = null;
@@ -73,7 +73,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseGetMember = true;

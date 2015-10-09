@@ -39,9 +39,9 @@ namespace NiL.JS.Expressions
         {
         }
 
-        internal override JSValue EvaluateForAssing(Context context)
+        internal protected override JSValue EvaluateForWrite(Context context)
         {
-            var res = first.EvaluateForAssing(context);
+            var res = first.EvaluateForWrite(context);
             if (res.valueType == JSValueType.Property)
                 result = (res.oValue as PropertyPair).get != null ? (res.oValue as PropertyPair).get.Invoke(context.objectSource, null) : JSValue.notExists;
             else
@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal override JSValue Evaluate(Context context)
+        internal protected override JSValue Evaluate(Context context)
         {
             var res = result;
             result = null;
@@ -103,7 +103,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, _BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             // second будем использовать как флаг isVisited
             if (second != null)
@@ -112,7 +112,7 @@ namespace NiL.JS.Expressions
 
             codeContext = state;
 
-            var res = first.Build(ref _this, depth, variables, state | _BuildState.InExpression, message, statistic, opts);
+            var res = first.Build(ref _this, depth, variables, state | BuildState.InExpression, message, statistic, opts);
             if (!res && first is GetVariableExpression)
                 (first as GetVariableExpression).forceThrow = true;
             return res;

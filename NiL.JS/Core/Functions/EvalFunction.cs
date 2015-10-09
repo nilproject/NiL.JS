@@ -49,7 +49,7 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override NiL.JS.Core.JSValue Invoke(NiL.JS.Core.JSValue thisBind, Arguments args)
+        public override JSValue  Invoke(JSValue  thisBind, Arguments args)
         {
             if (args == null)
                 return NotExistsInObject;
