@@ -34,7 +34,7 @@ Licensed under BSD 3-Clause License.
 
 ## Links
 
-[Samples](https://github.com/nilproject/NiL.JS/wiki/Examples)  
+[Examples](https://github.com/nilproject/NiL.JS/wiki/Examples)  
 [NuGet](https://www.nuget.org/packages/NiL.JS)  
 [Code analyzer on this engine](http://nilproject.net/linter.html)  
 
