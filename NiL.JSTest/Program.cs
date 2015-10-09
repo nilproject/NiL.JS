@@ -417,7 +417,7 @@ for (var i = 0; i < 10000000; )
 
                 if (state.Code[position] != ';')
                 {
-                    throw new JSException(new SyntaxError("Expected \";\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 2)));
+                    throw new JSException(new SyntaxError("Expected \";\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 1)));
                 }
 
                 return new ParseResult(true, new UsingStatement(namespaceName, aliasName));

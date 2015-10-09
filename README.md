@@ -18,7 +18,7 @@ Licensed under BSD 3-Clause License.
 * You can extend syntax with your own statements (see examples).
 * 99% of Sputnik tests passed.
 
-## Sample
+## Example
     
 **C\#**
 
@@ -34,7 +34,7 @@ Licensed under BSD 3-Clause License.
 
 ## Links
 
-[Samples](https://github.com/nilproject/NiL.JS/wiki/Samples)  
+[Examples](https://github.com/nilproject/NiL.JS/wiki/Examples)  
 [NuGet](https://www.nuget.org/packages/NiL.JS)  
 [Code analyzer on this engine](http://nilproject.net/linter.html)  
 
