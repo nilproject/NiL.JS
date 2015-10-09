@@ -135,7 +135,7 @@ namespace NiL.JS.BaseLibrary
             while (be.MoveNext())
                 yield return be.Current;
             for (var i = 0; i < data.Length; i++)
-                yield return i < 16 ? Tools.NumString[i] : i.ToString();
+                yield return Tools.Int32ToString(i);
         }
 
         [Hidden]

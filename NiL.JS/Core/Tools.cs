@@ -77,10 +77,6 @@ namespace NiL.JS.Core
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' 
         };
-        internal static readonly string[] NumString = new[] 
-		{ 
-            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"
-		};
 
         //internal static readonly string[] charStrings = (from x in Enumerable.Range(char.MinValue, char.MaxValue) select ((char)x).ToString()).ToArray();
 
@@ -741,17 +737,20 @@ namespace NiL.JS.Core
             public string value;
         }
 
-        private static readonly IntStringCacheItem[] intStringCache = new IntStringCacheItem[8]; // Обрати внимание на константы внизу
+        private const int cacheSize = 16;
+        private static readonly IntStringCacheItem[] intStringCache = new IntStringCacheItem[cacheSize]; // Обрати внимание на константы внизу
         private static int intStrCacheIndex = -1;
 
         public static string Int32ToString(int value)
         {
-            for (var i = 8; i-- > 0; )
+            if (value == 0)
+                return "0";
+            for (var i = cacheSize; i-- > 0; )
             {
                 if (intStringCache[i].key == value)
                     return intStringCache[i].value;
             }
-            return (intStringCache[intStrCacheIndex = (intStrCacheIndex + 1) & 7] = new IntStringCacheItem { key = value, value = value.ToString(CultureInfo.InvariantCulture) }).value;
+            return (intStringCache[intStrCacheIndex = (intStrCacheIndex + 1) & (cacheSize - 1)] = new IntStringCacheItem { key = value, value = value.ToString(CultureInfo.InvariantCulture) }).value;
         }
 
         public static bool ParseNumber(string code, out double value, int radix)

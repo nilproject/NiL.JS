@@ -361,9 +361,13 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public override string ToString()
         {
-            if (valueType == JSValueType.Int || valueType == JSValueType.Double)
-                return valueType == JSValueType.Int ? iValue >= 0 && iValue < 16 ? Tools.NumString[iValue] : iValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : Tools.DoubleToString(dValue);
-            return iValue != 0 ? iValue.ToString() : Tools.DoubleToString(dValue);
+            if (valueType == JSValueType.Int)
+                return Tools.Int32ToString(iValue);
+            if (valueType == JSValueType.Double)
+                return Tools.DoubleToString(dValue);
+            if (iValue != 0)
+                return Tools.Int32ToString(iValue);
+            return Tools.DoubleToString(dValue);
         }
 
         [Hidden]

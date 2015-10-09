@@ -732,7 +732,7 @@ namespace NiL.JS.Core
                 case JSValueType.Bool:
                     return res.iValue != 0 ? "true" : "false";
                 case JSValueType.Int:
-                    return res.iValue >= 0 && res.iValue < 16 ? Tools.NumString[res.iValue] : Tools.Int32ToString(res.iValue);
+                    return Tools.Int32ToString(res.iValue);
                 case JSValueType.Double:
                     return Tools.DoubleToString(res.dValue);
                 case JSValueType.String:
@@ -859,9 +859,9 @@ namespace NiL.JS.Core
         {
             if (valueType == JSValueType.String)
             {
-                var len = (oValue.ToString()).Length;
+                var len = oValue.ToString().Length;
                 for (var i = 0; i < len; i++)
-                    yield return i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture);
+                    yield return Tools.Int32ToString(i);
                 if (!hideNonEnum)
                     yield return "length";
             }

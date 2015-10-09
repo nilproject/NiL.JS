@@ -1424,7 +1424,7 @@ namespace NiL.JS.BaseLibrary
                 if (nargs.length >= 50000)
                     ExceptionsHelper.Throw(new RangeError("Too many arguments."));
                 for (var i = nargs.length; i-- > 0; )
-                    nargs[i] = argsSource[i < 16 ? Tools.NumString[i] : i.ToString(CultureInfo.InvariantCulture)];
+                    nargs[i] = argsSource[Tools.Int32ToString(i)];
             }
             return Invoke(self, nargs);
         }
