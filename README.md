@@ -15,7 +15,7 @@ Licensed under BSD 3-Clause License.
 * Compiler as a Service (CaaS).
 * Integrated static analyser.
 * Integrated debugger ("For developers" version).
-* You can extend syntax with your own statements (see examples).
+* You can extend syntax with your own statements ([see examples](https://github.com/nilproject/NiL.JS/wiki/Examples#add-you-own-syntax-extension-dev-brunch-only)).
 * 99% of Sputnik tests passed.
 
 ## Example
