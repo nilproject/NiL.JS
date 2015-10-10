@@ -26,7 +26,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return true; }
         }
@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
             tempContainer2 = new JSValue();
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             lock (this)
             {

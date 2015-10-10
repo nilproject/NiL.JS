@@ -289,7 +289,6 @@
     <Compile Include="Core\Context.cs" />
     <Compile Include="Core\Parser.cs" />
     <Compile Include="Core\GlobalObject.cs" />
-    <Compile Include="Core\ParseResult.cs" />
     <Compile Include="BaseLibrary\Console.cs" />
     <Compile Include="Core\Interop\HiddenAttribute.cs" />
     <Compile Include="Core\Interop\ImmutableAttribute.cs" />

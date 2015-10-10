@@ -21,22 +21,26 @@ namespace NiL.JS.Statements
         public CodeNode Body { get { return body; } }
         public ICollection<string> Labels { get { return new ReadOnlyCollection<string>(labels); } }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             //string code = state.Code;
             int i = index;
             if (!Parser.Validate(state.Code, "while (", ref i) && !Parser.Validate(state.Code, "while(", ref i))
-                return new ParseResult();
+                return null;
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
-            var condition = Parser.Parse(state, ref i, 1);
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
+            var condition = Parser.Parse(state, ref i, CodeFragmentType.Expression);
+            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (i >= state.Code.Length)
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
-            do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+            do
+                i++;
+            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
             if (i >= state.Code.Length)
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
             state.AllowBreak.Push(true);
@@ -57,10 +61,7 @@ namespace NiL.JS.Statements
             state.AllowContinue.Pop();
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new WhileStatement()
+            return new WhileStatement()
                 {
                     allowRemove = ccs == state.continiesCount && cbs == state.breaksCount,
                     body = body,
@@ -68,11 +69,10 @@ namespace NiL.JS.Statements
                     labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
 #if DEV
             if (context.debugging)

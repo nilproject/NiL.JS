@@ -759,11 +759,11 @@ namespace NiL.JS.BaseLibrary
             for (int i = 0; i < len; i++)
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function (" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
-            var fs = FunctionNotation.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
-            if (fs.isParsed && code.Length == index)
+            var func = FunctionNotation.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index);
+            if (func != null && code.Length == index)
             {
-                Parser.Build(ref fs.node, 0, new Dictionary<string, VariableDescriptor>(), context.strict ? BuildState.Strict : BuildState.None, null, null, Options.Default);
-                creator = fs.node as FunctionNotation;
+                Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), context.strict ? BuildState.Strict : BuildState.None, null, null, Options.Default);
+                creator = func as FunctionNotation;
             }
             else
                 ExceptionsHelper.Throw(new SyntaxError("Unknown syntax error"));

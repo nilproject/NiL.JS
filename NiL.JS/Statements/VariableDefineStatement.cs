@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
             internal VariableReference variable;
             internal readonly CodeNode source;
 
-            protected internal override bool ResultInTempContainer
+            internal override bool ResultInTempContainer
             {
                 get { return false; }
             }
@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
                 this.source = source;
             }
 
-            internal protected override JSValue Evaluate(Context context)
+            public override JSValue Evaluate(Context context)
             {
                 var res = source.Evaluate(context);
                 var v = variable.Evaluate(context);
@@ -102,17 +102,18 @@ namespace NiL.JS.Statements
             this.functionDepth = functionDepth;
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             bool isConst = false;
             if (!Parser.Validate(state.Code, "var ", ref i)
                 && !(isConst = Parser.Validate(state.Code, "const ", ref i)))
-                return new ParseResult();
+                return null;
             bool isDef = false;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             var initializator = new List<CodeNode>();
             var names = new List<string>();
             while ((state.Code[i] != ';') && (state.Code[i] != '}') && !Tools.isLineTerminator(state.Code[i]))
@@ -132,7 +133,8 @@ namespace NiL.JS.Statements
                 }
                 names.Add(name);
                 isDef = true;
-                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
+                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+                    i++;
                 if (i < state.Code.Length && (state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
                     ExceptionsHelper.Throw((new SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 1))));
                 if (i >= state.Code.Length)
@@ -143,7 +145,9 @@ namespace NiL.JS.Statements
                 if (Tools.isLineTerminator(state.Code[i]))
                 {
                     s = i;
-                    do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                    do
+                        i++;
+                    while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i >= state.Code.Length)
                     {
                         initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth });
@@ -154,11 +158,13 @@ namespace NiL.JS.Statements
                 }
                 if (state.Code[i] == '=')
                 {
-                    do i++; while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                    do
+                        i++;
+                    while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i == state.Code.Length)
                         ExceptionsHelper.Throw((new SyntaxError("Unexpected end of line in variable defenition.")));
                     VariableReference accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth };
-                    Expression source = ExpressionTree.Parse(state, ref i, false).node as Expression;
+                    Expression source = ExpressionTree.Parse(state, ref i, false, false) as Expression;
                     if (isConst)
                         source = new AllowWriteCN(accm, source);
                     initializator.Add(
@@ -181,34 +187,34 @@ namespace NiL.JS.Statements
                 s = i;
                 if ((state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
                     ExceptionsHelper.Throw(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
-                while (s < state.Code.Length && char.IsWhiteSpace(state.Code[s])) s++;
+                while (s < state.Code.Length && char.IsWhiteSpace(state.Code[s]))
+                    s++;
                 if (s >= state.Code.Length)
                     break;
                 if (state.Code[s] == ',')
                 {
                     i = s;
-                    do i++; while (char.IsWhiteSpace(state.Code[i]));
+                    do
+                        i++;
+                    while (char.IsWhiteSpace(state.Code[i]));
                 }
                 else
-                    while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
+                    while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+                        i++;
             }
             if (!isDef)
                 throw new ArgumentException("code (" + i + ")");
             var inits = initializator.ToArray();
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new VariableDefineStatement(names.ToArray(), inits, isConst, state.functionsDepth)
+            return new VariableDefineStatement(names.ToArray(), inits, isConst, state.functionsDepth)
                 {
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             for (int i = 0; i < initializators.Length; i++)
             {

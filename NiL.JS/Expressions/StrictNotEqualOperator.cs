@@ -14,7 +14,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             return base.Evaluate(context).iValue == 0;
         }

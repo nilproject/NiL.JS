@@ -39,19 +39,24 @@ namespace NiL.JS.Statements
             this.lines = body;
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
             if (!Parser.Validate(state.Code, "switch (", ref i) && !Parser.Validate(state.Code, "switch(", ref i))
-                return new ParseResult();
-            while (char.IsWhiteSpace(state.Code[i])) i++;
-            var image = ExpressionTree.Parse(state, ref i).node;
+                return null;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
+            var image = ExpressionTree.Parse(state, ref i);
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            do i++; while (char.IsWhiteSpace(state.Code[i]));
+            do
+                i++;
+            while (char.IsWhiteSpace(state.Code[i]));
             if (state.Code[i] != '{')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            do i++; while (char.IsWhiteSpace(state.Code[i]));
+            do
+                i++;
+            while (char.IsWhiteSpace(state.Code[i]));
             var body = new List<CodeNode>();
             var funcs = new List<FunctionNotation>();
             var cases = new List<SwitchCase>();
@@ -61,20 +66,22 @@ namespace NiL.JS.Statements
             {
                 do
                 {
-                    if (Parser.Validate(state.Code, "case", i) && Parser.isIdentificatorTerminator(state.Code[i + 4]))
+                    if (Parser.Validate(state.Code, "case", i) && Parser.IsIdentificatorTerminator(state.Code[i + 4]))
                     {
                         i += 4;
-                        while (char.IsWhiteSpace(state.Code[i])) i++;
-                        var sample = ExpressionTree.Parse(state, ref i).node;
+                        while (char.IsWhiteSpace(state.Code[i]))
+                            i++;
+                        var sample = ExpressionTree.Parse(state, ref i);
                         if (state.Code[i] != ':')
                             ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         i++;
                         cases.Add(new SwitchCase() { index = body.Count, statement = sample });
                     }
-                    else if (Parser.Validate(state.Code, "default", i) && Parser.isIdentificatorTerminator(state.Code[i + 7]))
+                    else if (Parser.Validate(state.Code, "default", i) && Parser.IsIdentificatorTerminator(state.Code[i + 7]))
                     {
                         i += 7;
-                        while (char.IsWhiteSpace(state.Code[i])) i++;
+                        while (char.IsWhiteSpace(state.Code[i]))
+                            i++;
                         if (cases[0] != null)
                             ExceptionsHelper.Throw((new SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                         if (state.Code[i] != ':')
@@ -82,8 +89,10 @@ namespace NiL.JS.Statements
                         i++;
                         cases[0] = new SwitchCase() { index = body.Count, statement = null };
                     }
-                    else break;
-                    while (char.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';')) i++;
+                    else
+                        break;
+                    while (char.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';'))
+                        i++;
                 } while (true);
                 if (cases.Count == 1 && cases[0] == null)
                     ExceptionsHelper.Throw((new SyntaxError("Switch statement must be contain cases. " + CodeCoordinates.FromTextPosition(state.Code, index, 0))));
@@ -98,27 +107,24 @@ namespace NiL.JS.Statements
                 }
                 else
                     body.Add(t);
-                while (char.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';')) i++;
+                while (char.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';'))
+                    i++;
             }
             state.AllowBreak.Pop();
             i++;
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new SwitchStatement(body.ToArray())
+            return new SwitchStatement(body.ToArray())
                 {
                     functions = funcs.ToArray(),
                     cases = cases.ToArray(),
                     image = image,
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             if (functions != null)
                 throw new InvalidOperationException();

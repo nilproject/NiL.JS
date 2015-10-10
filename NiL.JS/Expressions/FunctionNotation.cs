@@ -190,7 +190,7 @@ namespace NiL.JS.Expressions
                 descriptor.references.Add(this);
             }
 
-            internal protected override JSValue Evaluate(Context context)
+            public override JSValue Evaluate(Context context)
             {
                 throw new InvalidOperationException();
             }
@@ -234,7 +234,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return false; }
         }
@@ -256,12 +256,12 @@ namespace NiL.JS.Expressions
             this.name = name;
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             return Parse(state, ref index, FunctionType.Function);
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index, FunctionType mode)
+        internal static CodeNode Parse(ParsingState state, ref int index, FunctionType mode)
         {
             string code = state.Code;
             int i = index;
@@ -270,30 +270,30 @@ namespace NiL.JS.Expressions
                 case FunctionType.Function:
                     {
                         if (!Parser.Validate(code, "function", ref i))
-                            return new ParseResult();
+                            return null;
                         if (code[i] == '*')
                         {
                             mode = FunctionType.Generator;
                             i++;
                         }
                         else if ((code[i] != '(') && (!char.IsWhiteSpace(code[i])))
-                            return new ParseResult() { isParsed = false };
+                            return null;
                         break;
                     }
                 case FunctionType.Get:
                     {
                         if (!Parser.Validate(code, "get", ref i))
-                            return new ParseResult();
+                            return null;
                         if ((!char.IsWhiteSpace(code[i])))
-                            return new ParseResult() { isParsed = false };
+                            return null;
                         break;
                     }
                 case FunctionType.Set:
                     {
                         if (!Parser.Validate(code, "set", ref i))
-                            return new ParseResult();
+                            return null;
                         if ((!char.IsWhiteSpace(code[i])))
-                            return new ParseResult() { isParsed = false };
+                            return null;
                         break;
                     }
                 case FunctionType.Method:
@@ -380,7 +380,7 @@ namespace NiL.JS.Expressions
                 state.AllowBreak.Push(false);
                 state.AllowContinue.Push(false);
                 state.AllowDirectives = true;
-                body = CodeBlock.Parse(state, ref i).node as CodeBlock;
+                body = CodeBlock.Parse(state, ref i) as CodeBlock;
             }
             finally
             {
@@ -445,18 +445,14 @@ namespace NiL.JS.Expressions
                             break;
                         else if (code[i] == ',')
                             do i++; while (char.IsWhiteSpace(code[i]));
-                        args.Add((Expression)ExpressionTree.Parse(state, ref i, false).node);
+                        args.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
                     }
                     i++;
                     index = i;
                     while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
                     if (i < code.Length && code[i] == ';')
                         ExceptionsHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
-                    return new ParseResult()
-                    {
-                        isParsed = true,
-                        node = new Expressions.CallOperator(func, args.ToArray())
-                    };
+                    return new CallOperator(func, args.ToArray());
                 }
                 else
                     i = tindex;
@@ -469,14 +465,10 @@ namespace NiL.JS.Expressions
                 func.Reference.Length = name.Length;
             }
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = func
-            };
+            return func;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             return MakeFunction(context);
         }

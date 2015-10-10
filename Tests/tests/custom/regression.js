@@ -24,3 +24,5 @@ catch (e) {
 }
 
 var f = eval("function func(){}");
+
+for ([1, 2, 3]; false;);

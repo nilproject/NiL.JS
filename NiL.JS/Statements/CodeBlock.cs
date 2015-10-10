@@ -76,7 +76,7 @@ namespace NiL.JS.Statements
             this.strict = strict;
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
             bool sroot = i == 0 && state.AllowDirectives;
@@ -106,7 +106,7 @@ namespace NiL.JS.Statements
                     {
                         while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
                             i++;
-                        if (i < state.Code.Length && (Parser.isOperator(state.Code[i])
+                        if (i < state.Code.Length && (Parser.IsOperator(state.Code[i])
                             || Parser.Validate(state.Code, "instanceof", i)
                             || Parser.Validate(state.Code, "in", i)))
                         {
@@ -152,15 +152,21 @@ namespace NiL.JS.Statements
             while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
             {
                 var t = Parser.Parse(state, ref i, 0);
-                if (t == null || t is EmptyExpression)
+                if (t == null)
                 {
-                    if (sroot && i < state.Code.Length && state.Code[i] == '}')
-                        ExceptionsHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
-                    if (state.message != null
-                        && !expectSemicolon
-                        && (state.Code[i - 1] == ';' || state.Code[i - 1] == ','))
-                        state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 1), "Unnecessary semicolon.");
-                    expectSemicolon = false;
+                    if (i < state.Code.Length)
+                    {
+                        if (sroot && state.Code[i] == '}')
+                            ExceptionsHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
+                        if ((state.Code[i] == ';' || state.Code[i] == ','))
+                        {
+                            if (state.message != null
+                                && !expectSemicolon)
+                                state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 1), "Unnecessary semicolon.");
+                            i++;
+                        }
+                        expectSemicolon = false;
+                    }
                     continue;
                 }
                 if (t is FunctionNotation)
@@ -182,10 +188,7 @@ namespace NiL.JS.Statements
             int startPos = index;
             index = i;
             body.Reverse();
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new CodeBlock(body.ToArray(), (state.strict ^= strictSwitch) || strictSwitch)
+            return new CodeBlock(body.ToArray(), (state.strict ^= strictSwitch) || strictSwitch)
                 {
                     variables = emptyVariables,
                     Position = startPos,
@@ -194,11 +197,10 @@ namespace NiL.JS.Statements
 #if DEBUG
                     directives = directives
 #endif
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var ls = lines;
             for (int i = ls.Length; i-- > 0; )

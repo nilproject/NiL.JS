@@ -19,7 +19,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return false; }
         }
@@ -50,12 +50,12 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             string code = state.Code;
             int i = index;
             if (!Parser.Validate(code, "class", ref i))
-                return new ParseResult();
+                return null;
             while (char.IsWhiteSpace(code[i])) i++;
             string name = null;
             Expression bce = null;
@@ -95,7 +95,7 @@ namespace NiL.JS.Expressions
                 if (Parser.Validate(state.Code, "set ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set).node as FunctionNotation;
+                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set) as FunctionNotation;
                     if (!flds.ContainsKey(setter.Name))
                     {
                         var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
@@ -116,7 +116,7 @@ namespace NiL.JS.Expressions
                 else if (Parser.Validate(state.Code, "get ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get).node as FunctionNotation;
+                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get) as FunctionNotation;
                     if (!flds.ContainsKey(getter.Name))
                     {
                         var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
@@ -156,7 +156,7 @@ namespace NiL.JS.Expressions
                     if (fieldName == "constructor")
                         explicitCtor = true;
                     i = s;
-                    var initializator = FunctionNotation.Parse(state, ref i, FunctionType.Method).node as FunctionNotation;
+                    var initializator = FunctionNotation.Parse(state, ref i, FunctionType.Method) as FunctionNotation;
                     if (initializator == null)
                         ExceptionsHelper.Throw(new SyntaxError());
                     flds[fieldName] = initializator;
@@ -171,10 +171,10 @@ namespace NiL.JS.Expressions
                     ctorCode = "constructor(...args) { super(...args); }";
                 else
                     ctorCode = "constructor(...args) { }";
-                flds["constructor"] = FunctionNotation.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex).node;
+                flds["constructor"] = FunctionNotation.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex);
             }
             index = i + 1;
-            return new ParseResult() { isParsed = true, node = new ClassNotation(name, bce, flds) };
+            return new ClassNotation(name, bce, flds);
         }
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
@@ -182,7 +182,7 @@ namespace NiL.JS.Expressions
             return base.Build(ref _this, depth, variables, state, message, statistic, opts);
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             throw new NotImplementedException();
         }

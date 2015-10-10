@@ -79,7 +79,7 @@ namespace NiL.JS
                 throw new ArgumentNullException();
             Code = code;
             int i = 0;
-            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code, messageCallback), ref i).node;
+            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code, messageCallback), ref i);
             if (i < code.Length)
                 throw new System.ArgumentException("Invalid char");
             CompilerMessageCallback icallback = messageCallback != null ? (level, cord, message) =>

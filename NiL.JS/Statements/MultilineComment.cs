@@ -8,26 +8,23 @@ namespace NiL.JS.Statements
     /// </summary>
     internal sealed class MultilineComment : CodeNode
     {
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
             if (!Parser.Validate(state.Code, "/*", ref i))
-                return new ParseResult();
-            while (i + 1 < state.Code.Length && (state.Code[i] != '*' || state.Code[i + 1] != '/')) i++;
+                return null;
+            while (i + 1 < state.Code.Length && (state.Code[i] != '*' || state.Code[i + 1] != '/'))
+                i++;
             if (i + 1 >= state.Code.Length)
                 ExceptionsHelper.Throw((new SyntaxError("Non terminated multiline comment")));
             i += 2;
             try
             {
-                return new ParseResult()
-                {
-                    isParsed = true,
-                    node = new MultilineComment(state.Code.Substring(index + 2, i - index - 4))
+                return new MultilineComment(state.Code.Substring(index + 2, i - index - 4))
                     {
                         Length = i - index,
                         Position = index
-                    }
-                };
+                    };
             }
             finally
             {
@@ -42,7 +39,7 @@ namespace NiL.JS.Statements
             Text = text;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             return null;
         }

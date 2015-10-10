@@ -52,5 +52,15 @@ namespace NiL.JS
         {
             Throw(new TypeError(string.Format(Strings.IncrementReadonly, entityName)));
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static void ThrowUnknowToken(string code, int index)
+        {
+            var cord = CodeCoordinates.FromTextPosition(code, index, 0);
+            Throw(new SyntaxError(string.Format(
+                Strings.UnknowIdentifier,
+                code.Substring(index, System.Math.Min(50, code.Length - index)).Split(Tools.TrimChars).FirstOrDefault(),
+                cord)));
+        }
     }
 }

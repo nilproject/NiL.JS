@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -16,7 +17,7 @@ namespace NiL.JS.Expressions
             private CodeNode source;
             public JSValue lastThisBind;
 
-            protected internal override bool ResultInTempContainer
+            internal override bool ResultInTempContainer
             {
                 get { return false; }
             }
@@ -39,7 +40,7 @@ namespace NiL.JS.Expressions
                 throw new InvalidOperationException();
             }
 
-            internal protected override JSValue Evaluate(Context context)
+            public override JSValue Evaluate(Context context)
             {
                 JSValue ctor = source.Evaluate(context);
                 if (ctor.valueType != JSValueType.Function && !(ctor.valueType == JSValueType.Object && ctor.oValue is Function))
@@ -85,7 +86,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return false; }
         }
@@ -103,13 +104,35 @@ namespace NiL.JS.Expressions
         public NewOperator(Expression first, Expression[] arguments)
             : base(null, null, false)
         {
-            //if (first is Call)
-            //    this.first = new Call(thisSetter = new ThisSetter((first as Call).FirstOperand), (first as Call).Arguments);
-            //else
             this.first = new CallOperator(thisSetter = new ThisSetter(first), arguments);
         }
 
-        internal protected override JSValue Evaluate(NiL.JS.Core.Context context)
+        public static CodeNode Parse(ParsingState state, ref int index)
+        {
+            var i = index;
+            if (!Parser.Validate(state.Code, "new", ref i))
+                return null;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
+            var result = (Expression)ExpressionTree.Parse(state, ref i, true, false, true, true, false, false);
+            if (result == null)
+            {
+                var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+            }
+            if (result is CallOperator)
+                result = new NewOperator((result as Expression).FirstOperand, (result as CallOperator).Arguments) { Position = index, Length = i - index };
+            else
+            {
+                if (state.message != null)
+                    state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, index, 0), "Missed brackets in a constructor invocation.");
+                result = new Expressions.NewOperator(result, new Expression[0]) { Position = index, Length = i - index };
+            }
+            index = i;
+            return result;
+        }
+
+        public override JSValue Evaluate(NiL.JS.Core.Context context)
         {
             var prevTB = thisSetter.lastThisBind;
             try

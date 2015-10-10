@@ -24,7 +24,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return false; }
         }
@@ -34,7 +34,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
             if (state.Code[index] != '[')
@@ -48,7 +48,7 @@ namespace NiL.JS.Expressions
                 if (state.Code[i] == ',')
                     elms.Add(null);
                 else
-                    elms.Add((Expression)ExpressionTree.Parse(state, ref i, false).node);
+                    elms.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] == ',')
@@ -63,16 +63,12 @@ namespace NiL.JS.Expressions
             i++;
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new ArrayNotation()
+            return new ArrayNotation()
                 {
                     elements = elms.ToArray(),
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
 #if INLINE
@@ -98,7 +94,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             return impl(context, elements);
         }

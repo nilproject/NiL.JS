@@ -22,7 +22,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return false; }
         }
@@ -48,7 +48,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             JSValue res = null;
             JSValue source = null;

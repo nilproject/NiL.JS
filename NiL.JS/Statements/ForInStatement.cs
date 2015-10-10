@@ -37,12 +37,12 @@ namespace NiL.JS.Statements
 
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
-                return new ParseResult();
+                return null;
             while (char.IsWhiteSpace(state.Code[i])) i++;
             var res = new ForInStatement()
             {
@@ -67,7 +67,7 @@ namespace NiL.JS.Statements
             else
             {
                 if (state.Code[i] == ';')
-                    return new ParseResult();
+                    return null;
                 while (char.IsWhiteSpace(state.Code[i])) i++;
                 int start = i;
                 string varName;
@@ -79,14 +79,14 @@ namespace NiL.JS.Statements
                         if (Parser.Validate(state.Code, "in", ref i))
                             ExceptionsHelper.Throw(new SyntaxError("Invalid accumulator name at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start)));
                         else
-                            return new ParseResult();
+                            return null;
                     }
                     else
-                        return new ParseResult();
+                        return null;
                     //ExceptionsHelper.Throw(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, start)));
                 }
                 //if (!Parser.ValidateName(state.Code, ref i, state.strict))
-                //    return new ParseResult(); // for (1 in {};;); должен вызвать синтаксическую ошибку, но это проверка заставляет перейти в обычный for, для которого такое выражение допустимо
+                //    return null; // for (1 in {};;); должен вызвать синтаксическую ошибку, но это проверка заставляет перейти в обычный for, для которого такое выражение допустимо
                 varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
                 if (state.strict)
                 {
@@ -100,15 +100,15 @@ namespace NiL.JS.Statements
             {
                 do i++; while (char.IsWhiteSpace(state.Code[i]));
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
-                if (!defVal.isParsed)
+                if (defVal == null)
                     return defVal;
                 NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
                 exp = new AssignmentOperator(
                     exp,
-                    (NiL.JS.Expressions.Expression)defVal.node)
+                    (NiL.JS.Expressions.Expression)defVal)
                     {
                         Position = res.variable.Position,
-                        Length = defVal.node.EndPosition - res.variable.Position
+                        Length = defVal.EndPosition - res.variable.Position
                     };
                 if (res.variable == exp.first.first)
                     res.variable = exp;
@@ -117,9 +117,9 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i])) i++;
             }
             if (!Parser.Validate(state.Code, "in", ref i))
-                return new ParseResult();
+                return null;
             while (char.IsWhiteSpace(state.Code[i])) i++;
-            res.source = Parser.Parse(state, ref i, 1);
+            res.source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
             while (char.IsWhiteSpace(state.Code[i])) i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
@@ -141,14 +141,10 @@ namespace NiL.JS.Statements
             res.Position = index;
             res.Length = i - index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = res
-            };
+            return res;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var s = source.Evaluate(context);
             JSValue v = null;

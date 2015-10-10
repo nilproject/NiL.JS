@@ -25,7 +25,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return false; }
         }
@@ -37,7 +37,7 @@ namespace NiL.JS.Expressions
                 throw new InvalidOperationException("Second operand not allowed for typeof operator/");
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var val = first.Evaluate(context);
             switch (val.valueType)

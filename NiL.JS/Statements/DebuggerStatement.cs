@@ -8,26 +8,22 @@ namespace NiL.JS.Statements
 #endif
     public sealed class DebuggerStatement : CodeNode
     {
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "debugger", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
-                return new ParseResult();
+            if (!Parser.Validate(state.Code, "debugger", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+                return null;
             i ^= index;
             index ^= i;
             i ^= index;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new DebuggerStatement()
+            return new DebuggerStatement()
                 {
                     Position = i,
                     Length = index - i
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
 #if DEV
             if (!context.debugging)

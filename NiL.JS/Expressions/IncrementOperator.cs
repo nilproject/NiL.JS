@@ -24,7 +24,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return second != null; }
         }
@@ -61,7 +61,7 @@ namespace NiL.JS.Expressions
                 throw new ArgumentNullException("op");
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             // Если это постинкремент, то second не будут равен нулю.
             // first всегда содержит узел, из которого нужно получать пременную

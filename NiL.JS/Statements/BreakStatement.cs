@@ -12,13 +12,14 @@ namespace NiL.JS.Statements
 
         public JSValue Label { get { return label; } }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             //string code = state.Code;
             int i = index;
-            if (!Parser.Validate(state.Code, "break", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
-                return new ParseResult();
-            while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
+            if (!Parser.Validate(state.Code, "break", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+                return null;
+            while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+                i++;
             int sl = i;
             JSValue label = null;
             if (Parser.ValidateName(state.Code, ref i, state.strict))
@@ -32,19 +33,15 @@ namespace NiL.JS.Statements
             var pos = index;
             index = i;
             state.breaksCount++;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new BreakStatement()
+            return new BreakStatement()
                 {
                     label = label,
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             context.abort = AbortType.Break;
             context.abortInfo = label;

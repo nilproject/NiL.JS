@@ -11,7 +11,7 @@ namespace NiL.JS.Expressions
         private static readonly EmptyExpression _instance = new EmptyExpression();
         public static EmptyExpression Instance { get { return _instance; } }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return false; }
         }
@@ -36,7 +36,7 @@ namespace NiL.JS.Expressions
             Length = 0;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             return null;
         }

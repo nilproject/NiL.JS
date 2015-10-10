@@ -26,15 +26,17 @@ namespace NiL.JS.Statements
 
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
-            if (!Parser.Validate(state.Code, "do", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
-                return new ParseResult();
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
+            if (!Parser.Validate(state.Code, "do", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+                return null;
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             int ccs = state.continiesCount;
@@ -53,26 +55,28 @@ namespace NiL.JS.Statements
             state.AllowContinue.Pop();
             if (!(body is CodeBlock) && state.Code[i] == ';')
                 i++;
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i])) i++;
+            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (i >= state.Code.Length)
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
             if (!Parser.Validate(state.Code, "while", ref i))
                 ExceptionsHelper.Throw((new SyntaxError("Expected \"while\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (state.Code[i] != '(')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \"(\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            do i++; while (char.IsWhiteSpace(state.Code[i]));
-            var condition = Parser.Parse(state, ref i, 1);
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            do
+                i++;
+            while (char.IsWhiteSpace(state.Code[i]));
+            var condition = Parser.Parse(state, ref i, CodeFragmentType.Expression);
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             i++;
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new DoWhileStatement()
+            return new DoWhileStatement()
                 {
                     allowRemove = ccs == state.continiesCount && cbs == state.breaksCount,
                     body = body,
@@ -80,11 +84,10 @@ namespace NiL.JS.Statements
                     labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             do
             {

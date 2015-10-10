@@ -6,6 +6,12 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Core
 {
+    public enum CodeFragmentType
+    {
+        Statement,
+        Expression
+    }
+
     internal class Rule
     {
         public ValidateDelegate Validate;
@@ -26,6 +32,7 @@ namespace NiL.JS.Core
 
     public static class Parser
     {
+        private static HashSet<string> customReservedWords;
         private static List<Rule>[] rules = new List<Rule>[]
         {
             // 0
@@ -70,7 +77,7 @@ namespace NiL.JS.Core
                 new Rule("debugger", DebuggerStatement.Parse)
             },
             // 1
-            new List<Rule> // Для операторов
+            new List<Rule> // Начало выражения
             {
                 new Rule("[", ExpressionTree.Parse),
                 new Rule("{", ExpressionTree.Parse),
@@ -95,40 +102,17 @@ namespace NiL.JS.Core
                 new Rule(ValidateValue, ExpressionTree.Parse),
             },
             // 2
-            new List<Rule> // Для операторов №2
+            new List<Rule> // Сущности внутри выражения
             {
                 new Rule("[", ArrayNotation.Parse),
                 new Rule("{", ObjectNotation.Parse),
                 new Rule("function", FunctionNotation.Parse),
                 new Rule("class", ClassNotation.Parse),
-            },
-            // 3
-            new List<Rule> // Для for
-            {
-                new Rule("const ", VariableDefineStatement.Parse),
-                new Rule("var ", VariableDefineStatement.Parse),
-                new Rule("(", ExpressionTree.Parse),
-                new Rule("+", ExpressionTree.Parse),
-                new Rule("-", ExpressionTree.Parse),
-                new Rule("!", ExpressionTree.Parse),
-                new Rule("~", ExpressionTree.Parse),
-                new Rule("function", ExpressionTree.Parse),
-                new Rule("class", ClassNotation.Parse),
-                new Rule("(", ExpressionTree.Parse),
-                new Rule("true", ExpressionTree.Parse),
-                new Rule("false", ExpressionTree.Parse),
-                new Rule("null", ExpressionTree.Parse),
-                new Rule("this", ExpressionTree.Parse),
-                new Rule("typeof", ExpressionTree.Parse),
-                new Rule("new", ExpressionTree.Parse),
-                new Rule("delete", ExpressionTree.Parse),
-                new Rule("void", ExpressionTree.Parse),
-                new Rule("yield", ExpressionTree.Parse),
-                new Rule(ValidateName, ExpressionTree.Parse),
-                new Rule(ValidateValue, ExpressionTree.Parse),
+                new Rule("new", NewOperator.Parse),
             }
         };
 
+        [CLSCompliant(false)]
         public static bool Validate(string code, string patern, int index)
         {
             return Validate(code, patern, ref index);
@@ -173,6 +157,7 @@ namespace NiL.JS.Core
             return ValidateName(code, ref index, true, true, false);
         }
 
+        [CLSCompliant(false)]
         public static bool ValidateName(string code, ref int index)
         {
             return ValidateName(code, ref index, true, true, false);
@@ -183,12 +168,13 @@ namespace NiL.JS.Core
             return ValidateName(code, ref index, true, true, strict);
         }
 
+        [CLSCompliant(false)]
         public static bool ValidateName(string name, int index, bool reserveControl, bool allowEscape, bool strict)
         {
             return ValidateName(name, ref index, reserveControl, allowEscape, strict);
         }
 
-        public static bool ValidateName(string code, ref int index, bool reserveControl, bool allowEscape, bool strict)
+        public static bool ValidateName(string code, ref int index, bool checkReservedWords, bool allowEscape, bool strict)
         {
             int j = index;
             if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
@@ -202,14 +188,14 @@ namespace NiL.JS.Core
             }
             if (index == j)
                 return false;
-            string name = allowEscape || reserveControl ? code.Substring(index, j - index) : null;
+            string name = allowEscape || checkReservedWords ? code.Substring(index, j - index) : null;
             if (allowEscape)
             {
                 int i = 0;
                 var nname = Tools.Unescape(name, strict, false, false);
                 if (nname != name)
                 {
-                    var res = ValidateName(nname, ref i, reserveControl, false, strict) && i == nname.Length;
+                    var res = ValidateName(nname, ref i, checkReservedWords, false, strict) && i == nname.Length;
                     if (res)
                         index = j;
                     return res;
@@ -217,7 +203,7 @@ namespace NiL.JS.Core
                 else if (nname.IndexOf('\\') != -1)
                     return false;
             }
-            if (reserveControl)
+            if (checkReservedWords)
                 switch (name)
                 {
                     case "break":
@@ -268,6 +254,12 @@ namespace NiL.JS.Core
                     case "let":
                         {
                             if (strict)
+                                return false;
+                            break;
+                        }
+                    default:
+                        {
+                            if (customReservedWords != null && customReservedWords.Contains(name))
                                 return false;
                             break;
                         }
@@ -354,7 +346,7 @@ namespace NiL.JS.Core
                             }
                         default:
                             {
-                                if (isIdentificatorTerminator(c))
+                                if (IsIdentificatorTerminator(c))
                                 {
                                     w = false;
                                     break;
@@ -405,6 +397,7 @@ namespace NiL.JS.Core
             return false;
         }
 
+        [CLSCompliant(false)]
         public static bool ValidateValue(string code, int index)
         {
             return ValidateValue(code, ref index);
@@ -419,17 +412,21 @@ namespace NiL.JS.Core
                 return ValidateString(code, ref index, false);
             if ((code.Length - j >= 4) && (code[j] == 'n' || code[j] == 't' || code[j] == 'f'))
             {
-                string codeSs4 = code.Substring(j, 4);
-                if ((codeSs4 == "null") || (codeSs4 == "true") || ((code.Length >= 5) && (codeSs4 == "fals") && (code[j + 4] == 'e')))
+                if (code.IndexOf("null", j, 4) != -1 || code.IndexOf("true", j, 4) != -1)
                 {
-                    index += codeSs4 == "fals" ? 5 : 4;
+                    index += 4;
+                    return true;
+                }
+                if (code.IndexOf("false", j, 5) != -1)
+                {
+                    index += 5;
                     return true;
                 }
             }
             return ValidateNumber(code, ref index);
         }
 
-        public static bool isOperator(char c)
+        public static bool IsOperator(char c)
         {
             return (c == '+')
                 || (c == '-')
@@ -448,11 +445,11 @@ namespace NiL.JS.Core
                 || (c == '.');
         }
 
-        public static bool isIdentificatorTerminator(char c)
+        public static bool IsIdentificatorTerminator(char c)
         {
             return c == ' '
                 || Tools.isLineTerminator(c)
-                || isOperator(c)
+                || IsOperator(c)
                 || char.IsWhiteSpace(c)
                 || (c == '{')
                 || (c == '\v')
@@ -467,7 +464,7 @@ namespace NiL.JS.Core
                 || (c == '~');
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index, int ruleset)
+        internal static CodeNode Parse(ParsingState state, ref int index, CodeFragmentType ruleSet)
         {
             while ((index < state.Code.Length) && (char.IsWhiteSpace(state.Code[index])))
                 index++;
@@ -476,23 +473,21 @@ namespace NiL.JS.Core
             int sindex = index;
             if (state.Code[index] == ',' || state.Code[index] == ';')
             {
-                index++;
+                //index++;
                 return null;
             }
             if (index >= state.Code.Length)
                 return null;
-            for (int i = 0; i < rules[ruleset].Count; i++)
+            for (int i = 0; i < rules[(int)ruleSet].Count; i++)
             {
-                if (rules[ruleset][i].Validate(state.Code, index))
+                if (rules[(int)ruleSet][i].Validate(state.Code, index))
                 {
-                    var pr = rules[ruleset][i].Parse(state, ref index);
-                    if (pr.isParsed)
-                        return pr.node;
+                    var result = rules[(int)ruleSet][i].Parse(state, ref index);
+                    if (result != null)
+                        return result;
                 }
             }
-            var cord = CodeCoordinates.FromTextPosition(state.Code, sindex, 0);
-            ExceptionsHelper.Throw((new SyntaxError("Unexpected token at " + cord + " : "
-                + state.Code.Substring(index, System.Math.Min(20, state.Code.Length - index)).Split(new[] { ' ', '\n', '\r' })[0])));
+            ExceptionsHelper.ThrowUnknowToken(state.Code, sindex);
             return null;
         }
 
@@ -521,16 +516,40 @@ namespace NiL.JS.Core
             if (!typeof(CodeNode).IsAssignableFrom(type))
                 throw new ArgumentException("type must be sub-class of " + typeof(CodeNode).Name);
 
-            var validateDelegate = type.GetMethod("Validate", new[] { typeof(string), typeof(int) });
-            if (validateDelegate == null || validateDelegate.ReturnType != typeof(bool))
-                throw new ArgumentException("type must contain static method \"Validate\" which get String and Int32 and returns Boolean");
-            var parserDelegate = type.GetMethod("Parse", new[] { typeof(ParsingState), typeof(int).MakeByRefType() });
-            if (parserDelegate == null || parserDelegate.ReturnType != typeof(ParseResult))
-                throw new ArgumentException("type must contain static method \"Parse\" which get " + typeof(ParsingState).Name + " and Int32 by reference and returns " + typeof(ParseResult).Name);
+            var attributes = type.GetCustomAttributes(typeof(CustomCodeFragment), false);
+            if (attributes.Length == 0)
+                throw new ArgumentException("type must be marked with attribute \"" + typeof(CustomCodeFragment).Name + "\"");
+            var attribute = attributes[0] as CustomCodeFragment;
 
-            rules[0].Insert(rules[0].Count - 4, new Rule(
-                validateDelegate.CreateDelegate(typeof(ValidateDelegate)) as ValidateDelegate,
-                parserDelegate.CreateDelegate(typeof(ParseDelegate)) as ParseDelegate));
+            var validateMethod = type.GetMethod("Validate", new[] { typeof(string), typeof(int) });
+            if (validateMethod == null || validateMethod.ReturnType != typeof(bool))
+                throw new ArgumentException("type must contain static method \"Validate\" which get String and Int32 and returns Boolean");
+
+            var parserMethod = type.GetMethod("Parse", new[] { typeof(ParsingState), typeof(int).MakeByRefType() });
+            if (parserMethod == null || parserMethod.ReturnType != typeof(CodeNode))
+                throw new ArgumentException("type must contain static method \"Parse\" which get " + typeof(ParsingState).Name + " and Int32 by reference and returns " + typeof(CodeNode).Name);
+
+            var validateDelegate = validateMethod.CreateDelegate(typeof(ValidateDelegate)) as ValidateDelegate;
+            var parseDelegate = parserMethod.CreateDelegate(typeof(ParseDelegate)) as ParseDelegate;
+
+            rules[0].Insert(rules[0].Count - 4, new Rule(validateDelegate, parseDelegate));
+
+            if (attribute.Type == CodeFragmentType.Expression)
+            {
+                rules[1].Insert(rules[1].Count - 2, new Rule(validateDelegate, parseDelegate));
+                rules[2].Add(new Rule(validateDelegate, parseDelegate));
+            }
+
+            if (attribute.ReservedWords.Length != 0)
+            {
+                if (customReservedWords == null)
+                    customReservedWords = new HashSet<string>();
+                for (var i = 0; i < attribute.ReservedWords.Length; i++)
+                {
+                    if (ValidateName(attribute.ReservedWords[0], 0))
+                        customReservedWords.Add(attribute.ReservedWords[0]);
+                }
+            }
         }
     }
 }

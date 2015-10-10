@@ -2,7 +2,7 @@
 
 namespace NiL.JS.Core
 {
-    public delegate ParseResult ParseDelegate(ParsingState state, ref int position);
+    public delegate CodeNode ParseDelegate(ParsingState state, ref int position);
 
     public delegate bool ValidateDelegate(string code, int position);
 

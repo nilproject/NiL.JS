@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var res = context.caller._arguments;
             return res;
@@ -76,7 +76,7 @@ namespace NiL.JS.Expressions
             return descriptor.Get(context, true, defineDepth);
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var res = descriptor.Get(context, false, defineDepth);
             switch (res.valueType)

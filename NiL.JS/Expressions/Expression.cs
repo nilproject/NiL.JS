@@ -31,9 +31,9 @@ namespace NiL.JS.Expressions
                 return PredictedType.Unknown;
             }
         }
-        internal protected abstract bool ResultInTempContainer
+        internal virtual bool ResultInTempContainer
         {
-            get;
+            get { return false; }
         }
         internal BuildState codeContext;
 

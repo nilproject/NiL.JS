@@ -23,7 +23,7 @@ namespace NiL.JS.Statements
             this.labels = labels;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             for (; ; )
             {

@@ -21,7 +21,7 @@ namespace NiL.JS.Expressions
             get { return owner.name; }
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             return owner.Evaluate(context);
         }

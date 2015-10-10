@@ -7,12 +7,13 @@ namespace NiL.JS.Statements
     /// </summary>
     internal sealed class SinglelineComment : CodeNode
     {
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
             if (!Parser.Validate(state.Code, "//", ref i))
-                return new ParseResult();
-            while (i < state.Code.Length && state.Code[i] != '\r' && state.Code[i] != '\n' && !Tools.isLineTerminator(state.Code[i])) i++;
+                return null;
+            while (i < state.Code.Length && state.Code[i] != '\r' && state.Code[i] != '\n' && !Tools.isLineTerminator(state.Code[i]))
+                i++;
             int end = i;
             if (i < state.Code.Length)
             {
@@ -29,15 +30,11 @@ namespace NiL.JS.Statements
             }
             try
             {
-                return new ParseResult()
-                {
-                    isParsed = true,
-                    node = new SinglelineComment(state.Code.Substring(index + 2, end - index - 2))
+                return new SinglelineComment(state.Code.Substring(index + 2, end - index - 2))
                     {
                         Length = i - index,
                         Position = index
-                    }
-                };
+                    };
             }
             finally
             {
@@ -52,7 +49,7 @@ namespace NiL.JS.Statements
             Text = text;
         }
 
-        internal protected override JSValue Evaluate(NiL.JS.Core.Context context)
+        public override JSValue Evaluate(NiL.JS.Core.Context context)
         {
             return null;
         }

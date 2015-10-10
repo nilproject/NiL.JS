@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class BitwiseExclusiveDisjunctionOperator : Expression
     {
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return true; }
         }
@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             tempContainer.iValue = Tools.JSObjectToInt32(first.Evaluate(context)) ^ Tools.JSObjectToInt32(second.Evaluate(context));
             tempContainer.valueType = JSValueType.Int;

@@ -16,15 +16,15 @@ namespace NiL.JS.Statements
         public CodeNode Statement { get { return statement; } }
         public string Label { get { return label; } }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
             //string code = state.Code;
             if (!Parser.ValidateName(state.Code, ref i, state.strict))
-                return new ParseResult();
+                return null;
             int l = i;
             if (i >= state.Code.Length || (!Parser.Validate(state.Code, " :", ref i) && state.Code[i++] != ':'))
-                return new ParseResult();
+                return null;
             var label = state.Code.Substring(index, l - index);
             state.Labels.Add(label);
             int oldlc = state.LabelCount;
@@ -41,20 +41,16 @@ namespace NiL.JS.Statements
             }
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new LabeledStatement()
+            return new LabeledStatement()
                 {
                     statement = stat,
                     label = label,
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var res = statement.Evaluate(context);
             if ((context.abort == AbortType.Break) && (context.abortInfo != null) && (context.abortInfo.oValue as string == label))

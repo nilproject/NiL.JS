@@ -12,11 +12,11 @@ namespace NiL.JS.Statements
 
         public JSValue Label { get { return label; } }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
-                return new ParseResult();
+            if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+                return null;
             if (!state.AllowContinue.Peek())
                 ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use continue statement")));
             while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
@@ -31,19 +31,15 @@ namespace NiL.JS.Statements
             int pos = index;
             index = i;
             state.continiesCount++;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new ContinueStatement()
+            return new ContinueStatement()
                 {
                     label = label,
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             context.abort = AbortType.Continue;
             context.abortInfo = label;

@@ -16,20 +16,23 @@ namespace NiL.JS.Statements
         public CodeNode Body { get { return body; } }
         public CodeNode Scope { get { return obj; } }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
             if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
-                return new ParseResult();
+                return null;
             if (state.strict)
                 ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
             if (state.message != null)
                 state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, index, 4), "Do not use \"with\".");
-            var obj = Parser.Parse(state, ref i, 1);
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            var obj = Parser.Parse(state, ref i, CodeFragmentType.Expression);
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid syntax WithStatement.")));
-            do i++; while (char.IsWhiteSpace(state.Code[i]));
+            do
+                i++;
+            while (char.IsWhiteSpace(state.Code[i]));
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionNotation)
             {
@@ -42,20 +45,16 @@ namespace NiL.JS.Statements
             }
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new WithStatement()
+            return new WithStatement()
                 {
                     obj = obj,
                     body = body,
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
 #if DEV
             if (context.debugging)

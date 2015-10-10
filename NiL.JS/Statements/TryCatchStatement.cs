@@ -25,19 +25,19 @@ namespace NiL.JS.Statements
         public CodeNode FinalBody { get { return finallyBody; } }
         public string ExceptionVariableName { get { return catchVariableDesc.name; } }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             //string code = state.Code;
             int i = index;
-            if (!Parser.Validate(state.Code, "try", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
-                return new ParseResult();
+            if (!Parser.Validate(state.Code, "try", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+                return null;
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != '{')
                 ExceptionsHelper.Throw((new SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            var b = CodeBlock.Parse(state, ref i).node;
+            var b = CodeBlock.Parse(state, ref i);
             while (char.IsWhiteSpace(state.Code[i]))
                 i++;
             CodeNode cb = null;
@@ -64,7 +64,7 @@ namespace NiL.JS.Statements
                 state.functionsDepth++;
                 try
                 {
-                    cb = CodeBlock.Parse(state, ref i).node;
+                    cb = CodeBlock.Parse(state, ref i);
                 }
                 finally
                 {
@@ -74,23 +74,20 @@ namespace NiL.JS.Statements
                     i++;
             }
             CodeNode f = null;
-            if (Parser.Validate(state.Code, "finally", i) && Parser.isIdentificatorTerminator(state.Code[i + 7]))
+            if (Parser.Validate(state.Code, "finally", i) && Parser.IsIdentificatorTerminator(state.Code[i + 7]))
             {
                 i += 7;
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != '{')
                     ExceptionsHelper.Throw((new SyntaxError("Invalid finally block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                f = CodeBlock.Parse(state, ref i).node;
+                f = CodeBlock.Parse(state, ref i);
             }
             if (cb == null && f == null)
                 ExceptionsHelper.Throw((new SyntaxError("try block must contain 'catch' or/and 'finally' block")));
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new TryCatchStatement()
+            return new TryCatchStatement()
                 {
                     body = (CodeBlock)b,
                     catchBody = (CodeBlock)cb,
@@ -98,8 +95,7 @@ namespace NiL.JS.Statements
                     catchVariableDesc = new VariableDescriptor(exptn, state.functionsDepth + 1),
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 #if !NET35
         /*internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
@@ -235,7 +231,7 @@ namespace NiL.JS.Statements
             return Expression.Block(new[] { except }, impl);
         }*/
 #endif
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             Exception except = null;
             try

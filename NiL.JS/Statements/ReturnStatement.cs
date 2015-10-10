@@ -29,31 +29,27 @@ namespace NiL.JS.Statements
             this.body = body;
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "return", ref i) || !Parser.isIdentificatorTerminator(state.Code[i]))
-                return new ParseResult();
+            if (!Parser.Validate(state.Code, "return", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+                return null;
             if (state.AllowReturn == 0)
                 ExceptionsHelper.Throw(new SyntaxError("Invalid use of return statement."));
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                 i++;
-            var body = state.Code[i] == ';' || Tools.isLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, 1);
+            var body = state.Code[i] == ';' || Tools.isLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, CodeFragmentType.Expression);
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new ReturnStatement()
+            return new ReturnStatement()
                 {
                     body = (Expressions.Expression)body,
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             context.abortInfo = body != null ? body.Evaluate(context) : JSValue.undefined;
             if (context.abort < AbortType.Return)

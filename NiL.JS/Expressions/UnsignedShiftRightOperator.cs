@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class UnsignedShiftRightOperator : Expression
     {
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return true; }
         }
@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var left = (uint)Tools.JSObjectToInt32(first.Evaluate(context));
             var t = left >> Tools.JSObjectToInt32(second.Evaluate(context));

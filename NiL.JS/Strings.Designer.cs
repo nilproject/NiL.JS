@@ -142,6 +142,15 @@ namespace NiL.JS {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Unknown identifier &quot;{0}&quot; at {1}.
+        /// </summary>
+        internal static string UnknowIdentifier {
+            get {
+                return ResourceManager.GetString("UnknowIdentifier", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Variable &quot;{0}&quot; not defined.
         /// </summary>
         internal static string VariableNotDefined {

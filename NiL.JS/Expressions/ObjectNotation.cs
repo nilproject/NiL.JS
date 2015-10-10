@@ -33,7 +33,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return false; }
         }
@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             if (state.Code[index] != '{')
                 throw new ArgumentException("Invalid JSON definition");
@@ -58,14 +58,16 @@ namespace NiL.JS.Expressions
             int i = index;
             while (state.Code[i] != '}')
             {
-                do i++; while (char.IsWhiteSpace(state.Code[i]));
+                do
+                    i++;
+                while (char.IsWhiteSpace(state.Code[i]));
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
                 if (Parser.Validate(state.Code, "set ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set).node as FunctionNotation;
+                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set) as FunctionNotation;
                     if (!flds.ContainsKey(setter.Name))
                     {
                         var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
@@ -86,7 +88,7 @@ namespace NiL.JS.Expressions
                 else if (Parser.Validate(state.Code, "get ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get).node as FunctionNotation;
+                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get) as FunctionNotation;
                     if (!flds.ContainsKey(getter.Name))
                     {
                         var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
@@ -123,16 +125,18 @@ namespace NiL.JS.Expressions
                         else if (flds.Count != 0)
                             ExceptionsHelper.Throw((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                         else
-                            return new ParseResult();
+                            return null;
                     }
                     else
-                        return new ParseResult();
+                        return null;
                     while (char.IsWhiteSpace(state.Code[i]))
                         i++;
                     if (state.Code[i] != ':')
-                        return new ParseResult();
-                    do i++; while (char.IsWhiteSpace(state.Code[i]));
-                    var initializator = ExpressionTree.Parse(state, ref i, false).node;
+                        return null;
+                    do
+                        i++;
+                    while (char.IsWhiteSpace(state.Code[i]));
+                    var initializator = ExpressionTree.Parse(state, ref i, false, false);
                     CodeNode aei = null;
                     if (flds.TryGetValue(fieldName, out aei))
                     {
@@ -147,23 +151,19 @@ namespace NiL.JS.Expressions
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if ((state.Code[i] != ',') && (state.Code[i] != '}'))
-                    return new ParseResult();
+                    return null;
             }
             i++;
             var pos = index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = new ObjectNotation(flds)
+            return new ObjectNotation(flds)
                 {
                     Position = pos,
                     Length = index - pos
-                }
-            };
+                };
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var res = JSObject.CreateObject(false);
             if (fields.Length == 0)

@@ -15,7 +15,7 @@ namespace NiL.JS.Expressions
         internal bool allowTCO;
 
         public override bool IsContextIndependent { get { return false; } }
-        protected internal override bool ResultInTempContainer { get { return false; } }
+        internal override bool ResultInTempContainer { get { return false; } }
         protected internal override PredictedType ResultType
         {
             get
@@ -60,7 +60,7 @@ namespace NiL.JS.Expressions
             return a;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var temp = first.Evaluate(context);
             JSValue newThisBind = context.objectSource;

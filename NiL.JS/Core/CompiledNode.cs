@@ -38,7 +38,7 @@ namespace NiL.JS.Core
             }
         }
 
-        protected internal override bool ResultInTempContainer
+        internal override bool ResultInTempContainer
         {
             get { return false; }
         }
@@ -110,7 +110,7 @@ namespace NiL.JS.Core
             return original.Childs;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             if (compiledTree == null)
             {

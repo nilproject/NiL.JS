@@ -356,89 +356,23 @@ for (var i = 0; i < 10000000; )
             f.Dispose();
             sw.Stop();
         }
-
-        [CustomCodeFragment]
-        public sealed class UsingStatement : NiL.JS.Core.CodeNode
-        {
-            private string namespaceName;
-            private string aliasName;
-
-            public UsingStatement(string namespaceName, string aliasName)
-            {
-                this.namespaceName = namespaceName;
-                this.aliasName = aliasName;
-            }
-
-            public static bool Validate(string code, int position)
-            {
-                return Parser.Validate(code, "using", position);
-            }
-
-            public static ParseResult Parse(ParsingState state, ref int position)
-            {
-                if (!Parser.Validate(state.Code, "using", ref position))
-                    return new ParseResult();
-
-                while (char.IsWhiteSpace(state.Code, position))
-                    position++;
-
-                int start = position;
-                while (Parser.ValidateName(state.Code, ref position) && state.Code[position] == '.')
-                    position++;
-
-                if (state.Code[position] != ' ')
-                {
-                    throw new JSException(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
-                }
-
-                var namespaceName = state.Code.Substring(start, position - start);
-
-                while (char.IsWhiteSpace(state.Code, position))
-                    position++;
-
-                if (!Parser.Validate(state.Code, "as", ref position))
-                {
-                    throw new JSException(new SyntaxError("Expected \"as\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 2)));
-                }
-
-                while (char.IsWhiteSpace(state.Code, position))
-                    position++;
-
-                start = position;
-                if (!Parser.ValidateName(state.Code, ref position))
-                {
-                    throw new JSException(new SyntaxError("Expected identifier name at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
-                }
-
-                var aliasName = state.Code.Substring(start, position - start);
-
-                while (char.IsWhiteSpace(state.Code, position))
-                    position++;
-
-                if (state.Code[position] != ';')
-                {
-                    throw new JSException(new SyntaxError("Expected \";\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 1)));
-                }
-
-                return new ParseResult(true, new UsingStatement(namespaceName, aliasName));
-            }
-
-            protected override JSValue Evaluate(Context context)
-            {
-                context.DefineVariable(aliasName).Assign(new NamespaceProvider(namespaceName));
-                return null;
-            }
-        }
-
+        
         private static void testEx()
         {
-            Parser.DefineCustomCodeFragment(typeof(UsingStatement));
+            Parser.DefineCustomCodeFragment(typeof(NiL.JSTest.SyntaxExtensions.UsingStatement));
+            Parser.DefineCustomCodeFragment(typeof(NiL.JSTest.SyntaxExtensions.KeysOperator));
 
             var t = new Script(@"
 using System.Windows.Forms as forms;
 
-forms.Form().ShowDialog();
+var form = forms.Form();
+var textBox = forms.TextBox();
+textBox.Multiline = true;
+textBox.Parent = form;
+textBox.Dock = 5;
+textBox.Text = JSON.stringify(keys Object);
 
+form.ShowDialog();
 ");
             t.Context.AttachModule(typeof(object));
             t.Invoke();
@@ -446,6 +380,7 @@ forms.Form().ShowDialog();
 
         static void Main(string[] args)
         {
+            //Parser.DefineCustomCodeFragment(typeof(NiL.JSTest.SyntaxExtensions.UsingStatement));
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();

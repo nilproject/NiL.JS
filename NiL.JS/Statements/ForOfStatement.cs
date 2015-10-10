@@ -37,14 +37,16 @@ namespace NiL.JS.Statements
 
         }
 
-        internal static ParseResult Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParsingState state, ref int index)
         {
             //string code = state.Code;
             int i = index;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
-                return new ParseResult();
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+                return null;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             var res = new ForOfStatement()
             {
                 labels = state.Labels.GetRange(state.Labels.Count - state.LabelCount, state.LabelCount).ToArray()
@@ -52,7 +54,8 @@ namespace NiL.JS.Statements
             var vStart = i;
             if (Parser.Validate(state.Code, "var", ref i))
             {
-                while (char.IsWhiteSpace(state.Code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i]))
+                    i++;
                 int start = i;
                 string varName;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict))
@@ -68,12 +71,13 @@ namespace NiL.JS.Statements
             else
             {
                 if (state.Code[i] == ';')
-                    return new ParseResult();
-                while (char.IsWhiteSpace(state.Code[i])) i++;
+                    return null;
+                while (char.IsWhiteSpace(state.Code[i]))
+                    i++;
                 int start = i;
                 string varName;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict))
-                    return new ParseResult();
+                    return null;
                 varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
                 if (state.strict)
                 {
@@ -82,32 +86,38 @@ namespace NiL.JS.Statements
                 }
                 res.variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineDepth = state.functionsDepth };
             }
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (state.Code[i] == '=')
             {
-                do i++; while (char.IsWhiteSpace(state.Code[i]));
+                do
+                    i++;
+                while (char.IsWhiteSpace(state.Code[i]));
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
-                if (!defVal.isParsed)
+                if (defVal == null)
                     return defVal;
                 NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
                 exp = new AssignmentOperator(
                     exp,
-                    (NiL.JS.Expressions.Expression)defVal.node)
+                    (NiL.JS.Expressions.Expression)defVal)
                     {
                         Position = res.variable.Position,
-                        Length = defVal.node.EndPosition - res.variable.Position
+                        Length = defVal.EndPosition - res.variable.Position
                     };
                 if (res.variable == exp.first.first)
                     res.variable = exp;
                 else
                     (res.variable as VariableDefineStatement).initializators[0] = exp;
-                while (char.IsWhiteSpace(state.Code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i]))
+                    i++;
             }
             if (!Parser.Validate(state.Code, "of", ref i))
-                return new ParseResult();
-            while (char.IsWhiteSpace(state.Code[i])) i++;
-            res.source = Parser.Parse(state, ref i, 1);
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+                return null;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
+            res.source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             i++;
@@ -128,14 +138,10 @@ namespace NiL.JS.Statements
             res.Position = index;
             res.Length = i - index;
             index = i;
-            return new ParseResult()
-            {
-                isParsed = true,
-                node = res
-            };
+            return res;
         }
 
-        internal protected override JSValue Evaluate(Context context)
+        public override JSValue Evaluate(Context context)
         {
             var s = source.Evaluate(context);
             JSValue v = null;
@@ -227,7 +233,8 @@ namespace NiL.JS.Statements
                         catch (InvalidOperationException)
                         {
                             keys = s.GetEnumerator();
-                            for (int i = 0; i < index && keys.MoveNext(); i++) ;
+                            for (int i = 0; i < index && keys.MoveNext(); i++)
+                                ;
                         }
                         if (processedKeys.Contains(keys.Current))
                             continue;

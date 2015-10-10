@@ -63,7 +63,7 @@ namespace NiL.JS.Core
             return null;
         }
 
-        internal protected abstract JSValue Evaluate(Context context);
+        public abstract JSValue Evaluate(Context context);
 
         /// <summary>
         /// Заставляет объект перестроить своё содержимое перед началом выполнения.
