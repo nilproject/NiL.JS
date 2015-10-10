@@ -416,7 +416,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 100
+            int mode = 1
                    ;
             switch (mode)
             {

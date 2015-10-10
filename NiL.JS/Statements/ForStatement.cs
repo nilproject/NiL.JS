@@ -39,13 +39,18 @@ namespace NiL.JS.Statements
             CodeNode init = null;
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            init = state.Code[i] == ';' ? null as CodeNode : Parser.Parse(state, ref i, 3);
-            if ((init is ExpressionTree)
-                && (init as ExpressionTree).Type == OperationType.None
-                && (init as ExpressionTree).second == null)
-                init = (init as ExpressionTree).first;
             if (state.Code[i] != ';')
-                throw new JSException((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+            {
+                init = VariableDefineStatement.Parse(state, ref i).Statement;
+                if (init == null)
+                    init = Parser.Parse(state, ref i, 1);
+                if ((init is ExpressionTree)
+                    && (init as ExpressionTree).Type == OperationType.None
+                    && (init as ExpressionTree).second == null)
+                    init = (init as ExpressionTree).first;
+                if (state.Code[i] != ';')
+                    throw new JSException((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+            }
             do i++; while (char.IsWhiteSpace(state.Code[i]));
             var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i).Statement;
             if (state.Code[i] != ';')
