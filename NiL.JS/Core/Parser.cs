@@ -513,13 +513,24 @@ namespace NiL.JS.Core
         {
             if (type == null)
                 ExceptionsHelper.ThrowArgumentNull("type");
-            if (!typeof(CodeNode).IsAssignableFrom(type))
-                throw new ArgumentException("type must be sub-class of " + typeof(CodeNode).Name);
 
             var attributes = type.GetCustomAttributes(typeof(CustomCodeFragment), false);
             if (attributes.Length == 0)
                 throw new ArgumentException("type must be marked with attribute \"" + typeof(CustomCodeFragment).Name + "\"");
             var attribute = attributes[0] as CustomCodeFragment;
+
+            if (attribute.Type == CodeFragmentType.Statement)
+            {
+                if (!typeof(CodeNode).IsAssignableFrom(type))
+                    throw new ArgumentException("type must be sub-class of " + typeof(CodeNode).Name);
+            }
+            else if (attribute.Type == CodeFragmentType.Expression)
+            {
+                if (!typeof(Expression).IsAssignableFrom(type))
+                    throw new ArgumentException("type must be sub-class of " + typeof(Expression).Name);
+            }
+            else
+                throw new ArgumentException();
 
             var validateMethod = type.GetMethod("Validate", new[] { typeof(string), typeof(int) });
             if (validateMethod == null || validateMethod.ReturnType != typeof(bool))
