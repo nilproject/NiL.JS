@@ -412,15 +412,21 @@ namespace NiL.JS.Core
                 return ValidateString(code, ref index, false);
             if ((code.Length - j >= 4) && (code[j] == 'n' || code[j] == 't' || code[j] == 'f'))
             {
-                if (code.IndexOf("null", j, 4) != -1 || code.IndexOf("true", j, 4) != -1)
+                if (code.Length - j >= 4)
                 {
-                    index += 4;
-                    return true;
-                }
-                if (code.IndexOf("false", j, 5) != -1)
-                {
-                    index += 5;
-                    return true;
+                    if (code.IndexOf("null", j, 4) != -1 || code.IndexOf("true", j, 4) != -1)
+                    {
+                        index += 4;
+                        return true;
+                    }
+                    if (code.Length - j >= 5)
+                    {
+                        if (code.IndexOf("false", j, 5) != -1)
+                        {
+                            index += 5;
+                            return true;
+                        }
+                    }
                 }
             }
             return ValidateNumber(code, ref index);
