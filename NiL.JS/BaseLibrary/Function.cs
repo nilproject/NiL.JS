@@ -1330,11 +1330,14 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal protected override JSValue GetMember(JSValue nameObj, bool forWrite, bool own)
         {
-            string name = nameObj.ToString();
-            if (creator.body.strict && (name == "caller" || name == "arguments"))
-                return propertiesDummySM;
-            if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
-                return prototype;
+            if (nameObj.valueType != JSValueType.Symbol)
+            {
+                string name = nameObj.ToString();
+                if (creator.body.strict && (name == "caller" || name == "arguments"))
+                    return propertiesDummySM;
+                if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
+                    return prototype;
+            }
             return base.GetMember(nameObj, forWrite, own);
         }
 

@@ -35,11 +35,15 @@ namespace NiL.JS.Core
             oValue = this;
         }
 
-        internal protected override JSValue GetMember(JSValue name, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
-            var nameStr = name.ToString();
-            var res = context.GetVariable(nameStr, forWrite);
-            return res;
+            if (key.valueType != JSValueType.Symbol)
+            {
+                var nameStr = key.ToString();
+                var res = context.GetVariable(nameStr, forWrite);
+                return res;
+            }
+            return base.GetMember(key, forWrite, own);
         }
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)

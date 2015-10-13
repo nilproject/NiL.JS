@@ -9,10 +9,10 @@ using NiL.JS.Expressions;
 
 namespace NiL.JSTest.SyntaxExtensions
 {
-    [CustomCodeFragment(CodeFragmentType.Expression, "keys")]
-    public sealed class KeysOperator : Expression
+    [CustomCodeFragment(CodeFragmentType.Expression, "keysof")]
+    public sealed class KeysOfOperator : Expression
     {
-        public KeysOperator(Expression source)
+        public KeysOfOperator(Expression source)
             : base(source, null, false)
         {
 
@@ -20,12 +20,12 @@ namespace NiL.JSTest.SyntaxExtensions
 
         public static bool Validate(string code, int position)
         {
-            return Parser.Validate(code, "keys", position);
+            return Parser.Validate(code, "keysof", position);
         }
 
         public static CodeNode Parse(ParsingState state, ref int position)
         {
-            if (!Parser.Validate(state.Code, "keys", ref position))
+            if (!Parser.Validate(state.Code, "keysof", ref position))
                 return null;
 
             while (char.IsWhiteSpace(state.Code, position))
@@ -35,7 +35,7 @@ namespace NiL.JSTest.SyntaxExtensions
 
             var source = (Expression)ExpressionTree.Parse(state, ref position, true);
 
-            return new KeysOperator(source);
+            return new KeysOfOperator(source);
         }
 
         public override JSValue Evaluate(Context context)

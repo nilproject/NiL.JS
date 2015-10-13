@@ -177,62 +177,65 @@ namespace NiL.JS.BaseLibrary
             return r;
         }
 
-        protected internal sealed override JSValue GetMember(JSValue name, bool forWrite, bool own)
+        protected internal sealed override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
-            if (name.valueType == JSValueType.String && "length".Equals(name.oValue))
-                return length;
-            bool isIndex = false;
-            int index = 0;
-            JSValue tname = name;
-            if (tname.valueType >= JSValueType.Object)
-                tname = tname.ToPrimitiveValue_String_Value();
-            switch (tname.valueType)
+            if (key.valueType != JSValueType.Symbol)
             {
-                case JSValueType.Object:
-                case JSValueType.Bool:
-                    break;
-                case JSValueType.Int:
-                    {
-                        isIndex = tname.iValue >= 0;
-                        index = tname.iValue;
+                if (key.valueType == JSValueType.String && "length".Equals(key.oValue))
+                    return length;
+                bool isIndex = false;
+                int index = 0;
+                JSValue tname = key;
+                if (tname.valueType >= JSValueType.Object)
+                    tname = tname.ToPrimitiveValue_String_Value();
+                switch (tname.valueType)
+                {
+                    case JSValueType.Object:
+                    case JSValueType.Bool:
                         break;
-                    }
-                case JSValueType.Double:
-                    {
-                        isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
-                        if (isIndex)
-                            index = (int)(uint)tname.dValue;
-                        break;
-                    }
-                case JSValueType.String:
-                    {
-                        var fc = tname.oValue.ToString()[0];
-                        if ('0' <= fc && '9' >= fc)
+                    case JSValueType.Int:
                         {
-                            var dindex = 0.0;
-                            int si = 0;
-                            if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
-                                && (si == tname.oValue.ToString().Length)
-                                && dindex >= 0
-                                && dindex < uint.MaxValue
-                                && (long)dindex == dindex)
-                            {
-                                isIndex = true;
-                                index = (int)(uint)dindex;
-                            }
+                            isIndex = tname.iValue >= 0;
+                            index = tname.iValue;
+                            break;
                         }
-                        break;
-                    }
+                    case JSValueType.Double:
+                        {
+                            isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
+                            if (isIndex)
+                                index = (int)(uint)tname.dValue;
+                            break;
+                        }
+                    case JSValueType.String:
+                        {
+                            var fc = tname.oValue.ToString()[0];
+                            if ('0' <= fc && '9' >= fc)
+                            {
+                                var dindex = 0.0;
+                                int si = 0;
+                                if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
+                                    && (si == tname.oValue.ToString().Length)
+                                    && dindex >= 0
+                                    && dindex < uint.MaxValue
+                                    && (long)dindex == dindex)
+                                {
+                                    isIndex = true;
+                                    index = (int)(uint)dindex;
+                                }
+                            }
+                            break;
+                        }
+                }
+                if (isIndex)
+                {
+                    if (index < 0)
+                        ExceptionsHelper.Throw(new RangeError("Invalid array index"));
+                    if (index >= length.iValue)
+                        return undefined;
+                    return this[index];
+                }
             }
-            if (isIndex)
-            {
-                if (index < 0)
-                    ExceptionsHelper.Throw(new RangeError("Invalid array index"));
-                if (index >= length.iValue)
-                    return undefined;
-                return this[index];
-            }
-            return base.GetMember(name, forWrite, own);
+            return base.GetMember(key, forWrite, own);
         }
 
         protected internal override void SetMember(JSValue name, JSValue value, bool strict)

@@ -156,62 +156,65 @@ namespace NiL.JS.Core.Interop
                 return TypeProxy.Proxy(result);
         }
 
-        protected internal override JSValue GetMember(JSValue name, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
-            forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
-            if (name.valueType == JSValueType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
+            if (key.valueType != JSValueType.Symbol)
             {
-                lenObj.iValue = data.Count;
-                return lenObj;
-            }
-            bool isIndex = false;
-            int index = 0;
-            JSValue tname = name;
-            if (tname.valueType >= JSValueType.Object)
-                tname = tname.ToPrimitiveValue_String_Value();
-            switch (tname.valueType)
-            {
-                case JSValueType.Int:
-                    {
-                        isIndex = tname.iValue >= 0;
-                        index = tname.iValue;
-                        break;
-                    }
-                case JSValueType.Double:
-                    {
-                        isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
-                        if (isIndex)
-                            index = (int)(uint)tname.dValue;
-                        break;
-                    }
-                case JSValueType.String:
-                    {
-                        var fc = tname.oValue.ToString()[0];
-                        if ('0' <= fc && '9' >= fc)
+                forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
+                if (key.valueType == JSValueType.String && string.CompareOrdinal("length", key.oValue.ToString()) == 0)
+                {
+                    lenObj.iValue = data.Count;
+                    return lenObj;
+                }
+                bool isIndex = false;
+                int index = 0;
+                JSValue tname = key;
+                if (tname.valueType >= JSValueType.Object)
+                    tname = tname.ToPrimitiveValue_String_Value();
+                switch (tname.valueType)
+                {
+                    case JSValueType.Int:
                         {
-                            var dindex = 0.0;
-                            int si = 0;
-                            if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
-                                && (si == tname.oValue.ToString().Length)
-                                && dindex >= 0
-                                && dindex < uint.MaxValue
-                                && (long)dindex == dindex)
-                            {
-                                isIndex = true;
-                                index = (int)(uint)dindex;
-                            }
+                            isIndex = tname.iValue >= 0;
+                            index = tname.iValue;
+                            break;
                         }
-                        break;
-                    }
+                    case JSValueType.Double:
+                        {
+                            isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
+                            if (isIndex)
+                                index = (int)(uint)tname.dValue;
+                            break;
+                        }
+                    case JSValueType.String:
+                        {
+                            var fc = tname.oValue.ToString()[0];
+                            if ('0' <= fc && '9' >= fc)
+                            {
+                                var dindex = 0.0;
+                                int si = 0;
+                                if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
+                                    && (si == tname.oValue.ToString().Length)
+                                    && dindex >= 0
+                                    && dindex < uint.MaxValue
+                                    && (long)dindex == dindex)
+                                {
+                                    isIndex = true;
+                                    index = (int)(uint)dindex;
+                                }
+                            }
+                            break;
+                        }
+                }
+                if (isIndex)
+                {
+                    notExists.valueType = JSValueType.NotExistsInObject;
+                    if (index < 0 || index > data.Count)
+                        return notExists;
+                    return new Element(this, index);
+                }
             }
-            if (isIndex)
-            {
-                notExists.valueType = JSValueType.NotExistsInObject;
-                if (index < 0 || index > data.Count)
-                    return notExists;
-                return new Element(this, index);
-            }
-            return base.GetMember(name, forWrite, own);
+            return base.GetMember(key, forWrite, own);
         }
 
         protected internal override void SetMember(JSValue name, JSValue value, bool strict)

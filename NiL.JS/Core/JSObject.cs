@@ -13,6 +13,7 @@ namespace NiL.JS.Core
         internal static JSObject GlobalPrototype;
 
         internal IDictionary<string, JSValue> fields;
+        internal IDictionary<Symbol, JSValue> symbols;
         internal JSObject __prototype;
 
         [DoNotDelete]
@@ -122,46 +123,81 @@ namespace NiL.JS.Core
             if (oValue != this && oValue is JSValue)
                 return base.GetMember(key, forWrite, own);
 #endif
-
-            string name = null;
-            if (forWrite || fields != null)
-                name = key.ToString();
             JSValue res = null;
             JSObject proto = null;
-            bool fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
-            if (fromProto)
+            bool fromProto;
+            if (key.valueType == JSValueType.Symbol)
             {
-                res = proto.GetMember(key, false, own);
-                if (((own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property))) || res.valueType < JSValueType.Undefined)
-                    res = null;
-            }
-            if (res == null)
-            {
-                if (!forWrite || (attributes & JSValueAttributesInternal.Immutable) != 0)
+                var symbol = key.oValue as Symbol;
+                fromProto = (symbols == null || !symbols.TryGetValue(symbol, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
+                if (fromProto)
                 {
-                    if (!own && string.CompareOrdinal(name, "__proto__") == 0)
-                        return proto;
-                    return notExists;
+                    res = proto.GetMember(key, false, own);
+                    if ((own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property)) || res.valueType < JSValueType.Undefined)
+                        res = null;
                 }
-                res = new JSValue()
+                if (res == null)
                 {
-                    valueType = JSValueType.NotExistsInObject
-                };
-                if (fields == null)
-                    fields = createFields();
-                fields[name] = res;
-            }
-            else if (forWrite)
-            {
-                if (((res.attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto))
+                    if (!forWrite || (attributes & JSValueAttributesInternal.Immutable) != 0)
+                        return notExists;
+
+                    res = new JSValue { valueType = JSValueType.NotExistsInObject };
+                    if (symbols == null)
+                        symbols = new Dictionary<Symbol, JSValue>();
+                    symbols[symbol] = res;
+                }
+                else if (forWrite)
                 {
-                    if ((res.attributes & JSValueAttributesInternal.ReadOnly) == 0
-                        && (res.valueType != JSValueType.Property || own))
+                    if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto)
                     {
-                        res = res.CloneImpl();
-                        if (fields == null)
-                            fields = createFields();
-                        fields[name] = res;
+                        if ((res.attributes & JSValueAttributesInternal.ReadOnly) == 0
+                            && (res.valueType != JSValueType.Property || own))
+                        {
+                            res = res.CloneImpl();
+                            if (symbols == null)
+                                symbols = new Dictionary<Symbol, JSValue>();
+                            symbols[symbol] = res;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                string name = null;
+                if (forWrite || fields != null)
+                    name = key.ToString();
+                fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
+                if (fromProto)
+                {
+                    res = proto.GetMember(key, false, own);
+                    if (((own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property))) || res.valueType < JSValueType.Undefined)
+                        res = null;
+                }
+                if (res == null)
+                {
+                    if (!forWrite || (attributes & JSValueAttributesInternal.Immutable) != 0)
+                    {
+                        if (!own && string.CompareOrdinal(name, "__proto__") == 0)
+                            return proto;
+                        return notExists;
+                    }
+                    res = new JSValue { valueType = JSValueType.NotExistsInObject };
+                    if (fields == null)
+                        fields = createFields();
+                    fields[name] = res;
+                }
+                else if (forWrite)
+                {
+                    if (((res.attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto))
+                    {
+                        if ((res.attributes & JSValueAttributesInternal.ReadOnly) == 0
+                            && (res.valueType != JSValueType.Property || own))
+                        {
+                            res = res.CloneImpl();
+                            if (fields == null)
+                                fields = createFields();
+                            fields[name] = res;
+                        }
                     }
                 }
             }

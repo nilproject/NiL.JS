@@ -360,7 +360,7 @@ for (var i = 0; i < 10000000; )
         private static void testEx()
         {
             Parser.DefineCustomCodeFragment(typeof(NiL.JSTest.SyntaxExtensions.UsingStatement));
-            Parser.DefineCustomCodeFragment(typeof(NiL.JSTest.SyntaxExtensions.KeysOperator));
+            Parser.DefineCustomCodeFragment(typeof(NiL.JSTest.SyntaxExtensions.KeysOfOperator));
 
             var t = new Script(@"
 using System.Windows.Forms as forms;
@@ -409,7 +409,7 @@ form.ShowDialog();
             }));
 #endif
 
-            int mode = 3
+            int mode = 2
                     ;
             switch (mode)
             {

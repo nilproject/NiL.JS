@@ -140,84 +140,87 @@ namespace NiL.JS.Core
             return GlobalPrototype ?? Null;
         }
 
-        protected internal override JSValue GetMember(JSValue name, bool createMember, bool own)
+        protected internal override JSValue GetMember(JSValue key, bool createMember, bool own)
         {
-            createMember &= (attributes & JSValueAttributesInternal.Immutable) == 0;
-            if (name.valueType == JSValueType.Int)
+            if (key.valueType != JSValueType.Symbol)
             {
-                switch (name.iValue)
+                createMember &= (attributes & JSValueAttributesInternal.Immutable) == 0;
+                if (key.valueType == JSValueType.Int)
                 {
-                    case 0:
+                    switch (key.iValue)
+                    {
+                        case 0:
+                            return (a0 ?? (!createMember ? notExists : (a0 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
+                        case 1:
+                            return (a1 ?? (!createMember ? notExists : (a1 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
+                        case 2:
+                            return (a2 ?? (!createMember ? notExists : (a2 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
+                        case 3:
+                            return (a3 ?? (!createMember ? notExists : (a3 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
+                        case 4:
+                            return (a4 ?? (!createMember ? notExists : (a4 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
+                        //case 5:
+                        //    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                        //case 6:
+                        //    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                        //case 7:
+                        //    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    }
+                }
+                switch (key.ToString())
+                {
+                    case "0":
                         return (a0 ?? (!createMember ? notExists : (a0 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                    case 1:
+                    case "1":
                         return (a1 ?? (!createMember ? notExists : (a1 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                    case 2:
+                    case "2":
                         return (a2 ?? (!createMember ? notExists : (a2 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                    case 3:
+                    case "3":
                         return (a3 ?? (!createMember ? notExists : (a3 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                    case 4:
+                    case "4":
                         return (a4 ?? (!createMember ? notExists : (a4 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                    //case 5:
+                    //case "5":
                     //    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                    //case 6:
+                    //case "6":
                     //    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                    //case 7:
+                    //case "7":
                     //    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
+                    case "length":
+                        {
+                            if (_length == null)
+                                _length = new _LengthContainer(this)
+                                {
+                                    valueType = JSValueType.Int,
+                                    iValue = length,
+                                    attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.Reassign
+                                };
+                            return _length;
+                        }
+                    case "callee":
+                        {
+                            if (callee == null)
+                                callee = NotExistsInObject;
+                            if (createMember && (callee.attributes & JSValueAttributesInternal.SystemObject) != 0)
+                            {
+                                callee = callee.CloneImpl();
+                                callee.attributes = JSValueAttributesInternal.DoNotEnum;
+                            }
+                            return callee;
+                        }
+                    case "caller":
+                        {
+                            if (caller == null)
+                                caller = NotExistsInObject;
+                            if (createMember && (caller.attributes & JSValueAttributesInternal.SystemObject) != 0)
+                            {
+                                caller = caller.CloneImpl();
+                                callee.attributes = JSValueAttributesInternal.DoNotEnum;
+                            }
+                            return caller;
+                        }
                 }
             }
-            switch (name.ToString())
-            {
-                case "0":
-                    return (a0 ?? (!createMember ? notExists : (a0 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                case "1":
-                    return (a1 ?? (!createMember ? notExists : (a1 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                case "2":
-                    return (a2 ?? (!createMember ? notExists : (a2 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                case "3":
-                    return (a3 ?? (!createMember ? notExists : (a3 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                case "4":
-                    return (a4 ?? (!createMember ? notExists : (a4 = new JSValue() { valueType = JSValueType.NotExistsInObject })));
-                //case "5":
-                //    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "6":
-                //    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                //case "7":
-                //    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                case "length":
-                    {
-                        if (_length == null)
-                            _length = new _LengthContainer(this)
-                            {
-                                valueType = JSValueType.Int,
-                                iValue = length,
-                                attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.Reassign
-                            };
-                        return _length;
-                    }
-                case "callee":
-                    {
-                        if (callee == null)
-                            callee = NotExistsInObject;
-                        if (createMember && (callee.attributes & JSValueAttributesInternal.SystemObject) != 0)
-                        {
-                            callee = callee.CloneImpl();
-                            callee.attributes = JSValueAttributesInternal.DoNotEnum;
-                        }
-                        return callee;
-                    }
-                case "caller":
-                    {
-                        if (caller == null)
-                            caller = NotExistsInObject;
-                        if (createMember && (caller.attributes & JSValueAttributesInternal.SystemObject) != 0)
-                        {
-                            caller = caller.CloneImpl();
-                            callee.attributes = JSValueAttributesInternal.DoNotEnum;
-                        }
-                        return caller;
-                    }
-            }
-            return base.GetMember(name, createMember, own);
+            return base.GetMember(key, createMember, own);
         }
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)

@@ -429,7 +429,7 @@ namespace NiL.JS.Core
                 {
                     if (create)
                     {
-                        res = new JSValue() {valueType = JSValueType.NotExists};
+                        res = new JSValue() { valueType = JSValueType.NotExists };
                         fields[name] = res;
                     }
                     else

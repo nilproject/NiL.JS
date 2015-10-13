@@ -77,44 +77,47 @@ namespace NiL.JS
                 unions = new Dictionary<string, GenericType>();
         }
 
-        internal protected override JSValue GetMember(JSValue nameObj, bool create, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool create, bool own)
         {
-            var name = nameObj.ToString();
-            JSValue res = null;
-            if (childs.TryGetValue(name, out res))
-                return res;
-            string reqname = Namespace + "." + name;
-            var selection = types.StartedWith(reqname).GetEnumerator();
-            if (selection.MoveNext())
+            if (key.valueType != JSValueType.Symbol)
             {
-                if (unions != null && selection.Current.Key != reqname && selection.Current.Value.FullName[reqname.Length] == '`')
+                var name = key.ToString();
+                JSValue res = null;
+                if (childs.TryGetValue(name, out res))
+                    return res;
+                string reqname = Namespace + "." + name;
+                var selection = types.StartedWith(reqname).GetEnumerator();
+                if (selection.MoveNext())
                 {
-                    var ut = new GenericType(reqname);
-                    ut.Add(selection.Current.Value);
-                    while (selection.MoveNext())
-                        if (selection.Current.Value.FullName[reqname.Length] == '`')
-                        {
-                            string fn = selection.Current.Value.FullName;
-                            for (var i = fn.Length - 1; i > reqname.Length; i--)
-                                if (!Tools.IsDigit(fn[i]))
-                                {
-                                    fn = null;
-                                    break;
-                                }
-                            if (fn != null)
-                                ut.Add(selection.Current.Value);
-                        }
-                    res = TypeProxy.GetConstructor(ut);
-                    childs[name] = res;
+                    if (unions != null && selection.Current.Key != reqname && selection.Current.Value.FullName[reqname.Length] == '`')
+                    {
+                        var ut = new GenericType(reqname);
+                        ut.Add(selection.Current.Value);
+                        while (selection.MoveNext())
+                            if (selection.Current.Value.FullName[reqname.Length] == '`')
+                            {
+                                string fn = selection.Current.Value.FullName;
+                                for (var i = fn.Length - 1; i > reqname.Length; i--)
+                                    if (!Tools.IsDigit(fn[i]))
+                                    {
+                                        fn = null;
+                                        break;
+                                    }
+                                if (fn != null)
+                                    ut.Add(selection.Current.Value);
+                            }
+                        res = TypeProxy.GetConstructor(ut);
+                        childs[name] = res;
+                        return res;
+                    }
+                    if (selection.Current.Key == reqname)
+                        return TypeProxy.GetConstructor(selection.Current.Value);
+                    res = TypeProxy.Proxy(new NamespaceProvider(reqname, unions != null));
+                    childs.Add(name, res);
                     return res;
                 }
-                if (selection.Current.Key == reqname)
-                    return TypeProxy.GetConstructor(selection.Current.Value);
-                res = TypeProxy.Proxy(new NamespaceProvider(reqname, unions != null));
-                childs.Add(name, res);
-                return res;
             }
-            return new JS.Core.JSValue();
+            return notExists;
         }
 
         /// <summary>

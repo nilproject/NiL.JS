@@ -358,9 +358,11 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        internal protected override JSValue GetMember(JSValue nameObj, bool create, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool create, bool own)
         {
-            string name = nameObj.ToString();
+            if (key.valueType == JSValueType.Symbol)
+                return base.GetMember(key, false, own);
+            string name = key.ToString();
             JSValue r = null;
             if (fields.TryGetValue(name, out r))
             {
@@ -368,7 +370,7 @@ namespace NiL.JS.Core.Interop
                 {
                     if (!create)
                     {
-                        var t = base.GetMember(nameObj, false, own);
+                        var t = base.GetMember(key, false, own);
                         if (t.IsExists)
                             r.Assign(t);
                     }
@@ -387,9 +389,9 @@ namespace NiL.JS.Core.Interop
             {
                 var pi = prototypeInstance as JSValue;
                 if (pi != null)
-                    return pi.GetMember(nameObj, create, own);
+                    return pi.GetMember(key, create, own);
                 else
-                    return base.GetMember(nameObj, create, own);
+                    return base.GetMember(key, create, own);
             }
             if (m.Count > 1)
             {

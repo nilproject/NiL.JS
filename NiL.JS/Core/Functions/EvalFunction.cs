@@ -89,11 +89,14 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        protected internal override JSValue GetMember(JSValue name, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
-            if (name.ToString() == "prototype")
-                return undefined;
-            return base.GetMember(name, forWrite, own);
+            if (key.valueType != JSValueType.Symbol)
+            {
+                if (key.ToString() == "prototype")
+                    return undefined;
+            }
+            return base.GetMember(key, forWrite, own);
         }
     }
 }

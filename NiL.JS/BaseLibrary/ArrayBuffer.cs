@@ -111,22 +111,25 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue name, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
-            int index = 0;
-            double dindex = Tools.JSObjectToDouble(name);
-            if (!double.IsInfinity(dindex) && !double.IsNaN(dindex) && ((index = (int)dindex) == dindex))
+            if (key.valueType != JSValueType.Symbol)
             {
-                if (dindex > 0x7fffffff || dindex < 0)
-                    ExceptionsHelper.Throw((new RangeError("Invalid array index")));
-                if (((index = (int)dindex) == dindex))
+                int index = 0;
+                double dindex = Tools.JSObjectToDouble(key);
+                if (!double.IsInfinity(dindex) && !double.IsNaN(dindex) && ((index = (int)dindex) == dindex))
                 {
-                    if (index >= data.Length)
-                        return undefined;
-                    return new Element(index, this);
+                    if (dindex > 0x7fffffff || dindex < 0)
+                        ExceptionsHelper.Throw((new RangeError("Invalid array index")));
+                    if (((index = (int)dindex) == dindex))
+                    {
+                        if (index >= data.Length)
+                            return undefined;
+                        return new Element(index, this);
+                    }
                 }
             }
-            return base.GetMember(name, forWrite, own);
+            return base.GetMember(key, forWrite, own);
         }
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)

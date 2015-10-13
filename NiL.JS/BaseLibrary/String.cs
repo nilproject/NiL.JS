@@ -913,23 +913,26 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue name, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
-            int index = 0;
-            double dindex = Tools.JSObjectToDouble(name);
-            if (!double.IsInfinity(dindex)
-                && !double.IsNaN(dindex)
-                && ((index = (int)dindex) == dindex)
-                && ((index = (int)dindex) == dindex)
-                && index < (oValue.ToString()).Length
-                && index >= 0)
+            if (key.valueType != JSValueType.Symbol)
             {
-                return this[index];
+                int index = 0;
+                double dindex = Tools.JSObjectToDouble(key);
+                if (!double.IsInfinity(dindex)
+                    && !double.IsNaN(dindex)
+                    && ((index = (int)dindex) == dindex)
+                    && ((index = (int)dindex) == dindex)
+                    && index < (oValue.ToString()).Length
+                    && index >= 0)
+                {
+                    return this[index];
+                }
+                var namestr = key.ToString();
+                if (namestr == "length")
+                    return length;
             }
-            var namestr = name.ToString();
-            if (namestr == "length")
-                return length;
-            return base.GetMember(name, forWrite, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
+            return base.GetMember(key, forWrite, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
         }
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)

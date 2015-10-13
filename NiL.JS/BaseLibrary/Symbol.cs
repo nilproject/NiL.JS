@@ -9,7 +9,7 @@ namespace NiL.JS.BaseLibrary
     [Serializable]
 #endif
     [DisallowNewKeyword]
-    public sealed class Symbol : JSObject
+    public sealed class Symbol : JSValue
     {
         private static readonly Dictionary<string, Symbol> symbolsCache = new Dictionary<string, Symbol>();
 

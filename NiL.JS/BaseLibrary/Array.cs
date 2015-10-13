@@ -1969,84 +1969,87 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue name, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
-            if (name.valueType == JSValueType.String && string.CompareOrdinal("length", name.oValue.ToString()) == 0)
-                return length;
-            bool isIndex = false;
-            int index = 0;
-            JSValue tname = name;
-            if (tname.valueType >= JSValueType.Object)
-                tname = tname.ToPrimitiveValue_String_Value();
-            switch (tname.valueType)
+            if (key.valueType != JSValueType.Symbol)
             {
-                case JSValueType.Int:
-                    {
-                        isIndex = (tname.iValue & int.MinValue) == 0;
-                        index = tname.iValue;
-                        break;
-                    }
-                case JSValueType.Double:
-                    {
-                        isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
-                        if (isIndex)
-                            index = (int)(uint)tname.dValue;
-                        break;
-                    }
-                case JSValueType.String:
-                    {
-                        var fc = tname.oValue.ToString()[0];
-                        if ('0' <= fc && '9' >= fc)
+                if (key.valueType == JSValueType.String && string.CompareOrdinal("length", key.oValue.ToString()) == 0)
+                    return length;
+                bool isIndex = false;
+                int index = 0;
+                JSValue name = key;
+                if (name.valueType >= JSValueType.Object)
+                    name = name.ToPrimitiveValue_String_Value();
+                switch (name.valueType)
+                {
+                    case JSValueType.Int:
                         {
-                            var dindex = 0.0;
-                            int si = 0;
-                            if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
-                                && (si == tname.oValue.ToString().Length)
-                                && dindex >= 0
-                                && dindex < uint.MaxValue
-                                && (long)dindex == dindex)
-                            {
-                                isIndex = true;
-                                index = (int)(uint)dindex;
-                            }
+                            isIndex = (name.iValue & int.MinValue) == 0;
+                            index = name.iValue;
+                            break;
                         }
-                        break;
-                    }
-            }
-            if (isIndex)
-            {
-                forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
-                if (forWrite)
-                {
-                    if (_lengthObj != null && (_lengthObj.attributes & JSValueAttributesInternal.ReadOnly) != 0 && index >= data.Length)
-                    {
-                        if (own)
-                            ExceptionsHelper.Throw(new TypeError("Can not add item to fixed size array"));
-                        return notExists;
-                    }
-                    var res = data[index];
-                    if (res == null)
-                    {
-                        res = new JSValue() { valueType = JSValueType.NotExistsInObject };
-                        data[index] = res;
-                    }
-                    else if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0)
-                        data[index] = res = res.CloneImpl();
-                    return res;
+                    case JSValueType.Double:
+                        {
+                            isIndex = name.dValue >= 0 && name.dValue < uint.MaxValue && (long)name.dValue == name.dValue;
+                            if (isIndex)
+                                index = (int)(uint)name.dValue;
+                            break;
+                        }
+                    case JSValueType.String:
+                        {
+                            var fc = name.oValue.ToString()[0];
+                            if ('0' <= fc && '9' >= fc)
+                            {
+                                var dindex = 0.0;
+                                int si = 0;
+                                if (Tools.ParseNumber(name.oValue.ToString(), ref si, out dindex)
+                                    && (si == name.oValue.ToString().Length)
+                                    && dindex >= 0
+                                    && dindex < uint.MaxValue
+                                    && (long)dindex == dindex)
+                                {
+                                    isIndex = true;
+                                    index = (int)(uint)dindex;
+                                }
+                            }
+                            break;
+                        }
                 }
-                else
+                if (isIndex)
                 {
-                    notExists.valueType = JSValueType.NotExistsInObject;
-                    var res = data[index] ?? notExists;
-                    if (res.valueType < JSValueType.Undefined && !own)
-                        return __proto__.GetMember(name, false, false);
-                    return res;
+                    forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
+                    if (forWrite)
+                    {
+                        if (_lengthObj != null && (_lengthObj.attributes & JSValueAttributesInternal.ReadOnly) != 0 && index >= data.Length)
+                        {
+                            if (own)
+                                ExceptionsHelper.Throw(new TypeError("Can not add item to fixed size array"));
+                            return notExists;
+                        }
+                        var res = data[index];
+                        if (res == null)
+                        {
+                            res = new JSValue() { valueType = JSValueType.NotExistsInObject };
+                            data[index] = res;
+                        }
+                        else if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0)
+                            data[index] = res = res.CloneImpl();
+                        return res;
+                    }
+                    else
+                    {
+                        notExists.valueType = JSValueType.NotExistsInObject;
+                        var res = data[index] ?? notExists;
+                        if (res.valueType < JSValueType.Undefined && !own)
+                            return __proto__.GetMember(key, false, false);
+                        return res;
+                    }
                 }
             }
 
             //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
             //    return __proto__.GetMember(name, create, own);
-            return base.GetMember(name, forWrite, own);
+            return base.GetMember(key, forWrite, own);
         }
 
         /*internal override bool DeleteMember(JSObject name)

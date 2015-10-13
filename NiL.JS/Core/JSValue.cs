@@ -417,7 +417,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        internal protected virtual JSValue GetMember(JSValue name, bool forWrite, bool own)
+        internal protected virtual JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
             switch (valueType)
             {
@@ -426,7 +426,7 @@ namespace NiL.JS.Core
                         if (own)
                             return notExists;
                         forWrite = false;
-                        return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean)).GetMember(name, false, false);
+                        return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean)).GetMember(key, false, false);
                     }
                 case JSValueType.Int:
                 case JSValueType.Double:
@@ -434,25 +434,25 @@ namespace NiL.JS.Core
                         if (own)
                             return notExists;
                         forWrite = false;
-                        return TypeProxy.GetPrototype(typeof(Number)).GetMember(name, false, false);
+                        return TypeProxy.GetPrototype(typeof(Number)).GetMember(key, false, false);
                     }
                 case JSValueType.String:
                     {
-                        return stringGetMember(name, forWrite, own);
+                        return stringGetMember(key, forWrite, own);
                     }
                 case JSValueType.Undefined:
                 case JSValueType.NotExists:
                 case JSValueType.NotExistsInObject:
-                    throw can_not_get_property_of_undefined(name);
+                    throw can_not_get_property_of_undefined(key);
                 default:
                     {
                         if (oValue == this)
                             break;
                         if (oValue == null)
-                            throw can_not_get_property_of_null(name);
+                            throw can_not_get_property_of_null(key);
                         var inObj = oValue as JSObject;
                         if (inObj != null)
-                            return inObj.GetMember(name, forWrite, own);
+                            return inObj.GetMember(key, forWrite, own);
                         break;
                     }
             }
@@ -526,14 +526,14 @@ namespace NiL.JS.Core
         [Hidden]
         public override bool Equals(object obj)
         {
-            if (!(obj is JSObject))
+            if (!(obj is JSValue))
                 return false;
             if (object.ReferenceEquals(obj, this))
                 return true;
-            return Expressions.StrictEqualOperator.Check(this, obj as JSObject);
+            return Expressions.StrictEqualOperator.Check(this, obj as JSValue);
         }
 
-#region Do not remove
+        #region Do not remove
 
         [Hidden]
         public override int GetHashCode()
@@ -546,8 +546,8 @@ namespace NiL.JS.Core
         {
             return new NiL.JS.BaseLibrary.String(value.ToString());
         }
-#endregion
-        
+        #endregion
+
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
@@ -850,7 +850,7 @@ namespace NiL.JS.Core
         {
             if (valueType >= JSValueType.Object && oValue != this)
             {
-                return (oValue as JSObject ?? this).GetEnumeratorImpl(hideNonEnum);
+                return (oValue as JSValue ?? this).GetEnumeratorImpl(hideNonEnum);
             }
             return GetEnumeratorImpl(hideNonEnum);
         }
@@ -878,7 +878,7 @@ namespace NiL.JS.Core
         [AllowNullArguments]
         public virtual JSValue toString(Arguments args)
         {
-            var self = this.oValue as JSObject ?? this;
+            var self = this.oValue as JSValue ?? this;
             switch (self.valueType)
             {
                 case JSValueType.Int:
@@ -905,15 +905,17 @@ namespace NiL.JS.Core
                 case JSValueType.Date:
                 case JSValueType.Object:
                     {
-                        if (self.oValue is GlobalObject)
-                            return self.oValue.ToString();
-                        if (self.oValue is TypeProxy)
-                        {
-                            var ht = (self.oValue as TypeProxy).hostedType;
-                            return "[object " + (ht == typeof(JSObject) ? typeof(System.Object) : ht).Name + "]";
-                        }
                         if (self.oValue != null)
+                        {
+                            if (self.oValue is GlobalObject)
+                                return self.oValue.ToString();
+                            if (self.oValue is TypeProxy)
+                            {
+                                var ht = (self.oValue as TypeProxy).hostedType;
+                                return "[object " + (ht == typeof(JSObject) ? typeof(System.Object) : ht).Name + "]";
+                            }
                             return "[object " + (self.Value.GetType() == typeof(JSObject) ? typeof(System.Object) : self.Value.GetType()).Name + "]";
+                        }
                         else
                             return "[object Null]";
                     }
