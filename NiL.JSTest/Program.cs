@@ -332,7 +332,7 @@ for (var i = 0; i < 10000000; )
 
             public void type(Type type)
             {
-
+                Console.WriteLine(type);
             }
         }
 
@@ -416,7 +416,7 @@ t.__proto__.constructor().type(Number);
             }));
 #endif
 
-            int mode = 1
+            int mode = 3
                    ;
             switch (mode)
             {
