@@ -820,11 +820,13 @@ namespace NiL.JS.BaseLibrary
                 var sb = new StringBuilder(self.ToString());
                 int initialLength = sb.Length;
                 int index = 0;
-                for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++) ;
+                for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++)
+                    ;
                 if (index > 0)
                     sb.Remove(0, index);
                 index = sb.Length - 1;
-                for (; index >= 0 && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index--) ;
+                for (; index >= 0 && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index--)
+                    ;
                 index++;
                 if (index < sb.Length)
                     sb.Remove(index, sb.Length - index);
@@ -833,11 +835,13 @@ namespace NiL.JS.BaseLibrary
                     index = 0;
                     for (; ; )
                     {
-                        for (; index < sb.Length && sb[index] != '\n' && sb[index] != '\r'; index++) ;
+                        for (; index < sb.Length && sb[index] != '\n' && sb[index] != '\r'; index++)
+                            ;
                         if (index >= sb.Length)
                             break;
                         var startindex = index;
-                        for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++) ;
+                        for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++)
+                            ;
                         sb.Remove(startindex, index - startindex);
                     }
                 }
@@ -947,9 +951,9 @@ namespace NiL.JS.BaseLibrary
         #region HTML Wraping
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject anchor(JSObject self, JSObject arg)
+        public static JSObject anchor(JSObject self, Arguments arg)
         {
-            return "<a name=\"" + arg.Value + "\">" + self + "</a>";
+            return "<a name=\"" + arg[0].Value + "\">" + self + "</a>";
         }
 
         [DoNotEnumerate]
@@ -982,16 +986,16 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject fontcolor(JSObject self, JSObject arg)
+        public static JSObject fontcolor(JSObject self, Arguments arg)
         {
-            return "<font color=\"" + arg.Value + "\">" + self + "</font>";
+            return "<font color=\"" + arg[0].Value + "\">" + self + "</font>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject fontsize(JSObject self, JSObject arg)
+        public static JSObject fontsize(JSObject self, Arguments arg)
         {
-            return "<font size=\"" + arg.Value + "\">" + self + "</font>";
+            return "<font size=\"" + arg[0].Value + "\">" + self + "</font>";
         }
 
         [DoNotEnumerate]
@@ -1003,9 +1007,9 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSObject link(JSObject self, JSObject arg)
+        public static JSObject link(JSObject self, Arguments arg)
         {
-            return "<a href=\"" + arg.Value + "\">" + self + "</a>";
+            return "<a href=\"" + arg[0].Value + "\">" + self + "</a>";
         }
 
         [DoNotEnumerate]

@@ -73,7 +73,7 @@ namespace NiL.JS.Expressions
                         if (first.valueType != second.valueType)
                             return false;
                         else if (first.oValue == null)
-                            return second.oValue == null || object.ReferenceEquals(second.oValue, first.oValue);
+                            return second.oValue == null;
                         else
                             return object.ReferenceEquals(second.oValue, first.oValue);
                     }
