@@ -577,7 +577,7 @@ namespace NiL.JS.BaseLibrary
             {
                 attributes = JSValueAttributesInternal.DoNotDelete
                 | JSValueAttributesInternal.Immutable
-                | JSValueAttributesInternal.DoNotEnum
+                | JSValueAttributesInternal.DoNotEnumerate
                 | JSValueAttributesInternal.ReadOnly
             };
         protected static void ThrowTypeError()
@@ -588,7 +588,7 @@ namespace NiL.JS.BaseLibrary
         {
             valueType = JSValueType.Property,
             oValue = new PropertyPair() { get = TTEProxy, set = TTEProxy },
-            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable
+            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
 
         internal readonly FunctionNotation creator;
@@ -622,7 +622,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (_length == null)
                 {
-                    _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
+                    _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
                     _length.iValue = creator.parameters.Length;
                 }
                 return _length;
@@ -684,8 +684,8 @@ namespace NiL.JS.BaseLibrary
                     else
                     {
                         var res = JSObject.CreateObject();
-                        res.attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NotConfigurable;
-                        (res.fields["constructor"] = this.CloneImpl()).attributes = JSValueAttributesInternal.DoNotEnum;
+                        res.attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable;
+                        (res.fields["constructor"] = this.CloneImpl()).attributes = JSValueAttributesInternal.DoNotEnumerate;
                         _prototype = res;
                     }
                 }
@@ -740,7 +740,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Function()
         {
-            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
             creator = creatorDummy;
             valueType = JSValueType.Function;
             this.oValue = this;
@@ -749,7 +749,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Function(Arguments args)
         {
-            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
             context = (Context.CurrentContext ?? Context.GlobalContext).Root;
             if (context == Context.globalContext)
                 throw new InvalidOperationException("Special Functions constructor can be called only in runtime.");
@@ -774,7 +774,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal Function(Context context, FunctionNotation creator)
         {
-            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
             this.context = context;
             this.creator = creator;
             valueType = JSValueType.Function;

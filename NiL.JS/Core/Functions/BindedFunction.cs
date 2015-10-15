@@ -77,7 +77,8 @@ namespace NiL.JS.Core.Functions
                 if (args.length == 0)
                     bindedArguments = null;
             }
-            else bindedArguments = null;
+            else
+                bindedArguments = null;
         }
 
         [Hidden]
@@ -99,9 +100,9 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode)
         {
-            return proto.GetEnumeratorImpl(pdef);
+            return proto.GetEnumerator(hideNonEnumerable, enumeratorMode);
         }
 
         [Hidden]

@@ -45,7 +45,7 @@ namespace NiL.JS.Core.Functions
             var len = 0;
             for (var i = 0; i < methods.Length; i++)
                 len = System.Math.Max(len, methods[i].parameters.Length);
-            _length = new BaseLibrary.Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
+            _length = new BaseLibrary.Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 
             passCount = 2;

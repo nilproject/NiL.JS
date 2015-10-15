@@ -56,7 +56,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if ((pos < 0) || (pos >= oValue.ToString().Length))
                     return JSValue.notExists;
-                return new JSValue() { valueType = JSValueType.String, oValue = (oValue.ToString())[pos].ToString(), attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.DoNotDelete };
+                return new JSValue() { valueType = JSValueType.String, oValue = (oValue.ToString())[pos].ToString(), attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete };
             }
         }
 
@@ -883,7 +883,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var len = oValue.ToString().Length;
                 if (_length == null)
-                    _length = new Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.NotConfigurable };
+                    _length = new Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable };
                 else
                     _length.iValue = len;
                 return _length;
@@ -935,19 +935,21 @@ namespace NiL.JS.BaseLibrary
             return base.GetMember(key, forWrite, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        [Hidden]
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
-            var len = oValue.ToString().Length;
+            var str = oValue.ToString();
+            var len = str.Length;
             for (var i = 0; i < len; i++)
-                yield return Tools.Int32ToString(i);
+                yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumeratorMode > 0 ? str[i].ToString() : null);
             if (!hideNonEnum)
-                yield return "length";
+                yield return new KeyValuePair<string, JSValue>("length", length);
             if (fields != null)
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                        yield return f.Key;
+                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                        yield return f;
                 }
             }
         }
@@ -955,9 +957,9 @@ namespace NiL.JS.BaseLibrary
         #region HTML Wraping
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSValue anchor(JSValue self, JSValue arg)
+        public static JSValue anchor(JSValue self, Arguments arg)
         {
-            return "<a name=\"" + arg.Value + "\">" + self + "</a>";
+            return "<a name=\"" + arg[0].Value + "\">" + self + "</a>";
         }
 
         [DoNotEnumerate]
@@ -990,14 +992,14 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSValue fontcolor(JSValue self, JSValue arg)
+        public static JSValue fontcolor(JSValue self, Arguments arg)
         {
-            return "<font color=\"" + arg.Value + "\">" + self + "</font>";
+            return "<font color=\"" + arg[0].Value + "\">" + self + "</font>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSValue fontsize(JSValue self, JSValue arg)
+        public static JSValue fontsize(JSValue self, Arguments arg)
         {
             return "<font size=\"" + arg.Value + "\">" + self + "</font>";
         }
@@ -1011,9 +1013,9 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        public static JSValue link(JSValue self, JSValue arg)
+        public static JSValue link(JSValue self, Arguments arg)
         {
-            return "<a href=\"" + arg.Value + "\">" + self + "</a>";
+            return "<a href=\"" + arg[0].Value + "\">" + self + "</a>";
         }
 
         [DoNotEnumerate]

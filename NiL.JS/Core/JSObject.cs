@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Linq.Expressions;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
@@ -273,14 +275,15 @@ namespace NiL.JS.Core
             return false;
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        [Hidden]
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
             if (fields != null)
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                        yield return f.Key;
+                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                        yield return f;
                 }
             }
         }
@@ -328,18 +331,18 @@ namespace NiL.JS.Core
                 res.__prototype = proto;
             if (members.valueType >= JSValueType.Object)
             {
-                foreach (var member in members)
+                foreach (var item in members)
                 {
-                    var desc = members[member];
+                    var desc = item.Value;
                     if (desc.valueType == JSValueType.Property)
                     {
                         var getter = (desc.oValue as PropertyPair).get;
                         if (getter == null || getter.oValue == null)
-                            ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + member + " ."));
+                            ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
                         desc = (getter.oValue as Function).Invoke(members, null);
                     }
                     if (desc.valueType < JSValueType.Object || desc.oValue == null)
-                        ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + member + " ."));
+                        ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
                     var value = desc["value"];
                     if (value.valueType == JSValueType.Property)
                         value = Tools.InvokeGetter(value, desc);
@@ -373,16 +376,16 @@ namespace NiL.JS.Core
                     if (set.IsDefined && set.valueType != JSValueType.Function)
                         ExceptionsHelper.Throw(new TypeError("Setter mast be a function."));
                     var obj = new JSValue() { valueType = JSValueType.Undefined };
-                    res.fields[member] = obj;
+                    res.fields[item.Key] = obj;
                     obj.attributes |=
-                          JSValueAttributesInternal.DoNotEnum
-                        | JSValueAttributesInternal.NotConfigurable
+                          JSValueAttributesInternal.DoNotEnumerate
+                        | JSValueAttributesInternal.NonConfigurable
                         | JSValueAttributesInternal.DoNotDelete
                         | JSValueAttributesInternal.ReadOnly;
                     if ((bool)enumerable)
-                        obj.attributes &= ~JSValueAttributesInternal.DoNotEnum;
+                        obj.attributes &= ~JSValueAttributesInternal.DoNotEnumerate;
                     if ((bool)configurable)
-                        obj.attributes &= ~(JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete);
+                        obj.attributes &= ~(JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotDelete);
                     if (value.IsExists)
                     {
                         var atr = obj.attributes;
@@ -434,19 +437,19 @@ namespace NiL.JS.Core
                 return target;
             if (members.valueType > JSValueType.Undefined)
             {
-                foreach (var memberName in members)
+                foreach (var item in members)
                 {
-                    var desc = members[memberName];
+                    var desc = item.Value;
                     if (desc.valueType == JSValueType.Property)
                     {
                         var getter = (desc.oValue as PropertyPair).get;
                         if (getter == null || getter.oValue == null)
-                            ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + memberName + " ."));
+                            ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
                         desc = (getter.oValue as Function).Invoke(members, null);
                     }
                     if (desc.valueType < JSValueType.Object || desc.oValue == null)
-                        ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + memberName + " ."));
-                    definePropertyImpl(target, desc.oValue as JSObject, memberName);
+                        ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
+                    definePropertyImpl(target, desc.oValue as JSObject, item.Key);
                 }
             }
             return target;
@@ -547,11 +550,11 @@ namespace NiL.JS.Core
             }
 
             var newProp = obj.valueType < JSValueType.Undefined;
-            var config = (obj.attributes & JSValueAttributesInternal.NotConfigurable) == 0 || newProp;
+            var config = (obj.attributes & JSValueAttributesInternal.NonConfigurable) == 0 || newProp;
 
             if (!config)
             {
-                if (enumerable.IsExists && (obj.attributes & JSValueAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
+                if (enumerable.IsExists && (obj.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0 == (bool)enumerable)
                     ExceptionsHelper.Throw(new TypeError("Cannot change enumerable attribute for non configurable property."));
 
                 if (writable.IsExists && (obj.attributes & JSValueAttributesInternal.ReadOnly) != 0 && (bool)writable)
@@ -612,18 +615,18 @@ namespace NiL.JS.Core
             if (newProp)
             {
                 obj.attributes |=
-                    JSValueAttributesInternal.DoNotEnum
+                    JSValueAttributesInternal.DoNotEnumerate
                     | JSValueAttributesInternal.DoNotDelete
-                    | JSValueAttributesInternal.NotConfigurable
+                    | JSValueAttributesInternal.NonConfigurable
                     | JSValueAttributesInternal.ReadOnly;
             }
             else
             {
                 var atrbts = obj.attributes;
                 if (configurable.IsExists && (config || !(bool)configurable))
-                    obj.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
+                    obj.attributes |= JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotDelete;
                 if (enumerable.IsExists && (config || !(bool)enumerable))
-                    obj.attributes |= JSValueAttributesInternal.DoNotEnum;
+                    obj.attributes |= JSValueAttributesInternal.DoNotEnumerate;
                 if (writable.IsExists && (config || !(bool)writable))
                     obj.attributes |= JSValueAttributesInternal.ReadOnly;
 
@@ -640,9 +643,9 @@ namespace NiL.JS.Core
             if (config)
             {
                 if ((bool)enumerable)
-                    obj.attributes &= ~JSValueAttributesInternal.DoNotEnum;
+                    obj.attributes &= ~JSValueAttributesInternal.DoNotEnumerate;
                 if ((bool)configurable)
-                    obj.attributes &= ~(JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete);
+                    obj.attributes &= ~(JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotDelete);
                 if ((bool)writable)
                     obj.attributes &= ~JSValueAttributesInternal.ReadOnly;
             }
@@ -658,7 +661,7 @@ namespace NiL.JS.Core
             if (args[1].valueType != JSValueType.Function)
                 ExceptionsHelper.Throw(new TypeError("Expecting function as second parameter"));
             var field = GetMember(args[0], true, true);
-            if ((field.attributes & JSValueAttributesInternal.NotConfigurable) != 0)
+            if ((field.attributes & JSValueAttributesInternal.NonConfigurable) != 0)
                 ExceptionsHelper.Throw(new TypeError("Cannot change value of not configurable peoperty."));
             if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
                 ExceptionsHelper.Throw(new TypeError("Cannot change value of readonly peoperty."));
@@ -683,7 +686,7 @@ namespace NiL.JS.Core
             if (args[1].valueType != JSValueType.Function)
                 ExceptionsHelper.Throw(new TypeError("Expecting function as second parameter"));
             var field = GetMember(args[0], true, true);
-            if ((field.attributes & JSValueAttributesInternal.NotConfigurable) != 0)
+            if ((field.attributes & JSValueAttributesInternal.NonConfigurable) != 0)
                 ExceptionsHelper.Throw(new TypeError("Cannot change value of not configurable peoperty."));
             if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
                 ExceptionsHelper.Throw(new TypeError("Cannot change value of readonly peoperty."));
@@ -728,12 +731,12 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Object.freeze called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
-            for (var e = obj.GetEnumeratorImpl(false); e.MoveNext(); )
+            for (var e = obj.GetEnumerator(false, EnumerationMode.NeedValuesForWrite); e.MoveNext(); )
             {
-                var value = obj[e.Current];
+                var value = e.Current.Value;
                 if ((value.attributes & JSValueAttributesInternal.SystemObject) == 0)
                 {
-                    value.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete;
+                    value.attributes |= JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete;
                 }
             }
             return obj;
@@ -782,14 +785,14 @@ namespace NiL.JS.Core
                     if (node != null
                         && node.IsExists
                         && node.valueType >= JSValueType.Object && node.oValue != null
-                        && (node.attributes & JSValueAttributesInternal.NotConfigurable) == 0)
+                        && (node.attributes & JSValueAttributesInternal.NonConfigurable) == 0)
                         return false;
                 }
             }
             if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
-                    if (f.Value.valueType >= JSValueType.Object && f.Value.oValue != null && (f.Value.attributes & JSValueAttributesInternal.NotConfigurable) == 0)
+                    if (f.Value.valueType >= JSValueType.Object && f.Value.oValue != null && (f.Value.attributes & JSValueAttributesInternal.NonConfigurable) == 0)
                         return false;
                 }
             return true;
@@ -804,12 +807,12 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Object.seal called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
-            for (var e = obj.GetEnumeratorImpl(false); e.MoveNext(); )
+            for (var e = obj.GetEnumerator(false, EnumerationMode.NeedValuesForWrite); e.MoveNext(); )
             {
-                var value = obj[e.Current];
+                var value = e.Current.Value;
                 if ((value.attributes & JSValueAttributesInternal.SystemObject) == 0)
                 {
-                    value.attributes |= JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotDelete;
+                    value.attributes |= JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotDelete;
                 }
             }
             return obj;
@@ -833,7 +836,7 @@ namespace NiL.JS.Core
                 foreach (var node in arr.data.DirectOrder)
                 {
                     if (node.Value != null && node.Value.IsExists &&
-                        ((node.Value.attributes & JSValueAttributesInternal.NotConfigurable) == 0
+                        ((node.Value.attributes & JSValueAttributesInternal.NonConfigurable) == 0
                         || (node.Value.valueType != JSValueType.Property && (node.Value.attributes & JSValueAttributesInternal.ReadOnly) == 0)))
                         return false;
                 }
@@ -843,7 +846,7 @@ namespace NiL.JS.Core
                 var arg = obj as Arguments;
                 for (var i = 0; i < 16; i++)
                 {
-                    if ((arg[i].attributes & JSValueAttributesInternal.NotConfigurable) == 0
+                    if ((arg[i].attributes & JSValueAttributesInternal.NonConfigurable) == 0
                             || (arg[i].valueType != JSValueType.Property && (arg[i].attributes & JSValueAttributesInternal.ReadOnly) == 0))
                         return false;
                 }
@@ -851,7 +854,7 @@ namespace NiL.JS.Core
             if (obj.fields != null)
                 foreach (var f in obj.fields)
                 {
-                    if ((f.Value.attributes & JSValueAttributesInternal.NotConfigurable) == 0
+                    if ((f.Value.attributes & JSValueAttributesInternal.NonConfigurable) == 0
                             || (f.Value.valueType != JSValueType.Property && (f.Value.attributes & JSValueAttributesInternal.ReadOnly) == 0))
                         return false;
                 }
@@ -897,8 +900,8 @@ namespace NiL.JS.Core
                 res["set"] = (obj.oValue as PropertyPair).set;
                 res["get"] = (obj.oValue as PropertyPair).get;
             }
-            res["configurable"] = (obj.attributes & JSValueAttributesInternal.NotConfigurable) == 0 || (obj.attributes & JSValueAttributesInternal.DoNotDelete) == 0;
-            res["enumerable"] = (obj.attributes & JSValueAttributesInternal.DoNotEnum) == 0;
+            res["configurable"] = (obj.attributes & JSValueAttributesInternal.NonConfigurable) == 0 || (obj.attributes & JSValueAttributesInternal.DoNotDelete) == 0;
+            res["enumerable"] = (obj.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0;
             return res;
         }
 
@@ -910,7 +913,12 @@ namespace NiL.JS.Core
             if (args[0].oValue == null)
                 ExceptionsHelper.Throw(new TypeError("Cannot get property names of null"));
             var obj = args[0].oValue as JSObject;
-            return new NiL.JS.BaseLibrary.Array(obj.GetEnumeratorImpl(false));
+
+            var result = new BaseLibrary.Array();
+            for (var e = obj.GetEnumerator(false, EnumerationMode.KeysOnly); e.MoveNext(); )
+                result.Add(e.Current.Key);
+
+            return result;
         }
 
         [DoNotEnumerate]
@@ -921,7 +929,12 @@ namespace NiL.JS.Core
             if (args[0].oValue == null)
                 ExceptionsHelper.Throw(new TypeError("Cannot get property names of null"));
             var obj = args[0].oValue as JSObject;
-            return new NiL.JS.BaseLibrary.Array(obj.GetEnumeratorImpl(true));
+
+            var result = new BaseLibrary.Array();
+            for (var e = obj.GetEnumerator(true, EnumerationMode.KeysOnly); e.MoveNext(); )
+                result.Add(e.Current.Key);
+
+            return result;
         }
     }
 }

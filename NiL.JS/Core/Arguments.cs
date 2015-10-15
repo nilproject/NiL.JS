@@ -127,7 +127,7 @@ namespace NiL.JS.Core
         {
             valueType = JSValueType.Object;
             oValue = this;
-            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
         }
 
         public void Add(JSValue arg)
@@ -192,7 +192,7 @@ namespace NiL.JS.Core
                                 {
                                     valueType = JSValueType.Int,
                                     iValue = length,
-                                    attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.Reassign
+                                    attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.Reassign
                                 };
                             return _length;
                         }
@@ -203,7 +203,7 @@ namespace NiL.JS.Core
                             if (createMember && (callee.attributes & JSValueAttributesInternal.SystemObject) != 0)
                             {
                                 callee = callee.CloneImpl();
-                                callee.attributes = JSValueAttributesInternal.DoNotEnum;
+                                callee.attributes = JSValueAttributesInternal.DoNotEnumerate;
                             }
                             return callee;
                         }
@@ -214,7 +214,7 @@ namespace NiL.JS.Core
                             if (createMember && (caller.attributes & JSValueAttributesInternal.SystemObject) != 0)
                             {
                                 caller = caller.CloneImpl();
-                                callee.attributes = JSValueAttributesInternal.DoNotEnum;
+                                callee.attributes = JSValueAttributesInternal.DoNotEnumerate;
                             }
                             return caller;
                         }
@@ -223,54 +223,27 @@ namespace NiL.JS.Core
             return base.GetMember(key, createMember, own);
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
-            if (a0 != null && a0.IsExists && (!hideNonEnum || (a0.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                yield return "0";
-            if (a1 != null && a1.IsExists && (!hideNonEnum || (a1.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                yield return "1";
-            if (a2 != null && a2.IsExists && (!hideNonEnum || (a2.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                yield return "2";
-            if (a3 != null && a3.IsExists && (!hideNonEnum || (a3.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                yield return "3";
-            if (a4 != null && a4.IsExists && (!hideNonEnum || (a4.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                yield return "4";
-            //if (a5 != null && a5.IsExists && (!hideNonEnum || (a5.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "5";
-            //if (a6 != null && a6.IsExists && (!hideNonEnum || (a6.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "6";
-            //if (a7 != null && a7.IsExists && (!hideNonEnum || (a7.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "7";
-            //if (a8 != null && a8.isExists && (!hideNonEnum || (a8.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "8";
-            //if (a9 != null && a9.isExists && (!hideNonEnum || (a9.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "9";
-            //if (a10 != null && a10.isExists && (!hideNonEnum || (a10.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "10";
-            //if (a11 != null && a11.isExists && (!hideNonEnum || (a11.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "11";
-            //if (a12 != null && a12.isExists && (!hideNonEnum || (a12.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "12";
-            //if (a13 != null && a13.isExists && (!hideNonEnum || (a13.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "13";
-            //if (a14 != null && a14.isExists && (!hideNonEnum || (a14.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "14";
-            //if (a15 != null && a15.isExists && (!hideNonEnum || (a15.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
-            //    yield return "15";
-            if (callee != null && callee.IsExists && (!hideNonEnum || (callee.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                yield return "callee";
-            if (caller != null && callee.IsExists && (!hideNonEnum || (caller.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                yield return "caller";
-            if (_length != null && _length.IsExists && (!hideNonEnum || (_length.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                yield return "length";
-            var be = getBaseEnumerator(hideNonEnum);
+            if (a0 != null && a0.IsExists && (!hideNonEnum || (a0.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("0", a0);
+            if (a1 != null && a1.IsExists && (!hideNonEnum || (a1.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("1", a1);
+            if (a2 != null && a2.IsExists && (!hideNonEnum || (a2.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("2", a2);
+            if (a3 != null && a3.IsExists && (!hideNonEnum || (a3.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("3", a3);
+            if (a4 != null && a4.IsExists && (!hideNonEnum || (a4.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("4", a4);
+            if (callee != null && callee.IsExists && (!hideNonEnum || (callee.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("callee", callee);
+            if (caller != null && callee.IsExists && (!hideNonEnum || (caller.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("caller", caller);
+            if (_length != null && _length.IsExists && (!hideNonEnum || (_length.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("length", _length);
+            var be = base.GetEnumerator(hideNonEnum, enumeratorMode);
             while (be.MoveNext())
                 yield return be.Current;
-        }
-
-        private IEnumerator<string> getBaseEnumerator(bool hideNonEnum)
-        {
-            return base.GetEnumeratorImpl(hideNonEnum);
         }
 
         protected internal override bool DeleteMember(JSValue name)
@@ -337,7 +310,7 @@ namespace NiL.JS.Core
             _length = null;
             valueType = JSValueType.Object;
             oValue = this;
-            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
+            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace NiL.JS.Core
         {
             thisProto = CreateObject();
             thisProto.oValue = thisProto;
-            thisProto.attributes |= JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.DoNotDelete;
+            thisProto.attributes |= JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete;
         }
 
         private Context context;
@@ -46,14 +46,14 @@ namespace NiL.JS.Core
             return base.GetMember(key, forWrite, own);
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             foreach (var i in Context.globalContext.fields)
-                if (i.Value.IsExists && (!pdef || (i.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                    yield return i.Key;
+                if (i.Value.IsExists && (!hideNonEnumerable || (i.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                    yield return i;
             foreach (var i in context.fields)
-                if (i.Value.IsExists && (!pdef || (i.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                    yield return i.Key;
+                if (i.Value.IsExists && (!hideNonEnumerable || (i.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                    yield return i;
         }
 
         public override string ToString()

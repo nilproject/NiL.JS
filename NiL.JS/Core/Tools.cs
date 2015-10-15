@@ -86,15 +86,10 @@ namespace NiL.JS.Core
             private IEnumerable<T> owner;
             private IEnumerator<T> parent;
 
-            private _ForcedEnumerator(IEnumerable<T> owner)
+            public _ForcedEnumerator(IEnumerable<T> owner)
             {
                 this.owner = owner;
                 this.parent = owner.GetEnumerator();
-            }
-
-            public static _ForcedEnumerator<T> create(IEnumerable<T> owner)
-            {
-                return new _ForcedEnumerator<T>(owner);
             }
 
             #region Члены IEnumerator<T>
@@ -1428,7 +1423,6 @@ namespace NiL.JS.Core
 
         internal static IEnumerable<KeyValuePair<uint, JSValue>> EnumerateIterably(long length, JSValue src)
         {
-            //List<KeyValuePair<uint, string>> res = null;
             if (src.valueType == JSValueType.Object && src.Value is BaseLibrary.Array)
             {
                 foreach (var item in (src.Value as BaseLibrary.Array).data.DirectOrder)
@@ -1436,30 +1430,21 @@ namespace NiL.JS.Core
                     yield return new KeyValuePair<uint, JSValue>((uint)item.Key, item.Value);
                 }
             }
-            var @enum = src.GetEnumerator(false);
+            var @enum = src.GetEnumerator(false, EnumerationMode.NeedValues);
             while (@enum.MoveNext())
             {
-                var i = @enum.Current;
+                var i = @enum.Current.Key;
                 var pindex = 0;
                 var dindex = 0.0;
                 var lindex = 0U;
-                var key = new JSValue() { valueType = JSValueType.String };
                 if (Tools.ParseNumber(i, ref pindex, out dindex)
                     && (pindex == i.Length)
                     && dindex < length
                     && (lindex = (uint)dindex) == dindex)
                 {
-                    //if (res == null)
-                    //    res = new List<KeyValuePair<uint, string>>();
-                    //res.Add(new KeyValuePair<uint, string>(lindex, i));
-                    key.oValue = i;
-                    yield return new KeyValuePair<uint, JSValue>(lindex, src.GetMember(key, false, false));
+                    yield return new KeyValuePair<uint, JSValue>(lindex, @enum.Current.Value);
                 }
             }
-            //if (res == null)
-            //    return new KeyValuePair<uint, string>[0];
-            //res.Sort(new Comparison<KeyValuePair<uint, string>>((x, y) => System.Math.Sign(x.Key - y.Key)));
-            //return res;
         }
 
         public static int CompareWithMask(Enum x, Enum y, Enum mask)

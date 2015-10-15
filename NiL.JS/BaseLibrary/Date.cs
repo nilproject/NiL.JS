@@ -459,6 +459,13 @@ namespace NiL.JS.BaseLibrary
             timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
         }
 
+        [Hidden]
+        public Date(long ticks, long timeZoneOffset)
+        {
+            time = ticks / 10000;
+            timeZoneOffset = timeZoneOffset / 10000;
+        }
+
         [DoNotEnumerate]
         [ArgumentsLength(7)]
         public Date(Arguments args)

@@ -40,11 +40,11 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         static Number()
         {
-            POSITIVE_INFINITY.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
-            NEGATIVE_INFINITY.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
-            MAX_VALUE.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
-            MIN_VALUE.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
-            NaN.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject;
+            POSITIVE_INFINITY.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject;
+            NEGATIVE_INFINITY.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject;
+            MAX_VALUE.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject;
+            MIN_VALUE.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject;
+            NaN.attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]

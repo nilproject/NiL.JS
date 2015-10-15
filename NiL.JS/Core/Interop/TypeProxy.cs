@@ -201,7 +201,7 @@ namespace NiL.JS.Core.Interop
                     ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
 
-                    attributes |= JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject;
+                    attributes |= JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
                     if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
                         attributes |= JSValueAttributesInternal.Immutable;
                     var staticProxy = new TypeProxy()
@@ -230,7 +230,7 @@ namespace NiL.JS.Core.Interop
                         else
                             ctor = new ProxyConstructor(staticProxy);
                         ctor.attributes = attributes;
-                        attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.ReadOnly;
+                        attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly;
                         staticProxies[type] = ctor;
                         if (hostedType != typeof(ProxyConstructor))
                             fields["constructor"] = ctor;
@@ -358,25 +358,30 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        internal protected override JSValue GetMember(JSValue key, bool create, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
+            forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
+
             if (key.valueType == JSValueType.Symbol)
-                return base.GetMember(key, false, own);
+                return base.GetMember(key, forWrite, own);
+
             string name = key.ToString();
             JSValue r = null;
             if (fields.TryGetValue(name, out r))
             {
-                if (r.valueType < JSValueType.Undefined)
+                if (!r.IsExists)
                 {
-                    if (!create)
+                    if (!forWrite)
                     {
                         var t = base.GetMember(key, false, own);
                         if (t.IsExists)
+                        {
                             r.Assign(t);
+                            r.valueType = t.valueType;
+                        }
                     }
                 }
-                if (create
-                    && ((attributes & JSValueAttributesInternal.Immutable) == 0)
+                if (forWrite
                     && (r.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                     fields[name] = r = r.CloneImpl();
                 return r;
@@ -389,10 +394,16 @@ namespace NiL.JS.Core.Interop
             {
                 var pi = prototypeInstance as JSValue;
                 if (pi != null)
-                    return pi.GetMember(key, create, own);
+                    return pi.GetMember(key, forWrite, own);
                 else
-                    return base.GetMember(key, create, own);
+                    return base.GetMember(key, forWrite, own);
             }
+            return proxyMember(forWrite, name, m);
+        }
+
+        private JSValue proxyMember(bool forWrite, string name, IList<MemberInfo> m)
+        {
+            JSValue r = null;
             if (m.Count > 1)
             {
                 for (int i = 0; i < m.Count; i++)
@@ -417,7 +428,7 @@ namespace NiL.JS.Core.Interop
                         {
                             var method = (MethodInfo)m[0];
                             r = new MethodProxy(method);
-                            r.attributes &= ~(JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.DoNotEnum);
+                            r.attributes &= ~(JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotEnumerate);
                             break;
                         }
                     case MemberTypes.Field:
@@ -512,21 +523,20 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                 }
             }
             if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))
-                r.attributes |= JSValueAttributesInternal.DoNotEnum;
-            lock (fields)
-                fields[name] = create && (r.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject ? (r = r.CloneImpl()) : r;
+                r.attributes |= JSValueAttributesInternal.DoNotEnumerate;
+            fields[name] = forWrite && (r.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject ? (r = r.CloneImpl()) : r;
 
             for (var i = m.Count; i-- > 0; )
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 {
-                    r.attributes &= ~JSValueAttributesInternal.DoNotEnum;
+                    r.attributes &= ~JSValueAttributesInternal.DoNotEnumerate;
                     break;
                 }
                 if (m[i].IsDefined(typeof(ReadOnlyAttribute), false))
                     r.attributes |= JSValueAttributesInternal.ReadOnly;
                 if (m[i].IsDefined(typeof(NotConfigurable), false))
-                    r.attributes |= JSValueAttributesInternal.NotConfigurable;
+                    r.attributes |= JSValueAttributesInternal.NonConfigurable;
                 if (m[i].IsDefined(typeof(DoNotDeleteAttribute), false))
                     r.attributes |= JSValueAttributesInternal.DoNotDelete;
             }
@@ -571,7 +581,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             var name = args[0].ToString();
             JSValue temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.IsExists && (temp.attributes & JSValueAttributesInternal.DoNotEnum) == 0;
+                return temp.IsExists && (temp.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {
@@ -583,13 +593,13 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             return false;
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             if (members == null)
                 fillMembers();
             if (prototypeInstance != null)
             {
-                var @enum = prototypeInstance.GetEnumeratorImpl(pdef);
+                var @enum = prototypeInstance.GetEnumerator(hideNonEnumerable, enumerationMode);
                 while (@enum.MoveNext())
                     yield return @enum.Current;
             }
@@ -597,19 +607,34 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             {
                 foreach (var f in fields)
                 {
-                    if (!pdef || (f.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0)
-                        yield return f.Key;
+                    if (!hideNonEnumerable || (f.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0)
+                        yield return f;
                 }
             }
-            foreach (var m in members)
+            foreach (var item in members)
             {
-                if (fields.ContainsKey(m.Key))
+                if (fields.ContainsKey(item.Key))
                     continue;
-                for (var i = m.Value.Count; i-- > 0; )
+                for (var i = item.Value.Count; i-- > 0; )
                 {
-                    if (!pdef || !m.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
+                    if (!hideNonEnumerable || !item.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                     {
-                        yield return m.Key;
+                        switch (enumerationMode)
+                        {
+                            case EnumerationMode.KeysOnly:
+                                {
+                                    yield return new KeyValuePair<string, JSValue>(item.Key, null);
+                                    break;
+                                }
+                            case EnumerationMode.NeedValues:
+                            case EnumerationMode.NeedValuesForWrite:
+                                {
+                                    yield return new KeyValuePair<string, JSValue>(
+                                        item.Key, 
+                                        proxyMember(enumerationMode == EnumerationMode.NeedValuesForWrite, item.Key, item.Value));
+                                    break;
+                                }
+                        }
                         break;
                     }
                 }

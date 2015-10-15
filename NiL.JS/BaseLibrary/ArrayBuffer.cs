@@ -35,6 +35,21 @@ namespace NiL.JS.BaseLibrary
 
         internal byte[] data;
 
+        [Hidden]
+        public byte this[int index]
+        {
+            [Hidden]
+            get
+            {
+                return data[index];
+            }
+            [Hidden]
+            set
+            {
+                data[index] = value;
+            }
+        }
+
         [DoNotEnumerate]
         public ArrayBuffer()
             : this(0)
@@ -96,49 +111,38 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public byte this[int index]
-        {
-            [Hidden]
-            get
-            {
-                return data[index];
-            }
-            [Hidden]
-            set
-            {
-                data[index] = value;
-            }
-        }
-
-        [Hidden]
         internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
             if (key.valueType != JSValueType.Symbol)
             {
-                int index = 0;
+                uint index = 0;
                 double dindex = Tools.JSObjectToDouble(key);
-                if (!double.IsInfinity(dindex) && !double.IsNaN(dindex) && ((index = (int)dindex) == dindex))
+                if (!double.IsInfinity(dindex)
+                    && !double.IsNaN(dindex)
+                    && ((index = (uint)dindex) == dindex))
                 {
-                    if (dindex > 0x7fffffff || dindex < 0)
-                        ExceptionsHelper.Throw((new RangeError("Invalid array index")));
-                    if (((index = (int)dindex) == dindex))
-                    {
-                        if (index >= data.Length)
-                            return undefined;
-                        return new Element(index, this);
-                    }
+                    return getElement((int)index);
                 }
             }
             return base.GetMember(key, forWrite, own);
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        private JSValue getElement(int index)
+        {
+            if (index < 0)
+                ExceptionsHelper.Throw(new RangeError("Invalid array index"));
+            if (index >= data.Length)
+                return undefined;
+            return new Element(index, this);
+        }
+
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             var be = GetEnumerator();
             while (be.MoveNext())
                 yield return be.Current;
             for (var i = 0; i < data.Length; i++)
-                yield return Tools.Int32ToString(i);
+                yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumerationMode > 0 ? getElement(i) : null);
         }
 
         [Hidden]

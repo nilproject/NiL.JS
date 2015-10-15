@@ -27,6 +27,13 @@ namespace NiL.JS.Core
         Property = 1027 // 10000000011
     }
 
+    public enum EnumerationMode
+    {
+        KeysOnly = 0,
+        NeedValues,
+        NeedValuesForWrite
+    }
+
 #if !PORTABLE
     [Serializable]
 #endif
@@ -34,11 +41,11 @@ namespace NiL.JS.Core
     internal enum JSValueAttributesInternal : uint
     {
         None = 0,
-        DoNotEnum = 1 << 0,
+        DoNotEnumerate = 1 << 0,
         DoNotDelete = 1 << 1,
         ReadOnly = 1 << 2,
         Immutable = 1 << 3,
-        NotConfigurable = 1 << 4,
+        NonConfigurable = 1 << 4,
         Argument = 1 << 16,
         SystemObject = 1 << 17,
         ProxyPrototype = 1 << 18,
@@ -73,7 +80,7 @@ namespace NiL.JS.Core
 #if !PORTABLE
     [Serializable]
 #endif
-    public class JSValue : IEnumerable<string>, IEnumerable, IComparable<JSValue>
+    public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IEnumerable, IComparable<JSValue>
 #if !PORTABLE
 , ICloneable, IConvertible
 #endif
@@ -93,15 +100,13 @@ namespace NiL.JS.Core
          */
 
         [Hidden]
-        internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
+        internal static readonly JSValue undefined = new JSValue() { valueType = JSValueType.Undefined, attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSValue undefined = new JSValue() { valueType = JSValueType.Undefined, attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject };
+        internal static readonly JSValue notExists = new JSValue() { valueType = JSValueType.NotExists, attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSValue notExists = new JSValue() { valueType = JSValueType.NotExists, attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.SystemObject };
+        internal static readonly JSObject Null = new JSObject() { valueType = JSValueType.Object, oValue = null, attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSObject Null = new JSObject() { valueType = JSValueType.Object, oValue = null, attributes = JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject };
-        [Hidden]
-        internal static readonly JSValue nullString = new JSValue() { valueType = JSValueType.String, oValue = "null", attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.SystemObject };
+        internal static readonly JSValue nullString = new JSValue() { valueType = JSValueType.String, oValue = "null", attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
         [Hidden]
         public static JSValue Undefined { [Hidden] get { return undefined; } }
@@ -820,13 +825,13 @@ namespace NiL.JS.Core
             switch (valueType)
             {
                 case JSValueType.Bool:
-                    return new ObjectContainer(this is BaseLibrary.Boolean ? this : new NiL.JS.BaseLibrary.Boolean(iValue != 0));
+                    return new ObjectContainer(this is BaseLibrary.Boolean ? this : new BaseLibrary.Boolean(iValue != 0));
                 case JSValueType.Int:
-                    return new ObjectContainer(this is BaseLibrary.Number ? this : new Number(iValue));
+                    return new ObjectContainer(this is BaseLibrary.Number ? this : new BaseLibrary.Number(iValue));
                 case JSValueType.Double:
-                    return new ObjectContainer(this is BaseLibrary.Number ? this : new Number(dValue));
+                    return new ObjectContainer(this is BaseLibrary.Number ? this : new BaseLibrary.Number(dValue));
                 case JSValueType.String:
-                    return new ObjectContainer(this is BaseLibrary.String ? this : new NiL.JS.BaseLibrary.String(oValue.ToString()));
+                    return new ObjectContainer(this is BaseLibrary.String ? this : new BaseLibrary.String(oValue.ToString()));
                 case JSValueType.Symbol:
                     return new ObjectContainer(oValue);
             }
@@ -836,39 +841,42 @@ namespace NiL.JS.Core
         [Hidden]
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable<string>)this).GetEnumerator();
+            return this.GetEnumerator();
         }
 
         [Hidden]
-        public IEnumerator<string> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator()
         {
-            return GetEnumerator(true);
+            return GetEnumerator(true, EnumerationMode.NeedValuesForWrite);
         }
 
         [Hidden]
-        public IEnumerator<string> GetEnumerator(bool hideNonEnum)
+        public virtual IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode)
         {
             if (valueType >= JSValueType.Object && oValue != this)
             {
-                return (oValue as JSValue ?? this).GetEnumeratorImpl(hideNonEnum);
+                var innerObject = oValue as JSValue;
+                if (innerObject != null)
+                    return innerObject.GetEnumerator(hideNonEnumerable, enumeratorMode);
             }
-            return GetEnumeratorImpl(hideNonEnum);
+            return GetEnumeratorImpl(hideNonEnumerable);
         }
 
-        protected internal virtual IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        private IEnumerator<KeyValuePair<string, JSValue>> GetEnumeratorImpl(bool hideNonEnum)
         {
             if (valueType == JSValueType.String)
             {
-                var len = oValue.ToString().Length;
+                var strValue = oValue.ToString();
+                var len = strValue.Length;
                 for (var i = 0; i < len; i++)
-                    yield return Tools.Int32ToString(i);
+                    yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), strValue[i].ToString());
                 if (!hideNonEnum)
-                    yield return "length";
+                    yield return new KeyValuePair<string, JSValue>("length", len);
             }
             else if (valueType == JSValueType.Object)
             {
                 if (oValue == this)
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("Internal error");
             }
         }
 
@@ -957,7 +965,7 @@ namespace NiL.JS.Core
             var name = args[0];
             string n = name.ToString();
             var res = GetMember(n, true);
-            res = (res.IsExists) && ((res.attributes & JSValueAttributesInternal.DoNotEnum) == 0);
+            res = (res.IsExists) && ((res.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0);
             return res;
         }
 

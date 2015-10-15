@@ -409,7 +409,7 @@ form.ShowDialog();
             }));
 #endif
 
-            int mode = 2
+            int mode = 101
                     ;
             switch (mode)
             {

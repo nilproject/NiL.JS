@@ -47,7 +47,7 @@ namespace NiL.JS
         }
 
         private Dictionary<string, GenericType> unions;
-        private BinaryTree<JS.Core.JSValue> childs;
+        private BinaryTree<JSValue> childs;
 
         /// <summary>
         /// Пространство имён, доступ к которому предоставляет указанный экземпляр.
@@ -61,7 +61,6 @@ namespace NiL.JS
         public NamespaceProvider(string @namespace)
         {
             Namespace = @namespace;
-            childs = new BinaryTree<JS.Core.JSValue>();
         }
 
         /// <summary>
@@ -77,13 +76,13 @@ namespace NiL.JS
                 unions = new Dictionary<string, GenericType>();
         }
 
-        internal protected override JSValue GetMember(JSValue key, bool create, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
         {
             if (key.valueType != JSValueType.Symbol)
             {
                 var name = key.ToString();
                 JSValue res = null;
-                if (childs.TryGetValue(name, out res))
+                if (childs != null && childs.TryGetValue(name, out res))
                     return res;
                 string reqname = Namespace + "." + name;
                 var selection = types.StartedWith(reqname).GetEnumerator();
@@ -107,17 +106,19 @@ namespace NiL.JS
                                     ut.Add(selection.Current.Value);
                             }
                         res = TypeProxy.GetConstructor(ut);
+                        if (childs == null)
+                            childs = new BinaryTree<JS.Core.JSValue>();
                         childs[name] = res;
                         return res;
                     }
                     if (selection.Current.Key == reqname)
                         return TypeProxy.GetConstructor(selection.Current.Value);
-                    res = TypeProxy.Proxy(new NamespaceProvider(reqname, unions != null));
+                    res = new NamespaceProvider(reqname, unions != null);
                     childs.Add(name, res);
                     return res;
                 }
             }
-            return notExists;
+            return base.GetMember(key, forWrite, own);
         }
 
         /// <summary>
@@ -143,10 +144,9 @@ namespace NiL.JS
                 yield return type.Value;
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool pdef, EnumerationMode enumerationMode)
         {
-            foreach (var type in types.StartedWith(Namespace))
-                yield return type.Key;
+            yield break;
         }
     }
 }

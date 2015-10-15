@@ -83,7 +83,7 @@ namespace NiL.JS.Core.Functions
                 RequireNewKeywordLevel = RequireNewKeywordLevel.OnlyWithoutNew;
 
             if (_length == null)
-                _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum };
+                _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 #if PORTABLE
             var ctors = System.Linq.Enumerable.ToArray(typeProxy.hostedType.GetTypeInfo().DeclaredConstructors);
@@ -300,12 +300,12 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool pdef)
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
-            var e = __proto__.GetEnumeratorImpl(pdef);
+            var e = __proto__.GetEnumerator(hideNonEnumerable, enumerationMode);
             while (e.MoveNext())
                 yield return e.Current;
-            e = proxy.GetEnumeratorImpl(pdef);
+            e = proxy.GetEnumerator(hideNonEnumerable, enumerationMode);
             while (e.MoveNext())
                 yield return e.Current;
         }

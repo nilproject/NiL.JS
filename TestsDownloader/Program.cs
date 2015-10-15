@@ -52,9 +52,9 @@ namespace TestsDownloader
                 var host = response.ResponseUri.Scheme + "://" + response.ResponseUri.Host + "/";
                 var res = new string[(int)(tests["length"].Value)];
                 int index = 0;
-                foreach (var i in tests)
+                foreach (var item in tests)
                 {
-                    res[index++] = host + tests[i].Value.ToString();
+                    res[index++] = host + item.Value.ToString();
                 }
                 Console.SetCursorPosition(0, line);
                 Console.WriteLine(url + " Complete.       ");
@@ -93,11 +93,11 @@ namespace TestsDownloader
                 var testsCount = Tools.JSObjectToDouble(tests.GetMember("numTests")) * 0.01;
                 tests = tests.GetMember("tests");
                 double index = 0;
-                foreach (var i in tests)
+                foreach (var item in tests)
                 {
                     Console.SetCursorPosition(title.Length + 1, line);
                     Console.Write((index++ / testsCount).ToString("00") + "%");
-                    saveTest(rootDir, tests.GetMember(i));
+                    saveTest(rootDir, item.Value);
                 }
                 Console.SetCursorPosition(0, line);
                 Console.WriteLine(url + " Complete.   ");

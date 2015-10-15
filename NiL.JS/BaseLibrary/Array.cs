@@ -43,7 +43,7 @@ namespace NiL.JS.BaseLibrary
 
             public LengthField(Array owner)
             {
-                attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnum | JSValueAttributesInternal.NotConfigurable | JSValueAttributesInternal.Reassign;
+                attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.Reassign;
                 array = owner;
                 if ((int)array.data.Length == array.data.Length)
                 {
@@ -1262,21 +1262,21 @@ namespace NiL.JS.BaseLibrary
                 self["length"] = lenObj = _length - 1;
 
                 List<string> keysToRemove = new List<string>();
-                foreach (var key in self)
+                foreach (var item in self)
                 {
                     var pindex = 0;
                     var dindex = 0.0;
                     long lindex = 0;
-                    if (Tools.ParseNumber(key, ref pindex, out dindex)
-                        && (pindex == key.Length)
+                    if (Tools.ParseNumber(item.Key, ref pindex, out dindex)
+                        && (pindex == item.Key.Length)
                         && (lindex = (long)dindex) == dindex
                         && lindex < _length)
                     {
-                        var temp = self[key];
+                        var temp = item.Value;
                         if (!temp.IsExists)
                             continue;
                         if (temp.valueType != JSValueType.Property)
-                            keysToRemove.Add(key);
+                            keysToRemove.Add(item.Key);
                     }
                 }
                 var tjo = new JSValue() { valueType = JSValueType.String };
@@ -1322,7 +1322,7 @@ namespace NiL.JS.BaseLibrary
                 throw new ArgumentNullException("args");
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
                 ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.slice for null or undefined"));
-            HashSet<string> processedKeys = null;
+            HashSet<string> processedKeys = new HashSet<string>();
             Array res = new Array();
             for (; ; )
             {
@@ -1380,10 +1380,10 @@ namespace NiL.JS.BaseLibrary
                     var endIndex = Tools.JSObjectToInt64(args[1], _length, true);
                     if (endIndex < 0)
                         endIndex += _length;
-                    var @enum = self.GetEnumeratorImpl(false);
+                    var @enum = self.GetEnumerator(false, EnumerationMode.NeedValues);
                     while (@enum.MoveNext())
                     {
-                        var i = @enum.Current;
+                        var i = @enum.Current.Key;
                         var pindex = 0;
                         var dindex = 0.0;
                         long lindex = 0;
@@ -1392,7 +1392,7 @@ namespace NiL.JS.BaseLibrary
                             && dindex < _length
                             && (lindex = (long)dindex) == dindex)
                         {
-                            var temp = self[i];
+                            var temp = @enum.Current.Value;
                             if (temp.valueType == JSValueType.Property)
                                 temp = Tools.InvokeGetter(temp, self);
 
@@ -1416,8 +1416,6 @@ namespace NiL.JS.BaseLibrary
                 self = self.__proto__;
                 if (self == null || (self.valueType >= JSValueType.String && self.oValue == null))
                     break;
-                if (processedKeys == null)
-                    processedKeys = new HashSet<string>(crnt);
             }
             return res;
         }
@@ -1839,15 +1837,15 @@ namespace NiL.JS.BaseLibrary
                 {
                     var tt = new BinaryTree<string, List<JSValue>>(StringComparer.Ordinal);
                     List<string> keysToRemove = new List<string>();
-                    foreach (var key in self)
+                    foreach (var item in self)
                     {
                         var pindex = 0;
                         var dindex = 0.0;
-                        if (Tools.ParseNumber(key, ref pindex, out dindex) && (pindex == key.Length)
+                        if (Tools.ParseNumber(item.Key, ref pindex, out dindex) && (pindex == item.Key.Length)
                             && dindex < len)
                         {
-                            keysToRemove.Add(key);
-                            var value = self[key];
+                            keysToRemove.Add(item.Key);
+                            var value = item.Value;
                             if (value.IsDefined)
                             {
                                 value = value.CloneImpl();
@@ -1908,23 +1906,24 @@ namespace NiL.JS.BaseLibrary
             return joinImpl(this, ",", true);
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        [Hidden]
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
-            foreach (var node in data.DirectOrder)
+            foreach (var item in data.DirectOrder)
             {
-                if (node.Value != null
-                    && node.Value.IsExists
-                    && (!hideNonEnum || (node.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                    yield return ((uint)node.Key).ToString();
+                if (item.Value != null
+                    && item.Value.IsExists
+                    && (!hideNonEnum || (item.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                    yield return new KeyValuePair<string, JSValue>(((uint)item.Key).ToString(), item.Value);
             }
             if (!hideNonEnum)
-                yield return "length";
+                yield return new KeyValuePair<string, JSValue>("length", length);
             if (fields != null)
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnum) == 0))
-                        yield return f.Key;
+                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                        yield return f;
                 }
             }
         }

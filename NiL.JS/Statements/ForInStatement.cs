@@ -40,10 +40,12 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
                 return null;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             var res = new ForInStatement()
             {
                 labels = state.Labels.GetRange(state.Labels.Count - state.LabelCount, state.LabelCount).ToArray()
@@ -51,7 +53,8 @@ namespace NiL.JS.Statements
             var vStart = i;
             if (Parser.Validate(state.Code, "var", ref i))
             {
-                while (char.IsWhiteSpace(state.Code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i]))
+                    i++;
                 int start = i;
                 string varName;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict))
@@ -68,14 +71,16 @@ namespace NiL.JS.Statements
             {
                 if (state.Code[i] == ';')
                     return null;
-                while (char.IsWhiteSpace(state.Code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i]))
+                    i++;
                 int start = i;
                 string varName;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict))
                 {
                     if (Parser.ValidateValue(state.Code, ref i))
                     {
-                        while (char.IsWhiteSpace(state.Code[i])) i++;
+                        while (char.IsWhiteSpace(state.Code[i]))
+                            i++;
                         if (Parser.Validate(state.Code, "in", ref i))
                             ExceptionsHelper.Throw(new SyntaxError("Invalid accumulator name at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start)));
                         else
@@ -95,10 +100,13 @@ namespace NiL.JS.Statements
                 }
                 res.variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineDepth = state.functionsDepth };
             }
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (state.Code[i] == '=')
             {
-                do i++; while (char.IsWhiteSpace(state.Code[i]));
+                do
+                    i++;
+                while (char.IsWhiteSpace(state.Code[i]));
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
                 if (defVal == null)
                     return defVal;
@@ -114,13 +122,16 @@ namespace NiL.JS.Statements
                     res.variable = exp;
                 else
                     (res.variable as VariableDefineStatement).initializators[0] = exp;
-                while (char.IsWhiteSpace(state.Code[i])) i++;
+                while (char.IsWhiteSpace(state.Code[i]))
+                    i++;
             }
             if (!Parser.Validate(state.Code, "in", ref i))
                 return null;
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             res.source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
-            while (char.IsWhiteSpace(state.Code[i])) i++;
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             i++;
@@ -170,7 +181,7 @@ namespace NiL.JS.Statements
                     {
                         if (item.Value == null
                             || !item.Value.IsExists
-                            || (item.Value.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
+                            || (item.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
                             continue;
                         if (item.Key >= 0)
                         {
@@ -209,7 +220,7 @@ namespace NiL.JS.Statements
                         {
                             if (item.Value == null
                                 || !item.Value.IsExists
-                                || (item.Value.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
+                                || (item.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
                                 continue;
                             v.valueType = JSValueType.String;
                             v.oValue = item.Key;
@@ -238,19 +249,21 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
-                    var keys = NiL.JS.Core.Tools._ForcedEnumerator<string>.create(s);
+                    var keys = s.GetEnumerator(false, EnumerationMode.NeedValues);
                     try
                     {
                         for (; ; )
                         {
                             if (!keys.MoveNext())
                                 break;
-                            var key = keys.Current;
+                            var key = keys.Current.Key;
                             v.valueType = JSValueType.String;
                             v.oValue = key;
                             if (processedKeys.Contains(key))
                                 continue;
                             processedKeys.Add(key);
+                            if ((keys.Current.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
+                                continue;
 #if DEV
                             if (context.debugging && !(body is CodeBlock))
                                 context.raiseDebugger(body);

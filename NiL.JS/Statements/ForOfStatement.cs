@@ -167,7 +167,7 @@ namespace NiL.JS.Statements
                     {
                         if (item == null
                             || !item.IsExists
-                            || (item.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
+                            || (item.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
                             continue;
                         v.Assign(item);
 #if DEV
@@ -194,7 +194,7 @@ namespace NiL.JS.Statements
                         {
                             if (item.Value == null
                                 || !item.Value.IsExists
-                                || (item.Value.attributes & JSValueAttributesInternal.DoNotEnum) != 0)
+                                || (item.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
                                 continue;
                             if (processedKeys.Contains(item.Key))
                                 continue;
@@ -222,7 +222,7 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
-                    var keys = s.GetEnumerator();
+                    var keys = s.GetEnumerator(false, EnumerationMode.NeedValues);
                     for (; ; )
                     {
                         try
@@ -236,12 +236,12 @@ namespace NiL.JS.Statements
                             for (int i = 0; i < index && keys.MoveNext(); i++)
                                 ;
                         }
-                        if (processedKeys.Contains(keys.Current))
+                        if (processedKeys.Contains(keys.Current.Key))
                             continue;
-                        processedKeys.Add(keys.Current);
-                        v.valueType = JSValueType.String;
-                        v.oValue = keys.Current;
-                        v.Assign(s.GetMember(v, false, true));
+                        processedKeys.Add(keys.Current.Key);
+                        if ((keys.Current.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
+                            continue;
+                        v.Assign(keys.Current.Value);
 #if DEV
                         if (context.debugging && !(body is CodeBlock))
                             context.raiseDebugger(body);

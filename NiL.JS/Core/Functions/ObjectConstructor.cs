@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
@@ -30,12 +31,12 @@ namespace NiL.JS.Core.Functions
             return oVal.ToObject();
         }
 
-        protected internal override System.Collections.Generic.IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
         {
-            var pe = proxy.GetEnumeratorImpl(hideNonEnum);
+            var pe = proxy.GetEnumerator(hideNonEnum, enumerationMode);
             while (pe.MoveNext())
                 yield return pe.Current;
-            pe = __proto__.GetEnumeratorImpl(hideNonEnum);
+            pe = __proto__.GetEnumerator(hideNonEnum, enumerationMode);
             while (pe.MoveNext())
                 yield return pe.Current;
         }

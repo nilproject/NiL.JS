@@ -142,7 +142,7 @@ namespace NiL.JS.Core
                 #endregion
 
                 foreach (var v in globalContext.fields.Values)
-                    v.attributes |= JSValueAttributesInternal.DoNotEnum;
+                    v.attributes |= JSValueAttributesInternal.DoNotEnumerate;
             }
             catch
             {
@@ -499,7 +499,7 @@ namespace NiL.JS.Core
         public void AttachModule(Type moduleType, string name)
         {
             fields.Add(name, TypeProxy.GetConstructor(moduleType).CloneImpl());
-            fields[name].attributes = JSValueAttributesInternal.DoNotEnum;
+            fields[name].attributes = JSValueAttributesInternal.DoNotEnumerate;
         }
 
         /// <summary>

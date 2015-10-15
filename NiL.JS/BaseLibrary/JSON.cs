@@ -402,13 +402,13 @@ namespace NiL.JS.BaseLibrary
                 bool first = true;
                 foreach (var member in obj)
                 {
-                    var value = obj[member];
+                    var value = member.Value;
                     value = value.Value as JSValue ?? value;
                     if (value.valueType < JSValueType.Undefined)
                         continue;
                     if (value.valueType == JSValueType.Property)
                         value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(obj, null);
-                    strval = stringifyImpl(member, value, replacer, space, processed, args);
+                    strval = stringifyImpl(member.Key, value, replacer, space, processed, args);
                     if (strval == null)
                     {
                         if (obj is Array)
@@ -431,9 +431,9 @@ namespace NiL.JS.BaseLibrary
                     else
                     {
                         res.Append('"');
-                        for (var i = 0; i < member.Length; i++)
+                        for (var i = 0; i < member.Key.Length; i++)
                         {
-                            escapeIfNeed(res, member[i]);
+                            escapeIfNeed(res, member.Key[i]);
                         }
                         res.Append("\":")
                            .Append(space ?? "");

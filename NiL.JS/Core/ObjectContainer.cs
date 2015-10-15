@@ -70,12 +70,12 @@ namespace NiL.JS.Core
             return base.DeleteMember(name);
         }
 
-        protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
+        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
         {
             var t = instance as JSValue;
             if (t != null)
-                return t.GetEnumeratorImpl(hideNonEnum);
-            return base.GetEnumeratorImpl(hideNonEnum);
+                return t.GetEnumerator(hideNonEnum, enumerationMode);
+            return base.GetEnumerator(hideNonEnum, enumerationMode);
         }
     }
 }
