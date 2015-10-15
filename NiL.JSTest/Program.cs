@@ -370,7 +370,7 @@ var textBox = forms.TextBox();
 textBox.Multiline = true;
 textBox.Parent = form;
 textBox.Dock = 5;
-textBox.Text = JSON.stringify(keys Object);
+textBox.Text = (textBox.Parent === textBox.Parent && textBox.Parent != null).toString();
 
 form.ShowDialog();
 ");
