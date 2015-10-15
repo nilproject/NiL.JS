@@ -73,10 +73,10 @@ namespace NiL.JS.Expressions
                     {
                         if (first.valueType != second.valueType)
                             return false;
-                        else if (first.Value == null)
-                            return second.Value == null;
+                        else if (first.oValue == null)
+                            return second.oValue == null;
                         else
-                            return object.ReferenceEquals(second.Value, first.Value);
+                            return object.ReferenceEquals(second.oValue, first.oValue);
                     }
                 default:
                     throw new NotImplementedException();

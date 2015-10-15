@@ -247,7 +247,7 @@ namespace NiL.JS.Expressions
                                 }
                             default:
                                 {
-                                    return temp.Value == tjso.Value ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
+                                    return temp.oValue == tjso.oValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
                         }
                         break;
