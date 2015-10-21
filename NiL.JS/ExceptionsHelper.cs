@@ -54,7 +54,7 @@ namespace NiL.JS
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowUnknowToken(string code, int index)
+        internal static void ThrowUnknownToken(string code, int index)
         {
             var cord = CodeCoordinates.FromTextPosition(code, index, 0);
             Throw(new SyntaxError(string.Format(

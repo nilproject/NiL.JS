@@ -179,7 +179,7 @@ namespace NiL.JS.Expressions
                 else ExceptionsHelper.Throw((new SyntaxError("Invalid function name at " + CodeCoordinates.FromTextPosition(code, nameStartPos, i - nameStartPos))));
                 while (char.IsWhiteSpace(code[i])) i++;
                 if (code[i] != '(')
-                    ExceptionsHelper.Throw(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
+                    ExceptionsHelper.ThrowUnknownToken(code, i);
             }
             else if (mode == FunctionType.Get || mode == FunctionType.Set)
                 ExceptionsHelper.Throw(new SyntaxError("Getters and Setters must have name"));
@@ -193,14 +193,24 @@ namespace NiL.JS.Expressions
                 bool rest = Parser.Validate(code, "...", ref i);
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict))
-                    ExceptionsHelper.Throw((new SyntaxError("Invalid char at " + CodeCoordinates.FromTextPosition(code, nameStartPos, 0))));
+                    ExceptionsHelper.ThrowUnknownToken(code, nameStartPos);
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict);
-                parameters.Add(new ParameterReference(pname, rest, state.functionsDepth + 1)
+                var desc = new ParameterReference(pname, rest, state.functionsDepth + 1)
                 {
                     Position = n,
                     Length = i - n
-                }.Descriptor as ParameterDescriptor);
+                }.Descriptor as ParameterDescriptor;
+                parameters.Add(desc);
                 while (char.IsWhiteSpace(code[i])) i++;
+                if (code[i] == '=')
+                {
+                    if (rest)
+                        ExceptionsHelper.Throw(new SyntaxError("Rest parameters can not have an initializer " + CodeCoordinates.FromTextPosition(code, i, 0)));
+                    do
+                        i++;
+                    while (char.IsWhiteSpace(code[i]));
+                    desc.Initializer = ExpressionTree.Parse(state, ref i, false, false) as Expression;
+                }
                 if (code[i] == ',')
                 {
                     if (rest)
@@ -502,7 +512,7 @@ namespace NiL.JS.Expressions
             if (!containsFunctions)
             {
                 for (var i = 0; !containsFunctions && i < body.localVariables.Length; i++)
-                    containsFunctions |= body.localVariables[i].Inititalizator != null;
+                    containsFunctions |= body.localVariables[i].Initializer != null;
                 statistic.ContainsInnerFunction = containsFunctions;
             }
             for (var i = 0; !statistic.IsRecursive && i < body.variables.Length; i++)

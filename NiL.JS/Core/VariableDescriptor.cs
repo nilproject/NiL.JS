@@ -43,7 +43,7 @@ namespace NiL.JS.Core
         public bool IsDefined { get { return isDefined; } }
         public CodeNode Owner { get { return owner; } }
         public bool IsReadOnly { get { return isReadOnly; } }
-        public Expression Inititalizator { get; internal set; }
+        public Expression Initializer { get; internal set; }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
         public ReadOnlyCollection<CodeNode> Assignations { get { return assignations == null ? null : assignations.AsReadOnly(); } }
@@ -120,7 +120,7 @@ namespace NiL.JS.Core
             this.defineDepth = defineDepth;
             this.name = proto.Name;
             if (proto is EntityReference)
-                Inititalizator = (proto as EntityReference).Entity;
+                Initializer = (proto as EntityReference).Entity;
             references = new List<VariableReference>() { proto };
             proto.descriptor = this;
             this.isDefined = defined;

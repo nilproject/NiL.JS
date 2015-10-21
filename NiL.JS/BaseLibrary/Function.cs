@@ -1181,6 +1181,8 @@ namespace NiL.JS.BaseLibrary
             {
                 JSValue t = args[i];
                 var arg = creator.parameters[i];
+                if (!t.IsDefined && arg.Initializer != null)
+                    t = arg.Initializer.Evaluate(internalContext);
                 if (body.strict)
                 {
                     if (arg.assignations != null)
@@ -1227,14 +1229,32 @@ namespace NiL.JS.BaseLibrary
             for (; i < creator.parameters.Length; i++)
             {
                 var arg = creator.parameters[i];
-                if (cew || arg.assignations != null)
-                    arg.cacheRes = new JSValue()
+                if (arg.Initializer != null)
+                {
+                    if (cew || arg.assignations != null)
                     {
-                        attributes = JSValueAttributesInternal.Argument,
-                        valueType = JSValueType.Undefined
-                    };
+                        arg.cacheRes = arg.Initializer.Evaluate(internalContext).CloneImpl();
+                    }
+                    else
+                    {
+                        arg.cacheRes = arg.Initializer.Evaluate(internalContext);
+                    }
+                }
                 else
-                    arg.cacheRes = JSValue.undefined;
+                {
+                    if (cew || arg.assignations != null)
+                    {
+                        arg.cacheRes = new JSValue()
+                        {
+                            attributes = JSValueAttributesInternal.Argument,
+                            valueType = JSValueType.Undefined
+                        };
+                    }
+                    else
+                    {
+                        arg.cacheRes = JSValue.undefined;
+                    }
+                }
                 arg.cacheContext = internalContext;
                 if (arg.captured || cew)
                 {
@@ -1256,13 +1276,13 @@ namespace NiL.JS.BaseLibrary
                 {
                     var v = body.localVariables[i];
                     bool isArg = string.CompareOrdinal(v.name, "arguments") == 0;
-                    if (isArg && v.Inititalizator == null)
+                    if (isArg && v.Initializer == null)
                         continue;
                     JSValue f = new JSValue() { valueType = JSValueType.Undefined, attributes = JSValueAttributesInternal.DoNotDelete };
                     if (v.captured || cew)
                         (internalContext.fields ?? (internalContext.fields = createFields()))[v.name] = f;
-                    if (v.Inititalizator != null)
-                        f.Assign(v.Inititalizator.Evaluate(internalContext));
+                    if (v.Initializer != null)
+                        f.Assign(v.Initializer.Evaluate(internalContext));
                     if (v.isReadOnly)
                         f.attributes |= JSValueAttributesInternal.ReadOnly;
                     v.cacheRes = f;

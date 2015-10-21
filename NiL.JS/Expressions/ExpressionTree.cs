@@ -623,7 +623,7 @@ namespace NiL.JS.Expressions
 #endif
                         }
                     default:
-                        ExceptionsHelper.ThrowUnknowToken(state.Code, i);
+                        ExceptionsHelper.ThrowUnknownToken(state.Code, i);
                         break;
                 }
             }

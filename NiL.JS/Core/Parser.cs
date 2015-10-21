@@ -493,7 +493,7 @@ namespace NiL.JS.Core
                         return result;
                 }
             }
-            ExceptionsHelper.ThrowUnknowToken(state.Code, sindex);
+            ExceptionsHelper.ThrowUnknownToken(state.Code, sindex);
             return null;
         }
 
