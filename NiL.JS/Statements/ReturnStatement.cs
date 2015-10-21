@@ -66,7 +66,7 @@ namespace NiL.JS.Statements
             return new CodeNode[0];
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref body, depth + 1, variables, state | BuildState.InExpression, message, statistic, opts);
             // Улучшает работу оптимизатора хвостовой рекурсии
@@ -74,7 +74,7 @@ namespace NiL.JS.Statements
             {
                 var bat = body as NiL.JS.Expressions.ConditionalOperator;
                 var bts = bat.Threads;
-                _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1])) { Position = bat.Position, Length = bat.Length };
+                _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1])) { Position = bat.Position, Length = bat.Length } as T;
                 return true;
             }
             else if (body is NiL.JS.Expressions.CallOperator)
@@ -85,7 +85,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (body != null)
             {

@@ -612,7 +612,7 @@ namespace NiL.JS.Expressions
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, true, false, false, true, false, forEnumeration);
+                            first = (Expression)Parse(state, ref i, false, false, false, true, false, forEnumeration);
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -1283,10 +1283,10 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Type = Type;
-            _this = _fastImpl;
+            _this = _fastImpl as T;
             _fastImpl.Position = Position;
             _fastImpl.Length = Length;
             return true;

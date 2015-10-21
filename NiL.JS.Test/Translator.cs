@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NiL.JSTest
+namespace NiL.JS.Test
 {
     public static class Translator
     {

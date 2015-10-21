@@ -269,7 +269,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (builded)
                 return false;
@@ -322,9 +322,9 @@ namespace NiL.JS.Statements
             {
                 variables = null;
                 if (lines.Length == 1 || (t >= 0 && (lines.Length - t - 1) == 1))
-                    _this = lines[lines.Length - 1] ?? EmptyExpression.Instance; // блок не должен быть null, так как он может быть вложен в выражение
+                    _this = (lines[lines.Length - 1] ?? EmptyExpression.Instance) as T; // блок не должен быть null, так как он может быть вложен в выражение
                 else if (lines.Length == 0)
-                    _this = EmptyExpression.Instance;
+                    _this = EmptyExpression.Instance as T;
             }
             else
             {
@@ -372,7 +372,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (localVariables != null)
                 for (var i = 0; i < localVariables.Length; i++)

@@ -324,6 +324,17 @@ namespace NiL.JS.Core
         /// <returns>Zero if the requested index does not Exists</returns>
         public long NearestIndexNotLess(long index)
         {
+            if (mode == ArrayMode.Sparse)
+            {
+                if (navyData.Length == 0)
+                    return index;
+            }
+            else
+            {
+                if (values.Length < index)
+                    return 0;
+                return index;
+            }
             int bi = 31;
             long i = 0;
             long pm = -1;
@@ -361,6 +372,15 @@ namespace NiL.JS.Core
 
         public long NearestIndexNotMore(long index)
         {
+            if (mode == ArrayMode.Sparse)
+            {
+                if (navyData.Length == 0)
+                    return 0;
+            }
+            else
+            {
+                return Math.Min(values.Length, index);
+            }
             int bi = 31;
             long i = 0;
             for (; ; bi--)

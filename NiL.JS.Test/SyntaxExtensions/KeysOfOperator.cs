@@ -7,7 +7,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
 
-namespace NiL.JSTest.SyntaxExtensions
+namespace NiL.JS.Test.SyntaxExtensions
 {
     [CustomCodeFragment(CodeFragmentType.Expression, "keysof")]
     public sealed class KeysOfOperator : Expression

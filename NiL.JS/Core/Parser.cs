@@ -497,7 +497,7 @@ namespace NiL.JS.Core
             return null;
         }
 
-        internal static void Build(ref CodeNode s, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal static void Build<T>(ref T s, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts) where T : CodeNode
         {
             while (s != null && s.Build(ref s, depth, variables, state, message, statistic, opts))
                 ;

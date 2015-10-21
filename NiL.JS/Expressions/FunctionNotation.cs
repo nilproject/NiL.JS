@@ -15,148 +15,6 @@ namespace NiL.JS.Expressions
     public sealed class FunctionNotation : EntityNotation
     {
 #if !PORTABLE
-        internal sealed class GeneratorInitializator : Function
-        {
-            public override JSValue prototype
-            {
-                get
-                {
-                    return null;
-                }
-                set
-                {
-
-                }
-            }
-
-            private Function generator;
-            [Hidden]
-            public GeneratorInitializator(Function generator)
-            {
-                this.generator = generator;
-            }
-
-            [Hidden]
-            public override JSValue Invoke(JSValue thisBind, Arguments args)
-            {
-                return TypeProxy.Proxy(new Generator(generator, thisBind, args));
-            }
-
-            internal override JSObject GetDefaultPrototype()
-            {
-                return TypeProxy.GetPrototype(typeof(Function));
-            }
-        }
-
-        internal sealed class Generator : IDisposable
-        {
-            private Context generatorContext;
-            private Arguments initialArgs;
-            private Thread thread;
-            private Function generator;
-            private JSValue self;
-
-            [Hidden]
-            public Generator(Function generator, JSValue self, Arguments args)
-            {
-                this.generator = generator;
-                this.initialArgs = args;
-                this.self = self;
-            }
-
-            ~Generator()
-            {
-                Dispose();
-            }
-
-            public JSValue next(Arguments args)
-            {
-                if (thread == null)
-                {
-                    thread = new Thread(() =>
-                    {
-                        generator.Invoke(self, initialArgs);
-                        GC.SuppressFinalize(this);
-                    });
-                    thread.Start();
-                    do
-                    {
-                        for (var i = 0; i < Context.MaxConcurentContexts; i++)
-                        {
-                            if (Context.runnedContexts[i] == null)
-                                break;
-                            if (Context.runnedContexts[i].threadId == thread.ManagedThreadId)
-                            {
-                                generatorContext = Context.runnedContexts[i];
-                                break;
-                            }
-                        }
-                    }
-                    while (generatorContext == null);
-                    while (generatorContext.abort == AbortType.None)
-#if !NET35
-                        Thread.Yield();
-#else
-                        Thread.Sleep(0);
-#endif
-                    var res = JSObject.CreateObject();
-                    res.fields["value"] = generatorContext.abortInfo;
-                    res.fields["done"] = generatorContext.abort == AbortType.Return;
-                    return res;
-                }
-                else
-                {
-                    if (thread.ThreadState == ThreadState.Running
-                        || thread.ThreadState == ThreadState.WaitSleepJoin)
-                    {
-                        generatorContext.abortInfo = args[0];
-                        generatorContext.abort = AbortType.None;
-                        while (generatorContext.abort == AbortType.None)
-#if !NET35
-                            Thread.Yield();
-#else
-                            Thread.Sleep(0);
-#endif
-                        var res = JSObject.CreateObject();
-                        res.fields["value"] = generatorContext.abortInfo;
-                        res.fields["done"] = generatorContext.abort == AbortType.Return;
-                        return res;
-                    }
-                    else
-                    {
-                        var res = JSObject.CreateObject();
-                        res.fields["done"] = true;
-                        return res;
-                    }
-                }
-            }
-
-            public void @throw()
-            {
-                if (thread != null)
-                {
-                    if (thread.ThreadState == ThreadState.Suspended)
-                    {
-                        generatorContext.abort = AbortType.Exception;
-                    }
-                }
-            }
-
-            public void Dispose()
-            {
-                try
-                {
-                    thread.Abort();
-                }
-                catch
-                {
-
-                }
-            }
-        }
-#endif
-
-#if !PORTABLE
         [Serializable]
 #endif
         public sealed class ParameterDescriptor : VariableDescriptor
@@ -503,12 +361,12 @@ namespace NiL.JS.Expressions
         {
 #if !PORTABLE
             if (type == FunctionType.Generator)
-                return new GeneratorInitializator(new Function(context, this));
+                return new GeneratorFunction(new Function(context, this));
 #endif
             return new Function(context, this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             if (body.builded)
                 return false;
@@ -599,7 +457,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var bd = body as CodeNode;
             body.Optimize(ref bd, this, message, opts, this.statistic);

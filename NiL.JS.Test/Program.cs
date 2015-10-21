@@ -11,7 +11,7 @@ using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.BaseLibrary;
 
-namespace NiL.JSTest
+namespace NiL.JS.Test
 {
     class Program
     {
@@ -359,20 +359,16 @@ for (var i = 0; i < 10000000; )
         
         private static void testEx()
         {
-            Parser.DefineCustomCodeFragment(typeof(NiL.JSTest.SyntaxExtensions.UsingStatement));
-            Parser.DefineCustomCodeFragment(typeof(NiL.JSTest.SyntaxExtensions.KeysOfOperator));
+            Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
+            Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.KeysOfOperator));
 
             var t = new Script(@"
-using System.Windows.Forms as forms;
-
-var form = forms.Form();
-var textBox = forms.TextBox();
-textBox.Multiline = true;
-textBox.Parent = form;
-textBox.Dock = 5;
-textBox.Text = (textBox.Parent === textBox.Parent && textBox.Parent != null).toString();
-
-form.ShowDialog();
+function* incGen(x)
+{
+    var prew = x;
+    while(true)
+        prew = 1 + yield prew;
+}
 ");
             t.Context.AttachModule(typeof(object));
             t.Invoke();
@@ -380,7 +376,7 @@ form.ShowDialog();
 
         static void Main(string[] args)
         {
-            //Parser.DefineCustomCodeFragment(typeof(NiL.JSTest.SyntaxExtensions.UsingStatement));
+            //Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();

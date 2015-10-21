@@ -536,13 +536,12 @@ namespace NiL.JS.Core
                 string c = Tools.RemoveComments(code, 0);
                 var ps = new ParsingState(c, code, null);
                 ps.strict = strict;
-                var cb = CodeBlock.Parse(ps, ref i);
-                var body = cb as CodeBlock;
+                var body = CodeBlock.Parse(ps, ref i) as CodeBlock;
                 bool leak = !(strict || body.strict);
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Build(ref cb, 0, vars, (strict ? BuildState.Strict : BuildState.None) | BuildState.InEval, null, null, Options.Default);
+                Parser.Build(ref body, 0, vars, (strict ? BuildState.Strict : BuildState.None) | BuildState.InEval, null, null, Options.Default);
                 Context context = null;
                 if (leak)
                     context = this;
@@ -601,13 +600,12 @@ namespace NiL.JS.Core
                     }
                 }
 
-                CodeNode bd = body;
-                body.Optimize(ref bd, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
+                body.Optimize(ref body, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
 
                 var run = context.Activate();
                 try
                 {
-                    return cb.Evaluate(context) ?? context.lastResult ?? JSValue.notExists;
+                    return body.Evaluate(context) ?? context.lastResult ?? JSValue.notExists;
                 }
                 finally
                 {

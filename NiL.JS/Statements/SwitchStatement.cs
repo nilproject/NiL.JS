@@ -157,7 +157,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
@@ -209,7 +209,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             image.Optimize(ref image, owner, message, opts, statistic);
             for (var i = 1; i < cases.Length; i++)

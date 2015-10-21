@@ -54,14 +54,14 @@ namespace NiL.JS.Expressions
             return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref threads[0], depth, variables, state | BuildState.Conditional | BuildState.InExpression, message, statistic, opts);
             Parser.Build(ref threads[1], depth, variables, state | BuildState.Conditional | BuildState.InExpression, message, statistic, opts);
             base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && first is ConstantNotation)
             {
-                _this = (bool)first.Evaluate(null) ? threads[0] : threads[1];
+                _this = ((bool)first.Evaluate(null) ? threads[0] : threads[1]) as T;
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Constant expression.");
             }
@@ -74,9 +74,9 @@ namespace NiL.JS.Expressions
                     && (first as VariableReference).descriptor == (threads[0] as VariableReference).descriptor)
                 {
                     if (threads[0] == null)
-                        _this = first;
+                        _this = first as T;
                     else
-                        _this = new LogicalDisjunctionOperator(first, threads[1]) { Position = Position, Length = Length };
+                        _this = new LogicalDisjunctionOperator(first, threads[1]) { Position = Position, Length = Length } as T;
                 }
                 else
                 {
@@ -84,19 +84,19 @@ namespace NiL.JS.Expressions
                     if (threads[0] == null
                         && threads[1] == null)
                     {
-                        _this = first;
+                        _this = first as T;
                         return true; // можно попытаться удалить и это
                     }
                     else if (threads[0] == null)
-                        _this = new LogicalDisjunctionOperator(first, threads[1]) { Position = Position, Length = Length };
+                        _this = new LogicalDisjunctionOperator(first, threads[1]) { Position = Position, Length = Length } as T;
                     else if (threads[1] == null)
-                        _this = new LogicalConjunctionOperator(first, threads[0]) { Position = Position, Length = Length };
+                        _this = new LogicalConjunctionOperator(first, threads[0]) { Position = Position, Length = Length } as T;
                 }
             }
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             for (var i = threads.Length; i-- > 0; )

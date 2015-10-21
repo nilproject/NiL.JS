@@ -284,19 +284,19 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (!res && _this == this)
             {
                 if (first is StringConcatenationExpression)
                 {
-                    _this = first;
+                    _this = first as T;
                     (first as StringConcatenationExpression).sources.Add(second);
                 }
                 else if (second is StringConcatenationExpression)
                 {
-                    _this = second;
+                    _this = second as T;
                     (second as StringConcatenationExpression).sources.Insert(0, first);
                 }
                 else
@@ -304,23 +304,23 @@ namespace NiL.JS.Expressions
                     if (first is ConstantNotation && (first as ConstantNotation).value.valueType == JSValueType.String)
                     {
                         if ((first as ConstantNotation).value.oValue.ToString().Length == 0)
-                            _this = new ToStringExpression(second);
+                            _this = new ToStringExpression(second) as T;
                         else
-                            _this = new StringConcatenationExpression(new List<Expression>() { first, second });
+                            _this = new StringConcatenationExpression(new List<Expression>() { first, second }) as T;
                     }
                     else if (second is ConstantNotation && (second as ConstantNotation).value.valueType == JSValueType.String)
                     {
                         if ((second as ConstantNotation).value.oValue.ToString().Length == 0)
-                            _this = new ToStringExpression(first);
+                            _this = new ToStringExpression(first) as T;
                         else
-                            _this = new StringConcatenationExpression(new List<Expression>() { first, second });
+                            _this = new StringConcatenationExpression(new List<Expression>() { first, second }) as T;
                     }
                 }
             }
             return res;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             //if (first.ResultType == PredictedType.String
@@ -345,7 +345,7 @@ namespace NiL.JS.Expressions
             if (Tools.IsEqual(first.ResultType, PredictedType.Number, PredictedType.Group)
                 && Tools.IsEqual(second.ResultType, PredictedType.Number, PredictedType.Group))
             {
-                _this = new NumberAdditionOperator(first, second);
+                _this = new NumberAdditionOperator(first, second) as T;
                 return;
             }
         }

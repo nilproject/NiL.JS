@@ -59,7 +59,7 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);
@@ -67,7 +67,7 @@ namespace NiL.JS.Statements
             if (body != null)
                 body.Optimize(ref body, owner, message, opts, statistic);
             else
-                _this = condition;
+                _this = condition as T;
         }
     }
 
@@ -200,7 +200,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref condition, 2, variables, state | BuildState.InExpression, message, statistic, opts);
             Parser.Build(ref body, depth, variables, state | BuildState.Conditional, message, statistic, opts);
@@ -218,9 +218,9 @@ namespace NiL.JS.Statements
                     && (condition is ConstantNotation || (condition.IsContextIndependent)))
                 {
                     if ((bool)condition.Evaluate(null))
-                        _this = body;
+                        _this = body as T;
                     else
-                        _this = elseBody;
+                        _this = elseBody as T;
                     condition.Eliminated = true;
                 }
             }
@@ -234,11 +234,11 @@ namespace NiL.JS.Statements
 #endif
             }
             if (_this == this && elseBody == null)
-                _this = new IfStatement(this.condition, this.body) { Position = Position, Length = Length };
+                _this = new IfStatement(this.condition, this.body) { Position = Position, Length = Length } as T;
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);

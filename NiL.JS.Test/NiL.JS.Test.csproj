@@ -7,8 +7,8 @@
     <ProjectGuid>{6A330CC6-C974-47FD-95FA-AA0BCFAC4635}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NiL.JSTest</RootNamespace>
-    <AssemblyName>NiL.JSTest</AssemblyName>
+    <RootNamespace>NiL.JS.Test</RootNamespace>
+    <AssemblyName>NiL.JS.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

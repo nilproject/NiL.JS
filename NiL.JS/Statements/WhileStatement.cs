@@ -116,7 +116,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             depth = System.Math.Max(1, depth);
             Parser.Build(ref body, depth, variables, state | BuildState.Conditional | BuildState.InLoop, message, statistic, opts);
@@ -135,7 +135,7 @@ namespace NiL.JS.Statements
                     if ((bool)condition.Evaluate(null))
                     {
                         if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && body != null)
-                            _this = new InfinityLoopStatement(body, labels);
+                            _this = new InfinityLoopStatement(body, labels) as T;
                     }
                     else if ((opts & Options.SuppressUselessStatementsElimination) == 0)
                     {
@@ -149,7 +149,7 @@ namespace NiL.JS.Statements
                         && ((condition is ObjectNotation && (condition as ObjectNotation).Fields.Length == 0)
                             || (condition is ArrayNotation && (condition as ArrayNotation).Elements.Count == 0)))
                 {
-                    _this = new InfinityLoopStatement(body, labels);
+                    _this = new InfinityLoopStatement(body, labels) as T;
                     condition.Eliminated = true;
                 }
             }
@@ -165,7 +165,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (condition != null)
                 condition.Optimize(ref condition, owner, message, opts, statistic);

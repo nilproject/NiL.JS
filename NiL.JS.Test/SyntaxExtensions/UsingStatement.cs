@@ -7,7 +7,7 @@ using NiL.JS;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
-namespace NiL.JSTest.SyntaxExtensions
+namespace NiL.JS.Test.SyntaxExtensions
 {
     [CustomCodeFragment]
     public sealed class UsingStatement : CodeNode

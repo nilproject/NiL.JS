@@ -354,7 +354,7 @@ namespace NiL.JS.Statements
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsTry = true;
@@ -385,7 +385,7 @@ namespace NiL.JS.Statements
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null || finallyBody == null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
-                _this = finallyBody;
+                _this = finallyBody as T;
             }
             if (catchBody != null && (catchBody.lines.Length == 0 || (catchBody.lines.Length == 1 && catchBody.lines[0] is EmptyExpression)))
             {
@@ -395,7 +395,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize<T>(ref T _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             CodeNode b = null;
             body.Optimize(ref body, owner, message, opts, statistic);

@@ -93,7 +93,7 @@ namespace NiL.JS.Expressions
 #endif
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build<T>(ref T _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (!res)
@@ -102,14 +102,14 @@ namespace NiL.JS.Expressions
                 if (exp != null
                     && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
                 {
-                    _this = new ToNumberOperator(second);
+                    _this = new ToNumberOperator(second) as T;
                     return true;
                 }
                 exp = second as ConstantNotation;
                 if (exp != null
                     && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
                 {
-                    _this = new ToNumberOperator(first);
+                    _this = new ToNumberOperator(first) as T;
                     return true;
                 }
             }
