@@ -1235,13 +1235,13 @@ namespace NiL.JS.BaseLibrary
                 {
                     var v = body.localVariables[i];
                     bool isArg = string.CompareOrdinal(v.name, "arguments") == 0;
-                    if (isArg && v.Inititalizator == null)
+                    if (isArg && v.Initializer == null)
                         continue;
                     JSObject f = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributesInternal.DoNotDelete };
                     if (v.captured || cew)
                         (internalContext.fields ?? (internalContext.fields = createFields()))[v.name] = f;
-                    if (v.Inititalizator != null)
-                        f.Assign(v.Inititalizator.Evaluate(internalContext));
+                    if (v.Initializer != null)
+                        f.Assign(v.Initializer.Evaluate(internalContext));
                     if (v.isReadOnly)
                         f.attributes |= JSObjectAttributesInternal.ReadOnly;
                     v.cacheRes = f;

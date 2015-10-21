@@ -574,8 +574,8 @@ namespace NiL.JS.Core
                     var f = context.DefineVariable(body.localVariables[i].name);
                     if (!inplace)
                         f.attributes = JSObjectAttributesInternal.None;
-                    if (body.localVariables[i].Inititalizator != null)
-                        f.Assign(body.localVariables[i].Inititalizator.Evaluate(context));
+                    if (body.localVariables[i].Initializer != null)
+                        f.Assign(body.localVariables[i].Initializer.Evaluate(context));
                     if (body.localVariables[i].isReadOnly)
                         f.attributes |= JSObjectAttributesInternal.ReadOnly;
                     body.localVariables[i].captured = true;

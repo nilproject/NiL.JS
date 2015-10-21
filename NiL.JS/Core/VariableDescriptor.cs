@@ -44,7 +44,7 @@ namespace NiL.JS.Core
         {
             get { return owner; }
         }
-        public CodeNode Inititalizator { get; internal set; }
+        public CodeNode Initializer { get; internal set; }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
         public ReadOnlyCollection<CodeNode> Assignations { get { return assignations == null ? null : assignations.AsReadOnly(); } }
@@ -121,7 +121,7 @@ namespace NiL.JS.Core
             this.defineDepth = defineDepth;
             this.name = proto.Name;
             if (proto is FunctionExpression.FunctionReference)
-                Inititalizator = (proto as FunctionExpression.FunctionReference).Owner;
+                Initializer = (proto as FunctionExpression.FunctionReference).Owner;
             references = new List<VariableReference>();
             references.Add(proto);
             proto.descriptor = this;

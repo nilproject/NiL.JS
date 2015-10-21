@@ -261,7 +261,7 @@ namespace NiL.JS.Statements
                 res.Add(node);
             }
             if (variables != null)
-                res.AddRange(from v in variables where v.Inititalizator != null && (!(v.Inititalizator is FunctionExpression) || (v.Inititalizator as FunctionExpression).body != this) select v.Inititalizator);
+                res.AddRange(from v in variables where v.Initializer != null && (!(v.Initializer is FunctionExpression) || (v.Initializer as FunctionExpression).body != this) select v.Initializer);
             return res.ToArray();
         }
 
@@ -380,9 +380,9 @@ namespace NiL.JS.Statements
             if (localVariables != null)
                 for (var i = 0; i < localVariables.Length; i++)
                 {
-                    if (localVariables[i].Inititalizator != null)
+                    if (localVariables[i].Initializer != null)
                     {
-                        var cn = localVariables[i].Inititalizator as CodeNode;
+                        var cn = localVariables[i].Initializer as CodeNode;
                         cn.Optimize(ref cn, owner, message, opts, statistic);
                     }
                 }
@@ -395,9 +395,9 @@ namespace NiL.JS.Statements
             if (localVariables != null)
                 for (var i = 0; i < localVariables.Length; i++)
                 {
-                    if (localVariables[i].Inititalizator != null)
+                    if (localVariables[i].Initializer != null)
                     {
-                        var cn = localVariables[i].Inititalizator as CodeNode;
+                        var cn = localVariables[i].Initializer as CodeNode;
                         cn.Optimize(ref cn, owner, message, opts, statistic);
                     }
                 }
@@ -408,8 +408,8 @@ namespace NiL.JS.Statements
             for (int i = lines.Length; i-- > 0; )
                 lines[i].TryCompile(true, false, null, dynamicValues);
             for (int i = localVariables.Length; i-- > 0; )
-                if (localVariables[i].Inititalizator != null)
-                    localVariables[i].Inititalizator.TryCompile(true, false, null, dynamicValues);
+                if (localVariables[i].Initializer != null)
+                    localVariables[i].Initializer.TryCompile(true, false, null, dynamicValues);
             return null;
         }
 #endif

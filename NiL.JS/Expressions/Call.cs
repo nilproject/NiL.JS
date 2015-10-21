@@ -32,7 +32,7 @@ namespace NiL.JS.Expressions
                 if (first is VariableReference)
                 {
                     var desc = (first as VariableReference).descriptor;
-                    var fe = desc.Inititalizator as FunctionExpression;
+                    var fe = desc.Initializer as FunctionExpression;
                     if (fe != null)
                         return fe.statistic.ResultType; // для рекурсивных функций будет Unknown
                 }
@@ -117,7 +117,7 @@ namespace NiL.JS.Expressions
                     arguments.callee = func;
                     for (var i = func.creator.body.localVariables.Length; i-- > 0; )
                     {
-                        if (func.creator.body.localVariables[i].Inititalizator == null)
+                        if (func.creator.body.localVariables[i].Initializer == null)
                             func.creator.body.localVariables[i].cacheRes.Assign(JSObject.undefined);
                     }
                     func._arguments = arguments;
@@ -166,9 +166,9 @@ namespace NiL.JS.Expressions
                 VariableDescriptor f = null;
                 if (variables.TryGetValue(name, out f))
                 {
-                    if (f.Inititalizator != null) // Defined function
+                    if (f.Initializer != null) // Defined function
                     {
-                        var func = f.Inititalizator as FunctionExpression;
+                        var func = f.Initializer as FunctionExpression;
                         if (func != null)
                         {
                             for (var i = 0; i < func.arguments.Length; i++)

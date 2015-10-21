@@ -678,7 +678,7 @@ namespace NiL.JS.Expressions
             if (!containsFunctions)
             {
                 for (var i = 0; !containsFunctions && i < body.localVariables.Length; i++)
-                    containsFunctions |= body.localVariables[i].Inititalizator != null;
+                    containsFunctions |= body.localVariables[i].Initializer != null;
                 statistic.ContainsInnerFunction = containsFunctions;
             }
             for (var i = 0; !statistic.IsRecursive && i < body.variables.Length; i++)

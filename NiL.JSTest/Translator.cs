@@ -34,10 +34,10 @@ namespace NiL.JSTest
                             result.Append("object ").Append(node.LocalVariables[i].Name);
                         else
                             result.Append(", ").Append(node.LocalVariables[i].Name);
-                        if (node.LocalVariables[i].Inititalizator != null)
+                        if (node.LocalVariables[i].Initializer != null)
                         {
                             result.Append(" = ");
-                            node.LocalVariables[i].Inititalizator.Visit(this);
+                            node.LocalVariables[i].Initializer.Visit(this);
                         }
                     }
                     result.Append(";").Append(Environment.NewLine);
