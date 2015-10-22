@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Reflection;
 using System.Text;
 using NiL.JS.Core;
 using NiL.JS.Core.Functions;
@@ -787,7 +785,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var body = creator.body;
                 var result = notExists;
-                notExists.valueType = JSValueType.NotExistsInObject;
+                notExists.valueType = JSValueType.NotExists;
                 for (; ; )
                 {
                     if (body != null)
@@ -813,7 +811,13 @@ namespace NiL.JS.BaseLibrary
                     }
                     correctThisBind(self, body.strict); // нужно на случай вызова по new
                     for (int i = 0; i < arguments.Length; i++)
-                        arguments[i].Evaluate(initiator);
+                    {
+                        if (!arguments[i].Evaluate(initiator).IsDefined)
+                        {
+                            if (creator.parameters.Length > i && creator.parameters[i].initializer != null)
+                                creator.parameters[i].initializer.Evaluate(context);
+                        }
+                    }
                     return result;
                 }
 
@@ -922,7 +926,7 @@ namespace NiL.JS.BaseLibrary
             thisBind = correctThisBind(thisBind, body.strict);
             if (body.lines.Length == 0)
             {
-                notExists.valueType = JSValueType.NotExistsInObject;
+                notExists.valueType = JSValueType.NotExists;
                 return notExists;
             }
             var oldargs = _arguments;
@@ -970,8 +974,8 @@ namespace NiL.JS.BaseLibrary
                 }
                 internalContext.strict |= body.strict;
                 internalContext.variables = body.variables;
-                internalContext.Activate();
                 initParameters(args, body, internalContext);
+                internalContext.Activate();
                 res = evaluate(internalContext);
             }
             finally
@@ -1031,20 +1035,15 @@ namespace NiL.JS.BaseLibrary
                     storeParameters();
                 internalContext.abort = AbortType.None;
             }
-            if (ai == null)
+            if (ai == null || ai.valueType < JSValueType.Undefined)
             {
-                notExists.valueType = JSValueType.NotExistsInObject;
+                notExists.valueType = JSValueType.NotExists;
                 return notExists;
             }
+            else if (ai.valueType == JSValueType.Undefined)
+                return undefined;
             else
-            {
-                if (ai.valueType <= JSValueType.NotExists)
-                    return notExists;
-                else if (ai.valueType == JSValueType.Undefined)
-                    return undefined;
-                else
-                    return ai;
-            }
+                return ai;
         }
 
         private void initParametersFast(Expression[] arguments, Core.Context initiator, Context internalContext)
@@ -1139,6 +1138,8 @@ namespace NiL.JS.BaseLibrary
 
         private void setPrmFst(int index, JSValue value, Context context)
         {
+            if (!value.IsDefined && creator.parameters.Length > index && creator.parameters[index].initializer != null)
+                value.Assign(creator.parameters[index].initializer.Evaluate(context));
             value.attributes |= JSValueAttributesInternal.Argument;
             creator.parameters[index].cacheRes = value;
             creator.parameters[index].cacheContext = context;
@@ -1181,8 +1182,8 @@ namespace NiL.JS.BaseLibrary
             {
                 JSValue t = args[i];
                 var arg = creator.parameters[i];
-                if (!t.IsDefined && arg.Initializer != null)
-                    t = arg.Initializer.Evaluate(internalContext);
+                if (!t.IsDefined && arg.initializer != null)
+                    t = arg.initializer.Evaluate(internalContext.parent);
                 if (body.strict)
                 {
                     if (arg.assignations != null)
@@ -1229,15 +1230,17 @@ namespace NiL.JS.BaseLibrary
             for (; i < creator.parameters.Length; i++)
             {
                 var arg = creator.parameters[i];
-                if (arg.Initializer != null)
+                if (arg.initializer != null)
                 {
                     if (cew || arg.assignations != null)
                     {
-                        arg.cacheRes = arg.Initializer.Evaluate(internalContext).CloneImpl();
+                        arg.cacheRes = arg.initializer.Evaluate(internalContext.parent).CloneImpl();
                     }
                     else
                     {
-                        arg.cacheRes = arg.Initializer.Evaluate(internalContext);
+                        arg.cacheRes = arg.initializer.Evaluate(internalContext.parent);
+                        if (!arg.cacheRes.IsDefined)
+                            arg.cacheRes = undefined;
                     }
                 }
                 else
@@ -1276,13 +1279,13 @@ namespace NiL.JS.BaseLibrary
                 {
                     var v = body.localVariables[i];
                     bool isArg = string.CompareOrdinal(v.name, "arguments") == 0;
-                    if (isArg && v.Initializer == null)
+                    if (isArg && v.initializer == null)
                         continue;
                     JSValue f = new JSValue() { valueType = JSValueType.Undefined, attributes = JSValueAttributesInternal.DoNotDelete };
                     if (v.captured || cew)
                         (internalContext.fields ?? (internalContext.fields = createFields()))[v.name] = f;
-                    if (v.Initializer != null)
-                        f.Assign(v.Initializer.Evaluate(internalContext));
+                    if (v.initializer != null)
+                        f.Assign(v.initializer.Evaluate(internalContext));
                     if (v.isReadOnly)
                         f.attributes |= JSValueAttributesInternal.ReadOnly;
                     v.cacheRes = f;

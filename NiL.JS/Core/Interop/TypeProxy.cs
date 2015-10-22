@@ -84,7 +84,7 @@ namespace NiL.JS.Core.Interop
         {
             JSValue res;
             if (value == null)
-                return JSValue.undefined;
+                return JSValue.NotExists;
             else
             {
                 res = value as JSValue;

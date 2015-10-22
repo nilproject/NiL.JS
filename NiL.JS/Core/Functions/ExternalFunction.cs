@@ -82,7 +82,7 @@ namespace NiL.JS.Core.Functions
         {
             var res = del(thisBind, args);
             if (res == null)
-                return JSValue.Null;
+                return JSValue.NotExists;
             return res;
         }
     }

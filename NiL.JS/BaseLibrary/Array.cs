@@ -102,16 +102,7 @@ namespace NiL.JS.BaseLibrary
             data = new SparseArray<JSValue>((int)System.Math.Min(100000, (uint)length));
             if (length > 0)
             {
-                if (length > 4096 && length < 100000)
-                {
-                    for (var i = 0; i < length; i++)
-                    {
-                        data[i] = this;
-                        data[i] = null;
-                    }
-                }
-                else
-                    data[length - 1] = null;
+                data[length - 1] = null;
             }
             attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -145,7 +136,7 @@ namespace NiL.JS.BaseLibrary
         public Array(Arguments args)
         {
             if (args == null)
-                throw new NullReferenceException("args is null");
+                throw new ArgumentNullException("args");
             oValue = this;
             valueType = JSValueType.Object;
             data = new SparseArray<JSValue>();
@@ -155,45 +146,31 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public Array(ICollection collection)
+        public Array(ICollection source)
+            : this(source as IEnumerable)
         {
-            oValue = this;
-            valueType = JSValueType.Object;
-            if (collection == null)
-                throw new ArgumentNullException("collection");
-            data = new SparseArray<JSValue>();
-            var index = 0;
-            foreach (var e in collection)
-                data[index++] = (e as JSValue ?? TypeProxy.Proxy(e)).CloneImpl();
-            attributes |= JSValueAttributesInternal.SystemObject;
+
         }
 
         [Hidden]
-        public Array(IEnumerable enumerable)
+        public Array(IEnumerable source)
+            : this(source == null ? null : source.GetEnumerator())
         {
-            oValue = this;
-            valueType = JSValueType.Object;
-            if (enumerable == null)
-                throw new ArgumentNullException("enumerable");
-            data = new SparseArray<JSValue>();
-            var index = 0;
-            foreach (var e in enumerable)
-                data[index++] = (e as JSValue ?? TypeProxy.Proxy(e)).CloneImpl();
-            attributes |= JSValueAttributesInternal.SystemObject;
+
         }
 
         [Hidden]
-        internal Array(IEnumerator enumerator)
+        internal Array(IEnumerator source)
         {
             oValue = this;
             valueType = JSValueType.Object;
-            if (enumerator == null)
+            if (source == null)
                 throw new ArgumentNullException("enumerator");
             data = new SparseArray<JSValue>();
             var index = 0;
-            while (enumerator.MoveNext())
+            while (source.MoveNext())
             {
-                var e = enumerator.Current;
+                var e = source.Current;
                 data[index++] = (e as JSValue ?? TypeProxy.Proxy(e)).CloneImpl();
             }
             attributes |= JSValueAttributesInternal.SystemObject;

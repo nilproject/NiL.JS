@@ -39,11 +39,12 @@ namespace NiL.JS.Core
         internal PredictedType lastPredictedType;
         internal bool isDefined;
         internal bool isReadOnly;
+        internal Expression initializer;
 
         public bool IsDefined { get { return isDefined; } }
         public CodeNode Owner { get { return owner; } }
         public bool IsReadOnly { get { return isReadOnly; } }
-        public Expression Initializer { get; internal set; }
+        public Expression Initializer { get { return initializer; } }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
         public ReadOnlyCollection<CodeNode> Assignations { get { return assignations == null ? null : assignations.AsReadOnly(); } }
@@ -120,7 +121,7 @@ namespace NiL.JS.Core
             this.defineDepth = defineDepth;
             this.name = proto.Name;
             if (proto is EntityReference)
-                Initializer = (proto as EntityReference).Entity;
+                initializer = (proto as EntityReference).Entity;
             references = new List<VariableReference>() { proto };
             proto.descriptor = this;
             this.isDefined = defined;

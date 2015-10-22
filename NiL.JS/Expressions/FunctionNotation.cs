@@ -163,7 +163,8 @@ namespace NiL.JS.Expressions
             }
             var inExp = state.InExpression;
             state.InExpression = 0;
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (char.IsWhiteSpace(code[i]))
+                i++;
             var parameters = new List<ParameterDescriptor>();
             string name = null;
             int nameStartPos = 0;
@@ -176,8 +177,10 @@ namespace NiL.JS.Expressions
                     name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict);
                 else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateNumber(code, ref i))
                     name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
-                else ExceptionsHelper.Throw((new SyntaxError("Invalid function name at " + CodeCoordinates.FromTextPosition(code, nameStartPos, i - nameStartPos))));
-                while (char.IsWhiteSpace(code[i])) i++;
+                else
+                    ExceptionsHelper.Throw((new SyntaxError("Invalid function name at " + CodeCoordinates.FromTextPosition(code, nameStartPos, i - nameStartPos))));
+                while (char.IsWhiteSpace(code[i]))
+                    i++;
                 if (code[i] != '(')
                     ExceptionsHelper.ThrowUnknownToken(code, i);
             }
@@ -185,11 +188,15 @@ namespace NiL.JS.Expressions
                 ExceptionsHelper.Throw(new SyntaxError("Getters and Setters must have name"));
             else if (mode == FunctionType.Method)
                 ExceptionsHelper.Throw(new SyntaxError("Methods must have name"));
-            do i++; while (char.IsWhiteSpace(code[i]));
+            do
+                i++;
+            while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             while (code[i] != ')')
             {
+                if (parameters.Count == 255)
+                    ExceptionsHelper.Throw(new SyntaxError(string.Format("Too many arguments for function \"{0}\" {1}", name, CodeCoordinates.FromTextPosition(code, index, 0))));
                 bool rest = Parser.Validate(code, "...", ref i);
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict))
@@ -201,7 +208,8 @@ namespace NiL.JS.Expressions
                     Length = i - n
                 }.Descriptor as ParameterDescriptor;
                 parameters.Add(desc);
-                while (char.IsWhiteSpace(code[i])) i++;
+                while (char.IsWhiteSpace(code[i]))
+                    i++;
                 if (code[i] == '=')
                 {
                     if (rest)
@@ -209,13 +217,15 @@ namespace NiL.JS.Expressions
                     do
                         i++;
                     while (char.IsWhiteSpace(code[i]));
-                    desc.Initializer = ExpressionTree.Parse(state, ref i, false, false) as Expression;
+                    desc.initializer = ExpressionTree.Parse(state, ref i, false, false) as Expression;
                 }
                 if (code[i] == ',')
                 {
                     if (rest)
                         ExceptionsHelper.Throw(new SyntaxError("Rest parameters must be the last in parameters list"));
-                    do i++; while (char.IsWhiteSpace(code[i]));
+                    do
+                        i++;
+                    while (char.IsWhiteSpace(code[i]));
                 }
             }
             switch (mode)
@@ -233,7 +243,9 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
-            do i++; while (char.IsWhiteSpace(code[i]));
+            do
+                i++;
+            while (char.IsWhiteSpace(code[i]));
             if (code[i] != '{')
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
             var labels = state.Labels;
@@ -301,23 +313,28 @@ namespace NiL.JS.Expressions
             // что не разумно
             {
                 var tindex = i;
-                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i])) i++;
+                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
+                    i++;
                 if (i < code.Length && code[i] == '(')
                 {
                     var args = new List<Expression>();
                     i++;
                     for (; ; )
                     {
-                        while (char.IsWhiteSpace(code[i])) i++;
+                        while (char.IsWhiteSpace(code[i]))
+                            i++;
                         if (code[i] == ')')
                             break;
                         else if (code[i] == ',')
-                            do i++; while (char.IsWhiteSpace(code[i]));
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(code[i]));
                         args.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
                     }
                     i++;
                     index = i;
-                    while (i < code.Length && char.IsWhiteSpace(code[i])) i++;
+                    while (i < code.Length && char.IsWhiteSpace(code[i]))
+                        i++;
                     if (i < code.Length && code[i] == ';')
                         ExceptionsHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
                     return new CallOperator(func, args.ToArray());
@@ -394,6 +411,9 @@ namespace NiL.JS.Expressions
                 nvars[parameters[i].name] = parameters[i];
                 parameters[i].owner = this;
                 parameters[i].isDefined = true;
+
+                if (parameters[i].initializer != null)
+                    parameters[i].initializer.Build(ref parameters[i].initializer, depth, variables, state, message, statistic, opts);
             }
             statistic.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
             bodyCode.Build(ref bodyCode, 0, nvars, state & ~(BuildState.Conditional | BuildState.InExpression | BuildState.InEval), message, statistic, opts);
@@ -512,7 +532,7 @@ namespace NiL.JS.Expressions
             if (!containsFunctions)
             {
                 for (var i = 0; !containsFunctions && i < body.localVariables.Length; i++)
-                    containsFunctions |= body.localVariables[i].Initializer != null;
+                    containsFunctions |= body.localVariables[i].initializer != null;
                 statistic.ContainsInnerFunction = containsFunctions;
             }
             for (var i = 0; !statistic.IsRecursive && i < body.variables.Length; i++)

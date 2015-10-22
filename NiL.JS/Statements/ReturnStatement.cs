@@ -51,11 +51,9 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            context.abortInfo = body != null ? body.Evaluate(context) : JSValue.undefined;
+            context.abortInfo = body != null ? body.Evaluate(context) : null;
             if (context.abort < AbortType.Return)
                 context.abort = AbortType.Return;
-            //if (body is VariableReference)
-            //    context.abortInfo = context.abortInfo.CloneImpl();
             return JSValue.notExists;
         }
 

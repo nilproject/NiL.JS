@@ -98,8 +98,8 @@ namespace NiL.JS
                 var f = Context.DefineVariable(body.localVariables[i].name);
                 body.localVariables[i].cacheRes = f;
                 body.localVariables[i].cacheContext = Context;
-                if (body.localVariables[i].Initializer != null)
-                    f.Assign(body.localVariables[i].Initializer.Evaluate(Context));
+                if (body.localVariables[i].initializer != null)
+                    f.Assign(body.localVariables[i].initializer.Evaluate(Context));
                 if (body.localVariables[i].isReadOnly)
                     body.localVariables[i].cacheRes.attributes |= JSValueAttributesInternal.ReadOnly;
                 body.localVariables[i].captured |= stat.ContainsEval;
