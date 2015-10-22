@@ -40,9 +40,9 @@ namespace NiL.JS.Expressions
             }
 
             [Hidden]
-            public override JSObject Invoke(JSObject thisBind, Arguments args)
+            public override JSObject Invoke(JSObject targetObject, Arguments args)
             {
-                return TypeProxy.Proxy(new Generator(generator, thisBind, args));
+                return TypeProxy.Proxy(new Generator(generator, targetObject, args));
             }
 
             internal override JSObject GetDefaultPrototype()

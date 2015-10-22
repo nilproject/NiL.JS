@@ -9,13 +9,13 @@ namespace NiL.JS.Core
 {
     internal static class GlobalFunctions
     {
-        internal static JSObject isFinite(JSObject thisBind, Arguments x)
+        internal static JSObject isFinite(JSObject targetObject, Arguments x)
         {
             var d = Tools.JSObjectToDouble(x[0]);
             return !double.IsNaN(d) && !double.IsInfinity(d);
         }
 
-        internal static JSObject isNaN(JSObject thisBind, Arguments x)
+        internal static JSObject isNaN(JSObject targetObject, Arguments x)
         {
             var r = x[0];
             if (r.valueType >= JSObjectType.Object)
@@ -35,14 +35,14 @@ namespace NiL.JS.Core
             return true;
         }
 
-        internal static JSObject unescape(JSObject thisBind, Arguments x)
+        internal static JSObject unescape(JSObject targetObject, Arguments x)
         {
             var res = Uri.UnescapeDataString(x[0].ToString());
             return res;
         }
 
         [ArgumentsLength(2)]
-        internal static JSObject parseInt(JSObject thisBind, Arguments args)
+        internal static JSObject parseInt(JSObject targetObject, Arguments args)
         {
             double result = double.NaN;
             var radixo = args[1];
@@ -69,7 +69,7 @@ namespace NiL.JS.Core
             return System.Math.Truncate(result);
         }
 
-        internal static JSObject parseFloat(JSObject thisBind, Arguments x)
+        internal static JSObject parseFloat(JSObject targetObject, Arguments x)
         {
             double result = double.NaN;
             var source = x[0];
@@ -84,13 +84,13 @@ namespace NiL.JS.Core
             return result;
         }
 
-        internal static JSObject escape(JSObject thisBind, Arguments x)
+        internal static JSObject escape(JSObject targetObject, Arguments x)
         {
             return Uri.EscapeDataString(x[0].ToString());
         }
 #if !PORTABLE
         internal static uint __pinvokeCalled;
-        internal static JSObject __pinvoke(JSObject thisBind, Arguments args)
+        internal static JSObject __pinvoke(JSObject targetObject, Arguments args)
         {
             if (args == null)
                 return null;
@@ -156,7 +156,7 @@ namespace NiL.JS.Core
             });
         }
 #endif
-        internal static JSObject decodeURIComponent(JSObject thisBind, Arguments args)
+        internal static JSObject decodeURIComponent(JSObject targetObject, Arguments args)
         {
             var str = args[0].ToString();
 
@@ -226,7 +226,7 @@ namespace NiL.JS.Core
             return res.ToString();
         }
 
-        internal static JSObject decodeURI(JSObject thisBind, Arguments args)
+        internal static JSObject decodeURI(JSObject targetObject, Arguments args)
         {
             var str = args[0].ToString();
 
@@ -334,7 +334,7 @@ namespace NiL.JS.Core
             return false;
         }
 
-        internal static JSObject encodeURIComponent(JSObject thisBind, Arguments args)
+        internal static JSObject encodeURIComponent(JSObject targetObject, Arguments args)
         {
             var s = args[0].ToString();
 
@@ -385,7 +385,7 @@ namespace NiL.JS.Core
             return res.ToString();
         }
 
-        internal static JSObject encodeURI(JSObject thisBind, Arguments args)
+        internal static JSObject encodeURI(JSObject targetObject, Arguments args)
         {
             var s = args[0].ToString();
 

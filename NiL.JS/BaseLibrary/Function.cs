@@ -714,7 +714,7 @@ namespace NiL.JS.BaseLibrary
                 _arguments = value;
             }
         }
-        
+
         internal JSObject _caller;
         [Field]
         [DoNotDelete]
@@ -790,7 +790,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var body = creator.body;
                 var result = notExists;
-                notExists.valueType = JSObjectType.NotExistsInObject;
+                notExists.valueType = JSObjectType.NotExists;
                 for (; ; )
                 {
                     if (body != null)
@@ -836,7 +836,7 @@ namespace NiL.JS.BaseLibrary
             }
 
             // Совсем медленно. Плохая функция попалась
-            Arguments _arguments = new Core.Arguments()
+            var _arguments = new Arguments()
             {
                 caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
                 length = arguments.Length
@@ -891,7 +891,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public virtual JSObject Invoke(JSObject thisBind, Arguments args)
+        public virtual JSObject Invoke(JSObject targetObject, Arguments args)
         {
 #if DEBUG && !PORTABLE
             if (creator.trace)
@@ -899,7 +899,7 @@ namespace NiL.JS.BaseLibrary
 #endif
             JSObject res = null;
             var body = creator.body;
-            thisBind = correctThisBind(thisBind, body.strict);
+            targetObject = correctThisBind(targetObject, body.strict);
             if (body == null || body.lines.Length == 0)
             {
                 notExists.valueType = JSObjectType.NotExistsInObject;
@@ -916,7 +916,7 @@ namespace NiL.JS.BaseLibrary
             }
             creator.recursiveDepth++;
             var internalContext = new Context(context, ceocw, this);
-            internalContext.thisBind = thisBind;
+            internalContext.thisBind = targetObject;
             try
             {
                 if (args == null)
@@ -1011,32 +1011,27 @@ namespace NiL.JS.BaseLibrary
                     storeParameters();
                 internalContext.abort = AbortType.None;
             }
-            if (ai == null)
+            if (ai == null || ai.valueType < JSObjectType.Undefined)
             {
-                notExists.valueType = JSObjectType.NotExistsInObject;
+                notExists.valueType = JSObjectType.NotExists;
                 return notExists;
             }
+            else if (ai.valueType == JSObjectType.Undefined)
+                return undefined;
             else
-            {
-                if (ai.valueType <= JSObjectType.NotExists)
-                    return notExists;
-                else if (ai.valueType == JSObjectType.Undefined)
-                    return undefined;
-                else
-                    return ai;
-            }
+                return ai;
         }
 
         private void initParametersFast(Expression[] arguments, Core.Context initiator, Context internalContext)
         {
             JSObject a0 = null,
-                    a1 = null,
-                    a2 = null,
-                    a3 = null,
-                    a4 = null,
-                    a5 = null,
-                    a6 = null,
-                    a7 = null; // Вместо кучи, выделяем память на стеке
+                     a1 = null,
+                     a2 = null,
+                     a3 = null,
+                     a4 = null,
+                     a5 = null,
+                     a6 = null,
+                     a7 = null; // Вместо кучи, выделяем память на стеке
 
             var argumentsCount = arguments.Length;
             if (creator.arguments.Length != argumentsCount)
@@ -1252,28 +1247,28 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        internal JSObject correctThisBind(JSObject thisBind, bool strict)
+        internal JSObject correctThisBind(JSObject targetObject, bool strict)
         {
-            if (thisBind == null)
+            if (targetObject == null)
                 return strict ? undefined : context.Root.thisBind;
-            else if (thisBind.oValue == typeof(New) as object)
+            else if (targetObject.oValue == typeof(New) as object)
             {
-                thisBind.__proto__ = prototype.oValue as JSObject ?? prototype;
-                thisBind.oValue = thisBind;
+                targetObject.__proto__ = prototype.oValue as JSObject ?? prototype;
+                targetObject.oValue = targetObject;
             }
             else if (context != null)
             {
                 if (!strict) // Поправляем this
                 {
-                    if (thisBind.valueType > JSObjectType.Undefined && thisBind.valueType < JSObjectType.Object)
-                        return thisBind.ToObject();
-                    else if (thisBind.valueType <= JSObjectType.Undefined || thisBind.oValue == null)
+                    if (targetObject.valueType > JSObjectType.Undefined && targetObject.valueType < JSObjectType.Object)
+                        return targetObject.ToObject();
+                    else if (targetObject.valueType <= JSObjectType.Undefined || targetObject.oValue == null)
                         return context.Root.thisBind;
                 }
-                else if (thisBind.valueType < JSObjectType.Undefined)
+                else if (targetObject.valueType < JSObjectType.Undefined)
                     return undefined;
             }
-            return thisBind;
+            return targetObject;
         }
 
         private void storeParameters()

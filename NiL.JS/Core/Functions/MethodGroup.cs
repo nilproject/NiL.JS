@@ -60,7 +60,7 @@ namespace NiL.JS.Core.Functions
             return TypeProxy.GetPrototype(typeof(Function));
         }
 
-        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.Arguments args)
+        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject targetObject, NiL.JS.Core.Arguments args)
         {
             int l = args == null ? 0 : args.length;
             object[] cargs = null;
@@ -70,7 +70,7 @@ namespace NiL.JS.Core.Functions
                 for (var i = 0; i < methods.Length; i++)
                 {
                     if (methods[i].Parameters.Length == 1 && methods[i].Parameters[0].ParameterType == typeof(Arguments))
-                        return TypeProxy.Proxy(methods[i].InvokeImpl(thisBind, null, args));
+                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, null, args));
                     if (pass == 1 || methods[i].Parameters.Length == l)
                     {
                         if (l != 0)
@@ -88,7 +88,7 @@ namespace NiL.JS.Core.Functions
                             if (cargs == null)
                                 continue;
                         }
-                        return TypeProxy.Proxy(methods[i].InvokeImpl(thisBind, cargs, args));
+                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, cargs, args));
                     }
                 }
             }

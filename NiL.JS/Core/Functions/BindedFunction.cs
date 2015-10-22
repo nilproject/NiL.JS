@@ -17,7 +17,7 @@ namespace NiL.JS.Core.Functions
     internal sealed class BindedFunction : Function
     {
         private Function proto;
-        private JSObject thisBind;
+        private JSObject targetObject;
         private Arguments bindedArguments;
 
         public override JSObject caller
@@ -65,7 +65,7 @@ namespace NiL.JS.Core.Functions
                 _length = new Number(0);
             _length.iValue = proto.length.iValue;
             this.proto = proto;
-            this.thisBind = args[0];
+            this.targetObject = args[0];
             this.bindedArguments = args;
             if (args.length > 0)
             {
@@ -83,7 +83,7 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override JSObject Invoke(JSObject thisBind, Arguments args)
+        public override JSObject Invoke(JSObject targetObject, Arguments args)
         {
             if (bindedArguments != null)
             {
@@ -95,9 +95,9 @@ namespace NiL.JS.Core.Functions
                 for (var i = bindedArguments.length; i-- > 0; )
                     args[i] = bindedArguments[i];
             }
-            if (thisBind != null && thisBind.oValue == typeof(New) as object)
-                return proto.Invoke(thisBind, args);
-            return proto.Invoke(this.thisBind, args);
+            if (targetObject != null && targetObject.oValue == typeof(New) as object)
+                return proto.Invoke(targetObject, args);
+            return proto.Invoke(this.targetObject, args);
         }
 
         [Hidden]

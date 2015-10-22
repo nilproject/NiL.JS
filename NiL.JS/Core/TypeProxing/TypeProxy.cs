@@ -84,7 +84,7 @@ namespace NiL.JS.Core.TypeProxing
         {
             JSObject res;
             if (value == null)
-                return JSObject.undefined;
+                return JSObject.NotExists;
             else
             {
                 res = value as JSObject;
@@ -446,13 +446,13 @@ namespace NiL.JS.Core.TypeProxing
                                     valueType = JSObjectType.Property,
                                     oValue = new PropertyPair
                                     (
-                                        new ExternalFunction((thisBind, a) =>
+                                        new ExternalFunction((targetObject, a) =>
                                         {
-                                            return Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value));
+                                            return Proxy(field.GetValue(field.IsStatic ? null : targetObject.Value));
                                         }),
-                                        !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
+                                        !m[0].IsDefined(typeof(Modules.ReadOnlyAttribute), false) ? new ExternalFunction((targetObject, a) =>
                                         {
-                                            field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);
+                                            field.SetValue(field.IsStatic ? null : targetObject.Value, a[0].Value);
                                             return null;
                                         }) : null
                                     )

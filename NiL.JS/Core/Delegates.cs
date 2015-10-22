@@ -6,7 +6,7 @@ namespace NiL.JS.Core
 
     internal delegate bool ValidateDelegate(string code, int position);
 
-    public delegate JSObject ExternalFunctionDelegate(JSObject thisBind, Arguments args);
+    public delegate JSObject ExternalFunctionDelegate(JSObject targetObject, Arguments args);
 
     public sealed class DebuggerCallbackEventArgs : EventArgs
     {

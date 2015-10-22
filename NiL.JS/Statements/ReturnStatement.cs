@@ -48,11 +48,9 @@ namespace NiL.JS.Statements
 
         internal override JSObject Evaluate(Context context)
         {
-            context.abortInfo = body != null ? body.Evaluate(context) : JSObject.undefined;
+            context.abortInfo = body != null ? body.Evaluate(context) : null;
             if (context.abort < AbortType.Return)
                 context.abort = AbortType.Return;
-            //if (body is VariableReference)
-            //    context.abortInfo = context.abortInfo.CloneImpl();
             return JSObject.notExists;
         }
 

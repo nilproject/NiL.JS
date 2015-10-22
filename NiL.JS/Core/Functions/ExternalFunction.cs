@@ -78,11 +78,11 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override JSObject Invoke(JSObject thisBind, Arguments args)
+        public override JSObject Invoke(JSObject targetObject, Arguments args)
         {
-            var res = del(thisBind, args);
+            var res = del(targetObject, args);
             if (res == null)
-                return JSObject.Null;
+                return NotExists;
             return res;
         }
     }

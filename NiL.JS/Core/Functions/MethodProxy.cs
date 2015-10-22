@@ -407,7 +407,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        protected internal override NiL.JS.Core.JSObject InternalInvoke(NiL.JS.Core.JSObject self, NiL.JS.Expressions.Expression[] arguments, NiL.JS.Core.Context initiator)
+        protected internal override JSObject InternalInvoke(JSObject self, NiL.JS.Expressions.Expression[] arguments, Context initiator)
         {
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
                 return Invoke(self, null);
@@ -464,25 +464,25 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        internal object InvokeImpl(JSObject thisBind, object[] args, Arguments argsSource)
+        internal object InvokeImpl(JSObject targetObject, object[] args, Arguments argsSource)
         {
             object target = null;
             if (forceInstance)
             {
-                if (thisBind != null && thisBind.valueType >= JSObjectType.Object)
+                if (targetObject != null && targetObject.valueType >= JSObjectType.Object)
                 {
-                    target = thisBind.Value;
+                    target = targetObject.Value;
                     if (target is TypeProxy)
-                        target = (target as TypeProxy).prototypeInstance ?? thisBind.Value;
+                        target = (target as TypeProxy).prototypeInstance ?? targetObject.Value;
                     if (target == null || !typeof(JSObject).IsAssignableFrom(target.GetType()))
-                        target = thisBind;
+                        target = targetObject;
                 }
                 else
-                    target = thisBind ?? undefined;
+                    target = targetObject ?? undefined;
             }
             else if (!methodBase.IsStatic && !methodBase.IsConstructor)
             {
-                target = hardTarget ?? getTargetObject(thisBind ?? undefined, methodBase.DeclaringType);
+                target = hardTarget ?? getTargetObject(targetObject ?? undefined, methodBase.DeclaringType);
                 if (target == null)
                 {
                     // Исключительная ситуация. Я не знаю, почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
@@ -574,9 +574,9 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject thisBind, NiL.JS.Core.Arguments args)
+        public override NiL.JS.Core.JSObject Invoke(NiL.JS.Core.JSObject targetObject, NiL.JS.Core.Arguments args)
         {
-            return TypeProxing.TypeProxy.Proxy(InvokeImpl(thisBind, null, args));
+            return TypeProxing.TypeProxy.Proxy(InvokeImpl(targetObject, null, args));
         }
 
         private static object[] convertArray(NiL.JS.BaseLibrary.Array array)

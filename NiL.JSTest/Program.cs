@@ -380,10 +380,29 @@ for (var i = 0; i < 10000000; )
         private static void testEx()
         {
             var t = new Script(@"
-console.log(new Object(true) === new Object(true));
-console.log(new Object(true) == new Object(true));
+var proto = {
+            prop: 'enumerableValue'
+        };
+
+        var ConstructFun = function () { };
+        ConstructFun.prototype = proto;
+
+        var child = new ConstructFun();
+
+        Object.defineProperty(child, 'prop', {
+            value: 'nonEnumerableValue',
+            enumerable: false
+        });
+
+        var accessedProp = false;
+
+        for (var p in child) {
+            if (p === 'prop') {
+                accessedProp = true;
+            }
+        }
+console.log(!accessedProp);
 ");
-            t.Context.DefineVariable("t").Assign(new JSObject(new Struct()));
             t.Invoke();
         }
 
@@ -417,7 +436,7 @@ console.log(new Object(true) == new Object(true));
             }));
 #endif
 
-            int mode = 1
+            int mode = 153
                    ;
             switch (mode)
             {

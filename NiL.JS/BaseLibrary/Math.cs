@@ -90,15 +90,15 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject acos(Arguments args)
         {
             return System.Math.Acos(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject asin(Arguments args)
         {
             return System.Math.Asin(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
@@ -111,8 +111,8 @@ namespace NiL.JS.BaseLibrary
             return System.Math.Atan(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         [ArgumentsLength(2)]
         public static JSObject atan2(Arguments args)
         {
@@ -126,22 +126,22 @@ namespace NiL.JS.BaseLibrary
             return System.Math.Atan2(a, b);
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject ceil(Arguments args)
         {
             return System.Math.Ceiling(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject cos(Arguments args)
         {
             return System.Math.Cos(Tools.JSObjectToDouble(args.length > 0 ? args[0] : null));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject exp(Arguments args)
         {
             var arg = args[0];
@@ -261,14 +261,14 @@ namespace NiL.JS.BaseLibrary
             {
                 var t = Tools.JSObjectToDouble(args[i]);
                 if (double.IsNaN(t))
-                    return double.NaN;
+                    return Number.NaN;
                 res = System.Math.Min(res, t);
             }
             return res;
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         [ArgumentsLength(2)]
         public static JSObject pow(Arguments args)
         {
@@ -290,8 +290,8 @@ namespace NiL.JS.BaseLibrary
             return result;
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject random()
         {
             return randomInstance.NextDouble();
@@ -354,15 +354,15 @@ namespace NiL.JS.BaseLibrary
                 return double.IsNaN(a) ? Number.NaN : a;
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject sin(Arguments args)
         {
             return System.Math.Sin(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject sqrt(Arguments args)
         {
             var arg = args[0];
@@ -376,8 +376,8 @@ namespace NiL.JS.BaseLibrary
             return res;
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject tan(Arguments args)
         {
             return System.Math.Tan(Tools.JSObjectToDouble(args.Length > 0 ? args[0] : null));
@@ -385,49 +385,49 @@ namespace NiL.JS.BaseLibrary
 
         #region Exclusives
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         [ArgumentsLength(2)]
         public static JSObject IEEERemainder(Arguments args)
         {
             if (args.Length < 2)
-                return double.NaN;
+                return Number.NaN;
             return System.Math.IEEERemainder(Tools.JSObjectToDouble(args[0]), Tools.JSObjectToDouble(args[1]));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject sign(Arguments args)
         {
             if (args.Length < 1)
-                return double.NaN;
+                return Number.NaN;
             return System.Math.Sign(Tools.JSObjectToDouble(args[0]));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject sinh(Arguments args)
         {
             if (args.Length < 1)
-                return double.NaN;
+                return Number.NaN;
             return System.Math.Sinh(Tools.JSObjectToDouble(args[0]));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject tanh(Arguments args)
         {
             if (args.Length < 1)
-                return double.NaN;
+                return Number.NaN;
             return System.Math.Tanh(Tools.JSObjectToDouble(args[0]));
         }
 
-        [DoNotEnumerate]
         [DoNotDelete]
+        [DoNotEnumerate]
         public static JSObject trunc(Arguments args)
         {
             if (args.Length < 1)
-                return double.NaN;
+                return Number.NaN;
             return System.Math.Truncate(Tools.JSObjectToDouble(args[0]));
         }
 

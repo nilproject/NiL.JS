@@ -15,7 +15,7 @@ namespace NiL.JS.Core.Functions
             _length = new Number(1);
         }
 
-        public override NiL.JS.Core.JSObject Invoke(JSObject thisBind, Arguments args)
+        public override NiL.JS.Core.JSObject Invoke(JSObject targetObject, Arguments args)
         {
             JSObject oVal = null;
             if (args != null && args.length > 0)
