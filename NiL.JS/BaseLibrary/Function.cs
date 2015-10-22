@@ -902,7 +902,7 @@ namespace NiL.JS.BaseLibrary
             targetObject = correctThisBind(targetObject, body.strict);
             if (body == null || body.lines.Length == 0)
             {
-                notExists.valueType = JSObjectType.NotExistsInObject;
+                notExists.valueType = JSObjectType.NotExists;
                 return notExists;
             }
             var oldargs = _arguments;
