@@ -48,11 +48,12 @@ namespace NiL.JS.Core
                 new Rule("for", ForStatement.Parse),
                 new Rule("while", WhileStatement.Parse),
                 new Rule("return", ReturnStatement.Parse),
-                new Rule("function", FunctionNotation.Parse),
+                new Rule("function", FunctionNotation.ParseFunction),
                 new Rule("class", ClassNotation.Parse),
                 new Rule("switch", SwitchStatement.Parse),
                 new Rule("with", WithStatement.Parse),
                 new Rule("do", DoWhileStatement.Parse),
+                new Rule(ValidateArrow, FunctionNotation.ParseArrow),
                 new Rule("(", ExpressionTree.Parse),
                 new Rule("+", ExpressionTree.Parse),
                 new Rule("-", ExpressionTree.Parse),
@@ -83,12 +84,12 @@ namespace NiL.JS.Core
                 new Rule("{", ExpressionTree.Parse),
                 new Rule("function", ExpressionTree.Parse),
                 new Rule("class", ExpressionTree.Parse),
+                new Rule(ValidateArrow, FunctionNotation.ParseArrow),
                 new Rule("(", ExpressionTree.Parse),
                 new Rule("+", ExpressionTree.Parse),
                 new Rule("-", ExpressionTree.Parse),
                 new Rule("!", ExpressionTree.Parse),
                 new Rule("~", ExpressionTree.Parse),
-                new Rule("(", ExpressionTree.Parse),
                 new Rule("true", ExpressionTree.Parse),
                 new Rule("false", ExpressionTree.Parse),
                 new Rule("null", ExpressionTree.Parse),
@@ -106,11 +107,70 @@ namespace NiL.JS.Core
             {
                 new Rule("[", ArrayNotation.Parse),
                 new Rule("{", ObjectNotation.Parse),
-                new Rule("function", FunctionNotation.Parse),
+                new Rule("function", FunctionNotation.ParseFunction),
                 new Rule("class", ClassNotation.Parse),
                 new Rule("new", NewOperator.Parse),
+                new Rule(ValidateArrow, FunctionNotation.ParseArrow),
             }
         };
+
+        private static bool ValidateArrow(string code, int index)
+        {
+            bool bracket = code[index] == '(';
+
+            if (bracket)
+                index++;
+            else if (!ValidateName(code, ref index))
+                return false;
+            if (code.Length == index)
+                return false;
+
+            while (char.IsWhiteSpace(code[index]))
+            {
+                index++;
+                if (code.Length == index)
+                    return false;
+            }
+
+            if (bracket)
+            {
+                while (code[index] == ',')
+                {
+                    do
+                    {
+                        index++;
+                        if (code.Length == index)
+                            return false;
+                    }
+                    while (char.IsWhiteSpace(code[index]));
+
+                    if (!ValidateName(code, ref index))
+                        return false;
+
+                    while (char.IsWhiteSpace(code[index]))
+                    {
+                        index++;
+                        if (code.Length == index)
+                            return false;
+                    }
+                }
+                if (code[index] != ')')
+                    return false;
+
+                do
+                {
+                    index++;
+                    if (code.Length == index)
+                        return false;
+                }
+                while (char.IsWhiteSpace(code[index]));
+            }
+
+            if (!Validate(code, "=>", index))
+                return false;
+
+            return true;
+        }
 
         [CLSCompliant(false)]
         public static bool Validate(string code, string patern, int index)
@@ -497,9 +557,9 @@ namespace NiL.JS.Core
             return null;
         }
 
-        internal static void Build<T>(ref T s, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts) where T : CodeNode
+        internal static void Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            while (s != null && s.Build(ref s, depth, variables, state, message, statistic, opts))
+            while (_this != null && _this.Build(ref _this, depth, variables, state, message, statistic, opts))
                 ;
         }
 

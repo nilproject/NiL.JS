@@ -27,13 +27,13 @@ namespace NiL.JS.Expressions
             return base.Evaluate(context).iValue == 0;
         }
 
-        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             baseOptimize(ref _this, owner, message, opts, statistic);
             if (_this == this)
                 if (first.ResultType == PredictedType.Number && second.ResultType == PredictedType.Number)
                 {
-                    _this = new NumberLessOrEqualOperator(first, second) as T;
+                    _this = new NumberLessOrEqualOperator(first, second);
                     return;
                 }
         }

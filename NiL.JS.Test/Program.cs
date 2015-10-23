@@ -405,7 +405,7 @@ function* incGen(x)
             }));
 #endif
 
-            int mode = 6
+            int mode = 2
                     ;
             switch (mode)
             {
@@ -417,11 +417,7 @@ function* incGen(x)
 #if !PORTABLE
                 case -3:
                     {
-                        Context.GlobalContext.DefineVariable
-                            ("forms") // имя переменной, через которую будет доступно пространство имён.
-                            .Assign(new NamespaceProvider
-                                ("System.Windows.Forms")); // пространство имён, к которому будет осуществляться доступ.
-                        runFile("samples/WinFormsSample.js");
+                        runFile("md5.js");
                         break;
                     }
 #endif

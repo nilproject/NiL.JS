@@ -96,13 +96,13 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(body);
 #endif
                 context.lastResult = body.Evaluate(context) ?? context.lastResult;
-                if (context.abort != AbortType.None)
+                if (context.abortType != AbortType.None)
                 {
                     var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                    var _break = (context.abort > AbortType.Continue) || !me;
-                    if (context.abort < AbortType.Return && me)
+                    var _break = (context.abortType > AbortType.Continue) || !me;
+                    if (context.abortType < AbortType.Return && me)
                     {
-                        context.abort = AbortType.None;
+                        context.abortType = AbortType.None;
                         context.abortInfo = JSValue.notExists;
                     }
                     if (_break)
@@ -128,7 +128,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             depth = System.Math.Max(1, depth);
             Parser.Build(ref body, depth, variables, state | BuildState.InLoop, message, statistic, opts);
@@ -140,9 +140,9 @@ namespace NiL.JS.Statements
                     && (condition is ConstantNotation || (condition as Expressions.Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
-                        _this = new InfinityLoopStatement(body, labels) as T;
+                        _this = new InfinityLoopStatement(body, labels);
                     else if (labels.Length == 0)
-                        _this = body as T;
+                        _this = body;
                     condition.Eliminated = true;
                 }
             }
@@ -161,7 +161,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             condition.Optimize(ref condition, owner, message, opts, statistic);
             body.Optimize(ref body, owner, message, opts, statistic);

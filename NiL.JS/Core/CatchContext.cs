@@ -9,7 +9,7 @@ namespace NiL.JS.Core
         private string errorVariableName;
 
         internal CatchContext(JSValue e, Context proto, string name)
-            : base(proto, false, proto.caller)
+            : base(proto, false, proto.owner)
         {
             if (e == null)
                 throw new ArgumentNullException();

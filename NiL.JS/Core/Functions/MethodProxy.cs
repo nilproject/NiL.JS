@@ -370,7 +370,7 @@ namespace NiL.JS.Core.Functions
             {
                 Arguments _arguments = new Core.Arguments()
                 {
-                    caller = initiator.strict && initiator.caller != null && initiator.caller.creator.body.strict ? Function.propertiesDummySM : initiator.caller,
+                    caller = initiator.strict && initiator.owner != null && initiator.owner.creator.body.strict ? Function.propertiesDummySM : initiator.owner,
                     length = arguments.Length
                 };
 

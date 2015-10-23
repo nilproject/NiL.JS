@@ -257,14 +257,14 @@ namespace NiL.JS.BaseLibrary
                 res = new Array() { self };
             }
             else
-                res = Tools.iterableToArray(self, true, true, false, -1);
+                res = Tools.arraylikeToArray(self, true, true, false, -1);
             for (var i = 0; i < args.length; i++)
             {
                 var v = args[i];
                 var varr = v.oValue as Array;
                 if (varr != null)
                 {
-                    varr = Tools.iterableToArray(varr, true, false, false, -1);
+                    varr = Tools.arraylikeToArray(varr, true, false, false, -1);
                     for (var ai = 0; ai < varr.data.Length; ai++)
                     {
                         var item = varr.data[ai];
@@ -302,7 +302,7 @@ namespace NiL.JS.BaseLibrary
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
                 ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype." + (inverse ? "some" : "every") + " for null or undefined"));
             if (!nativeMode)
-                src = Tools.iterableToArray(self, false, false, false, -1);
+                src = Tools.arraylikeToArray(self, false, false, false, -1);
 
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
@@ -337,7 +337,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, length).data.DirectOrder.GetEnumerator();
+                        alternativeEnum = Tools.arraylikeToArray(self.__proto__, false, false, false, length).data.DirectOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -391,7 +391,7 @@ namespace NiL.JS.BaseLibrary
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
                 ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.filter for null or undefined"));
             if (!nativeMode)
-                src = Tools.iterableToArray(self, false, false, false, -1);
+                src = Tools.arraylikeToArray(self, false, false, false, -1);
 
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
@@ -428,7 +428,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
+                        alternativeEnum = Tools.arraylikeToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -499,7 +499,7 @@ namespace NiL.JS.BaseLibrary
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
                 ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype." + (needResult ? "map" : "forEach") + " for null or undefined"));
             if (!nativeMode)
-                src = Tools.iterableToArray(self, false, false, false, -1);
+                src = Tools.arraylikeToArray(self, false, false, false, -1);
 
             Function f = args[0] == null ? null : args[0].oValue as Function;
             if (f == null)
@@ -535,7 +535,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
+                        alternativeEnum = Tools.arraylikeToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -591,13 +591,13 @@ namespace NiL.JS.BaseLibrary
             bool nativeMode = src != null;
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
                 ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.indexOf for null or undefined"));
-            var _length = nativeMode ? src.data.Length : Tools.getLengthOfIterably(self, false);
+            var _length = nativeMode ? src.data.Length : Tools.getLengthOfArraylike(self, false);
             var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : 0;
             if (fromIndex < 0)
                 fromIndex += _length;
 
             if (!nativeMode)
-                src = Tools.iterableToArray(self, false, false, false, _length);
+                src = Tools.arraylikeToArray(self, false, false, false, _length);
             JSValue image = args[0];
             IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
             long prew = fromIndex - 1;
@@ -618,7 +618,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
+                        alternativeEnum = Tools.arraylikeToArray(self.__proto__, false, false, false, _length).data.DirectOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -720,7 +720,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                return joinImpl(Tools.iterableToArray(self, true, false, false, -1), separator, locale);
+                return joinImpl(Tools.arraylikeToArray(self, true, false, false, -1), separator, locale);
             }
         }
 
@@ -734,13 +734,13 @@ namespace NiL.JS.BaseLibrary
             if (!self.IsDefined || (self.valueType >= JSValueType.Object && self.oValue == null))
                 ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.lastIndexOf for null or undefined"));
 
-            var _length = nativeMode ? src.data.Length : Tools.getLengthOfIterably(self, false);
+            var _length = nativeMode ? src.data.Length : Tools.getLengthOfArraylike(self, false);
             var fromIndex = args.length > 1 ? Tools.JSObjectToInt64(args[1], 0, true) : _length - 1;
             if (fromIndex < 0)
                 fromIndex += _length;
 
             if (!nativeMode)
-                src = Tools.iterableToArray(self, false, false, false, _length);
+                src = Tools.arraylikeToArray(self, false, false, false, _length);
 
             JSValue image = args[0];
             IEnumerator<KeyValuePair<int, JSValue>> alternativeEnum = null;
@@ -762,7 +762,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (alternativeEnum == null)
                     {
-                        alternativeEnum = Tools.iterableToArray(self.__proto__, false, false, false, _length).data.ReversOrder.GetEnumerator();
+                        alternativeEnum = Tools.arraylikeToArray(self.__proto__, false, false, false, _length).data.ReversOrder.GetEnumerator();
                         alternativeEnum.MoveNext();
                     }
                     alter = true;
@@ -825,7 +825,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var length = Tools.getLengthOfIterably(self, true);
+                var length = Tools.getLengthOfArraylike(self, true);
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
                 length--;
@@ -869,7 +869,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var length = Tools.getLengthOfIterably(self, false);
+                var length = Tools.getLengthOfArraylike(self, false);
                 var i = length;
                 length += args.length;
                 self["length"] = length;
@@ -935,7 +935,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var length = Tools.getLengthOfIterably(self, false);
+                var length = Tools.getLengthOfArraylike(self, false);
                 for (var i = 0; i < length >> 1; i++)
                 {
                     JSValue i0 = i.ToString();
@@ -1020,7 +1020,7 @@ namespace NiL.JS.BaseLibrary
             //if (self.GetType() != typeof(Array)) // при переборе должны быть получены значения из прототипов. 
             // Если просто запрашивать пропущенные индексы, то может быть большое падение производительности в случаях
             // когда пропуски очень огромны и элементов реально нет ни здесь, ни в прототипе 
-            var src = self.oValue as Array ?? Tools.iterableToArray(self, false, false, false, -1);
+            var src = self.oValue as Array ?? Tools.arraylikeToArray(self, false, false, false, -1);
             var native = src == self.oValue;
             var func = args[0].oValue as Function;
             var accum = new JSValue() { valueType = JSValueType.NotExists };
@@ -1235,7 +1235,7 @@ namespace NiL.JS.BaseLibrary
                     self["length"] = lenObj = _length - 1;
                     return res;
                 }
-                var protoSource = Tools.iterableToArray(self, false, true, false, -1);
+                var protoSource = Tools.arraylikeToArray(self, false, true, false, -1);
                 self["length"] = lenObj = _length - 1;
 
                 List<string> keysToRemove = new List<string>();
@@ -1493,7 +1493,7 @@ namespace NiL.JS.BaseLibrary
             }
             else // êòî-òî îòïðàâèë îáúåêò ñ ïîëåì length
             {
-                long _length = Tools.getLengthOfIterably(self, false);
+                long _length = Tools.getLengthOfArraylike(self, false);
                 var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
                 long pos1 = 0;
                 if (args.Length > 1)
@@ -1526,7 +1526,7 @@ namespace NiL.JS.BaseLibrary
                 var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
                 var res = needResult ? new Array() : null;
                 long prewKey = -1;
-                foreach (var keyS in Tools.EnumerateIterably(_length, self))
+                foreach (var keyS in Tools.EnumerateArraylike(_length, self))
                 {
                     if (prewKey == -1)
                         prewKey = (uint)keyS.Key;
@@ -1763,7 +1763,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var len = Tools.getLengthOfIterably(self, false);
+                var len = Tools.getLengthOfArraylike(self, false);
                 if (comparer != null)
                 {
                     var second = new JSValue();
@@ -1774,7 +1774,7 @@ namespace NiL.JS.BaseLibrary
 
                     var tt = new BinaryTree<JSValue, List<JSValue>>(new JSComparer(args, first, second, comparer));
                     List<string> keysToRemove = new List<string>();
-                    foreach (var key in Tools.EnumerateIterably(len, self))
+                    foreach (var key in Tools.EnumerateArraylike(len, self))
                     {
                         keysToRemove.Add(key.Key.ToString());
                         var item = key.Value;
@@ -1858,7 +1858,7 @@ namespace NiL.JS.BaseLibrary
             args.a0 = 0;
             args.a1 = args.a0;
             spliceImpl(self, args, false);
-            return Tools.getLengthOfIterably(self, false);
+            return Tools.getLengthOfArraylike(self, false);
         }
 
         [Hidden]

@@ -11,7 +11,7 @@ namespace NiL.JS.Core
         private JSValue @object;
 
         public WithContext(JSValue obj, Context prototype)
-            : base(prototype, false, prototype.caller)
+            : base(prototype, false, prototype.owner)
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");

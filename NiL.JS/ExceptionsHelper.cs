@@ -62,5 +62,16 @@ namespace NiL.JS
                 code.Substring(index, System.Math.Min(50, code.Length - index)).Split(Tools.TrimChars).FirstOrDefault(),
                 cord)));
         }
+
+        internal static void ThrowSyntaxError(string message, string code, int position)
+        {
+            ThrowSyntaxError(message, code, position, 0);
+        }
+
+        internal static void ThrowSyntaxError(string message, string code, int position, int length)
+        {
+            var cord = CodeCoordinates.FromTextPosition(code, position, 0);
+            Throw(new SyntaxError(message + " " + cord));
+        }
     }
 }

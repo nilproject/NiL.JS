@@ -87,7 +87,7 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 while (generatorContext == null);
-                while (generatorContext.abort == AbortType.None)
+                while (generatorContext.abortType == AbortType.None)
 #if !NET35
                     Thread.Yield();
 #else
@@ -95,7 +95,7 @@ namespace NiL.JS.BaseLibrary
 #endif
                 var res = JSObject.CreateObject();
                 res.fields["value"] = generatorContext.abortInfo;
-                res.fields["done"] = generatorContext.abort == AbortType.Return;
+                res.fields["done"] = generatorContext.abortType == AbortType.Return;
                 return res;
             }
             else
@@ -104,8 +104,8 @@ namespace NiL.JS.BaseLibrary
                     || thread.ThreadState == ThreadState.WaitSleepJoin)
                 {
                     generatorContext.abortInfo = args[0];
-                    generatorContext.abort = AbortType.None;
-                    while (generatorContext.abort == AbortType.None)
+                    generatorContext.abortType = AbortType.None;
+                    while (generatorContext.abortType == AbortType.None)
 #if !NET35
                         Thread.Yield();
 #else
@@ -113,7 +113,7 @@ namespace NiL.JS.BaseLibrary
 #endif
                     var res = JSObject.CreateObject();
                     res.fields["value"] = generatorContext.abortInfo;
-                    res.fields["done"] = generatorContext.abort == AbortType.Return;
+                    res.fields["done"] = generatorContext.abortType == AbortType.Return;
                     return res;
                 }
                 else
@@ -131,7 +131,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (thread.ThreadState == ThreadState.Suspended)
                 {
-                    generatorContext.abort = AbortType.Exception;
+                    generatorContext.abortType = AbortType.Exception;
                 }
             }
         }

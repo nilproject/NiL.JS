@@ -36,7 +36,7 @@ namespace NiL.JS.Expressions
                 return second.Evaluate(context);
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (message != null && depth <= 1)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use logical operator as a conditional statement");

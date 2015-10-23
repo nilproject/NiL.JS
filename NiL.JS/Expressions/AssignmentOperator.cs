@@ -85,7 +85,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -115,7 +115,7 @@ namespace NiL.JS.Expressions
 #endif
             var gme = first as GetMemberOperator;
             if (gme != null)
-                _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length } as T;
+                _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
 
             if ((state & (BuildState.InExpression | BuildState.InEval)) != 0)
                 saveResult = true;
@@ -123,7 +123,7 @@ namespace NiL.JS.Expressions
             return r;
         }
 
-        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             baseOptimize(ref _this, owner, message, opts, statistic);
             var vr = first as VariableReference;
@@ -172,11 +172,11 @@ namespace NiL.JS.Expressions
                             if (second.IsContextIndependent)
                             {
                                 _this.Eliminated = true;
-                                _this = EmptyExpression.Instance as T;
+                                _this = EmptyExpression.Instance;
                             }
                             else
                             {
-                                _this = second as T;
+                                _this = second;
                                 this.second = null;
                                 this.Eliminated = true;
                                 this.second = _this as Expression;
@@ -191,7 +191,7 @@ namespace NiL.JS.Expressions
                         Position = Position,
                         Length = Length,
                         codeContext = codeContext
-                    } as T;
+                    };
                 }
             }
         }

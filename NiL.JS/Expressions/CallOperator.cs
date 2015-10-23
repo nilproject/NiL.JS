@@ -80,12 +80,13 @@ namespace NiL.JS.Expressions
             else
             {
                 if (allowTCO
-                    && context.caller != null
-                    && (func.Type == FunctionType.Function || func.Type == FunctionType.AnonymousFunction)
-                    && func == context.caller.oValue
-                    && context.caller.oValue != Script.pseudoCaller)
+                    && (func.Type != FunctionType.Generator)
+                    && context.owner != null
+                    && func == context.owner.oValue
+                    && context.owner.oValue != Script.pseudoCaller)
                 {
                     tailCall(context, func);
+                    context.objectSource = newThisBind;
                     return JSValue.undefined;
                 }
                 else
@@ -99,11 +100,11 @@ namespace NiL.JS.Expressions
 
         private void tailCall(Context context, Function func)
         {
-            context.abort = AbortType.TailRecursion;
+            context.abortType = AbortType.TailRecursion;
 
             var arguments = new Arguments()
             {
-                caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller,
+                caller = context.strict && context.owner != null && context.owner.creator.body.strict ? Function.propertiesDummySM : context.owner,
                 length = this.arguments.Length
             };
             for (int i = 0; i < this.arguments.Length; i++)
@@ -111,14 +112,7 @@ namespace NiL.JS.Expressions
             context.objectSource = null;
 
             arguments.callee = func;
-            for (var i = func.creator.body.localVariables.Length; i-- > 0; )
-            {
-                if (func.creator.body.localVariables[i].initializer == null)
-                    func.creator.body.localVariables[i].cacheRes.Assign(JSValue.undefined);
-            }
-            func._arguments = arguments;
-            if (context.fields != null && context.fields.ContainsKey("arguments"))
-                context.fields["arguments"] = arguments;
+            context.abortInfo = arguments;
         }
 
         private static void checkStack()
@@ -135,7 +129,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseCall = true;
@@ -171,7 +165,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             for (var i = arguments.Length; i-- > 0; )

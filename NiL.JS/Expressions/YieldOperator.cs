@@ -35,17 +35,17 @@ namespace NiL.JS.Expressions
             {
                 tempContainer.Assign(first.Evaluate(context));
                 context.abortInfo = tempContainer;
-                context.abort = AbortType.Yield;
+                context.abortType = AbortType.Yield;
                 context.Deactivate();
-                while (context.abort == AbortType.Yield)
+                while (context.abortType == AbortType.Yield)
 #if !NET35
                     Thread.Yield();
 #else
                     Thread.Sleep(0);
 #endif
-                if (context.abort == AbortType.Exception)
+                if (context.abortType == AbortType.Exception)
                     ExceptionsHelper.Throw(new Error("Execution aborted"));
-                context.abort = AbortType.None;
+                context.abortType = AbortType.None;
                 context.Activate();
                 tempContainer.Assign(context.abortInfo ?? JSValue.notExists);
                 return tempContainer;

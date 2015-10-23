@@ -124,13 +124,13 @@ namespace NiL.JS.Statements
                     var temp = body.Evaluate(context);
                     if (temp != null)
                         context.lastResult = temp;
-                    if (context.abort != AbortType.None)
+                    if (context.abortType != AbortType.None)
                     {
                         var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                        var _break = (context.abort > AbortType.Continue) || !me;
-                        if (context.abort < AbortType.Return && me)
+                        var _break = (context.abortType > AbortType.Continue) || !me;
+                        if (context.abortType < AbortType.Return && me)
                         {
-                            context.abort = AbortType.None;
+                            context.abortType = AbortType.None;
                             context.abortInfo = null;
                         }
                         if (_break)
@@ -171,7 +171,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref init, 1, variables, state, message, statistic, opts);
             if ((opts & Options.SuppressUselessStatementsElimination) == 0
@@ -193,7 +193,7 @@ namespace NiL.JS.Statements
                 && (condition as Expressions.Expression).IsContextIndependent
                 && !(bool)condition.Evaluate(null))
             {
-                _this = init as T;
+                _this = init;
                 return false;
             }
             else if (body == null || body is EmptyExpression) // initial solution. Will extended
@@ -245,10 +245,10 @@ namespace NiL.JS.Statements
                                 {
                                     if (!(bool)NiL.JS.Expressions.LessOperator.Check(vvalue, lvalue))
                                     {
-                                        _this = init as T;
+                                        _this = init;
                                         return false;
                                     }
-                                    _this = new CodeBlock(new[] { new NiL.JS.Expressions.AssignmentOperator(variable, limit), init }, false) as T;
+                                    _this = new CodeBlock(new[] { new NiL.JS.Expressions.AssignmentOperator(variable, limit), init }, false);
                                     return true;
                                 }
                             }
@@ -259,7 +259,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (init != null)
                 init.Optimize(ref init, owner, message, opts, statistic);

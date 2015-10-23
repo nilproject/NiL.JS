@@ -81,7 +81,7 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
             state = state | BuildState.InExpression;
@@ -102,18 +102,18 @@ namespace NiL.JS.Expressions
                         res.iValue = (int)res.dValue;
                         res.valueType = JSValueType.Int;
                     }
-                    _this = new ConstantNotation(res) as CodeNode as T;
+                    _this = new ConstantNotation(res) as CodeNode;
                     return true;
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantNotation(e.Avatar))) as T;
+                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantNotation(e.Avatar)));
                     expressionWillThrow(message);
                     return true;
                 }
                 catch (Exception e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(e)) as T;
+                    _this = new ExpressionWrapper(new ThrowStatement(e));
                     expressionWillThrow(message);
                     return true;
                 }
@@ -121,12 +121,12 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             baseOptimize(ref _this, owner, message, opts, statistic);
         }
 
-        internal void baseOptimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic) where T : CodeNode
+        internal void baseOptimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var f = first as CodeNode;
             var s = second as CodeNode;
@@ -144,16 +144,16 @@ namespace NiL.JS.Expressions
             {
                 try
                 {
-                    _this = new ConstantNotation(Evaluate(null)) as T;
+                    _this = new ConstantNotation(Evaluate(null));
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantNotation(e.Avatar))) as T;
+                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantNotation(e.Avatar)));
                     expressionWillThrow(message);
                 }
                 catch (Exception e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(e)) as T;
+                    _this = new ExpressionWrapper(new ThrowStatement(e));
                     expressionWillThrow(message);
                 }
             }

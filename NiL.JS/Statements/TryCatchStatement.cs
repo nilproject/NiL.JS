@@ -265,7 +265,7 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(finallyBody);
 #endif
-            var abort = context.abort;
+            var abort = context.abortType;
             var ainfo = context.abortInfo;
             if (abort == AbortType.Return && ainfo != null)
             {
@@ -274,12 +274,12 @@ namespace NiL.JS.Statements
                 else
                     ainfo = JSValue.Undefined;
             }
-            context.abort = AbortType.None;
+            context.abortType = AbortType.None;
             context.abortInfo = JSValue.undefined;
             context.lastResult = finallyBody.Evaluate(context) ?? context.lastResult;
-            if (context.abort == AbortType.None)
+            if (context.abortType == AbortType.None)
             {
-                context.abort = abort;
+                context.abortType = abort;
                 context.abortInfo = ainfo;
             }
             else
@@ -350,11 +350,11 @@ namespace NiL.JS.Statements
                 context.lastResult = catchContext.lastResult ?? context.lastResult;
                 catchContext.Deactivate();
             }
-            context.abort = catchContext.abort;
+            context.abortType = catchContext.abortType;
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsTry = true;
@@ -385,7 +385,7 @@ namespace NiL.JS.Statements
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null || finallyBody == null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
-                _this = finallyBody as T;
+                _this = finallyBody;
             }
             if (catchBody != null && (catchBody.lines.Length == 0 || (catchBody.lines.Length == 1 && catchBody.lines[0] is EmptyExpression)))
             {
@@ -395,7 +395,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize<T>(ref T _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             CodeNode b = null;
             body.Optimize(ref body, owner, message, opts, statistic);

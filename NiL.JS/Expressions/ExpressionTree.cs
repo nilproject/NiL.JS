@@ -645,8 +645,7 @@ namespace NiL.JS.Expressions
                         ExceptionsHelper.Throw((new SyntaxError("Expected \")\"")));
                 }
                 i++;
-                if ((state.InExpression > 0 && first is FunctionNotation)
-                    || (forNew && first is CallOperator))
+                if ((state.InExpression > 0 && first is FunctionNotation) || (forNew && first is CallOperator))
                     first = new Expressions.CommaOperator(first, null) { Position = index, Length = i - index };
             }
             else
@@ -1283,10 +1282,10 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Type = Type;
-            _this = _fastImpl as T;
+            _this = _fastImpl;
             _fastImpl.Position = Position;
             _fastImpl.Length = Length;
             return true;

@@ -19,9 +19,13 @@ namespace NiL.JS.Expressions
 
         internal protected override JSValue EvaluateForWrite(Context context)
         {
-            var res = context.caller._arguments;
+            if (context.owner.creator.type == BaseLibrary.FunctionType.Arrow)
+                context = context.parent;
+            if (context.arguments == null)
+                context.owner.BuildArgumentsObject();
+            var res = context.arguments;
             if (res is Arguments)
-                context.caller._arguments = res = res.CloneImpl();
+                context.arguments = res = res.CloneImpl();
             if (context.fields != null && context.fields.ContainsKey(Name))
                 context.fields[Name] = res;
             return res;
@@ -29,8 +33,11 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var res = context.caller._arguments;
-            return res;
+            if (context.owner.creator.type == BaseLibrary.FunctionType.Arrow)
+                context = context.parent;
+            if (context.arguments == null)
+                context.owner.BuildArgumentsObject();
+            return context.arguments;
         }
     }
 
@@ -70,7 +77,7 @@ namespace NiL.JS.Expressions
                 if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
                     ExceptionsHelper.ThrowVariableNotDefined(variableName);
                 if ((res.attributes & JSValueAttributesInternal.Argument) != 0)
-                    context.caller.buildArgumentsObject();
+                    context.owner.BuildArgumentsObject();
                 return res;
             }
             return descriptor.Get(context, true, defineDepth);
@@ -124,7 +131,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
@@ -154,12 +161,12 @@ namespace NiL.JS.Expressions
             {
                 if (statistic != null)
                     statistic.ContainsArguments = true;
-                _this = new GetArgumentsExpression(defineDepth) { descriptor = descriptor } as T;
+                _this = new GetArgumentsExpression(defineDepth) { descriptor = descriptor };
             }
             return false;
         }
 
-        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             if ((opts & Options.SuppressConstantPropogation) == 0
@@ -211,7 +218,7 @@ namespace NiL.JS.Expressions
                     var assign = lastAssign as AssignmentOperator;
                     if (assign != null && (assign.codeContext & BuildState.Conditional) == 0 && assign.second is ConstantNotation)
                     {
-                        _this = assign.second as T;
+                        _this = assign.second;
                     }
                 }
             }

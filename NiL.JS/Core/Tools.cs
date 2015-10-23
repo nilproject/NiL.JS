@@ -1302,16 +1302,14 @@ namespace NiL.JS.Core
 #endif
         internal static bool isHex(char p)
         {
-            if (p < '0')
-                return false;
-            if (p > 'f')
+            if (p < '0' || p > 'f')
                 return false;
             var c = anum(p);
             return c >= 0 && c < 16;
         }
 
         /// <summary>
-        /// Переводит представление числа из системы исчисления с основанием 36 (0-9 A-Z без учёта регистра) в десятичную.
+        /// Переводит число из системы исчисления с основанием 36 (0-9 A-Z без учёта регистра) в десятичную.
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
@@ -1323,7 +1321,7 @@ namespace NiL.JS.Core
             return ((p % 'a' % 'A' + 10) % ('0' + 10));
         }
 
-        internal static long getLengthOfIterably(JSValue src, bool reassignLen)
+        internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
         {
             var len = src.GetMember("length", true, false); // тут же проверка на null/undefined с падением если надо
             if (len.valueType == JSValueType.Property)
@@ -1351,7 +1349,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal static BaseLibrary.Array iterableToArray(JSValue src, bool evalProps, bool clone, bool reassignLen, long _length)
+        internal static BaseLibrary.Array arraylikeToArray(JSValue src, bool evalProps, bool clone, bool reassignLen, long _length)
         {
             var temp = new BaseLibrary.Array();
             bool goDeep = true;
@@ -1388,12 +1386,12 @@ namespace NiL.JS.Core
                 {
                     if (_length == -1)
                     {
-                        _length = getLengthOfIterably(src, reassignLen);
+                        _length = getLengthOfArraylike(src, reassignLen);
                         if (_length == 0)
                             return temp;
                     }
                     long prew = -1;
-                    foreach (var index in EnumerateIterably(_length, src))
+                    foreach (var index in EnumerateArraylike(_length, src))
                     {
                         var value = index.Value;
                         if (!value.IsExists)
@@ -1421,7 +1419,7 @@ namespace NiL.JS.Core
             return temp;
         }
 
-        internal static IEnumerable<KeyValuePair<uint, JSValue>> EnumerateIterably(long length, JSValue src)
+        internal static IEnumerable<KeyValuePair<uint, JSValue>> EnumerateArraylike(long length, JSValue src)
         {
             if (src.valueType == JSValueType.Object && src.Value is BaseLibrary.Array)
             {

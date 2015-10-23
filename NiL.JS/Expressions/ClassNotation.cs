@@ -171,13 +171,13 @@ namespace NiL.JS.Expressions
                     ctorCode = "constructor(...args) { super(...args); }";
                 else
                     ctorCode = "constructor(...args) { }";
-                flds["constructor"] = FunctionNotation.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex);
+                flds["constructor"] = FunctionNotation.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex, FunctionType.Method);
             }
             index = i + 1;
             return new ClassNotation(name, bce, flds);
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return base.Build(ref _this, depth, variables, state, message, statistic, opts);
         }

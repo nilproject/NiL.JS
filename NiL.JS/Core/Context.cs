@@ -169,12 +169,13 @@ namespace NiL.JS.Core
         internal JSValue tempContainer;
         internal Context parent;
         internal IDictionary<string, JSValue> fields;
-        internal AbortType abort;
+        internal AbortType abortType;
         internal JSValue objectSource;
         internal JSValue abortInfo;
         internal JSValue lastResult;
+        internal JSValue arguments;
         internal JSValue thisBind;
-        internal Function caller;
+        internal Function owner;
         internal bool strict;
         internal VariableDescriptor[] variables;
 
@@ -268,10 +269,13 @@ namespace NiL.JS.Core
         {
         }
 
-        internal Context(Context prototype, bool createFields, Function caller)
+        internal Context(Context prototype, bool createFields, Function owner)
         {
+            this.owner = owner;
             if (prototype != null)
             {
+                if (owner == prototype.owner)
+                    arguments = prototype.arguments;
                 tempContainer = prototype.tempContainer;
                 this.parent = prototype;
                 this.thisBind = prototype.thisBind;
@@ -283,9 +287,8 @@ namespace NiL.JS.Core
             {
                 tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
             }
-            this.caller = caller;
             if (createFields)
-                this.fields = new StringMap2<JSValue>();
+                this.fields = JSObject.createFields();
             this.abortInfo = JSValue.notExists;
         }
 
@@ -370,6 +373,16 @@ namespace NiL.JS.Core
             oldContext = null;
             return c;
 #endif
+        }
+
+        internal Context GetRunnedContextFor(Function function)
+        {
+            var context = CurrentContext;
+            while (context != null && context.owner != function)
+            {
+                context = context.oldContext;
+            }
+            return context;
         }
 
         /// <summary>
@@ -541,12 +554,14 @@ namespace NiL.JS.Core
                 if (i < c.Length)
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
-                Parser.Build(ref body, 0, vars, (strict ? BuildState.Strict : BuildState.None) | BuildState.InEval, null, null, Options.Default);
+                CodeNode cb = body;
+                Parser.Build(ref cb, 0, vars, (strict ? BuildState.Strict : BuildState.None) | BuildState.InEval, null, null, Options.Default);
+                body = cb as CodeBlock;
                 Context context = null;
                 if (leak)
                     context = this;
                 else
-                    context = new Context(this, true, this.caller) { strict = true, variables = body.variables };
+                    context = new Context(this, true, this.owner) { strict = true, variables = body.variables };
                 if (leak)
                 {
                     if (context.variables != null)
@@ -600,7 +615,9 @@ namespace NiL.JS.Core
                     }
                 }
 
-                body.Optimize(ref body, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
+                cb = body;
+                body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
+                body = cb as CodeBlock;
 
                 var run = context.Activate();
                 try

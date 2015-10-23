@@ -298,21 +298,13 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Try to assign to a non-primitive value");
             }
         }
-
+        
 #if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         internal static IDictionary<string, JSValue> createFields()
         {
-            return createFields(0);
-        }
-
-#if INLINE
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-        internal static IDictionary<string, JSValue> createFields(int p)
-        {
-            //return new Dictionary<string, JSObject>(p, System.StringComparer.Ordinal);
+            //return new Dictionary<string, JSObject>(System.StringComparer.Ordinal);
             return new StringMap2<JSValue>();
         }
 

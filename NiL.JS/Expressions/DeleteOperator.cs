@@ -61,7 +61,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (base.Build(ref _this, depth, variables, state, message, statistic, opts))
                 return true;
@@ -75,7 +75,7 @@ namespace NiL.JS.Expressions
             if (gme != null)
             {
                 //first = new SafeMemberGetter(gme);
-                _this = new DeleteMemberExpression(gme.first, gme.second) as T;
+                _this = new DeleteMemberExpression(gme.first, gme.second);
                 return false;
             }
             var f = first as VariableReference ?? ((first is GetValueForAssignmentOperator) ? (first as GetValueForAssignmentOperator).Source as VariableReference : null);

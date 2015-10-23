@@ -51,9 +51,13 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            context.abortInfo = body != null ? body.Evaluate(context) : null;
-            if (context.abort < AbortType.Return)
-                context.abort = AbortType.Return;
+            var result = body != null ? body.Evaluate(context) : null;
+            if (context.abortType != AbortType.TailRecursion)
+            {
+                context.abortInfo = result;
+                if (context.abortType < AbortType.Return)
+                    context.abortType = AbortType.Return;
+            }
             return JSValue.notExists;
         }
 
@@ -64,7 +68,7 @@ namespace NiL.JS.Statements
             return new CodeNode[0];
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref body, depth + 1, variables, state | BuildState.InExpression, message, statistic, opts);
             // Улучшает работу оптимизатора хвостовой рекурсии
@@ -72,18 +76,20 @@ namespace NiL.JS.Statements
             {
                 var bat = body as NiL.JS.Expressions.ConditionalOperator;
                 var bts = bat.Threads;
-                _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1])) { Position = bat.Position, Length = bat.Length } as T;
+                _this = new IfElseStatement(bat.FirstOperand, new ReturnStatement(bts[0]), new ReturnStatement(bts[1])) { Position = bat.Position, Length = bat.Length };
                 return true;
             }
             else if (body is NiL.JS.Expressions.CallOperator)
+            {
                 (body as NiL.JS.Expressions.CallOperator).allowTCO = true;
+            }
 
             statistic.Returns.Add(body ?? EmptyExpression.Instance);
 
             return false;
         }
 
-        internal protected override void Optimize<T>(ref T _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (body != null)
             {

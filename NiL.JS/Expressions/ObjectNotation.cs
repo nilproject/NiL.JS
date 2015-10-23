@@ -168,7 +168,7 @@ namespace NiL.JS.Expressions
             var res = JSObject.CreateObject(false);
             if (fields.Length == 0)
                 return res;
-            res.fields = JSObject.createFields(fields.Length);
+            res.fields = JSObject.createFields();
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Evaluate(context);
@@ -192,7 +192,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build<T>(ref T _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
@@ -210,7 +210,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize<T>(ref T _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             for (var i = Initializators.Length; i-- > 0; )
             {
