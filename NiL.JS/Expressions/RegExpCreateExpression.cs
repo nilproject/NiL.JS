@@ -5,6 +5,7 @@ using NiL.JS.Core;
 
 #if !PORTABLE
 using NiL.JS.Core.JIT;
+using NiL.JS.Statements;
 #endif
 
 namespace NiL.JS.Expressions
@@ -42,6 +43,30 @@ namespace NiL.JS.Expressions
         {
             this.pattern = pattern;
             this.flags = flags;
+        }
+
+        public static CodeNode Parse(ParsingState state, ref int position)
+        {
+            var i = position;
+            if (!Parser.ValidateRegex(state.Code, ref i, false))
+                return null;
+
+            string value = state.Code.Substring(position, i - position);
+            position = i;
+
+            state.Code = Tools.RemoveComments(state.SourceCode, i);
+            var s = value.LastIndexOf('/') + 1;
+            string flags = value.Substring(s);
+            try
+            {
+                return new RegExpExpression(value.Substring(1, s - 2), flags); // объекты должны быть каждый раз разные
+            }
+            catch (Exception e)
+            {
+                if (state.message != null)
+                    state.message(MessageLevel.Error, CodeCoordinates.FromTextPosition(state.Code, i - value.Length, value.Length), string.Format(Strings.InvalidRegExp, value));
+                return new ExpressionWrapper(new ThrowStatement(e));
+            }
         }
 
         protected override CodeNode[] getChildsImpl()

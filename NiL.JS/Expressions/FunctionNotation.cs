@@ -176,39 +176,45 @@ namespace NiL.JS.Expressions
                 i++;
             var parameters = new List<ParameterDescriptor>();
             string name = null;
+            bool arrowWithSunglePrm = false;
             int nameStartPos = 0;
-            if (code[i] != '(')
+            if (mode != FunctionType.Arrow)
             {
-                if (mode == FunctionType.Arrow)
-                    ExceptionsHelper.ThrowSyntaxError("Arrow-function cannot have name", code, index);
-
-                nameStartPos = i;
-                if (Parser.ValidateName(code, ref i, false, true, state.strict))
-                    name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
-                else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateString(code, ref i, false))
-                    name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict);
-                else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateNumber(code, ref i))
-                    name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
-                else
-                    ExceptionsHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, i - nameStartPos);
-                while (char.IsWhiteSpace(code[i]))
-                    i++;
                 if (code[i] != '(')
-                    ExceptionsHelper.ThrowUnknownToken(code, i);
+                {
+                    nameStartPos = i;
+                    if (Parser.ValidateName(code, ref i, false, true, state.strict))
+                        name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
+                    else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateString(code, ref i, false))
+                        name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict);
+                    else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateNumber(code, ref i))
+                        name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
+                    else
+                        ExceptionsHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, i - nameStartPos);
+                    while (char.IsWhiteSpace(code[i]))
+                        i++;
+                    if (code[i] != '(')
+                        ExceptionsHelper.ThrowUnknownToken(code, i);
+                }
+                else if (mode == FunctionType.Get || mode == FunctionType.Set)
+                    ExceptionsHelper.ThrowSyntaxError("Getters and Setters must have name", code, index);
+                else if (mode == FunctionType.Method)
+                    ExceptionsHelper.ThrowSyntaxError("Methods must have name", code, index);
             }
-            else if (mode == FunctionType.Get || mode == FunctionType.Set)
-                ExceptionsHelper.ThrowSyntaxError("Getters and Setters must have name", code, index);
-            else if (mode == FunctionType.Method)
-                ExceptionsHelper.ThrowSyntaxError("Methods must have name", code, index);
+            else if (code[i] != '(')
+            {
+                arrowWithSunglePrm = true;
+                i--;
+            }
             do
                 i++;
             while (char.IsWhiteSpace(code[i]));
             if (code[i] == ',')
-                ExceptionsHelper.Throw(new SyntaxError("Unexpected char at " + CodeCoordinates.FromTextPosition(code, i, 0)));
+                ExceptionsHelper.ThrowSyntaxError("Unexpected char at ", code, i);
             while (code[i] != ')')
             {
                 if (parameters.Count == 255 || (mode == FunctionType.Set && parameters.Count == 1) || mode == FunctionType.Get)
-                    ExceptionsHelper.Throw(new SyntaxError(string.Format("Too many arguments for function \"{0}\" {1}", name, CodeCoordinates.FromTextPosition(code, index, 0))));
+                    ExceptionsHelper.ThrowSyntaxError(string.Format("Too many arguments for function \"{0}\"", name), code, index);
 
                 bool rest = Parser.Validate(code, "...", ref i);
                 if (rest && mode == FunctionType.Arrow)
@@ -226,6 +232,11 @@ namespace NiL.JS.Expressions
                 parameters.Add(desc);
                 while (char.IsWhiteSpace(code[i]))
                     i++;
+                if (arrowWithSunglePrm)
+                {
+                    i--;
+                    break;
+                }
                 if (code[i] == '=')
                 {
                     if (mode == FunctionType.Arrow)
@@ -262,7 +273,8 @@ namespace NiL.JS.Expressions
             CodeBlock body = null;
             if (mode == FunctionType.Arrow)
             {
-                Parser.Validate(code, "=>", ref i);
+                if (!Parser.Validate(code, "=>", ref i))
+                    ExceptionsHelper.ThrowSyntaxError("Expected \"=>\"", code, i);
                 while (char.IsWhiteSpace(code[i]))
                     i++;
             }

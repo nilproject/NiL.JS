@@ -111,6 +111,7 @@ namespace NiL.JS.Core
                 new Rule("class", ClassNotation.Parse),
                 new Rule("new", NewOperator.Parse),
                 new Rule(ValidateArrow, FunctionNotation.ParseArrow),
+                new Rule(ValidateRegex, RegExpExpression.Parse),
             }
         };
 
@@ -134,7 +135,8 @@ namespace NiL.JS.Core
 
             if (bracket)
             {
-                while (code[index] == ',')
+                index--;
+                do
                 {
                     do
                     {
@@ -154,6 +156,7 @@ namespace NiL.JS.Core
                             return false;
                     }
                 }
+                while (code[index] == ',');
                 if (code[index] != ')')
                     return false;
 
@@ -180,6 +183,10 @@ namespace NiL.JS.Core
 
         public static bool Validate(string code, string patern, ref int index)
         {
+            if (string.IsNullOrEmpty(patern))
+                return true;
+            if (string.IsNullOrEmpty(code))
+                return false;
             int i = 0;
             int j = index;
             bool needInc = false;
@@ -209,7 +216,7 @@ namespace NiL.JS.Core
                 j++;
             }
             index = j;
-            return true;
+            return IsIdentificatorTerminator(patern[patern.Length - 1]) || code.Length <= index || IsIdentificatorTerminator(code[index]);
         }
 
         public static bool ValidateName(string code, int index)
@@ -334,7 +341,12 @@ namespace NiL.JS.Core
             return Tools.ParseNumber(code, ref index, out fictive, 0, Tools.ParseNumberOptions.AllowFloat | Tools.ParseNumberOptions.AllowAutoRadix);
         }
 
-        public static bool ValidateRegex(string code, ref int index, bool except)
+        public static bool ValidateRegex(string code, int index)
+        {
+            return ValidateRegex(code, ref index, false);
+        }
+
+        public static bool ValidateRegex(string code, ref int index, bool throwError)
         {
             int j = index;
             if (code[j] == '/')
@@ -377,7 +389,7 @@ namespace NiL.JS.Core
                         case 'g':
                             {
                                 if (g)
-                                    if (except)
+                                    if (throwError)
                                         throw new ArgumentException("Invalid flag in regexp definition");
                                     else
                                         return false;
@@ -387,7 +399,7 @@ namespace NiL.JS.Core
                         case 'i':
                             {
                                 if (i)
-                                    if (except)
+                                    if (throwError)
                                         throw new ArgumentException("Invalid flag in regexp definition");
                                     else
                                         return false;
@@ -397,7 +409,7 @@ namespace NiL.JS.Core
                         case 'm':
                             {
                                 if (m)
-                                    if (except)
+                                    if (throwError)
                                         throw new ArgumentException("Invalid flag in regexp definition");
                                     else
                                         return false;
@@ -411,7 +423,7 @@ namespace NiL.JS.Core
                                     w = false;
                                     break;
                                 }
-                                if (except)
+                                if (throwError)
                                     throw new ArgumentException("Invalid flag in regexp definition");
                                 else
                                     return false;
@@ -532,6 +544,11 @@ namespace NiL.JS.Core
 
         internal static CodeNode Parse(ParsingState state, ref int index, CodeFragmentType ruleSet)
         {
+            return Parse(state, ref index, ruleSet, true);
+        }
+
+        internal static CodeNode Parse(ParsingState state, ref int index, CodeFragmentType ruleSet, bool throwError)
+        {
             while ((index < state.Code.Length) && (char.IsWhiteSpace(state.Code[index])))
                 index++;
             if (index >= state.Code.Length || state.Code[index] == '}')
@@ -553,7 +570,8 @@ namespace NiL.JS.Core
                         return result;
                 }
             }
-            ExceptionsHelper.ThrowUnknownToken(state.Code, sindex);
+            if (throwError)
+                ExceptionsHelper.ThrowUnknownToken(state.Code, sindex);
             return null;
         }
 

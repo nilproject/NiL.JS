@@ -246,7 +246,11 @@ namespace NiL.JS.Statements
                         catchHandler(context, e);
                 }
                 else
+                {
+                    if (finallyBody == null)
+                        throw;
                     except = e;
+                }
             }
             finally
             {

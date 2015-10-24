@@ -390,6 +390,10 @@ namespace NiL.JS.Expressions
                 threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration);
                 first.Length = i - first.Position;
             }
+            else if ((first = (Expression)Parser.Parse(state, ref i, (CodeFragmentType)2, false)) != null)
+            {
+                // do nothing
+            }
             else if (Parser.ValidateName(state.Code, ref i, state.strict) || Parser.Validate(state.Code, "this", ref i))
             {
                 var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
@@ -439,19 +443,7 @@ namespace NiL.JS.Expressions
                         }
                         else if (Parser.ValidateRegex(state.Code, ref s, true))
                         {
-                            state.Code = Tools.RemoveComments(state.SourceCode, i);
-                            s = value.LastIndexOf('/') + 1;
-                            string flags = value.Substring(s);
-                            try
-                            {
-                                first = new RegExpExpression(value.Substring(1, s - 2), flags); // объекты должны быть каждый раз разные
-                            }
-                            catch (Exception e)
-                            {
-                                first = new ExpressionWrapper(new ThrowStatement(e));
-                                if (state.message != null)
-                                    state.message(MessageLevel.Error, CodeCoordinates.FromTextPosition(state.Code, index, value.Length), string.Format(Strings.InvalidRegExp, value));
-                            }
+                            throw new InvalidOperationException("This case was moved");
                         }
                         else
                             throw new ArgumentException("Unable to process value (" + value + ")");
@@ -622,9 +614,6 @@ namespace NiL.JS.Expressions
                             break;
 #endif
                         }
-                    default:
-                        ExceptionsHelper.ThrowUnknownToken(state.Code, i);
-                        break;
                 }
             }
             else if (state.Code[i] == '(')
@@ -652,9 +641,8 @@ namespace NiL.JS.Expressions
             {
                 if (forEnumeration)
                     return null;
-                first = (Expression)Parser.Parse(state, ref i, (CodeFragmentType)2);
             }
-            if (first is EmptyExpression)
+            if (first == null || first is EmptyExpression)
                 ExceptionsHelper.Throw((new SyntaxError("Invalid operator argument at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             bool canAsign = !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
