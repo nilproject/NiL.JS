@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
+using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Core
 {
@@ -114,12 +115,19 @@ namespace NiL.JS.Core
                         break;
                     default:
                         if (fields == null)
-                            fields = createFields();
+                            fields = getFieldsContainer();
                         fields[index.ToString()] = value;
                         break;
                 }
 
             }
+        }
+
+        internal Arguments(Context context)
+            : this()
+        {
+            if (context != null)
+                caller = context.strict && context.owner != null && context.owner.creator.body.strict ? Function.propertiesDummySM : context.owner;
         }
 
         public Arguments()
@@ -140,7 +148,7 @@ namespace NiL.JS.Core
             return GlobalPrototype ?? Null;
         }
 
-        protected internal override JSValue GetMember(JSValue key, bool createMember, bool own)
+        protected internal override JSValue GetMember(JSValue key, bool createMember, MemberScope memberScope)
         {
             if (key.valueType != JSValueType.Symbol)
             {
@@ -220,7 +228,7 @@ namespace NiL.JS.Core
                         }
                 }
             }
-            return base.GetMember(key, createMember, own);
+            return base.GetMember(key, createMember, memberScope);
         }
 
         public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)

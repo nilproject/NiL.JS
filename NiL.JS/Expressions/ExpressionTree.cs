@@ -1108,16 +1108,19 @@ namespace NiL.JS.Expressions
                                 else if (state.Code[i] == ',')
                                 {
                                     if (args.Count == 0)
-                                        ExceptionsHelper.Throw(new SyntaxError("Empty argument of function"));
+                                        ExceptionsHelper.ThrowSyntaxError("Empty argument of function call", state.Code, i);
                                     do
                                         i++;
                                     while (char.IsWhiteSpace(state.Code[i]));
                                 }
                                 if (i + 1 == state.Code.Length)
-                                    ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line"));
+                                    ExceptionsHelper.ThrowSyntaxError("Unexpected end of source", state.Code, i);
+                                var spread = Parser.Validate(state.Code, "...", ref i);
                                 args.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
+                                if (spread)
+                                    args[args.Count - 1] = new SpreadOperator(args[args.Count - 1]);
                                 if (args[args.Count - 1] == null)
-                                    ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
+                                    ExceptionsHelper.ThrowSyntaxError("Expected \")\"", state.Code, startPos);
                             }
                             first = new CallOperator(first, args.ToArray())
                             {

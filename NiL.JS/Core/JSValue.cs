@@ -11,22 +11,36 @@ namespace NiL.JS.Core
 #if !PORTABLE
     [Serializable]
 #endif
+    public enum MemberScope
+    {
+        Сommon = 0,
+        Own,
+        Super
+    }
+
+#if !PORTABLE
+    [Serializable]
+#endif
     public enum JSValueType
     {
         NotExists = 0,
         NotExistsInObject = 1,
-        Undefined = 3,  // 00000000011 // значение undefined говорит о том, что этот объект, вообще-то, определён, но вот его значение нет
-        Bool = 7,       // 00000000111
-        Int = 11,       // 00000001011
-        Double = 19,    // 00000010011
-        String = 35,    // 00000100011
-        Symbol = 67,    // 00001000011
-        Object = 131,   // 00010000011
-        Function = 259, // 00100000011
-        Date = 515,     // 01000000011
-        Property = 1027 // 10000000011
+        Undefined = 3,                  // 000000000011 // значение undefined говорит о том, что этот объект, вообще-то, определён, но вот его значение нет
+        Bool = 7,                       // 000000000111
+        Int = 11,                       // 000000001011
+        Double = 19,                    // 000000010011
+        String = 35,                    // 000000100011
+        Symbol = 67,                    // 000001000011
+        Object = 131,                   // 000010000011
+        Function = 259,                 // 000100000011
+        Date = 515,                     // 001000000011
+        Property = 1027,                // 010000000011
+        SpreadOperatorResult = 2048     // 100000000011
     }
 
+#if !PORTABLE
+    [Serializable]
+#endif
     public enum EnumerationMode
     {
         KeysOnly = 0,
@@ -53,14 +67,12 @@ namespace NiL.JS.Core
         Eval = 1 << 20,
         Temporary = 1 << 21,
         Cloned = 1 << 22,
-        ContainsParsedInt = 1 << 23,
-        ContainsParsedDouble = 1 << 24,
         Reassign = 1 << 25,
         IntrinsicFunction = 1 << 26,
         /// <summary>
         /// Аттрибуты, не передающиеся при присваивании
         /// </summary>
-        PrivateAttributes = Immutable | ProxyPrototype | Field,
+        PrivateAttributes = Immutable | ProxyPrototype | Field | IntrinsicFunction,
     }
 
 #if !PORTABLE
@@ -80,7 +92,7 @@ namespace NiL.JS.Core
 #if !PORTABLE
     [Serializable]
 #endif
-    public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IEnumerable, IComparable<JSValue>
+    public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<JSValue>
 #if !PORTABLE
 , ICloneable, IConvertible
 #endif
@@ -144,7 +156,7 @@ namespace NiL.JS.Core
             [Hidden]
             set
             {
-                this.GetMember(name, true, true).Assign(value ?? JSValue.undefined);
+                this.GetMember(name, true, MemberScope.Own).Assign(value ?? JSValue.undefined);
             }
         }
 
@@ -281,6 +293,62 @@ namespace NiL.JS.Core
             }
         }
 
+        [Hidden]
+        public bool IsExists
+        {
+            [Hidden]
+#if INLINE
+            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+            get { return valueType >= JSValueType.Undefined; }
+        }
+
+        [Hidden]
+        public bool IsDefined
+        {
+            [Hidden]
+#if INLINE
+            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+            get { return valueType > JSValueType.Undefined; }
+        }
+
+        [Hidden]
+        public bool IsNull
+        {
+            [Hidden]
+#if INLINE
+            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+            get { return valueType >= JSValueType.Object && oValue == null; }
+        }
+
+        [Hidden]
+        public bool IsNumber
+        {
+            [Hidden]
+#if INLINE
+            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+            get { return valueType == JSValueType.Int || valueType == JSValueType.Double; }
+        }
+
+        internal bool IsNeedClone
+        {
+#if INLINE
+            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+            get { return (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject; }
+        }
+
+        internal bool IsBox
+        {
+            get
+            {
+                return valueType >= JSValueType.Object && oValue != null && oValue != this;
+            }
+        }
+
         internal virtual JSObject GetDefaultPrototype()
         {
             switch (valueType)
@@ -309,14 +377,14 @@ namespace NiL.JS.Core
         {
             var cc = Context.CurrentContext;
             if (cc == null)
-                return GetMember((JSValue)name, false, false);
+                return GetMember((JSValue)name, false, MemberScope.Сommon);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc.wrap(name), false, false);
+                return GetMember(cc.wrap(name), false, MemberScope.Сommon);
             }
             finally
             {
@@ -328,18 +396,18 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public JSValue GetMember(string name, bool own)
+        public JSValue GetMember(string name, MemberScope memberScope)
         {
             var cc = Context.CurrentContext;
             if (cc == null)
-                return GetMember((JSValue)name, false, own);
+                return GetMember((JSValue)name, false, memberScope);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc.wrap(name), false, own);
+                return GetMember(cc.wrap(name), false, memberScope);
             }
             finally
             {
@@ -355,37 +423,14 @@ namespace NiL.JS.Core
         {
             var cc = Context.CurrentContext;
             if (cc == null)
-                return GetMember((JSValue)name, true, true);
+                return GetMember((JSValue)name, true, MemberScope.Own);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc.wrap(name), true, true);
-            }
-            finally
-            {
-                cc.tempContainer.iValue = oi;
-                cc.tempContainer.oValue = oo;
-                cc.tempContainer.dValue = od;
-                cc.tempContainer.valueType = ovt;
-            }
-        }
-
-        [Hidden]
-        internal protected JSValue GetMember(string name, bool createMember, bool own)
-        {
-            var cc = Context.CurrentContext;
-            if (cc == null)
-                return GetMember((JSValue)name, createMember, own);
-            var oi = cc.tempContainer.iValue;
-            var od = cc.tempContainer.dValue;
-            object oo = cc.tempContainer.oValue;
-            var ovt = cc.tempContainer.valueType;
-            try
-            {
-                return GetMember(cc.wrap(name), createMember, own);
+                return GetMember(cc.wrap(name), true, MemberScope.Own);
             }
             finally
             {
@@ -421,29 +466,50 @@ namespace NiL.JS.Core
             }
         }
 
-        [Hidden]
-        internal protected virtual JSValue GetMember(JSValue key, bool forWrite, bool own)
+        internal protected JSValue GetMember(string name, bool forWrite, MemberScope memberScope)
+        {
+            var cc = Context.CurrentContext;
+            if (cc == null)
+                return GetMember((JSValue)name, forWrite, memberScope);
+            var oi = cc.tempContainer.iValue;
+            var od = cc.tempContainer.dValue;
+            object oo = cc.tempContainer.oValue;
+            var ovt = cc.tempContainer.valueType;
+            try
+            {
+                return GetMember(cc.wrap(name), forWrite, memberScope);
+            }
+            finally
+            {
+                cc.tempContainer.iValue = oi;
+                cc.tempContainer.oValue = oo;
+                cc.tempContainer.dValue = od;
+                cc.tempContainer.valueType = ovt;
+            }
+        }
+
+        internal protected virtual JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
             switch (valueType)
             {
                 case JSValueType.Bool:
                     {
-                        if (own)
+                        if (memberScope == MemberScope.Own)
                             return notExists;
                         forWrite = false;
-                        return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean)).GetMember(key, false, false);
+                        return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean)).GetMember(key, false, MemberScope.Сommon);
                     }
                 case JSValueType.Int:
                 case JSValueType.Double:
                     {
-                        if (own)
+                        if (memberScope == MemberScope.Own)
                             return notExists;
                         forWrite = false;
-                        return TypeProxy.GetPrototype(typeof(Number)).GetMember(key, false, false);
+                        return TypeProxy.GetPrototype(typeof(Number)).GetMember(key, false, MemberScope.Сommon);
                     }
                 case JSValueType.String:
                     {
-                        return stringGetMember(key, forWrite, own);
+                        return stringGetMember(key, forWrite, memberScope);
                     }
                 case JSValueType.Undefined:
                 case JSValueType.NotExists:
@@ -457,7 +523,7 @@ namespace NiL.JS.Core
                             throw can_not_get_property_of_null(key);
                         var inObj = oValue as JSObject;
                         if (inObj != null)
-                            return inObj.GetMember(key, forWrite, own);
+                            return inObj.GetMember(key, forWrite, memberScope);
                         break;
                     }
             }
@@ -474,7 +540,7 @@ namespace NiL.JS.Core
             return new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
         }
 
-        private JSValue stringGetMember(JSValue name, bool forWrite, bool own)
+        private JSValue stringGetMember(JSValue name, bool forWrite, MemberScope memberScope)
         {
             if ((name.valueType == JSValueType.String || name.valueType >= JSValueType.Object)
                 && string.CompareOrdinal(name.oValue.ToString(), "length") == 0)
@@ -489,10 +555,10 @@ namespace NiL.JS.Core
                 && oValue.ToString().Length > index)
                 return oValue.ToString()[index];
 
-            if (own)
+            if (memberScope == MemberScope.Own)
                 return notExists;
 
-            return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String)).GetMember(name, false, false);
+            return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String)).GetMember(name, false, MemberScope.Сommon);
         }
 
         internal protected virtual void SetMember(JSValue name, JSValue value, bool strict)
@@ -625,62 +691,6 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public bool IsExists
-        {
-            [Hidden]
-#if INLINE
-            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-            get { return valueType >= JSValueType.Undefined; }
-        }
-
-        [Hidden]
-        public bool IsDefined
-        {
-            [Hidden]
-#if INLINE
-            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-            get { return valueType > JSValueType.Undefined; }
-        }
-
-        [Hidden]
-        public bool IsNull
-        {
-            [Hidden]
-#if INLINE
-            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-            get { return valueType >= JSValueType.Object && oValue == null; }
-        }
-
-        [Hidden]
-        public bool IsNumber
-        {
-            [Hidden]
-#if INLINE
-            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-            get { return valueType == JSValueType.Int || valueType == JSValueType.Double; }
-        }
-
-        internal bool isNeedClone
-        {
-#if INLINE
-            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-            get { return (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject; }
-        }
-
-        internal bool IsBox
-        {
-            get
-            {
-                return valueType >= JSValueType.Object && oValue != null && oValue != this;
-            }
-        }
-
-        [Hidden]
         public object Clone()
         {
             return CloneImpl();
@@ -700,7 +710,12 @@ namespace NiL.JS.Core
             }
             var res = new JSValue();
             res.Assign(this);
-            res.attributes = this.attributes & ~(JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly);
+            res.attributes = this.attributes &
+                ~(JSValueAttributesInternal.ReadOnly
+                | JSValueAttributesInternal.SystemObject
+                | JSValueAttributesInternal.Temporary
+                | JSValueAttributesInternal.Reassign
+                | JSValueAttributesInternal.ProxyPrototype);
             return res;
         }
 
@@ -765,7 +780,6 @@ namespace NiL.JS.Core
             this.oValue = value.oValue;
         }
 
-        [Hidden]
         internal JSValue ToPrimitiveValue_Value_String()
         {
             return ToPrimitiveValue("valueOf", "toString");
@@ -838,7 +852,6 @@ namespace NiL.JS.Core
             return new JSObject() { valueType = JSValueType.Object };
         }
 
-        [Hidden]
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
@@ -964,7 +977,7 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("propertyIsEnumerable calling on undefined value."));
             var name = args[0];
             string n = name.ToString();
-            var res = GetMember(n, true);
+            var res = GetMember(n, MemberScope.Own);
             res = (res.IsExists) && ((res.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0);
             return res;
         }
@@ -1010,7 +1023,7 @@ namespace NiL.JS.Core
         public virtual JSValue hasOwnProperty(Arguments args)
         {
             JSValue name = args[0];
-            var res = GetMember(name, false, true);
+            var res = GetMember(name, false, MemberScope.Own);
             return res.IsExists;
         }
 
@@ -1180,9 +1193,30 @@ namespace NiL.JS.Core
 
         #region Члены IComparable<JSValue>
 
-        int IComparable<JSValue>.CompareTo(JSValue other)
+        [Hidden]
+        public virtual int CompareTo(JSValue other)
         {
-            throw new NotImplementedException();
+            if (valueType == other.valueType)
+            {
+                switch (valueType)
+                {
+                    case JSValueType.Undefined:
+                    case JSValueType.NotExists:
+                    case JSValueType.NotExistsInObject:
+                        return 0;
+                    case JSValueType.Bool:
+                    case JSValueType.Int:
+                        return iValue - other.iValue;
+                    case JSValueType.Double:
+                        return System.Math.Sign(dValue - other.dValue);
+                    case JSValueType.String:
+                        return string.CompareOrdinal(oValue.ToString(), other.oValue.ToString());
+                    default:
+                        throw new NotImplementedException("Try to compare two values of " + valueType);
+                }
+            }
+            else
+                throw new InvalidOperationException("Type mismatch");
         }
 
         #endregion

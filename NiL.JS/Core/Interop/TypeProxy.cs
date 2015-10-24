@@ -23,6 +23,7 @@ namespace NiL.JS.Core.Interop
         [NonSerialized]
 #endif
         internal Dictionary<string, IList<MemberInfo>> members;
+
         private ConstructorInfo ictor;
         private JSObject _prototypeInstance;
         internal JSObject prototypeInstance
@@ -172,15 +173,16 @@ namespace NiL.JS.Core.Interop
         }
 
         private TypeProxy()
-            : base(true)
+            : base()
         {
             valueType = JSValueType.Object;
             oValue = this;
-            attributes |= JSValueAttributesInternal.SystemObject;
+            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.DoNotEnumerate;
+            fields = getFieldsContainer();
         }
 
         private TypeProxy(Type type)
-            : base(true)
+            : this()
         {
             if (dynamicProxies.ContainsKey(type))
                 throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
@@ -190,18 +192,16 @@ namespace NiL.JS.Core.Interop
                 dynamicProxies[type] = this;
                 try
                 {
-                    valueType = JSValueType.Object;
-                    oValue = this;
                     var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
                     if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
                         __prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
+
 #if PORTABLE
                     ictor = hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
 #else
                     ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
 
-                    attributes |= JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
                     if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
                         attributes |= JSValueAttributesInternal.Immutable;
                     var staticProxy = new TypeProxy()
@@ -260,14 +260,12 @@ namespace NiL.JS.Core.Interop
         {
             lock (this)
             {
-                lock (fields)
-                {
-                    if (members != null)
-                        return;
-                    var tempmemb = new Dictionary<string, IList<MemberInfo>>();
-                    string prewName = null;
-                    IList<MemberInfo> temp = null;
-                    bool instanceAttribute = false;
+                if (members != null)
+                    return;
+                var tempMembers = new Dictionary<string, IList<MemberInfo>>();
+                string prewName = null;
+                IList<MemberInfo> temp = null;
+                bool instanceAttribute = false;
 #if PORTABLE
                     var mmbrs = hostedType.GetTypeInfo().DeclaredMembers
                         .Union(hostedType.GetRuntimeMethods())
@@ -275,95 +273,101 @@ namespace NiL.JS.Core.Interop
                         .Union(hostedType.GetRuntimeFields())
                         .Union(hostedType.GetRuntimeEvents()).ToArray(); // ïðèõîäèòñÿ äåëàòü âîò òàê íåîïòèìàëüíî, äðóãîãî ñïîñîáà íåò
 #else
-                    var mmbrs = hostedType.GetMembers();
+                var mmbrs = hostedType.GetMembers();
 #endif
-                    for (int i = 0; i < mmbrs.Length; i++)
+                for (int i = 0; i < mmbrs.Length; i++)
+                {
+                    if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
+                        continue;
+
+                    instanceAttribute = mmbrs[i].IsDefined(typeof(InstanceMemberAttribute), false);
+
+                    if (!InstanceMode && instanceAttribute)
+                        continue;
+
+                    if (mmbrs[i] is PropertyInfo)
                     {
-                        if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
+                        if (((mmbrs[i] as PropertyInfo).GetSetMethod() ?? (mmbrs[i] as PropertyInfo).GetGetMethod()).IsStatic != !(InstanceMode ^ instanceAttribute))
                             continue;
-
-                        instanceAttribute = mmbrs[i].IsDefined(typeof(InstanceMemberAttribute), false);
-
-                        if (!InstanceMode && instanceAttribute)
+                        if (((mmbrs[i] as PropertyInfo).GetSetMethod() == null || !(mmbrs[i] as PropertyInfo).GetSetMethod().IsPublic)
+                            && ((mmbrs[i] as PropertyInfo).GetGetMethod() == null || !(mmbrs[i] as PropertyInfo).GetGetMethod().IsPublic))
                             continue;
+                    }
+                    if ((mmbrs[i] is EventInfo)
+                        && (!(mmbrs[i] as EventInfo).GetAddMethod().IsPublic || (mmbrs[i] as EventInfo).GetAddMethod().IsStatic != !InstanceMode))
+                        continue;
 
-                        if (mmbrs[i] is PropertyInfo)
-                        {
-                            if (((mmbrs[i] as PropertyInfo).GetSetMethod() ?? (mmbrs[i] as PropertyInfo).GetGetMethod()).IsStatic != !(InstanceMode ^ instanceAttribute))
-                                continue;
-                            if (((mmbrs[i] as PropertyInfo).GetSetMethod() == null || !(mmbrs[i] as PropertyInfo).GetSetMethod().IsPublic)
-                                && ((mmbrs[i] as PropertyInfo).GetGetMethod() == null || !(mmbrs[i] as PropertyInfo).GetGetMethod().IsPublic))
-                                continue;
-                        }
-                        if ((mmbrs[i] is EventInfo)
-                            && (!(mmbrs[i] as EventInfo).GetAddMethod().IsPublic || (mmbrs[i] as EventInfo).GetAddMethod().IsStatic != !InstanceMode))
-                            continue;
-
-                        if ((mmbrs[i] is FieldInfo) && (!(mmbrs[i] as FieldInfo).IsPublic || (mmbrs[i] as FieldInfo).IsStatic != !InstanceMode))
-                            continue;
+                    if ((mmbrs[i] is FieldInfo) && (!(mmbrs[i] as FieldInfo).IsPublic || (mmbrs[i] as FieldInfo).IsStatic != !InstanceMode))
+                        continue;
 #if PORTABLE
                         if ((mmbrs[i] is TypeInfo) && !(mmbrs[i] as TypeInfo).IsPublic)
                             continue;
 #else
-                        if ((mmbrs[i] is Type) && !(mmbrs[i] as Type).IsPublic)
-                            continue;
+                    if ((mmbrs[i] is Type) && !(mmbrs[i] as Type).IsPublic)
+                        continue;
 #endif
-                        if (mmbrs[i] is MethodBase)
-                        {
-                            if ((mmbrs[i] as MethodBase).IsStatic != !(InstanceMode ^ instanceAttribute))
-                                continue;
-                            if (!(mmbrs[i] as MethodBase).IsPublic)
-                                continue;
-                            if ((mmbrs[i] as MethodBase).DeclaringType == typeof(object) && mmbrs[i].Name == "GetType")
-                                continue;
-                            if (mmbrs[i] is ConstructorInfo)
-                                continue;
-                        }
-                        var membername = mmbrs[i].Name;
-                        membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
-                        if (prewName != membername)
-                        {
-                            if (temp != null && temp.Count > 1)
-                            {
-                                var type = temp[0].DeclaringType;
-                                for (var j = 1; j < temp.Count; j++)
-                                {
-                                    if (type != temp[j].DeclaringType && type.IsAssignableFrom(temp[j].DeclaringType))
-                                        type = temp[j].DeclaringType;
-                                }
-                                int offset = 0;
-                                for (var j = 1; j < temp.Count; j++)
-                                {
-                                    if (!type.IsAssignableFrom(temp[j].DeclaringType))
-                                    {
-                                        temp.RemoveAt(j--);
-                                        tempmemb.Remove(prewName + "$" + (++offset + j));
-                                    }
-                                }
-                                if (temp.Count == 1)
-                                    tempmemb.Remove(prewName + "$0");
-                            }
-                            if (!tempmemb.TryGetValue(membername, out temp))
-                                tempmemb[membername] = temp = new List<MemberInfo>();
-                            prewName = membername;
-                        }
-                        if (temp.Count == 1)
-                            tempmemb.Add(membername + "$0", new[] { temp[0] });
-                        temp.Add(mmbrs[i]);
-                        if (temp.Count != 1)
-                            tempmemb.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+                    if (mmbrs[i] is MethodBase)
+                    {
+                        if ((mmbrs[i] as MethodBase).IsStatic != !(InstanceMode ^ instanceAttribute))
+                            continue;
+                        if (!(mmbrs[i] as MethodBase).IsPublic)
+                            continue;
+                        if ((mmbrs[i] as MethodBase).DeclaringType == typeof(object) && mmbrs[i].Name == "GetType")
+                            continue;
+                        if (mmbrs[i] is ConstructorInfo)
+                            continue;
                     }
-                    members = tempmemb;
+                    var membername = mmbrs[i].Name;
+                    membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
+
+                    if (prewName != membername)
+                    {
+                        if (temp != null && temp.Count > 1)
+                        {
+                            var type = temp[0].DeclaringType;
+                            for (var j = 1; j < temp.Count; j++)
+                            {
+                                if (type != temp[j].DeclaringType && type.IsAssignableFrom(temp[j].DeclaringType))
+                                    type = temp[j].DeclaringType;
+                            }
+                            int offset = 0;
+                            for (var j = 1; j < temp.Count; j++)
+                            {
+                                if (!type.IsAssignableFrom(temp[j].DeclaringType))
+                                {
+                                    temp.RemoveAt(j--);
+                                    tempMembers.Remove(prewName + "$" + (++offset + j));
+                                }
+                            }
+                            if (temp.Count == 1)
+                                tempMembers.Remove(prewName + "$0");
+                        }
+                        if (!tempMembers.TryGetValue(membername, out temp))
+                            tempMembers[membername] = temp = new List<MemberInfo>();
+                        prewName = membername;
+                    }
+                    if (temp.Count == 1)
+                        tempMembers.Add(membername + "$0", new[] { temp[0] });
+                    temp.Add(mmbrs[i]);
+                    if (temp.Count != 1)
+                        tempMembers.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+                }
+                members = tempMembers;
+
+                if (InstanceMode && typeof(IIterable).IsAssignableFrom(hostedType))
+                {
+                    this.SetMember(Symbol.iterator, proxyMember(false, members["iterator"]), false);
+                    members.Remove("iterator");
                 }
             }
         }
 
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
             forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
 
             if (key.valueType == JSValueType.Symbol)
-                return base.GetMember(key, forWrite, own);
+                return base.GetMember(key, forWrite, memberScope);
 
             string name = key.ToString();
             JSValue r = null;
@@ -373,7 +377,7 @@ namespace NiL.JS.Core.Interop
                 {
                     if (!forWrite)
                     {
-                        var t = base.GetMember(key, false, own);
+                        var t = base.GetMember(key, false, memberScope);
                         if (t.IsExists)
                         {
                             r.Assign(t);
@@ -394,21 +398,25 @@ namespace NiL.JS.Core.Interop
             {
                 var pi = prototypeInstance as JSValue;
                 if (pi != null)
-                    return pi.GetMember(key, forWrite, own);
+                    return pi.GetMember(key, forWrite, memberScope);
                 else
-                    return base.GetMember(key, forWrite, own);
+                    return base.GetMember(key, forWrite, memberScope);
             }
-            return proxyMember(forWrite, name, m);
+
+            var result = proxyMember(forWrite, m);
+            fields[name] = result;
+
+            return result;
         }
 
-        private JSValue proxyMember(bool forWrite, string name, IList<MemberInfo> m)
+        private JSValue proxyMember(bool forWrite, IList<MemberInfo> m)
         {
             JSValue r = null;
             if (m.Count > 1)
             {
                 for (int i = 0; i < m.Count; i++)
                     if (!(m[i] is MethodBase))
-                        ExceptionsHelper.Throw(Proxy(new TypeError("Incompatible fields type.")));
+                        ExceptionsHelper.Throw(Proxy(new TypeError("Incompatible fields types.")));
                 var cache = new MethodProxy[m.Count];
                 for (int i = 0; i < m.Count; i++)
                     cache[i] = new MethodProxy(m[i] as MethodBase);
@@ -422,8 +430,6 @@ namespace NiL.JS.Core.Interop
                 switch (m[0].MemberType)
 #endif
                 {
-                    case MemberTypes.Constructor:
-                        throw new InvalidOperationException("Constructor can not be called directly");
                     case MemberTypes.Method:
                         {
                             var method = (MethodInfo)m[0];
@@ -524,7 +530,8 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             }
             if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 r.attributes |= JSValueAttributesInternal.DoNotEnumerate;
-            fields[name] = forWrite && (r.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject ? (r = r.CloneImpl()) : r;
+            if (forWrite && (r.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject)
+                r = r.CloneImpl();
 
             for (var i = m.Count; i-- > 0; )
             {
@@ -630,8 +637,8 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                             case EnumerationMode.NeedValuesForWrite:
                                 {
                                     yield return new KeyValuePair<string, JSValue>(
-                                        item.Key, 
-                                        proxyMember(enumerationMode == EnumerationMode.NeedValuesForWrite, item.Key, item.Value));
+                                        item.Key,
+                                        fields[item.Key] = proxyMember(enumerationMode == EnumerationMode.NeedValuesForWrite, item.Value));
                                     break;
                                 }
                         }

@@ -45,18 +45,12 @@ namespace NiL.JS.Expressions
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
-            if ((a.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == 0)
+            if (a.valueType != JSValueType.SpreadOperatorResult)
             {
-                // Предполагается, что тут мы отдаём не контейнер, а сам объект. 
-                // В частности, preventExtensions ожидает именно такое поведение
-                if (a.IsBox)
-                    return a.oValue as JSObject; // клонировать в таком случае не надо, так как это точно не временный объект
-                if (clone && (a.attributes & JSValueAttributesInternal.Temporary) != 0)
-                {
-                    a = a.CloneImpl();
-                    a.attributes |= JSValueAttributesInternal.Cloned;
-                }
+                a = a.CloneImpl(false);
+                a.attributes |= JSValueAttributesInternal.Cloned;
             }
+
             return a;
         }
 
@@ -102,9 +96,8 @@ namespace NiL.JS.Expressions
         {
             context.abortType = AbortType.TailRecursion;
 
-            var arguments = new Arguments()
+            var arguments = new Arguments(context)
             {
-                caller = context.strict && context.owner != null && context.owner.creator.body.strict ? Function.propertiesDummySM : context.owner,
                 length = this.arguments.Length
             };
             for (int i = 0; i < this.arguments.Length; i++)

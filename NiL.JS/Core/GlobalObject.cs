@@ -26,7 +26,7 @@ namespace NiL.JS.Core
         }
 
         public GlobalObject(Context context)
-            : base(false)
+            : base()
         {
             attributes = JSValueAttributesInternal.SystemObject;
             this.context = context;
@@ -35,7 +35,7 @@ namespace NiL.JS.Core
             oValue = this;
         }
 
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
             if (key.valueType != JSValueType.Symbol)
             {
@@ -43,7 +43,7 @@ namespace NiL.JS.Core
                 var res = context.GetVariable(nameStr, forWrite);
                 return res;
             }
-            return base.GetMember(key, forWrite, own);
+            return base.GetMember(key, forWrite, memberScope);
         }
 
         public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)

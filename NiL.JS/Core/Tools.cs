@@ -1323,7 +1323,7 @@ namespace NiL.JS.Core
 
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
         {
-            var len = src.GetMember("length", true, false); // тут же проверка на null/undefined с падением если надо
+            var len = src.GetMember("length", true, MemberScope.Сommon); // тут же проверка на null/undefined с падением если надо
             if (len.valueType == JSValueType.Property)
             {
                 if (reassignLen && (len.attributes & JSValueAttributesInternal.ReadOnly) == 0)

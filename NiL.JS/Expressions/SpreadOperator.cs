@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using NiL.JS.Core;
 
@@ -31,7 +32,11 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            throw new NotImplementedException();
+            return new JSObject
+            {
+                oValue = first.Evaluate(context).AsIterable().AsEnumerable().ToArray(),
+                valueType = JSValueType.SpreadOperatorResult
+            };
         }
 
         internal protected override JSValue EvaluateForWrite(NiL.JS.Core.Context context)

@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
                     || ctor.oValue is MethodProxy)
                     ExceptionsHelper.Throw(new TypeError("Function \"" + (ctor.oValue as Function).name + "\" is not a constructor."));
 
-                JSValue _this = new JSObject(false) { valueType = JSValueType.Object, oValue = typeof(NewOperator) };
+                JSValue _this = new JSObject() { valueType = JSValueType.Object, oValue = typeof(NewOperator) };
                 context.objectSource = _this;
                 lastThisBind = _this;
                 return ctor;

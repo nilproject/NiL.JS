@@ -235,6 +235,9 @@
     <Compile Include="Core\CompiledNode.cs" />
     <Compile Include="Core\Functions\MethodGroup.cs" />
     <Compile Include="Core\Functions\MethodProxy.cs" />
+    <Compile Include="Core\IIterable.cs" />
+    <Compile Include="Core\IIteratorResult.cs" />
+    <Compile Include="Core\IteratorProtocolExtensions.cs" />
     <Compile Include="Core\JSValue.cs" />
     <Compile Include="Core\Interop\ConvertValueAttribute.cs" />
     <Compile Include="BaseLibrary\Debug.cs" />
@@ -269,7 +272,7 @@
     <Compile Include="Core\Interop\DisallowNewKeywordAttribute.cs" />
     <Compile Include="Core\Interop\RequireNewKeywordAttribute.cs" />
     <Compile Include="ExceptionsHelper.cs" />
-    <Compile Include="BaseLibrary\IIterator.cs" />
+    <Compile Include="Core\IIterator.cs" />
     <Compile Include="Expressions\SpreadOperator.cs" />
     <Compile Include="Expressions\EntityNotation.cs" />
     <Compile Include="Expressions\RegExpCreateExpression.cs" />

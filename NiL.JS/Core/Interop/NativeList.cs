@@ -52,7 +52,7 @@ namespace NiL.JS.Core.Interop
                             case TypeCode.DateTime:
                                 {
                                     var dateTime = (DateTime)value;
-                                    base.Assign(new JSObject(new Date(dateTime.ToUniversalTime().Ticks, dateTime.ToLocalTime().Ticks - dateTime.ToUniversalTime().Ticks)));
+                                    base.Assign(new ObjectContainer(new Date(dateTime.ToUniversalTime().Ticks, dateTime.ToLocalTime().Ticks - dateTime.ToUniversalTime().Ticks)));
                                     break;
                                 }
                             case TypeCode.Decimal:
@@ -212,7 +212,7 @@ namespace NiL.JS.Core.Interop
                 return TypeProxy.Proxy(result);
         }
 
-        protected internal override JSValue GetMember(JSValue key, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
             if (key.valueType != JSValueType.Symbol)
             {
@@ -270,7 +270,7 @@ namespace NiL.JS.Core.Interop
                     return new Element(this, index);
                 }
             }
-            return base.GetMember(key, forWrite, own);
+            return base.GetMember(key, forWrite, memberScope);
         }
 
         protected internal override void SetMember(JSValue key, JSValue value, bool strict)

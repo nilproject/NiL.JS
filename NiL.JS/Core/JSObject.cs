@@ -83,47 +83,32 @@ namespace NiL.JS.Core
         {
             //valueType = JSObjectType.Undefined;
         }
-
-        [Hidden]
-        public JSObject(bool createFields)
-            : this()
-        {
-            if (createFields)
-                fields = JSObject.createFields();
-        }
-
-        [Hidden]
-        public JSObject(object content)
-            : this(true)
-        {
-            oValue = content;
-            valueType = JSValueType.Object;
-        }
-
+        
         [Hidden]
         public static JSObject CreateObject()
         {
-            return CreateObject(true);
+            return CreateObject(false);
         }
 
-        [Hidden]
-        public static JSObject CreateObject(bool createFields)
+        internal static JSObject CreateObject(bool createFields)
         {
-            var t = new JSObject(true)
+            var t = new JSObject()
             {
                 valueType = JSValueType.Object,
-                __prototype = GlobalPrototype
+                __prototype = GlobalPrototype,
             };
             t.oValue = t;
+            if (createFields)
+                t.fields = getFieldsContainer();
             return t;
         }
 
-        protected internal override JSValue GetMember(JSValue key, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
 #if DEBUG
             // Это ошибочная ситуация, но, по крайней мере, так положение будет исправлено
             if (oValue != this && oValue is JSValue)
-                return base.GetMember(key, forWrite, own);
+                return base.GetMember(key, forWrite, memberScope);
 #endif
             JSValue res = null;
             JSObject proto = null;
@@ -134,8 +119,8 @@ namespace NiL.JS.Core
                 fromProto = (symbols == null || !symbols.TryGetValue(symbol, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
                 if (fromProto)
                 {
-                    res = proto.GetMember(key, false, own);
-                    if ((own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property)) || res.valueType < JSValueType.Undefined)
+                    res = proto.GetMember(key, false, memberScope);
+                    if ((memberScope == MemberScope.Own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property)) || res.valueType < JSValueType.Undefined)
                         res = null;
                 }
                 if (res == null)
@@ -153,7 +138,7 @@ namespace NiL.JS.Core
                     if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto)
                     {
                         if ((res.attributes & JSValueAttributesInternal.ReadOnly) == 0
-                            && (res.valueType != JSValueType.Property || own))
+                            && (res.valueType != JSValueType.Property || memberScope == MemberScope.Own))
                         {
                             res = res.CloneImpl();
                             if (symbols == null)
@@ -171,21 +156,21 @@ namespace NiL.JS.Core
                 fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
                 if (fromProto)
                 {
-                    res = proto.GetMember(key, false, own);
-                    if (((own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property))) || res.valueType < JSValueType.Undefined)
+                    res = proto.GetMember(key, false, memberScope);
+                    if (((memberScope == MemberScope.Own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property))) || res.valueType < JSValueType.Undefined)
                         res = null;
                 }
                 if (res == null)
                 {
                     if (!forWrite || (attributes & JSValueAttributesInternal.Immutable) != 0)
                     {
-                        if (!own && string.CompareOrdinal(name, "__proto__") == 0)
+                        if (memberScope != MemberScope.Own && string.CompareOrdinal(name, "__proto__") == 0)
                             return proto;
                         return notExists;
                     }
                     res = new JSValue { valueType = JSValueType.NotExistsInObject };
                     if (fields == null)
-                        fields = createFields();
+                        fields = getFieldsContainer();
                     fields[name] = res;
                 }
                 else if (forWrite)
@@ -193,11 +178,11 @@ namespace NiL.JS.Core
                     if (((res.attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto))
                     {
                         if ((res.attributes & JSValueAttributesInternal.ReadOnly) == 0
-                            && (res.valueType != JSValueType.Property || own))
+                            && (res.valueType != JSValueType.Property || memberScope == MemberScope.Own))
                         {
                             res = res.CloneImpl();
                             if (fields == null)
-                                fields = createFields();
+                                fields = getFieldsContainer();
                             fields[name] = res;
                         }
                     }
@@ -208,34 +193,34 @@ namespace NiL.JS.Core
             return res;
         }
 
-        protected internal override void SetMember(JSValue name, JSValue value, bool strict)
+        protected internal override void SetMember(JSValue key, JSValue value, bool throwOnError)
         {
             JSValue field;
             if (valueType >= JSValueType.Object && oValue != this)
             {
                 if (oValue == null)
-                    ExceptionsHelper.Throw(new TypeError("Can not get property \"" + name + "\" of \"null\""));
+                    ExceptionsHelper.Throw(new TypeError("Can not get property \"" + key + "\" of \"null\""));
                 field = oValue as JSObject;
                 if (field != null)
                 {
-                    field.SetMember(name, value, strict);
+                    field.SetMember(key, value, throwOnError);
                     return;
                 }
             }
-            field = GetMember(name, true, false);
+            field = GetMember(key, true, MemberScope.Сommon);
             if (field.valueType == JSValueType.Property)
             {
                 var setter = (field.oValue as PropertyPair).set;
                 if (setter != null)
                     setter.Invoke(this, new Arguments { value });
-                else if (strict)
-                    ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + name + "\""));
+                else if (throwOnError)
+                    ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + key + "\""));
                 return;
             }
             else if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
-                if (strict)
-                    ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + name + "\""));
+                if (throwOnError)
+                    ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + key + "\""));
             }
             else
                 field.Assign(value);
@@ -261,11 +246,11 @@ namespace NiL.JS.Core
                     field.valueType = JSValueType.NotExistsInObject;
                 return fields.Remove(tname);
             }
-            field = GetMember(name, false, true);
+            field = GetMember(name, false, MemberScope.Own);
             if (!field.IsExists)
                 return true;
             if ((field.attributes & JSValueAttributesInternal.SystemObject) != 0)
-                field = GetMember(name, true, true);
+                field = GetMember(name, true, MemberScope.Own);
             if ((field.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
             {
                 field.valueType = JSValueType.NotExistsInObject;
@@ -302,7 +287,7 @@ namespace NiL.JS.Core
 #if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        internal static IDictionary<string, JSValue> createFields()
+        internal static IDictionary<string, JSValue> getFieldsContainer()
         {
             //return new Dictionary<string, JSObject>(System.StringComparer.Ordinal);
             return new StringMap2<JSValue>();
@@ -318,7 +303,7 @@ namespace NiL.JS.Core
             var members = args[1].oValue as JSObject ?? Null;
             if (args[1].valueType >= JSValueType.Object && members.oValue == null)
                 ExceptionsHelper.Throw(new TypeError("Properties descriptor may be only Object."));
-            var res = CreateObject();
+            var res = CreateObject(true);
             if (proto.valueType >= JSValueType.Object)
                 res.__prototype = proto;
             if (members.valueType >= JSValueType.Object)
@@ -652,7 +637,7 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Missed parameters"));
             if (args[1].valueType != JSValueType.Function)
                 ExceptionsHelper.Throw(new TypeError("Expecting function as second parameter"));
-            var field = GetMember(args[0], true, true);
+            var field = GetMember(args[0], true, MemberScope.Own);
             if ((field.attributes & JSValueAttributesInternal.NonConfigurable) != 0)
                 ExceptionsHelper.Throw(new TypeError("Cannot change value of not configurable peoperty."));
             if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
@@ -677,7 +662,7 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Missed parameters"));
             if (args[1].valueType != JSValueType.Function)
                 ExceptionsHelper.Throw(new TypeError("Expecting function as second parameter"));
-            var field = GetMember(args[0], true, true);
+            var field = GetMember(args[0], true, MemberScope.Own);
             if ((field.attributes & JSValueAttributesInternal.NonConfigurable) != 0)
                 ExceptionsHelper.Throw(new TypeError("Cannot change value of not configurable peoperty."));
             if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0)
@@ -698,7 +683,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public JSObject __lookupGetter(Arguments args)
         {
-            var field = GetMember(args[0], false, false);
+            var field = GetMember(args[0], false, MemberScope.Сommon);
             if (field.valueType == JSValueType.Property)
                 return (field.oValue as PropertyPair).get;
             return null;
@@ -708,7 +693,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public JSObject __lookupSetter(Arguments args)
         {
-            var field = GetMember(args[0], false, false);
+            var field = GetMember(args[0], false, MemberScope.Сommon);
             if (field.valueType == JSValueType.Property)
                 return (field.oValue as PropertyPair).get;
             return null;
@@ -873,11 +858,11 @@ namespace NiL.JS.Core
             if (args[0].valueType < JSValueType.Object)
                 ExceptionsHelper.Throw(new TypeError("Object.getOwnPropertyDescriptor called on non-object."));
             var source = args[0].oValue as JSObject ?? Null;
-            var obj = source.GetMember(args[1], false, true);
+            var obj = source.GetMember(args[1], false, MemberScope.Own);
             if (obj.valueType < JSValueType.Undefined)
                 return undefined;
             if ((obj.attributes & JSValueAttributesInternal.SystemObject) != 0)
-                obj = source.GetMember(args[1], true, true);
+                obj = source.GetMember(args[1], true, MemberScope.Own);
             var res = CreateObject();
             if (obj.valueType != JSValueType.Property || (obj.attributes & JSValueAttributesInternal.Field) != 0)
             {

@@ -24,6 +24,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         private Function generator;
+
         [Hidden]
         public GeneratorFunction(Function generator)
         {
@@ -42,14 +43,14 @@ namespace NiL.JS.BaseLibrary
         }
     }
 
-    internal sealed class GeneratorIterator : IDisposable, IIterator
+    internal sealed class GeneratorIterator : IDisposable, IIterator, IIterable
     {
         private Context generatorContext;
         private Arguments initialArgs;
         private Thread thread;
         private Function generator;
         private JSValue self;
-
+        
         [Hidden]
         public GeneratorIterator(Function generator, JSValue self, Arguments args)
         {
@@ -58,12 +59,13 @@ namespace NiL.JS.BaseLibrary
             this.self = self;
         }
 
+        [Hidden]
         ~GeneratorIterator()
         {
             Dispose();
         }
 
-        public JSValue next(Arguments args)
+        public IIteratorResult next(Arguments args)
         {
             if (thread == null)
             {
@@ -93,15 +95,11 @@ namespace NiL.JS.BaseLibrary
 #else
                     Thread.Sleep(0);
 #endif
-                var res = JSObject.CreateObject();
-                res.fields["value"] = generatorContext.abortInfo;
-                res.fields["done"] = generatorContext.abortType == AbortType.Return;
-                return res;
+                return new GeneratorResult(generatorContext.abortInfo, generatorContext.abortType == AbortType.Return);
             }
             else
             {
-                if (thread.ThreadState == ThreadState.Running
-                    || thread.ThreadState == ThreadState.WaitSleepJoin)
+                if (thread.ThreadState == ThreadState.Running || thread.ThreadState == ThreadState.WaitSleepJoin)
                 {
                     generatorContext.abortInfo = args[0];
                     generatorContext.abortType = AbortType.None;
@@ -111,31 +109,16 @@ namespace NiL.JS.BaseLibrary
 #else
                         Thread.Sleep(0);
 #endif
-                    var res = JSObject.CreateObject();
-                    res.fields["value"] = generatorContext.abortInfo;
-                    res.fields["done"] = generatorContext.abortType == AbortType.Return;
-                    return res;
+                    return new GeneratorResult(generatorContext.abortInfo, generatorContext.abortType == AbortType.Return);
                 }
                 else
                 {
-                    var res = JSObject.CreateObject();
-                    res.fields["done"] = true;
-                    return res;
+                    return new GeneratorResult(null, true);
                 }
             }
         }
 
-        public void @throw()
-        {
-            if (thread != null)
-            {
-                if (thread.ThreadState == ThreadState.Suspended)
-                {
-                    generatorContext.abortType = AbortType.Exception;
-                }
-            }
-        }
-
+        [Hidden]
         public void Dispose()
         {
             GC.SuppressFinalize(this);
@@ -147,6 +130,60 @@ namespace NiL.JS.BaseLibrary
             {
 
             }
+        }
+
+
+        public IIteratorResult @return()
+        {
+            if (thread != null)
+            {
+                if (thread.ThreadState == ThreadState.Suspended)
+                {
+                    generatorContext.abortType = AbortType.Return;
+                }
+            }
+            Dispose();
+            return new GeneratorResult(null, true);
+        }
+
+        public IIteratorResult @throw(Arguments arguments = null)
+        {
+            if (thread != null)
+            {
+                if (thread.ThreadState == ThreadState.Suspended)
+                {
+                    generatorContext.abortType = AbortType.Exception;
+                }
+            }
+            return new GeneratorResult(null, true);
+        }
+
+        public IIterator iterator()
+        {
+            return this;
+        }
+    }
+
+    internal sealed class GeneratorResult : IIteratorResult
+    {
+        private JSValue _value;
+        private bool _done;
+
+        public JSValue value
+        {
+            get { return _value; }
+        }
+
+        public bool done
+        {
+            get { return _done; }
+        }
+
+        [Hidden]
+        public GeneratorResult(JSValue value, bool done)
+        {
+            this._value = value;
+            this._done = done;
         }
     }
 }

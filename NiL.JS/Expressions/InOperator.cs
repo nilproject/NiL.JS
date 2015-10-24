@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
                     return res;
                 }
             }
-            var t = source.GetMember(temp, false, false);
+            var t = source.GetMember(temp, false, MemberScope.Сommon);
             tempContainer = temp;
             return t.IsExists;
         }

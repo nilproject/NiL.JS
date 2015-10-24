@@ -302,8 +302,8 @@ namespace NiL.JS.Core
 
         public IEnumerator<TValue> GetEnumerator()
         {
-            foreach (var kvp in DirectOrder)
-                yield return kvp.Value;
+            for (var i = 0u; i < pseudoLength; i++)
+                yield return this[(int)i];
         }
 
         #endregion

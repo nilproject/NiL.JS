@@ -682,7 +682,7 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        var res = JSObject.CreateObject();
+                        var res = JSObject.CreateObject(true);
                         res.attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable;
                         (res.fields["constructor"] = this.CloneImpl()).attributes = JSValueAttributesInternal.DoNotEnumerate;
                         _prototype = res;
@@ -856,9 +856,8 @@ namespace NiL.JS.BaseLibrary
             }
 
             // Совсем медленно. Плохая функция попалась
-            Arguments _arguments = new Core.Arguments()
+            Arguments _arguments = new Core.Arguments(initiator)
             {
-                caller = initiator.strict && initiator.owner != null && initiator.owner.creator.body.strict ? Function.propertiesDummySM : initiator.owner,
                 length = arguments.Length
             };
             if (creator.statistic.ContainsRestParameters)
@@ -956,7 +955,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public virtual JSValue Invoke(JSValue thisBind, Arguments args)
+        public virtual JSValue Invoke(JSValue targetObject, Arguments args)
         {
 #if DEBUG && !PORTABLE
             if (creator.trace)
@@ -964,7 +963,7 @@ namespace NiL.JS.BaseLibrary
 #endif
             JSValue res = null;
             var body = creator.body;
-            thisBind = correctThisBind(thisBind, body.strict);
+            targetObject = correctThisBind(targetObject, body.strict);
             if (body.lines.Length == 0)
             {
                 notExists.valueType = JSValueType.NotExists;
@@ -980,10 +979,7 @@ namespace NiL.JS.BaseLibrary
             if (args == null)
             {
                 var cc = Context.CurrentContext;
-                args = new Arguments()
-                {
-                    caller = cc == null ? null : cc.strict && cc.owner != null && cc.owner.creator.body.strict ? Function.propertiesDummySM : cc.owner
-                };
+                args = new Arguments(cc);
             }
             for (; ; ) // tail recursion catcher
             {
@@ -997,7 +993,7 @@ namespace NiL.JS.BaseLibrary
                         creator.reference.descriptor.cacheContext = internalContext.parent;
                         creator.reference.descriptor.cacheRes = this;
                     }
-                    internalContext.thisBind = thisBind;
+                    internalContext.thisBind = targetObject;
                     internalContext.strict |= body.strict;
                     internalContext.variables = body.variables;
                     if (creator.type == FunctionType.Arrow)
@@ -1035,10 +1031,10 @@ namespace NiL.JS.BaseLibrary
                         creator.parametersStored = creator.recursionDepth;
                     exit(internalContext);
                 }
-                if (internalContext.abortType != AbortType.TailRecursion)
+                if (res != null) // tail recursion
                     break;
                 args = internalContext.abortInfo as Arguments;
-                thisBind = correctThisBind(internalContext.objectSource, body.strict);
+                targetObject = correctThisBind(internalContext.objectSource, body.strict);
             }
             return res;
         }
@@ -1140,28 +1136,28 @@ namespace NiL.JS.BaseLibrary
                 }
             }
 
-            setPrmFst(0, a0, internalContext);
+            setParamValue(0, a0, internalContext);
             if (argumentsCount > 1)
             {
-                setPrmFst(1, a1, internalContext);
+                setParamValue(1, a1, internalContext);
                 if (argumentsCount > 2)
                 {
-                    setPrmFst(2, a2, internalContext);
+                    setParamValue(2, a2, internalContext);
                     if (argumentsCount > 3)
                     {
-                        setPrmFst(3, a3, internalContext);
+                        setParamValue(3, a3, internalContext);
                         if (argumentsCount > 4)
                         {
-                            setPrmFst(4, a4, internalContext);
+                            setParamValue(4, a4, internalContext);
                             if (argumentsCount > 5)
                             {
-                                setPrmFst(5, a5, internalContext);
+                                setParamValue(5, a5, internalContext);
                                 if (argumentsCount > 6)
                                 {
-                                    setPrmFst(6, a6, internalContext);
+                                    setParamValue(6, a6, internalContext);
                                     if (argumentsCount > 7)
                                     {
-                                        setPrmFst(7, a7, internalContext);
+                                        setParamValue(7, a7, internalContext);
                                     }
                                 }
                             }
@@ -1171,7 +1167,7 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        private void setPrmFst(int index, JSValue value, Context context)
+        private void setParamValue(int index, JSValue value, Context context)
         {
             if (!value.IsDefined && creator.parameters.Length > index && creator.parameters[index].initializer != null)
                 value.Assign(creator.parameters[index].initializer.Evaluate(context));
@@ -1181,7 +1177,7 @@ namespace NiL.JS.BaseLibrary
             if (creator.parameters[index].captured)
             {
                 if (context.fields == null)
-                    context.fields = createFields();
+                    context.fields = getFieldsContainer();
                 context.fields[creator.parameters[index].name] = value;
             }
         }
@@ -1248,7 +1244,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 t.attributes &= ~JSValueAttributesInternal.Cloned;
                 if (arg.captured || cew)
-                    (internalContext.fields ?? (internalContext.fields = createFields()))[arg.Name] = t;
+                    (internalContext.fields ?? (internalContext.fields = getFieldsContainer()))[arg.Name] = t;
                 arg.cacheContext = internalContext;
                 arg.cacheRes = t;
                 if (string.CompareOrdinal(arg.name, "arguments") == 0)
@@ -1298,7 +1294,7 @@ namespace NiL.JS.BaseLibrary
                 if (arg.captured || cew)
                 {
                     if (internalContext.fields == null)
-                        internalContext.fields = createFields();
+                        internalContext.fields = getFieldsContainer();
                     internalContext.fields[arg.Name] = arg.cacheRes;
                 }
                 if (string.CompareOrdinal(arg.name, "arguments") == 0)
@@ -1319,7 +1315,7 @@ namespace NiL.JS.BaseLibrary
                         continue;
                     JSValue f = new JSValue() { valueType = JSValueType.Undefined, attributes = JSValueAttributesInternal.DoNotDelete };
                     if (v.captured || cew)
-                        (internalContext.fields ?? (internalContext.fields = createFields()))[v.name] = f;
+                        (internalContext.fields ?? (internalContext.fields = getFieldsContainer()))[v.name] = f;
                     if (v.initializer != null)
                         f.Assign(v.initializer.Evaluate(internalContext));
                     if (v.isReadOnly)
@@ -1366,7 +1362,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var context = creator.parameters[0].cacheContext;
                 if (context.fields == null)
-                    context.fields = createFields();
+                    context.fields = getFieldsContainer();
                 for (var i = 0; i < creator.parameters.Length; i++)
                     context.fields[creator.parameters[i].Name] = creator.parameters[i].cacheRes;
             }
@@ -1374,7 +1370,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var context = creator.body.localVariables[0].cacheContext;
                 if (context.fields == null)
-                    context.fields = createFields();
+                    context.fields = getFieldsContainer();
                 for (var i = 0; i < creator.body.localVariables.Length; i++)
                     context.fields[creator.body.localVariables[i].Name] = creator.body.localVariables[i].cacheRes;
             }
@@ -1387,7 +1383,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue nameObj, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue nameObj, bool forWrite, MemberScope memberScope)
         {
             if (nameObj.valueType != JSValueType.Symbol)
             {
@@ -1397,7 +1393,7 @@ namespace NiL.JS.BaseLibrary
                 if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
                     return prototype;
             }
-            return base.GetMember(nameObj, forWrite, own);
+            return base.GetMember(nameObj, forWrite, memberScope);
         }
 
         [CLSCompliant(false)]

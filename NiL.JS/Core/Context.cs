@@ -288,7 +288,7 @@ namespace NiL.JS.Core
                 tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
             }
             if (createFields)
-                this.fields = JSObject.createFields();
+                this.fields = JSObject.getFieldsContainer();
             this.abortInfo = JSValue.notExists;
         }
 
@@ -447,7 +447,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        res = JSObject.GlobalPrototype.GetMember(wrap(name), create, false);
+                        res = JSObject.GlobalPrototype.GetMember(wrap(name), create, MemberScope.Сommon);
                         if (res.valueType == JSValueType.NotExistsInObject)
                             res.valueType = JSValueType.NotExists;
                     }

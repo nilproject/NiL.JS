@@ -165,10 +165,10 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var res = JSObject.CreateObject(false);
+            var res = JSObject.CreateObject();
             if (fields.Length == 0)
                 return res;
-            res.fields = JSObject.createFields();
+            res.fields = JSObject.getFieldsContainer();
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Evaluate(context);

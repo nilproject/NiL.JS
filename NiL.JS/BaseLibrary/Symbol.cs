@@ -13,6 +13,8 @@ namespace NiL.JS.BaseLibrary
     {
         private static readonly Dictionary<string, Symbol> symbolsCache = new Dictionary<string, Symbol>();
 
+        public static readonly Symbol iterator = new Symbol("iterator");
+
         [Hidden]
         public string Description { get; private set; }
 
@@ -27,7 +29,8 @@ namespace NiL.JS.BaseLibrary
             Description = description;
             oValue = this;
             valueType = JSValueType.Symbol;
-            symbolsCache[description] = this;
+            if (!symbolsCache.ContainsKey(description))
+                symbolsCache[description] = this;
         }
 
         public static Symbol @for(string description)
@@ -55,11 +58,11 @@ namespace NiL.JS.BaseLibrary
             return "Symbol(" + Description + ")";
         }
 
-        protected internal override JSValue GetMember(JSValue name, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue name, bool forWrite, MemberScope memberScope)
         {
             if (forWrite)
                 return undefined;
-            return base.GetMember(name, false, own);
+            return base.GetMember(name, false, memberScope);
         }
     }
 }

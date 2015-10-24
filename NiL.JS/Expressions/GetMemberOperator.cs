@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
                 source = source.Clone() as JSValue;
             else
                 source = source.oValue as JSValue ?? source;
-            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), true, false);
+            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), true, MemberScope.Сommon);
             context.objectSource = source;
             if (res.valueType == JSValueType.NotExists)
                 res.valueType = JSValueType.NotExistsInObject;
@@ -64,7 +64,7 @@ namespace NiL.JS.Expressions
                     res = null;
                 }
             }
-            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), false, false);
+            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), false, MemberScope.Сommon);
             context.objectSource = source;
             if (res.valueType == JSValueType.NotExists)
                 res.valueType = JSValueType.NotExistsInObject;

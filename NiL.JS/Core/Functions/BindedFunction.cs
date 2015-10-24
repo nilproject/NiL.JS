@@ -106,9 +106,9 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        protected internal override JSValue GetMember(JSValue key, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
-            return proto.GetMember(key, forWrite, own);
+            return proto.GetMember(key, forWrite, memberScope);
         }
 
         internal override JSObject GetDefaultPrototype()

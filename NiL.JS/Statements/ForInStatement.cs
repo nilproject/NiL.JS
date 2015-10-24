@@ -185,12 +185,10 @@ namespace NiL.JS.Statements
                             continue;
                         if (item.Key >= 0)
                         {
-                            v.attributes = (v.attributes & ~JSValueAttributesInternal.ContainsParsedDouble) | JSValueAttributesInternal.ContainsParsedInt;
                             v.oValue = item.Key.ToString();
                         }
                         else
                         {
-                            v.attributes = (v.attributes & ~JSValueAttributesInternal.ContainsParsedInt) | JSValueAttributesInternal.ContainsParsedDouble;
                             v.oValue = ((uint)item.Key).ToString();
                         }
                         if (processedKeys.Contains(v.oValue.ToString()))

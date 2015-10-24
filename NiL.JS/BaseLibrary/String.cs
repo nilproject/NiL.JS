@@ -261,8 +261,8 @@ namespace NiL.JS.BaseLibrary
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
                     res.data[i] = match.Groups[i].Value;
-                res.GetMember("index", true, true).Assign(match.Index);
-                res.GetMember("input", true, true).Assign(self);
+                res.GetMember("index", true, MemberScope.Own).Assign(match.Index);
+                res.GetMember("input", true, MemberScope.Own).Assign(self);
                 return res;
             }
         }
@@ -913,7 +913,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
             if (key.valueType != JSValueType.Symbol)
             {
@@ -932,7 +932,7 @@ namespace NiL.JS.BaseLibrary
                 if (namestr == "length")
                     return length;
             }
-            return base.GetMember(key, forWrite, own); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
+            return base.GetMember(key, forWrite, memberScope); // обращение идёт к Объекту String, а не к значению string, поэтому члены создавать можно
         }
 
         [Hidden]

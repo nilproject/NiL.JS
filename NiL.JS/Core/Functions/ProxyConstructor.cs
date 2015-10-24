@@ -107,25 +107,25 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, bool own)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
             if (key.valueType != JSValueType.Symbol)
             {
                 if (key.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
-                var res = proxy.GetMember(key, forWrite && own, own);
-                if (res.IsExists || (own && forWrite))
+                var res = proxy.GetMember(key, forWrite && memberScope == MemberScope.Own, memberScope);
+                if (res.IsExists || (memberScope == MemberScope.Own && forWrite))
                 {
-                    if (forWrite && res.isNeedClone)
-                        res = proxy.GetMember(key, true, own);
+                    if (forWrite && res.IsNeedClone)
+                        res = proxy.GetMember(key, true, memberScope);
                     return res;
                 }
-                res = __proto__.GetMember(key, forWrite, own);
-                if (own && (res.valueType != JSValueType.Property || (res.attributes & JSValueAttributesInternal.Field) == 0))
+                res = __proto__.GetMember(key, forWrite, memberScope);
+                if (memberScope == MemberScope.Own && (res.valueType != JSValueType.Property || (res.attributes & JSValueAttributesInternal.Field) == 0))
                     return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
                 return res;
             }
-            return base.GetMember(key, forWrite, own);
+            return base.GetMember(key, forWrite, memberScope);
         }
 
         protected internal override bool DeleteMember(JSValue name)

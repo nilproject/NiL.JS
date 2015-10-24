@@ -46,12 +46,12 @@ namespace NiL.JS.Core
         {
         }
 
-        protected internal override JSValue GetMember(JSValue name, bool forWrite, bool own)
+        protected internal override JSValue GetMember(JSValue name, bool forWrite, MemberScope memberScope)
         {
             var t = instance as JSValue;
             if (t != null)
-                return t.GetMember(name, forWrite, own);
-            return base.GetMember(name, forWrite, own);
+                return t.GetMember(name, forWrite, memberScope);
+            return base.GetMember(name, forWrite, memberScope);
         }
 
         protected internal override void SetMember(JSValue name, JSValue value, bool strict)
