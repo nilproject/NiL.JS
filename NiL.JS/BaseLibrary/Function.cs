@@ -1020,8 +1020,8 @@ namespace NiL.JS.BaseLibrary
                         {
                             args.callee = this;
                         }
-                        initParameters(args, internalContext);
                     }
+                    initParameters(args, internalContext);
                     res = evaluate(internalContext);
                 }
                 finally

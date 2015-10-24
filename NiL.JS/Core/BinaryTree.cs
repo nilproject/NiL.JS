@@ -271,7 +271,7 @@ namespace NiL.JS.Core
             if (!typeof(IComparable).IsAssignableFrom(typeof(TKey))
                && !typeof(IComparable<TKey>).IsAssignableFrom(typeof(TKey)))
 #endif
-                throw new ArgumentException("Compaper not defined.");
+                throw new ArgumentException("Compaper is not defined.");
             root = null;
             Count = 0;
             state = DateTime.UtcNow.Ticks;

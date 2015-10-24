@@ -16,7 +16,7 @@ namespace NiL.JS.Core
             if (obj == null)
                 throw new ArgumentNullException("obj");
             if (obj.valueType == JSValueType.NotExists)
-                ExceptionsHelper.Throw((new ReferenceError("Variable not defined.")));
+                ExceptionsHelper.Throw((new ReferenceError("Variable is not defined.")));
             if (obj.valueType <= JSValueType.Undefined)
                 ExceptionsHelper.Throw(new TypeError("Can't access to property value of \"undefined\"."));
             if (obj.valueType >= JSValueType.Object && obj.oValue == null)

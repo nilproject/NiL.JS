@@ -217,8 +217,6 @@ namespace NiL.JS.Expressions
                     ExceptionsHelper.ThrowSyntaxError(string.Format("Too many arguments for function \"{0}\"", name), code, index);
 
                 bool rest = Parser.Validate(code, "...", ref i);
-                if (rest && mode == FunctionType.Arrow)
-                    ExceptionsHelper.ThrowSyntaxError("Arrow-function cannot have rest parameter", code, i);
 
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict))

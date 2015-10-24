@@ -151,7 +151,7 @@ namespace NiL.JS {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Variable &quot;{0}&quot; not defined.
+        ///   Ищет локализованную строку, похожую на Variable &quot;{0}&quot; is not defined.
         /// </summary>
         internal static string VariableNotDefined {
             get {

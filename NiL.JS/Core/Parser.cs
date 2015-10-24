@@ -146,6 +146,8 @@ namespace NiL.JS.Core
                     }
                     while (char.IsWhiteSpace(code[index]));
 
+                    Validate(code, "...", ref index);
+
                     if (!ValidateName(code, ref index))
                         return false;
 
