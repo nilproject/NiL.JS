@@ -36,7 +36,7 @@ namespace NiL.JS.Core
     internal enum JSObjectAttributesInternal : uint
     {
         None = 0,
-        DoNotEnum = 1 << 0,
+        DoNotEnumerate = 1 << 0,
         DoNotDelete = 1 << 1,
         ReadOnly = 1 << 2,
         Immutable = 1 << 3,
@@ -84,13 +84,13 @@ namespace NiL.JS.Core
         [Hidden]
         internal static readonly IEnumerator<string> EmptyEnumerator = ((IEnumerable<string>)(new string[0])).GetEnumerator();
         [Hidden]
-        internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSObject undefined = new JSObject() { valueType = JSObjectType.Undefined, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSObject notExists = new JSObject() { valueType = JSObjectType.NotExists, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSObject notExists = new JSObject() { valueType = JSObjectType.NotExists, attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSObject Null = new JSObject() { valueType = JSObjectType.Object, oValue = null, attributes = JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSObject nullString = new JSObject() { valueType = JSObjectType.String, oValue = "null", attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+        internal static readonly JSObject nullString = new JSObject() { valueType = JSObjectType.String, oValue = "null", attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.SystemObject };
         [Hidden]
         internal static JSObject GlobalPrototype;
 
@@ -782,6 +782,24 @@ namespace NiL.JS.Core
             return res;
         }
 
+        internal JSObject CloneImpl(bool force)
+        {
+            if (!force && (attributes & JSObjectAttributesInternal.Cloned) != 0)
+            {
+                attributes &= ~JSObjectAttributesInternal.Cloned;
+                return this;
+            }
+            var res = new JSObject();
+            res.Assign(this);
+            res.attributes = this.attributes &
+                ~(JSObjectAttributesInternal.ReadOnly
+                | JSObjectAttributesInternal.SystemObject
+                | JSObjectAttributesInternal.Temporary
+                | JSObjectAttributesInternal.Reassign
+                | JSObjectAttributesInternal.ProxyPrototype);
+            return res;
+        }
+
         [Hidden]
         public override string ToString()
         {
@@ -878,7 +896,7 @@ namespace NiL.JS.Core
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                         yield return f.Key;
                 }
             }
@@ -967,7 +985,7 @@ namespace NiL.JS.Core
             JSObject name = args[0];
             string n = name.ToString();
             var res = GetMember(n, true);
-            res = (res.IsExists) && ((res.attributes & JSObjectAttributesInternal.DoNotEnum) == 0);
+            res = (res.IsExists) && ((res.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0);
             return res;
         }
 
@@ -1247,12 +1265,12 @@ namespace NiL.JS.Core
                     JSObject obj = new JSObject() { valueType = JSObjectType.Undefined };
                     res.fields[member] = obj;
                     obj.attributes |=
-                        JSObjectAttributesInternal.DoNotEnum
+                        JSObjectAttributesInternal.DoNotEnumerate
                         | JSObjectAttributesInternal.NotConfigurable
                         | JSObjectAttributesInternal.DoNotDelete
                         | JSObjectAttributesInternal.ReadOnly;
                     if ((bool)enumerable)
-                        obj.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
+                        obj.attributes &= ~JSObjectAttributesInternal.DoNotEnumerate;
                     if ((bool)configurable)
                         obj.attributes &= ~(JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete);
                     if (value.IsExists)
@@ -1446,7 +1464,7 @@ namespace NiL.JS.Core
 
             if (!config)
             {
-                if (enumerable.IsExists && (obj.attributes & JSObjectAttributesInternal.DoNotEnum) != 0 == (bool)enumerable)
+                if (enumerable.IsExists && (obj.attributes & JSObjectAttributesInternal.DoNotEnumerate) != 0 == (bool)enumerable)
                     throw new JSException(new TypeError("Cannot change enumerable attribute for non configurable property."));
 
                 if (writable.IsExists && (obj.attributes & JSObjectAttributesInternal.ReadOnly) != 0 && (bool)writable)
@@ -1507,7 +1525,7 @@ namespace NiL.JS.Core
             if (newProp)
             {
                 obj.attributes |=
-                    JSObjectAttributesInternal.DoNotEnum
+                    JSObjectAttributesInternal.DoNotEnumerate
                     | JSObjectAttributesInternal.DoNotDelete
                     | JSObjectAttributesInternal.NotConfigurable
                     | JSObjectAttributesInternal.ReadOnly;
@@ -1518,7 +1536,7 @@ namespace NiL.JS.Core
                 if (configurable.IsExists && (config || !(bool)configurable))
                     obj.attributes |= JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete;
                 if (enumerable.IsExists && (config || !(bool)enumerable))
-                    obj.attributes |= JSObjectAttributesInternal.DoNotEnum;
+                    obj.attributes |= JSObjectAttributesInternal.DoNotEnumerate;
                 if (writable.IsExists && (config || !(bool)writable))
                     obj.attributes |= JSObjectAttributesInternal.ReadOnly;
 
@@ -1536,7 +1554,7 @@ namespace NiL.JS.Core
             if (config)
             {
                 if ((bool)enumerable)
-                    obj.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
+                    obj.attributes &= ~JSObjectAttributesInternal.DoNotEnumerate;
                 if ((bool)configurable)
                     obj.attributes &= ~(JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotDelete);
                 if ((bool)writable)
@@ -1818,7 +1836,7 @@ namespace NiL.JS.Core
                 res["get"] = (obj.oValue as PropertyPair).get;
             }
             res["configurable"] = (obj.attributes & JSObjectAttributesInternal.NotConfigurable) == 0 || (obj.attributes & JSObjectAttributesInternal.DoNotDelete) == 0;
-            res["enumerable"] = (obj.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
+            res["enumerable"] = (obj.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0;
             return res;
         }
 

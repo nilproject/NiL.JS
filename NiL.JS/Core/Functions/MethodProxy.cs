@@ -113,7 +113,7 @@ namespace NiL.JS.Core.Functions
             parameters = methodBase.GetParameters();
 
             if (_length == null)
-                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject };
+                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.SystemObject };
             var pc = methodBase.GetCustomAttributes(typeof(Modules.ArgumentsLengthAttribute), false).ToArray();
             if (pc.Length != 0)
                 _length.iValue = (pc[0] as Modules.ArgumentsLengthAttribute).Count;
@@ -420,7 +420,7 @@ namespace NiL.JS.Core.Functions
                 };
 
                 for (int i = 0; i < arguments.Length; i++)
-                    _arguments[i] = NiL.JS.Expressions.Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1);
+                    _arguments[i] = NiL.JS.Expressions.Call.PrepareArg(initiator, arguments[i], arguments.Length > 1);
                 initiator.objectSource = null;
 
                 return Invoke(self, _arguments);
@@ -433,7 +433,7 @@ namespace NiL.JS.Core.Functions
                 args = new object[targetCount];
                 for (int i = targetCount; i-- > 0; )
                 {
-                    var obj = arguments.Length > i ? NiL.JS.Expressions.Call.prepareArg(initiator, arguments[i], false, arguments.Length > 1) : notExists;
+                    var obj = arguments.Length > i ? NiL.JS.Expressions.Call.PrepareArg(initiator, arguments[i], arguments.Length > 1) : notExists;
                     if (obj.IsExists)
                     {
                         args[i] = marshal(obj, parameters[i].ParameterType);

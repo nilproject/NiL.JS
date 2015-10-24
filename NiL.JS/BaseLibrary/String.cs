@@ -67,7 +67,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if ((pos < 0) || (pos >= oValue.ToString().Length))
                     return JSObject.notExists;
-                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue.ToString())[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.DoNotDelete };
+                return new JSObject(false) { valueType = JSObjectType.String, oValue = (oValue.ToString())[pos].ToString(), attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.DoNotDelete };
             }
         }
 
@@ -896,7 +896,7 @@ namespace NiL.JS.BaseLibrary
                 if (this.GetType() == typeof(String))
                 {
                     if (_length == null)
-                        _length = new Number(len) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable };
+                        _length = new Number(len) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.NotConfigurable };
                     else
                         _length.iValue = len;
                     return _length;

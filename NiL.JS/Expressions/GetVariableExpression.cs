@@ -67,7 +67,7 @@ namespace NiL.JS.Expressions
                 if (res.valueType < JSObjectType.Undefined && (!suspendThrow || forceThrow))
                     throwRefError();
                 if ((res.attributes & JSObjectAttributesInternal.Argument) != 0)
-                    context.caller.buildArgumentsObject();
+                    context.caller.BuildArgumentsObject();
                 return res;
             }
             return descriptor.Get(context, true, functionDepth);

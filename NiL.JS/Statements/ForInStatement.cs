@@ -174,7 +174,7 @@ namespace NiL.JS.Statements
                     {
                         if (item.Value == null
                             || !item.Value.IsExists
-                            || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
+                            || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnumerate) != 0)
                             continue;
                         if (item.Key >= 0)
                         {
@@ -213,7 +213,7 @@ namespace NiL.JS.Statements
                         {
                             if (item.Value == null
                                 || !item.Value.IsExists
-                                || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnum) != 0)
+                                || (item.Value.attributes & JSObjectAttributesInternal.DoNotEnumerate) != 0)
                                 continue;
                             v.valueType = JSObjectType.String;
                             v.oValue = item.Key;

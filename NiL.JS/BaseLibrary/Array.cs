@@ -45,7 +45,7 @@ namespace NiL.JS.BaseLibrary
 
             public LengthField(Array owner)
             {
-                attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.Reassign;
+                attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.Reassign;
                 array = owner;
                 if ((long)(int)array.data.Length == array.data.Length)
                 {
@@ -1926,7 +1926,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (node.Value != null
                     && node.Value.IsExists
-                    && (!hideNonEnum || (node.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    && (!hideNonEnum || (node.Value.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                     yield return ((uint)node.Key).ToString();
             }
             if (!hideNonEnum)
@@ -1935,7 +1935,7 @@ namespace NiL.JS.BaseLibrary
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                         yield return f.Key;
                 }
             }

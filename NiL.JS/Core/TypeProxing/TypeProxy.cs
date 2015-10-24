@@ -207,7 +207,7 @@ namespace NiL.JS.Core.TypeProxing
                     ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
 
-                    attributes |= JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+                    attributes |= JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.SystemObject;
                     if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
                         attributes |= JSObjectAttributesInternal.Immutable;
                     var staticProxy = new TypeProxy()
@@ -236,7 +236,7 @@ namespace NiL.JS.Core.TypeProxing
                         else
                             ctor = new ProxyConstructor(staticProxy);
                         ctor.attributes = attributes;
-                        attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly;
+                        attributes |= JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.ReadOnly;
                         staticProxies[type] = ctor;
                         if (hostedType != typeof(ProxyConstructor))
                             fields["constructor"] = ctor;
@@ -427,7 +427,7 @@ namespace NiL.JS.Core.TypeProxing
                         {
                             var method = (MethodInfo)m[0];
                             r = new MethodProxy(method);
-                            r.attributes &= ~(JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnum);
+                            r.attributes &= ~(JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.NotConfigurable | JSObjectAttributesInternal.DoNotEnumerate);
                             break;
                         }
                     case MemberTypes.Field:
@@ -525,7 +525,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                 }
             }
             if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))
-                r.attributes |= JSObjectAttributesInternal.DoNotEnum;
+                r.attributes |= JSObjectAttributesInternal.DoNotEnumerate;
             lock (fields)
                 fields[name] = create && (r.attributes & (JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.SystemObject)) == JSObjectAttributesInternal.SystemObject ? (r = r.CloneImpl()) : r;
 
@@ -533,7 +533,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 {
-                    r.attributes &= ~JSObjectAttributesInternal.DoNotEnum;
+                    r.attributes &= ~JSObjectAttributesInternal.DoNotEnumerate;
                     break;
                 }
                 if (m[i].IsDefined(typeof(ReadOnlyAttribute), false))
@@ -584,7 +584,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             var name = args[0].ToString();
             JSObject temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.IsExists && (temp.attributes & JSObjectAttributesInternal.DoNotEnum) == 0;
+                return temp.IsExists && (temp.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {
@@ -610,7 +610,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             {
                 foreach (var f in fields)
                 {
-                    if (!pdef || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnum) == 0)
+                    if (!pdef || (f.Value.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0)
                         yield return f.Key;
                 }
             }

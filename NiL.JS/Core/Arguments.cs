@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
+using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Core
 {
@@ -122,12 +123,19 @@ namespace NiL.JS.Core
             }
         }
 
+        internal Arguments(Context context)
+            : this()
+        {
+            if (context != null)
+                caller = context.strict && context.caller != null && context.caller.creator.body.strict ? Function.propertiesDummySM : context.caller;
+        }
+
         public Arguments()
             : base()
         {
             valueType = JSObjectType.Object;
             oValue = this;
-            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.SystemObject;
         }
 
         public void Add(JSObject arg)
@@ -197,7 +205,7 @@ namespace NiL.JS.Core
                 case "length":
                     {
                         if (_length == null)
-                            _length = new _LengthContainer(this) { valueType = JSObjectType.Int, iValue = length, attributes = JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.Reassign };
+                            _length = new _LengthContainer(this) { valueType = JSObjectType.Int, iValue = length, attributes = JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.Reassign };
                         return _length;
                     }
                 case "callee":
@@ -205,7 +213,7 @@ namespace NiL.JS.Core
                         if (createMember && (callee.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                         {
                             callee = callee.CloneImpl();
-                            callee.attributes = JSObjectAttributesInternal.DoNotEnum;
+                            callee.attributes = JSObjectAttributesInternal.DoNotEnumerate;
                         }
                         return (callee ?? (!createMember ? notExists : (callee = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                     }
@@ -214,7 +222,7 @@ namespace NiL.JS.Core
                         if (createMember && (caller.attributes & JSObjectAttributesInternal.SystemObject) != 0)
                         {
                             caller = caller.CloneImpl();
-                            callee.attributes = JSObjectAttributesInternal.DoNotEnum;
+                            callee.attributes = JSObjectAttributesInternal.DoNotEnumerate;
                         }
                         return (caller ?? (!createMember ? notExists : (caller = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                     }
@@ -224,15 +232,15 @@ namespace NiL.JS.Core
 
         protected internal override IEnumerator<string> GetEnumeratorImpl(bool hideNonEnum)
         {
-            if (a0 != null && a0.IsExists && (!hideNonEnum || (a0.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a0 != null && a0.IsExists && (!hideNonEnum || (a0.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                 yield return "0";
-            if (a1 != null && a1.IsExists && (!hideNonEnum || (a1.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a1 != null && a1.IsExists && (!hideNonEnum || (a1.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                 yield return "1";
-            if (a2 != null && a2.IsExists && (!hideNonEnum || (a2.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a2 != null && a2.IsExists && (!hideNonEnum || (a2.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                 yield return "2";
-            if (a3 != null && a3.IsExists && (!hideNonEnum || (a3.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a3 != null && a3.IsExists && (!hideNonEnum || (a3.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                 yield return "3";
-            if (a4 != null && a4.IsExists && (!hideNonEnum || (a4.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (a4 != null && a4.IsExists && (!hideNonEnum || (a4.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                 yield return "4";
             //if (a5 != null && a5.IsExists && (!hideNonEnum || (a5.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "5";
@@ -256,11 +264,11 @@ namespace NiL.JS.Core
             //    yield return "14";
             //if (a15 != null && a15.isExists && (!hideNonEnum || (a15.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
             //    yield return "15";
-            if (callee != null && callee.IsExists && (!hideNonEnum || (callee.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (callee != null && callee.IsExists && (!hideNonEnum || (callee.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                 yield return "callee";
-            if (caller != null && callee.IsExists && (!hideNonEnum || (caller.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (caller != null && callee.IsExists && (!hideNonEnum || (caller.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                 yield return "caller";
-            if (_length != null && _length.IsExists && (!hideNonEnum || (_length.attributes & JSObjectAttributesInternal.DoNotEnum) == 0))
+            if (_length != null && _length.IsExists && (!hideNonEnum || (_length.attributes & JSObjectAttributesInternal.DoNotEnumerate) == 0))
                 yield return "length";
             var be = getBaseEnumerator(hideNonEnum);
             while (be.MoveNext())
@@ -336,7 +344,7 @@ namespace NiL.JS.Core
             _length = null;
             valueType = JSObjectType.Object;
             oValue = this;
-            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum | JSObjectAttributesInternal.SystemObject;
+            attributes = JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate | JSObjectAttributesInternal.SystemObject;
         }
     }
 }

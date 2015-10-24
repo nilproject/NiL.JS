@@ -8,13 +8,6 @@ using NiL.JS.Core.TypeProxing;
 
 namespace NiL.JS.Core.Functions
 {
-    public enum RequireNewKeywordLevel
-    {
-        Both = 0,
-        OnlyWithNew,
-        OnlyWithoutNew
-    }
-
 #if !PORTABLE
     [Serializable]
 #endif
@@ -30,15 +23,6 @@ namespace NiL.JS.Core.Functions
         private static readonly object[] _objectA = new object[0];
         internal readonly TypeProxy proxy;
         private MethodProxy[] constructors;
-
-        [Hidden]
-        public RequireNewKeywordLevel RequireNewKeywordLevel
-        {
-            [Hidden]
-            get;
-            [Hidden]
-            set;
-        }
 
         [Hidden]
         public override string name
@@ -95,12 +79,12 @@ namespace NiL.JS.Core.Functions
             if (ownew && owonew)
                 throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
             if (ownew)
-                RequireNewKeywordLevel = Functions.RequireNewKeywordLevel.OnlyWithNew;
+                RequireNewKeywordLevel = RequireNewKeywordLevel.OnlyWithNew;
             if (owonew)
-                RequireNewKeywordLevel = Functions.RequireNewKeywordLevel.OnlyWithoutNew;
+                RequireNewKeywordLevel = RequireNewKeywordLevel.OnlyWithoutNew;
 
             if (_length == null)
-                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnum };
+                _length = new Number(0) { attributes = JSObjectAttributesInternal.ReadOnly | JSObjectAttributesInternal.DoNotDelete | JSObjectAttributesInternal.DoNotEnumerate };
 
 #if PORTABLE
             var ctors = typeProxy.hostedType.GetTypeInfo().DeclaredConstructors.ToArray();
@@ -157,12 +141,12 @@ namespace NiL.JS.Core.Functions
             {
                 if (bynew)
                 {
-                    if (RequireNewKeywordLevel == Functions.RequireNewKeywordLevel.OnlyWithoutNew)
+                    if (RequireNewKeywordLevel == RequireNewKeywordLevel.OnlyWithoutNew)
                         throw new JSException(new TypeError("Type \"" + proxy.hostedType.Name + "\" can not be crated with new keyword"));
                 }
                 else
                 {
-                    if (RequireNewKeywordLevel == Functions.RequireNewKeywordLevel.OnlyWithNew)
+                    if (RequireNewKeywordLevel == RequireNewKeywordLevel.OnlyWithNew)
                         throw new JSException(new TypeError("Type \"" + proxy.hostedType.Name + "\" can not be crated without new keyword"));
 
                     if (proxy.hostedType == typeof(Date))
