@@ -405,7 +405,7 @@ function* incGen(x)
             }));
 #endif
 
-            int mode = 5
+            int mode = 2
                     ;
             switch (mode)
             {

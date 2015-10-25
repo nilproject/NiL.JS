@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
@@ -107,12 +104,18 @@ namespace NiL.JS.Core
 
             public JSValue value
             {
-                get { return result["value"]; }
+                get
+                {
+                    return Tools.InvokeGetter(result["value"], result);
+                }
             }
 
             public bool done
             {
-                get { return (bool)result["done"]; }
+                get
+                {
+                    return (bool)Tools.InvokeGetter(result["done"], result);
+                }
             }
         }
 

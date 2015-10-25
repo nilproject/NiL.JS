@@ -101,7 +101,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (thread.ThreadState == ThreadState.Running || thread.ThreadState == ThreadState.WaitSleepJoin)
                 {
-                    generatorContext.abortInfo = args[0];
+                    generatorContext.abortInfo = args != null ? args[0] : JSObject.undefined;
                     generatorContext.abortType = AbortType.None;
                     while (generatorContext.abortType == AbortType.None)
 #if !NET35

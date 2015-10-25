@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Expressions
@@ -12,6 +12,7 @@ namespace NiL.JS.Expressions
     public sealed class CallOperator : Expression
     {
         private Expression[] arguments;
+        internal bool withSpread;
         internal bool allowTCO;
 
         public override bool IsContextIndependent { get { return false; } }
@@ -89,7 +90,7 @@ namespace NiL.JS.Expressions
             func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
 
             checkStack();
-            return func.InternalInvoke(newThisBind, this.arguments, context);
+            return func.InternalInvoke(newThisBind, this.arguments, context, withSpread);
         }
 
         private void tailCall(Context context, Function func)

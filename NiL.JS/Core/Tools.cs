@@ -1457,6 +1457,8 @@ namespace NiL.JS.Core
 
         internal static JSValue InvokeGetter(JSValue property, JSValue target)
         {
+            if (property.valueType != JSValueType.Property)
+                return property;
             var getter = property.oValue as PropertyPair;
             if (getter == null || getter.get == null)
                 return JSValue.undefined;

@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Expressions;
-using NiL.JS.Statements;
+using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
@@ -1099,6 +1097,7 @@ namespace NiL.JS.Expressions
                             var args = new List<Expression>();
                             i++;
                             int startPos = i;
+                            bool withSpread = false;
                             for (; ; )
                             {
                                 while (char.IsWhiteSpace(state.Code[i]))
@@ -1118,14 +1117,18 @@ namespace NiL.JS.Expressions
                                 var spread = Parser.Validate(state.Code, "...", ref i);
                                 args.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
                                 if (spread)
+                                {
                                     args[args.Count - 1] = new SpreadOperator(args[args.Count - 1]);
+                                    withSpread = true;
+                                }
                                 if (args[args.Count - 1] == null)
                                     ExceptionsHelper.ThrowSyntaxError("Expected \")\"", state.Code, startPos);
                             }
                             first = new CallOperator(first, args.ToArray())
                             {
                                 Position = first.Position,
-                                Length = i - first.Position + 1
+                                Length = i - first.Position + 1,
+                                withSpread = withSpread
                             };
                             i++;
                             repeat = !forNew;

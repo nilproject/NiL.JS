@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
@@ -82,11 +81,11 @@ namespace NiL.JS.Core
     public enum JSValuesAttributes
     {
         None = 0,
-        DoNotEnum = 1 << 0,
+        DoNotEnumerate = 1 << 0,
         DoNotDelete = 1 << 1,
         ReadOnly = 1 << 2,
         Immutable = 1 << 3,
-        NotConfigurable = 1 << 4,
+        NonConfigurable = 1 << 4,
     }
 
 #if !PORTABLE

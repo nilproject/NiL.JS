@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
-using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
@@ -48,6 +48,7 @@ namespace NiL.JS.Expressions
                 context.abortType = AbortType.None;
                 context.Activate();
                 tempContainer.Assign(context.abortInfo ?? JSValue.notExists);
+                context.abortInfo = null;
                 return tempContainer;
             }
         }

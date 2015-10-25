@@ -799,9 +799,9 @@ namespace NiL.JS.BaseLibrary
             this.oValue = this;
         }
 
-        protected internal virtual JSValue InternalInvoke(JSValue self, Expression[] arguments, Context initiator)
+        protected internal virtual JSValue InternalInvoke(JSValue self, Expression[] arguments, Context initiator, bool withSpread)
         {
-            if (this.GetType() == typeof(Function))
+            if (!withSpread && this.GetType() == typeof(Function))
             {
                 var body = creator.body;
                 var result = notExists;
@@ -856,29 +856,54 @@ namespace NiL.JS.BaseLibrary
             }
 
             // Совсем медленно. Плохая функция попалась
-            Arguments _arguments = new Core.Arguments(initiator)
+            Arguments _arguments = new Core.Arguments(initiator);
+            for (int targetIndex = 0, sourceIndex = 0; targetIndex < arguments.Length; targetIndex++, sourceIndex++)
             {
-                length = arguments.Length
-            };
-            if (creator.statistic.ContainsRestParameters)
-            {
-                for (int i = 0; i < arguments.Length; i++)
+                if (creator.parameters.Length > targetIndex && creator.parameters[targetIndex].IsRest)
                 {
-                    if (creator.parameters[i].IsRest)
+                    var restArr = new Array((long)(arguments.Length - targetIndex));
+                    _arguments.Add(restArr);
+                    for (; sourceIndex < arguments.Length; sourceIndex++)
                     {
-                        var restArr = new Array((long)(arguments.Length - i));
-                        _arguments[i] = restArr;
-                        for (; i < arguments.Length; i++)
-                            restArr.data.Add(CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1));
+                        var arg = arguments[sourceIndex].Evaluate(initiator);
+                        if (arg.valueType == JSValueType.SpreadOperatorResult)
+                        {
+                            var values = arg.oValue as IList<JSValue>;
+                            for (var j = 0; j < values.Count; j++)
+                            {
+                                var v = values[j].CloneImpl(false);
+                                v.attributes |= JSValueAttributesInternal.Cloned;
+                                restArr.data.Add(v);
+                            }
+                        }
+                        else
+                        {
+                            arg = arg.CloneImpl(false);
+                            arg.attributes |= JSValueAttributesInternal.Cloned;
+                            restArr.data.Add(arg);
+                        }
+                    }
+                }
+                else
+                {
+                    var arg = arguments[sourceIndex].Evaluate(initiator);
+                    if (arg.valueType == JSValueType.SpreadOperatorResult)
+                    {
+                        var values = arg.oValue as IList<JSValue>;
+                        for (var j = 0; j < values.Count; j++, targetIndex++)
+                        {
+                            var v = values[j].CloneImpl(false);
+                            v.attributes |= JSValueAttributesInternal.Cloned;
+                            _arguments.Add(v);
+                        }
                     }
                     else
-                        _arguments[i] = CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1);
+                    {
+                        arg = arg.CloneImpl(false);
+                        arg.attributes |= JSValueAttributesInternal.Cloned;
+                        _arguments.Add(arg);
+                    }
                 }
-            }
-            else
-            {
-                for (int i = 0; i < arguments.Length; i++)
-                    _arguments[i] = CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1);
             }
             initiator.objectSource = null;
 
