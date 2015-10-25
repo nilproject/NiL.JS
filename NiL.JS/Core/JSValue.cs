@@ -184,6 +184,7 @@ namespace NiL.JS.Core
                     case JSValueType.Object:
                     case JSValueType.Function:
                     case JSValueType.Property:
+                    case JSValueType.SpreadOperatorResult:
                     case JSValueType.Date:
                         {
                             if (oValue != this && oValue is JSObject)

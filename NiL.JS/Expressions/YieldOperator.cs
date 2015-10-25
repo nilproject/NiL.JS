@@ -33,8 +33,8 @@ namespace NiL.JS.Expressions
         {
             lock (this)
             {
-                tempContainer.Assign(first.Evaluate(context));
-                context.abortInfo = tempContainer;
+                var r = first.Evaluate(context).CloneImpl(false);
+                context.abortInfo = r;
                 context.abortType = AbortType.Yield;
                 context.Deactivate();
                 while (context.abortType == AbortType.Yield)

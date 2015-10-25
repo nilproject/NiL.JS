@@ -856,58 +856,48 @@ namespace NiL.JS.BaseLibrary
             }
 
             // Совсем медленно. Плохая функция попалась
-            Arguments _arguments = new Core.Arguments(initiator);
-            for (int targetIndex = 0, sourceIndex = 0; targetIndex < arguments.Length; targetIndex++, sourceIndex++)
+            Arguments argumentsObject = new Core.Arguments(initiator);
+            IList<JSValue> spreadSource = null;
+
+            int targetIndex = 0;
+            int sourceIndex = 0;
+            int spreadIndex = 0;
+
+            while (sourceIndex < arguments.Length)
             {
-                if (creator.parameters.Length > targetIndex && creator.parameters[targetIndex].IsRest)
+                if (spreadSource != null)
                 {
-                    var restArr = new Array((long)(arguments.Length - targetIndex));
-                    _arguments.Add(restArr);
-                    for (; sourceIndex < arguments.Length; sourceIndex++)
+                    argumentsObject[targetIndex] = spreadSource[spreadIndex];
+                    spreadIndex++;
+                    if (spreadIndex == spreadSource.Count)
                     {
-                        var arg = arguments[sourceIndex].Evaluate(initiator);
-                        if (arg.valueType == JSValueType.SpreadOperatorResult)
-                        {
-                            var values = arg.oValue as IList<JSValue>;
-                            for (var j = 0; j < values.Count; j++)
-                            {
-                                var v = values[j].CloneImpl(false);
-                                v.attributes |= JSValueAttributesInternal.Cloned;
-                                restArr.data.Add(v);
-                            }
-                        }
-                        else
-                        {
-                            arg = arg.CloneImpl(false);
-                            arg.attributes |= JSValueAttributesInternal.Cloned;
-                            restArr.data.Add(arg);
-                        }
+                        spreadSource = null;
+                        sourceIndex++;
                     }
                 }
                 else
                 {
-                    var arg = arguments[sourceIndex].Evaluate(initiator);
-                    if (arg.valueType == JSValueType.SpreadOperatorResult)
+                    var value = arguments[sourceIndex].Evaluate(initiator);
+                    if (value.valueType == JSValueType.SpreadOperatorResult)
                     {
-                        var values = arg.oValue as IList<JSValue>;
-                        for (var j = 0; j < values.Count; j++, targetIndex++)
-                        {
-                            var v = values[j].CloneImpl(false);
-                            v.attributes |= JSValueAttributesInternal.Cloned;
-                            _arguments.Add(v);
-                        }
+                        spreadIndex = 0;
+                        spreadSource = value.oValue as IList<JSValue>;
+                        continue;
                     }
                     else
                     {
-                        arg = arg.CloneImpl(false);
-                        arg.attributes |= JSValueAttributesInternal.Cloned;
-                        _arguments.Add(arg);
+                        sourceIndex++;
+                        argumentsObject[targetIndex] = value;
                     }
                 }
+                targetIndex++;
             }
+
+            argumentsObject.length = targetIndex;
+
             initiator.objectSource = null;
 
-            return Invoke(self, _arguments);
+            return Invoke(self, argumentsObject);
         }
 
         private JSValue fastInvoke(JSValue targetObject, Expression[] arguments, Context initiator)
@@ -1233,17 +1223,23 @@ namespace NiL.JS.BaseLibrary
         {
             var cea = creator.statistic.ContainsEval || creator.statistic.ContainsArguments;
             var cew = creator.statistic.ContainsEval || creator.statistic.ContainsWith;
-            int min = System.Math.Min(args.length, creator.parameters.Length);
-            int i = 0;
-            for (; i < min; i++)
+            int min = System.Math.Min(args.length, creator.parameters.Length - (creator.statistic.ContainsRestParameters ? 1 : 0));
+
+            Array restArray = null;
+            if (creator.statistic.ContainsRestParameters)
+            {
+                restArray = new Array();
+            }
+
+            for (var i = 0; i < min; i++)
             {
                 JSValue t = args[i];
-                var arg = creator.parameters[i];
-                if (!t.IsDefined && arg.initializer != null)
-                    t = arg.initializer.Evaluate(internalContext);
+                var prm = creator.parameters[i];
+                if (!t.IsDefined && prm.initializer != null)
+                    t = prm.initializer.Evaluate(internalContext);
                 if (creator.body.strict)
                 {
-                    if (arg.assignations != null)
+                    if (prm.assignations != null)
                     {
                         args[i] = t = t.CloneImpl();
                         t.attributes |= JSValueAttributesInternal.Cloned;
@@ -1257,7 +1253,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    if (arg.assignations != null
+                    if (prm.assignations != null
                         || cea
                         || cew
                         || (t.attributes & JSValueAttributesInternal.Temporary) != 0)
@@ -1268,23 +1264,28 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 t.attributes &= ~JSValueAttributesInternal.Cloned;
-                if (arg.captured || cew)
-                    (internalContext.fields ?? (internalContext.fields = getFieldsContainer()))[arg.Name] = t;
-                arg.cacheContext = internalContext;
-                arg.cacheRes = t;
-                if (string.CompareOrdinal(arg.name, "arguments") == 0)
+                if (prm.captured || cew)
+                    (internalContext.fields ?? (internalContext.fields = getFieldsContainer()))[prm.Name] = t;
+                prm.cacheContext = internalContext;
+                prm.cacheRes = t;
+                if (string.CompareOrdinal(prm.name, "arguments") == 0)
                     internalContext.arguments = t;
             }
-            for (; i < args.length; i++)
+
+            for (var i = min; i < args.length; i++)
             {
                 JSValue t = args[i];
-                if ((t.attributes & JSValueAttributesInternal.Cloned) != 0)
-                    t.attributes &= ~JSValueAttributesInternal.Cloned;
-                else if (cew || cea)
-                    args[i] = t = t.CloneImpl();
+                if (cew || cea)
+                    args[i] = t = t.CloneImpl(false);
                 t.attributes |= JSValueAttributesInternal.Argument;
+
+                if (restArray != null)
+                {
+                    restArray.data.Add(t);
+                }
             }
-            for (; i < creator.parameters.Length; i++)
+
+            for (var i = min; i < creator.parameters.Length; i++)
             {
                 var arg = creator.parameters[i];
                 if (arg.initializer != null)
@@ -1304,15 +1305,18 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (cew || arg.assignations != null)
                     {
-                        arg.cacheRes = new JSValue()
-                        {
-                            attributes = JSValueAttributesInternal.Argument,
-                            valueType = JSValueType.Undefined
-                        };
+                        if (i == min && restArray != null)
+                            arg.cacheRes = restArray.CloneImpl();
+                        else
+                            arg.cacheRes = new JSValue() { valueType = JSValueType.Undefined };
+                        arg.cacheRes.attributes = JSValueAttributesInternal.Argument;
                     }
                     else
                     {
-                        arg.cacheRes = JSValue.undefined;
+                        if (i == min && restArray != null)
+                            arg.cacheRes = restArray;
+                        else
+                            arg.cacheRes = JSValue.undefined;
                     }
                 }
                 arg.cacheContext = internalContext;
@@ -1474,12 +1478,13 @@ namespace NiL.JS.BaseLibrary
         public JSValue call(Arguments args)
         {
             var newThis = args[0];
-            var prmlen = --args.length;
+            var prmlen = args.length - 1;
             if (prmlen >= 0)
             {
                 for (var i = 0; i <= prmlen; i++)
                     args[i] = args[i + 1];
                 args[prmlen] = null;
+                args.length = prmlen;
             }
             else
                 args[0] = null;
