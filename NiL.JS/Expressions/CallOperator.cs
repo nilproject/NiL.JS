@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
-        internal static JSValue PrepareArg(Context context, CodeNode source, bool clone)
+        internal static JSValue PrepareArg(Context context, CodeNode source)
         {
             context.objectSource = null;
             var a = source.Evaluate(context);
@@ -102,7 +102,7 @@ namespace NiL.JS.Expressions
                 length = this.arguments.Length
             };
             for (int i = 0; i < this.arguments.Length; i++)
-                arguments[i] = PrepareArg(context, this.arguments[i], this.arguments.Length > 1);
+                arguments[i] = PrepareArg(context, this.arguments[i]);
             context.objectSource = null;
 
             arguments.callee = func;

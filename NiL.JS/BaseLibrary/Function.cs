@@ -877,7 +877,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    var value = arguments[sourceIndex].Evaluate(initiator);
+                    var value = CallOperator.PrepareArg(initiator, arguments[sourceIndex]);
                     if (value.valueType == JSValueType.SpreadOperatorResult)
                     {
                         spreadIndex = 0;

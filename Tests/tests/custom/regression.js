@@ -37,3 +37,14 @@ for ([, ]; false;);
     if (o[s0] === o[s1])
         console.log("Incorrect keying with symbols");
 })();
+
+function func(x) {
+    return x + 1;
+}
+(function (x, y) { if (x == y) console.log("a(1) == a(2)"); })(func(1), func(2));
+
+function x2(x) {
+    return 2 * x;
+}
+
+(function (a, b) { with({}) if(a == b) console.log("Weak parameters") })(x2(2), x2(3));

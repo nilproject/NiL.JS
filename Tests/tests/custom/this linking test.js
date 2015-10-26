@@ -95,10 +95,5 @@ var t = { x: 2, f: function () { return function () { return this.x; } } };
 if (t.f()() != 1)
     $ERROR("#12");
 
-function func(x) {
-    return x + 1;
-}
-(function (x, y) { if (x == y) console.log("a(1) == a(2)"); })(func(1), func(2));
-
 if ((new (function () { return function () { this.str = 'hello' } }())).str != "hello")
     console.log("new (f()) failed.");

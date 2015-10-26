@@ -366,19 +366,9 @@ namespace NiL.JS.Core.Functions
         {
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
                 return Invoke(self, null);
-            if (raw)
+            if (raw || withSpread)
             {
-                Arguments _arguments = new Core.Arguments()
-                {
-                    caller = initiator.strict && initiator.owner != null && initiator.owner.creator.body.strict ? Function.propertiesDummySM : initiator.owner,
-                    length = arguments.Length
-                };
-
-                for (int i = 0; i < arguments.Length; i++)
-                    _arguments[i] = NiL.JS.Expressions.CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1);
-                initiator.objectSource = null;
-
-                return Invoke(self, _arguments);
+                return base.InternalInvoke(self, arguments, initiator, withSpread);
             }
             else
             {
@@ -388,7 +378,7 @@ namespace NiL.JS.Core.Functions
                 args = new object[targetCount];
                 for (int i = targetCount; i-- > 0; )
                 {
-                    var obj = arguments.Length > i ? NiL.JS.Expressions.CallOperator.PrepareArg(initiator, arguments[i], arguments.Length > 1) : notExists;
+                    var obj = arguments.Length > i ? Expressions.CallOperator.PrepareArg(initiator, arguments[i]) : notExists;
                     if (obj.IsExists)
                     {
                         args[i] = marshal(obj, parameters[i].ParameterType);
