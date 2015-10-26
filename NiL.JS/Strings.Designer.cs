@@ -142,6 +142,15 @@ namespace NiL.JS {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Unexpected token.
+        /// </summary>
+        internal static string UnexpectedToken {
+            get {
+                return ResourceManager.GetString("UnexpectedToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Unknown identifier &quot;{0}&quot; at {1}.
         /// </summary>
         internal static string UnknowIdentifier {

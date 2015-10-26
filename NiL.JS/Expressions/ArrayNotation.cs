@@ -45,10 +45,18 @@ namespace NiL.JS.Expressions
             var elms = new List<Expression>();
             while (state.Code[i] != ']')
             {
+                var start = i;
+                var spread = Parser.Validate(state.Code, "...", ref i);
                 if (state.Code[i] == ',')
+                {
+                    if (spread)
+                        ExceptionsHelper.ThrowSyntaxError("Expected expression", state.Code, i);
                     elms.Add(null);
+                }
                 else
                     elms.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
+                if (spread)
+                    elms[elms.Count - 1] = new SpreadOperator(elms[elms.Count - 1]) { Position = start, Length = i - start };
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] == ',')
@@ -58,7 +66,7 @@ namespace NiL.JS.Expressions
                     while (char.IsWhiteSpace(state.Code[i]));
                 }
                 else if (state.Code[i] != ']')
-                    throw new ArgumentException("Syntax error. Expected ']'");
+                    ExceptionsHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
             }
             i++;
             var pos = index;
@@ -79,16 +87,29 @@ namespace NiL.JS.Expressions
             var res = new NiL.JS.BaseLibrary.Array((long)elements.Length);
             if (elements.Length > 0)
             {
-                for (int i = 0; i < elements.Length; i++)
+                for (int sourceIndex = 0, targetIndex = 0; sourceIndex < elements.Length; sourceIndex++, targetIndex++)
                 {
-                    if (elements[i] != null)
+                    if (elements[sourceIndex] != null)
                     {
-                        var e = elements[i].Evaluate(context).CloneImpl();
-                        e.attributes = 0;
-                        res.data[i] = e;
+                        var e = elements[sourceIndex].Evaluate(context);
+                        if (e.valueType == JSValueType.SpreadOperatorResult)
+                        {
+                            var spreadArray = e.oValue as IList<JSValue>;
+                            for (var i = 0; i < spreadArray.Count; i++, targetIndex++)
+                            {
+                                res.data[targetIndex] = spreadArray[i].CloneImpl(false);
+                            }
+                            targetIndex--;
+                        }
+                        else
+                        {
+                            e = e.CloneImpl(false);
+                            e.attributes = 0;
+                            res.data[targetIndex] = e;
+                        }
                     }
                     else
-                        res.data[i] = (writableNotExists ?? (writableNotExists = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSValueAttributesInternal.SystemObject }));
+                        res.data[targetIndex] = (writableNotExists ?? (writableNotExists = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSValueAttributesInternal.SystemObject }));
                 }
             }
             return res;

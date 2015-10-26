@@ -22,7 +22,7 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
-            return "(" + Line + ":" + Column + "*" + Length + ")";
+            return "(" + Line + ":" + Column + (Length != 0 ? "*" + Length : "") + ")";
         }
 
         public static CodeCoordinates FromTextPosition(string text, int position, int length)

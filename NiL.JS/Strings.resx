@@ -144,6 +144,9 @@
   <data name="InvalidTryToCreateWithoutNew" xml:space="preserve">
     <value>Type "{0}" can not be created without new keyword</value>
   </data>
+  <data name="UnexpectedToken" xml:space="preserve">
+    <value>Unexpected token</value>
+  </data>
   <data name="UnknowIdentifier" xml:space="preserve">
     <value>Unknown identifier "{0}" at {1}</value>
   </data>

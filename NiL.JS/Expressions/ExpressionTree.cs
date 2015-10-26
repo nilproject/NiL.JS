@@ -641,7 +641,7 @@ namespace NiL.JS.Expressions
                     return null;
             }
             if (first == null || first is EmptyExpression)
-                ExceptionsHelper.Throw((new SyntaxError("Invalid operator argument at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
             bool canAsign = !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binary = false;
@@ -768,7 +768,7 @@ namespace NiL.JS.Expressions
                                 {
                                     if ((first is GetVariableExpression)
                                         && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
-                                        ExceptionsHelper.Throw(new SyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
+                                        ExceptionsHelper.ThrowSyntaxError("Cannot incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode.", state.Code, i);
                                 }
                                 first = new Expressions.IncrementOperator(first, Expressions.IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 //first = new OperatorStatement() { second = first, _type = OperationType.Incriment, Position = first.Position, Length = i + 2 - first.Position };
@@ -1178,7 +1178,7 @@ namespace NiL.JS.Expressions
                                 i = rollbackPos;
                                 goto case ';';
                             }
-                            ExceptionsHelper.Throw((new SyntaxError("Invalid operator '" + state.Code[i] + "' at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                            ExceptionsHelper.ThrowSyntaxError("Unexpected token '" + state.Code[i] + "'", state.Code, i);
                             break;
                         }
                 }
@@ -1187,12 +1187,12 @@ namespace NiL.JS.Expressions
                 && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
             {
                 if (assign || type == OperationType.Assign)
-                    ExceptionsHelper.Throw((new SyntaxError("Assignment to eval or arguments is not allowed in strict mode")));
+                    ExceptionsHelper.ThrowSyntaxError("Assignment to eval or arguments is not allowed in strict mode", state.Code, i);
                 //if (type == OperationType.Incriment || type == OperationType.Decriment)
                 //    ExceptionsHelper.Throw(new SyntaxError("Can not " + type.ToString().ToLower() + " \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
             }
             if ((!canAsign) && ((type == OperationType.Assign) || (assign)))
-                ExceptionsHelper.Throw(new SyntaxError("invalid left-hand side in assignment"));
+                ExceptionsHelper.ThrowSyntaxError("Invalid left-hand side in assignment", state.Code, i);
             if (binary && !forUnary)
             {
                 do

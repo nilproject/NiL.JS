@@ -34,7 +34,7 @@ namespace NiL.JS.Core
         Function = 259,                 // 000100000011
         Date = 515,                     // 001000000011
         Property = 1027,                // 010000000011
-        SpreadOperatorResult = 2048     // 100000000011
+        SpreadOperatorResult = 2051     // 100000000011
     }
 
 #if !PORTABLE
@@ -527,7 +527,7 @@ namespace NiL.JS.Core
                         break;
                     }
             }
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Cannot get member of object with type '" + valueType + "'");
         }
 
         private static Exception can_not_get_property_of_undefined(JSValue name)
