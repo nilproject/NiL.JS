@@ -93,19 +93,19 @@ namespace NiL.JS.Expressions
 #endif
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (!res)
             {
-                var exp = first as ConstantNotation;
+                var exp = first as ConstantDefinition;
                 if (exp != null
                     && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
                 {
                     _this = new ToNumberOperator(second);
                     return true;
                 }
-                exp = second as ConstantNotation;
+                exp = second as ConstantDefinition;
                 if (exp != null
                     && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
                 {
@@ -123,9 +123,9 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            if (first is ConstantNotation
-                && ((first as ConstantNotation).value.valueType == JSValueType.Int)
-                && ((first as ConstantNotation).value.iValue == -1))
+            if (first is ConstantDefinition
+                && ((first as ConstantDefinition).value.valueType == JSValueType.Int)
+                && ((first as ConstantDefinition).value.iValue == -1))
                 return "-" + second;
             return "(" + first + " * " + second + ")";
         }

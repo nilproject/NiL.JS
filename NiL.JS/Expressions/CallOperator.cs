@@ -25,7 +25,7 @@ namespace NiL.JS.Expressions
                 if (first is VariableReference)
                 {
                     var desc = (first as VariableReference).descriptor;
-                    var fe = desc.initializer as FunctionNotation;
+                    var fe = desc.initializer as FunctionDefinition;
                     if (fe != null)
                         return fe.statistic.ResultType; // для рекурсивных функций будет Unknown
                 }
@@ -51,7 +51,6 @@ namespace NiL.JS.Expressions
                 a = a.CloneImpl(false);
                 a.attributes |= JSValueAttributesInternal.Cloned;
             }
-
             return a;
         }
 
@@ -123,7 +122,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseCall = true;
@@ -131,7 +130,7 @@ namespace NiL.JS.Expressions
             codeContext = state;
 
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Build(ref arguments[i], depth + 1, variables, state | BuildState.InExpression, message, statistic, opts);
+                Parser.Build(ref arguments[i], depth + 1, variables, state | CodeContext.InExpression, message, statistic, opts);
             base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (first is GetVariableExpression)
             {
@@ -141,7 +140,7 @@ namespace NiL.JS.Expressions
                 VariableDescriptor f = null;
                 if (variables.TryGetValue(name, out f))
                 {
-                    var func = f.initializer as FunctionNotation;
+                    var func = f.initializer as FunctionDefinition;
                     if (func != null)
                     {
                         for (var i = 0; i < func.parameters.Length; i++)
@@ -159,7 +158,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             for (var i = arguments.Length; i-- > 0; )

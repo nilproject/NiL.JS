@@ -565,7 +565,7 @@ namespace NiL.JS.BaseLibrary
         }
 #endif
 
-        private static readonly FunctionNotation creatorDummy = new FunctionNotation("anonymous");
+        private static readonly FunctionDefinition creatorDummy = new FunctionDefinition("anonymous");
         internal static readonly Function emptyFunction = new Function();
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function)
 #if PORTABLE
@@ -590,7 +590,7 @@ namespace NiL.JS.BaseLibrary
             attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
 
-        internal readonly FunctionNotation creator;
+        internal readonly FunctionDefinition creator;
         [Hidden]
         internal readonly Context parentContext;
         [Hidden]
@@ -684,7 +684,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         var res = JSObject.CreateObject(true);
                         res.attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable;
-                        (res.fields["constructor"] = this.CloneImpl()).attributes = JSValueAttributesInternal.DoNotEnumerate;
+                        (res.fields["constructor"] = this.CloneImpl(false)).attributes = JSValueAttributesInternal.DoNotEnumerate;
                         _prototype = res;
                     }
                 }
@@ -777,11 +777,11 @@ namespace NiL.JS.BaseLibrary
             for (int i = 0; i < len; i++)
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function (" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
-            var func = FunctionNotation.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index, FunctionType.Method);
+            var func = FunctionDefinition.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index, FunctionType.Method);
             if (func != null && code.Length == index)
             {
-                Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), parentContext.strict ? BuildState.Strict : BuildState.None, null, null, Options.Default);
-                creator = func as FunctionNotation;
+                Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), parentContext.strict ? CodeContext.Strict : CodeContext.None, null, null, Options.Default);
+                creator = func as FunctionDefinition;
             }
             else
                 ExceptionsHelper.Throw(new SyntaxError("Unknown syntax error"));
@@ -790,7 +790,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal Function(Context context, FunctionNotation creator)
+        internal Function(Context context, FunctionDefinition creator)
         {
             attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
             this.parentContext = context;
@@ -1069,7 +1069,11 @@ namespace NiL.JS.BaseLibrary
             else if (ai.valueType == JSValueType.Undefined)
                 return undefined;
             else
+            {
+                ai = ai.CloneImpl(false);
+                ai.attributes |= JSValueAttributesInternal.Cloned;
                 return ai;
+            }
         }
 
         private void exit(Context internalContext)
@@ -1211,7 +1215,7 @@ namespace NiL.JS.BaseLibrary
                 for (var i = 0; i < creator.parameters.Length; i++)
                 {
                     if (creator.body.strict)
-                        args[i] = creator.parameters[i].cacheRes.CloneImpl();
+                        args[i] = creator.parameters[i].cacheRes.CloneImpl(false);
                     else
                         args[i] = creator.parameters[i].cacheRes;
                 }
@@ -1241,14 +1245,14 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (prm.assignations != null)
                     {
-                        args[i] = t = t.CloneImpl();
+                        args[i] = t = t.CloneImpl(false);
                         t.attributes |= JSValueAttributesInternal.Cloned;
                     }
                     if (cea)
                     {
                         if ((t.attributes & JSValueAttributesInternal.Cloned) == 0)
-                            args[i] = t.CloneImpl();
-                        t = t.CloneImpl();
+                            args[i] = t.CloneImpl(false);
+                        t = t.CloneImpl(false);
                     }
                 }
                 else
@@ -1259,7 +1263,7 @@ namespace NiL.JS.BaseLibrary
                         || (t.attributes & JSValueAttributesInternal.Temporary) != 0)
                     {
                         if ((t.attributes & JSValueAttributesInternal.Cloned) == 0)
-                            args[i] = t = t.CloneImpl();
+                            args[i] = t = t.CloneImpl(false);
                         t.attributes |= JSValueAttributesInternal.Argument;
                     }
                 }
@@ -1292,7 +1296,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (cew || arg.assignations != null)
                     {
-                        arg.cacheRes = arg.initializer.Evaluate(internalContext).CloneImpl();
+                        arg.cacheRes = arg.initializer.Evaluate(internalContext).CloneImpl(false);
                     }
                     else
                     {
@@ -1306,7 +1310,7 @@ namespace NiL.JS.BaseLibrary
                     if (cew || arg.assignations != null)
                     {
                         if (i == min && restArray != null)
-                            arg.cacheRes = restArray.CloneImpl();
+                            arg.cacheRes = restArray.CloneImpl(false);
                         else
                             arg.cacheRes = new JSValue() { valueType = JSValueType.Undefined };
                         arg.cacheRes.attributes = JSValueAttributesInternal.Argument;

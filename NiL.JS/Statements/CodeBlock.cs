@@ -146,7 +146,7 @@ namespace NiL.JS.Statements
                 i = start;
             }
             for (var j = body.Count; j-- > 0; )
-                (body[j] as ConstantNotation).value.oValue = Tools.Unescape((body[j] as ConstantNotation).value.oValue.ToString(), state.strict);
+                (body[j] as ConstantDefinition).value.oValue = Tools.Unescape((body[j] as ConstantDefinition).value.oValue.ToString(), state.strict);
 
             bool expectSemicolon = false;
             while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
@@ -169,11 +169,11 @@ namespace NiL.JS.Statements
                     }
                     continue;
                 }
-                if (t is FunctionNotation)
+                if (t is FunctionDefinition)
                 {
                     if (state.strict && !allowDirectives)
                         ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionNotation).Name))
+                    if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionDefinition).Name))
                         ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Declarated function must have name.")));
                     expectSemicolon = false;
                 }
@@ -265,21 +265,21 @@ namespace NiL.JS.Statements
                 res.Add(node);
             }
             if (variables != null)
-                res.AddRange(from v in variables where v.initializer != null && (!(v.initializer is FunctionNotation) || (v.initializer as FunctionNotation).body != this) select v.initializer);
+                res.AddRange(from v in variables where v.initializer != null && (!(v.initializer is FunctionDefinition) || (v.initializer as FunctionDefinition).body != this) select v.initializer);
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (builded)
                 return false;
 
             for (int i = lines.Length; i-- > 0; )
             {
-                var fe = lines[i] as EntityNotation;
+                var fe = lines[i] as EntityDefinition;
                 if (fe != null)
                 {
-                    Parser.Build(ref lines[i], (state & BuildState.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? BuildState.Strict : BuildState.None), message, statistic, opts);
+                    Parser.Build(ref lines[i], (state & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? CodeContext.Strict : CodeContext.None), message, statistic, opts);
                     if (fe.Hoist)
                     {
                         lines[i] = null;
@@ -299,7 +299,7 @@ namespace NiL.JS.Statements
                         if (unreachable && message != null)
                             message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position, lines[i].Length), "Unreachable code detected.");
                         var cn = lines[i];
-                        Parser.Build(ref cn, (state & BuildState.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? BuildState.Strict : BuildState.None), message, statistic, opts);
+                        Parser.Build(ref cn, (state & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? CodeContext.Strict : CodeContext.None), message, statistic, opts);
                         lines[i] = cn;
                         unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement || cn is ThrowStatement;
                     }
@@ -372,7 +372,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (localVariables != null)
                 for (var i = 0; i < localVariables.Length; i++)

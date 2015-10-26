@@ -80,7 +80,7 @@ namespace NiL.JS.Core
                     globalContext.fields = new StringMap2<JSValue>();
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
-                globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl());
+                globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl(false));
                 globalContext.fields["Object"].attributes = JSValueAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
                 Core.GlobalObject.refreshGlobalObjectProto();
@@ -403,7 +403,7 @@ namespace NiL.JS.Core
                 };
             }
             else if ((res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
-                fields[name] = res = res.CloneImpl();
+                fields[name] = res = res.CloneImpl(false);
             res.valueType |= JSValueType.Undefined;
             return res;
         }
@@ -458,7 +458,7 @@ namespace NiL.JS.Core
             else
             {
                 if (create && (res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
-                    fields[name] = res = res.CloneImpl();
+                    fields[name] = res = res.CloneImpl(false);
             }
             return res;
         }
@@ -511,7 +511,7 @@ namespace NiL.JS.Core
         /// <param name="moduleType">Тип, для которого будет создан внутренний объект.</param>
         public void AttachModule(Type moduleType, string name)
         {
-            fields.Add(name, TypeProxy.GetConstructor(moduleType).CloneImpl());
+            fields.Add(name, TypeProxy.GetConstructor(moduleType).CloneImpl(false));
             fields[name].attributes = JSValueAttributesInternal.DoNotEnumerate;
         }
 
@@ -555,7 +555,7 @@ namespace NiL.JS.Core
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
                 CodeNode cb = body;
-                Parser.Build(ref cb, 0, vars, (strict ? BuildState.Strict : BuildState.None) | BuildState.InEval, null, null, Options.Default);
+                Parser.Build(ref cb, 0, vars, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, null, Options.Default);
                 body = cb as CodeBlock;
                 Context context = null;
                 if (leak)

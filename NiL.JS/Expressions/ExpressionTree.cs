@@ -384,7 +384,7 @@ namespace NiL.JS.Expressions
                 do
                     i++;
                 while (char.IsWhiteSpace(state.Code[i]));
-                first = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
+                first = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
                 threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration);
                 first.Length = i - first.Position;
             }
@@ -396,7 +396,7 @@ namespace NiL.JS.Expressions
             {
                 var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
                 if (name == "undefined")
-                    first = new ConstantNotation(JSValue.undefined) { Position = index, Length = i - index };
+                    first = new ConstantDefinition(JSValue.undefined) { Position = index, Length = i - index };
                 else
                     first = new GetVariableExpression(name, state.functionsDepth) { Position = index, Length = i - index, defineDepth = state.functionsDepth };
             }
@@ -407,17 +407,17 @@ namespace NiL.JS.Expressions
                 {
                     value = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict);
                     if (state.stringConstants.ContainsKey(value))
-                        first = new ConstantNotation(state.stringConstants[value]) { Position = index, Length = i - s };
+                        first = new ConstantDefinition(state.stringConstants[value]) { Position = index, Length = i - s };
                     else
-                        first = new ConstantNotation(state.stringConstants[value] = value) { Position = index, Length = i - s };
+                        first = new ConstantDefinition(state.stringConstants[value] = value) { Position = index, Length = i - s };
                 }
                 else
                 {
                     bool b = false;
                     if (value == "null")
-                        first = new ConstantNotation(JSValue.Null) { Position = s, Length = i - s };
+                        first = new ConstantDefinition(JSValue.Null) { Position = s, Length = i - s };
                     else if (bool.TryParse(value, out b))
-                        first = new ConstantNotation(b ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False) { Position = index, Length = i - s };
+                        first = new ConstantDefinition(b ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False) { Position = index, Length = i - s };
                     else
                     {
                         int n = 0;
@@ -427,16 +427,16 @@ namespace NiL.JS.Expressions
                             if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
                             {
                                 if (state.intConstants.ContainsKey(n))
-                                    first = new ConstantNotation(state.intConstants[n]) { Position = index, Length = i - index };
+                                    first = new ConstantDefinition(state.intConstants[n]) { Position = index, Length = i - index };
                                 else
-                                    first = new ConstantNotation(state.intConstants[n] = n) { Position = index, Length = i - index };
+                                    first = new ConstantDefinition(state.intConstants[n] = n) { Position = index, Length = i - index };
                             }
                             else
                             {
                                 if (state.doubleConstants.ContainsKey(d))
-                                    first = new ConstantNotation(state.doubleConstants[d]) { Position = index, Length = i - index };
+                                    first = new ConstantDefinition(state.doubleConstants[d]) { Position = index, Length = i - index };
                                 else
-                                    first = new ConstantNotation(state.doubleConstants[d] = d) { Position = index, Length = i - index };
+                                    first = new ConstantDefinition(state.doubleConstants[d] = d) { Position = index, Length = i - index };
                             }
                         }
                         else if (Parser.ValidateRegex(state.Code, ref s, true))
@@ -568,7 +568,7 @@ namespace NiL.JS.Expressions
                             do
                                 i++;
                             while (char.IsWhiteSpace(state.Code[i]));
-                            first = new Expressions.CommaOperator((Expression)Parse(state, ref i, true, false, false, true, false, forEnumeration), new ConstantNotation(JSValue.undefined)) { Position = index, Length = i - index };
+                            first = new Expressions.CommaOperator((Expression)Parse(state, ref i, true, false, false, true, false, forEnumeration), new ConstantDefinition(JSValue.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -632,7 +632,7 @@ namespace NiL.JS.Expressions
                         ExceptionsHelper.Throw((new SyntaxError("Expected \")\"")));
                 }
                 i++;
-                if ((state.InExpression > 0 && first is FunctionNotation) || (forNew && first is CallOperator))
+                if ((state.InExpression > 0 && first is FunctionDefinition) || (forNew && first is CallOperator))
                     first = new Expressions.CommaOperator(first, null) { Position = index, Length = i - index };
             }
             else
@@ -1046,7 +1046,7 @@ namespace NiL.JS.Expressions
                             JSValue jsname = null;
                             if (!state.stringConstants.TryGetValue(name, out jsname))
                                 state.stringConstants[name] = jsname = name;
-                            first = new GetMemberOperator(first, new ConstantNotation(name)
+                            first = new GetMemberOperator(first, new ConstantDefinition(name)
                                                                      {
                                                                          Position = s,
                                                                          Length = i - s
@@ -1083,7 +1083,7 @@ namespace NiL.JS.Expressions
                             if (state.message != null)
                             {
                                 startPos = 0;
-                                var cname = mname as ConstantNotation;
+                                var cname = mname as ConstantDefinition;
                                 if (cname != null
                                     && cname.value.valueType == JSValueType.String
                                     && Parser.ValidateName(cname.value.oValue.ToString(), ref startPos, false)
@@ -1276,7 +1276,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Type = Type;
             _this = _fastImpl;

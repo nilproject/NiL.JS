@@ -35,7 +35,7 @@ namespace NiL.JS.Expressions
         {
             get { return false; }
         }
-        internal BuildState codeContext;
+        internal CodeContext codeContext;
 
         internal Expression first;
         internal Expression second;
@@ -63,8 +63,8 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return (first == null || first is ConstantNotation || (first is Expression && ((Expression)first).IsContextIndependent))
-                    && (second == null || second is ConstantNotation || (second is Expression && ((Expression)second).IsContextIndependent));
+                return (first == null || first is ConstantDefinition || (first is Expression && ((Expression)first).IsContextIndependent))
+                    && (second == null || second is ConstantDefinition || (second is Expression && ((Expression)second).IsContextIndependent));
             }
         }
 
@@ -81,10 +81,10 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
-            state = state | BuildState.InExpression;
+            state = state | CodeContext.InExpression;
 
             Parser.Build(ref first, depth + 1, variables, state, message, statistic, opts);
             Parser.Build(ref second, depth + 1, variables, state, message, statistic, opts);
@@ -102,12 +102,12 @@ namespace NiL.JS.Expressions
                         res.iValue = (int)res.dValue;
                         res.valueType = JSValueType.Int;
                     }
-                    _this = new ConstantNotation(res) as CodeNode;
+                    _this = new ConstantDefinition(res) as CodeNode;
                     return true;
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantNotation(e.Avatar)));
+                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantDefinition(e.Avatar)));
                     expressionWillThrow(message);
                     return true;
                 }
@@ -121,12 +121,12 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             baseOptimize(ref _this, owner, message, opts, statistic);
         }
 
-        internal void baseOptimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal void baseOptimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var f = first as CodeNode;
             var s = second as CodeNode;
@@ -140,15 +140,15 @@ namespace NiL.JS.Expressions
                 s.Optimize(ref s, owner, message, opts, statistic);
                 second = s as Expression;
             }
-            if (IsContextIndependent && !(this is ConstantNotation))
+            if (IsContextIndependent && !(this is ConstantDefinition))
             {
                 try
                 {
-                    _this = new ConstantNotation(Evaluate(null));
+                    _this = new ConstantDefinition(Evaluate(null));
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantNotation(e.Avatar)));
+                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantDefinition(e.Avatar)));
                     expressionWillThrow(message);
                 }
                 catch (Exception e)

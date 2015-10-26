@@ -387,7 +387,7 @@ namespace NiL.JS.Core.Interop
                 }
                 if (forWrite
                     && (r.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
-                    fields[name] = r = r.CloneImpl();
+                    fields[name] = r = r.CloneImpl(false);
                 return r;
             }
             if (members == null)
@@ -531,7 +531,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 r.attributes |= JSValueAttributesInternal.DoNotEnumerate;
             if (forWrite && (r.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject)
-                r = r.CloneImpl();
+                r = r.CloneImpl(false);
 
             for (var i = m.Count; i-- > 0; )
             {

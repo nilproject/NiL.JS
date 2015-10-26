@@ -124,7 +124,7 @@ namespace NiL.JS.Statements
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             res.body = Parser.Parse(state, ref i, 0);
-            if (res.body is FunctionNotation)
+            if (res.body is FunctionDefinition)
             {
                 if (state.strict)
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -281,16 +281,16 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref variable, 2, variables, state | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref variable, 2, variables, state | CodeContext.InExpression, message, statistic, opts);
             var tvar = variable as VariableDefineStatement;
             if (tvar != null)
                 variable = tvar.initializators[0];
             if (variable is AssignmentOperator)
                 ((variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
-            Parser.Build(ref source, 2, variables, state | BuildState.InExpression, message, statistic, opts);
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | BuildState.Conditional | BuildState.InLoop, message, statistic, opts);
+            Parser.Build(ref source, 2, variables, state | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
             if (variable is Expressions.CommaOperator)
             {
                 if ((variable as Expressions.CommaOperator).SecondOperand != null)
@@ -299,13 +299,13 @@ namespace NiL.JS.Statements
             }
             if (message != null
                 && (source is ObjectNotation
-                || source is ArrayNotation
-                || source is ConstantNotation))
+                || source is ArrayDefinition
+                || source is ConstantDefinition))
                 message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             source.Optimize(ref source, owner, message, opts, statistic);
             if (body != null)

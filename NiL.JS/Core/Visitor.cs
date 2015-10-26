@@ -25,7 +25,7 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ArrayNotation node)
+        internal protected virtual T Visit(ArrayDefinition node)
         {
             return Visit(node as Expression);
         }
@@ -40,12 +40,12 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ClassNotation node)
+        internal protected virtual T Visit(ClassDefinition node)
         {
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ConstantNotation node)
+        internal protected virtual T Visit(ConstantDefinition node)
         {
             return Visit(node as Expression);
         }
@@ -80,7 +80,7 @@ namespace NiL.JS.Core
             return Visit(node as CodeNode);
         }
 
-        internal protected virtual T Visit(FunctionNotation node)
+        internal protected virtual T Visit(FunctionDefinition node)
         {
             return Visit(node as Expression);
         }

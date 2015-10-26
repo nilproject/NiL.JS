@@ -12,7 +12,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class FunctionNotation : EntityNotation
+    public sealed class FunctionDefinition : EntityDefinition
     {
 #if !PORTABLE
         [Serializable]
@@ -105,7 +105,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal FunctionNotation(string name)
+        internal FunctionDefinition(string name)
         {
             parameters = new ParameterDescriptor[0];
             body = new CodeBlock(new CodeNode[0], false);
@@ -326,7 +326,7 @@ namespace NiL.JS.Expressions
                         ExceptionsHelper.ThrowSyntaxError("Parameters name cannot be \"arguments\" or \"eval\" in strict mode at", code, parameters[j].references[0].Position, parameters[j].references[0].Length);
                 }
             }
-            FunctionNotation func = new FunctionNotation(name)
+            FunctionDefinition func = new FunctionDefinition(name)
             {
                 parameters = parameters.ToArray(),
                 body = body,
@@ -430,7 +430,7 @@ namespace NiL.JS.Expressions
             return new Function(context, this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             if (body.builded)
                 return false;
@@ -438,7 +438,7 @@ namespace NiL.JS.Expressions
                 stats.ContainsInnerFunction = true;
             codeContext = state;
 
-            if ((state & BuildState.InLoop) != 0 && message != null)
+            if ((state & CodeContext.InLoop) != 0 && message != null)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), Strings.FunctionInLoop);
 
             var bodyCode = body as CodeNode;
@@ -457,7 +457,7 @@ namespace NiL.JS.Expressions
                 }
             }
             statistic.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
-            bodyCode.Build(ref bodyCode, 0, nvars, state & ~(BuildState.Conditional | BuildState.InExpression | BuildState.InEval), message, statistic, opts);
+            bodyCode.Build(ref bodyCode, 0, nvars, state & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval), message, statistic, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
@@ -529,7 +529,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var bd = body as CodeNode;
             body.Optimize(ref bd, this, message, opts, this.statistic);

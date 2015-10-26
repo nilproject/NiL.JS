@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class ClassNotation : EntityNotation
+    public sealed class ClassDefinition : EntityDefinition
     {
         protected internal override PredictedType ResultType
         {
@@ -36,7 +36,7 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        public ClassNotation(string name, Expression bce, Dictionary<string, CodeNode> fields)
+        public ClassDefinition(string name, Expression bce, Dictionary<string, CodeNode> fields)
         {
             this.name = name;
             this.bce = bce;
@@ -74,7 +74,7 @@ namespace NiL.JS.Expressions
                     ExceptionsHelper.Throw(new SyntaxError("Invalid base class name"));
                 var baseClassName = code.Substring(n, i - n);
                 if (baseClassName == "null")
-                    bce = new ConstantNotation(JSValue.Null) { Position = n, Length = 4 };
+                    bce = new ConstantDefinition(JSValue.Null) { Position = n, Length = 4 };
                 else
                     bce = new GetVariableExpression(baseClassName, state.functionsDepth);
                 while (char.IsWhiteSpace(code[i])) i++;
@@ -95,43 +95,43 @@ namespace NiL.JS.Expressions
                 if (Parser.Validate(state.Code, "set ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var setter = FunctionNotation.Parse(state, ref i, FunctionType.Set) as FunctionNotation;
+                    var setter = FunctionDefinition.Parse(state, ref i, FunctionType.Set) as FunctionDefinition;
                     if (!flds.ContainsKey(setter.Name))
                     {
-                        var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
+                        var vle = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
                         vle.value.valueType = JSValueType.Property;
                         flds.Add(setter.Name, vle);
                     }
                     else
                     {
                         var vle = flds[setter.Name];
-                        if (!(vle is ConstantNotation)
-                            || (vle as ConstantNotation).value.valueType != JSValueType.Property)
+                        if (!(vle is ConstantDefinition)
+                            || (vle as ConstantDefinition).value.valueType != JSValueType.Property)
                             ExceptionsHelper.Throw((new SyntaxError("Try to define setter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        if (((vle as ConstantNotation).value.oValue as CodeNode[])[0] != null)
+                        if (((vle as ConstantDefinition).value.oValue as CodeNode[])[0] != null)
                             ExceptionsHelper.Throw((new SyntaxError("Try to redefine setter " + setter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        ((vle as ConstantNotation).value.oValue as CodeNode[])[0] = setter;
+                        ((vle as ConstantDefinition).value.oValue as CodeNode[])[0] = setter;
                     }
                 }
                 else if (Parser.Validate(state.Code, "get ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var getter = FunctionNotation.Parse(state, ref i, FunctionType.Get) as FunctionNotation;
+                    var getter = FunctionDefinition.Parse(state, ref i, FunctionType.Get) as FunctionDefinition;
                     if (!flds.ContainsKey(getter.Name))
                     {
-                        var vle = new ConstantNotation(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
+                        var vle = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
                         vle.value.valueType = JSValueType.Property;
                         flds.Add(getter.Name, vle);
                     }
                     else
                     {
                         var vle = flds[getter.Name];
-                        if (!(vle is ConstantNotation)
-                            || (vle as ConstantNotation).value.valueType != JSValueType.Property)
+                        if (!(vle is ConstantDefinition)
+                            || (vle as ConstantDefinition).value.valueType != JSValueType.Property)
                             ExceptionsHelper.Throw((new SyntaxError("Try to define getter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        if (((vle as ConstantNotation).value.oValue as CodeNode[])[1] != null)
+                        if (((vle as ConstantDefinition).value.oValue as CodeNode[])[1] != null)
                             ExceptionsHelper.Throw((new SyntaxError("Try to redefine getter " + getter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        ((vle as ConstantNotation).value.oValue as CodeNode[])[1] = getter;
+                        ((vle as ConstantDefinition).value.oValue as CodeNode[])[1] = getter;
                     }
                 }
                 else
@@ -156,7 +156,7 @@ namespace NiL.JS.Expressions
                     if (fieldName == "constructor")
                         explicitCtor = true;
                     i = s;
-                    var initializator = FunctionNotation.Parse(state, ref i, FunctionType.Method) as FunctionNotation;
+                    var initializator = FunctionDefinition.Parse(state, ref i, FunctionType.Method) as FunctionDefinition;
                     if (initializator == null)
                         ExceptionsHelper.Throw(new SyntaxError());
                     flds[fieldName] = initializator;
@@ -167,17 +167,17 @@ namespace NiL.JS.Expressions
             {
                 string ctorCode;
                 int ctorIndex = 0;
-                if (bce != null && !(bce is ConstantNotation))
+                if (bce != null && !(bce is ConstantDefinition))
                     ctorCode = "constructor(...args) { super(...args); }";
                 else
                     ctorCode = "constructor(...args) { }";
-                flds["constructor"] = FunctionNotation.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex, FunctionType.Method);
+                flds["constructor"] = FunctionDefinition.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex, FunctionType.Method);
             }
             index = i + 1;
-            return new ClassNotation(name, bce, flds);
+            return new ClassDefinition(name, bce, flds);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return base.Build(ref _this, depth, variables, state, message, statistic, opts);
         }

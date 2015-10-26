@@ -9,6 +9,7 @@ namespace NiL.JS.Core
         public readonly Stack<bool> AllowContinue;
         public readonly Stack<bool> AllowYield;
         public int functionsDepth;
+        public CodeContext CodeContext;
         public int InExpression;
         public List<string> Labels;
         public bool strict;

@@ -12,9 +12,9 @@ namespace NiL.JS.Expressions
 #endif
     internal sealed class EntityReference : VariableReference
     {
-        private EntityNotation owner;
+        private EntityDefinition owner;
 
-        public EntityNotation Entity { get { return owner; } }
+        public EntityDefinition Entity { get { return owner; } }
 
         public override string Name
         {
@@ -26,7 +26,7 @@ namespace NiL.JS.Expressions
             return owner.Evaluate(context);
         }
 
-        public EntityReference(EntityNotation owner)
+        public EntityReference(EntityDefinition owner)
         {
             defineDepth = -1;
             this.owner = owner;
@@ -48,7 +48,7 @@ namespace NiL.JS.Expressions
     /// 
     /// Base type fot ClassNotation and FunctionNotation.
     /// </summary>
-    public abstract class EntityNotation : Expression
+    public abstract class EntityDefinition : Expression
     {
         internal VariableReference reference;
         internal string name;
@@ -58,19 +58,19 @@ namespace NiL.JS.Expressions
 
         public abstract bool Hoist { get; }
 
-        protected EntityNotation()
+        protected EntityDefinition()
         {
             reference = new EntityReference(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return false;
         }
 
-        internal virtual void Register(Dictionary<string, VariableDescriptor> variables, BuildState state)
+        internal virtual void Register(Dictionary<string, VariableDescriptor> variables, CodeContext state)
         {
-            if ((state & BuildState.InExpression) == 0 && name != null) // имя не задано только для случая Function("<some string>")
+            if ((state & CodeContext.InExpression) == 0 && name != null) // имя не задано только для случая Function("<some string>")
             {
                 VariableDescriptor desc = null;
                 if (!variables.TryGetValue(name, out desc) || desc == null)

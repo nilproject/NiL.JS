@@ -274,7 +274,7 @@
     <Compile Include="ExceptionsHelper.cs" />
     <Compile Include="Core\IIterator.cs" />
     <Compile Include="Expressions\SpreadOperator.cs" />
-    <Compile Include="Expressions\EntityNotation.cs" />
+    <Compile Include="Expressions\EntityDefinition.cs" />
     <Compile Include="Expressions\RegExpCreateExpression.cs" />
     <Compile Include="Core\Interop\InstanceMemberAttribute.cs" />
     <Compile Include="Core\Interop\NativeList.cs" />
@@ -304,7 +304,7 @@
     <Compile Include="Core\Functions\ProxyConstructor.cs" />
     <Compile Include="Core\Visitor.cs" />
     <Compile Include="Core\WithContext.cs" />
-    <Compile Include="Expressions\ClassNotation.cs" />
+    <Compile Include="Expressions\ClassDefinition.cs" />
     <Compile Include="Expressions\ExpressionWrapper.cs" />
     <Compile Include="Expressions\DeleteMemberExpression.cs" />
     <Compile Include="Expressions\SetMemberExpression.cs" />
@@ -356,7 +356,7 @@
     <Compile Include="Statements\ThrowStatement.cs" />
     <Compile Include="Expressions\EmptyExpression.cs" />
     <Compile Include="Statements\CodeBlock.cs" />
-    <Compile Include="Expressions\ArrayNotation.cs" />
+    <Compile Include="Expressions\ArrayDefinition.cs" />
     <Compile Include="Statements\BreakStatement.cs" />
     <Compile Include="Statements\ContinueStatement.cs" />
     <Compile Include="Statements\ForInStatement.cs" />
@@ -375,10 +375,10 @@
     <Compile Include="Statements\ReturnStatement.cs" />
     <Compile Include="Statements\DoWhileStatement.cs" />
     <Compile Include="Statements\ForStatement.cs" />
-    <Compile Include="Expressions\FunctionNotation.cs" />
+    <Compile Include="Expressions\FunctionDefinition.cs" />
     <Compile Include="Expressions\GetMemberOperator.cs" />
     <Compile Include="Statements\IfElseStatement.cs" />
-    <Compile Include="Expressions\ConstantNotation.cs" />
+    <Compile Include="Expressions\ConstantDefinition.cs" />
     <Compile Include="Core\JSObject.cs" />
     <Compile Include="Expressions\ExpressionTree.cs" />
     <Compile Include="Script.cs" />

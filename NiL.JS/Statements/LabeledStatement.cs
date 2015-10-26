@@ -32,7 +32,7 @@ namespace NiL.JS.Statements
             var stat = Parser.Parse(state, ref i, 0);
             state.Labels.Remove(label);
             state.LabelCount = oldlc;
-            if (stat is FunctionNotation)
+            if (stat is FunctionDefinition)
             {
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, stat.Position, stat.Length), "Labeled function. Are you sure?.");
@@ -66,13 +66,13 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref statement, depth, variables, state, message, statistic, opts);
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             statement.Optimize(ref statement, owner, message, opts, statistic);
         }

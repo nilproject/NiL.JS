@@ -101,7 +101,7 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                AdditionOperator.Impl(tempContainer, op.CloneImpl(), second.Evaluate(context));
+                AdditionOperator.Impl(tempContainer, op.CloneImpl(false), second.Evaluate(context));
             }
             return tempContainer;
         }

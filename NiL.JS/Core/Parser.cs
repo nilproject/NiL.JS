@@ -48,12 +48,12 @@ namespace NiL.JS.Core
                 new Rule("for", ForStatement.Parse),
                 new Rule("while", WhileStatement.Parse),
                 new Rule("return", ReturnStatement.Parse),
-                new Rule("function", FunctionNotation.ParseFunction),
-                new Rule("class", ClassNotation.Parse),
+                new Rule("function", FunctionDefinition.ParseFunction),
+                new Rule("class", ClassDefinition.Parse),
                 new Rule("switch", SwitchStatement.Parse),
                 new Rule("with", WithStatement.Parse),
                 new Rule("do", DoWhileStatement.Parse),
-                new Rule(ValidateArrow, FunctionNotation.ParseArrow),
+                new Rule(ValidateArrow, FunctionDefinition.ParseArrow),
                 new Rule("(", ExpressionTree.Parse),
                 new Rule("+", ExpressionTree.Parse),
                 new Rule("-", ExpressionTree.Parse),
@@ -84,7 +84,7 @@ namespace NiL.JS.Core
                 new Rule("{", ExpressionTree.Parse),
                 new Rule("function", ExpressionTree.Parse),
                 new Rule("class", ExpressionTree.Parse),
-                new Rule(ValidateArrow, FunctionNotation.ParseArrow),
+                new Rule(ValidateArrow, FunctionDefinition.ParseArrow),
                 new Rule("(", ExpressionTree.Parse),
                 new Rule("+", ExpressionTree.Parse),
                 new Rule("-", ExpressionTree.Parse),
@@ -105,12 +105,12 @@ namespace NiL.JS.Core
             // 2
             new List<Rule> // Сущности внутри выражения
             {
-                new Rule("[", ArrayNotation.Parse),
+                new Rule("[", ArrayDefinition.Parse),
                 new Rule("{", ObjectNotation.Parse),
-                new Rule("function", FunctionNotation.ParseFunction),
-                new Rule("class", ClassNotation.Parse),
+                new Rule("function", FunctionDefinition.ParseFunction),
+                new Rule("class", ClassDefinition.Parse),
                 new Rule("new", NewOperator.Parse),
-                new Rule(ValidateArrow, FunctionNotation.ParseArrow),
+                new Rule(ValidateArrow, FunctionDefinition.ParseArrow),
                 new Rule(ValidateRegex, RegExpExpression.Parse),
             }
         };
@@ -577,13 +577,13 @@ namespace NiL.JS.Core
             return null;
         }
 
-        internal static void Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal static void Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             while (_this != null && _this.Build(ref _this, depth, variables, state, message, statistic, opts))
                 ;
         }
 
-        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             CodeNode t = s;
             Build(ref t, depth, variables, state, message, statistic, opts);

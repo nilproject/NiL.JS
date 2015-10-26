@@ -37,11 +37,11 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
-            return node.Build(ref node, depth, variables, state | BuildState.InExpression, message, statistic, opts);
+            return node.Build(ref node, depth, variables, state | CodeContext.InExpression, message, statistic, opts);
         }
     }
 }

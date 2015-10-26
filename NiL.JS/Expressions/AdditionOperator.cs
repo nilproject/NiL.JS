@@ -284,7 +284,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (!res && _this == this)
@@ -301,16 +301,16 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    if (first is ConstantNotation && (first as ConstantNotation).value.valueType == JSValueType.String)
+                    if (first is ConstantDefinition && (first as ConstantDefinition).value.valueType == JSValueType.String)
                     {
-                        if ((first as ConstantNotation).value.oValue.ToString().Length == 0)
+                        if ((first as ConstantDefinition).value.oValue.ToString().Length == 0)
                             _this = new ToStringExpression(second);
                         else
                             _this = new StringConcatenationExpression(new List<Expression>() { first, second });
                     }
-                    else if (second is ConstantNotation && (second as ConstantNotation).value.valueType == JSValueType.String)
+                    else if (second is ConstantDefinition && (second as ConstantDefinition).value.valueType == JSValueType.String)
                     {
-                        if ((second as ConstantNotation).value.oValue.ToString().Length == 0)
+                        if ((second as ConstantDefinition).value.oValue.ToString().Length == 0)
                             _this = new ToStringExpression(first);
                         else
                             _this = new StringConcatenationExpression(new List<Expression>() { first, second });
@@ -320,7 +320,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             //if (first.ResultType == PredictedType.String

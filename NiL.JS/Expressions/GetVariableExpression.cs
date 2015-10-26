@@ -25,7 +25,7 @@ namespace NiL.JS.Expressions
                 context.owner.BuildArgumentsObject();
             var res = context.arguments;
             if (res is Arguments)
-                context.arguments = res = res.CloneImpl();
+                context.arguments = res = res.CloneImpl(false);
             if (context.fields != null && context.fields.ContainsKey(Name))
                 context.fields[Name] = res;
             return res;
@@ -131,7 +131,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
@@ -166,7 +166,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             if ((opts & Options.SuppressConstantPropogation) == 0
@@ -191,7 +191,7 @@ namespace NiL.JS.Expressions
 
                         if (assigns[i].Position > Position)
                         {
-                            if ((codeContext & BuildState.InLoop) != 0 && ((assigns[i] as Expression).codeContext & BuildState.InLoop) != 0)
+                            if ((codeContext & CodeContext.InLoop) != 0 && ((assigns[i] as Expression).codeContext & CodeContext.InLoop) != 0)
                             // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
                             {
                                 // оптимизация не применяется
@@ -216,7 +216,7 @@ namespace NiL.JS.Expressions
                         }
                     }
                     var assign = lastAssign as AssignmentOperator;
-                    if (assign != null && (assign.codeContext & BuildState.Conditional) == 0 && assign.second is ConstantNotation)
+                    if (assign != null && (assign.codeContext & CodeContext.Conditional) == 0 && assign.second is ConstantDefinition)
                     {
                         _this = assign.second;
                     }

@@ -11,7 +11,7 @@ using NiL.JS.Core.JIT;
 namespace NiL.JS.Core
 {
     [Flags]
-    public enum BuildState
+    public enum CodeContext
     {
         None = 0,
         Strict = 1,
@@ -71,12 +71,12 @@ namespace NiL.JS.Core
         /// <param name="self">Ссылка на экземпляр, для которого происходит вызов функции</param>
         /// <param name="depth">Глубина погружения в выражении</param>
         /// <returns>true если были внесены изменения и требуется повторный вызов функции</returns>
-        internal protected virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return false;
         }
 
-        internal protected virtual void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected virtual void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
 
         }

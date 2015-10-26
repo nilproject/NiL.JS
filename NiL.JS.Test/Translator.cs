@@ -57,7 +57,7 @@ namespace NiL.JS.Test
                 return this;
             }
 
-            protected override Visitor Visit(JS.Expressions.FunctionNotation node)
+            protected override Visitor Visit(JS.Expressions.FunctionDefinition node)
             {
                 result.Append("(Func<");
                 var prms = node.Parameters;

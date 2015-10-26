@@ -7,7 +7,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class ConstantNotation : Expression
+    public sealed class ConstantDefinition : Expression
     {
         internal JSValue value;
 
@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        public ConstantNotation(JSValue value)
+        public ConstantDefinition(JSValue value)
             : base(null, null, false)
         {
             this.value = value;
@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 

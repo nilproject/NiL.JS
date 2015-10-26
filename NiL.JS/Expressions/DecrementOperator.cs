@@ -81,7 +81,7 @@ namespace NiL.JS.Expressions
             {
                 if (context.strict)
                     raiseErrorValue();
-                val = val.CloneImpl();
+                val = val.CloneImpl(false);
             }
             switch (val.valueType)
             {
@@ -183,11 +183,11 @@ namespace NiL.JS.Expressions
             ExceptionsHelper.Throw(new TypeError("Can not decrement property \"" + (first) + "\" without setter."));
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
-            Parser.Build(ref first, depth + 1, variables, state | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, state | CodeContext.InExpression, message, statistic, opts);
             if (depth <= 1 && second != null)
             {
                 first = second;
@@ -202,7 +202,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var vr = first as VariableReference;
             if (vr != null && vr.descriptor.isDefined)

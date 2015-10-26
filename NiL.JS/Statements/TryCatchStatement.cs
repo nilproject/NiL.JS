@@ -274,7 +274,7 @@ namespace NiL.JS.Statements
             if (abort == AbortType.Return && ainfo != null)
             {
                 if (ainfo.IsDefined)
-                    ainfo = ainfo.CloneImpl();
+                    ainfo = ainfo.CloneImpl(false);
                 else
                     ainfo = JSValue.Undefined;
             }
@@ -337,7 +337,7 @@ namespace NiL.JS.Statements
             }
             else
 #endif
-                cvar = e is JSException ? (e as JSException).Avatar.CloneImpl() : TypeProxy.Proxy(e);
+                cvar = e is JSException ? (e as JSException).Avatar.CloneImpl(false) : TypeProxy.Proxy(e);
             cvar.attributes |= JSValueAttributesInternal.DoNotDelete;
             var catchContext = new CatchContext(cvar, context, catchVariableDesc.name);
 #if DEBUG
@@ -358,12 +358,12 @@ namespace NiL.JS.Statements
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsTry = true;
             CodeNode b = null;
-            Parser.Build(ref body, depth, variables, state | BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | CodeContext.Conditional, message, statistic, opts);
             if (catchBody != null)
             {
                 this.@catch = true;
@@ -372,7 +372,7 @@ namespace NiL.JS.Statements
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
                 b = catchBody as CodeNode;
-                Parser.Build(ref b, depth, variables, state | BuildState.Conditional, message, statistic, opts);
+                Parser.Build(ref b, depth, variables, state | CodeContext.Conditional, message, statistic, opts);
                 catchBody = b != null ? b as CodeBlock ?? new CodeBlock(new CodeNode[] { b }, catchBody.strict) { Position = catchBody.Position, Length = catchBody.Length } : null;
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
@@ -399,7 +399,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             CodeNode b = null;
             body.Optimize(ref body, owner, message, opts, statistic);

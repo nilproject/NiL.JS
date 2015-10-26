@@ -42,7 +42,7 @@ namespace NiL.JS.Statements
             int ccs = state.continiesCount;
             int cbs = state.breaksCount;
             var body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionNotation)
+            if (body is FunctionDefinition)
             {
                 if (state.strict)
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -128,16 +128,16 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             depth = System.Math.Max(1, depth);
-            Parser.Build(ref body, depth, variables, state | BuildState.InLoop, message, statistic, opts);
-            Parser.Build(ref condition, 2, variables, state | BuildState.InLoop | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | CodeContext.InLoop, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
             try
             {
                 if (allowRemove
                     && (opts & Options.SuppressUselessExpressionsElimination) == 0
-                    && (condition is ConstantNotation || (condition as Expressions.Expression).IsContextIndependent))
+                    && (condition is ConstantDefinition || (condition as Expressions.Expression).IsContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = new InfinityLoopStatement(body, labels);
@@ -161,7 +161,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             condition.Optimize(ref condition, owner, message, opts, statistic);
             body.Optimize(ref body, owner, message, opts, statistic);

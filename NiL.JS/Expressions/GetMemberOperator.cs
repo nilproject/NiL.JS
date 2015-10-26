@@ -54,7 +54,7 @@ namespace NiL.JS.Expressions
             JSValue source = null;
             source = first.Evaluate(context);
             if (source.valueType < JSValueType.Object)
-                source = source.CloneImpl();
+                source = source.CloneImpl(false);
             else if (source != source.oValue)
             {
                 res = source.oValue as JSValue;
@@ -73,12 +73,12 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseGetMember = true;
             base.Build(ref _this, depth, variables, state, message, statistic, opts);
-            if (second is ConstantNotation)
+            if (second is ConstantDefinition)
             {
                 cachedMemberName = second.Evaluate(null);
                 if (statistic != null && cachedMemberName.ToString() == "arguments")
@@ -96,10 +96,10 @@ namespace NiL.JS.Expressions
         {
             var res = first.ToString();
             int i = 0;
-            if (second is ConstantNotation
-                && (second as ConstantNotation).value.ToString().Length > 0
-                && (Parser.ValidateName((second as ConstantNotation).value.ToString(), ref i, true)))
-                res += "." + (second as ConstantNotation).value;
+            if (second is ConstantDefinition
+                && (second as ConstantDefinition).value.ToString().Length > 0
+                && (Parser.ValidateName((second as ConstantDefinition).value.ToString(), ref i, true)))
+                res += "." + (second as ConstantDefinition).value;
             else
                 res += "[" + second + "]";
             return res;

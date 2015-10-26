@@ -210,7 +210,7 @@ namespace NiL.JS.Core
                                 callee = NotExistsInObject;
                             if (createMember && (callee.attributes & JSValueAttributesInternal.SystemObject) != 0)
                             {
-                                callee = callee.CloneImpl();
+                                callee = callee.CloneImpl(false);
                                 callee.attributes = JSValueAttributesInternal.DoNotEnumerate;
                             }
                             return callee;
@@ -221,7 +221,7 @@ namespace NiL.JS.Core
                                 caller = NotExistsInObject;
                             if (createMember && (caller.attributes & JSValueAttributesInternal.SystemObject) != 0)
                             {
-                                caller = caller.CloneImpl();
+                                caller = caller.CloneImpl(false);
                                 callee.attributes = JSValueAttributesInternal.DoNotEnumerate;
                             }
                             return caller;

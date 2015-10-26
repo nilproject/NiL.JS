@@ -34,7 +34,7 @@ namespace NiL.JS.Expressions
         internal SetMemberExpression(Expression obj, Expression fieldName, Expression value)
             : base(obj, fieldName, true)
         {
-            if (fieldName is ConstantNotation)
+            if (fieldName is ConstantDefinition)
                 cachedMemberName = fieldName.Evaluate(null);
             else
                 tempContainer1 = new JSValue();
@@ -80,13 +80,13 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var cn = value as CodeNode;
             value.Optimize(ref cn, owner, message, opts, statistic);
@@ -108,8 +108,8 @@ namespace NiL.JS.Expressions
         {
             var res = first.ToString();
             int i = 0;
-            var cn = second as ConstantNotation;
-            if (second is ConstantNotation
+            var cn = second as ConstantDefinition;
+            if (second is ConstantDefinition
                 && cn.value.ToString().Length > 0
                 && (Parser.ValidateName(cn.value.ToString(), ref i, true)))
                 res += "." + cn.value;

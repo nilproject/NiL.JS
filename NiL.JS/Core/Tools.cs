@@ -1374,9 +1374,9 @@ namespace NiL.JS.Core
                             goDeep = true;
                         }
                         if (evalProps && value.valueType == JSValueType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
+                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl(false);
                         else if (clone)
-                            value = value.CloneImpl();
+                            value = value.CloneImpl(false);
                         if (temp.data[element.Key] == null)
                             temp.data[element.Key] = value;
                     }
@@ -1397,9 +1397,9 @@ namespace NiL.JS.Core
                         if (!value.IsExists)
                             continue;
                         if (evalProps && value.valueType == JSValueType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl();
+                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl(false);
                         else if (clone)
-                            value = value.CloneImpl();
+                            value = value.CloneImpl(false);
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
                         {
                             goDeep = true;

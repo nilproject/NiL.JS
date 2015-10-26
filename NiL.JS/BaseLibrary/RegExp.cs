@@ -173,7 +173,7 @@ namespace NiL.JS.BaseLibrary
             }
             set
             {
-                lIndex = (value ?? JSValue.undefined).CloneImpl();
+                lIndex = (value ?? JSValue.undefined).CloneImpl(false);
             }
         }
 
@@ -192,7 +192,7 @@ namespace NiL.JS.BaseLibrary
             string input = (arg ?? "undefined").ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
             if ((lIndex.attributes & JSValueAttributesInternal.SystemObject) != 0)
-                lIndex = lIndex.CloneImpl();
+                lIndex = lIndex.CloneImpl(false);
             if (lIndex.valueType == JSValueType.Double)
             {
                 lIndex.valueType = JSValueType.Int;

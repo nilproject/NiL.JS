@@ -112,52 +112,22 @@ namespace NiL.JS.Core
 #endif
             JSValue res = null;
             JSObject proto = null;
-            bool fromProto;
+            bool fromProto = false;
+            string name = null;
             if (key.valueType == JSValueType.Symbol)
             {
-                var symbol = key.oValue as Symbol;
-                fromProto = (symbols == null || !symbols.TryGetValue(symbol, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
-                if (fromProto)
-                {
-                    res = proto.GetMember(key, false, memberScope);
-                    if ((memberScope == MemberScope.Own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property)) || res.valueType < JSValueType.Undefined)
-                        res = null;
-                }
-                if (res == null)
-                {
-                    if (!forWrite || (attributes & JSValueAttributesInternal.Immutable) != 0)
-                        return notExists;
-
-                    res = new JSValue { valueType = JSValueType.NotExistsInObject };
-                    if (symbols == null)
-                        symbols = new Dictionary<Symbol, JSValue>();
-                    symbols[symbol] = res;
-                }
-                else if (forWrite)
-                {
-                    if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto)
-                    {
-                        if ((res.attributes & JSValueAttributesInternal.ReadOnly) == 0
-                            && (res.valueType != JSValueType.Property || memberScope == MemberScope.Own))
-                        {
-                            res = res.CloneImpl();
-                            if (symbols == null)
-                                symbols = new Dictionary<Symbol, JSValue>();
-                            symbols[symbol] = res;
-                        }
-                    }
-                }
+                res = getSymbol(key, forWrite, memberScope);
             }
             else
             {
-                string name = null;
                 if (forWrite || fields != null)
                     name = key.ToString();
                 fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
                 if (fromProto)
                 {
                     res = proto.GetMember(key, false, memberScope);
-                    if (((memberScope == MemberScope.Own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property))) || res.valueType < JSValueType.Undefined)
+                    if (((memberScope == MemberScope.Own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property))) 
+                        || res.valueType < JSValueType.Undefined)
                         res = null;
                 }
                 if (res == null)
@@ -180,7 +150,7 @@ namespace NiL.JS.Core
                         if ((res.attributes & JSValueAttributesInternal.ReadOnly) == 0
                             && (res.valueType != JSValueType.Property || memberScope == MemberScope.Own))
                         {
-                            res = res.CloneImpl();
+                            res = res.CloneImpl(false);
                             if (fields == null)
                                 fields = getFieldsContainer();
                             fields[name] = res;
@@ -190,6 +160,45 @@ namespace NiL.JS.Core
             }
 
             res.valueType |= JSValueType.NotExistsInObject;
+            return res;
+        }
+
+        private JSValue getSymbol(JSValue key, bool forWrite, MemberScope memberScope)
+        {
+            JSObject proto = null;
+            JSValue res = null;
+            var symbol = key.oValue as Symbol;
+            var fromProto = (symbols == null || !symbols.TryGetValue(symbol, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
+            if (fromProto)
+            {
+                res = proto.GetMember(key, false, memberScope);
+                if ((memberScope == MemberScope.Own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property)) || res.valueType < JSValueType.Undefined)
+                    res = null;
+            }
+            if (res == null)
+            {
+                if (!forWrite || (attributes & JSValueAttributesInternal.Immutable) != 0)
+                    return notExists;
+
+                res = new JSValue { valueType = JSValueType.NotExistsInObject };
+                if (symbols == null)
+                    symbols = new Dictionary<Symbol, JSValue>();
+                symbols[symbol] = res;
+            }
+            else if (forWrite)
+            {
+                if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto)
+                {
+                    if ((res.attributes & JSValueAttributesInternal.ReadOnly) == 0
+                        && (res.valueType != JSValueType.Property || memberScope == MemberScope.Own))
+                    {
+                        res = res.CloneImpl(false);
+                        if (symbols == null)
+                            symbols = new Dictionary<Symbol, JSValue>();
+                        symbols[symbol] = res;
+                    }
+                }
+            }
             return res;
         }
 

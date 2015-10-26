@@ -54,12 +54,12 @@ namespace NiL.JS.Expressions
             return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref threads[0], depth, variables, state | BuildState.Conditional | BuildState.InExpression, message, statistic, opts);
-            Parser.Build(ref threads[1], depth, variables, state | BuildState.Conditional | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref threads[0], depth, variables, state | CodeContext.Conditional | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref threads[1], depth, variables, state | CodeContext.Conditional | CodeContext.InExpression, message, statistic, opts);
             base.Build(ref _this, depth, variables, state, message, statistic, opts);
-            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && first is ConstantNotation)
+            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && first is ConstantDefinition)
             {
                 _this = ((bool)first.Evaluate(null) ? threads[0] : threads[1]);
                 if (message != null)
@@ -96,7 +96,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             for (var i = threads.Length; i-- > 0; )
@@ -106,8 +106,8 @@ namespace NiL.JS.Expressions
                 threads[i] = cn as Expression;
             }
             if (message != null
-                && (threads[0] is GetVariableExpression || threads[0] is ConstantNotation)
-                && (threads[1] is GetVariableExpression || threads[1] is ConstantNotation)
+                && (threads[0] is GetVariableExpression || threads[0] is ConstantDefinition)
+                && (threads[1] is GetVariableExpression || threads[1] is ConstantDefinition)
                 && ResultType == PredictedType.Ambiguous)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Type of an expression is ambiguous");
         }

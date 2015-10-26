@@ -31,7 +31,7 @@ namespace NiL.JS.Expressions
         internal DeleteMemberExpression(Expression obj, Expression fieldName)
             : base(obj, fieldName, true)
         {
-            if (fieldName is ConstantNotation)
+            if (fieldName is ConstantDefinition)
                 cachedMemberName = fieldName.Evaluate(null);
         }
 
@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return false;
         }
@@ -64,8 +64,8 @@ namespace NiL.JS.Expressions
         {
             var res = first.ToString();
             int i = 0;
-            var cn = second as ConstantNotation;
-            if (second is ConstantNotation
+            var cn = second as ConstantDefinition;
+            if (second is ConstantDefinition
                 && cn.value.ToString().Length > 0
                 && (Parser.ValidateName(cn.value.ToString(), ref i, true)))
                 res += "." + cn.value;

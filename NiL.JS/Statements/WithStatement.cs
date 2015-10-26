@@ -34,7 +34,7 @@ namespace NiL.JS.Statements
                 i++;
             while (char.IsWhiteSpace(state.Code[i]));
             var body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionNotation)
+            if (body is FunctionDefinition)
             {
                 if (state.strict)
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -90,16 +90,16 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsWith = true;
-            Parser.Build(ref obj, depth + 1, variables, state | BuildState.InExpression, message, statistic, opts);
-            Parser.Build(ref body, depth, variables, state | BuildState.InWith, message, statistic, opts);
+            Parser.Build(ref obj, depth + 1, variables, state | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | CodeContext.InWith, message, statistic, opts);
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (obj != null)
                 obj.Optimize(ref obj, owner, message, opts, statistic);

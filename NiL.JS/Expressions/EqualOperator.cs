@@ -274,12 +274,12 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
             if (message != null)
             {
-                var fc = first as ConstantNotation ?? second as ConstantNotation;
+                var fc = first as ConstantDefinition ?? second as ConstantDefinition;
                 if (fc != null)
                 {
                     switch (fc.value.valueType)

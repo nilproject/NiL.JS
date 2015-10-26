@@ -70,7 +70,7 @@ namespace NiL.JS.Statements
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             var body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionNotation)
+            if (body is FunctionDefinition)
             {
                 if (state.strict)
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -171,7 +171,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref init, 1, variables, state, message, statistic, opts);
             if ((opts & Options.SuppressUselessStatementsElimination) == 0
@@ -179,16 +179,16 @@ namespace NiL.JS.Statements
                 && !(init as VariableDefineStatement).isConst
                 && (init as VariableDefineStatement).initializators.Length == 1)
                 init = (init as VariableDefineStatement).initializators[0];
-            Parser.Build(ref condition, 2, variables, state | BuildState.InLoop | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
             if (post != null)
             {
-                Parser.Build(ref post, 1, variables, state | BuildState.Conditional | BuildState.InLoop | BuildState.InExpression, message, statistic, opts);
+                Parser.Build(ref post, 1, variables, state | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
                 if (post == null && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | BuildState.Conditional | BuildState.InLoop, message, statistic, opts);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
             if (condition == null)
-                condition = new ConstantNotation(NiL.JS.BaseLibrary.Boolean.True);
+                condition = new ConstantDefinition(NiL.JS.BaseLibrary.Boolean.True);
             else if ((condition is Expressions.Expression)
                 && (condition as Expressions.Expression).IsContextIndependent
                 && !(bool)condition.Evaluate(null))
@@ -199,25 +199,25 @@ namespace NiL.JS.Statements
             else if (body == null || body is EmptyExpression) // initial solution. Will extended
             {
                 VariableReference variable = null;
-                ConstantNotation limit = null;
+                ConstantDefinition limit = null;
                 if (condition is NiL.JS.Expressions.LessOperator)
                 {
                     variable = (condition as NiL.JS.Expressions.LessOperator).FirstOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.LessOperator).SecondOperand as ConstantNotation;
+                    limit = (condition as NiL.JS.Expressions.LessOperator).SecondOperand as ConstantDefinition;
                 }
                 else if (condition is NiL.JS.Expressions.MoreOperator)
                 {
                     variable = (condition as NiL.JS.Expressions.MoreOperator).SecondOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.MoreOperator).FirstOperand as ConstantNotation;
+                    limit = (condition as NiL.JS.Expressions.MoreOperator).FirstOperand as ConstantDefinition;
                 }
                 else if (condition is NiL.JS.Expressions.NotEqualOperator)
                 {
                     variable = (condition as NiL.JS.Expressions.LessOperator).SecondOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.LessOperator).FirstOperand as ConstantNotation;
+                    limit = (condition as NiL.JS.Expressions.LessOperator).FirstOperand as ConstantDefinition;
                     if (variable == null && limit == null)
                     {
                         variable = (condition as NiL.JS.Expressions.LessOperator).FirstOperand as VariableReference;
-                        limit = (condition as NiL.JS.Expressions.LessOperator).SecondOperand as ConstantNotation;
+                        limit = (condition as NiL.JS.Expressions.LessOperator).SecondOperand as ConstantDefinition;
                     }
                 }
                 if (variable != null
@@ -232,7 +232,7 @@ namespace NiL.JS.Statements
                             && ((init as NiL.JS.Expressions.AssignmentOperator).FirstOperand as GetVariableExpression).descriptor == variable.descriptor)
                         {
                             var value = (init as NiL.JS.Expressions.AssignmentOperator).SecondOperand;
-                            if (value is ConstantNotation)
+                            if (value is ConstantDefinition)
                             {
                                 var vvalue = value.Evaluate(null);
                                 var lvalue = limit.Evaluate(null);
@@ -259,7 +259,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (init != null)
                 init.Optimize(ref init, owner, message, opts, statistic);

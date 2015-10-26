@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class ArrayNotation : Expression
+    public sealed class ArrayDefinition : Expression
     {
         private static JSValue writableNotExists = null;
         private Expression[] elements;
@@ -29,7 +29,7 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        private ArrayNotation()
+        private ArrayDefinition()
         {
 
         }
@@ -71,7 +71,7 @@ namespace NiL.JS.Expressions
             i++;
             var pos = index;
             index = i;
-            return new ArrayNotation()
+            return new ArrayDefinition()
                 {
                     elements = elms.ToArray(),
                     Position = pos,
@@ -125,16 +125,16 @@ namespace NiL.JS.Expressions
             return elements;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             codeContext = state;
 
             for (int i = 0; i < elements.Length; i++)
-                Parser.Build(ref elements[i], 2, variables, state | BuildState.InExpression, message, statistic, opts);
+                Parser.Build(ref elements[i], 2, variables, state | CodeContext.InExpression, message, statistic, opts);
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             for (var i = elements.Length; i-- > 0; )
             {

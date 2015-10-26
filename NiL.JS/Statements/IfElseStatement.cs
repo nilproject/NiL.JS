@@ -59,7 +59,7 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);
@@ -112,7 +112,7 @@ namespace NiL.JS.Statements
                 i++;
             while (char.IsWhiteSpace(state.Code[i]));
             CodeNode body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionNotation)
+            if (body is FunctionDefinition)
             {
                 if (state.strict)
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -134,7 +134,7 @@ namespace NiL.JS.Statements
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
                 elseBody = Parser.Parse(state, ref i, 0);
-                if (elseBody is FunctionNotation)
+                if (elseBody is FunctionDefinition)
                 {
                     if (state.strict)
                         ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
@@ -200,11 +200,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref condition, 2, variables, state | BuildState.InExpression, message, statistic, opts);
-            Parser.Build(ref body, depth, variables, state | BuildState.Conditional, message, statistic, opts);
-            Parser.Build(ref elseBody, depth, variables, state | BuildState.Conditional, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, state | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, state | CodeContext.Conditional, message, statistic, opts);
+            Parser.Build(ref elseBody, depth, variables, state | CodeContext.Conditional, message, statistic, opts);
 
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
@@ -215,7 +215,7 @@ namespace NiL.JS.Statements
             try
             {
                 if ((opts & Options.SuppressUselessExpressionsElimination) == 0
-                    && (condition is ConstantNotation || (condition.IsContextIndependent)))
+                    && (condition is ConstantDefinition || (condition.IsContextIndependent)))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = body;
@@ -238,7 +238,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);

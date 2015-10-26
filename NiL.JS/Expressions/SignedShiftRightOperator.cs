@@ -34,7 +34,7 @@ namespace NiL.JS.Expressions
             return tempContainer;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (!res && _this == this)
@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
                 try
                 {
                     if (first.IsContextIndependent && Tools.JSObjectToInt32((first).Evaluate(null)) == 0)
-                        _this = new ConstantNotation(0);
+                        _this = new ConstantDefinition(0);
                     else if (second.IsContextIndependent && Tools.JSObjectToInt32((second).Evaluate(null)) == 0)
                         _this = new ToIntegerOperator(first);
                 }

@@ -368,7 +368,7 @@ namespace NiL.JS.Core.Functions
                 return Invoke(self, null);
             if (raw || withSpread)
             {
-                return base.InternalInvoke(self, arguments, initiator, withSpread);
+                return base.InternalInvoke(self, arguments, initiator, true);
             }
             else
             {

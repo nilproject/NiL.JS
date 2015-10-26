@@ -24,12 +24,12 @@ namespace NiL.JS.Statements
 #endif
     public sealed class SwitchStatement : CodeNode
     {
-        private FunctionNotation[] functions;
+        private FunctionDefinition[] functions;
         private readonly CodeNode[] lines;
         private SwitchCase[] cases;
         private CodeNode image;
 
-        public FunctionNotation[] Functions { get { return functions; } }
+        public FunctionDefinition[] Functions { get { return functions; } }
         public CodeNode[] Body { get { return lines; } }
         public SwitchCase[] Cases { get { return cases; } }
         public CodeNode Image { get { return image; } }
@@ -58,7 +58,7 @@ namespace NiL.JS.Statements
                 i++;
             while (char.IsWhiteSpace(state.Code[i]));
             var body = new List<CodeNode>();
-            var funcs = new List<FunctionNotation>();
+            var funcs = new List<FunctionDefinition>();
             var cases = new List<SwitchCase>();
             cases.Add(null);
             state.AllowBreak.Push(true);
@@ -99,11 +99,11 @@ namespace NiL.JS.Statements
                 var t = Parser.Parse(state, ref i, 0);
                 if (t == null)
                     continue;
-                if (t is FunctionNotation)
+                if (t is FunctionDefinition)
                 {
                     if (state.strict)
                         ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    funcs.Add(t as FunctionNotation);
+                    funcs.Add(t as FunctionDefinition);
                 }
                 else
                     body.Add(t);
@@ -157,13 +157,13 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, BuildState state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
-            Parser.Build(ref image, 2, variables, state | BuildState.InExpression, message, statistic, opts);
+            Parser.Build(ref image, 2, variables, state | CodeContext.InExpression, message, statistic, opts);
             for (int i = 0; i < lines.Length; i++)
-                Parser.Build(ref lines[i], 1, variables, state | BuildState.Conditional, message, statistic, opts);
+                Parser.Build(ref lines[i], 1, variables, state | CodeContext.Conditional, message, statistic, opts);
             for (int i = 0; functions != null && i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
@@ -209,7 +209,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionNotation owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             image.Optimize(ref image, owner, message, opts, statistic);
             for (var i = 1; i < cases.Length; i++)
