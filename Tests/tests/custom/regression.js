@@ -23,7 +23,7 @@ catch (e) {
         console.log("empty func argument fail #3.1");
 }
 
-var f = eval("function func(){}");
+var f = eval("function functionInsideEval(){}");
 
 for ([, ]; false;);
 
@@ -52,7 +52,7 @@ function x2(x) {
 if (Math.max(...[1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) != 9)
     console.log("Spread in proxied method work incorrectly");
 
-function func(a, b, ...rest) {
+function func1(a, b, ...rest) {
     if (JSON.stringify(rest) !== JSON.stringify([2, 3, 4]))
         console.log("Incorrect rest parameters container");
     if (JSON.stringify(arguments) !== JSON.stringify({ 0: 0, 1: 1, 2: 2, 3: 3, 4: 4 }))
@@ -66,7 +66,7 @@ test[Symbol.iterator] = function* () {
         yield i;
 }
 
-if (func(...test) !== 5)
+if (func1(...test) !== 5)
     console.log("Function with rest parameters returns invalid value");
 
 (function (...args) {

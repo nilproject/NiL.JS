@@ -405,7 +405,7 @@ function* incGen(x)
             }));
 #endif
             
-            int mode = 2
+            int mode = 0
                     ;
             switch (mode)
             {
@@ -417,7 +417,7 @@ function* incGen(x)
 #if !PORTABLE
                 case -3:
                     {
-                        runFile("md5.js");
+                        runFile(@"sunspider-0.9.1\access-nsieve.js", 100);
                         break;
                     }
 #endif
@@ -644,12 +644,6 @@ ast.print_to_string();");
                         sunspider();
                         break;
                     }
-                case 102:
-                    {
-                        for (var i = 0; i < 10; i++)
-                            runFile(@"sunspider-0.9.1\access-nsieve.js");
-                        break;
-                    }
                 case 103:
                     {
                         kraken();
@@ -824,13 +818,14 @@ ast.print_to_string();");
                 runFile(fls[i]);
         }
 
-        private static void runFile(string filename)
+        private static void runFile(string filename, int times = 1)
         {
             Console.WriteLine("Processing file: " + filename);
             var f = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var sr = new StreamReader(f);
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
+            Context.RefreshGlobalContext();
             var s = new Script(sr.ReadToEnd());
             sr.Dispose();
             f.Dispose();
@@ -838,7 +833,8 @@ ast.print_to_string();");
             Console.WriteLine("Compile time: " + sw.Elapsed);
             Console.WriteLine("-------------------------------------");
             sw.Restart();
-            s.Invoke();
+            while (times-- > 0)
+                s.Invoke();
             sw.Stop();
             Console.WriteLine("-------------------------------------");
             Console.WriteLine("Complite.");

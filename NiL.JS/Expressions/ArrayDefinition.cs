@@ -84,10 +84,11 @@ namespace NiL.JS.Expressions
 #endif
         private static JSValue impl(Context context, Expression[] elements)
         {
-            var res = new NiL.JS.BaseLibrary.Array((long)elements.Length);
-            if (elements.Length > 0)
+            var length = elements.Length;
+            var res = new BaseLibrary.Array(length);
+            if (length > 0)
             {
-                for (int sourceIndex = 0, targetIndex = 0; sourceIndex < elements.Length; sourceIndex++, targetIndex++)
+                for (int sourceIndex = 0, targetIndex = 0; sourceIndex < length; sourceIndex++, targetIndex++)
                 {
                     if (elements[sourceIndex] != null)
                     {
@@ -109,7 +110,11 @@ namespace NiL.JS.Expressions
                         }
                     }
                     else
-                        res.data[targetIndex] = (writableNotExists ?? (writableNotExists = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSValueAttributesInternal.SystemObject }));
+                    {
+                        if (writableNotExists == null)
+                            writableNotExists = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSValueAttributesInternal.SystemObject };
+                        res.data[targetIndex] = writableNotExists;
+                    }
                 }
             }
             return res;

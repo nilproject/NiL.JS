@@ -799,7 +799,7 @@ namespace NiL.JS.BaseLibrary
             this.oValue = this;
         }
 
-        protected internal virtual JSValue InternalInvoke(JSValue self, Expression[] arguments, Context initiator, bool withSpread)
+        internal virtual JSValue InternalInvoke(JSValue self, Expression[] arguments, Context initiator, bool withSpread)
         {
             if (!withSpread && this.GetType() == typeof(Function))
             {
@@ -1070,9 +1070,7 @@ namespace NiL.JS.BaseLibrary
                 return undefined;
             else
             {
-                ai = ai.CloneImpl(false);
-                ai.attributes |= JSValueAttributesInternal.Cloned;
-                return ai;
+                return ai.CloneImpl(false);
             }
         }
 

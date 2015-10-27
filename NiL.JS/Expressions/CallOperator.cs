@@ -44,7 +44,6 @@ namespace NiL.JS.Expressions
 
         internal static JSValue PrepareArg(Context context, CodeNode source)
         {
-            context.objectSource = null;
             var a = source.Evaluate(context);
             if (a.valueType != JSValueType.SpreadOperatorResult)
             {

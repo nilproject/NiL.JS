@@ -155,7 +155,7 @@ namespace NiL.JS.Core
             [Hidden]
             set
             {
-                this.GetMember(name, true, MemberScope.Own).Assign(value ?? JSValue.undefined);
+                this.SetMember(name, value ?? JSValue.undefined, true);
             }
         }
 
@@ -561,7 +561,7 @@ namespace NiL.JS.Core
             return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String)).GetMember(name, false, MemberScope.Сommon);
         }
 
-        internal protected virtual void SetMember(JSValue name, JSValue value, bool strict)
+        internal protected virtual void SetMember(JSValue name, JSValue value, bool throwOnError)
         {
             JSValue field;
             if (valueType >= JSValueType.Object)
@@ -573,7 +573,7 @@ namespace NiL.JS.Core
                 field = oValue as JSObject;
                 if (field != null)
                 {
-                    field.SetMember(name, value, strict);
+                    field.SetMember(name, value, throwOnError);
                     return;
                 }
             }

@@ -176,20 +176,20 @@ namespace NiL.JS.BaseLibrary
                     {
                         revargs[0] = t.fieldName;
                         revargs[1] = t.value;
-                        var val = reviewer.Invoke(revargs);
-                        if (val.IsDefined)
+                        var value = reviewer.Invoke(revargs);
+                        if (value.IsDefined)
                         {
                             if (t.container != null)
-                                t.container.GetMember(t.fieldName, true, MemberScope.Own).Assign(val);
+                                t.container.SetMember(t.fieldName, value, false);
                             else
                             {
-                                t.value = val;
+                                t.value = value;
                                 stack.Push(t);
                             }
                         }
                     }
                     else if (t.container != null)
-                        t.container.GetMember(t.fieldName, true, MemberScope.Own).Assign(t.value);
+                        t.container.SetMember(t.fieldName, t.value, false);
                     else
                         stack.Push(t);
                 }

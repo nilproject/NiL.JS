@@ -362,7 +362,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        protected internal override JSValue InternalInvoke(JSValue self, Expressions.Expression[] arguments, NiL.JS.Core.Context initiator, bool withSpread)
+        internal override JSValue InternalInvoke(JSValue self, Expressions.Expression[] arguments, NiL.JS.Core.Context initiator, bool withSpread)
         {
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
                 return Invoke(self, null);

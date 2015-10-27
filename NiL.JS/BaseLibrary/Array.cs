@@ -15,7 +15,7 @@ namespace NiL.JS.BaseLibrary
         private static readonly SparseArray<JSValue> emptyData = new SparseArray<JSValue>();
         [Hidden]
         internal SparseArray<JSValue> data;
-        
+
         [DoNotEnumerate]
         public Array()
         {
@@ -895,7 +895,7 @@ namespace NiL.JS.BaseLibrary
                         ((item0.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(self, args);
                     }
                     else if (value1.IsExists)
-                        self.GetMember(i0, true, MemberScope.Own).Assign(value1);
+                        self.SetMember(i0, value0, false);
                     else
                     {
                         var t = self.GetMember(i0, true, MemberScope.Own);
@@ -914,7 +914,7 @@ namespace NiL.JS.BaseLibrary
                         ((item1.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(self, args);
                     }
                     else if (value0.IsExists)
-                        self.GetMember(i1, true, MemberScope.Own).Assign(value0);
+                        self.SetMember(i1, value0, false);
                     else
                     {
                         var t = self.GetMember(i1, true, MemberScope.Own);

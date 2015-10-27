@@ -261,8 +261,8 @@ namespace NiL.JS.BaseLibrary
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
                     res.data[i] = match.Groups[i].Value;
-                res.GetMember("index", true, MemberScope.Own).Assign(match.Index);
-                res.GetMember("input", true, MemberScope.Own).Assign(self);
+                res.SetMember("index", match.Index, false);
+                res.SetMember("input", self, true);
                 return res;
             }
         }
