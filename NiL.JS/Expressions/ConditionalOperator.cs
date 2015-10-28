@@ -12,13 +12,13 @@ namespace NiL.JS.Expressions
     {
         private Expression[] threads;
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {
-                return base.IsContextIndependent
-                    && (threads[0].IsContextIndependent)
-                    && (threads[1].IsContextIndependent);
+                return base.ContextIndependent
+                    && (threads[0].ContextIndependent)
+                    && (threads[1].ContextIndependent);
             }
         }
 

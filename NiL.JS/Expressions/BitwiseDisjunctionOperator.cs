@@ -39,13 +39,13 @@ namespace NiL.JS.Expressions
             var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
             if (_this != this)
                 return res;
-            if (second.IsContextIndependent
+            if (second.ContextIndependent
                 && Tools.JSObjectToInt32(second.Evaluate(null)) == 0)
             {
                 _this = new ToIntegerOperator(first);
                 return true;
             }
-            if (first.IsContextIndependent
+            if (first.ContextIndependent
                  && Tools.JSObjectToInt32(first.Evaluate(null)) == 0)
             {
                 _this = new ToIntegerOperator(second);

@@ -16,7 +16,7 @@ namespace NiL.JS.Core
         internal VariableDescriptor descriptor;
         public VariableDescriptor Descriptor { get { return descriptor; } }
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {

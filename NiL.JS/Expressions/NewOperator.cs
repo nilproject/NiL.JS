@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
                 this.source = source;
             }
 
-            public override bool IsContextIndependent
+            public override bool ContextIndependent
             {
                 get
                 {
@@ -78,7 +78,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {

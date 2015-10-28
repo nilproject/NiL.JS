@@ -41,9 +41,9 @@ namespace NiL.JS.Expressions
             {
                 try
                 {
-                    if (first.IsContextIndependent && Tools.JSObjectToInt32((first).Evaluate(null)) == 0)
+                    if (first.ContextIndependent && Tools.JSObjectToInt32((first).Evaluate(null)) == 0)
                         _this = new ConstantDefinition(0);
-                    else if (second.IsContextIndependent && Tools.JSObjectToInt32((second).Evaluate(null)) == 0)
+                    else if (second.ContextIndependent && Tools.JSObjectToInt32((second).Evaluate(null)) == 0)
                         _this = new ToIntegerOperator(first);
                 }
                 catch

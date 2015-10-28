@@ -895,7 +895,7 @@ namespace NiL.JS.BaseLibrary
                         ((item0.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(self, args);
                     }
                     else if (value1.IsExists)
-                        self.SetMember(i0, value0, false);
+                        self.SetMember(i0, value1, false);
                     else
                     {
                         var t = self.GetMember(i0, true, MemberScope.Own);
@@ -1880,7 +1880,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
-            if (key.valueType != JSValueType.Symbol)
+            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
             {
                 if (key.valueType == JSValueType.String && string.CompareOrdinal("length", key.oValue.ToString()) == 0)
                     return length;
@@ -1956,8 +1956,6 @@ namespace NiL.JS.BaseLibrary
                 }
             }
 
-            //if ((attributes & JSObjectAttributesInternal.ProxyPrototype) != 0)
-            //    return __proto__.GetMember(name, create, own);
             return base.GetMember(key, forWrite, memberScope);
         }
 

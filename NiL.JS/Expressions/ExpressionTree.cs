@@ -392,13 +392,31 @@ namespace NiL.JS.Expressions
             {
                 // do nothing
             }
-            else if (Parser.ValidateName(state.Code, ref i, state.strict) || Parser.Validate(state.Code, "this", ref i))
+            else if (Parser.ValidateName(state.Code, ref i, state.strict)
+                || Parser.Validate(state.Code, "this", ref i)
+                || Parser.Validate(state.Code, "super", ref i))
             {
                 var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
-                if (name == "undefined")
-                    first = new ConstantDefinition(JSValue.undefined) { Position = index, Length = i - index };
-                else
-                    first = new GetVariableExpression(name, state.functionsDepth) { Position = index, Length = i - index, defineDepth = state.functionsDepth };
+                switch (name)
+                {
+                    case "super":
+                        {
+                            first = new SuperExpression(state.functionsDepth);
+                            break;
+                        }
+                    case "undefined":
+                        {
+                            first = new ConstantDefinition(JSValue.undefined);
+                            break;
+                        }
+                    default:
+                        {
+                            first = new GetVariableExpression(name, state.functionsDepth);
+                            break;
+                        }
+                }
+                first.Position = index;
+                first.Length = i - index;
             }
             else if (Parser.ValidateValue(state.Code, ref i))
             {

@@ -179,7 +179,7 @@ namespace NiL.JS.BaseLibrary
 
         protected internal sealed override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
-            if (key.valueType != JSValueType.Symbol)
+            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
             {
                 if (key.valueType == JSValueType.String && "length".Equals(key.oValue))
                     return length;

@@ -16,7 +16,7 @@ namespace NiL.JS.Expressions
 
         public ICollection<Expression> Elements { get { return elements; } }
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {

@@ -17,7 +17,7 @@ namespace NiL.JS.Expressions
         public CodeNode[] Initializators { get { return values; } }
         public string[] Fields { get { return fields; } }
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {

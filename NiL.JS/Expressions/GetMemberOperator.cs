@@ -10,11 +10,12 @@ namespace NiL.JS.Expressions
     public sealed class GetMemberOperator : Expression
     {
         private JSValue cachedMemberName;
+        private MemberScope memberScope;
 
         public CodeNode Source { get { return first; } }
         public CodeNode FieldName { get { return second; } }
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {
@@ -41,7 +42,7 @@ namespace NiL.JS.Expressions
                 source = source.Clone() as JSValue;
             else
                 source = source.oValue as JSValue ?? source;
-            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), true, MemberScope.Сommon);
+            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), true, memberScope);
             context.objectSource = source;
             if (res.valueType == JSValueType.NotExists)
                 res.valueType = JSValueType.NotExistsInObject;
@@ -84,6 +85,8 @@ namespace NiL.JS.Expressions
                 if (statistic != null && cachedMemberName.ToString() == "arguments")
                     statistic.ContainsArguments = true;
             }
+            if (first is SuperExpression)
+                memberScope = MemberScope.Super;
             return false;
         }
 

@@ -63,6 +63,7 @@ namespace NiL.JS.Core
                 new Rule("false", ExpressionTree.Parse),
                 new Rule("null", ExpressionTree.Parse),
                 new Rule("this", ExpressionTree.Parse),
+                new Rule("super", ExpressionTree.Parse),
                 new Rule("typeof", ExpressionTree.Parse),
                 new Rule("try", TryCatchStatement.Parse),
                 new Rule("new", ExpressionTree.Parse),

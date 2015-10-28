@@ -15,7 +15,7 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {

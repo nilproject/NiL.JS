@@ -150,7 +150,7 @@ namespace NiL.JS.Core
 
         protected internal override JSValue GetMember(JSValue key, bool createMember, MemberScope memberScope)
         {
-            if (key.valueType != JSValueType.Symbol)
+            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
             {
                 createMember &= (attributes & JSValueAttributesInternal.Immutable) == 0;
                 if (key.valueType == JSValueType.Int)

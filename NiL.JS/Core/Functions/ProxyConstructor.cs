@@ -109,7 +109,7 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
-            if (key.valueType != JSValueType.Symbol)
+            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
             {
                 if (key.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;

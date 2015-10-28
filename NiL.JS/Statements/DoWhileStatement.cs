@@ -137,7 +137,7 @@ namespace NiL.JS.Statements
             {
                 if (allowRemove
                     && (opts & Options.SuppressUselessExpressionsElimination) == 0
-                    && (condition is ConstantDefinition || (condition as Expressions.Expression).IsContextIndependent))
+                    && (condition is ConstantDefinition || (condition as Expressions.Expression).ContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = new InfinityLoopStatement(body, labels);

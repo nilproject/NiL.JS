@@ -52,7 +52,7 @@ namespace NiL.JS.Expressions
 
         public override string Name { get { return variableName; } }
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {
@@ -64,7 +64,7 @@ namespace NiL.JS.Expressions
         {
             this.defineDepth = functionDepth;
             int i = 0;
-            if ((name != "this") && !Parser.ValidateName(name, i, true, true, false))
+            if ((name != "this") && (name != "super") && !Parser.ValidateName(name, i, true, true, false))
                 throw new ArgumentException("Invalid variable name");
             this.variableName = name;
         }

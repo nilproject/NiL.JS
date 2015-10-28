@@ -30,11 +30,11 @@ namespace NiL.JS.Core
 
         public CodeNode Original { get { return original; } }
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {
-                return original is Expressions.Expression && (original as Expressions.Expression).IsContextIndependent;
+                return original is Expressions.Expression && (original as Expressions.Expression).ContextIndependent;
             }
         }
 

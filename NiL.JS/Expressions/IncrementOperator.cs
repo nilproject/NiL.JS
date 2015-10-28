@@ -16,7 +16,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class IncrementOperator : Expression
     {
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {

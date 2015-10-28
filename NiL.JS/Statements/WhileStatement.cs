@@ -129,7 +129,7 @@ namespace NiL.JS.Statements
             }
             try
             {
-                if (allowRemove && (condition is ConstantDefinition || (condition is Expression && (condition as Expression).IsContextIndependent)))
+                if (allowRemove && (condition is ConstantDefinition || (condition is Expression && (condition as Expression).ContextIndependent)))
                 {
                     Eliminated = true;
                     if ((bool)condition.Evaluate(null))

@@ -190,7 +190,7 @@ namespace NiL.JS.Statements
             if (condition == null)
                 condition = new ConstantDefinition(NiL.JS.BaseLibrary.Boolean.True);
             else if ((condition is Expressions.Expression)
-                && (condition as Expressions.Expression).IsContextIndependent
+                && (condition as Expressions.Expression).ContextIndependent
                 && !(bool)condition.Evaluate(null))
             {
                 _this = init;

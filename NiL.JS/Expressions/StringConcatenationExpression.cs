@@ -12,13 +12,13 @@ namespace NiL.JS.Expressions
     {
         internal IList<Expression> sources;
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {
                 for (var i = 0; i < sources.Count; i++)
                 {
-                    if (sources[i].IsContextIndependent)
+                    if (sources[i].ContextIndependent)
                         return false;
                 }
                 return true;

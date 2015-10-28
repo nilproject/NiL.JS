@@ -13,7 +13,7 @@ namespace NiL.JS.Expressions
 
         public CodeNode Source { get { return first; } }
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {

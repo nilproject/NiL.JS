@@ -214,7 +214,7 @@ namespace NiL.JS.Core.Interop
 
         protected internal override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
-            if (key.valueType != JSValueType.Symbol)
+            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
             {
                 forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
                 if (key.valueType == JSValueType.String && string.CompareOrdinal("length", key.oValue.ToString()) == 0)

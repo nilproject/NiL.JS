@@ -13,7 +13,7 @@ namespace NiL.JS.Expressions
         private Arguments setterArgs;
         private bool saveResult;
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {
@@ -169,7 +169,7 @@ namespace NiL.JS.Expressions
                         }
                         if (last)
                         {
-                            if (second.IsContextIndependent)
+                            if (second.ContextIndependent)
                             {
                                 _this.Eliminated = true;
                                 _this = EmptyExpression.Instance;

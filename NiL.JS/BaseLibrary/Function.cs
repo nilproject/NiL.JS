@@ -817,7 +817,7 @@ namespace NiL.JS.BaseLibrary
                             {
                                 if (ret.Body != null)
                                 {
-                                    if (ret.Body.IsContextIndependent)
+                                    if (ret.Body.ContextIndependent)
                                         result = ret.Body.Evaluate(null);
                                     else
                                         break;
@@ -878,6 +878,7 @@ namespace NiL.JS.BaseLibrary
                 else
                 {
                     var value = CallOperator.PrepareArg(initiator, arguments[sourceIndex]);
+                    value.attributes |= JSValueAttributesInternal.Cloned;
                     if (value.valueType == JSValueType.SpreadOperatorResult)
                     {
                         spreadIndex = 0;
@@ -1123,28 +1124,28 @@ namespace NiL.JS.BaseLibrary
              * Поэтому заменять значения можно только после полного расчёта новых значений
              */
 
-            a0 = arguments[0].Evaluate(initiator).CloneImpl(false);
+            a0 = CallOperator.PrepareArg(initiator, arguments[0]);
             if (argumentsCount > 1)
             {
-                a1 = arguments[1].Evaluate(initiator).CloneImpl(false);
+                a1 = CallOperator.PrepareArg(initiator, arguments[1]);
                 if (argumentsCount > 2)
                 {
-                    a2 = arguments[2].Evaluate(initiator).CloneImpl(false);
+                    a2 = CallOperator.PrepareArg(initiator, arguments[2]);
                     if (argumentsCount > 3)
                     {
-                        a3 = arguments[3].Evaluate(initiator).CloneImpl(false);
+                        a3 = CallOperator.PrepareArg(initiator, arguments[3]);
                         if (argumentsCount > 4)
                         {
-                            a4 = arguments[4].Evaluate(initiator).CloneImpl(false);
+                            a4 = CallOperator.PrepareArg(initiator, arguments[4]);
                             if (argumentsCount > 5)
                             {
-                                a5 = arguments[5].Evaluate(initiator).CloneImpl(false);
+                                a5 = CallOperator.PrepareArg(initiator, arguments[5]);
                                 if (argumentsCount > 6)
                                 {
-                                    a6 = arguments[6].Evaluate(initiator).CloneImpl(false);
+                                    a6 = CallOperator.PrepareArg(initiator, arguments[6]);
                                     if (argumentsCount > 7)
                                     {
-                                        a7 = arguments[7].Evaluate(initiator).CloneImpl(false);
+                                        a7 = CallOperator.PrepareArg(initiator, arguments[7]);
                                     }
                                 }
                             }
@@ -1223,8 +1224,7 @@ namespace NiL.JS.BaseLibrary
 
         private void initParameters(Arguments args, Context internalContext)
         {
-            var cea = creator.statistic.ContainsEval || creator.statistic.ContainsArguments;
-            var cew = creator.statistic.ContainsEval || creator.statistic.ContainsWith;
+            var ceaw = creator.statistic.ContainsEval || creator.statistic.ContainsArguments || creator.statistic.ContainsWith;
             int min = System.Math.Min(args.length, creator.parameters.Length - (creator.statistic.ContainsRestParameters ? 1 : 0));
 
             Array restArray = null;
@@ -1241,32 +1241,28 @@ namespace NiL.JS.BaseLibrary
                     t = prm.initializer.Evaluate(internalContext);
                 if (creator.body.strict)
                 {
-                    if (prm.assignations != null)
+                    if (ceaw)
+                    {
+                        args[i] = t.CloneImpl(false);
+                        t = t.CloneImpl(false);
+                    }
+                    else if (prm.assignations != null)
                     {
                         args[i] = t = t.CloneImpl(false);
-                        t.attributes |= JSValueAttributesInternal.Cloned;
-                    }
-                    if (cea)
-                    {
-                        if ((t.attributes & JSValueAttributesInternal.Cloned) == 0)
-                            args[i] = t.CloneImpl(false);
-                        t = t.CloneImpl(false);
                     }
                 }
                 else
                 {
                     if (prm.assignations != null
-                        || cea
-                        || cew
+                        || ceaw
                         || (t.attributes & JSValueAttributesInternal.Temporary) != 0)
                     {
-                        if ((t.attributes & JSValueAttributesInternal.Cloned) == 0)
-                            args[i] = t = t.CloneImpl(false);
+                        args[i] = t = t.CloneImpl(false);
                         t.attributes |= JSValueAttributesInternal.Argument;
                     }
                 }
                 t.attributes &= ~JSValueAttributesInternal.Cloned;
-                if (prm.captured || cew)
+                if (prm.captured || ceaw)
                     (internalContext.fields ?? (internalContext.fields = getFieldsContainer()))[prm.Name] = t;
                 prm.cacheContext = internalContext;
                 prm.cacheRes = t;
@@ -1277,7 +1273,7 @@ namespace NiL.JS.BaseLibrary
             for (var i = min; i < args.length; i++)
             {
                 JSValue t = args[i];
-                if (cew || cea)
+                if (ceaw)
                     args[i] = t = t.CloneImpl(false);
                 t.attributes |= JSValueAttributesInternal.Argument;
 
@@ -1292,7 +1288,7 @@ namespace NiL.JS.BaseLibrary
                 var arg = creator.parameters[i];
                 if (arg.initializer != null)
                 {
-                    if (cew || arg.assignations != null)
+                    if (ceaw || arg.assignations != null)
                     {
                         arg.cacheRes = arg.initializer.Evaluate(internalContext).CloneImpl(false);
                     }
@@ -1305,7 +1301,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    if (cew || arg.assignations != null)
+                    if (ceaw || arg.assignations != null)
                     {
                         if (i == min && restArray != null)
                             arg.cacheRes = restArray.CloneImpl(false);
@@ -1322,7 +1318,7 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 arg.cacheContext = internalContext;
-                if (arg.captured || cew)
+                if (arg.captured || ceaw)
                 {
                     if (internalContext.fields == null)
                         internalContext.fields = getFieldsContainer();
@@ -1416,7 +1412,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal protected override JSValue GetMember(JSValue nameObj, bool forWrite, MemberScope memberScope)
         {
-            if (nameObj.valueType != JSValueType.Symbol)
+            if (memberScope < MemberScope.Super && nameObj.valueType != JSValueType.Symbol)
             {
                 string name = nameObj.ToString();
                 if (creator.body.strict && (name == "caller" || name == "arguments"))

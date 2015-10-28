@@ -13,7 +13,7 @@ namespace NiL.JS.Core.Interop
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class TypeProxy : JSObject
+    internal sealed class TypeProxy : JSObject
     {
         private static readonly Dictionary<Type, JSValue> staticProxies = new Dictionary<Type, JSValue>();
         private static readonly Dictionary<Type, TypeProxy> dynamicProxies = new Dictionary<Type, TypeProxy>();
@@ -80,6 +80,78 @@ namespace NiL.JS.Core.Interop
         }
 
         internal bool InstanceMode = false;
+
+        private TypeProxy()
+            : base()
+        {
+            valueType = JSValueType.Object;
+            oValue = this;
+            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.DoNotEnumerate;
+            fields = getFieldsContainer();
+        }
+
+        private TypeProxy(Type type)
+            : this()
+        {
+            if (dynamicProxies.ContainsKey(type))
+                throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
+            else
+            {
+                hostedType = type;
+                dynamicProxies[type] = this;
+                try
+                {
+                    var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
+                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
+                        __prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
+
+#if PORTABLE
+                    ictor = hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
+#else
+                    ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
+#endif
+
+                    if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
+                        attributes |= JSValueAttributesInternal.Immutable;
+                    var staticProxy = new TypeProxy()
+                    {
+                        hostedType = type,
+                        InstanceMode = false
+                    };
+                    InstanceMode = true;
+
+                    if (typeof(JSValue).IsAssignableFrom(hostedType))
+                        _prototypeInstance = prototypeInstance;
+
+#if PORTABLE
+                    if (hostedType.GetTypeInfo().IsAbstract)
+#else
+                    if (hostedType.IsAbstract)
+#endif
+                    {
+                        staticProxies[type] = staticProxy;
+                    }
+                    else
+                    {
+                        Function ctor = null;
+                        if (type == typeof(JSObject))
+                            ctor = new ObjectConstructor(staticProxy);
+                        else
+                            ctor = new ProxyConstructor(staticProxy);
+                        ctor.attributes = attributes;
+                        attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly;
+                        staticProxies[type] = ctor;
+                        if (hostedType != typeof(ProxyConstructor))
+                            fields["constructor"] = ctor;
+                    }
+                }
+                catch
+                {
+                    dynamicProxies.Remove(type);
+                    throw;
+                }
+            }
+        }
 
         public static JSValue Proxy(object value)
         {
@@ -170,78 +242,6 @@ namespace NiL.JS.Core.Interop
             NiL.JS.BaseLibrary.Boolean.False.__prototype = null;
             staticProxies.Clear();
             dynamicProxies.Clear();
-        }
-
-        private TypeProxy()
-            : base()
-        {
-            valueType = JSValueType.Object;
-            oValue = this;
-            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.DoNotEnumerate;
-            fields = getFieldsContainer();
-        }
-
-        private TypeProxy(Type type)
-            : this()
-        {
-            if (dynamicProxies.ContainsKey(type))
-                throw new InvalidOperationException("Type \"" + type + "\" already proxied.");
-            else
-            {
-                hostedType = type;
-                dynamicProxies[type] = this;
-                try
-                {
-                    var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
-                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
-                        __prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
-
-#if PORTABLE
-                    ictor = hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
-#else
-                    ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
-#endif
-
-                    if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
-                        attributes |= JSValueAttributesInternal.Immutable;
-                    var staticProxy = new TypeProxy()
-                    {
-                        hostedType = type,
-                        InstanceMode = false
-                    };
-                    InstanceMode = true;
-
-                    if (typeof(JSValue).IsAssignableFrom(hostedType))
-                        _prototypeInstance = prototypeInstance;
-
-#if PORTABLE
-                    if (hostedType.GetTypeInfo().IsAbstract)
-#else
-                    if (hostedType.IsAbstract)
-#endif
-                    {
-                        staticProxies[type] = staticProxy;
-                    }
-                    else
-                    {
-                        Function ctor = null;
-                        if (type == typeof(JSObject))
-                            ctor = new ObjectConstructor(staticProxy);
-                        else
-                            ctor = new ProxyConstructor(staticProxy);
-                        ctor.attributes = attributes;
-                        attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly;
-                        staticProxies[type] = ctor;
-                        if (hostedType != typeof(ProxyConstructor))
-                            fields["constructor"] = ctor;
-                    }
-                }
-                catch
-                {
-                    dynamicProxies.Remove(type);
-                    throw;
-                }
-            }
         }
 
         internal override JSObject GetDefaultPrototype()
@@ -364,10 +364,10 @@ namespace NiL.JS.Core.Interop
 
         internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
-            forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
-
-            if (key.valueType == JSValueType.Symbol)
+            if (memberScope == MemberScope.Super || key.valueType == JSValueType.Symbol)
                 return base.GetMember(key, forWrite, memberScope);
+
+            forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
 
             string name = key.ToString();
             JSValue r = null;

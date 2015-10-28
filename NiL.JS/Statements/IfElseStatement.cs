@@ -215,7 +215,7 @@ namespace NiL.JS.Statements
             try
             {
                 if ((opts & Options.SuppressUselessExpressionsElimination) == 0
-                    && (condition is ConstantDefinition || (condition.IsContextIndependent)))
+                    && (condition is ConstantDefinition || (condition.ContextIndependent)))
                 {
                     if ((bool)condition.Evaluate(null))
                         _this = body;

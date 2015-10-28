@@ -83,7 +83,7 @@ namespace NiL.JS.Core
         {
             //valueType = JSObjectType.Undefined;
         }
-        
+
         [Hidden]
         public static JSObject CreateObject()
         {
@@ -122,11 +122,11 @@ namespace NiL.JS.Core
             {
                 if (forWrite || fields != null)
                     name = key.ToString();
-                fromProto = (fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
+                fromProto = (memberScope == MemberScope.Super || fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
                 if (fromProto)
                 {
                     res = proto.GetMember(key, false, memberScope);
-                    if (((memberScope == MemberScope.Own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property))) 
+                    if (((memberScope == MemberScope.Own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property)))
                         || res.valueType < JSValueType.Undefined)
                         res = null;
                 }
@@ -292,7 +292,7 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Try to assign to a non-primitive value");
             }
         }
-        
+
 #if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -300,6 +300,12 @@ namespace NiL.JS.Core
         {
             //return new Dictionary<string, JSObject>(System.StringComparer.Ordinal);
             return new StringMap2<JSValue>();
+        }
+
+        [Hidden]
+        public JSValue Wrap(object @object)
+        {
+            return TypeProxy.Proxy(@object);
         }
 
         [DoNotEnumerate]
@@ -403,8 +409,8 @@ namespace NiL.JS.Core
             return res;
         }
 
-        [ArgumentsLength(2)]
         [DoNotEnumerate]
+        [ArgumentsLength(2)]
         public static JSValue defineProperties(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)

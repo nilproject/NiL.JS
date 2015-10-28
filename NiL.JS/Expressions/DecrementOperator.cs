@@ -14,7 +14,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class DecrementOperator : Expression
     {
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {

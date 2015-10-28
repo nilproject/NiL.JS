@@ -18,7 +18,7 @@ namespace NiL.JS.Expressions
         private string pattern;
         private string flags;
 
-        public override bool IsContextIndependent
+        public override bool ContextIndependent
         {
             get
             {

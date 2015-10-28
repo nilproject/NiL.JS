@@ -59,12 +59,12 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public virtual bool IsContextIndependent
+        public virtual bool ContextIndependent
         {
             get
             {
-                return (first == null || first is ConstantDefinition || (first is Expression && ((Expression)first).IsContextIndependent))
-                    && (second == null || second is ConstantDefinition || (second is Expression && ((Expression)second).IsContextIndependent));
+                return (first == null || first is ConstantDefinition || (first is Expression && ((Expression)first).ContextIndependent))
+                    && (second == null || second is ConstantDefinition || (second is Expression && ((Expression)second).ContextIndependent));
             }
         }
 
@@ -88,7 +88,7 @@ namespace NiL.JS.Expressions
 
             Parser.Build(ref first, depth + 1, variables, state, message, statistic, opts);
             Parser.Build(ref second, depth + 1, variables, state, message, statistic, opts);
-            if (this.IsContextIndependent)
+            if (this.ContextIndependent)
             {
                 if (message != null && !(this is RegExpExpression))
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Constant expression. Maybe, it's a mistake.");
@@ -140,7 +140,7 @@ namespace NiL.JS.Expressions
                 s.Optimize(ref s, owner, message, opts, statistic);
                 second = s as Expression;
             }
-            if (IsContextIndependent && !(this is ConstantDefinition))
+            if (ContextIndependent && !(this is ConstantDefinition))
             {
                 try
                 {

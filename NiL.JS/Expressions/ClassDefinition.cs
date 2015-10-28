@@ -24,6 +24,14 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
+        public override bool ContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         private string[] fields;
         private CodeNode[] values;
         private Expression bce;

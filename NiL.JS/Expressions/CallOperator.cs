@@ -15,7 +15,7 @@ namespace NiL.JS.Expressions
         internal bool withSpread;
         internal bool allowTCO;
 
-        public override bool IsContextIndependent { get { return false; } }
+        public override bool ContextIndependent { get { return false; } }
         internal override bool ResultInTempContainer { get { return false; } }
         protected internal override PredictedType ResultType
         {

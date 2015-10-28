@@ -37,7 +37,7 @@ namespace NiL.JS.Core
 
         internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
-            if (key.valueType != JSValueType.Symbol)
+            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
             {
                 var nameStr = key.ToString();
                 var res = context.GetVariable(nameStr, forWrite);

@@ -915,7 +915,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
         {
-            if (key.valueType != JSValueType.Symbol)
+            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
             {
                 int index = 0;
                 double dindex = Tools.JSObjectToDouble(key);
