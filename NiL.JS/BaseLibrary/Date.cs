@@ -86,15 +86,15 @@ namespace NiL.JS.BaseLibrary
         private static IEnumerable<string> tokensOf(string source)
         {
             int position = 0;
-            int prewPos = 0;
+            int prevPos = 0;
             while (position < source.Length)
             {
-                if (source[position] == '(' && (prewPos == position || source.IndexOf(':', prewPos, position - prewPos) == -1))
+                if (source[position] == '(' && (prevPos == position || source.IndexOf(':', prevPos, position - prevPos) == -1))
                 {
-                    if (prewPos != position)
+                    if (prevPos != position)
                     {
-                        yield return source.Substring(prewPos, position - prewPos);
-                        prewPos = position;
+                        yield return source.Substring(prevPos, position - prevPos);
+                        prevPos = position;
                     }
                     int depth = 1;
                     position++;
@@ -110,7 +110,7 @@ namespace NiL.JS.BaseLibrary
                                 break;
                         }
                     }
-                    prewPos = position;
+                    prevPos = position;
                     continue;
                 }
                 if (!char.IsWhiteSpace(source[position]))
@@ -118,16 +118,16 @@ namespace NiL.JS.BaseLibrary
                     position++;
                     continue;
                 }
-                if (prewPos != position)
+                if (prevPos != position)
                 {
-                    yield return source.Substring(prewPos, position - prewPos);
-                    prewPos = position;
+                    yield return source.Substring(prevPos, position - prevPos);
+                    prevPos = position;
                 }
                 else
-                    prewPos = ++position;
+                    prevPos = ++position;
             }
-            if (prewPos != position)
-                yield return source.Substring(prewPos);
+            if (prevPos != position)
+                yield return source.Substring(prevPos);
         }
 
         private static int indexOf(IList<string> list, string value, bool ignoreCase)
@@ -180,11 +180,13 @@ namespace NiL.JS.BaseLibrary
                             day = month;
                             wasDay = true;
                         }
-                        else
+                        else if (!wasYear)
                         {
                             year = month;
                             wasYear = true;
                         }
+                        else
+                            return false;
                     }
                     wasForceMonth = true;
                     wasMonth = true;
@@ -300,8 +302,10 @@ namespace NiL.JS.BaseLibrary
             return true;
         }
 
-        private static bool parseByFormat(string format, string timeStr, out long time, out long timeZoneOffset)
+        private static bool parseIso8601(string timeStr, out long time, out long timeZoneOffset)
         {
+            const string format = "YYYY|-MM|-DD|THH|:MM|:SS|.SSS";
+
             var year = 0;
             var month = int.MinValue;
             var day = int.MinValue;
@@ -309,7 +313,6 @@ namespace NiL.JS.BaseLibrary
             var minutes = 0;
             var seconds = 0;
             var milliseconds = 0;
-            format = format.ToLower();
             time = 0;
             timeZoneOffset = 0;
             int part = 0; // 0 - дата, 1 - время, 2 - смещение
@@ -317,19 +320,27 @@ namespace NiL.JS.BaseLibrary
             for (; i < format.Length; i++, j++)
             {
                 if (timeStr.Length <= j)
-                    return false;
-                switch (format[i])
+                {
+                    if (format[i] == '|')
+                        break;
+                    else
+                        return false;
+                }
+
+                switch (char.ToLowerInvariant(format[i]))
                 {
                     case 'y':
                         {
-                            if (!Tools.IsDigit(timeStr[j]))
+                            if (part != 0)
+                                return false;
+                            if (!Tools.isDigit(timeStr[j]))
                                 return false;
                             year = year * 10 + timeStr[j] - '0';
                             break;
                         }
                     case 'm':
                         {
-                            if (!Tools.IsDigit(timeStr[j]))
+                            if (!Tools.isDigit(timeStr[j]))
                                 return false;
                             switch (part)
                             {
@@ -345,12 +356,16 @@ namespace NiL.JS.BaseLibrary
                                         minutes = minutes * 10 + timeStr[j] - '0';
                                         break;
                                     }
+                                default:
+                                    return false;
                             }
                             break;
                         }
                     case 'd':
                         {
-                            if (!Tools.IsDigit(timeStr[j]))
+                            if (part != 0)
+                                return false;
+                            if (!Tools.isDigit(timeStr[j]))
                                 return false;
                             if (day == int.MinValue)
                                 day = 0;
@@ -359,26 +374,34 @@ namespace NiL.JS.BaseLibrary
                         }
                     case 'h':
                         {
-                            if (!Tools.IsDigit(timeStr[j]))
+                            if (part != 1)
+                                return false;
+                            if (!Tools.isDigit(timeStr[j]))
                                 return false;
                             hour = hour * 10 + timeStr[j] - '0';
                             break;
                         }
                     case 's':
                         {
-                            if (!Tools.IsDigit(timeStr[j]))
+                            if (part != 1)
+                                return false;
+                            if (!Tools.isDigit(timeStr[j]))
                                 return false;
                             seconds = seconds * 10 + timeStr[j] - '0';
                             break;
                         }
                     case ':':
                         {
+                            if (part != 1)
+                                return false;
                             if (format[i] != timeStr[j])
                                 return false;
                             break;
                         }
                     case '/':
                         {
+                            if (part != 0)
+                                return false;
                             if (format[i] != timeStr[j])
                                 return false;
                             break;
@@ -400,21 +423,32 @@ namespace NiL.JS.BaseLibrary
                         }
                     case 't':
                         {
-                            part++;
+                            if ('t' != char.ToLowerInvariant(timeStr[j]))
+                                return false;
+                            if (part == 0)
+                                part++;
+                            else
+                                return false;
                             break;
                         }
                     case '.':
                         {
+                            if ('.' != timeStr[j])
+                            {
+                                if (timeStr[j] == 'z')
+                                    break;
+                                return false;
+                            }
                             if (part != 1)
                                 return false;
                             else
                                 break;
                         }
-                    case 'z': break;
-                    default: return false;
+                    default:
+                        return false;
                 }
             }
-            if (j < timeStr.Length)
+            if (j < timeStr.Length && char.ToLowerInvariant(timeStr[j]) != 'z')
                 return false;
             if (month == int.MinValue)
                 month = 1;
@@ -422,24 +456,20 @@ namespace NiL.JS.BaseLibrary
                 day = 1;
             if (year < 100)
                 year += (DateTime.Now.Year / 100) * 100;
+            if (seconds > 99)
+            {
+                milliseconds = seconds % 1000;
+                seconds /= 1000;
+            }
             time = dateToMilliseconds(year, month - 1, day, hour, minutes, seconds, milliseconds);
-            timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
+            timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(new DateTime(time * 10000)).Ticks / 10000;
             time += timeZoneOffset;
             return true;
         }
 
         private static bool tryParse(string timeString, out long time, out long tzo)
         {
-            return parseByFormat("YYYY-MM-DDTHH:MM:SS.SSSZ", timeString, out time, out tzo)
-             || parseByFormat("YYYY-MM-DDTHH:MM:SS.SSS", timeString, out time, out tzo)
-             || parseByFormat("YYYY-MM-DDTHH:MM:SSZ", timeString, out time, out tzo)
-             || parseByFormat("YYYY-MM-DDTHH:MM:SS", timeString, out time, out tzo)
-             || parseByFormat("YYYY-MM-DDTHH:MM", timeString, out time, out tzo)
-             || parseByFormat("YYYY-MM-DDTHH", timeString, out time, out tzo)
-             || parseByFormat("YYYY-MM-DD", timeString, out time, out tzo)
-             || parseByFormat("YYYY-MM", timeString, out time, out tzo)
-             || parseByFormat("YYYY", timeString, out time, out tzo)
-             || parseSelf(timeString, out time, out tzo);
+            return parseIso8601(timeString, out time, out tzo) || parseSelf(timeString, out time, out tzo);
         }
 
         private static bool isLeap(int year)
@@ -457,13 +487,6 @@ namespace NiL.JS.BaseLibrary
         {
             time = DateTime.Now.Ticks / 10000;
             timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
-        }
-
-        [Hidden]
-        public Date(long ticks, long timeZoneOffset)
-        {
-            time = ticks / 10000;
-            timeZoneOffset = timeZoneOffset / 10000;
         }
 
         [DoNotEnumerate]
@@ -1190,7 +1213,7 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-#region Do not remove
+        #region Do not remove
 
         [Hidden]
         public override bool Equals(object obj)
@@ -1204,7 +1227,7 @@ namespace NiL.JS.BaseLibrary
             return base.GetHashCode();
         }
 
-#endregion
+        #endregion
 
     }
 }
