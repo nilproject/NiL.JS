@@ -435,14 +435,23 @@ namespace NiL.JS.BaseLibrary
                         {
                             if ('.' != timeStr[j])
                             {
-                                if (timeStr[j] == 'z')
+                                if (char.ToLowerInvariant(timeStr[j]) == 'z')
+                                {
+                                    j = timeStr.Length;
+                                    i = format.Length;
                                     break;
+                                }
                                 return false;
                             }
                             if (part != 1)
                                 return false;
                             else
                                 break;
+                        }
+                    case '|':
+                        {
+                            j--;
+                            break;
                         }
                     default:
                         return false;
