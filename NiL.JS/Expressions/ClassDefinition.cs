@@ -64,7 +64,8 @@ namespace NiL.JS.Expressions
             int i = index;
             if (!Parser.Validate(code, "class", ref i))
                 return null;
-            while (char.IsWhiteSpace(code[i])) i++;
+            while (char.IsWhiteSpace(code[i]))
+                i++;
             string name = null;
             Expression bce = null;
             if (!Parser.Validate(code, "extends ", i))
@@ -73,7 +74,9 @@ namespace NiL.JS.Expressions
                 if (!Parser.ValidateName(code, ref i, true))
                     ExceptionsHelper.Throw(new SyntaxError("Invalid class name"));
                 name = code.Substring(n, i - n);
-                do i++; while (char.IsWhiteSpace(code[i]));
+                do
+                    i++;
+                while (char.IsWhiteSpace(code[i]));
             }
             if (Parser.Validate(code, "extends ", ref i))
             {
@@ -85,7 +88,8 @@ namespace NiL.JS.Expressions
                     bce = new ConstantDefinition(JSValue.Null) { Position = n, Length = 4 };
                 else
                     bce = new GetVariableExpression(baseClassName, state.functionsDepth);
-                while (char.IsWhiteSpace(code[i])) i++;
+                while (char.IsWhiteSpace(code[i]))
+                    i++;
             }
             if (code[i] != '{')
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(code, i, 1)));
@@ -94,9 +98,13 @@ namespace NiL.JS.Expressions
             var oldStrict = state.strict;
             state.strict = true;
             var flds = new Dictionary<string, CodeNode>();
+            var oldCodeContext = state.CodeContext;
+            state.CodeContext |= CodeContext.InClassDefenition;
             while (code[i] != '}')
             {
-                do i++; while (char.IsWhiteSpace(code[i]) || code[i] == ';');
+                do
+                    i++;
+                while (char.IsWhiteSpace(code[i]) || code[i] == ';');
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
@@ -160,17 +168,23 @@ namespace NiL.JS.Expressions
                     if (fieldName == null)
                         ExceptionsHelper.Throw((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                     if (flds.ContainsKey(fieldName))
-                        ExceptionsHelper.Throw(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
+                        ExceptionsHelper.Throw(new SyntaxError("Trying to redefinition field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
                     if (fieldName == "constructor")
+                    {
+                        if (explicitCtor)
+                            ExceptionsHelper.ThrowSyntaxError("Trying to redefinition constructor", state.Code, i);
+                        state.CodeContext |= CodeContext.InClassConstructor;
                         explicitCtor = true;
+                    }
                     i = s;
                     var initializator = FunctionDefinition.Parse(state, ref i, FunctionType.Method) as FunctionDefinition;
+                    if (explicitCtor)
+                        state.CodeContext = oldCodeContext | CodeContext.InClassDefenition;
                     if (initializator == null)
                         ExceptionsHelper.Throw(new SyntaxError());
                     flds[fieldName] = initializator;
                 }
             }
-            state.strict = oldStrict;
             if (!explicitCtor)
             {
                 string ctorCode;
@@ -179,8 +193,14 @@ namespace NiL.JS.Expressions
                     ctorCode = "constructor(...args) { super(...args); }";
                 else
                     ctorCode = "constructor(...args) { }";
-                flds["constructor"] = FunctionDefinition.Parse(new ParsingState(ctorCode, ctorCode, null), ref ctorIndex, FunctionType.Method);
+                flds["constructor"] = FunctionDefinition.Parse(new ParsingState(ctorCode, ctorCode, null)
+                {
+                    strict = true,
+                    CodeContext = CodeContext.InClassConstructor | CodeContext.InClassDefenition
+                }, ref ctorIndex, FunctionType.Method);
             }
+            state.CodeContext = oldCodeContext;
+            state.strict = oldStrict;
             index = i + 1;
             return new ClassDefinition(name, bce, flds);
         }

@@ -20,7 +20,9 @@ namespace NiL.JS.Core
         InLoop = 8,
         InWith = 16,
         InEval = 32,
-        InExpression = 64
+        InExpression = 64,
+        InClassDefenition = 128,
+        InClassConstructor = 256
     }
 
 #if !PORTABLE

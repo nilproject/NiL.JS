@@ -315,7 +315,7 @@ namespace NiL.JS.BaseLibrary
             var milliseconds = 0;
             time = 0;
             timeZoneOffset = 0;
-            int part = 0; // 0 - дата, 1 - время, 2 - смещение
+            int part = 0; // 0 - дата, 1 - время, 2 - миллисекунды
             int i = 0, j = 0;
             for (; i < format.Length; i++, j++)
             {
@@ -333,14 +333,14 @@ namespace NiL.JS.BaseLibrary
                         {
                             if (part != 0)
                                 return false;
-                            if (!Tools.isDigit(timeStr[j]))
+                            if (!Tools.IsDigit(timeStr[j]))
                                 return false;
                             year = year * 10 + timeStr[j] - '0';
                             break;
                         }
                     case 'm':
                         {
-                            if (!Tools.isDigit(timeStr[j]))
+                            if (!Tools.IsDigit(timeStr[j]))
                                 return false;
                             switch (part)
                             {
@@ -365,7 +365,7 @@ namespace NiL.JS.BaseLibrary
                         {
                             if (part != 0)
                                 return false;
-                            if (!Tools.isDigit(timeStr[j]))
+                            if (!Tools.IsDigit(timeStr[j]))
                                 return false;
                             if (day == int.MinValue)
                                 day = 0;
@@ -376,18 +376,21 @@ namespace NiL.JS.BaseLibrary
                         {
                             if (part != 1)
                                 return false;
-                            if (!Tools.isDigit(timeStr[j]))
+                            if (!Tools.IsDigit(timeStr[j]))
                                 return false;
                             hour = hour * 10 + timeStr[j] - '0';
                             break;
                         }
                     case 's':
                         {
-                            if (part != 1)
+                            if (part < 1)
                                 return false;
-                            if (!Tools.isDigit(timeStr[j]))
+                            if (!Tools.IsDigit(timeStr[j]))
                                 return false;
-                            seconds = seconds * 10 + timeStr[j] - '0';
+                            if (part == 1)
+                                seconds = seconds * 10 + timeStr[j] - '0';
+                            else
+                                milliseconds = milliseconds * 10 + timeStr[j] - '0';
                             break;
                         }
                     case ':':
@@ -435,14 +438,26 @@ namespace NiL.JS.BaseLibrary
                         {
                             if ('.' != timeStr[j])
                             {
-                                if (timeStr[j] == 'z')
+                                if (char.ToLowerInvariant(timeStr[j]) == 'z')
+                                {
+                                    j = timeStr.Length;
+                                    i = format.Length;
                                     break;
+                                }
                                 return false;
                             }
                             if (part != 1)
                                 return false;
                             else
+                            {
+                                part++;
                                 break;
+                            }
+                        }
+                    case '|':
+                        {
+                            j--;
+                            break;
                         }
                     default:
                         return false;
@@ -456,11 +471,6 @@ namespace NiL.JS.BaseLibrary
                 day = 1;
             if (year < 100)
                 year += (DateTime.Now.Year / 100) * 100;
-            if (seconds > 99)
-            {
-                milliseconds = seconds % 1000;
-                seconds /= 1000;
-            }
             time = dateToMilliseconds(year, month - 1, day, hour, minutes, seconds, milliseconds);
             timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(new DateTime(time * 10000)).Ticks / 10000;
             time += timeZoneOffset;
@@ -487,6 +497,13 @@ namespace NiL.JS.BaseLibrary
         {
             time = DateTime.Now.Ticks / 10000;
             timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
+        }
+
+        [Hidden]
+        public Date(long ticks, long timeZoneOffset)
+        {
+            time = ticks / 10000;
+            timeZoneOffset = timeZoneOffset / 10000;
         }
 
         [DoNotEnumerate]
