@@ -315,7 +315,7 @@ namespace NiL.JS.BaseLibrary
             var milliseconds = 0;
             time = 0;
             timeZoneOffset = 0;
-            int part = 0; // 0 - дата, 1 - время, 2 - смещение
+            int part = 0; // 0 - дата, 1 - время, 2 - миллисекунды
             int i = 0, j = 0;
             for (; i < format.Length; i++, j++)
             {
@@ -383,11 +383,14 @@ namespace NiL.JS.BaseLibrary
                         }
                     case 's':
                         {
-                            if (part != 1)
+                            if (part < 1)
                                 return false;
                             if (!Tools.isDigit(timeStr[j]))
                                 return false;
-                            seconds = seconds * 10 + timeStr[j] - '0';
+                            if (part == 1)
+                                seconds = seconds * 10 + timeStr[j] - '0';
+                            else
+                                milliseconds = milliseconds * 10 + timeStr[j] - '0';
                             break;
                         }
                     case ':':
@@ -446,7 +449,10 @@ namespace NiL.JS.BaseLibrary
                             if (part != 1)
                                 return false;
                             else
+                            {
+                                part++;
                                 break;
+                            }
                         }
                     case '|':
                         {
@@ -465,11 +471,6 @@ namespace NiL.JS.BaseLibrary
                 day = 1;
             if (year < 100)
                 year += (DateTime.Now.Year / 100) * 100;
-            if (seconds > 99)
-            {
-                milliseconds = seconds % 1000;
-                seconds /= 1000;
-            }
             time = dateToMilliseconds(year, month - 1, day, hour, minutes, seconds, milliseconds);
             timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(new DateTime(time * 10000)).Ticks / 10000;
             time += timeZoneOffset;
@@ -869,7 +870,7 @@ namespace NiL.JS.BaseLibrary
                 || (time.valueType == JSObjectType.Double && (double.IsNaN(time.dValue) || double.IsInfinity(time.dValue))))
             {
                 error = true;
-                time = 0;
+                this.time = 0;
             }
             else
             {
