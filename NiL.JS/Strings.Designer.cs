@@ -88,6 +88,15 @@ namespace NiL.JS {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на &quot;Invalid left-hand side in assignment.&quot;.
+        /// </summary>
+        internal static string InvalidLefthandSideInAssignment {
+            get {
+                return ResourceManager.GetString("InvalidLefthandSideInAssignment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Invalid property name at {0}.
         /// </summary>
         internal static string InvalidPropertyName {

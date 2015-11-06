@@ -28,8 +28,8 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        internal GetMemberOperator(Expression obj, Expression fieldName)
-            : base(obj, fieldName, false)
+        internal GetMemberOperator(Expression source, Expression fieldName)
+            : base(source, fieldName, false)
         {
         }
 
@@ -74,11 +74,11 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseGetMember = true;
-            base.Build(ref _this, depth, variables, state, message, statistic, opts);
+            base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
             if (second is ConstantDefinition)
             {
                 cachedMemberName = second.Evaluate(null);

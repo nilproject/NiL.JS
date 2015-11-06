@@ -6,6 +6,7 @@ using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
+using System.Text;
 
 namespace NiL.JS.Statements
 {
@@ -222,31 +223,31 @@ namespace NiL.JS.Statements
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
-                        throw new ApplicationException("NaN was rewrite");
+                        throw new ApplicationException("NaN has been rewitten");
                 if (JSObject.undefined.valueType != JSValueType.Undefined)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
-                        throw new ApplicationException("undefined was rewrite");
+                        throw new ApplicationException("undefined has been rewitten");
                 if (JSObject.notExists.IsExists)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
-                        throw new ApplicationException("notExists was rewrite");
+                        throw new ApplicationException("notExists has been rewitten");
                 if (BaseLibrary.Boolean.False.valueType != JSValueType.Bool
                     || BaseLibrary.Boolean.False.iValue != 0
                     || BaseLibrary.Boolean.False.attributes != JSValueAttributesInternal.SystemObject)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
-                        throw new ApplicationException("Boolean.False was rewrite");
+                        throw new ApplicationException("Boolean.False has been rewitten");
                 if (BaseLibrary.Boolean.True.valueType != JSValueType.Bool
                     || BaseLibrary.Boolean.True.iValue != 1
                     || BaseLibrary.Boolean.True.attributes != JSValueAttributesInternal.SystemObject)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
-                        throw new ApplicationException("Boolean.True was rewrite");
+                        throw new ApplicationException("Boolean.True has been rewitten");
 #endif
                 if (context.abortType != AbortType.None)
                     break;
@@ -269,7 +270,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (builded)
                 return false;
@@ -279,11 +280,11 @@ namespace NiL.JS.Statements
                 var fe = lines[i] as EntityDefinition;
                 if (fe != null)
                 {
-                    Parser.Build(ref lines[i], (state & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? CodeContext.Strict : CodeContext.None), message, statistic, opts);
+                    Parser.Build(ref lines[i], (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, statistic, opts);
                     if (fe.Hoist)
                     {
                         lines[i] = null;
-                        fe.Register(variables, state);
+                        fe.Register(variables, codeContext);
                     }
                 }
             }
@@ -299,7 +300,7 @@ namespace NiL.JS.Statements
                         if (unreachable && message != null)
                             message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position, lines[i].Length), "Unreachable code detected.");
                         var cn = lines[i];
-                        Parser.Build(ref cn, (state & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, state | (this.strict ? CodeContext.Strict : CodeContext.None), message, statistic, opts);
+                        Parser.Build(ref cn, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, depth), variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, statistic, opts);
                         lines[i] = cn;
                         unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement || cn is ThrowStatement;
                     }
@@ -420,13 +421,13 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        public string ToString(bool parsed)
+        public string ToString(bool linewiseStringify)
         {
-            if (parsed)
+            if (linewiseStringify)
             {
                 if (lines == null || lines.Length == 0)
                     return "{ }";
-                string res = " {" + Environment.NewLine;
+                StringBuilder res = new StringBuilder().Append(" {").Append(Environment.NewLine);
                 var replp = Environment.NewLine;
                 var replt = Environment.NewLine + "  ";
                 for (int i = lines.Length; i-- > 0; )
@@ -435,9 +436,9 @@ namespace NiL.JS.Statements
                     if (lc[0] == '(')
                         lc = lc.Substring(1, lc.Length - 2);
                     lc = lc.Replace(replp, replt);
-                    res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
+                    res.Append("  ").Append(lc).Append(lc[lc.Length - 1] != '}' ? ";" : "").Append(Environment.NewLine);
                 }
-                return res + "}";
+                return res.Append("}").ToString();
             }
             else
                 return '{' + Code + '}';

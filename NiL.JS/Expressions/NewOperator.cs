@@ -12,72 +12,6 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class NewOperator : Expression
     {
-        private sealed class ThisSetter : Expression
-        {
-            private CodeNode source;
-            public JSValue lastThisBind;
-
-            internal override bool ResultInTempContainer
-            {
-                get { return false; }
-            }
-
-            public ThisSetter(CodeNode source)
-            {
-                this.source = source;
-            }
-
-            public override bool ContextIndependent
-            {
-                get
-                {
-                    return false;
-                }
-            }
-
-            protected override CodeNode[] getChildsImpl()
-            {
-                throw new InvalidOperationException();
-            }
-
-            public override JSValue Evaluate(Context context)
-            {
-                JSValue ctor = source.Evaluate(context);
-                if (ctor.valueType != JSValueType.Function && !(ctor.valueType == JSValueType.Object && ctor.oValue is Function))
-                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.TypeError(ctor + " is not callable")));
-                if (ctor.oValue is EvalFunction
-                    || ctor.oValue is ExternalFunction
-                    || ctor.oValue is MethodProxy)
-                    ExceptionsHelper.Throw(new TypeError("Function \"" + (ctor.oValue as Function).name + "\" is not a constructor."));
-
-                JSValue _this = new JSObject() { valueType = JSValueType.Object, oValue = typeof(NewOperator) };
-                context.objectSource = _this;
-                lastThisBind = _this;
-                return ctor;
-            }
-
-            public override string ToString()
-            {
-                return source.ToString();
-            }
-
-            public override T Visit<T>(Visitor<T> visitor)
-            {
-                if (source is GetVariableExpression)
-                    return visitor.Visit(source as GetVariableExpression);
-                if (source is GetMemberOperator)
-                    return visitor.Visit(source as GetMemberOperator);
-                if (source is CommaOperator)
-                    return visitor.Visit(source as CommaOperator);
-                return visitor.Visit(source);
-            }
-
-            internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
-            {
-                return source.Build(ref source, depth, variables, state, message, statistic, opts);
-            }
-        }
-
         public override bool ContextIndependent
         {
             get
@@ -98,13 +32,11 @@ namespace NiL.JS.Expressions
                 return PredictedType.Object;
             }
         }
-
-        private ThisSetter thisSetter;
-
-        public NewOperator(Expression first, Expression[] arguments)
-            : base(null, null, false)
+        
+        internal NewOperator(CallOperator call)
+            : base(call, null, false)
         {
-            this.first = new CallOperator(thisSetter = new ThisSetter(first), arguments);
+
         }
 
         public static CodeNode Parse(ParsingState state, ref int index)
@@ -121,12 +53,12 @@ namespace NiL.JS.Expressions
                 ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
             }
             if (result is CallOperator)
-                result = new NewOperator((result as Expression).FirstOperand, (result as CallOperator).Arguments) { Position = index, Length = i - index };
+                result = new NewOperator(result as CallOperator) { Position = index, Length = i - index };
             else
             {
                 if (state.message != null)
                     state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, index, 0), "Missed brackets in a constructor invocation.");
-                result = new Expressions.NewOperator(result, new Expression[0]) { Position = index, Length = i - index };
+                result = new Expressions.NewOperator(new CallOperator(result, new Expression[0]) { Position = result.Position, Length = result.Length }) { Position = index, Length = i - index };
             }
             index = i;
             return result;
@@ -134,26 +66,18 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(NiL.JS.Core.Context context)
         {
-            var prevTB = thisSetter.lastThisBind;
-            try
-            {
-                thisSetter.lastThisBind = null;
-                var temp = first.Evaluate(context);
-                if (temp.valueType >= JSValueType.Object && temp.oValue != null)
-                    return temp;
-                return thisSetter.lastThisBind;
-            }
-            finally
-            {
-                thisSetter.lastThisBind = prevTB;
-            }
+            throw new InvalidOperationException();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (message != null && depth <= 1)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use NewOperator for side effect");
-            return base.Build(ref _this, depth, variables, state, message, statistic, opts);
+
+            (first as CallOperator).construct = true;
+            _this = first;
+
+            return true;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

@@ -36,11 +36,11 @@ namespace NiL.JS.Expressions
                 return second.Evaluate(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (message != null && depth <= 1)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use logical operator as a conditional statement");
-            return base.Build(ref _this, depth, variables, state | CodeContext.Conditional, message, statistic, opts);
+            return base.Build(ref _this, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

@@ -116,11 +116,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             depth = System.Math.Max(1, depth);
-            Parser.Build(ref body, depth, variables, state | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
-            Parser.Build(ref condition, 2, variables, state | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
                 if (message != null)

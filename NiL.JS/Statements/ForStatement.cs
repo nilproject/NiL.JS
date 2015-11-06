@@ -171,22 +171,22 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref init, 1, variables, state, message, statistic, opts);
+            Parser.Build(ref init, 1, variables, codeContext, message, statistic, opts);
             if ((opts & Options.SuppressUselessStatementsElimination) == 0
                 && init is VariableDefineStatement
                 && !(init as VariableDefineStatement).isConst
                 && (init as VariableDefineStatement).initializators.Length == 1)
                 init = (init as VariableDefineStatement).initializators[0];
-            Parser.Build(ref condition, 2, variables, state | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
             if (post != null)
             {
-                Parser.Build(ref post, 1, variables, state | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref post, 1, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
                 if (post == null && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, state | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
+            Parser.Build(ref body, System.Math.Max(1, depth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
             if (condition == null)
                 condition = new ConstantDefinition(NiL.JS.BaseLibrary.Boolean.True);
             else if ((condition is Expressions.Expression)
@@ -225,7 +225,7 @@ namespace NiL.JS.Statements
                     && post is NiL.JS.Expressions.IncrementOperator
                     && ((post as NiL.JS.Expressions.IncrementOperator).FirstOperand as VariableReference).descriptor == variable.descriptor)
                 {
-                    if (variable.defineDepth >= 0 && variable.descriptor.defineDepth >= 0)
+                    if (variable.defineFunctionDepth >= 0 && variable.descriptor.defineDepth >= 0)
                     {
                         if (init is NiL.JS.Expressions.AssignmentOperator
                             && (init as NiL.JS.Expressions.AssignmentOperator).FirstOperand is GetVariableExpression

@@ -78,9 +78,9 @@ namespace NiL.JS.Core.Functions
             if (ownew && owonew)
                 throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
             if (ownew)
-                RequireNewKeywordLevel = RequireNewKeywordLevel.OnlyWithNew;
+                RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
             if (owonew)
-                RequireNewKeywordLevel = RequireNewKeywordLevel.OnlyWithoutNew;
+                RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
 
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
@@ -133,62 +133,56 @@ namespace NiL.JS.Core.Functions
             return proxy.DeleteMember(name) && __proto__.DeleteMember(name);
         }
 
-        [Hidden]
-        public override JSValue Invoke(JSValue thisOverride, Arguments argsObj)
+        protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
-            bool bynew = false;
-            if (thisOverride != null)
-                bynew = thisOverride.oValue == typeof(Expressions.NewOperator) as object;
-            if (bynew)
+            var objc = targetObject as ObjectContainer;
+            if (objc != null) // new
             {
-                if (RequireNewKeywordLevel == RequireNewKeywordLevel.OnlyWithoutNew)
-                    ExceptionsHelper.Throw(new TypeError(string.Format(Strings.InvalidTryToCreateWithNew, proxy.hostedType.Name)));
+
             }
             else
             {
-                if (RequireNewKeywordLevel == RequireNewKeywordLevel.OnlyWithNew)
-                    ExceptionsHelper.Throw(new TypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, proxy.hostedType.Name)));
-
                 if (proxy.hostedType == typeof(Date))
                     return new Date().ToString();
             }
+
             try
             {
                 object obj;
                 if (proxy.hostedType == typeof(NiL.JS.BaseLibrary.Array))
                 {
-                    if (argsObj == null)
+                    if (arguments == null)
                         obj = new NiL.JS.BaseLibrary.Array();
                     else
-                        switch (argsObj.length)
+                        switch (arguments.length)
                         {
                             case 0:
                                 obj = new NiL.JS.BaseLibrary.Array();
                                 break;
                             case 1:
                                 {
-                                    switch (argsObj.a0.valueType)
+                                    switch (arguments.a0.valueType)
                                     {
                                         case JSValueType.Int:
-                                            obj = new NiL.JS.BaseLibrary.Array(argsObj.a0.iValue);
+                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0.iValue);
                                             break;
                                         case JSValueType.Double:
-                                            obj = new NiL.JS.BaseLibrary.Array(argsObj.a0.dValue);
+                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0.dValue);
                                             break;
                                         default:
-                                            obj = new NiL.JS.BaseLibrary.Array(argsObj);
+                                            obj = new NiL.JS.BaseLibrary.Array(arguments);
                                             break;
                                     }
                                     break;
                                 }
                             default:
-                                obj = new NiL.JS.BaseLibrary.Array(argsObj);
+                                obj = new NiL.JS.BaseLibrary.Array(arguments);
                                 break;
                         }
                 }
                 else
                 {
-                    if ((argsObj == null || argsObj.length == 0)
+                    if ((arguments == null || arguments.length == 0)
 #if PORTABLE
  && proxy.hostedType.GetTypeInfo().IsValueType)
 #else
@@ -198,23 +192,31 @@ namespace NiL.JS.Core.Functions
                     else
                     {
                         object[] args = null;
-                        MethodProxy constructor = findConstructor(argsObj, ref args);
+                        MethodProxy constructor = findConstructor(arguments, ref args);
                         if (constructor == null)
                             ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created.")));
-                        obj = constructor.InvokeImpl(null, args, argsObj == null ? constructor.parameters.Length != 0 ? new Arguments() : null : argsObj);
+                        obj = constructor.InvokeImpl(
+                            null,
+                            args,
+                            arguments == null ? constructor.parameters.Length != 0 ? new Arguments()
+                                                                                   : null
+                                              : arguments);
                     }
                 }
+
                 JSValue res = obj as JSValue;
 
-                // Здесь нельзя возвращать контейнер с ValueType < Object, иначе из New выйдет служебный экземпляр NewMarker
-                if (bynew)
+                if (objc != null)
                 {
                     if (res != null)
                     {
                         // Для Number, Boolean и String
                         if (res.valueType < JSValueType.Object)
                         {
-                            res = new ObjectContainer(obj, res.__proto__);
+                            objc.instance = obj;
+                            if (objc.__prototype == null)
+                                objc.__prototype = res.__proto__;
+                            res = objc;
                         }
                         else if (res.oValue is JSValue)
                         {
@@ -227,13 +229,13 @@ namespace NiL.JS.Core.Functions
                     }
                     else
                     {
-                        res = new ObjectContainer(obj, TypeProxy.GetPrototype(proxy.hostedType));
-                        //if (res.fields == null)
-                        //    res.fields = createFields();
-                        // из-за того, что GetMember сам дотягивается до объекта, можно попробовать убрать создание филдов
-                        res.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
-                        if (obj is Date)
-                            res.valueType = JSValueType.Date;
+                        objc.instance = obj;
+
+                        objc.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
+                        if (obj.GetType() == typeof(Date))
+                            objc.valueType = JSValueType.Date;
+
+                        res = objc;
                     }
                 }
                 else
@@ -258,6 +260,11 @@ namespace NiL.JS.Core.Functions
 #endif
                 throw e.InnerException;
             }
+        }
+
+        protected internal override JSValue ConstructObject()
+        {
+            return new ObjectContainer(null) { __prototype = TypeProxy.GetPrototype(proxy.hostedType) };
         }
 
         [Hidden]

@@ -153,7 +153,7 @@ namespace NiL.JS.BaseLibrary
                 var value = src.GetMember(index, false, MemberScope.Сommon);
                 if (value.valueType == JSValueType.Property)
                 {
-                    value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, dummyArgs);
+                    value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Call(src, dummyArgs);
                     dummyArgs.Reset();
                 }
                 this[(int)(i + offset)] = value;

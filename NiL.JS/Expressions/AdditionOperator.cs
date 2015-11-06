@@ -284,9 +284,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            var res = base.Build(ref _this, depth, variables, state, message, statistic, opts);
+            var res = base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
             if (!res && _this == this)
             {
                 if (first is StringConcatenationExpression)

@@ -69,7 +69,7 @@ namespace NiL.JS.Core
         Reassign = 1 << 25,
         IntrinsicFunction = 1 << 26,
         /// <summary>
-        /// Аттрибуты, не передающиеся при присваивании
+        /// Аттрибуты, которые передаются при при присваивании
         /// </summary>
         PrivateAttributes = Immutable | ProxyPrototype | Field | IntrinsicFunction,
     }
@@ -771,9 +771,9 @@ namespace NiL.JS.Core
 #endif
             if (this == value || (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) != 0)
                 return;
-            this.attributes =
-                (this.attributes & ~JSValueAttributesInternal.PrivateAttributes)
-                | (value.attributes & JSValueAttributesInternal.PrivateAttributes);
+            //this.attributes =
+            //    (this.attributes & ~JSValueAttributesInternal.PrivateAttributes)
+            //    | (value.attributes & JSValueAttributesInternal.PrivateAttributes);
             this.valueType = value.valueType | JSValueType.Undefined;
             this.iValue = value.iValue;
             this.dValue = value.dValue;
@@ -805,7 +805,7 @@ namespace NiL.JS.Core
                 JSValue res = null;
                 if (tpvs.valueType == JSValueType.Function)
                 {
-                    res = (tpvs.oValue as NiL.JS.BaseLibrary.Function).Invoke(this, null);
+                    res = (tpvs.oValue as NiL.JS.BaseLibrary.Function).Call(this, null);
                     if (res.valueType == JSValueType.Object)
                     {
                         if (res.oValue is NiL.JS.BaseLibrary.String)
@@ -817,7 +817,7 @@ namespace NiL.JS.Core
                 tpvs = GetMember(func1);
                 if (tpvs.valueType == JSValueType.Function)
                 {
-                    res = (tpvs.oValue as NiL.JS.BaseLibrary.Function).Invoke(this, null);
+                    res = (tpvs.oValue as NiL.JS.BaseLibrary.Function).Call(this, null);
                     if (res.valueType == JSValueType.Object)
                     {
                         if (res.oValue is NiL.JS.BaseLibrary.String)

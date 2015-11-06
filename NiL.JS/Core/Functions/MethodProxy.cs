@@ -60,7 +60,8 @@ namespace NiL.JS.Core.Functions
         public MethodProxy()
         {
             parameters = new ParameterInfo[0];
-            implementation = (a, b, c) => null;
+            implementation = delegate { return null; };
+            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
         public MethodProxy(MethodBase methodBase, object hardTarget)
@@ -111,6 +112,7 @@ namespace NiL.JS.Core.Functions
 #else
                 makeMethodOverEmit(methodInfo);
 #endif
+                RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
             }
             else if (methodBase is ConstructorInfo)
                 makeConstructorOverExpression(methodBase as ConstructorInfo);
@@ -362,13 +364,28 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        internal override JSValue InternalInvoke(JSValue self, Expressions.Expression[] arguments, NiL.JS.Core.Context initiator, bool withSpread)
+        internal override JSValue InternalInvoke(JSValue targetObject, Expressions.Expression[] arguments, NiL.JS.Core.Context initiator, bool withSpread, bool withNew)
         {
+            if (withNew)
+            {
+                if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
+                {
+                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
+                }
+            }
+            else
+            {
+                if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithNewOnly)
+                {
+                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
+                }
+            }
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
-                return Invoke(self, null);
+                return Invoke(withNew, correctTargetObject(targetObject, creator.body.strict), null);
+
             if (raw || withSpread)
             {
-                return base.InternalInvoke(self, arguments, initiator, true);
+                return base.InternalInvoke(targetObject, arguments, initiator, true, withNew);
             }
             else
             {
@@ -378,7 +395,7 @@ namespace NiL.JS.Core.Functions
                 args = new object[targetCount];
                 for (int i = targetCount; i-- > 0; )
                 {
-                    var obj = arguments.Length > i ? Expressions.CallOperator.PrepareArg(initiator, arguments[i]) : notExists;
+                    var obj = arguments.Length > i ? Tools.PrepareArg(initiator, arguments[i]) : notExists;
                     if (obj.IsExists)
                     {
                         args[i] = marshal(obj, parameters[i].ParameterType);
@@ -404,7 +421,7 @@ namespace NiL.JS.Core.Functions
                         }
                     }
                 }
-                return Interop.TypeProxy.Proxy(InvokeImpl(self, args, null));
+                return Interop.TypeProxy.Proxy(InvokeImpl(targetObject, args, null));
             }
         }
 
@@ -519,9 +536,9 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-        public override JSValue Invoke(JSValue thisBind, NiL.JS.Core.Arguments args)
+        protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
-            return Interop.TypeProxy.Proxy(InvokeImpl(thisBind, null, args));
+            return Interop.TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
         }
 
         private static object[] convertArray(NiL.JS.BaseLibrary.Array array)

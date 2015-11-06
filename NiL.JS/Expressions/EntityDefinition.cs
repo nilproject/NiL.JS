@@ -28,7 +28,7 @@ namespace NiL.JS.Expressions
 
         public EntityReference(EntityDefinition owner)
         {
-            defineDepth = -1;
+            defineFunctionDepth = -1;
             this.owner = owner;
         }
 
@@ -63,25 +63,25 @@ namespace NiL.JS.Expressions
             reference = new EntityReference(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return false;
         }
 
-        internal virtual void Register(Dictionary<string, VariableDescriptor> variables, CodeContext state)
+        internal virtual void Register(Dictionary<string, VariableDescriptor> variables, CodeContext codeContext)
         {
-            if ((state & CodeContext.InExpression) == 0 && name != null) // имя не задано только для случая Function("<some string>")
+            if ((codeContext & CodeContext.InExpression) == 0 && name != null) // имя не задано только для случая Function("<some string>")
             {
                 VariableDescriptor desc = null;
                 if (!variables.TryGetValue(name, out desc) || desc == null)
-                    variables[name] = Reference.descriptor ?? new VariableDescriptor(Reference, true, Reference.defineDepth);
+                    variables[name] = Reference.descriptor ?? new VariableDescriptor(Reference, true, Reference.defineFunctionDepth);
                 else
                 {
                     variables[name] = Reference.descriptor;
                     for (var j = 0; j < desc.references.Count; j++)
                         desc.references[j].descriptor = Reference.descriptor;
                     Reference.descriptor.references.AddRange(desc.references);
-                    Reference.descriptor.captured = Reference.descriptor.captured || Reference.descriptor.references.FindIndex(x => x.defineDepth > x.descriptor.defineDepth) != -1;
+                    Reference.descriptor.captured = Reference.descriptor.captured || Reference.descriptor.references.FindIndex(x => x.defineFunctionDepth > x.descriptor.defineDepth) != -1;
                 }
             }
         }

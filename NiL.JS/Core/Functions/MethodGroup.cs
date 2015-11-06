@@ -60,9 +60,9 @@ namespace NiL.JS.Core.Functions
             return TypeProxy.GetPrototype(typeof(Function));
         }
 
-        public override JSValue  Invoke(JSValue  thisBind, NiL.JS.Core.Arguments args)
+        protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
-            int l = args == null ? 0 : args.length;
+            int l = arguments == null ? 0 : arguments.length;
             object[] cargs = null;
 
             for (int pass = 0; pass < passCount; pass++)
@@ -70,12 +70,12 @@ namespace NiL.JS.Core.Functions
                 for (var i = 0; i < methods.Length; i++)
                 {
                     if (methods[i].Parameters.Length == 1 && methods[i].Parameters[0].ParameterType == typeof(Arguments))
-                        return TypeProxy.Proxy(methods[i].InvokeImpl(thisBind, null, args));
+                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, null, arguments));
                     if (pass == 1 || methods[i].Parameters.Length == l)
                     {
                         if (l != 0)
                         {
-                            cargs = methods[i].ConvertArgs(args, pass == 1);
+                            cargs = methods[i].ConvertArgs(arguments, pass == 1);
                             for (var j = cargs.Length; j-- > 0; )
                             {
                                 var prmType = methods[i].Parameters[j].ParameterType;
@@ -88,7 +88,7 @@ namespace NiL.JS.Core.Functions
                             if (cargs == null)
                                 continue;
                         }
-                        return TypeProxy.Proxy(methods[i].InvokeImpl(thisBind, cargs, args));
+                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, cargs, arguments));
                     }
                 }
             }

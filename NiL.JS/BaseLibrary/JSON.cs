@@ -176,11 +176,11 @@ namespace NiL.JS.BaseLibrary
                     {
                         revargs[0] = t.fieldName;
                         revargs[1] = t.value;
-                        var value = reviewer.Invoke(revargs);
+                        var value = reviewer.Call(revargs);
                         if (value.IsDefined)
                         {
                             if (t.container != null)
-                                t.container.SetMember(t.fieldName, value, false);
+                                t.container.GetMember(t.fieldName, true, MemberScope.Own).Assign(value);
                             else
                             {
                                 t.value = value;
@@ -189,7 +189,7 @@ namespace NiL.JS.BaseLibrary
                         }
                     }
                     else if (t.container != null)
-                        t.container.SetMember(t.fieldName, t.value, false);
+                        t.container.GetMember(t.fieldName, true, MemberScope.Own).Assign(t.value);
                     else
                         stack.Push(t);
                 }
@@ -360,7 +360,7 @@ namespace NiL.JS.BaseLibrary
                 args[0].oValue = key;
                 args[1] = obj;
                 args.length = 2;
-                var t = replacer.Invoke(args);
+                var t = replacer.Call(args);
                 if (t.valueType >= JSValueType.Object && t.oValue == null)
                     return "null";
                 if (t.valueType <= JSValueType.Undefined)
@@ -397,7 +397,7 @@ namespace NiL.JS.BaseLibrary
                 var toJSONmemb = obj["toJSON"];
                 toJSONmemb = toJSONmemb.Value as JSValue ?? toJSONmemb;
                 if (toJSONmemb.valueType == JSValueType.Function)
-                    return stringifyImpl("", (toJSONmemb.oValue as Function).Invoke(obj, null), null, space, processed, null);
+                    return stringifyImpl("", (toJSONmemb.oValue as Function).Call(obj, null), null, space, processed, null);
                 res = new StringBuilder(obj is Array ? "[" : "{");
                 bool first = true;
                 foreach (var member in obj)
@@ -407,7 +407,7 @@ namespace NiL.JS.BaseLibrary
                     if (value.valueType < JSValueType.Undefined)
                         continue;
                     if (value.valueType == JSValueType.Property)
-                        value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(obj, null);
+                        value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Call(obj, null);
                     strval = stringifyImpl(member.Key, value, replacer, space, processed, args);
                     if (strval == null)
                     {

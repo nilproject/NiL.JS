@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Expressions
 {
@@ -49,10 +50,10 @@ namespace NiL.JS.Expressions
             return new CodeNode[] { first };
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             CodeNode f = first;
-            var res = first.Build(ref f, depth, variables, state, message, statistic, opts);
+            var res = first.Build(ref f, depth, variables, codeContext, message, statistic, opts);
             first = f as Expression ?? first;
             return res;
         }

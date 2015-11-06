@@ -15,7 +15,7 @@ namespace NiL.JS.Core.Functions
     internal sealed class BindedFunction : Function
     {
         private Function proto;
-        private JSValue thisBind;
+        private JSValue _thisBind;
         private Arguments bindedArguments;
 
         public override JSValue caller
@@ -63,7 +63,7 @@ namespace NiL.JS.Core.Functions
                 _length = new Number(0);
             _length.iValue = proto.length.iValue;
             this.proto = proto;
-            this.thisBind = args[0];
+            this._thisBind = args[0];
             this.bindedArguments = args;
             if (args.length > 0)
             {
@@ -79,24 +79,30 @@ namespace NiL.JS.Core.Functions
             }
             else
                 bindedArguments = null;
+
+            RequireNewKeywordLevel = proto.RequireNewKeywordLevel;
         }
 
-        [Hidden]
-        public override JSValue Invoke(JSValue thisBind, Arguments args)
+        protected override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             if (bindedArguments != null)
             {
-                if (args == null)
-                    args = new Arguments();
-                args.length += bindedArguments.length;
-                for (var i = args.length; i-- > bindedArguments.length; )
-                    args[i] = args[i - bindedArguments.length];
+                if (arguments == null)
+                    arguments = new Arguments();
+                arguments.length += bindedArguments.length;
+                for (var i = arguments.length; i-- > bindedArguments.length; )
+                    arguments[i] = arguments[i - bindedArguments.length];
                 for (var i = bindedArguments.length; i-- > 0; )
-                    args[i] = bindedArguments[i];
+                    arguments[i] = bindedArguments[i];
             }
-            if (thisBind != null && thisBind.oValue == typeof(NewOperator) as object)
-                return proto.Invoke(thisBind, args);
-            return proto.Invoke(this.thisBind, args);
+            if ((construct || _thisBind == null || _thisBind.IsNull || !_thisBind.IsDefined) && (targetObject != null && targetObject.IsDefined))
+                return proto.Call(targetObject, arguments);
+            return proto.Call(_thisBind, arguments);
+        }
+
+        protected internal override JSValue ConstructObject()
+        {
+            return proto.ConstructObject();
         }
 
         [Hidden]

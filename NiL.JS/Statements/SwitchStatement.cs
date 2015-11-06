@@ -157,17 +157,17 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (depth < 1)
                 throw new InvalidOperationException();
-            Parser.Build(ref image, 2, variables, state | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref image, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             for (int i = 0; i < lines.Length; i++)
-                Parser.Build(ref lines[i], 1, variables, state | CodeContext.Conditional, message, statistic, opts);
+                Parser.Build(ref lines[i], 1, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
             for (int i = 0; functions != null && i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
-                Parser.Build(ref stat, 1, variables, state, message, statistic, opts);
+                Parser.Build(ref stat, 1, variables, codeContext, message, statistic, opts);
                 VariableDescriptor desc = null;
                 if (!variables.TryGetValue(functions[i].name, out desc) || desc == null)
                     variables[functions[i].name] = functions[i].Reference.descriptor;
@@ -177,12 +177,12 @@ namespace NiL.JS.Statements
                     for (var j = 0; j < desc.references.Count; j++)
                         desc.references[j].descriptor = functions[i].Reference.descriptor;
                     functions[i].Reference.descriptor.references.AddRange(desc.references);
-                    functions[i].Reference.descriptor.captured = functions[i].Reference.descriptor.captured || functions[i].Reference.descriptor.references.FindIndex(x => x.defineDepth > x.descriptor.defineDepth) != -1;
+                    functions[i].Reference.descriptor.captured = functions[i].Reference.descriptor.captured || functions[i].Reference.descriptor.references.FindIndex(x => x.defineFunctionDepth > x.descriptor.defineDepth) != -1;
                 }
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
-                Parser.Build(ref cases[i].statement, 2, variables, state, message, statistic, opts);
+                Parser.Build(ref cases[i].statement, 2, variables, codeContext, message, statistic, opts);
             for (int i = 0; i < lines.Length / 2; i++)
             {
                 var t = lines[i];

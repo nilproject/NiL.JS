@@ -73,5 +73,25 @@ namespace NiL.JS
             var cord = CodeCoordinates.FromTextPosition(code, position, 0);
             Throw(new SyntaxError(message + " " + cord));
         }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static T ThrowIfNotExists<T>(T obj, object name) where T : JSValue
+        {
+            if (obj.valueType == JSValueType.NotExists)
+                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" has not been defined.")));
+            return obj;
+        }
+
+        internal static void ThrowReferenceError(string message)
+        {
+            Throw(new ReferenceError(message));
+        }
+
+        internal static void ThrowTypeError(string message)
+        {
+            Throw(new TypeError(message));
+        }
     }
 }

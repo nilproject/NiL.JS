@@ -2,11 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
-namespace NiL.JS.Core
+namespace NiL.JS.Extensions
 {
-    public static class IteratorProtocolExtensions
+    public static class IterationProtocolExtensions
     {
         public static IEnumerable<JSValue> AsEnumerable(this IIterable iterableObject)
         {
@@ -131,19 +132,19 @@ namespace NiL.JS.Core
 
             public IIteratorResult next(Arguments arguments = null)
             {
-                var result = iterator["next"].As<Function>().Invoke(iterator, arguments);
+                var result = iterator["next"].As<Function>().Call(iterator, arguments);
                 return new IteratorItemDecorator(result);
             }
 
             public IIteratorResult @return()
             {
-                var result = iterator["return"].As<Function>().Invoke(iterator, null);
+                var result = iterator["return"].As<Function>().Call(iterator, null);
                 return new IteratorItemDecorator(result);
             }
 
             public IIteratorResult @throw(Arguments arguments = null)
             {
-                var result = iterator["throw"].As<Function>().Invoke(iterator, null);
+                var result = iterator["throw"].As<Function>().Call(iterator, null);
                 return new IteratorItemDecorator(result);
             }
         }
@@ -163,7 +164,7 @@ namespace NiL.JS.Core
                 var iteratorFunction = source.GetMember(Symbol.iterator, false, MemberScope.Сommon);
                 if (iteratorFunction.valueType != JSValueType.Function)
                     return null;
-                var iterator = iteratorFunction.As<Function>().Invoke(source, null);
+                var iterator = iteratorFunction.As<Function>().Call(source, null);
                 if (iterator == null)
                     return null;
                 return new IteratorDecorator(iterator);

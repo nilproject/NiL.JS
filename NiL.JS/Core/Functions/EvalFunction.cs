@@ -46,14 +46,14 @@ namespace NiL.JS.Core.Functions
         public EvalFunction()
         {
             _length = new Number(1);
+            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        [Hidden]
-        public override JSValue  Invoke(JSValue  thisBind, Arguments args)
+        protected override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            if (args == null)
+            if (arguments == null)
                 return NotExists;
-            var arg = args[0];
+            var arg = arguments[0];
             if (arg.valueType != JSValueType.String)
                 return arg;
             if ((this.attributes & JSValueAttributesInternal.Eval) != 0)
@@ -73,7 +73,7 @@ namespace NiL.JS.Core.Functions
                     root.Activate();
                     try
                     {
-                        return root.Eval(args[0].ToString(), false);
+                        return root.Eval(arguments[0].ToString(), false);
                     }
                     finally
                     {
@@ -81,11 +81,12 @@ namespace NiL.JS.Core.Functions
                     }
                 }
                 else
-                    return ccontext.Eval(args[0].ToString(), false);
+                    return ccontext.Eval(arguments[0].ToString(), false);
             }
             finally
             {
-                while (stack.Count != 0) stack.Pop().Activate();
+                while (stack.Count != 0)
+                    stack.Pop().Activate();
             }
         }
 

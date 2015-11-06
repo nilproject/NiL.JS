@@ -73,3 +73,46 @@ if (func1(...test) !== 5)
     if (JSON.stringify(args) !== JSON.stringify([1, 2, 3, 4, 5, 6, 7, 8, 9, 0, "word"]))
         console.log("Spread operator in array definition work incorrectly");
 })(...[1, 2, 3, 4, ...[5, 6, 7, 8], 9, 0], "word");
+
+function funcWhichReturnThis() {
+    return this;
+}
+
+var b0 = funcWhichReturnThis.bind(undefined);
+
+if (b0() !== function () { return this; } ())
+    console.log("Invalid this linking for binded function #1");
+
+var b1 = funcWhichReturnThis.bind(null);
+
+if (b1() !== function () { return this; } ())
+    console.log("Invalid this linking for binded function #2");
+
+function bindedConstruct() {
+    function f() { return this; };
+    return new (f.bind({ fake: 'value' }))();
+}
+
+if (bindedConstruct().fake !== undefined)
+    console.log("Invalid [[Construct]] of binded function");
+
+var a = 1;
+(function (p) { (function (x, y) { if (x != 1) console.log("Incorrect parameters processing #1"); })(p, a = 2) })(a);
+
+a = 1;
+(function (p) { (function (x, y) { a = 2; if (x != 1) console.log("Incorrect parameters processing #2"); })(p) })(a);
+
+a = 1;
+(function (p) { (function (x, y) { a = 2; if (x != 1) console.log("Incorrect parameters processing #3"); })(p, p) })(a);
+
+(function (p) { (function (x, y) { if (x != true) console.log("Incorrect parameters processing #4"); })(p, a = 2) })(true);
+
+(function (p) { (function (x, y) { p = 2; if (x != true) console.log("Incorrect parameters processing #5"); })(p) })(true);
+
+(function (x) { var a = [x]; a[0] = 2; if (x != 1) console.log("Incorrect clone flag in fast function"); })(1);
+
+(function (x) { var a = [x]; a[0] = 2; if (x != 1) console.log("Incorrect clone flag in regular function"); })(1, 2);
+
+(function (x) { var a = [x]; a[0] = 2; if (x != 1) console.log("Incorrect clone flag in fast function"); })(1);
+
+(function (x) { var a = [x]; a[0] = 2; if (x != 1) console.log("Incorrect clone flag in regular function"); })(1, 2);

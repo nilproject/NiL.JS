@@ -43,9 +43,9 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            codeContext = state;
+            this._codeContext = codeContext;
 
             if (message != null && depth <= 1 && first != null && second != null)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use comma as a statements delimiter");
@@ -54,8 +54,8 @@ namespace NiL.JS.Expressions
                 _this = first;
                 return true;
             }
-            Parser.Build(ref first, depth + 1, variables, state | CodeContext.InExpression, message, statistic, opts);
-            Parser.Build(ref second, depth + 1, variables, state | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref second, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             return false;
         }
 

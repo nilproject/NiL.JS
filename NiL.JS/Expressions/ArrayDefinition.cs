@@ -98,13 +98,13 @@ namespace NiL.JS.Expressions
                             var spreadArray = e.oValue as IList<JSValue>;
                             for (var i = 0; i < spreadArray.Count; i++, targetIndex++)
                             {
-                                res.data[targetIndex] = spreadArray[i].CloneImpl(false);
+                                res.data[targetIndex] = spreadArray[i].CloneImpl(true);
                             }
                             targetIndex--;
                         }
                         else
                         {
-                            e = e.CloneImpl(false);
+                            e = e.CloneImpl(true);
                             e.attributes = 0;
                             res.data[targetIndex] = e;
                         }
@@ -130,12 +130,12 @@ namespace NiL.JS.Expressions
             return elements;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            codeContext = state;
+            _codeContext = codeContext;
 
             for (int i = 0; i < elements.Length; i++)
-                Parser.Build(ref elements[i], 2, variables, state | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref elements[i], 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             return false;
         }
 

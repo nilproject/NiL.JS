@@ -382,7 +382,7 @@ namespace NiL.JS.Expressions
             state.InExpression = inExp;
             if (name != null)
             {
-                func.Reference.defineDepth = state.functionsDepth;
+                func.Reference.defineFunctionDepth = state.functionsDepth;
                 func.Reference.Position = nameStartPos;
                 func.Reference.Length = name.Length;
             }
@@ -430,15 +430,15 @@ namespace NiL.JS.Expressions
             return new Function(context, this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             if (body.builded)
                 return false;
             if (stats != null)
                 stats.ContainsInnerFunction = true;
-            codeContext = state;
+            _codeContext = codeContext;
 
-            if ((state & CodeContext.InLoop) != 0 && message != null)
+            if ((codeContext & CodeContext.InLoop) != 0 && message != null)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), Strings.FunctionInLoop);
 
             var bodyCode = body as CodeNode;
@@ -452,17 +452,17 @@ namespace NiL.JS.Expressions
                 if (parameters[i].initializer != null)
                 {
                     CodeNode initializer = parameters[i].initializer;
-                    parameters[i].initializer.Build(ref initializer, depth, variables, state, message, statistic, opts);
+                    parameters[i].initializer.Build(ref initializer, depth, variables, codeContext, message, statistic, opts);
                     parameters[i].initializer = (Expression)initializer;
                 }
             }
             statistic.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
-            bodyCode.Build(ref bodyCode, 0, nvars, state & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval), message, statistic, opts);
+            bodyCode.Build(ref bodyCode, 0, nvars, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval), message, statistic, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
                 if (Reference.descriptor == null)
-                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.defineDepth);
+                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.defineFunctionDepth);
                 if (System.Array.FindIndex(parameters, x => x.Name == Reference.descriptor.name) == -1)
                     if (nvars.TryGetValue(name, out fdesc) && !fdesc.IsDefined)
                     {
@@ -601,7 +601,36 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            var res = ((FunctionType)((int)type & 3)).ToString().ToLowerInvariant() + " " + name + "(";
+            string res;
+            switch (type)
+            {
+                case FunctionType.Generator:
+                    {
+                        res = "functions* ";
+                        break;
+                    }
+                case FunctionType.Method:
+                    {
+                        res = "";
+                        break;
+                    }
+                case FunctionType.Get:
+                    {
+                        res = "get ";
+                        break;
+                    }
+                case FunctionType.Set:
+                    {
+                        res = "set ";
+                        break;
+                    }
+                default:
+                    {
+                        res = "function ";
+                        break;
+                    }
+            }
+            res += name + "(";
             if (parameters != null)
                 for (int i = 0; i < parameters.Length; )
                     res += parameters[i] + (++i < parameters.Length ? "," : "");

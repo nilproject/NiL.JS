@@ -192,20 +192,20 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            codeContext = state;
+            _codeContext = codeContext;
 
             for (int i = 0; i < values.Length; i++)
             {
                 if ((values[i] is ConstantDefinition) && ((values[i] as ConstantDefinition).value.valueType == JSValueType.Property))
                 {
                     var gs = (values[i] as ConstantDefinition).value.oValue as CodeNode[];
-                    Parser.Build(ref gs[0], 1, variables, state | CodeContext.InExpression, message, statistic, opts);
-                    Parser.Build(ref gs[1], 1, variables, state | CodeContext.InExpression, message, statistic, opts);
+                    Parser.Build(ref gs[0], 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                    Parser.Build(ref gs[1], 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
                 }
                 else
-                    Parser.Build(ref values[i], 2, variables, state | CodeContext.InExpression, message, statistic, opts);
+                    Parser.Build(ref values[i], 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             }
             return false;
         }

@@ -45,10 +45,10 @@ namespace NiL.JS.Statements
                 return res;
             }
 
-            internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+            internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
             {
                 var v = variable as CodeNode;
-                var res = variable.Build(ref v, depth, variables, state, message, statistic, opts);
+                var res = variable.Build(ref v, depth, variables, codeContext, message, statistic, opts);
                 variable = v as VariableReference;
                 return res;
             }
@@ -139,7 +139,7 @@ namespace NiL.JS.Statements
                     ExceptionsHelper.Throw((new SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 1))));
                 if (i >= state.Code.Length)
                 {
-                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth });
+                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
                     break;
                 }
                 if (Tools.isLineTerminator(state.Code[i]))
@@ -150,7 +150,7 @@ namespace NiL.JS.Statements
                     while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i >= state.Code.Length)
                     {
-                        initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth });
+                        initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
                         break;
                     }
                     if (state.Code[i] != '=')
@@ -163,7 +163,7 @@ namespace NiL.JS.Statements
                     while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i == state.Code.Length)
                         ExceptionsHelper.ThrowSyntaxError("Unexpected end of line in variable definition.", state.Code, i);
-                    VariableReference accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth };
+                    VariableReference accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth };
                     Expression source = ExpressionTree.Parse(state, ref i, false, false) as Expression;
                     if (isConst)
                         source = new AllowWriteCN(accm, source);
@@ -180,7 +180,7 @@ namespace NiL.JS.Statements
                 {
                     //if (isConst)
                     //    ExceptionsHelper.Throw(new SyntaxError("Constant must contain value at " + CodeCoordinates.FromTextPosition(state.Code, i)));
-                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineDepth = state.functionsDepth });
+                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
                 }
                 if (i >= state.Code.Length)
                     break;
@@ -233,7 +233,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -268,7 +268,7 @@ namespace NiL.JS.Statements
             int actualChilds = 0;
             for (int i = 0; i < initializators.Length; i++)
             {
-                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, state, message, statistic, opts);
+                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, codeContext, message, statistic, opts);
                 if (initializators[i] != null)
                     actualChilds++;
             }

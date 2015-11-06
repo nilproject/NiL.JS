@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
+using NiL.JS.Core.Interop;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
@@ -34,22 +36,25 @@ namespace NiL.JS.Expressions
 
         private string[] fields;
         private CodeNode[] values;
-        private Expression bce;
+        private Expression baseType;
+        private FunctionDefinition _ctor;
 
         public CodeNode[] Initializators { get { return values; } }
         public string[] Fields { get { return fields; } }
-        public Expression BaseClassExpression { get { return bce; } }
+        public Expression BaseClassExpression { get { return baseType; } }
+        public FunctionDefinition Constructor { get { return _ctor; } }
         public override bool Hoist
         {
             get { return false; }
         }
 
-        public ClassDefinition(string name, Expression bce, Dictionary<string, CodeNode> fields)
+        public ClassDefinition(string name, Expression baseType, Dictionary<string, CodeNode> fields, FunctionDefinition ctor)
         {
             this.name = name;
-            this.bce = bce;
+            this.baseType = baseType;
             this.fields = new string[fields.Count];
             this.values = new CodeNode[fields.Count];
+            this._ctor = ctor;
             int i = 0;
             foreach (var f in fields)
             {
@@ -67,7 +72,7 @@ namespace NiL.JS.Expressions
             while (char.IsWhiteSpace(code[i]))
                 i++;
             string name = null;
-            Expression bce = null;
+            Expression baseType = null;
             if (!Parser.Validate(code, "extends ", i))
             {
                 var n = i;
@@ -85,16 +90,16 @@ namespace NiL.JS.Expressions
                     ExceptionsHelper.Throw(new SyntaxError("Invalid base class name"));
                 var baseClassName = code.Substring(n, i - n);
                 if (baseClassName == "null")
-                    bce = new ConstantDefinition(JSValue.Null) { Position = n, Length = 4 };
+                    baseType = new ConstantDefinition(JSValue.Null) { Position = n, Length = 4 };
                 else
-                    bce = new GetVariableExpression(baseClassName, state.functionsDepth);
+                    baseType = new GetVariableExpression(baseClassName, state.functionsDepth);
                 while (char.IsWhiteSpace(code[i]))
                     i++;
             }
             if (code[i] != '{')
-                ExceptionsHelper.Throw(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(code, i, 1)));
+                ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
 
-            var explicitCtor = false;
+            CodeNode ctor = null;
             var oldStrict = state.strict;
             state.strict = true;
             var flds = new Dictionary<string, CodeNode>();
@@ -171,29 +176,29 @@ namespace NiL.JS.Expressions
                         ExceptionsHelper.Throw(new SyntaxError("Trying to redefinition field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
                     if (fieldName == "constructor")
                     {
-                        if (explicitCtor)
+                        if (ctor != null)
                             ExceptionsHelper.ThrowSyntaxError("Trying to redefinition constructor", state.Code, i);
                         state.CodeContext |= CodeContext.InClassConstructor;
-                        explicitCtor = true;
                     }
                     i = s;
                     var initializator = FunctionDefinition.Parse(state, ref i, FunctionType.Method) as FunctionDefinition;
-                    if (explicitCtor)
+                    if (ctor != null)
                         state.CodeContext = oldCodeContext | CodeContext.InClassDefenition;
+                    else
+                        flds[fieldName] = initializator;
                     if (initializator == null)
                         ExceptionsHelper.Throw(new SyntaxError());
-                    flds[fieldName] = initializator;
                 }
             }
-            if (!explicitCtor)
+            if (ctor == null)
             {
                 string ctorCode;
                 int ctorIndex = 0;
-                if (bce != null && !(bce is ConstantDefinition))
+                if (baseType != null && !(baseType is ConstantDefinition))
                     ctorCode = "constructor(...args) { super(...args); }";
                 else
                     ctorCode = "constructor(...args) { }";
-                flds["constructor"] = FunctionDefinition.Parse(new ParsingState(ctorCode, ctorCode, null)
+                ctor = FunctionDefinition.Parse(new ParsingState(ctorCode, ctorCode, null)
                 {
                     strict = true,
                     CodeContext = CodeContext.InClassConstructor | CodeContext.InClassDefenition
@@ -202,17 +207,32 @@ namespace NiL.JS.Expressions
             state.CodeContext = oldCodeContext;
             state.strict = oldStrict;
             index = i + 1;
-            return new ClassDefinition(name, bce, flds);
+            return new ClassDefinition(name, baseType, flds, ctor as FunctionDefinition);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            return base.Build(ref _this, depth, variables, state, message, statistic, opts);
+            Parser.Build(ref _ctor, depth, variables, codeContext, message, statistic, opts);
+            Parser.Build(ref baseType, depth, variables, codeContext, message, statistic, opts);
+
+            return base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
         }
 
         public override JSValue Evaluate(Context context)
         {
-            throw new NotImplementedException();
+            var proto = TypeProxy.GlobalPrototype;
+            if (this.baseType != null)
+                proto = baseType.Evaluate(context).GetMember("prototype") as JSObject;
+            var ctor = this._ctor.Evaluate(context) as Function;
+            context.DefineVariable(name).Assign(ctor);
+            ctor.prototype.__proto__ = proto;
+
+            for (var i = 0; i < fields.Length; i++)
+            {
+                ctor.prototype[fields[i]] = values[i].Evaluate(context);
+            }
+
+            return ctor;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -222,7 +242,18 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " & " + second + ")";
+            var result = new StringBuilder();
+            result.Append("class ").Append(name);
+            if (baseType != null)
+                result.Append(" extends ").Append(baseType);
+            result.Append(" {").Append(Environment.NewLine);
+            for (var i = 0; i < fields.Length; i++)
+            {
+                var t = values[i].ToString().Replace(Environment.NewLine, Environment.NewLine + "  ");
+                result.Append(t);
+            }
+            result.Append(Environment.NewLine).Append("}");
+            return result.ToString();
         }
     }
 }

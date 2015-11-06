@@ -358,12 +358,12 @@ namespace NiL.JS.Statements
             context.abortInfo = catchContext.abortInfo;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsTry = true;
             CodeNode b = null;
-            Parser.Build(ref body, depth, variables, state | CodeContext.Conditional, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
             if (catchBody != null)
             {
                 this.@catch = true;
@@ -372,7 +372,7 @@ namespace NiL.JS.Statements
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
                 b = catchBody as CodeNode;
-                Parser.Build(ref b, depth, variables, state | CodeContext.Conditional, message, statistic, opts);
+                Parser.Build(ref b, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
                 catchBody = b != null ? b as CodeBlock ?? new CodeBlock(new CodeNode[] { b }, catchBody.strict) { Position = catchBody.Position, Length = catchBody.Length } : null;
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
@@ -382,7 +382,7 @@ namespace NiL.JS.Statements
                     v.Value.captured = true;
             }
             if (finallyBody != null)
-                Parser.Build(ref finallyBody, depth, variables, state, message, statistic, opts);
+                Parser.Build(ref finallyBody, depth, variables, codeContext, message, statistic, opts);
             if (body == null
                 || body is EmptyExpression
                 || (body is CodeBlock && (body as CodeBlock).lines.Length == 0))

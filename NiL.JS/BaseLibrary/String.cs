@@ -335,7 +335,7 @@ namespace NiL.JS.BaseLibrary
                             t = m.Index;
                             margs[margs.length - 2] = t;
                             margs[margs.length - 1] = self;
-                            return f.Invoke(margs).ToString();
+                            return f.Call(margs).ToString();
                         }, (args[0].Value as RegExp)._global ? int.MaxValue : 1);
                     self.oValue = temp;
                     self.valueType = JSValueType.String;
@@ -361,7 +361,7 @@ namespace NiL.JS.BaseLibrary
                     if (index == -1)
                         return self;
                     margs[1] = index;
-                    var res = othis.Substring(0, index) + f.Invoke(margs).ToString() + othis.Substring(index + pattern.Length);
+                    var res = othis.Substring(0, index) + f.Call(margs).ToString() + othis.Substring(index + pattern.Length);
                     self.oValue = othis;
                     self.valueType = JSValueType.String;
                     return res;

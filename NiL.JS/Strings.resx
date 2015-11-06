@@ -126,6 +126,9 @@
   <data name="IncrementReadonly" xml:space="preserve">
     <value>Can not increment readonly "{0}"</value>
   </data>
+  <data name="InvalidLefthandSideInAssignment" xml:space="preserve">
+    <value>"Invalid left-hand side in assignment."</value>
+  </data>
   <data name="InvalidPropertyName" xml:space="preserve">
     <value>Invalid property name at {0}</value>
   </data>

@@ -14,7 +14,9 @@ namespace NiL.JS.Expressions
         private Expression[] arguments;
         internal bool withSpread;
         internal bool allowTCO;
+        internal bool construct;
 
+        public bool Construct { get { return construct; } }
         public override bool ContextIndependent { get { return false; } }
         internal override bool ResultInTempContainer { get { return false; } }
         protected internal override PredictedType ResultType
@@ -34,7 +36,7 @@ namespace NiL.JS.Expressions
             }
         }
         public Expression[] Arguments { get { return arguments; } }
-        public bool AllowTCO { get { return allowTCO; } }
+        public bool AllowTCO { get { return allowTCO && !construct; } }
 
         internal CallOperator(Expression first, Expression[] arguments)
             : base(first, null, false)
@@ -42,21 +44,10 @@ namespace NiL.JS.Expressions
             this.arguments = arguments;
         }
 
-        internal static JSValue PrepareArg(Context context, CodeNode source)
-        {
-            var a = source.Evaluate(context);
-            if (a.valueType != JSValueType.SpreadOperatorResult)
-            {
-                a = a.CloneImpl(false);
-                a.attributes |= JSValueAttributesInternal.Cloned;
-            }
-            return a;
-        }
-
         public override JSValue Evaluate(Context context)
         {
             var temp = first.Evaluate(context);
-            JSValue newThisBind = context.objectSource;
+            JSValue targetObject = context.objectSource;
 
             Function func = temp.valueType == JSValueType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
             if (func == null)
@@ -73,13 +64,14 @@ namespace NiL.JS.Expressions
             else
             {
                 if (allowTCO
+                    && !construct
                     && (func.Type != FunctionType.Generator)
                     && context.owner != null
                     && func == context.owner.oValue
                     && context.owner.oValue != Script.pseudoCaller)
                 {
                     tailCall(context, func);
-                    context.objectSource = newThisBind;
+                    context.objectSource = targetObject;
                     return JSValue.undefined;
                 }
                 else
@@ -88,7 +80,9 @@ namespace NiL.JS.Expressions
             func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
 
             checkStack();
-            return func.InternalInvoke(newThisBind, this.arguments, context, withSpread);
+            if (construct)
+                targetObject = null;
+            return func.InternalInvoke(targetObject, this.arguments, context, withSpread, construct);
         }
 
         private void tailCall(Context context, Function func)
@@ -100,7 +94,7 @@ namespace NiL.JS.Expressions
                 length = this.arguments.Length
             };
             for (int i = 0; i < this.arguments.Length; i++)
-                arguments[i] = PrepareArg(context, this.arguments[i]);
+                arguments[i] = Tools.PrepareArg(context, this.arguments[i]);
             context.objectSource = null;
 
             arguments.callee = func;
@@ -121,16 +115,37 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.UseCall = true;
 
-            codeContext = state;
+            this._codeContext = codeContext;
+
+            if (first is SuperExpression)
+            {
+                var fdepth = (first as VariableReference).defineFunctionDepth;
+                first =
+                    new GetMemberOperator(new GetMemberOperator(new GetMemberOperator(new GetMemberOperator(
+                        first,
+                        new ConstantDefinition("__proto__")),
+                        new ConstantDefinition("__proto__")),
+                        new ConstantDefinition("constructor")),
+                        new ConstantDefinition("call"));
+
+                var newArgs = new Expression[arguments.Length + 1];
+                newArgs[0] = new GetVariableExpression("this", fdepth);
+                for (var i = 0; i < arguments.Length; i++)
+                    newArgs[i + 1] = arguments[i];
+                arguments = newArgs;
+            }
 
             for (var i = 0; i < arguments.Length; i++)
-                Parser.Build(ref arguments[i], depth + 1, variables, state | CodeContext.InExpression, message, statistic, opts);
-            base.Build(ref _this, depth, variables, state, message, statistic, opts);
+            {
+                Parser.Build(ref arguments[i], depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+            }
+
+            base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
             if (first is GetVariableExpression)
             {
                 var name = first.ToString();
@@ -190,7 +205,11 @@ namespace NiL.JS.Expressions
                 if (i + 1 < arguments.Length)
                     res += ", ";
             }
-            return res + ")";
+            res += ")";
+
+            if (construct)
+                return "new " + res;
+            return res;
         }
     }
 }

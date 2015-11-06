@@ -16,19 +16,24 @@ namespace NiL.JS.Core.Functions
             _length = new Number(1);
         }
 
-        public override JSValue Invoke(JSValue thisBind, Arguments args)
+        protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
             JSValue oVal = null;
-            if (args != null && args.length > 0)
-                oVal = args[0];
-            if ((oVal == null) ||
-                (((oVal.valueType >= JSValueType.Object && oVal.oValue == null)
-                                        || oVal.valueType <= JSValueType.Undefined)))
+            if (arguments != null && arguments.length > 0)
+                oVal = arguments[0];
+            if ((oVal == null) 
+                || ((oVal.valueType >= JSValueType.Object && oVal.oValue == null) 
+                    || oVal.valueType <= JSValueType.Undefined))
                 return CreateObject();
             else if (oVal.valueType >= JSValueType.Object && oVal.oValue != null)
                 return oVal;
 
             return oVal.ToObject();
+        }
+
+        protected internal override JSValue ConstructObject()
+        {
+            return null;
         }
 
         public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)

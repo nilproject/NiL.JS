@@ -237,7 +237,7 @@
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
-    <Compile Include="Core\IteratorProtocolExtensions.cs" />
+    <Compile Include="Extensions\IterationProtocolExtensions.cs" />
     <Compile Include="Core\JSValue.cs" />
     <Compile Include="Core\Interop\ConvertValueAttribute.cs" />
     <Compile Include="BaseLibrary\Debug.cs" />

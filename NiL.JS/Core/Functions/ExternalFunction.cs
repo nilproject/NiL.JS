@@ -75,12 +75,12 @@ namespace NiL.JS.Core.Functions
             if (del == null)
                 throw new ArgumentNullException();
             this.del = del;
+            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        [Hidden]
-        public override JSValue Invoke(JSValue thisBind, Arguments args)
+        protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
-            var res = del(thisBind, args);
+            var res = del(targetObject, arguments);
             if (res == null)
                 return JSValue.NotExists;
             return res;

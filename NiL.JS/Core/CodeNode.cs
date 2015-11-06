@@ -32,7 +32,7 @@ namespace NiL.JS.Core
     {
         private static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
 #if !PORTABLE
-        internal static readonly MethodInfo EvaluateForAssignMethod = typeof(CodeNode).GetMethod("EvaluateForWrite", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
+        internal static readonly MethodInfo EvaluateForWriteMethod = typeof(CodeNode).GetMethod("EvaluateForWrite", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
         internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
 
 #if !NET35
@@ -61,7 +61,7 @@ namespace NiL.JS.Core
 
         internal protected virtual JSValue EvaluateForWrite(NiL.JS.Core.Context context)
         {
-            ExceptionsHelper.Throw(new ReferenceError("Invalid left-hand side in assignment."));
+            ExceptionsHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
             return null;
         }
 
@@ -73,7 +73,7 @@ namespace NiL.JS.Core
         /// <param name="self">Ссылка на экземпляр, для которого происходит вызов функции</param>
         /// <param name="depth">Глубина погружения в выражении</param>
         /// <returns>true если были внесены изменения и требуется повторный вызов функции</returns>
-        internal protected virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected virtual bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             return false;
         }

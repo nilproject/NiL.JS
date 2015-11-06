@@ -62,7 +62,7 @@ namespace NiL.JS.Expressions
 
         internal GetVariableExpression(string name, int functionDepth)
         {
-            this.defineDepth = functionDepth;
+            this.defineFunctionDepth = functionDepth;
             int i = 0;
             if ((name != "this") && (name != "super") && !Parser.ValidateName(name, i, true, true, false))
                 throw new ArgumentException("Invalid variable name");
@@ -73,19 +73,19 @@ namespace NiL.JS.Expressions
         {
             if (context.strict || forceThrow)
             {
-                var res = Descriptor.Get(context, false, defineDepth);
+                var res = Descriptor.Get(context, false, defineFunctionDepth);
                 if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
                     ExceptionsHelper.ThrowVariableNotDefined(variableName);
                 if ((res.attributes & JSValueAttributesInternal.Argument) != 0)
                     context.owner.BuildArgumentsObject();
                 return res;
             }
-            return descriptor.Get(context, true, defineDepth);
+            return descriptor.Get(context, true, defineFunctionDepth);
         }
 
         public override JSValue Evaluate(Context context)
         {
-            var res = descriptor.Get(context, false, defineDepth);
+            var res = descriptor.Get(context, false, defineFunctionDepth);
             switch (res.valueType)
             {
                 case JSValueType.NotExists:
@@ -118,7 +118,7 @@ namespace NiL.JS.Expressions
             dynamicValues.Add(this);
             var res = System.Linq.Expressions.Expression.Call(
                 System.Linq.Expressions.Expression.ArrayAccess(JITHelpers.DynamicValuesParameter, JITHelpers.cnst(dynamicValues.Count - 1)),
-                forAssign ? EvaluateForAssignMethod : EvaluateMethod,
+                forAssign ? EvaluateForWriteMethod : EvaluateMethod,
                 JITHelpers.ContextParameter
                 );
             if (expectedType == typeof(int))
@@ -131,16 +131,16 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            codeContext = state;
+            _codeContext = codeContext;
 
             if (statistic != null && variableName == "this")
                 statistic.UseThis = true;
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                desc = new VariableDescriptor(this, false, defineDepth);
+                desc = new VariableDescriptor(this, false, defineFunctionDepth);
                 descriptor = desc;
                 variables[variableName] = this.Descriptor;
             }
@@ -157,11 +157,11 @@ namespace NiL.JS.Expressions
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused get of defined variable was removed. Maybe, something missing.");
             }
             else if (variableName == "arguments"
-                && defineDepth > 0)
+                && defineFunctionDepth > 0)
             {
                 if (statistic != null)
                     statistic.ContainsArguments = true;
-                _this = new GetArgumentsExpression(defineDepth) { descriptor = descriptor };
+                _this = new GetArgumentsExpression(defineFunctionDepth) { descriptor = descriptor };
             }
             return false;
         }
@@ -191,7 +191,7 @@ namespace NiL.JS.Expressions
 
                         if (assigns[i].Position > Position)
                         {
-                            if ((codeContext & CodeContext.InLoop) != 0 && ((assigns[i] as Expression).codeContext & CodeContext.InLoop) != 0)
+                            if ((_codeContext & CodeContext.InLoop) != 0 && ((assigns[i] as Expression)._codeContext & CodeContext.InLoop) != 0)
                             // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
                             {
                                 // оптимизация не применяется
@@ -216,7 +216,7 @@ namespace NiL.JS.Expressions
                         }
                     }
                     var assign = lastAssign as AssignmentOperator;
-                    if (assign != null && (assign.codeContext & CodeContext.Conditional) == 0 && assign.second is ConstantDefinition)
+                    if (assign != null && (assign._codeContext & CodeContext.Conditional) == 0 && assign.second is ConstantDefinition)
                     {
                         _this = assign.second;
                     }

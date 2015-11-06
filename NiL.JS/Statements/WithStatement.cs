@@ -90,12 +90,12 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             if (statistic != null)
                 statistic.ContainsWith = true;
-            Parser.Build(ref obj, depth + 1, variables, state | CodeContext.InExpression, message, statistic, opts);
-            Parser.Build(ref body, depth, variables, state | CodeContext.InWith, message, statistic, opts);
+            Parser.Build(ref obj, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref body, depth, variables, codeContext | CodeContext.InWith, message, statistic, opts);
             return false;
         }
 

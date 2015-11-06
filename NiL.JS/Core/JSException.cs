@@ -44,11 +44,11 @@ namespace NiL.JS.Core
                 {
                     var n = Avatar.GetMember("name");
                     if (n.valueType == JSValueType.Property)
-                        n = (n.oValue as PropertyPair).get.Invoke(Avatar, null).ToString();
+                        n = (n.oValue as PropertyPair).get.Call(Avatar, null).ToString();
 
                     var m = Avatar.GetMember("message");
                     if (m.valueType == JSValueType.Property)
-                        return n + ": " + (m.oValue as PropertyPair).get.Invoke(Avatar, null);
+                        return n + ": " + (m.oValue as PropertyPair).get.Call(Avatar, null);
                     else
                         return n + ": " + m;
                 }

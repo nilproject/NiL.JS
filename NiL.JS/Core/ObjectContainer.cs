@@ -15,21 +15,20 @@ namespace NiL.JS.Core
     /// </remarks>
     internal sealed class ObjectContainer : JSObject
     {
-        private object instance;
+        internal object instance;
 
         [Hidden]
         public override object Value
         {
             get
             {
-                return instance;
+                return instance ?? base.Value;
             }
         }
 
         [Hidden]
         public ObjectContainer(object instance, JSObject proto)
         {
-            __prototype = proto;
             this.instance = instance;
             if (instance is Date)
                 valueType = JSValueType.Date;
@@ -37,12 +36,16 @@ namespace NiL.JS.Core
                 valueType = JSValueType.Object;
             oValue = this;
             attributes = JSValueAttributesInternal.SystemObject;
-            attributes |= proto.attributes & JSValueAttributesInternal.Immutable;
+            if (proto != null)
+            {
+                attributes |= proto.attributes & JSValueAttributesInternal.Immutable;
+                __prototype = proto;
+            }
         }
 
         [Hidden]
         public ObjectContainer(object instance)
-            : this(instance, TypeProxy.GetPrototype(instance.GetType()))
+            : this(instance, instance != null ? TypeProxy.GetPrototype(instance.GetType()) : null)
         {
         }
 

@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class GetValueForAssignmentOperator : Expression
     {
-        private JSValue result;
+        private JSValue secondResult;
 
         public CodeNode Source { get { return first; } }
 
@@ -42,17 +42,14 @@ namespace NiL.JS.Expressions
         internal protected override JSValue EvaluateForWrite(Context context)
         {
             var res = first.EvaluateForWrite(context);
-            if (res.valueType == JSValueType.Property)
-                result = (res.oValue as PropertyPair).get != null ? (res.oValue as PropertyPair).get.Invoke(context.objectSource, null) : JSValue.notExists;
-            else
-                result = res;
+            secondResult = Tools.InvokeGetter(res, context.objectSource);
             return res;
         }
 
         public override JSValue Evaluate(Context context)
         {
-            var res = result;
-            result = null;
+            var res = secondResult;
+            secondResult = null;
             return res;
         }
 
@@ -103,16 +100,16 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             // second будем использовать как флаг isVisited
             if (second != null)
                 return false;
             second = first;
 
-            codeContext = state;
+            _codeContext = codeContext;
 
-            var res = first.Build(ref _this, depth, variables, state | CodeContext.InExpression, message, statistic, opts);
+            var res = first.Build(ref _this, depth, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             if (!res && first is GetVariableExpression)
                 (first as GetVariableExpression).forceThrow = true;
             return res;

@@ -35,7 +35,7 @@ namespace NiL.JS.Expressions
         {
             get { return false; }
         }
-        internal CodeContext codeContext;
+        internal CodeContext _codeContext;
 
         internal Expression first;
         internal Expression second;
@@ -81,13 +81,13 @@ namespace NiL.JS.Expressions
             this.second = second;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            codeContext = state;
-            state = state | CodeContext.InExpression;
+            this._codeContext = codeContext;
+            codeContext = codeContext | CodeContext.InExpression;
 
-            Parser.Build(ref first, depth + 1, variables, state, message, statistic, opts);
-            Parser.Build(ref second, depth + 1, variables, state, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, codeContext, message, statistic, opts);
+            Parser.Build(ref second, depth + 1, variables, codeContext, message, statistic, opts);
             if (this.ContextIndependent)
             {
                 if (message != null && !(this is RegExpExpression))

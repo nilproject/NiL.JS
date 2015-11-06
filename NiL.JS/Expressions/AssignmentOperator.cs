@@ -76,7 +76,7 @@ namespace NiL.JS.Expressions
                 setterArgs[0] = temp;
                 var setter = (field.oValue as PropertyPair).set;
                 if (setter != null)
-                    setter.Invoke(fieldSource, setterArgs);
+                    setter.Call(fieldSource, setterArgs);
                 else if (context.strict)
                     ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
                 if (saveResult)
@@ -85,7 +85,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -95,7 +95,7 @@ namespace NiL.JS.Expressions
                     fs.name = (first as VariableReference).Name;
             }
 #endif
-            var r = base.Build(ref _this, depth, variables, state, message, statistic, opts);
+            var r = base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
 
             var f = first as VariableReference ?? ((first is GetValueForAssignmentOperator) ? (first as GetValueForAssignmentOperator).Source as VariableReference : null);
             if (f != null)
@@ -117,7 +117,7 @@ namespace NiL.JS.Expressions
             if (gme != null)
                 _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
 
-            if ((state & (CodeContext.InExpression | CodeContext.InEval)) != 0)
+            if ((codeContext& (CodeContext.InExpression | CodeContext.InEval)) != 0)
                 saveResult = true;
 
             return r;
@@ -151,7 +151,7 @@ namespace NiL.JS.Expressions
             }
 
             var gve = first as GetVariableExpression;
-            if (gve != null && gve.descriptor.isDefined && (codeContext & CodeContext.InWith) == 0)
+            if (gve != null && gve.descriptor.isDefined && (_codeContext & CodeContext.InWith) == 0)
             {
                 if (owner != null // не будем это применять в корневом узле. Только в функциях. Иначе это может задумываться как настройка контекста для последующего использования в Eval
                     && !gve.descriptor.captured
@@ -160,7 +160,7 @@ namespace NiL.JS.Expressions
                     && !statistic.ContainsWith) // можем упустить присваивание
                 {
                     if ((owner.body.strict || gve.descriptor.owner != owner || !owner.statistic.ContainsArguments) // аргументы это одна сущность с двумя именами
-                        && (codeContext & CodeContext.InLoop) == 0)
+                        && (_codeContext & CodeContext.InLoop) == 0)
                     {
                         bool last = true;
                         for (var i = 0; last && i < gve.descriptor.references.Count; i++)
@@ -190,7 +190,7 @@ namespace NiL.JS.Expressions
                     {
                         Position = Position,
                         Length = Length,
-                        codeContext = codeContext
+                        _codeContext = _codeContext
                     };
                 }
             }

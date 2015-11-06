@@ -111,7 +111,7 @@ namespace NiL.JS.Core
                         var targs = new Arguments();
                         targs.length = 1;
                         targs[0] = (int)o;
-                        function.Invoke(null, targs);
+                        function.Call(null, targs);
                     }) { Name = "NiL.JS __pinvoke thread (" + __pinvokeCalled + ":" + i + ")" }).Start(i);
                 }
                 __pinvokeCalled++;

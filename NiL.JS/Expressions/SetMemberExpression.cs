@@ -60,8 +60,6 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    //if ((sjso ?? source).fields == null)
-                    //    (sjso ?? source).fields = JSObject.createFields();
                     tempContainer2.Assign(source);
                     source = tempContainer2;
                 }
@@ -80,9 +78,9 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            codeContext = state;
+            this._codeContext = codeContext;
             return false;
         }
 

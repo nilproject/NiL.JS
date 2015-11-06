@@ -8,8 +8,8 @@ namespace NiL.JS.Core
 #endif
     public abstract class VariableReference : Expression
     {
-        internal int defineDepth;
-        public int DefineDepth { get { return defineDepth; } }
+        internal int defineFunctionDepth;
+        public int DefineFunctionDepth { get { return defineFunctionDepth; } }
 
         public abstract string Name { get; }
 
@@ -39,7 +39,7 @@ namespace NiL.JS.Core
 
         protected VariableReference()
         {
-            defineDepth = -1;
+            defineFunctionDepth = -1;
         }
 
         protected override CodeNode[] getChildsImpl()

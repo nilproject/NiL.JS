@@ -221,7 +221,7 @@ namespace NiL.JS.Core
             {
                 var setter = (field.oValue as PropertyPair).set;
                 if (setter != null)
-                    setter.Invoke(this, new Arguments { value });
+                    setter.Call(this, new Arguments { value });
                 else if (throwOnError)
                     ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + key + "\""));
                 return;
@@ -331,7 +331,7 @@ namespace NiL.JS.Core
                         var getter = (desc.oValue as PropertyPair).get;
                         if (getter == null || getter.oValue == null)
                             ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
-                        desc = (getter.oValue as Function).Invoke(members, null);
+                        desc = (getter.oValue as Function).Call(members, null);
                     }
                     if (desc.valueType < JSValueType.Object || desc.oValue == null)
                         ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
@@ -437,7 +437,7 @@ namespace NiL.JS.Core
                         var getter = (desc.oValue as PropertyPair).get;
                         if (getter == null || getter.oValue == null)
                             ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
-                        desc = (getter.oValue as Function).Invoke(members, null);
+                        desc = (getter.oValue as Function).Call(members, null);
                     }
                     if (desc.valueType < JSValueType.Object || desc.oValue == null)
                         ExceptionsHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
@@ -882,7 +882,7 @@ namespace NiL.JS.Core
             if (obj.valueType != JSValueType.Property || (obj.attributes & JSValueAttributesInternal.Field) != 0)
             {
                 if (obj.valueType == JSValueType.Property)
-                    res["value"] = (obj.oValue as PropertyPair).get.Invoke(source, null);
+                    res["value"] = (obj.oValue as PropertyPair).get.Call(source, null);
                 else
                     res["value"] = obj;
                 res["writable"] = obj.valueType < JSValueType.Undefined || (obj.attributes & JSValueAttributesInternal.ReadOnly) == 0;

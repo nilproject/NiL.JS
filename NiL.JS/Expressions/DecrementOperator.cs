@@ -75,7 +75,7 @@ namespace NiL.JS.Expressions
                 if (ppair.get == null)
                     val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
                 else
-                    val = ppair.get.Invoke(context.objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
+                    val = ppair.get.Call(context.objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
             }
             else if ((val.attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
@@ -125,7 +125,7 @@ namespace NiL.JS.Expressions
                     }
                 case JSValueType.NotExists:
                     {
-                        Tools.RaiseIfNotExists(val, first);
+                        ExceptionsHelper.ThrowIfNotExists(val, first);
                         break;
                     }
             }
@@ -166,7 +166,7 @@ namespace NiL.JS.Expressions
             {
                 args.length = 1;
                 args[0] = val;
-                setter.Invoke(context.objectSource, args);
+                setter.Call(context.objectSource, args);
             }
             else if ((val.attributes & JSValueAttributesInternal.Reassign) != 0)
                 val.Assign(val);
@@ -183,11 +183,11 @@ namespace NiL.JS.Expressions
             ExceptionsHelper.Throw(new TypeError("Can not decrement property \"" + (first) + "\" without setter."));
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext state, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            codeContext = state;
+            _codeContext = codeContext;
 
-            Parser.Build(ref first, depth + 1, variables, state | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref first, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             if (depth <= 1 && second != null)
             {
                 first = second;

@@ -29,12 +29,12 @@ namespace NiL.JS.BaseLibrary
         public GeneratorFunction(Function generator)
         {
             this.generator = generator;
+            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        [Hidden]
-        public override JSValue Invoke(JSValue thisBind, Arguments args)
+        protected override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            return TypeProxy.Proxy(new GeneratorIterator(generator, thisBind, args));
+            return TypeProxy.Proxy(new GeneratorIterator(generator, targetObject, arguments));
         }
 
         internal override JSObject GetDefaultPrototype()
@@ -71,7 +71,7 @@ namespace NiL.JS.BaseLibrary
             {
                 thread = new Thread(() =>
                 {
-                    generator.Invoke(self, initialArgs);
+                    generator.Call(self, initialArgs);
                     GC.SuppressFinalize(this);
                 });
                 thread.Start();

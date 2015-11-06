@@ -32,8 +32,8 @@ namespace NiL.JS.BaseLibrary
     public enum RequireNewKeywordLevel
     {
         Both = 0,
-        OnlyWithNew,
-        OnlyWithoutNew
+        WithNewOnly,
+        WithoutNewOnly
     }
 
 #if !PORTABLE
@@ -41,530 +41,6 @@ namespace NiL.JS.BaseLibrary
 #endif
     public class Function : JSObject
     {
-#if !PORTABLE
-        private class _DelegateWraper
-        {
-            private Function function;
-
-            public _DelegateWraper(Function func)
-            {
-                function = func;
-            }
-
-            public RT Invoke<RT>()
-            {
-                var eargs = new Arguments();
-                eargs.length = 0;
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1>(T1 a1)
-            {
-                var eargs = new Arguments();
-                eargs.length = 2;
-                eargs[0] = TypeProxy.Proxy(a1);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2>(T1 a1, T2 a2)
-            {
-                var eargs = new Arguments();
-                eargs.length = 2;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3>(T1 a1, T2 a2, T3 a3)
-            {
-                var eargs = new Arguments();
-                eargs.length = 3;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
-            {
-                var eargs = new Arguments();
-                eargs.length = 4;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
-            {
-                var eargs = new Arguments();
-                eargs.length = 5;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
-            {
-                var eargs = new Arguments();
-                eargs.length = 6;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
-            {
-                var eargs = new Arguments();
-                eargs.length = 7;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
-            {
-                var eargs = new Arguments();
-                eargs.length = 8;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
-            {
-                var eargs = new Arguments();
-                eargs.length = 9;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
-            {
-                var eargs = new Arguments();
-                eargs.length = 10;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
-            {
-                var eargs = new Arguments();
-                eargs.length = 11;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
-            {
-                var eargs = new Arguments();
-                eargs.length = 12;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
-            {
-                var eargs = new Arguments();
-                eargs.length = 13;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                eargs[12] = TypeProxy.Proxy(a13);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
-            {
-                var eargs = new Arguments();
-                eargs.length = 14;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                eargs[12] = TypeProxy.Proxy(a13);
-                eargs[13] = TypeProxy.Proxy(a14);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
-            {
-                var eargs = new Arguments();
-                eargs.length = 15;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                eargs[12] = TypeProxy.Proxy(a13);
-                eargs[13] = TypeProxy.Proxy(a14);
-                eargs[14] = TypeProxy.Proxy(a15);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public RT Invoke<RT, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
-            {
-                var eargs = new Arguments();
-                eargs.length = 16;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                eargs[12] = TypeProxy.Proxy(a13);
-                eargs[13] = TypeProxy.Proxy(a14);
-                eargs[14] = TypeProxy.Proxy(a15);
-                eargs[15] = TypeProxy.Proxy(a16);
-                return (RT)function.Invoke(eargs).Value;
-            }
-
-            public void Invoke()
-            {
-                var eargs = new Arguments();
-                eargs.length = 0;
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1>(T1 a1)
-            {
-                var eargs = new Arguments();
-
-
-                eargs.length = 2;
-                eargs[0] = TypeProxy.Proxy(a1);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2>(T1 a1, T2 a2)
-            {
-                var eargs = new Arguments();
-                eargs.length = 2;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3>(T1 a1, T2 a2, T3 a3)
-            {
-                var eargs = new Arguments();
-                eargs.length = 3;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4>(T1 a1, T2 a2, T3 a3, T4 a4)
-            {
-                var eargs = new Arguments();
-                eargs.length = 4;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
-            {
-                var eargs = new Arguments();
-                eargs.length = 5;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
-            {
-                var eargs = new Arguments();
-                eargs.length = 6;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
-            {
-                var eargs = new Arguments();
-                eargs.length = 7;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8)
-            {
-                var eargs = new Arguments();
-                eargs.length = 8;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9)
-            {
-                var eargs = new Arguments();
-                eargs.length = 9;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10)
-            {
-                var eargs = new Arguments();
-                eargs.length = 10;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11)
-            {
-                var eargs = new Arguments();
-                eargs.length = 11;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12)
-            {
-                var eargs = new Arguments();
-                eargs.length = 12;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13)
-            {
-                var eargs = new Arguments();
-                eargs.length = 13;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                eargs[12] = TypeProxy.Proxy(a13);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14)
-            {
-                var eargs = new Arguments();
-                eargs.length = 14;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                eargs[12] = TypeProxy.Proxy(a13);
-                eargs[13] = TypeProxy.Proxy(a14);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15)
-            {
-                var eargs = new Arguments();
-                eargs.length = 15;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                eargs[12] = TypeProxy.Proxy(a13);
-                eargs[13] = TypeProxy.Proxy(a14);
-                eargs[14] = TypeProxy.Proxy(a15);
-                function.Invoke(eargs);
-            }
-
-            public void Invoke<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7, T8 a8, T9 a9, T10 a10, T11 a11, T12 a12, T13 a13, T14 a14, T15 a15, T16 a16)
-            {
-                var eargs = new Arguments();
-                eargs.length = 16;
-                eargs[0] = TypeProxy.Proxy(a1);
-                eargs[1] = TypeProxy.Proxy(a2);
-                eargs[2] = TypeProxy.Proxy(a3);
-                eargs[3] = TypeProxy.Proxy(a4);
-                eargs[4] = TypeProxy.Proxy(a5);
-                eargs[5] = TypeProxy.Proxy(a6);
-                eargs[6] = TypeProxy.Proxy(a7);
-                eargs[7] = TypeProxy.Proxy(a8);
-                eargs[8] = TypeProxy.Proxy(a9);
-                eargs[9] = TypeProxy.Proxy(a10);
-                eargs[10] = TypeProxy.Proxy(a11);
-                eargs[11] = TypeProxy.Proxy(a12);
-                eargs[12] = TypeProxy.Proxy(a13);
-                eargs[13] = TypeProxy.Proxy(a14);
-                eargs[14] = TypeProxy.Proxy(a15);
-                eargs[15] = TypeProxy.Proxy(a16);
-                function.Invoke(eargs);
-            }
-        }
-#endif
-
         private static readonly FunctionDefinition creatorDummy = new FunctionDefinition("anonymous");
         internal static readonly Function emptyFunction = new Function();
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function)
@@ -658,7 +134,7 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get;
             [Hidden]
-            set;
+            protected set;
         }
 
         #region Runtime
@@ -799,9 +275,44 @@ namespace NiL.JS.BaseLibrary
             this.oValue = this;
         }
 
-        internal virtual JSValue InternalInvoke(JSValue self, Expression[] arguments, Context initiator, bool withSpread)
+        [Hidden]
+        public JSValue Construct(Arguments arguments)
         {
-            if (!withSpread && this.GetType() == typeof(Function))
+            if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
+            {
+                ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
+            }
+
+            JSValue targetObject = ConstructObject();
+            return Construct(targetObject, arguments);
+        }
+
+        [Hidden]
+        public JSValue Construct(JSValue targetObject, Arguments arguments)
+        {
+            if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
+            {
+                ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
+            }
+
+            var res = Invoke(true, targetObject, arguments);
+            if (res.valueType < JSValueType.Object || res.oValue == null)
+                return targetObject;
+            return res;
+        }
+
+        protected internal virtual JSValue ConstructObject()
+        {
+            JSValue targetObject = new JSObject() { valueType = JSValueType.Object };
+            targetObject.oValue = targetObject;
+            targetObject.__proto__ = prototype.valueType < JSValueType.Object ? GlobalPrototype : prototype.oValue as JSObject;
+
+            return targetObject;
+        }
+
+        internal virtual JSValue InternalInvoke(JSValue targetObject, Expression[] arguments, Context initiator, bool withSpread, bool construct)
+        {
+            if (!construct && !withSpread && this.GetType() == typeof(Function))
             {
                 var body = creator.body;
                 var result = notExists;
@@ -829,7 +340,6 @@ namespace NiL.JS.BaseLibrary
                         else if (body.lines.Length != 0)
                             break;
                     }
-                    correctThisBind(self, body.strict); // нужно на случай вызова по new
                     for (int i = 0; i < arguments.Length; i++)
                     {
                         if (!arguments[i].Evaluate(initiator).IsDefined)
@@ -851,7 +361,7 @@ namespace NiL.JS.BaseLibrary
                     && creator.parameters.Length == arguments.Length // из-за необходимости иметь возможность построить аргументы, если они потребуются
                     && arguments.Length < 9)
                 {
-                    return fastInvoke(self, arguments, initiator);
+                    return fastInvoke(targetObject, arguments, initiator);
                 }
             }
 
@@ -877,8 +387,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    var value = CallOperator.PrepareArg(initiator, arguments[sourceIndex]);
-                    value.attributes |= JSValueAttributesInternal.Cloned;
+                    var value = Tools.PrepareArg(initiator, arguments[sourceIndex]);
                     if (value.valueType == JSValueType.SpreadOperatorResult)
                     {
                         spreadIndex = 0;
@@ -898,7 +407,14 @@ namespace NiL.JS.BaseLibrary
 
             initiator.objectSource = null;
 
-            return Invoke(self, argumentsObject);
+            if (construct)
+            {
+                if (targetObject == null || targetObject.valueType < JSValueType.Object)
+                    return Construct(argumentsObject);
+                return Construct(targetObject, argumentsObject);
+            }
+            else
+                return Call(targetObject, argumentsObject);
         }
 
         private JSValue fastInvoke(JSValue targetObject, Expression[] arguments, Context initiator)
@@ -908,7 +424,7 @@ namespace NiL.JS.BaseLibrary
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
 #endif
             var body = creator.body;
-            targetObject = correctThisBind(targetObject, body.strict);
+            targetObject = correctTargetObject(targetObject, body.strict);
             if (creator.recursionDepth > creator.parametersStored) // рекурсивный вызов.
             {
                 storeParameters();
@@ -965,21 +481,38 @@ namespace NiL.JS.BaseLibrary
                 }
                 if (tailCall)
                     break;
-                targetObject = correctThisBind(internalContext.objectSource, body.strict);
+                targetObject = correctTargetObject(internalContext.objectSource, body.strict);
             }
             return res;
         }
 
         [Hidden]
-        public virtual JSValue Invoke(JSValue targetObject, Arguments args)
+        public JSValue Call(Arguments args)
         {
+            return Call(undefined, args);
+        }
+
+        [Hidden]
+        public JSValue Call(JSValue targetObject, Arguments arguments)
+        {
+            if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithNewOnly)
+            {
+                ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
+            }
+
+            targetObject = correctTargetObject(targetObject, creator.body.strict);
+            return Invoke(false, targetObject, arguments);
+        }
+
+        protected virtual JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        {
+
 #if DEBUG && !PORTABLE
             if (creator.trace)
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
 #endif
             JSValue res = null;
             var body = creator.body;
-            targetObject = correctThisBind(targetObject, body.strict);
             if (body.lines.Length == 0)
             {
                 notExists.valueType = JSValueType.NotExists;
@@ -992,10 +525,10 @@ namespace NiL.JS.BaseLibrary
                     storeParameters();
                 creator.parametersStored = creator.recursionDepth;
             }
-            if (args == null)
+            if (arguments == null)
             {
                 var cc = Context.CurrentContext;
-                args = new Arguments(cc);
+                arguments = new Arguments(cc);
             }
             for (; ; ) // tail recursion catcher
             {
@@ -1019,21 +552,21 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        internalContext.arguments = args;
+                        internalContext.arguments = arguments;
                         if (ceocw)
                             internalContext.fields["arguments"] = internalContext.arguments;
                         if (body.strict)
                         {
-                            args.attributes |= JSValueAttributesInternal.ReadOnly;
-                            args.callee = propertiesDummySM;
-                            args.caller = propertiesDummySM;
+                            arguments.attributes |= JSValueAttributesInternal.ReadOnly;
+                            arguments.callee = propertiesDummySM;
+                            arguments.caller = propertiesDummySM;
                         }
                         else
                         {
-                            args.callee = this;
+                            arguments.callee = this;
                         }
                     }
-                    initParameters(args, internalContext);
+                    initParameters(arguments, internalContext);
                     res = evaluate(internalContext);
                 }
                 finally
@@ -1049,8 +582,8 @@ namespace NiL.JS.BaseLibrary
                 }
                 if (res != null) // tail recursion
                     break;
-                args = internalContext.abortInfo as Arguments;
-                targetObject = correctThisBind(internalContext.objectSource, body.strict);
+                arguments = internalContext.abortInfo as Arguments;
+                targetObject = correctTargetObject(internalContext.objectSource, body.strict);
             }
             return res;
         }
@@ -1071,7 +604,10 @@ namespace NiL.JS.BaseLibrary
                 return undefined;
             else
             {
-                return ai.CloneImpl(false);
+                // константы и новосозданные объекты копировать нет смысла
+                if ((ai.attributes & JSValueAttributesInternal.SystemObject) == 0)
+                    return ai.CloneImpl(false);
+                return ai;
             }
         }
 
@@ -1124,28 +660,28 @@ namespace NiL.JS.BaseLibrary
              * Поэтому заменять значения можно только после полного расчёта новых значений
              */
 
-            a0 = CallOperator.PrepareArg(initiator, arguments[0]);
+            a0 = Tools.PrepareArg(initiator, arguments[0]);
             if (argumentsCount > 1)
             {
-                a1 = CallOperator.PrepareArg(initiator, arguments[1]);
+                a1 = Tools.PrepareArg(initiator, arguments[1]);
                 if (argumentsCount > 2)
                 {
-                    a2 = CallOperator.PrepareArg(initiator, arguments[2]);
+                    a2 = Tools.PrepareArg(initiator, arguments[2]);
                     if (argumentsCount > 3)
                     {
-                        a3 = CallOperator.PrepareArg(initiator, arguments[3]);
+                        a3 = Tools.PrepareArg(initiator, arguments[3]);
                         if (argumentsCount > 4)
                         {
-                            a4 = CallOperator.PrepareArg(initiator, arguments[4]);
+                            a4 = Tools.PrepareArg(initiator, arguments[4]);
                             if (argumentsCount > 5)
                             {
-                                a5 = CallOperator.PrepareArg(initiator, arguments[5]);
+                                a5 = Tools.PrepareArg(initiator, arguments[5]);
                                 if (argumentsCount > 6)
                                 {
-                                    a6 = CallOperator.PrepareArg(initiator, arguments[6]);
+                                    a6 = Tools.PrepareArg(initiator, arguments[6]);
                                     if (argumentsCount > 7)
                                     {
-                                        a7 = CallOperator.PrepareArg(initiator, arguments[7]);
+                                        a7 = Tools.PrepareArg(initiator, arguments[7]);
                                     }
                                 }
                             }
@@ -1187,9 +723,15 @@ namespace NiL.JS.BaseLibrary
 
         private void setParamValue(int index, JSValue value, Context context)
         {
+            if (creator.parameters[index].assignations != null)
+            {
+                value = value.CloneImpl(false);
+                value.attributes |= JSValueAttributesInternal.Argument;
+            }
+            else
+                value.attributes &= ~JSValueAttributesInternal.Cloned;
             if (!value.IsDefined && creator.parameters.Length > index && creator.parameters[index].initializer != null)
                 value.Assign(creator.parameters[index].initializer.Evaluate(context));
-            value.attributes |= JSValueAttributesInternal.Argument;
             creator.parameters[index].cacheRes = value;
             creator.parameters[index].cacheContext = context;
             if (creator.parameters[index].captured)
@@ -1248,7 +790,8 @@ namespace NiL.JS.BaseLibrary
                     }
                     else if (prm.assignations != null)
                     {
-                        args[i] = t = t.CloneImpl(false);
+                        t = t.CloneImpl(false);
+                        args[i] = t;
                     }
                 }
                 else
@@ -1257,7 +800,8 @@ namespace NiL.JS.BaseLibrary
                         || ceaw
                         || (t.attributes & JSValueAttributesInternal.Temporary) != 0)
                     {
-                        args[i] = t = t.CloneImpl(false);
+                        t = t.CloneImpl(false);
+                        args[i] = t;
                         t.attributes |= JSValueAttributesInternal.Argument;
                     }
                 }
@@ -1355,21 +899,12 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        internal JSValue correctThisBind(JSValue thisBind, bool strict)
+        internal JSValue correctTargetObject(JSValue thisBind, bool strict)
         {
             if (thisBind == null)
-                return strict ? undefined : parentContext.Root.thisBind;
-            else if (thisBind.oValue == typeof(NewOperator) as object)
-            {
-                if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.OnlyWithoutNew)
-                    ExceptionsHelper.Throw(new TypeError(string.Format(Strings.InvalidTryToCreateWithNew, name)));
-                thisBind.__proto__ = prototype.valueType < JSValueType.Object ? GlobalPrototype : prototype.oValue as JSObject;
-                thisBind.oValue = thisBind;
-            }
+                return strict ? undefined : parentContext != null ? parentContext.Root.thisBind : null;
             else if (parentContext != null)
             {
-                if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.OnlyWithNew)
-                    ExceptionsHelper.Throw(new TypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name)));
                 if (!strict) // Поправляем this
                 {
                     if (thisBind.valueType > JSValueType.Undefined && thisBind.valueType < JSValueType.Object)
@@ -1401,12 +936,6 @@ namespace NiL.JS.BaseLibrary
                 for (var i = 0; i < creator.body.localVariables.Length; i++)
                     context.fields[creator.body.localVariables[i].Name] = creator.body.localVariables[i].cacheRes;
             }
-        }
-
-        [Hidden]
-        public JSValue Invoke(Arguments args)
-        {
-            return Invoke(undefined, args);
         }
 
         [Hidden]
@@ -1473,6 +1002,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        [CLSCompliant(false)]
         public JSValue call(Arguments args)
         {
             var newThis = args[0];
@@ -1486,7 +1016,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
                 args[0] = null;
-            return Invoke(newThis, args);
+            return Call(newThis, args);
         }
 
         [DoNotEnumerate]
@@ -1505,14 +1035,14 @@ namespace NiL.JS.BaseLibrary
                     ExceptionsHelper.Throw(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
                 if (len.valueType == JSValueType.Property)
-                    len = (len.oValue as PropertyPair).get.Invoke(argsSource, null);
+                    len = (len.oValue as PropertyPair).get.Call(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
                 if (nargs.length >= 50000)
                     ExceptionsHelper.Throw(new RangeError("Too many arguments."));
                 for (var i = nargs.length; i-- > 0; )
                     nargs[i] = argsSource[Tools.Int32ToString(i)];
             }
-            return Invoke(self, nargs);
+            return Call(self, nargs);
         }
 
         [DoNotEnumerate]
@@ -1528,39 +1058,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public virtual object MakeDelegate(Type delegateType)
         {
-#if PORTABLE
-            throw new NotSupportedException("Do not supported in portable version");
-#else
-            var del = delegateType.GetMethod("Invoke");
-            var prms = del.GetParameters();
-            if (prms.Length <= 16)
-            {
-                var invokes = typeof(_DelegateWraper).GetMember("Invoke");
-                if (del.ReturnType != typeof(void))
-                {
-                    Type[] argtypes = new Type[prms.Length + 1];
-                    for (int i = 0; i < prms.Length; i++)
-                        argtypes[i + 1] = prms[i].ParameterType;
-                    argtypes[0] = del.ReturnType;
-                    var instance = new _DelegateWraper(this);
-                    var method = ((System.Reflection.MethodInfo)invokes[prms.Length]).MakeGenericMethod(argtypes);
-                    return Delegate.CreateDelegate(delegateType, instance, method);
-                }
-                else
-                {
-                    Type[] argtypes = new Type[prms.Length];
-                    for (int i = 0; i < prms.Length; i++)
-                        argtypes[i] = prms[i].ParameterType;
-                    var instance = new _DelegateWraper(this);
-                    var method = ((System.Reflection.MethodInfo)invokes[17 + prms.Length]);
-                    if (prms.Length > 0)
-                        method = method.MakeGenericMethod(argtypes);
-                    return Delegate.CreateDelegate(delegateType, instance, method);
-                }
-            }
-            else
-                throw new ArgumentException("Parameters count must be less or equal 16.");
-#endif
+            return null;
         }
     }
 }

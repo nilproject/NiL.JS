@@ -1286,17 +1286,7 @@ namespace NiL.JS.Core
             }
             return (res as object ?? code).ToString();
         }
-
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        internal static JSValue RaiseIfNotExists(JSValue obj, object name)
-        {
-            if (obj.valueType == JSValueType.NotExists)
-                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" has not been defined.")));
-            return obj;
-        }
-
+        
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
@@ -1329,10 +1319,10 @@ namespace NiL.JS.Core
                 if (reassignLen && (len.attributes & JSValueAttributesInternal.ReadOnly) == 0)
                 {
                     len.valueType = JSValueType.Undefined;
-                    len.Assign(((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null));
+                    len.Assign(((len.oValue as PropertyPair).get ?? Function.emptyFunction).Call(src, null));
                 }
                 else
-                    len = ((len.oValue as PropertyPair).get ?? Function.emptyFunction).Invoke(src, null);
+                    len = ((len.oValue as PropertyPair).get ?? Function.emptyFunction).Call(src, null);
             }
             uint res;
             if (len.valueType >= JSValueType.Object)
@@ -1342,7 +1332,7 @@ namespace NiL.JS.Core
             if (reassignLen)
             {
                 if (len.valueType == JSValueType.Property)
-                    ((len.oValue as PropertyPair).set ?? Function.emptyFunction).Invoke(src, new Arguments() { a0 = res, length = 1 });
+                    ((len.oValue as PropertyPair).set ?? Function.emptyFunction).Call(src, new Arguments() { a0 = res, length = 1 });
                 else
                     len.Assign(res);
             }
@@ -1374,7 +1364,7 @@ namespace NiL.JS.Core
                             goDeep = true;
                         }
                         if (evalProps && value.valueType == JSValueType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl(false);
+                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (temp.data[element.Key] == null)
@@ -1397,7 +1387,7 @@ namespace NiL.JS.Core
                         if (!value.IsExists)
                             continue;
                         if (evalProps && value.valueType == JSValueType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Invoke(src, null).CloneImpl(false);
+                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
@@ -1462,10 +1452,23 @@ namespace NiL.JS.Core
             var getter = property.oValue as PropertyPair;
             if (getter == null || getter.get == null)
                 return JSValue.undefined;
-            property = getter.get.Invoke(target, null);
+            property = getter.get.Call(target, null);
             if (property.valueType < JSValueType.Undefined)
                 property = JSValue.undefined;
             return property;
+        }
+
+        internal static JSValue PrepareArg(Context context, CodeNode source)
+        {
+            var a = source.Evaluate(context);
+            if (a == null)
+                return JSValue.undefined;
+            if (a.valueType != JSValueType.SpreadOperatorResult)
+            {
+                a = a.CloneImpl(false);
+                a.attributes |= JSValueAttributesInternal.Cloned;
+            }
+            return a;
         }
     }
 }
