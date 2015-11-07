@@ -691,6 +691,12 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
+        public static JSValue Wrap(object @object)
+        {
+            return TypeProxy.Proxy(@object);
+        }
+
+        [Hidden]
         public object Clone()
         {
             return CloneImpl();

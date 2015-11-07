@@ -302,12 +302,6 @@ namespace NiL.JS.Core
             return new StringMap2<JSValue>();
         }
 
-        [Hidden]
-        public JSValue Wrap(object @object)
-        {
-            return TypeProxy.Proxy(@object);
-        }
-
         [DoNotEnumerate]
         [ArgumentsLength(2)]
         public static JSValue create(Arguments args)

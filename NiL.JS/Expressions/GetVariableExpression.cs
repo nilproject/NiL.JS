@@ -118,7 +118,7 @@ namespace NiL.JS.Expressions
             dynamicValues.Add(this);
             var res = System.Linq.Expressions.Expression.Call(
                 System.Linq.Expressions.Expression.ArrayAccess(JITHelpers.DynamicValuesParameter, JITHelpers.cnst(dynamicValues.Count - 1)),
-                forAssign ? EvaluateForWriteMethod : EvaluateMethod,
+                forAssign ? JITHelpers.EvaluateForWriteMethod : JITHelpers.EvaluateMethod,
                 JITHelpers.ContextParameter
                 );
             if (expectedType == typeof(int))

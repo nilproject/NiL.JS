@@ -19,6 +19,9 @@ namespace NiL.JS.Core.JIT
         public static readonly MethodInfo JSObjectToBooleanMethod = null;
         public static readonly MethodInfo JSObjectToInt32Method = typeof(Tools).GetMethod("JSObjectToInt32", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(JSValue) }, null);
 
+        internal static readonly MethodInfo EvaluateForWriteMethod = typeof(CodeNode).GetMethod("EvaluateForWrite", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
+        internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
+
         static JITHelpers()
         {
             var methods = typeof(JSValue).GetMethods(BindingFlags.Static | BindingFlags.Public);
@@ -165,17 +168,7 @@ namespace NiL.JS.Core.JIT
             return method.Method;
         }
 
-        internal static MethodInfo methodof(Action<JSValue> method)
-        {
-            return method.Method;
-        }
-
         internal static MethodInfo methodof(Func<Context, JSValue> method)
-        {
-            return method.Method;
-        }
-
-        internal static MethodInfo methodof(Func<object, bool> method)
         {
             return method.Method;
         }
@@ -190,14 +183,24 @@ namespace NiL.JS.Core.JIT
             return method.Method;
         }
 
-        internal static MethodInfo methodof(Action<Context, Exception> method)
-        {
-            return method.Method;
-        }
-
         internal static MethodInfo methodof(Func<JSValue, object> func)
         {
             return func.Method;
+        }
+
+        internal static MethodInfo methodof(Func<object, JSValue> func)
+        {
+            return func.Method;
+        }
+
+        internal static MethodInfo methodof(Func<Arguments, JSValue> func)
+        {
+            return func.Method;
+        }
+
+        internal static MethodInfo methodof(Action<Context, Exception> method)
+        {
+            return method.Method;
         }
 
         internal static MethodInfo methodof(Func<Context, JSValue, Context> method)

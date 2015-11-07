@@ -15,6 +15,39 @@ namespace NiL.JS.Test
 {
     class Program
     {
+        private sealed class ClassWithEvent
+        {
+            public event EventHandler MyEvent;
+
+            public void FireMyEvent()
+            {
+                var @event = MyEvent;
+                if (@event != null)
+                    @event(this, EventArgs.Empty);
+            }
+        }
+
+        private static void testEx()
+        {
+            Context.GlobalContext.DefineVariable("testInstance").Assign(JSValue.Wrap(new ClassWithEvent()));
+
+            Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
+            Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.KeysOfOperator));
+
+            var t = new Script(@"
+function func(){
+    console.log('Hello');
+}
+
+testInstance.MyEvent = func;
+testInstance.FireMyEvent();
+testInstance.remove_MyEvent(func);
+testInstance.FireMyEvent();
+");
+            t.Context.AttachModule(typeof(object));
+            t.Invoke();
+        }
+
         static void Main(string[] args)
         {
             //Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
@@ -46,7 +79,7 @@ namespace NiL.JS.Test
             }));
 #endif
             
-            int mode = 0
+            int mode = 3
                     ;
             switch (mode)
             {
@@ -657,23 +690,6 @@ for (var i = 0; i < 10000000; )
             sr.Dispose();
             f.Dispose();
             sw.Stop();
-        }
-        
-        private static void testEx()
-        {
-            Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
-            Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.KeysOfOperator));
-
-            var t = new Script(@"
-function* incGen(x)
-{
-    var prew = x;
-    while(true)
-        prew = 1 + yield prew;
-}
-");
-            t.Context.AttachModule(typeof(object));
-            t.Invoke();
         }
 
         private static void cryptojs()

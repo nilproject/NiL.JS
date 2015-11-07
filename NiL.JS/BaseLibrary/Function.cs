@@ -4,8 +4,10 @@ using System.Text;
 using NiL.JS.Core;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
+using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
+using linqEx = System.Linq.Expressions;
 
 namespace NiL.JS.BaseLibrary
 {
@@ -41,8 +43,8 @@ namespace NiL.JS.BaseLibrary
 #endif
     public class Function : JSObject
     {
-        private static readonly FunctionDefinition creatorDummy = new FunctionDefinition("anonymous");
         internal static readonly Function emptyFunction = new Function();
+        private static readonly FunctionDefinition creatorDummy = new FunctionDefinition("anonymous");
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function)
 #if PORTABLE
             .GetTypeInfo().GetDeclaredMethod("ThrowTypeError"))
@@ -65,6 +67,8 @@ namespace NiL.JS.BaseLibrary
             oValue = new PropertyPair() { get = TTEProxy, set = TTEProxy },
             attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
+
+        private Dictionary<Type, Delegate> delegateCache;
 
         internal readonly FunctionDefinition creator;
         [Hidden]
@@ -1056,9 +1060,55 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public virtual object MakeDelegate(Type delegateType)
+        public virtual Delegate MakeDelegate(Type delegateType)
         {
-            return null;
+            if (delegateCache != null)
+            {
+                Delegate cachedDelegate;
+                if (delegateCache.TryGetValue(delegateType, out cachedDelegate))
+                    return cachedDelegate;
+            }
+
+            var invokeMethod = delegateType.GetMethod("Invoke");
+            var prms = invokeMethod.GetParameters();
+
+            var handlerArgumentsParameters = new linqEx.ParameterExpression[prms.Length];
+            for (var i = 0; i < prms.Length; i++)
+            {
+                handlerArgumentsParameters[i] = linqEx.Expression.Parameter(prms[i].ParameterType, prms[i].Name);
+            }
+
+            var argumentsParameter = linqEx.Expression.Parameter(typeof(Arguments), "arguments");
+            var expressions = new List<linqEx.Expression>();
+
+            if (prms.Length != 0)
+            {
+                expressions.Add(linqEx.Expression.Assign(argumentsParameter, linqEx.Expression.New(typeof(Arguments))));
+                for (var i = 0; i < handlerArgumentsParameters.Length; i++)
+                {
+                    expressions.Add(linqEx.Expression.Call(argumentsParameter, typeof(Arguments).GetMethod("Add"),
+                        linqEx.Expression.Call(JITHelpers.methodof(TypeProxy.Proxy), handlerArgumentsParameters[i])));
+                }
+            }
+
+            var callTree = linqEx.Expression.Call(linqEx.Expression.Constant(this), JITHelpers.methodof(Call), argumentsParameter);
+
+            if (invokeMethod.ReturnParameter.ParameterType != typeof(void))
+            {
+                var asMethod = typeof(JSValue).GetMethod("As").MakeGenericMethod(invokeMethod.ReturnParameter.ParameterType);
+                callTree = linqEx.Expression.Call(callTree, asMethod);
+            }
+
+            expressions.Add(callTree);
+            var result = linqEx.Expression.Block(new[] { argumentsParameter }, expressions);
+
+            var @delegate = linqEx.Expression.Lambda(delegateType, result, "<delegateWrapper>" + name, handlerArgumentsParameters).Compile();
+
+            if (delegateCache == null)
+                delegateCache = new Dictionary<Type, Delegate>();
+            delegateCache.Add(delegateType, @delegate);
+
+            return @delegate;
         }
     }
 }

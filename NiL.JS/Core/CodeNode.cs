@@ -32,9 +32,6 @@ namespace NiL.JS.Core
     {
         private static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
 #if !PORTABLE
-        internal static readonly MethodInfo EvaluateForWriteMethod = typeof(CodeNode).GetMethod("EvaluateForWrite", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
-        internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
-
 #if !NET35
         internal System.Linq.Expressions.Expression JitOverCall(bool forAssign)
         {
