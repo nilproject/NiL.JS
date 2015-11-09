@@ -43,8 +43,8 @@ namespace NiL.JS.BaseLibrary
 #endif
     public class Function : JSObject
     {
-        internal static readonly Function emptyFunction = new Function();
         private static readonly FunctionDefinition creatorDummy = new FunctionDefinition("anonymous");
+        internal static readonly Function emptyFunction = new Function();
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function)
 #if PORTABLE
             .GetTypeInfo().GetDeclaredMethod("ThrowTypeError"))

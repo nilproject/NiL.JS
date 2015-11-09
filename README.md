@@ -2,7 +2,7 @@
 NiL.JS
 ======
     
-Open source ECMAScript 5.1 (JavaScript) engine.
+Open source ECMAScript 6.0 (ES2015) (JavaScript) engine.
 Licensed under BSD 3-Clause License.
     
 * High performance.

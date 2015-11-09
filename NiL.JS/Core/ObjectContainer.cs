@@ -61,8 +61,8 @@ namespace NiL.JS.Core
         {
             var t = instance as JSValue;
             if (t != null)
-                t.SetMember(name, value, strict);
-            base.SetMember(name, value, strict);
+                t.SetMember(name, value, memberScope, strict);
+            base.SetMember(name, value, memberScope, strict);
         }
 
         protected internal override bool DeleteMember(JSValue name)
