@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
@@ -8,6 +9,34 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
+#if !PORTABLE
+    [Serializable]
+#endif
+    public sealed class MemberDescriptor
+    {
+        internal string _name;
+        internal CodeNode _value;
+        internal bool _static;
+
+        public string Name { get { return _name; } }
+        public CodeNode Value { get { return _value; } }
+        public bool Static { get { return _static; } }
+
+        public MemberDescriptor(string name, CodeNode value, bool @static)
+        {
+            _name = name;
+            _value = value;
+            _static = @static;
+        }
+
+        public override string ToString()
+        {
+            if (_static)
+                return "static " + _value;
+            return _value.ToString();
+        }
+    }
+
 #if !PORTABLE
     [Serializable]
 #endif
@@ -34,13 +63,11 @@ namespace NiL.JS.Expressions
             }
         }
 
-        private string[] fields;
-        private CodeNode[] values;
+        private ReadOnlyCollection<MemberDescriptor> members;
         private Expression baseType;
         private FunctionDefinition _ctor;
 
-        public CodeNode[] Initializators { get { return values; } }
-        public string[] Fields { get { return fields; } }
+        public ICollection<MemberDescriptor> Members { get { return members; } }
         public Expression BaseClassExpression { get { return baseType; } }
         public FunctionDefinition Constructor { get { return _ctor; } }
         public override bool Hoist
@@ -48,19 +75,12 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        public ClassDefinition(string name, Expression baseType, Dictionary<string, CodeNode> fields, FunctionDefinition ctor)
+        private ClassDefinition(string name, Expression baseType, ICollection<MemberDescriptor> fields, FunctionDefinition ctor)
         {
             this.name = name;
             this.baseType = baseType;
-            this.fields = new string[fields.Count];
-            this.values = new CodeNode[fields.Count];
             this._ctor = ctor;
-            int i = 0;
-            foreach (var f in fields)
-            {
-                this.fields[i] = f.Key;
-                this.values[i++] = f.Value;
-            }
+            this.members = new List<MemberDescriptor>(fields).AsReadOnly();
         }
 
         internal static CodeNode Parse(ParsingState state, ref int index)
@@ -102,7 +122,7 @@ namespace NiL.JS.Expressions
             CodeNode ctor = null;
             var oldStrict = state.strict;
             state.strict = true;
-            var flds = new Dictionary<string, CodeNode>();
+            var flds = new Dictionary<string, MemberDescriptor>();
             var oldCodeContext = state.CodeContext;
             state.CodeContext |= CodeContext.InClassDefenition;
             while (code[i] != '}')
@@ -110,49 +130,33 @@ namespace NiL.JS.Expressions
                 do
                     i++;
                 while (char.IsWhiteSpace(code[i]) || code[i] == ';');
-                int s = i;
                 if (state.Code[i] == '}')
                     break;
-                if (Parser.Validate(state.Code, "set ", ref i) && state.Code[i] != ':')
+
+                bool @static = Parser.Validate(state.Code, "static ", ref i);
+
+                int s = i;
+                if (Parser.Validate(state.Code, "get ", ref i) || Parser.Validate(state.Code, "set ", ref i))
                 {
                     i = s;
-                    var setter = FunctionDefinition.Parse(state, ref i, FunctionType.Set) as FunctionDefinition;
-                    if (!flds.ContainsKey(setter.Name))
+                    var mode = state.Code[i] == 's' ? FunctionType.Setter : FunctionType.Getter;
+                    var propertyAccessor = FunctionDefinition.Parse(state, ref i, mode) as FunctionDefinition;
+                    var accessorName = (@static ? "static " : "") + propertyAccessor.name;
+                    if (!flds.ContainsKey(accessorName))
                     {
-                        var vle = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
-                        vle.value.valueType = JSValueType.Property;
-                        flds.Add(setter.Name, vle);
+                        var propertyPair = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { propertyAccessor, null } });
+                        propertyPair.value.valueType = JSValueType.Property;
+                        flds.Add(accessorName, new MemberDescriptor(propertyAccessor.name, propertyPair, @static));
                     }
                     else
                     {
-                        var vle = flds[setter.Name];
+                        var vle = flds[accessorName].Value;
                         if (!(vle is ConstantDefinition)
                             || (vle as ConstantDefinition).value.valueType != JSValueType.Property)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to define setter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        if (((vle as ConstantDefinition).value.oValue as CodeNode[])[0] != null)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to redefine setter " + setter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        ((vle as ConstantDefinition).value.oValue as CodeNode[])[0] = setter;
-                    }
-                }
-                else if (Parser.Validate(state.Code, "get ", ref i) && state.Code[i] != ':')
-                {
-                    i = s;
-                    var getter = FunctionDefinition.Parse(state, ref i, FunctionType.Get) as FunctionDefinition;
-                    if (!flds.ContainsKey(getter.Name))
-                    {
-                        var vle = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
-                        vle.value.valueType = JSValueType.Property;
-                        flds.Add(getter.Name, vle);
-                    }
-                    else
-                    {
-                        var vle = flds[getter.Name];
-                        if (!(vle is ConstantDefinition)
-                            || (vle as ConstantDefinition).value.valueType != JSValueType.Property)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to define getter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        if (((vle as ConstantDefinition).value.oValue as CodeNode[])[1] != null)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to redefine getter " + getter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        ((vle as ConstantDefinition).value.oValue as CodeNode[])[1] = getter;
+                            ExceptionsHelper.Throw((new SyntaxError("Try to define " + mode + " for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
+                        if (((vle as ConstantDefinition).value.oValue as CodeNode[])[(int)mode - 1] != null)
+                            ExceptionsHelper.Throw((new SyntaxError("Try to redefine " + mode + " " + propertyAccessor.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
+                        ((vle as ConstantDefinition).value.oValue as CodeNode[])[(int)mode - 1] = propertyAccessor;
                     }
                 }
                 else
@@ -171,22 +175,65 @@ namespace NiL.JS.Expressions
                             fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict);
                     }
                     if (fieldName == null)
-                        ExceptionsHelper.Throw((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
-                    if (flds.ContainsKey(fieldName))
-                        ExceptionsHelper.Throw(new SyntaxError("Trying to redefinition field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
+                        ExceptionsHelper.Throw((new SyntaxError("Invalid member name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                     if (fieldName == "constructor")
                     {
+                        if (@static)
+                        {
+                            ExceptionsHelper.ThrowSyntaxError(Strings.ConstructorCannotBeStatic, state.Code, s);
+                        }
                         if (ctor != null)
-                            ExceptionsHelper.ThrowSyntaxError("Trying to redefinition constructor", state.Code, i);
+                        {
+                            ExceptionsHelper.ThrowSyntaxError("Trying to redefinition constructor", state.Code, s);
+                        }
+
                         state.CodeContext |= CodeContext.InClassConstructor;
                     }
+                    else if (@static)
+                    {
+                        fieldName = "static " + fieldName;
+                        state.CodeContext |= CodeContext.InStaticMember;
+                    }
+                    if (flds.ContainsKey(fieldName))
+                        ExceptionsHelper.Throw(new SyntaxError("Trying to redefinition member \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
+
                     i = s;
-                    var initializator = FunctionDefinition.Parse(state, ref i, FunctionType.Method) as FunctionDefinition;
-                    if (ctor != null)
-                        state.CodeContext = oldCodeContext | CodeContext.InClassDefenition;
+                    var method = FunctionDefinition.Parse(state, ref i, FunctionType.Method) as FunctionDefinition;
+
+                    state.CodeContext = oldCodeContext | CodeContext.InClassDefenition;
+
+                    if (fieldName == "constructor")
+                    {
+                        ctor = method;
+
+                        if (baseType != null && !(baseType is ConstantDefinition))
+                        {
+                            do
+                            {
+                                if (method.body.localVariables != null)
+                                {
+                                    var lvi = 0;
+                                    for (; lvi < method.body.localVariables.Length; lvi++)
+                                    {
+                                        if (method.body.localVariables[lvi].name == "super")
+                                        {
+                                            break;
+                                        }
+                                    }
+                                    if (lvi < method.body.localVariables.Length)
+                                        break;
+                                }
+
+                                ExceptionsHelper.ThrowSyntaxError("constructor must contain call constructor of superclass", state.Code, s);
+                            }
+                            while (false);
+                        }
+                    }
                     else
-                        flds[fieldName] = initializator;
-                    if (initializator == null)
+                    {
+                        flds[fieldName] = new MemberDescriptor(method.name, method, @static);
+                    }
+                    if (method == null)
                         ExceptionsHelper.Throw(new SyntaxError());
                 }
             }
@@ -207,29 +254,58 @@ namespace NiL.JS.Expressions
             state.CodeContext = oldCodeContext;
             state.strict = oldStrict;
             index = i + 1;
-            return new ClassDefinition(name, baseType, flds, ctor as FunctionDefinition);
+            return new ClassDefinition(name, baseType, flds.Values, ctor as FunctionDefinition);
         }
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref _ctor, depth, variables, codeContext, message, statistic, opts);
+            Parser.Build(ref _ctor, depth, variables, codeContext | CodeContext.InClassDefenition | CodeContext.InClassConstructor, message, statistic, opts);
             Parser.Build(ref baseType, depth, variables, codeContext, message, statistic, opts);
+
+            for (var i = 0; i < members.Count; i++)
+            {
+                Parser.Build
+                (
+                    ref members[i]._value,
+                    depth,
+                    variables,
+                    codeContext | CodeContext.InClassDefenition | (members[i]._static ? CodeContext.InStaticMember : 0),
+                    message,
+                    statistic,
+                    opts
+                );
+            }
 
             return base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
         }
 
         public override JSValue Evaluate(Context context)
         {
-            var proto = TypeProxy.GlobalPrototype;
-            if (this.baseType != null)
-                proto = baseType.Evaluate(context).GetMember("prototype") as JSObject;
             var ctor = this._ctor.Evaluate(context) as Function;
+            ctor.RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
             context.DefineVariable(name).Assign(ctor);
-            ctor.prototype.__proto__ = proto;
 
-            for (var i = 0; i < fields.Length; i++)
+            JSValue protoCtor = TypeProxy.GlobalPrototype;
+            if (this.baseType != null)
             {
-                ctor.prototype[fields[i]] = values[i].Evaluate(context);
+                protoCtor = baseType.Evaluate(context).oValue as JSObject;
+                ctor.prototype.__proto__ = Tools.InvokeGetter(protoCtor.GetMember("prototype"), protoCtor).oValue as JSObject;
+                ctor.prototype.SetMember("constructor", ctor, false);
+                ctor.__proto__ = protoCtor as JSObject;
+            }
+
+            for (var i = 0; i < members.Count; i++)
+            {
+                var member = members[i];
+                var value = member.Value.Evaluate(context);
+                if (member.Static)
+                {
+                    ctor.SetMember(member.Name, value, true);
+                }
+                else
+                {
+                    ctor.prototype.SetMember(member.Name, value, true);
+                }
             }
 
             return ctor;
@@ -247,9 +323,9 @@ namespace NiL.JS.Expressions
             if (baseType != null)
                 result.Append(" extends ").Append(baseType);
             result.Append(" {").Append(Environment.NewLine);
-            for (var i = 0; i < fields.Length; i++)
+            for (var i = 0; i < members.Count; i++)
             {
-                var t = values[i].ToString().Replace(Environment.NewLine, Environment.NewLine + "  ");
+                var t = members[i].ToString().Replace(Environment.NewLine, Environment.NewLine + "  ");
                 result.Append(t);
             }
             result.Append(Environment.NewLine).Append("}");

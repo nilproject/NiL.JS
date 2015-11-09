@@ -67,7 +67,7 @@ namespace NiL.JS.Expressions
                 if (Parser.Validate(state.Code, "set ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var setter = FunctionDefinition.Parse(state, ref i, FunctionType.Set) as FunctionDefinition;
+                    var setter = FunctionDefinition.Parse(state, ref i, FunctionType.Setter) as FunctionDefinition;
                     if (!flds.ContainsKey(setter.Name))
                     {
                         var vle = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
@@ -88,7 +88,7 @@ namespace NiL.JS.Expressions
                 else if (Parser.Validate(state.Code, "get ", ref i) && state.Code[i] != ':')
                 {
                     i = s;
-                    var getter = FunctionDefinition.Parse(state, ref i, FunctionType.Get) as FunctionDefinition;
+                    var getter = FunctionDefinition.Parse(state, ref i, FunctionType.Getter) as FunctionDefinition;
                     if (!flds.ContainsKey(getter.Name))
                     {
                         var vle = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });

@@ -61,6 +61,15 @@ namespace NiL.JS {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Constructor cannot be static.
+        /// </summary>
+        internal static string ConstructorCannotBeStatic {
+            get {
+                return ResourceManager.GetString("ConstructorCannotBeStatic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Do not define a function inside a loop.
         /// </summary>
         internal static string FunctionInLoop {

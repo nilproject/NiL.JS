@@ -22,7 +22,8 @@ namespace NiL.JS.Core
         InEval = 32,
         InExpression = 64,
         InClassDefenition = 128,
-        InClassConstructor = 256
+        InClassConstructor = 256,
+        InStaticMember = 512
     }
 
 #if !PORTABLE

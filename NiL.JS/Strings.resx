@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ConstructorCannotBeStatic" xml:space="preserve">
+    <value>Constructor cannot be static</value>
+  </data>
   <data name="FunctionInLoop" xml:space="preserve">
     <value>Do not define a function inside a loop</value>
   </data>

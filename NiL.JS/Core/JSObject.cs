@@ -122,10 +122,10 @@ namespace NiL.JS.Core
             {
                 if (forWrite || fields != null)
                     name = key.ToString();
-                fromProto = (memberScope == MemberScope.Super || fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
+                fromProto = (memberScope >= MemberScope.Super || fields == null || !fields.TryGetValue(name, out res) || res.valueType < JSValueType.Undefined) && ((proto = __proto__).oValue != null);
                 if (fromProto)
                 {
-                    res = proto.GetMember(key, false, memberScope);
+                    res = proto.GetMember(key, false, memberScope > 0 ? (MemberScope)(memberScope - 1) : 0);
                     if (((memberScope == MemberScope.Own && ((res.attributes & JSValueAttributesInternal.Field) == 0 || res.valueType != JSValueType.Property)))
                         || res.valueType < JSValueType.Undefined)
                         res = null;
@@ -202,7 +202,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        protected internal override void SetMember(JSValue key, JSValue value, bool throwOnError)
+        protected internal override void SetMember(JSValue key, JSValue value, MemberScope memberScope, bool throwOnError)
         {
             JSValue field;
             if (valueType >= JSValueType.Object && oValue != this)
@@ -212,7 +212,7 @@ namespace NiL.JS.Core
                 field = oValue as JSObject;
                 if (field != null)
                 {
-                    field.SetMember(key, value, throwOnError);
+                    field.SetMember(key, value, memberScope, throwOnError);
                     return;
                 }
             }

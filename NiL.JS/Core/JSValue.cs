@@ -13,8 +13,9 @@ namespace NiL.JS.Core
     public enum MemberScope
     {
         Сommon = 0,
-        Own,
-        Super
+        Own = 1,
+        Super = 2,
+        SuperProto = 3
     }
 
 #if !PORTABLE
@@ -561,19 +562,30 @@ namespace NiL.JS.Core
             return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String)).GetMember(name, false, MemberScope.Сommon);
         }
 
-        internal protected virtual void SetMember(JSValue name, JSValue value, bool throwOnError)
+        internal protected void SetMember(JSValue name, JSValue value, bool throwOnError)
+        {
+            SetMember(name, value, MemberScope.Сommon, throwOnError);
+        }
+
+        internal protected virtual void SetMember(JSValue name, JSValue value, MemberScope memberScope, bool throwOnError)
         {
             JSValue field;
             if (valueType >= JSValueType.Object)
             {
                 if (oValue == null)
-                    ExceptionsHelper.Throw(new TypeError("Can not get property \"" + name + "\" of \"null\""));
+                    ExceptionsHelper.ThrowTypeError("Can not get property \"" + name + "\" of \"null\"");
+
                 if (oValue == this)
-                    throw new InvalidOperationException();
+                {
+                    System.Diagnostics.Debug.Write(typeof(JSValue).Name + "." + JIT.JITHelpers.methodof(SetMember).Name + " must be overridden for objects");
+
+                    GetMember(name, true, memberScope).Assign(value);
+                }
+
                 field = oValue as JSObject;
                 if (field != null)
                 {
-                    field.SetMember(name, value, throwOnError);
+                    field.SetMember(name, value, memberScope, throwOnError);
                     return;
                 }
             }

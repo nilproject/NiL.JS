@@ -163,7 +163,7 @@ namespace NiL.JS.Core.JIT
             return dest;
         }
 
-        internal static MethodInfo methodof(Func<JSValue, JSValue, bool, JSValue> method)
+        internal static MethodInfo methodof(Action<JSValue, JSValue, MemberScope, bool> method)
         {
             return method.Method;
         }

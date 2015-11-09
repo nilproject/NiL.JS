@@ -20,8 +20,8 @@ namespace NiL.JS.BaseLibrary
     public enum FunctionType
     {
         Function = 0,
-        Get,
-        Set,
+        Getter,
+        Setter,
         AnonymousFunction,
         Generator,
         Method,
@@ -138,7 +138,7 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get;
             [Hidden]
-            protected set;
+            internal protected set;
         }
 
         #region Runtime
@@ -979,10 +979,10 @@ namespace NiL.JS.BaseLibrary
                 case FunctionType.Generator:
                     res.Append("function*");
                     break;
-                case FunctionType.Get:
+                case FunctionType.Getter:
                     res.Append("get");
                     break;
-                case FunctionType.Set:
+                case FunctionType.Setter:
                     res.Append("set");
                     break;
                 default:

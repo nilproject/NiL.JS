@@ -65,7 +65,7 @@ namespace NiL.JS.Expressions
                     res = null;
                 }
             }
-            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), false, MemberScope.Сommon);
+            res = source.GetMember(cachedMemberName ?? second.Evaluate(context), false, memberScope);
             context.objectSource = source;
             if (res.valueType == JSValueType.NotExists)
                 res.valueType = JSValueType.NotExistsInObject;
@@ -86,7 +86,7 @@ namespace NiL.JS.Expressions
                     statistic.ContainsArguments = true;
             }
             if (first is SuperExpression)
-                memberScope = MemberScope.Super;
+                memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? MemberScope.Super : MemberScope.SuperProto;
             return false;
         }
 

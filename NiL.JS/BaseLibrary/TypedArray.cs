@@ -238,7 +238,7 @@ namespace NiL.JS.BaseLibrary
             return base.GetMember(key, forWrite, memberScope);
         }
 
-        protected internal override void SetMember(JSValue name, JSValue value, bool strict)
+        protected internal override void SetMember(JSValue name, JSValue value, MemberScope memberScope, bool strict)
         {
             if (name.valueType == JSValueType.String && "length".Equals(name.oValue))
                 return;

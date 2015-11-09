@@ -79,7 +79,7 @@ testInstance.FireMyEvent();
             }));
 #endif
             
-            int mode = 3
+            int mode = 2
                     ;
             switch (mode)
             {

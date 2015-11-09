@@ -143,7 +143,7 @@ namespace NiL.JS.Expressions
                             return null;
                         break;
                     }
-                case FunctionType.Get:
+                case FunctionType.Getter:
                     {
                         if (!Parser.Validate(code, "get", ref i))
                             return null;
@@ -151,7 +151,7 @@ namespace NiL.JS.Expressions
                             return null;
                         break;
                     }
-                case FunctionType.Set:
+                case FunctionType.Setter:
                     {
                         if (!Parser.Validate(code, "set", ref i))
                             return null;
@@ -185,9 +185,9 @@ namespace NiL.JS.Expressions
                     nameStartPos = i;
                     if (Parser.ValidateName(code, ref i, false, true, state.strict))
                         name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
-                    else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateString(code, ref i, false))
+                    else if ((mode == FunctionType.Getter || mode == FunctionType.Setter) && Parser.ValidateString(code, ref i, false))
                         name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict);
-                    else if ((mode == FunctionType.Get || mode == FunctionType.Set) && Parser.ValidateNumber(code, ref i))
+                    else if ((mode == FunctionType.Getter || mode == FunctionType.Setter) && Parser.ValidateNumber(code, ref i))
                         name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
                     else
                         ExceptionsHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, i - nameStartPos);
@@ -196,7 +196,7 @@ namespace NiL.JS.Expressions
                     if (code[i] != '(')
                         ExceptionsHelper.ThrowUnknownToken(code, i);
                 }
-                else if (mode == FunctionType.Get || mode == FunctionType.Set)
+                else if (mode == FunctionType.Getter || mode == FunctionType.Setter)
                     ExceptionsHelper.ThrowSyntaxError("Getters and Setters must have name", code, index);
                 else if (mode == FunctionType.Method)
                     ExceptionsHelper.ThrowSyntaxError("Methods must have name", code, index);
@@ -213,7 +213,7 @@ namespace NiL.JS.Expressions
                 ExceptionsHelper.ThrowSyntaxError("Unexpected char at ", code, i);
             while (code[i] != ')')
             {
-                if (parameters.Count == 255 || (mode == FunctionType.Set && parameters.Count == 1) || mode == FunctionType.Get)
+                if (parameters.Count == 255 || (mode == FunctionType.Setter && parameters.Count == 1) || mode == FunctionType.Getter)
                     ExceptionsHelper.ThrowSyntaxError(string.Format("Too many arguments for function \"{0}\"", name), code, index);
 
                 bool rest = Parser.Validate(code, "...", ref i);
@@ -258,7 +258,7 @@ namespace NiL.JS.Expressions
             }
             switch (mode)
             {
-                case FunctionType.Set:
+                case FunctionType.Setter:
                     {
                         if (parameters.Count != 1)
                             ExceptionsHelper.ThrowSyntaxError("Setter must have only one argument", code, index);
@@ -614,12 +614,12 @@ namespace NiL.JS.Expressions
                         res = "";
                         break;
                     }
-                case FunctionType.Get:
+                case FunctionType.Getter:
                     {
                         res = "get ";
                         break;
                     }
-                case FunctionType.Set:
+                case FunctionType.Setter:
                     {
                         res = "set ";
                         break;

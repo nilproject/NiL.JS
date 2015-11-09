@@ -273,7 +273,7 @@ namespace NiL.JS.Core.Interop
             return base.GetMember(key, forWrite, memberScope);
         }
 
-        protected internal override void SetMember(JSValue key, JSValue value, bool strict)
+        protected internal override void SetMember(JSValue key, JSValue value, MemberScope memberScope, bool strict)
         {
             if (key.valueType != JSValueType.Symbol)
             {

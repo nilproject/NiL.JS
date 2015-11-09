@@ -6,6 +6,13 @@ using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Expressions
 {
+    public enum CallMode
+    {
+        Regular = 0,
+        Construct,
+        Super
+    }
+
 #if !PORTABLE
     [Serializable]
 #endif
@@ -14,9 +21,9 @@ namespace NiL.JS.Expressions
         private Expression[] arguments;
         internal bool withSpread;
         internal bool allowTCO;
-        internal bool construct;
+        internal CallMode callMode;
 
-        public bool Construct { get { return construct; } }
+        public CallMode CallMode { get { return callMode; } }
         public override bool ContextIndependent { get { return false; } }
         internal override bool ResultInTempContainer { get { return false; } }
         protected internal override PredictedType ResultType
@@ -36,7 +43,7 @@ namespace NiL.JS.Expressions
             }
         }
         public Expression[] Arguments { get { return arguments; } }
-        public bool AllowTCO { get { return allowTCO && !construct; } }
+        public bool AllowTCO { get { return allowTCO && callMode == 0; } }
 
         internal CallOperator(Expression first, Expression[] arguments)
             : base(first, null, false)
@@ -59,12 +66,12 @@ namespace NiL.JS.Expressions
                 }
                 context.objectSource = null;
                 // Аргументы должны быть вычислены даже если функция не существует.
-                ExceptionsHelper.Throw(new TypeError(first.ToString() + " is not callable"));
+                ExceptionsHelper.ThrowTypeError(first.ToString() + " is not callable");
             }
             else
             {
                 if (allowTCO
-                    && !construct
+                    && callMode == 0
                     && (func.Type != FunctionType.Generator)
                     && context.owner != null
                     && func == context.owner.oValue
@@ -80,9 +87,9 @@ namespace NiL.JS.Expressions
             func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
 
             checkStack();
-            if (construct)
+            if (callMode == CallMode.Construct)
                 targetObject = null;
-            return func.InternalInvoke(targetObject, this.arguments, context, withSpread, construct);
+            return func.InternalInvoke(targetObject, this.arguments, context, withSpread, callMode != 0);
         }
 
         private void tailCall(Context context, Function func)
@@ -122,22 +129,12 @@ namespace NiL.JS.Expressions
 
             this._codeContext = codeContext;
 
-            if (first is SuperExpression)
-            {
-                var fdepth = (first as VariableReference).defineFunctionDepth;
-                first =
-                    new GetMemberOperator(new GetMemberOperator(new GetMemberOperator(new GetMemberOperator(
-                        first,
-                        new ConstantDefinition("__proto__")),
-                        new ConstantDefinition("__proto__")),
-                        new ConstantDefinition("constructor")),
-                        new ConstantDefinition("call"));
+            var super = first as SuperExpression;
 
-                var newArgs = new Expression[arguments.Length + 1];
-                newArgs[0] = new GetVariableExpression("this", fdepth);
-                for (var i = 0; i < arguments.Length; i++)
-                    newArgs[i + 1] = arguments[i];
-                arguments = newArgs;
+            if (super != null)
+            {
+                super.ctorMode = true;
+                callMode = CallMode.Super;
             }
 
             for (var i = 0; i < arguments.Length; i++)
@@ -207,7 +204,7 @@ namespace NiL.JS.Expressions
             }
             res += ")";
 
-            if (construct)
+            if (callMode == CallMode.Construct)
                 return "new " + res;
             return res;
         }

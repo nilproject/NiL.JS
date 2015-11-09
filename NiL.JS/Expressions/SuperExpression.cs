@@ -9,6 +9,8 @@ namespace NiL.JS.Expressions
 {
     public sealed class SuperExpression : GetVariableExpression
     {
+        public bool ctorMode;
+
         internal SuperExpression(int functionDepth)
             : base("super", functionDepth)
         {
@@ -23,7 +25,15 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            return context.thisBind;
+            if (ctorMode)
+            {
+                context.objectSource = context.thisBind;
+                return context.thisBind.__proto__.__proto__.GetMember("constructor");
+            }
+            else
+            {
+                return context.thisBind;
+            }
         }
 
         protected internal override bool Build(ref Core.CodeNode _this, int depth, Dictionary<string, Core.VariableDescriptor> variables, Core.CodeContext codeContext, CompilerMessageCallback message, Core.FunctionStatistics statistic, Options opts)
