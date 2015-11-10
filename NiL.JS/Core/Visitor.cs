@@ -115,7 +115,7 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(ObjectNotation  node)
+        internal protected virtual T Visit(ObjectDefinition  node)
         {
             return Visit(node as Expression);
         }

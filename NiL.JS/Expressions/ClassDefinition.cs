@@ -144,19 +144,42 @@ namespace NiL.JS.Expressions
                     var accessorName = (@static ? "static " : "") + propertyAccessor.name;
                     if (!flds.ContainsKey(accessorName))
                     {
-                        var propertyPair = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { propertyAccessor, null } });
-                        propertyPair.value.valueType = JSValueType.Property;
+                        var propertyPair = new PropertyPairExpression
+                        (
+                            mode == FunctionType.Getter ? propertyAccessor : null,
+                            mode == FunctionType.Setter ? propertyAccessor : null
+                        );
                         flds.Add(accessorName, new MemberDescriptor(propertyAccessor.name, propertyPair, @static));
                     }
                     else
                     {
-                        var vle = flds[accessorName].Value;
-                        if (!(vle is ConstantDefinition)
-                            || (vle as ConstantDefinition).value.valueType != JSValueType.Property)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to define " + mode + " for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        if (((vle as ConstantDefinition).value.oValue as CodeNode[])[(int)mode - 1] != null)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to redefine " + mode + " " + propertyAccessor.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        ((vle as ConstantDefinition).value.oValue as CodeNode[])[(int)mode - 1] = propertyAccessor;
+                        var vle = flds[accessorName].Value as PropertyPairExpression;
+
+                        if (vle == null)
+                            ExceptionsHelper.Throw((new SyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
+
+                        do
+                        {
+                            if (mode == FunctionType.Getter)
+                            {
+                                if (vle.Getter == null)
+                                {
+                                    vle.Getter = propertyAccessor;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (vle.Setter == null)
+                                {
+                                    vle.Setter = propertyAccessor;
+                                    break;
+                                }
+                            }
+
+                            ExceptionsHelper.ThrowSyntaxError("Try to redefine " + mode.ToString().ToLowerInvariant() + " of " + propertyAccessor.Name, state.Code, s);
+                        }
+                        while (false);
                     }
                 }
                 else
@@ -283,14 +306,19 @@ namespace NiL.JS.Expressions
         {
             var ctor = this._ctor.Evaluate(context) as Function;
             ctor.RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
-            context.DefineVariable(name).Assign(ctor);
 
             JSValue protoCtor = TypeProxy.GlobalPrototype;
             if (this.baseType != null)
             {
                 protoCtor = baseType.Evaluate(context).oValue as JSObject;
-                ctor.prototype.__proto__ = Tools.InvokeGetter(protoCtor.GetMember("prototype"), protoCtor).oValue as JSObject;
-                ctor.prototype.SetMember("constructor", ctor, false);
+                if (protoCtor == null)
+                {
+                    ctor.prototype.__proto__ = null;
+                }
+                else
+                {
+                    ctor.prototype.__proto__ = Tools.InvokeGetter(protoCtor.GetMember("prototype"), protoCtor).oValue as JSObject;
+                }
                 ctor.__proto__ = protoCtor as JSObject;
             }
 
@@ -298,16 +326,21 @@ namespace NiL.JS.Expressions
             {
                 var member = members[i];
                 var value = member.Value.Evaluate(context);
+                JSValue target = null;
                 if (member.Static)
                 {
-                    ctor.SetMember(member.Name, value, true);
+                    target = ctor;
                 }
                 else
                 {
-                    ctor.prototype.SetMember(member.Name, value, true);
+                    target = ctor.prototype;
                 }
+
+                target.SetMember(member.Name, value, true);
             }
 
+            if ((_codeContext & CodeContext.InExpression) == 0)
+                context.DefineVariable(name).Assign(ctor);
             return ctor;
         }
 

@@ -83,7 +83,7 @@ namespace NiL.JS.Expressions
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            this._codeContext = codeContext;
+            _codeContext = codeContext;
             codeContext = codeContext | CodeContext.InExpression;
 
             Parser.Build(ref first, depth + 1, variables, codeContext, message, statistic, opts);

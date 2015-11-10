@@ -116,3 +116,6 @@ a = 1;
 (function (x) { var a = [x]; a[0] = 2; if (x != 1) console.log("Incorrect clone flag in fast function"); })(1);
 
 (function (x) { var a = [x]; a[0] = 2; if (x != 1) console.log("Incorrect clone flag in regular function"); })(1, 2);
+
+if ((new class extends null { get test() { return "hello" } }).test != "hello")
+    console.log("Something wrong with classes");

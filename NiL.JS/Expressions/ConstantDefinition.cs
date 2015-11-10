@@ -73,9 +73,6 @@ namespace NiL.JS.Expressions
         {
             this._codeContext = codeContext;
 
-            var vss = value.oValue as CodeNode[];
-            if (vss != null)
-                throw new InvalidOperationException("It behaviour is deprecated");
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && depth <= 1)
             {
                 _this = null;

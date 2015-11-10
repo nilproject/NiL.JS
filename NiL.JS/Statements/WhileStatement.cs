@@ -146,7 +146,7 @@ namespace NiL.JS.Statements
                     condition.Eliminated = true;
                 }
                 else if ((opts & Options.SuppressUselessExpressionsElimination) == 0
-                        && ((condition is ObjectNotation && (condition as ObjectNotation).Fields.Length == 0)
+                        && ((condition is ObjectDefinition && (condition as ObjectDefinition).Fields.Length == 0)
                             || (condition is ArrayDefinition && (condition as ArrayDefinition).Elements.Count == 0)))
                 {
                     _this = new InfinityLoopStatement(body, labels);

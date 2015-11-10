@@ -107,7 +107,7 @@ namespace NiL.JS.Core
             new List<Rule> // Сущности внутри выражения
             {
                 new Rule("[", ArrayDefinition.Parse),
-                new Rule("{", ObjectNotation.Parse),
+                new Rule("{", ObjectDefinition.Parse),
                 new Rule("function", FunctionDefinition.ParseFunction),
                 new Rule("class", ClassDefinition.Parse),
                 new Rule("new", NewOperator.Parse),

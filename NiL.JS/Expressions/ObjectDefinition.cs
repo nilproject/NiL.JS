@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class ObjectNotation : Expression
+    public sealed class ObjectDefinition : Expression
     {
         private string[] fields;
         private CodeNode[] values;
@@ -38,7 +38,7 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        private ObjectNotation(Dictionary<string, CodeNode> fields)
+        private ObjectDefinition(Dictionary<string, CodeNode> fields)
         {
             this.fields = new string[fields.Count];
             this.values = new CodeNode[fields.Count];
@@ -64,46 +64,50 @@ namespace NiL.JS.Expressions
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
-                if (Parser.Validate(state.Code, "set ", ref i) && state.Code[i] != ':')
+                if ((Parser.Validate(state.Code, "get ", ref i) || Parser.Validate(state.Code, "set ", ref i)) && state.Code[i] != ':')
                 {
                     i = s;
-                    var setter = FunctionDefinition.Parse(state, ref i, FunctionType.Setter) as FunctionDefinition;
-                    if (!flds.ContainsKey(setter.Name))
+                    var mode = state.Code[i] == 's' ? FunctionType.Setter : FunctionType.Getter;
+                    var propertyAccessor = FunctionDefinition.Parse(state, ref i, mode) as FunctionDefinition;
+                    var accessorName = propertyAccessor.name;
+                    if (!flds.ContainsKey(accessorName))
                     {
-                        var vle = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { setter, null } });
-                        vle.value.valueType = JSValueType.Property;
-                        flds.Add(setter.Name, vle);
+                        var propertyPair = new PropertyPairExpression
+                        (
+                            mode == FunctionType.Getter ? propertyAccessor : null,
+                            mode == FunctionType.Setter ? propertyAccessor : null
+                        );
+                        flds.Add(accessorName, propertyPair);
                     }
                     else
                     {
-                        var vle = flds[setter.Name];
-                        if (!(vle is ConstantDefinition)
-                            || (vle as ConstantDefinition).value.valueType != JSValueType.Property)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to define setter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        if (((vle as ConstantDefinition).value.oValue as CodeNode[])[0] != null)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to redefine setter " + setter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        ((vle as ConstantDefinition).value.oValue as CodeNode[])[0] = setter;
-                    }
-                }
-                else if (Parser.Validate(state.Code, "get ", ref i) && state.Code[i] != ':')
-                {
-                    i = s;
-                    var getter = FunctionDefinition.Parse(state, ref i, FunctionType.Getter) as FunctionDefinition;
-                    if (!flds.ContainsKey(getter.Name))
-                    {
-                        var vle = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = new CodeNode[2] { null, getter } });
-                        vle.value.valueType = JSValueType.Property;
-                        flds.Add(getter.Name, vle);
-                    }
-                    else
-                    {
-                        var vle = flds[getter.Name];
-                        if (!(vle is ConstantDefinition)
-                            || (vle as ConstantDefinition).value.valueType != JSValueType.Property)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to define getter for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        if (((vle as ConstantDefinition).value.oValue as CodeNode[])[1] != null)
-                            ExceptionsHelper.Throw((new SyntaxError("Try to redefine getter " + getter.Name + " at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
-                        ((vle as ConstantDefinition).value.oValue as CodeNode[])[1] = getter;
+                        var vle = flds[accessorName] as PropertyPairExpression;
+
+                        if (vle == null)
+                            ExceptionsHelper.ThrowSyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field", state.Code, s);
+
+                        do
+                        {
+                            if (mode == FunctionType.Getter)
+                            {
+                                if (vle.Getter == null)
+                                {
+                                    vle.Getter = propertyAccessor;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (vle.Setter == null)
+                                {
+                                    vle.Setter = propertyAccessor;
+                                    break;
+                                }
+                            }
+
+                            ExceptionsHelper.ThrowSyntaxError("Try to redefine " + mode.ToString().ToLowerInvariant() + " of " + propertyAccessor.Name, state.Code, s);
+                        }
+                        while (false);
                     }
                 }
                 else
@@ -140,9 +144,9 @@ namespace NiL.JS.Expressions
                     CodeNode aei = null;
                     if (flds.TryGetValue(fieldName, out aei))
                     {
-                        if (((state.strict && (!(aei is ConstantDefinition) || (aei as ConstantDefinition).value != JSValue.undefined))
-                            || (aei is ConstantDefinition && ((aei as ConstantDefinition).value.valueType == JSValueType.Property))))
-                            ExceptionsHelper.Throw(new SyntaxError("Try to redefine field \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
+                        if (state.strict ? (!(aei is ConstantDefinition) || (aei as ConstantDefinition).value != JSValue.undefined)
+                                         : aei is PropertyPairExpression)
+                            ExceptionsHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
                         if (state.message != null)
                             state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, initializator.Position, 0), "Duplicate key \"" + fieldName + "\"");
                     }
@@ -156,7 +160,7 @@ namespace NiL.JS.Expressions
             i++;
             var pos = index;
             index = i;
-            return new ObjectNotation(flds)
+            return new ObjectDefinition(flds)
                 {
                     Position = pos,
                     Length = index - pos
@@ -172,22 +176,12 @@ namespace NiL.JS.Expressions
             for (int i = 0; i < fields.Length; i++)
             {
                 var val = values[i].Evaluate(context);
-                if (val.valueType == JSValueType.Property)
-                {
-                    var gs = val.oValue as CodeNode[];
-                    var prop = res.fields[fields[i]] = new JSValue();
-                    prop.oValue = new PropertyPair(gs[1] != null ? gs[1].Evaluate(context) as Function : null, gs[0] != null ? gs[0].Evaluate(context) as Function : null);
-                    prop.valueType = JSValueType.Property;
-                }
+                val = val.CloneImpl(false);
+                val.attributes = JSValueAttributesInternal.None;
+                if (this.fields[i] == "__proto__")
+                    res.__proto__ = val.oValue as JSObject;
                 else
-                {
-                    val = val.CloneImpl(false);
-                    val.attributes = JSValueAttributesInternal.None;
-                    if (this.fields[i] == "__proto__")
-                        res.__proto__ = val.oValue as JSObject;
-                    else
-                        res.fields[this.fields[i]] = val;
-                }
+                    res.fields[this.fields[i]] = val;
             }
             return res;
         }
@@ -198,14 +192,7 @@ namespace NiL.JS.Expressions
 
             for (int i = 0; i < values.Length; i++)
             {
-                if ((values[i] is ConstantDefinition) && ((values[i] as ConstantDefinition).value.valueType == JSValueType.Property))
-                {
-                    var gs = (values[i] as ConstantDefinition).value.oValue as CodeNode[];
-                    Parser.Build(ref gs[0], 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-                    Parser.Build(ref gs[1], 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-                }
-                else
-                    Parser.Build(ref values[i], 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref values[i], 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             }
             return false;
         }

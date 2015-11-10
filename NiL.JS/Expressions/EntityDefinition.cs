@@ -65,6 +65,7 @@ namespace NiL.JS.Expressions
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
+            _codeContext = codeContext;
             return false;
         }
 

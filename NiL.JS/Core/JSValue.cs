@@ -789,9 +789,6 @@ namespace NiL.JS.Core
 #endif
             if (this == value || (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) != 0)
                 return;
-            //this.attributes =
-            //    (this.attributes & ~JSValueAttributesInternal.PrivateAttributes)
-            //    | (value.attributes & JSValueAttributesInternal.PrivateAttributes);
             this.valueType = value.valueType | JSValueType.Undefined;
             this.iValue = value.iValue;
             this.dValue = value.dValue;

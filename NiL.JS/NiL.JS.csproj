@@ -237,6 +237,7 @@
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
+    <Compile Include="Expressions\PropertyPairExpression.cs" />
     <Compile Include="Extensions\IterationProtocolExtensions.cs" />
     <Compile Include="Core\JSValue.cs" />
     <Compile Include="Core\Interop\ConvertValueAttribute.cs" />
@@ -366,7 +367,7 @@
     <Compile Include="Expressions\StrictEqualOperator.cs" />
     <Compile Include="Statements\SwitchStatement.cs" />
     <Compile Include="Expressions\GetVariableExpression.cs" />
-    <Compile Include="Expressions\ObjectNotation.cs" />
+    <Compile Include="Expressions\ObjectDefinition.cs" />
     <Compile Include="Expressions\AssignmentOperator.cs" />
     <Compile Include="Expressions\CallOperator.cs" />
     <Compile Include="Expressions\IncrementOperator.cs" />

@@ -298,7 +298,7 @@ namespace NiL.JS.Statements
                 variable = (variable as Expressions.CommaOperator).FirstOperand;
             }
             if (message != null
-                && (source is ObjectNotation
+                && (source is ObjectDefinition
                 || source is ArrayDefinition
                 || source is ConstantDefinition))
                 message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
