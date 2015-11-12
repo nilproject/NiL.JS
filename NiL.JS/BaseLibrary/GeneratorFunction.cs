@@ -89,12 +89,16 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 while (generatorContext == null);
+
                 while (generatorContext.abortType == AbortType.None)
+                {
 #if !NET35
                     Thread.Yield();
 #else
                     Thread.Sleep(0);
 #endif
+                }
+
                 return new GeneratorResult(generatorContext.abortInfo, generatorContext.abortType == AbortType.Return);
             }
             else
@@ -117,21 +121,6 @@ namespace NiL.JS.BaseLibrary
                 }
             }
         }
-
-        [Hidden]
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            try
-            {
-                thread.Abort();
-            }
-            catch
-            {
-
-            }
-        }
-
 
         public IIteratorResult @return()
         {
@@ -161,6 +150,38 @@ namespace NiL.JS.BaseLibrary
         public IIterator iterator()
         {
             return this;
+        }
+
+        [Hidden]
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            try
+            {
+                thread.Abort();
+            }
+            catch
+            {
+
+            }
+        }
+
+        [Hidden]
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        [Hidden]
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        [Hidden]
+        public override string ToString()
+        {
+            return base.ToString();
         }
     }
 

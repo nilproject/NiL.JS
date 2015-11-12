@@ -356,8 +356,12 @@ namespace NiL.JS.Core.Interop
 
                 if (InstanceMode && typeof(IIterable).IsAssignableFrom(hostedType))
                 {
-                    this.SetMember(Symbol.iterator, proxyMember(false, members["iterator"]), false);
-                    members.Remove("iterator");
+                    IList<MemberInfo> iterator = null;
+                    if (members.TryGetValue("iterator", out iterator))
+                    {
+                        this.SetMember(Symbol.iterator, proxyMember(false, iterator), false);
+                        members.Remove("iterator");
+                    }
                 }
             }
         }

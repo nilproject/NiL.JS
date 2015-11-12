@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Statements
 {
@@ -12,13 +13,13 @@ namespace NiL.JS.Statements
 #endif
     public sealed class ForOfStatement : CodeNode
     {
-        private CodeNode variable;
-        private CodeNode source;
+        private CodeNode _variable;
+        private CodeNode _source;
         private CodeNode body;
         private string[] labels;
 
-        public CodeNode Variable { get { return variable; } }
-        public CodeNode Source { get { return source; } }
+        public CodeNode Variable { get { return _variable; } }
+        public CodeNode Source { get { return _source; } }
         public CodeNode Body { get { return body; } }
         public ReadOnlyCollection<string> Labels
         {
@@ -39,7 +40,6 @@ namespace NiL.JS.Statements
 
         internal static CodeNode Parse(ParsingState state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             while (char.IsWhiteSpace(state.Code[i]))
                 i++;
@@ -66,7 +66,7 @@ namespace NiL.JS.Statements
                     if (varName == "arguments" || varName == "eval")
                         ExceptionsHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
-                res.variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineFunctionDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
+                res._variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineFunctionDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
             }
             else
             {
@@ -84,7 +84,7 @@ namespace NiL.JS.Statements
                     if (varName == "arguments" || varName == "eval")
                         ExceptionsHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
-                res.variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineFunctionDepth = state.functionsDepth };
+                res._variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineFunctionDepth = state.functionsDepth };
             }
             while (char.IsWhiteSpace(state.Code[i]))
                 i++;
@@ -96,18 +96,18 @@ namespace NiL.JS.Statements
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
                 if (defVal == null)
                     return defVal;
-                NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
+                NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res._variable as GetVariableExpression ?? (res._variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
                 exp = new AssignmentOperator(
                     exp,
                     (NiL.JS.Expressions.Expression)defVal)
                     {
-                        Position = res.variable.Position,
-                        Length = defVal.EndPosition - res.variable.Position
+                        Position = res._variable.Position,
+                        Length = defVal.EndPosition - res._variable.Position
                     };
-                if (res.variable == exp.first.first)
-                    res.variable = exp;
+                if (res._variable == exp.first.first)
+                    res._variable = exp;
                 else
-                    (res.variable as VariableDefineStatement).initializators[0] = exp;
+                    (res._variable as VariableDefineStatement).initializators[0] = exp;
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
             }
@@ -115,7 +115,7 @@ namespace NiL.JS.Statements
                 return null;
             while (char.IsWhiteSpace(state.Code[i]))
                 i++;
-            res.source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
+            res._source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
             while (char.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != ')')
@@ -143,139 +143,41 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            var s = source.Evaluate(context);
-            JSValue v = null;
-            if (variable is AssignmentOperator)
+
+            JSValue variable = null;
+            var source = _source.Evaluate(context);
+
+            if (_variable is AssignmentOperator)
             {
-                variable.Evaluate(context);
-                v = (variable as AssignmentOperator).first.Evaluate(context);
+                _variable.Evaluate(context);
+                variable = (_variable as AssignmentOperator).first.Evaluate(context);
             }
             else
-                v = variable.EvaluateForWrite(context);
-            if (!s.IsDefined
-                || (s.valueType >= JSValueType.Object && s.oValue == null)
-                || body == null)
-                return JSValue.undefined;
-            int index = 0;
-            HashSet<string> processedKeys = new HashSet<string>(StringComparer.Ordinal);
-            while (s != null)
+                variable = _variable.EvaluateForWrite(context);
+
+            if (!source.IsDefined || source.IsNull || body == null)
+                return null;
+
+            var iterator = source.AsIterable().iterator();
+            IIteratorResult iteratorResult = iterator.next();
+
+            while (!iteratorResult.done)
             {
-                if (s.oValue is NiL.JS.BaseLibrary.Array)
-                {
-                    var src = s.oValue as NiL.JS.BaseLibrary.Array;
-                    foreach (var item in src.data)
-                    {
-                        if (item == null
-                            || !item.IsExists
-                            || (item.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
-                            continue;
-                        v.Assign(item);
-#if DEV
-                        if (context.debugging && !(body is CodeBlock))
-                            context.raiseDebugger(body);
-#endif
-                        context.lastResult = body.Evaluate(context) ?? context.lastResult;
-                        if (context.abortType != AbortType.None)
-                        {
-
-                            var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                            var _break = (context.abortType > AbortType.Continue) || !me;
-                            if (context.abortType < AbortType.Return && me)
-                            {
-                                context.abortType = AbortType.None;
-                                context.abortInfo = JSValue.notExists;
-                            }
-                            if (_break)
-                                return null;
-                        }
-                    }
-                    if (src.fields != null)
-                        foreach (var item in src.fields)
-                        {
-                            if (item.Value == null
-                                || !item.Value.IsExists
-                                || (item.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
-                                continue;
-                            if (processedKeys.Contains(item.Key))
-                                continue;
-                            processedKeys.Add(item.Key);
-                            v.Assign(item.Value);
-#if DEV
-                            if (context.debugging && !(body is CodeBlock))
-                                context.raiseDebugger(body);
-#endif
-                            context.lastResult = body.Evaluate(context) ?? context.lastResult;
-                            if (context.abortType != AbortType.None)
-                            {
-
-                                var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                                var _break = (context.abortType > AbortType.Continue) || !me;
-                                if (context.abortType < AbortType.Return && me)
-                                {
-                                    context.abortType = AbortType.None;
-                                    context.abortInfo = JSValue.notExists;
-                                }
-                                if (_break)
-                                    return null;
-                            }
-                        }
-                }
-                else
-                {
-                    var keys = s.GetEnumerator(false, EnumerationMode.NeedValues);
-                    for (; ; )
-                    {
-                        try
-                        {
-                            if (!keys.MoveNext())
-                                break;
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            keys = s.GetEnumerator();
-                            for (int i = 0; i < index && keys.MoveNext(); i++)
-                                ;
-                        }
-                        if (processedKeys.Contains(keys.Current.Key))
-                            continue;
-                        processedKeys.Add(keys.Current.Key);
-                        if ((keys.Current.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
-                            continue;
-                        v.Assign(keys.Current.Value);
-#if DEV
-                        if (context.debugging && !(body is CodeBlock))
-                            context.raiseDebugger(body);
-#endif
-                        context.lastResult = body.Evaluate(context) ?? context.lastResult;
-                        if (context.abortType != AbortType.None)
-                        {
-                            var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                            var _break = (context.abortType > AbortType.Continue) || !me;
-                            if (context.abortType < AbortType.Return && me)
-                            {
-                                context.abortType = AbortType.None;
-                                context.abortInfo = JSValue.notExists;
-                            }
-                            if (_break)
-                                return null;
-                        }
-                        index++;
-                    }
-                }
-                s = s.__proto__;
-                if (s == JSValue.Null || !s.IsDefined || (s.valueType >= JSValueType.Object && s.oValue == null))
-                    break;
+                variable.Assign(iteratorResult.value);
+                body.Evaluate(context);
+                iteratorResult = iterator.next();
             }
+
             return null;
         }
 
         protected override CodeNode[] getChildsImpl()
         {
-            var res = new List<CodeNode>()
+            var res = new List<CodeNode>
             {
                 body,
-                variable,
-                source
+                _variable,
+                _source
             };
             res.RemoveAll(x => x == null);
             return res.ToArray();
@@ -283,31 +185,31 @@ namespace NiL.JS.Statements
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref variable, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-            var tvar = variable as VariableDefineStatement;
+            Parser.Build(ref _variable, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+            var tvar = _variable as VariableDefineStatement;
             if (tvar != null)
-                variable = tvar.initializators[0];
-            if (variable is AssignmentOperator)
-                ((variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
-            Parser.Build(ref source, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                _variable = tvar.initializators[0];
+            if (_variable is AssignmentOperator)
+                ((_variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
+            Parser.Build(ref _source, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             Parser.Build(ref body, System.Math.Max(1, depth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
-            if (variable is Expressions.CommaOperator)
+            if (_variable is Expressions.CommaOperator)
             {
-                if ((variable as Expressions.CommaOperator).SecondOperand != null)
+                if ((_variable as Expressions.CommaOperator).SecondOperand != null)
                     throw new InvalidOperationException("Invalid left-hand side in for-in");
-                variable = (variable as Expressions.CommaOperator).FirstOperand;
+                _variable = (_variable as Expressions.CommaOperator).FirstOperand;
             }
             if (message != null
-                && (source is ObjectDefinition
-                || source is ArrayDefinition
-                || source is ConstantDefinition))
+                && (_source is ObjectDefinition
+                || _source is ArrayDefinition
+                || _source is ConstantDefinition))
                 message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
             return false;
         }
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            source.Optimize(ref source, owner, message, opts, statistic);
+            _source.Optimize(ref _source, owner, message, opts, statistic);
             if (body != null)
                 body.Optimize(ref body, owner, message, opts, statistic);
         }
@@ -319,7 +221,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return "for (" + variable + " in " + source + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            return "for (" + _variable + " in " + _source + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
     }
 }
