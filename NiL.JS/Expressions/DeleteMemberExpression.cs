@@ -15,7 +15,7 @@ namespace NiL.JS.Expressions
         public Expression Source { get { return first; } }
         public Expression FieldName { get { return second; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {

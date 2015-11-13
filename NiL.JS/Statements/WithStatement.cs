@@ -10,11 +10,11 @@ namespace NiL.JS.Statements
 #endif
     public sealed class WithStatement : CodeNode
     {
-        private CodeNode obj;
+        private CodeNode scope;
         private CodeNode body;
 
         public CodeNode Body { get { return body; } }
-        public CodeNode Scope { get { return obj; } }
+        public CodeNode Scope { get { return scope; } }
 
         internal static CodeNode Parse(ParsingState state, ref int index)
         {
@@ -40,14 +40,14 @@ namespace NiL.JS.Statements
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
-                body = new CodeBlock(new[] { body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
+                body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             var pos = index;
             index = i;
             return new WithStatement()
                 {
-                    obj = obj,
+                    scope = obj,
                     body = body,
                     Position = pos,
                     Length = index - pos
@@ -58,9 +58,9 @@ namespace NiL.JS.Statements
         {
 #if DEV
             if (context.debugging)
-                context.raiseDebugger(obj);
+                context.raiseDebugger(scope);
 #endif
-            var intcontext = new WithContext(obj.Evaluate(context), context);
+            var intcontext = new WithContext(scope.Evaluate(context), context);
 #if DEV
             if (context.debugging && !(body is CodeBlock))
                 context.raiseDebugger(body);
@@ -79,12 +79,12 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>()
             {
                 body,
-                obj
+                scope
             };
             res.RemoveAll(x => x == null);
             return res.ToArray();
@@ -94,22 +94,22 @@ namespace NiL.JS.Statements
         {
             if (statistic != null)
                 statistic.ContainsWith = true;
-            Parser.Build(ref obj, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref scope, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             Parser.Build(ref body, depth, variables, codeContext | CodeContext.InWith, message, statistic, opts);
             return false;
         }
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            if (obj != null)
-                obj.Optimize(ref obj, owner, message, opts, statistic);
+            if (scope != null)
+                scope.Optimize(ref scope, owner, message, opts, statistic);
             if (body != null)
                 body.Optimize(ref body, owner, message, opts, statistic);
         }
 
         public override string ToString()
         {
-            return "with (" + obj + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            return "with (" + scope + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

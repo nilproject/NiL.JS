@@ -27,7 +27,7 @@ namespace NiL.JS.Statements
 #if PORTABLE
                 return labels.AsReadOnly<string>();
 #else
-                return System.Array.AsReadOnly<string>(labels);
+                return System.Array.AsReadOnly(labels);
 #endif
             }
         }
@@ -110,7 +110,7 @@ namespace NiL.JS.Statements
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
                 if (defVal == null)
                     return defVal;
-                NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
+                NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res.variable as GetVariableExpression ?? (res.variable as VariableDefineStatement).initializers[0] as GetVariableExpression);
                 exp = new AssignmentOperator(
                     exp,
                     (NiL.JS.Expressions.Expression)defVal)
@@ -121,7 +121,7 @@ namespace NiL.JS.Statements
                 if (res.variable == exp.first.first)
                     res.variable = exp;
                 else
-                    (res.variable as VariableDefineStatement).initializators[0] = exp;
+                    (res.variable as VariableDefineStatement).initializers[0] = exp;
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
             }
@@ -144,7 +144,7 @@ namespace NiL.JS.Statements
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res.body.Position, 0), "Do not declare function in nested blocks.");
-                res.body = new CodeBlock(new[] { res.body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
+                res.body = new CodeBlock(new[] { res.body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             state.AllowBreak.Pop();
@@ -295,7 +295,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>()
             {
@@ -312,7 +312,7 @@ namespace NiL.JS.Statements
             Parser.Build(ref variable, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             var tvar = variable as VariableDefineStatement;
             if (tvar != null)
-                variable = tvar.initializators[0];
+                variable = tvar.initializers[0];
             if (variable is AssignmentOperator)
                 ((variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
             Parser.Build(ref source, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);

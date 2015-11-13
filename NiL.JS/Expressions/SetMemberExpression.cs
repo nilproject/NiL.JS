@@ -18,7 +18,7 @@ namespace NiL.JS.Expressions
         public Expression FieldName { get { return second; } }
         public Expression Value { get { return value; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -97,7 +97,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return new CodeNode[] { first, second, value };
         }

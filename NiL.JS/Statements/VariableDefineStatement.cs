@@ -65,7 +65,7 @@ namespace NiL.JS.Statements
                 return visitor.Visit(variable);
             }
 
-            protected override CodeNode[] getChildsImpl()
+            protected internal override CodeNode[] getChildsImpl()
             {
                 return variable.Childs;
             }
@@ -78,25 +78,25 @@ namespace NiL.JS.Statements
 
         internal int functionDepth;
         internal VariableDescriptor[] variables;
-        internal CodeNode[] initializators;
+        internal Expression[] initializers;
         internal readonly string[] names;
         internal readonly bool isConst;
 
         public bool Const { get { return isConst; } }
-        public CodeNode[] Initializators { get { return initializators; } }
+        public CodeNode[] Initializers { get { return initializers; } }
         public string[] Names { get { return names; } }
 
-        internal VariableDefineStatement(string name, CodeNode init, bool isConst, int functionDepth)
+        internal VariableDefineStatement(string name, Expression init, bool isConst, int functionDepth)
         {
             names = new[] { name };
-            initializators = new[] { init };
+            initializers = new Expression[] { init };
             this.isConst = isConst;
             this.functionDepth = functionDepth;
         }
 
-        private VariableDefineStatement(string[] names, CodeNode[] initializators, bool isConst, int functionDepth)
+        private VariableDefineStatement(string[] names, Expression[] initializers, bool isConst, int functionDepth)
         {
-            this.initializators = initializators;
+            this.initializers = initializers;
             this.names = names;
             this.isConst = isConst;
             this.functionDepth = functionDepth;
@@ -114,7 +114,7 @@ namespace NiL.JS.Statements
             bool isDef = false;
             while (char.IsWhiteSpace(state.Code[i]))
                 i++;
-            var initializator = new List<CodeNode>();
+            var initializers = new List<Expression>();
             var names = new List<string>();
             while ((state.Code[i] != ';') && (state.Code[i] != '}') && !Tools.isLineTerminator(state.Code[i]))
             {
@@ -139,7 +139,7 @@ namespace NiL.JS.Statements
                     ExceptionsHelper.Throw((new SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 1))));
                 if (i >= state.Code.Length)
                 {
-                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
+                    initializers.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
                     break;
                 }
                 if (Tools.isLineTerminator(state.Code[i]))
@@ -150,7 +150,7 @@ namespace NiL.JS.Statements
                     while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i >= state.Code.Length)
                     {
-                        initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
+                        initializers.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
                         break;
                     }
                     if (state.Code[i] != '=')
@@ -167,7 +167,7 @@ namespace NiL.JS.Statements
                     Expression source = ExpressionTree.Parse(state, ref i, false, false) as Expression;
                     if (isConst)
                         source = new AllowWriteCN(accm, source);
-                    initializator.Add(
+                    initializers.Add(
                         new AssignmentOperator(
                             accm,
                             source)
@@ -179,8 +179,8 @@ namespace NiL.JS.Statements
                 else
                 {
                     //if (isConst)
-                    //    ExceptionsHelper.Throw(new SyntaxError("Constant must contain value at " + CodeCoordinates.FromTextPosition(state.Code, i)));
-                    initializator.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
+                    //    ExceptionsHelper.ThrowSyntaxError("Constant must contain value", state.Code, i);
+                    initializers.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
                 }
                 if (i >= state.Code.Length)
                     break;
@@ -204,7 +204,7 @@ namespace NiL.JS.Statements
             }
             if (!isDef)
                 throw new ArgumentException("code (" + i + ")");
-            var inits = initializator.ToArray();
+            var inits = initializers.ToArray();
             var pos = index;
             index = i;
             return new VariableDefineStatement(names.ToArray(), inits, isConst, state.functionsDepth)
@@ -216,19 +216,19 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            for (int i = 0; i < initializators.Length; i++)
+            for (int i = 0; i < initializers.Length; i++)
             {
-                initializators[i].Evaluate(context);
+                initializers[i].Evaluate(context);
                 if (isConst)
                     (this.variables[i].cacheRes ?? this.variables[i].Get(context, false, this.variables[i].defineDepth)).attributes |= JSValueAttributesInternal.ReadOnly;
             }
             return JSValue.notExists;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>();
-            res.AddRange(initializators);
+            res.AddRange(initializers);
             res.RemoveAll(x => x == null);
             return res.ToArray();
         }
@@ -266,13 +266,13 @@ namespace NiL.JS.Statements
                 this.variables[i].isReadOnly = isConst;
             }
             int actualChilds = 0;
-            for (int i = 0; i < initializators.Length; i++)
+            for (int i = 0; i < initializers.Length; i++)
             {
-                Parser.Build(ref initializators[i], message != null ? 2 : depth, variables, codeContext, message, statistic, opts);
-                if (initializators[i] != null)
+                Parser.Build(ref initializers[i], message != null ? 2 : depth, variables, codeContext, message, statistic, opts);
+                if (initializers[i] != null)
                     actualChilds++;
             }
-            if (this == _this && actualChilds < initializators.Length)
+            if (this == _this && actualChilds < initializers.Length)
             {
                 if ((opts & Options.SuppressUselessStatementsElimination) == 0 && actualChilds == 0)
                 {
@@ -280,20 +280,20 @@ namespace NiL.JS.Statements
                     Eliminated = true;
                     return false;
                 }
-                var newinits = new CodeNode[actualChilds];
-                for (int i = 0, j = 0; i < initializators.Length; i++)
-                    if (initializators[i] != null)
-                        newinits[j++] = initializators[i];
-                initializators = newinits;
+                var newinits = new Expression[actualChilds];
+                for (int i = 0, j = 0; i < initializers.Length; i++)
+                    if (initializers[i] != null)
+                        newinits[j++] = initializers[i];
+                initializers = newinits;
             }
             return false;
         }
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            for (int i = 0; i < initializators.Length; i++)
+            for (int i = 0; i < initializers.Length; i++)
             {
-                initializators[i].Optimize(ref initializators[i], owner, message, opts, statistic);
+                initializers[i].Optimize(ref initializers[i], owner, message, opts, statistic);
             }
         }
 
@@ -305,9 +305,9 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             var res = isConst ? "const " : "var ";
-            for (var i = 0; i < initializators.Length; i++)
+            for (var i = 0; i < initializers.Length; i++)
             {
-                var t = initializators[i].ToString();
+                var t = initializers[i].ToString();
                 if (string.IsNullOrEmpty(t))
                     continue;
                 if (t[0] == '(')

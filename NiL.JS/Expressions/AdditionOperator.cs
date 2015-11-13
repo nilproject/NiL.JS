@@ -301,16 +301,16 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    if (first is ConstantDefinition && (first as ConstantDefinition).value.valueType == JSValueType.String)
+                    if (first.ContextIndependent && first.Evaluate(null).valueType == JSValueType.String)
                     {
-                        if ((first as ConstantDefinition).value.oValue.ToString().Length == 0)
+                        if (first.Evaluate(null).ToString().Length == 0)
                             _this = new ToStringExpression(second);
                         else
                             _this = new StringConcatenationExpression(new List<Expression>() { first, second });
                     }
-                    else if (second is ConstantDefinition && (second as ConstantDefinition).value.valueType == JSValueType.String)
+                    else if (second.ContextIndependent && second.Evaluate(null).valueType == JSValueType.String)
                     {
-                        if ((second as ConstantDefinition).value.oValue.ToString().Length == 0)
+                        if (second.Evaluate(null).ToString().Length == 0)
                             _this = new ToStringExpression(first);
                         else
                             _this = new StringConcatenationExpression(new List<Expression>() { first, second });
@@ -323,25 +323,7 @@ namespace NiL.JS.Expressions
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
-            //if (first.ResultType == PredictedType.String
-            //    || second.ResultType == PredictedType.String)
-            //{
-            //    if (first is StringConcat)
-            //    {
-            //        _this = first;
-            //        (first as StringConcat).sources.Add(second);
-            //    }
-            //    else if (second is StringConcat)
-            //    {
-            //        _this = second;
-            //        (second as StringConcat).sources.Insert(0, first);
-            //    }
-            //    else
-            //    {
-            //        _this = new StringConcat(new List<Expression>() { first, second });
-            //    }
-            //    return;
-            //}
+
             if (Tools.IsEqual(first.ResultType, PredictedType.Number, PredictedType.Group)
                 && Tools.IsEqual(second.ResultType, PredictedType.Number, PredictedType.Group))
             {
@@ -379,6 +361,11 @@ namespace NiL.JS.Expressions
         public override string ToString()
         {
             return "(" + first + " + " + second + ")";
+        }
+
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            throw new NotImplementedException();
         }
     }
 }

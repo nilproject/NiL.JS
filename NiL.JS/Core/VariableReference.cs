@@ -16,7 +16,7 @@ namespace NiL.JS.Core
         internal VariableDescriptor descriptor;
         public VariableDescriptor Descriptor { get { return descriptor; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -42,7 +42,7 @@ namespace NiL.JS.Core
             defineFunctionDepth = -1;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return null;
         }

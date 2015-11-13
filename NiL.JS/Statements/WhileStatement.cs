@@ -54,7 +54,7 @@ namespace NiL.JS.Statements
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
-                body = new CodeBlock(new[] { body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
+                body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             state.AllowBreak.Pop();
@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>()
             {
@@ -146,7 +146,7 @@ namespace NiL.JS.Statements
                     condition.Eliminated = true;
                 }
                 else if ((opts & Options.SuppressUselessExpressionsElimination) == 0
-                        && ((condition is ObjectDefinition && (condition as ObjectDefinition).Fields.Length == 0)
+                        && ((condition is ObjectDefinition && (condition as ObjectDefinition).FieldNames.Length == 0)
                             || (condition is ArrayDefinition && (condition as ArrayDefinition).Elements.Count == 0)))
                 {
                     _this = new InfinityLoopStatement(body, labels);

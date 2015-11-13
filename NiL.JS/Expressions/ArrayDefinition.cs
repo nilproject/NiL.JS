@@ -16,7 +16,7 @@ namespace NiL.JS.Expressions
 
         public ICollection<Expression> Elements { get { return elements; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -27,6 +27,19 @@ namespace NiL.JS.Expressions
         internal override bool ResultInTempContainer
         {
             get { return false; }
+        }
+
+        protected internal override bool NeedDecompose
+        {
+            get
+            {
+                for (var i = 0; i < elements.Length; i++)
+                {
+                    if (elements[i].NeedDecompose)
+                        return true;
+                }
+                return false;
+            }
         }
 
         private ArrayDefinition()
@@ -125,7 +138,7 @@ namespace NiL.JS.Expressions
             return impl(context, elements);
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return elements;
         }
@@ -155,6 +168,28 @@ namespace NiL.JS.Expressions
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);
+        }
+
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            var lastDecomposeIndex = -1;
+            for (var i = 0; i < elements.Length; i++)
+            {
+                elements[i].Decompose(ref elements[i], result);
+                if (elements[i].NeedDecompose)
+                {
+                    lastDecomposeIndex = i;
+                }
+            }
+
+            for (var i = 0; i < lastDecomposeIndex; i++)
+            {
+                if (!(elements[i] is ExtractStoredValueExpression))
+                {
+                    result.Add(new StoreValueStatement(elements[i]));
+                    elements[i] = new ExtractStoredValueExpression(elements[i]);
+                }
+            }
         }
 
         public override string ToString()

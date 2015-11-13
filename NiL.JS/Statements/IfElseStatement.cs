@@ -11,15 +11,15 @@ namespace NiL.JS.Statements
     public sealed class IfStatement : CodeNode
     {
         private Expression condition;
-        private CodeNode body;
+        private CodeNode then;
 
-        public CodeNode Body { get { return body; } }
+        public CodeNode Then { get { return then; } }
         public CodeNode Condition { get { return condition; } }
 
         internal IfStatement(Expression condition, CodeNode body)
         {
             this.condition = condition;
-            this.body = body;
+            this.then = body;
         }
 
         public override JSValue Evaluate(Context context)
@@ -31,27 +31,27 @@ namespace NiL.JS.Statements
             if ((bool)condition.Evaluate(context))
             {
 #if DEV
-                if (context.debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
+                if (context.debugging && !(then is CodeBlock))
+                    context.raiseDebugger(then);
 #endif
-                var temp = body.Evaluate(context);
+                var temp = then.Evaluate(context);
                 if (temp != null)
                     context.lastResult = temp;
             }
             return null;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
-            return new[] { body, condition };
+            return new[] { then, condition };
         }
 
         public override string ToString()
         {
             string rp = Environment.NewLine;
             string rs = Environment.NewLine + "  ";
-            var sbody = body.ToString();
-            return "if (" + condition + ")" + (body is CodeBlock ? sbody : Environment.NewLine + "  " + sbody.Replace(rp, rs));
+            var sbody = then.ToString();
+            return "if (" + condition + ")" + (then is CodeBlock ? sbody : Environment.NewLine + "  " + sbody.Replace(rp, rs));
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -64,8 +64,8 @@ namespace NiL.JS.Statements
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);
             condition = (Expression)cc;
-            if (body != null)
-                body.Optimize(ref body, owner, message, opts, statistic);
+            if (then != null)
+                then.Optimize(ref then, owner, message, opts, statistic);
             else
                 _this = condition;
         }
@@ -77,11 +77,11 @@ namespace NiL.JS.Statements
     public sealed class IfElseStatement : CodeNode
     {
         private Expression condition;
-        private CodeNode body;
-        private CodeNode elseBody;
+        private CodeNode then;
+        private CodeNode @else;
 
-        public CodeNode Body { get { return body; } }
-        public CodeNode ElseBody { get { return elseBody; } }
+        public CodeNode Then { get { return then; } }
+        public CodeNode Else { get { return @else; } }
         public Expression Condition { get { return condition; } }
 
         private IfElseStatement()
@@ -92,8 +92,8 @@ namespace NiL.JS.Statements
         public IfElseStatement(Expression condition, CodeNode body, CodeNode elseBody)
         {
             this.condition = condition;
-            this.body = body;
-            this.elseBody = elseBody;
+            this.then = body;
+            this.@else = elseBody;
         }
 
         internal static CodeNode Parse(ParsingState state, ref int index)
@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
-                body = new CodeBlock(new[] { body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
+                body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             CodeNode elseBody = null;
@@ -140,7 +140,7 @@ namespace NiL.JS.Statements
                         ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.message != null)
                         state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, elseBody.Position, elseBody.Length), "Do not declare function in nested blocks.");
-                    elseBody = new CodeBlock(new[] { elseBody }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
+                    elseBody = new CodeBlock(new[] { elseBody }); // для того, чтобы не дублировать код по декларации функции, 
                     // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
                 }
             }
@@ -150,9 +150,9 @@ namespace NiL.JS.Statements
             index = i;
             return new IfElseStatement()
                 {
-                    body = body,
+                    then = body,
                     condition = condition,
-                    elseBody = elseBody,
+                    @else = elseBody,
                     Position = pos,
                     Length = index - pos
                 };
@@ -167,10 +167,10 @@ namespace NiL.JS.Statements
             if ((bool)condition.Evaluate(context))
             {
 #if DEV
-                if (context.debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
+                if (context.debugging && !(then is CodeBlock))
+                    context.raiseDebugger(then);
 #endif
-                var temp = body.Evaluate(context);
+                var temp = then.Evaluate(context);
                 if (temp != null)
                     context.lastResult = temp;
                 return null;
@@ -178,23 +178,23 @@ namespace NiL.JS.Statements
             else
             {
 #if DEV
-                if (context.debugging && !(elseBody is CodeBlock))
-                    context.raiseDebugger(elseBody);
+                if (context.debugging && !(@else is CodeBlock))
+                    context.raiseDebugger(@else);
 #endif
-                var temp = elseBody.Evaluate(context);
+                var temp = @else.Evaluate(context);
                 if (temp != null)
                     context.lastResult = temp;
                 return null;
             }
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>()
             {
-                body,
+                then,
                 condition,
-                elseBody
+                @else
             };
             res.RemoveAll(x => x == null);
             return res.ToArray();
@@ -203,8 +203,8 @@ namespace NiL.JS.Statements
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
             Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-            Parser.Build(ref body, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
-            Parser.Build(ref elseBody, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
+            Parser.Build(ref then, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
+            Parser.Build(ref @else, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
 
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
@@ -218,9 +218,9 @@ namespace NiL.JS.Statements
                     && (condition is ConstantDefinition || (condition.ContextIndependent)))
                 {
                     if ((bool)condition.Evaluate(null))
-                        _this = body;
+                        _this = then;
                     else
-                        _this = elseBody;
+                        _this = @else;
                     condition.Eliminated = true;
                 }
             }
@@ -233,8 +233,8 @@ namespace NiL.JS.Statements
                 System.Diagnostics.Debugger.Log(10, "Error", e.Message);
 #endif
             }
-            if (_this == this && elseBody == null)
-                _this = new IfStatement(this.condition, this.body) { Position = Position, Length = Length };
+            if (_this == this && @else == null)
+                _this = new IfStatement(this.condition, this.then) { Position = Position, Length = Length };
             return false;
         }
 
@@ -243,10 +243,10 @@ namespace NiL.JS.Statements
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, statistic);
             condition = (Expression)cc;
-            if (body != null)
-                body.Optimize(ref body, owner, message, opts, statistic);
-            if (elseBody != null)
-                elseBody.Optimize(ref elseBody, owner, message, opts, statistic);
+            if (then != null)
+                then.Optimize(ref then, owner, message, opts, statistic);
+            if (@else != null)
+                @else.Optimize(ref @else, owner, message, opts, statistic);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -258,12 +258,13 @@ namespace NiL.JS.Statements
         {
             string rp = Environment.NewLine;
             string rs = Environment.NewLine + "  ";
-            var sbody = body.ToString();
-            var sebody = elseBody == null ? "" : elseBody.ToString();
-            return "if (" + condition + ")" + (body is CodeBlock ? sbody : Environment.NewLine + "  " + sbody.Replace(rp, rs)) +
-                (elseBody != null ?
-                Environment.NewLine + "else" + Environment.NewLine +
-                (elseBody is CodeBlock ? sebody.Replace(rp, rs) : "  " + sebody) : "");
+            var sbody = then.ToString();
+            var sebody = @else == null ? "" : @else.ToString();
+            return "if (" + condition + ")" +
+                (then is CodeBlock ? sbody : Environment.NewLine + "  " + sbody.Replace(rp, rs)) +
+                (@else != null ? Environment.NewLine +
+                "else" + Environment.NewLine +
+                (@else is CodeBlock ? sebody.Replace(rp, rs) : "  " + sebody) : "");
         }
     }
 }

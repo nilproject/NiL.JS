@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
@@ -33,7 +34,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -55,6 +56,11 @@ namespace NiL.JS.Expressions
                 Setter == null ? null : (Function)Setter.Evaluate(context)
             );
             return tempContainer;
+        }
+
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            throw new InvalidOperationException();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace NiL.JS.Expressions
         public CodeNode Source { get { return first; } }
         public CodeNode FieldName { get { return second; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {

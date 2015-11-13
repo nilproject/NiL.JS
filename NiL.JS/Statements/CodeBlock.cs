@@ -28,7 +28,7 @@ namespace NiL.JS.Statements
         internal VariableDescriptor[] variables;
         internal VariableDescriptor[] localVariables;
         internal CodeNode[] lines;
-        internal readonly bool strict;
+        internal bool strict;
 
         public VariableDescriptor[] Variables { get { return variables; } }
         public VariableDescriptor[] LocalVariables { get { return localVariables; } }
@@ -67,14 +67,14 @@ namespace NiL.JS.Statements
             }
         }
 
-        public CodeBlock(CodeNode[] body, bool strict)
+        public CodeBlock(CodeNode[] body)
         {
             if (body == null)
                 throw new ArgumentNullException("body");
             code = "";
             this.lines = body;
             variables = null;
-            this.strict = strict;
+            this.strict = false;
         }
 
         internal static CodeNode Parse(ParsingState state, ref int index)
@@ -188,9 +188,9 @@ namespace NiL.JS.Statements
                 i++;
             int startPos = index;
             index = i;
-            body.Reverse();
-            return new CodeBlock(body.ToArray(), (state.strict ^= strictSwitch) || strictSwitch)
+            return new CodeBlock(body.ToArray())
                 {
+                    strict = (state.strict ^= strictSwitch) || strictSwitch,
                     variables = emptyVariables,
                     Position = startPos,
                     code = state.SourceCode,
@@ -204,7 +204,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var ls = lines;
-            for (int i = ls.Length; i-- > 0; )
+            for (int i = 0; i < ls.Length; i++)
             {
 #if DEV
                 if (context.debugging)
@@ -255,10 +255,10 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>();
-            for (int i = lines.Length; i-- > 0; )
+            for (int i = 0; i < lines.Length; i++)
             {
                 var node = lines[i];
                 if (node == null)
@@ -275,7 +275,7 @@ namespace NiL.JS.Statements
             if (builded)
                 return false;
 
-            for (int i = lines.Length; i-- > 0; )
+            for (int i = 0; i < lines.Length; i++)
             {
                 var fe = lines[i] as EntityDefinition;
                 if (fe != null)
@@ -289,7 +289,7 @@ namespace NiL.JS.Statements
                 }
             }
             bool unreachable = false;
-            for (int i = lines.Length; i-- > 0; )
+            for (int i = 0; i < lines.Length; i++)
             {
                 if (lines[i] != null)
                 {
@@ -373,6 +373,13 @@ namespace NiL.JS.Statements
             return false;
         }
 
+        internal void Optimize(ref CodeBlock self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        {
+            CodeNode cn = self;
+            Optimize(ref cn, owner, message, opts, statistic);
+            self = (CodeBlock)cn;
+        }
+
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             if (localVariables != null)
@@ -384,13 +391,14 @@ namespace NiL.JS.Statements
                         cn.Optimize(ref cn, owner, message, opts, statistic);
                     }
                 }
-            for (var i = lines.Length; i-- > 0; )
+            for (int i = 0; i < lines.Length; i++)
             {
                 var cn = lines[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, statistic);
                 lines[i] = cn;
             }
             if (localVariables != null)
+            {
                 for (var i = 0; i < localVariables.Length; i++)
                 {
                     if (localVariables[i].initializer != null)
@@ -399,11 +407,12 @@ namespace NiL.JS.Statements
                         cn.Optimize(ref cn, owner, message, opts, statistic);
                     }
                 }
+            }
         }
 #if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
-            for (int i = lines.Length; i-- > 0; )
+            for (int i = 0; i < lines.Length; i++)
                 lines[i].TryCompile(true, false, null, dynamicValues);
             for (int i = localVariables.Length; i-- > 0; )
                 if (localVariables[i].initializer != null)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
@@ -11,13 +12,13 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class ObjectDefinition : Expression
     {
-        private string[] fields;
-        private CodeNode[] values;
+        private Expression[] values;
+        private string[] fieldNames;
 
-        public CodeNode[] Initializators { get { return values; } }
-        public string[] Fields { get { return fields; } }
+        public Expression[] Values { get { return values; } }
+        public string[] FieldNames { get { return fieldNames; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -38,14 +39,22 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        private ObjectDefinition(Dictionary<string, CodeNode> fields)
+        protected internal override bool NeedDecompose
         {
-            this.fields = new string[fields.Count];
-            this.values = new CodeNode[fields.Count];
+            get
+            {
+                return values.Any(x => x.NeedDecompose);
+            }
+        }
+
+        private ObjectDefinition(Dictionary<string, Expression> fields)
+        {
+            this.fieldNames = new string[fields.Count];
+            this.values = new Expression[fields.Count];
             int i = 0;
             foreach (var f in fields)
             {
-                this.fields[i] = f.Key;
+                this.fieldNames[i] = f.Key;
                 this.values[i++] = f.Value;
             }
         }
@@ -54,7 +63,7 @@ namespace NiL.JS.Expressions
         {
             if (state.Code[index] != '{')
                 throw new ArgumentException("Invalid JSON definition");
-            var flds = new Dictionary<string, CodeNode>();
+            var flds = new Dictionary<string, Expression>();
             int i = index;
             while (state.Code[i] != '}')
             {
@@ -140,17 +149,17 @@ namespace NiL.JS.Expressions
                     do
                         i++;
                     while (char.IsWhiteSpace(state.Code[i]));
-                    var initializator = ExpressionTree.Parse(state, ref i, false, false);
-                    CodeNode aei = null;
+                    var initializer = (Expression)ExpressionTree.Parse(state, ref i, false, false);
+                    Expression aei = null;
                     if (flds.TryGetValue(fieldName, out aei))
                     {
                         if (state.strict ? (!(aei is ConstantDefinition) || (aei as ConstantDefinition).value != JSValue.undefined)
                                          : aei is PropertyPairExpression)
                             ExceptionsHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
                         if (state.message != null)
-                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, initializator.Position, 0), "Duplicate key \"" + fieldName + "\"");
+                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, initializer.Position, 0), "Duplicate key \"" + fieldName + "\"");
                     }
-                    flds[fieldName] = initializator;
+                    flds[fieldName] = initializer;
                 }
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
@@ -170,18 +179,18 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var res = JSObject.CreateObject();
-            if (fields.Length == 0)
+            if (fieldNames.Length == 0)
                 return res;
             res.fields = JSObject.getFieldsContainer();
-            for (int i = 0; i < fields.Length; i++)
+            for (int i = 0; i < fieldNames.Length; i++)
             {
                 var val = values[i].Evaluate(context);
                 val = val.CloneImpl(false);
                 val.attributes = JSValueAttributesInternal.None;
-                if (this.fields[i] == "__proto__")
+                if (this.fieldNames[i] == "__proto__")
                     res.__proto__ = val.oValue as JSObject;
                 else
-                    res.fields[this.fields[i]] = val;
+                    res.fields[this.fieldNames[i]] = val;
             }
             return res;
         }
@@ -199,15 +208,15 @@ namespace NiL.JS.Expressions
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            for (var i = Initializators.Length; i-- > 0; )
+            for (var i = Values.Length; i-- > 0; )
             {
-                var cn = Initializators[i] as CodeNode;
+                var cn = Values[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, statistic);
-                Initializators[i] = cn as Expression;
+                Values[i] = cn as Expression;
             }
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return values;
         }
@@ -217,10 +226,32 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            var lastDecomposeIndex = -1;
+            for (var i = 0; i < values.Length; i++)
+            {
+                values[i].Decompose(ref values[i], result);
+                if (values[i].NeedDecompose)
+                {
+                    lastDecomposeIndex = i;
+                }
+            }
+
+            for (var i = 0; i < lastDecomposeIndex; i++)
+            {
+                if (!(values[i] is ExtractStoredValueExpression))
+                {
+                    result.Add(new StoreValueStatement(values[i]));
+                    values[i] = new ExtractStoredValueExpression(values[i]);
+                }
+            }
+        }
+
         public override string ToString()
         {
             string res = "{ ";
-            for (int i = 0; i < fields.Length; i++)
+            for (int i = 0; i < fieldNames.Length; i++)
             {
                 if ((values[i] is ConstantDefinition) && ((values[i] as ConstantDefinition).value.valueType == JSValueType.Property))
                 {
@@ -231,8 +262,8 @@ namespace NiL.JS.Expressions
                     res += gs[1];
                 }
                 else
-                    res += "\"" + fields[i] + "\"" + " : " + values[i];
-                if (i + 1 < fields.Length)
+                    res += "\"" + fieldNames[i] + "\"" + " : " + values[i];
+                if (i + 1 < fieldNames.Length)
                     res += ", ";
             }
             return res + " }";

@@ -12,13 +12,13 @@ namespace NiL.JS.Statements
 #endif
     public sealed class ForStatement : CodeNode
     {
-        private CodeNode init;
+        private CodeNode initializer;
         private CodeNode condition;
         private CodeNode post;
         private CodeNode body;
         private string[] labels;
 
-        public CodeNode Initializator { get { return init; } }
+        public CodeNode Initializator { get { return initializer; } }
         public CodeNode Condition { get { return condition; } }
         public CodeNode Post { get { return post; } }
         public CodeNode Body { get { return body; } }
@@ -76,7 +76,7 @@ namespace NiL.JS.Statements
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
-                body = new CodeBlock(new[] { body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
+                body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             state.AllowBreak.Pop();
@@ -87,7 +87,7 @@ namespace NiL.JS.Statements
                 {
                     body = body,
                     condition = condition,
-                    init = init,
+                    initializer = init,
                     post = post,
                     labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
                     Position = startPos,
@@ -97,13 +97,13 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            if (init != null)
+            if (initializer != null)
             {
 #if DEV
                 if (context.debugging)
-                    context.raiseDebugger(init);
+                    context.raiseDebugger(initializer);
 #endif
-                init.Evaluate(context);
+                initializer.Evaluate(context);
             }
 #if DEV
             if (context.debugging)
@@ -158,11 +158,11 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>()
             {
-                init, 
+                initializer, 
                 condition,
                 post,
                 body
@@ -173,12 +173,12 @@ namespace NiL.JS.Statements
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref init, 1, variables, codeContext, message, statistic, opts);
+            Parser.Build(ref initializer, 1, variables, codeContext, message, statistic, opts);
             if ((opts & Options.SuppressUselessStatementsElimination) == 0
-                && init is VariableDefineStatement
-                && !(init as VariableDefineStatement).isConst
-                && (init as VariableDefineStatement).initializators.Length == 1)
-                init = (init as VariableDefineStatement).initializators[0];
+                && initializer is VariableDefineStatement
+                && !(initializer as VariableDefineStatement).isConst
+                && (initializer as VariableDefineStatement).initializers.Length == 1)
+                initializer = (initializer as VariableDefineStatement).initializers[0];
             Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
             if (post != null)
             {
@@ -193,7 +193,7 @@ namespace NiL.JS.Statements
                 && (condition as Expressions.Expression).ContextIndependent
                 && !(bool)condition.Evaluate(null))
             {
-                _this = init;
+                _this = initializer;
                 return false;
             }
             else if (body == null || body is EmptyExpression) // initial solution. Will extended
@@ -227,11 +227,11 @@ namespace NiL.JS.Statements
                 {
                     if (variable.defineFunctionDepth >= 0 && variable.descriptor.defineDepth >= 0)
                     {
-                        if (init is NiL.JS.Expressions.AssignmentOperator
-                            && (init as NiL.JS.Expressions.AssignmentOperator).FirstOperand is GetVariableExpression
-                            && ((init as NiL.JS.Expressions.AssignmentOperator).FirstOperand as GetVariableExpression).descriptor == variable.descriptor)
+                        if (initializer is NiL.JS.Expressions.AssignmentOperator
+                            && (initializer as NiL.JS.Expressions.AssignmentOperator).FirstOperand is GetVariableExpression
+                            && ((initializer as NiL.JS.Expressions.AssignmentOperator).FirstOperand as GetVariableExpression).descriptor == variable.descriptor)
                         {
-                            var value = (init as NiL.JS.Expressions.AssignmentOperator).SecondOperand;
+                            var value = (initializer as NiL.JS.Expressions.AssignmentOperator).SecondOperand;
                             if (value is ConstantDefinition)
                             {
                                 var vvalue = value.Evaluate(null);
@@ -243,12 +243,17 @@ namespace NiL.JS.Statements
                                     || lvalue.valueType == JSValueType.Bool
                                     || lvalue.valueType == JSValueType.Double))
                                 {
+                                    post.Eliminated = true;
+                                    condition.Eliminated = true;
+
                                     if (!(bool)NiL.JS.Expressions.LessOperator.Check(vvalue, lvalue))
                                     {
-                                        _this = init;
+
+                                        _this = initializer;
                                         return false;
                                     }
-                                    _this = new CodeBlock(new[] { new NiL.JS.Expressions.AssignmentOperator(variable, limit), init }, false);
+
+                                    _this = new CodeBlock(new[] { initializer, new NiL.JS.Expressions.AssignmentOperator(variable, limit) });
                                     return true;
                                 }
                             }
@@ -261,8 +266,8 @@ namespace NiL.JS.Statements
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            if (init != null)
-                init.Optimize(ref init, owner, message, opts, statistic);
+            if (initializer != null)
+                initializer.Optimize(ref initializer, owner, message, opts, statistic);
             if (condition != null)
                 condition.Optimize(ref condition, owner, message, opts, statistic);
             if (post != null)
@@ -278,7 +283,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            var istring = (init as object ?? "").ToString();
+            var istring = (initializer as object ?? "").ToString();
             return "for (" + istring + "; " + condition + "; " + post + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
     }

@@ -25,7 +25,7 @@ namespace NiL.JS.Statements
     public sealed class SwitchStatement : CodeNode
     {
         private FunctionDefinition[] functions;
-        private readonly CodeNode[] lines;
+        private CodeNode[] lines;
         private SwitchCase[] cases;
         private CodeNode image;
 
@@ -128,7 +128,7 @@ namespace NiL.JS.Statements
         {
             if (functions != null)
                 throw new InvalidOperationException();
-            int i = cases[0] != null ? cases[0].index : 0;
+            int i = cases[0] != null ? cases[0].index : lines.Length;
             var imageVal = image.Evaluate(context);
             for (int j = 1; j < cases.Length; j++)
             {
@@ -142,7 +142,7 @@ namespace NiL.JS.Statements
                     break;
                 }
             }
-            while (i-- > 0)
+            for (; i < lines.Length; i++)
             {
                 if (lines[i] == null)
                     continue;
@@ -168,33 +168,16 @@ namespace NiL.JS.Statements
             {
                 CodeNode stat = functions[i];
                 Parser.Build(ref stat, 1, variables, codeContext, message, statistic, opts);
-                VariableDescriptor desc = null;
-                if (!variables.TryGetValue(functions[i].name, out desc) || desc == null)
-                    variables[functions[i].name] = functions[i].Reference.descriptor;
-                else
-                {
-                    variables[functions[i].name] = functions[i].Reference.descriptor;
-                    for (var j = 0; j < desc.references.Count; j++)
-                        desc.references[j].descriptor = functions[i].Reference.descriptor;
-                    functions[i].Reference.descriptor.references.AddRange(desc.references);
-                    functions[i].Reference.descriptor.captured = functions[i].Reference.descriptor.captured || functions[i].Reference.descriptor.references.FindIndex(x => x.defineFunctionDepth > x.descriptor.defineDepth) != -1;
-                }
+
+                functions[i].Register(variables, codeContext);
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
                 Parser.Build(ref cases[i].statement, 2, variables, codeContext, message, statistic, opts);
-            for (int i = 0; i < lines.Length / 2; i++)
-            {
-                var t = lines[i];
-                lines[i] = lines[lines.Length - 1 - i];
-                lines[lines.Length - 1 - i] = t;
-            }
-            for (int i = cases[0] != null ? 0 : 1; i < cases.Length; i++)
-                cases[i].index = lines.Length - cases[i].index;
             return false;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>()
             {
@@ -247,11 +230,13 @@ namespace NiL.JS.Statements
                 res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
             }
             if (functions != null)
+            {
                 for (var i = 0; i < functions.Length; i++)
                 {
                     var func = functions[i].ToString().Replace(replp, replt);
                     res += "  " + func + Environment.NewLine;
                 }
+            }
             return res + "}";
         }
     }

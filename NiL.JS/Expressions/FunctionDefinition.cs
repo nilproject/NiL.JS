@@ -68,10 +68,12 @@ namespace NiL.JS.Expressions
         internal int parametersStored;
         internal int recursionDepth;
         #endregion
+
         internal readonly FunctionStatistics statistic;
         internal ParameterDescriptor[] parameters;
         internal CodeBlock body;
         internal FunctionType type;
+        internal bool strict;
 #if DEBUG
         internal bool trace;
 #endif
@@ -84,7 +86,7 @@ namespace NiL.JS.Expressions
             get { return true; }
         }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -108,7 +110,7 @@ namespace NiL.JS.Expressions
         internal FunctionDefinition(string name)
         {
             parameters = new ParameterDescriptor[0];
-            body = new CodeBlock(new CodeNode[0], false);
+            body = new CodeBlock(new CodeNode[0]);
             body.variables = new VariableDescriptor[0];
             statistic = new FunctionStatistics();
             this.name = name;
@@ -279,7 +281,7 @@ namespace NiL.JS.Expressions
             if (code[i] != '{')
             {
                 if (mode == FunctionType.Arrow)
-                    body = new CodeBlock(new CodeNode[] { new ReturnStatement(ExpressionTree.Parse(state, ref i) as Expression) }, false);
+                    body = new CodeBlock(new CodeNode[] { new ReturnStatement(ExpressionTree.Parse(state, ref i) as Expression) });
                 else
                     ExceptionsHelper.ThrowUnknownToken(code, i);
             }
@@ -395,7 +397,7 @@ namespace NiL.JS.Expressions
             return MakeFunction(context);
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new CodeNode[1 + parameters.Length + (Reference != null ? 1 : 0)];
             for (var i = 0; i < parameters.Length; i++)
@@ -464,6 +466,7 @@ namespace NiL.JS.Expressions
                 if (Reference.descriptor == null)
                     Reference.descriptor = new VariableDescriptor(Reference, true, Reference.defineFunctionDepth);
                 if (System.Array.FindIndex(parameters, x => x.Name == Reference.descriptor.name) == -1)
+                {
                     if (nvars.TryGetValue(name, out fdesc) && !fdesc.IsDefined)
                     {
                         foreach (var r in fdesc.references)
@@ -478,6 +481,7 @@ namespace NiL.JS.Expressions
                             }
                         }
                     }
+                }
             }
             if (message != null)
             {

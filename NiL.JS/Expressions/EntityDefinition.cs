@@ -58,6 +58,14 @@ namespace NiL.JS.Expressions
 
         public abstract bool Hoist { get; }
 
+        protected internal override bool NeedDecompose
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         protected EntityDefinition()
         {
             reference = new EntityReference(this);
@@ -69,7 +77,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal virtual void Register(Dictionary<string, VariableDescriptor> variables, CodeContext codeContext)
+        internal protected virtual void Register(Dictionary<string, VariableDescriptor> variables, CodeContext codeContext)
         {
             if ((codeContext & CodeContext.InExpression) == 0 && name != null) // имя не задано только для случая Function("<some string>")
             {
@@ -85,6 +93,11 @@ namespace NiL.JS.Expressions
                     Reference.descriptor.captured = Reference.descriptor.captured || Reference.descriptor.references.FindIndex(x => x.defineFunctionDepth > x.descriptor.defineDepth) != -1;
                 }
             }
+        }
+
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            throw new InvalidOperationException();
         }
     }
 }

@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return null;
         }

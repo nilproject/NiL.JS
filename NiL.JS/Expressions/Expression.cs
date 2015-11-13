@@ -21,7 +21,6 @@ namespace NiL.JS.Expressions
          * Наследниками Expression являются только те конструкции, которые могут возвращать значени (r-value).
          */
 
-
         internal JSValue tempContainer;
 
         internal protected virtual PredictedType ResultType
@@ -59,21 +58,30 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public virtual bool ContextIndependent
+        protected internal virtual bool ContextIndependent
         {
             get
             {
-                return (first == null || first is ConstantDefinition || (first is Expression && ((Expression)first).ContextIndependent))
-                    && (second == null || second is ConstantDefinition || (second is Expression && ((Expression)second).ContextIndependent));
+                return (first == null || first.ContextIndependent)
+                    && (second == null || second.ContextIndependent);
             }
         }
 
-        internal protected Expression()
+        protected internal virtual bool NeedDecompose
+        {
+            get
+            {
+                return (first != null && first.NeedDecompose)
+                    || (second != null && second.NeedDecompose);
+            }
+        }
+
+        protected Expression()
         {
 
         }
 
-        internal protected Expression(Expression first, Expression second, bool createTempContainer)
+        protected Expression(Expression first, Expression second, bool createTempContainer)
         {
             if (createTempContainer)
                 tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
@@ -119,6 +127,13 @@ namespace NiL.JS.Expressions
                 }
             }
             return false;
+        }
+
+        internal void Optimize(ref Expression self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        {
+            CodeNode cn = self;
+            Optimize(ref cn, owner, message, opts, statistic);
+            self = (Expression)cn;
         }
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
@@ -170,7 +185,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             if (first != null && second != null)
                 return new CodeNode[]{
@@ -186,6 +201,25 @@ namespace NiL.JS.Expressions
                     second
                 };
             return null;
+        }
+
+        protected internal virtual void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            if (first != null)
+            {
+                first.Decompose(ref first, result);
+            }
+            
+            if (second != null)
+            {
+                if (second.NeedDecompose && !(first is ExtractStoredValueExpression))
+                {
+                    result.Add(new StoreValueStatement(first));
+                    first = new ExtractStoredValueExpression(first);
+                }
+
+                second.Decompose(ref second, result);
+            }
         }
     }
 }

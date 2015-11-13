@@ -15,9 +15,9 @@ namespace NiL.JS.Statements
 #endif
     public sealed class ReturnStatement : CodeNode
     {
-        private Expressions.Expression body;
+        private Expression body;
 
-        public Expressions.Expression Body { get { return body; } }
+        public Expression Body { get { return body; } }
 
         internal ReturnStatement()
         {
@@ -61,7 +61,7 @@ namespace NiL.JS.Statements
             return JSValue.notExists;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             if (body != null)
                 return new CodeNode[] { body };

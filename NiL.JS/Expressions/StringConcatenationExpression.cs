@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using NiL.JS.Core;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -12,16 +14,29 @@ namespace NiL.JS.Expressions
     {
         internal IList<Expression> sources;
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
                 for (var i = 0; i < sources.Count; i++)
                 {
-                    if (sources[i].ContextIndependent)
+                    if (!sources[i].ContextIndependent)
                         return false;
                 }
                 return true;
+            }
+        }
+
+        protected internal override bool NeedDecompose
+        {
+            get
+            {
+                for (var i = 0; i < sources.Count; i++)
+                {
+                    if (sources[i].NeedDecompose)
+                        return true;
+                }
+                return false;
             }
         }
 
@@ -92,6 +107,30 @@ namespace NiL.JS.Expressions
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);
+        }
+
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            var lastDecomposeIndex = -1;
+            for (var i = 0; i < sources.Count; i++)
+            {
+                Expression s = sources[i];
+                sources[i].Decompose(ref s, result);
+                sources[i] = s;
+                if (sources[i].NeedDecompose)
+                {
+                    lastDecomposeIndex = i;
+                }
+            }
+
+            for (var i = 0; i < lastDecomposeIndex; i++)
+            {
+                if (!(sources[i] is ExtractStoredValueExpression))
+                {
+                    result.Add(new StoreValueStatement(sources[i]));
+                    sources[i] = new ExtractStoredValueExpression(sources[i]);
+                }
+            }
         }
 
         public override string ToString()

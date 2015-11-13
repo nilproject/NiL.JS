@@ -18,7 +18,7 @@ namespace NiL.JS.Expressions
         private string pattern;
         private string flags;
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return null;
         }

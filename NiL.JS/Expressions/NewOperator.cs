@@ -12,7 +12,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class NewOperator : Expression
     {
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {

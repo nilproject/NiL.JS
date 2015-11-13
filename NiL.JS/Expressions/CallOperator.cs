@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -18,13 +20,13 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class CallOperator : Expression
     {
-        private Expression[] arguments;
+        private Expression[] _arguments;
         internal bool withSpread;
         internal bool allowTCO;
         internal CallMode callMode;
 
         public CallMode CallMode { get { return callMode; } }
-        public override bool ContextIndependent { get { return false; } }
+        protected internal override bool ContextIndependent { get { return false; } }
         internal override bool ResultInTempContainer { get { return false; } }
         protected internal override PredictedType ResultType
         {
@@ -42,13 +44,30 @@ namespace NiL.JS.Expressions
                 return PredictedType.Unknown;
             }
         }
-        public Expression[] Arguments { get { return arguments; } }
+        public Expression[] Arguments { get { return _arguments; } }
         public bool AllowTCO { get { return allowTCO && callMode == 0; } }
+        
+        protected internal override bool NeedDecompose
+        {
+            get
+            {
+                if (first.NeedDecompose)
+                    return true;
+
+                for (var i = 0; i < _arguments.Length; i++)
+                {
+                    if (_arguments[i].NeedDecompose)
+                        return true;
+                }
+
+                return false;
+            }
+        }
 
         internal CallOperator(Expression first, Expression[] arguments)
             : base(first, null, false)
         {
-            this.arguments = arguments;
+            this._arguments = arguments;
         }
 
         public override JSValue Evaluate(Context context)
@@ -59,10 +78,10 @@ namespace NiL.JS.Expressions
             Function func = temp.valueType == JSValueType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
             if (func == null)
             {
-                for (int i = 0; i < this.arguments.Length; i++)
+                for (int i = 0; i < this._arguments.Length; i++)
                 {
                     context.objectSource = null;
-                    this.arguments[i].Evaluate(context);
+                    this._arguments[i].Evaluate(context);
                 }
                 context.objectSource = null;
                 // Аргументы должны быть вычислены даже если функция не существует.
@@ -89,7 +108,7 @@ namespace NiL.JS.Expressions
             checkStack();
             if (callMode == CallMode.Construct)
                 targetObject = null;
-            return func.InternalInvoke(targetObject, this.arguments, context, withSpread, callMode != 0);
+            return func.InternalInvoke(targetObject, this._arguments, context, withSpread, callMode != 0);
         }
 
         private void tailCall(Context context, Function func)
@@ -98,10 +117,10 @@ namespace NiL.JS.Expressions
 
             var arguments = new Arguments(context)
             {
-                length = this.arguments.Length
+                length = this._arguments.Length
             };
-            for (int i = 0; i < this.arguments.Length; i++)
-                arguments[i] = Tools.PrepareArg(context, this.arguments[i]);
+            for (int i = 0; i < this._arguments.Length; i++)
+                arguments[i] = Tools.PrepareArg(context, this._arguments[i]);
             context.objectSource = null;
 
             arguments.callee = func;
@@ -137,9 +156,9 @@ namespace NiL.JS.Expressions
                 callMode = CallMode.Super;
             }
 
-            for (var i = 0; i < arguments.Length; i++)
+            for (var i = 0; i < _arguments.Length; i++)
             {
-                Parser.Build(ref arguments[i], depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref _arguments[i], depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             }
 
             base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
@@ -156,11 +175,11 @@ namespace NiL.JS.Expressions
                     {
                         for (var i = 0; i < func.parameters.Length; i++)
                         {
-                            if (i >= arguments.Length)
+                            if (i >= _arguments.Length)
                                 break;
                             if (func.parameters[i].lastPredictedType == PredictedType.Unknown)
-                                func.parameters[i].lastPredictedType = arguments[i].ResultType;
-                            else if (Tools.CompareWithMask(func.parameters[i].lastPredictedType, arguments[i].ResultType, PredictedType.Group) != 0)
+                                func.parameters[i].lastPredictedType = _arguments[i].ResultType;
+                            else if (Tools.CompareWithMask(func.parameters[i].lastPredictedType, _arguments[i].ResultType, PredictedType.Group) != 0)
                                 func.parameters[i].lastPredictedType = PredictedType.Ambiguous;
                         }
                     }
@@ -172,19 +191,19 @@ namespace NiL.JS.Expressions
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             base.Optimize(ref _this, owner, message, opts, statistic);
-            for (var i = arguments.Length; i-- > 0; )
+            for (var i = _arguments.Length; i-- > 0; )
             {
-                var cn = arguments[i] as CodeNode;
+                var cn = _arguments[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, statistic);
-                arguments[i] = cn as Expression;
+                _arguments[i] = cn as Expression;
             }
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
-            var result = new CodeNode[arguments.Length + 1];
+            var result = new CodeNode[_arguments.Length + 1];
             result[0] = first;
-            arguments.CopyTo(result, 1);
+            _arguments.CopyTo(result, 1);
             return result;
         }
 
@@ -193,13 +212,37 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            first.Decompose(ref first, result);
+
+            var lastDecomposeIndex = -1;
+            for (var i = 0; i < _arguments.Length; i++)
+            {
+                _arguments[i].Decompose(ref _arguments[i], result);
+                if (_arguments[i].NeedDecompose)
+                {
+                    lastDecomposeIndex = i;
+                }
+            }
+
+            for (var i = 0; i < lastDecomposeIndex; i++)
+            {
+                if (!(_arguments[i] is ExtractStoredValueExpression))
+                {
+                    result.Add(new StoreValueStatement(_arguments[i]));
+                    _arguments[i] = new ExtractStoredValueExpression(_arguments[i]);
+                }
+            }
+        }
+
         public override string ToString()
         {
             string res = first + "(";
-            for (int i = 0; i < arguments.Length; i++)
+            for (int i = 0; i < _arguments.Length; i++)
             {
-                res += arguments[i];
-                if (i + 1 < arguments.Length)
+                res += _arguments[i];
+                if (i + 1 < _arguments.Length)
                     res += ", ";
             }
             res += ")";

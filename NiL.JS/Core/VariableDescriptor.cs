@@ -35,7 +35,7 @@ namespace NiL.JS.Core
         internal readonly string name;
         internal CodeNode owner;
         internal bool captured;
-        internal List<CodeNode> assignations;
+        internal List<Expression> assignations;
         internal PredictedType lastPredictedType;
         internal bool isDefined;
         internal bool isReadOnly;
@@ -47,7 +47,7 @@ namespace NiL.JS.Core
         public Expression Initializer { get { return initializer; } }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
-        public ReadOnlyCollection<CodeNode> Assignations { get { return assignations == null ? null : assignations.AsReadOnly(); } }
+        public ReadOnlyCollection<Expression> Assignations { get { return assignations == null ? null : assignations.AsReadOnly(); } }
 
         public IEnumerable<VariableReference> References
         {

@@ -12,7 +12,7 @@ namespace NiL.JS.Expressions
     {
         private Expression[] threads;
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {

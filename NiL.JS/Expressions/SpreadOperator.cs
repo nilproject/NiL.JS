@@ -45,7 +45,7 @@ namespace NiL.JS.Expressions
             throw new NotImplementedException();
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return new CodeNode[] { first };
         }

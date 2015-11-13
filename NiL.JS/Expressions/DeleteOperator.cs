@@ -17,7 +17,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -84,7 +84,7 @@ namespace NiL.JS.Expressions
                 if (f.Descriptor.isDefined && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Try to delete defined variable." + ((codeContext & CodeContext.Strict) != 0 ? " In strict mode it cause exception." : " This is not allowed"));
                 (f.Descriptor.assignations ??
-                    (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+                    (f.Descriptor.assignations = new System.Collections.Generic.List<Expression>())).Add(this);
             }
             return false;
         }

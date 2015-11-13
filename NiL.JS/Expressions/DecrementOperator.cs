@@ -14,7 +14,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class DecrementOperator : Expression
     {
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -197,7 +197,7 @@ namespace NiL.JS.Expressions
             if (f != null)
             {
                 (f.Descriptor.assignations ??
-                    (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+                    (f.Descriptor.assignations = new System.Collections.Generic.List<Expression>())).Add(this);
             }
             return false;
         }

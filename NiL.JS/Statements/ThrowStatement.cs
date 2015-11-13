@@ -12,14 +12,14 @@ namespace NiL.JS.Statements
 #endif
     public sealed class ThrowStatement : CodeNode
     {
-        private CodeNode body;
+        private Expression body;
 
         public ThrowStatement(Exception e)
         {
             body = new ConstantDefinition(TypeProxy.Proxy(e));
         }
 
-        internal ThrowStatement(CodeNode statement)
+        internal ThrowStatement(Expression statement)
         {
             body = statement;
         }
@@ -33,7 +33,7 @@ namespace NiL.JS.Statements
                 return null;
             while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                 i++;
-            var b = state.Code[i] == ';' || Tools.isLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, CodeFragmentType.Expression);
+            var b = state.Code[i] == ';' || Tools.isLineTerminator(state.Code[i]) ? null : (Expression)Parser.Parse(state, ref i, CodeFragmentType.Expression);
             if (b is EmptyExpression)
                 ExceptionsHelper.Throw((new SyntaxError("Can't throw result of EmptyStatement " + CodeCoordinates.FromTextPosition(state.Code, i - 1, 0))));
             var pos = index;
@@ -51,7 +51,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>()
             {

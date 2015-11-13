@@ -30,7 +30,7 @@ namespace NiL.JS.Core
 
         public CodeNode Original { get { return original; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -50,14 +50,6 @@ namespace NiL.JS.Core
                 if (!(original is Expressions.Expression))
                     return PredictedType.Unknown;
                 return (original as Expressions.Expression).ResultType;
-            }
-        }
-
-        public override int EndPosition
-        {
-            get
-            {
-                return original.EndPosition;
             }
         }
 
@@ -105,7 +97,7 @@ namespace NiL.JS.Core
             this.dynamicValues = dynamicValues;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return original.Childs;
         }

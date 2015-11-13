@@ -15,12 +15,12 @@ namespace NiL.JS.Statements
     {
         private CodeNode _variable;
         private CodeNode _source;
-        private CodeNode body;
-        private string[] labels;
+        private CodeNode _body;
+        private string[] _labels;
 
         public CodeNode Variable { get { return _variable; } }
         public CodeNode Source { get { return _source; } }
-        public CodeNode Body { get { return body; } }
+        public CodeNode Body { get { return _body; } }
         public ReadOnlyCollection<string> Labels
         {
             get
@@ -28,7 +28,7 @@ namespace NiL.JS.Statements
 #if PORTABLE
                 return new ReadOnlyCollection<string>(labels);
 #else
-                return System.Array.AsReadOnly<string>(labels);
+                return System.Array.AsReadOnly(_labels);
 #endif
             }
         }
@@ -49,7 +49,7 @@ namespace NiL.JS.Statements
                 i++;
             var res = new ForOfStatement()
             {
-                labels = state.Labels.GetRange(state.Labels.Count - state.LabelCount, state.LabelCount).ToArray()
+                _labels = state.Labels.GetRange(state.Labels.Count - state.LabelCount, state.LabelCount).ToArray()
             };
             var vStart = i;
             if (Parser.Validate(state.Code, "var", ref i))
@@ -96,7 +96,7 @@ namespace NiL.JS.Statements
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
                 if (defVal == null)
                     return defVal;
-                NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res._variable as GetVariableExpression ?? (res._variable as VariableDefineStatement).initializators[0] as GetVariableExpression);
+                NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res._variable as GetVariableExpression ?? (res._variable as VariableDefineStatement).initializers[0] as GetVariableExpression);
                 exp = new AssignmentOperator(
                     exp,
                     (NiL.JS.Expressions.Expression)defVal)
@@ -107,7 +107,7 @@ namespace NiL.JS.Statements
                 if (res._variable == exp.first.first)
                     res._variable = exp;
                 else
-                    (res._variable as VariableDefineStatement).initializators[0] = exp;
+                    (res._variable as VariableDefineStatement).initializers[0] = exp;
                 while (char.IsWhiteSpace(state.Code[i]))
                     i++;
             }
@@ -123,14 +123,14 @@ namespace NiL.JS.Statements
             i++;
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
-            res.body = Parser.Parse(state, ref i, 0);
-            if (res.body is FunctionDefinition)
+            res._body = Parser.Parse(state, ref i, 0);
+            if (res._body is FunctionDefinition)
             {
                 if (state.strict)
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res.body.Position, res.body.Length), "Do not declare function in nested blocks.");
-                res.body = new CodeBlock(new[] { res.body }, state.strict); // для того, чтобы не дублировать код по декларации функции, 
+                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res._body.Position, res._body.Length), "Do not declare function in nested blocks.");
+                res._body = new CodeBlock(new[] { res._body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             state.AllowBreak.Pop();
@@ -155,7 +155,7 @@ namespace NiL.JS.Statements
             else
                 variable = _variable.EvaluateForWrite(context);
 
-            if (!source.IsDefined || source.IsNull || body == null)
+            if (!source.IsDefined || source.IsNull || _body == null)
                 return null;
 
             var iterator = source.AsIterable().iterator();
@@ -164,18 +164,18 @@ namespace NiL.JS.Statements
             while (!iteratorResult.done)
             {
                 variable.Assign(iteratorResult.value);
-                body.Evaluate(context);
+                _body.Evaluate(context);
                 iteratorResult = iterator.next();
             }
 
             return null;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>
             {
-                body,
+                _body,
                 _variable,
                 _source
             };
@@ -188,11 +188,11 @@ namespace NiL.JS.Statements
             Parser.Build(ref _variable, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             var tvar = _variable as VariableDefineStatement;
             if (tvar != null)
-                _variable = tvar.initializators[0];
+                _variable = tvar.initializers[0];
             if (_variable is AssignmentOperator)
                 ((_variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
             Parser.Build(ref _source, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
+            Parser.Build(ref _body, System.Math.Max(1, depth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
             if (_variable is Expressions.CommaOperator)
             {
                 if ((_variable as Expressions.CommaOperator).SecondOperand != null)
@@ -210,8 +210,8 @@ namespace NiL.JS.Statements
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
             _source.Optimize(ref _source, owner, message, opts, statistic);
-            if (body != null)
-                body.Optimize(ref body, owner, message, opts, statistic);
+            if (_body != null)
+                _body.Optimize(ref _body, owner, message, opts, statistic);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -221,7 +221,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return "for (" + _variable + " in " + _source + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            return "for (" + _variable + " in " + _source + ")" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
         }
     }
 }

@@ -44,6 +44,14 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
+        protected internal override bool ContextIndependent
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public ConstantDefinition(JSValue value)
             : base(null, null, false)
         {
@@ -62,7 +70,7 @@ namespace NiL.JS.Expressions
             return base.EvaluateForWrite(context);
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             if (value != null && value.oValue is CodeNode[])
                 return value.oValue as CodeNode[];

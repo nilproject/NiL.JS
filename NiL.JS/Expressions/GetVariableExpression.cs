@@ -52,7 +52,7 @@ namespace NiL.JS.Expressions
 
         public override string Name { get { return variableName; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -102,7 +102,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return null;
         }
@@ -179,10 +179,18 @@ namespace NiL.JS.Expressions
                 var assigns = descriptor.assignations;
                 if (assigns != null && assigns.Count > 0)
                 {
+                    /*
+                     * Применение оптимизации зависит от порядка добавления присваиваний.
+                     * Этот порядок в свою очередь зависит от порядка следования операций в CodeBlock.
+                     * Раньше этот порядок был обратным, сейчас прямой, поэтому здесь присваивания нужно перебирать
+                     * в обратном порядке. Оптимизация не применится если найдется изменение в котором first указывает на
+                     * это использование. Это говорит о том, что в данном месте этой переменной
+                     * присваивается значение
+                     */
                     CodeNode lastAssign = null;
-                    for (var i = 0; i < assigns.Count; i++)
+                    for (var i = assigns.Count; i-- > 0; )
                     {
-                        if (assigns[i].Position == Position)
+                        if (assigns[i].first == this)
                         {
                             // оптимизация не применяется
                             lastAssign = null;

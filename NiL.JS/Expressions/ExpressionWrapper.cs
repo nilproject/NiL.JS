@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 
         public CodeNode Node { get { return node; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {

@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
         private bool @catch;
 
         private CodeNode body;
-        private CodeBlock catchBody;
+        private CodeNode catchBody;
         private CodeNode finallyBody;
         private VariableDescriptor catchVariableDesc;
 
@@ -326,7 +326,7 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(catchBody);
 #endif
-            if (catchBody.lines == null || catchBody.lines.Length == 0)
+            if (catchBody is EmptyExpression)
                 return;
             JSValue cvar = null;
 #if !PORTABLE
@@ -362,7 +362,6 @@ namespace NiL.JS.Statements
         {
             if (statistic != null)
                 statistic.ContainsTry = true;
-            CodeNode b = null;
             Parser.Build(ref body, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
             if (catchBody != null)
             {
@@ -371,9 +370,9 @@ namespace NiL.JS.Statements
                 VariableDescriptor oldVarDesc = null;
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
-                b = catchBody as CodeNode;
-                Parser.Build(ref b, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
-                catchBody = b != null ? b as CodeBlock ?? new CodeBlock(new CodeNode[] { b }, catchBody.strict) { Position = catchBody.Position, Length = catchBody.Length } : null;
+
+                Parser.Build(ref catchBody, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
+
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
                 else
@@ -383,15 +382,13 @@ namespace NiL.JS.Statements
             }
             if (finallyBody != null)
                 Parser.Build(ref finallyBody, depth, variables, codeContext, message, statistic, opts);
-            if (body == null
-                || body is EmptyExpression
-                || (body is CodeBlock && (body as CodeBlock).lines.Length == 0))
+            if (body == null || (body is EmptyExpression))
             {
                 if (message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null || finallyBody == null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
                 _this = finallyBody;
             }
-            if (catchBody != null && (catchBody.lines.Length == 0 || (catchBody.lines.Length == 1 && catchBody.lines[0] is EmptyExpression)))
+            if (@catch && (catchBody == null || (catchBody is EmptyExpression)))
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, (catchBody ?? this as CodeNode).Position, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
@@ -401,19 +398,16 @@ namespace NiL.JS.Statements
 
         internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            CodeNode b = null;
             body.Optimize(ref body, owner, message, opts, statistic);
             if (catchBody != null)
             {
-                b = catchBody as CodeNode;
-                catchBody.Optimize(ref b, owner, message, opts, statistic);
-                catchBody = b as CodeBlock;
+                catchBody.Optimize(ref catchBody, owner, message, opts, statistic);
             }
             if (finallyBody != null)
                 finallyBody.Optimize(ref finallyBody, owner, message, opts, statistic);
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>()
             {
@@ -433,15 +427,14 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             var sbody = body.ToString();
-            var fbody = finallyBody == null ? "" : finallyBody.ToString();
-            var cbody = catchBody == null ? "" : catchBody.ToString();
-            return "try" + (body is CodeBlock ? sbody : " {" + Environment.NewLine + "  " + sbody + Environment.NewLine + "}") +
-                (catchBody != null ?
-                Environment.NewLine + "catch (" + catchVariableDesc + ")" +
-                (catchBody != null ? cbody : "{ " + cbody + " }") : "") +
-                (finallyBody != null ?
-                Environment.NewLine + "finally" +
-                (finallyBody is CodeBlock ? fbody : " { " + fbody + " }") : "");
+            var fbody = finallyBody == null ? "" : (finallyBody as CodeBlock as object ?? "{" + Environment.NewLine + " " + finallyBody + Environment.NewLine + "}").ToString();
+            var cbody = catchBody == null ? "" : (catchBody as CodeBlock as object ?? "{" + Environment.NewLine + " " + catchBody + Environment.NewLine + "}").ToString();
+            return "try" +
+                sbody +
+                (catchBody != null ? Environment.NewLine +
+                "catch (" + catchVariableDesc + ")" + Environment.NewLine +
+                cbody : "") +
+                (finallyBody != null ? Environment.NewLine + "finally" + fbody : "");
         }
     }
 }

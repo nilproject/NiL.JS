@@ -13,7 +13,7 @@ namespace NiL.JS.Expressions
 
         public CodeNode Source { get { return first; } }
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -58,14 +58,6 @@ namespace NiL.JS.Expressions
             return first.ToString();
         }
 
-        public override int EndPosition
-        {
-            get
-            {
-                return first.EndPosition;
-            }
-        }
-
         public override int Length
         {
             get
@@ -90,7 +82,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] getChildsImpl()
         {
             return first.Childs;
         }

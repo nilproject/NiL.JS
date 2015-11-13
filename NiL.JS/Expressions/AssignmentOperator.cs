@@ -13,7 +13,7 @@ namespace NiL.JS.Expressions
         private Arguments setterArgs;
         private bool saveResult;
 
-        public override bool ContextIndependent
+        protected internal override bool ContextIndependent
         {
             get
             {
@@ -100,8 +100,9 @@ namespace NiL.JS.Expressions
             var f = first as VariableReference ?? ((first is GetValueForAssignmentOperator) ? (first as GetValueForAssignmentOperator).Source as VariableReference : null);
             if (f != null)
             {
-                (f.Descriptor.assignations ??
-                    (f.Descriptor.assignations = new System.Collections.Generic.List<CodeNode>())).Add(this);
+                var assigns = (f.Descriptor.assignations ?? (f.Descriptor.assignations = new System.Collections.Generic.List<Expression>()));
+                if (assigns.IndexOf(this) == -1)
+                    assigns.Add(this);
                 if (second is ConstantDefinition)
                 {
                     var pt = second.ResultType;
@@ -117,7 +118,7 @@ namespace NiL.JS.Expressions
             if (gme != null)
                 _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
 
-            if ((codeContext& (CodeContext.InExpression | CodeContext.InEval)) != 0)
+            if ((codeContext & (CodeContext.InExpression | CodeContext.InEval)) != 0)
                 saveResult = true;
 
             return r;

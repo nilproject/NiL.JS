@@ -52,8 +52,8 @@ namespace NiL.JS.Test
 
             protected override Visitor Visit(JS.Statements.VariableDefineStatement node)
             {
-                for (var i = 0; i < node.Initializators.Length; i++)
-                    node.Initializators[i].Visit(this);
+                for (var i = 0; i < node.Initializers.Length; i++)
+                    node.Initializers[i].Visit(this);
                 return this;
             }
 

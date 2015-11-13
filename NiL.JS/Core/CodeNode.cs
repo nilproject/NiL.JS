@@ -32,8 +32,8 @@ namespace NiL.JS.Core
     public abstract class CodeNode
     {
         private static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
-#if !PORTABLE
-#if !NET35
+
+#if !NET35 && !PORTABLE
         internal System.Linq.Expressions.Expression JitOverCall(bool forAssign)
         {
             return System.Linq.Expressions.Expression.Call(
@@ -43,16 +43,16 @@ namespace NiL.JS.Core
                 );
         }
 #endif
-#endif
+
         public virtual bool Eliminated { get; internal set; }
         public virtual int Position { get; internal set; }
         public virtual int Length { get; internal set; }
-        public virtual int EndPosition { get { return Position + Length; } }
+        public int EndPosition { get { return Position + Length; } }
 
         private CodeNode[] childs;
         public CodeNode[] Childs { get { return childs ?? (childs = getChildsImpl() ?? emptyCodeNodeArray); } }
-
-        protected virtual CodeNode[] getChildsImpl()
+        
+        protected internal virtual CodeNode[] getChildsImpl()
         {
             return new CodeNode[0];
         }
@@ -75,7 +75,7 @@ namespace NiL.JS.Core
         {
             return false;
         }
-
+        
         internal protected virtual void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
 
