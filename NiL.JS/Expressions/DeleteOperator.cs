@@ -78,7 +78,7 @@ namespace NiL.JS.Expressions
                 _this = new DeleteMemberExpression(gme.first, gme.second);
                 return false;
             }
-            var f = first as VariableReference ?? ((first is GetValueForAssignmentOperator) ? (first as GetValueForAssignmentOperator).Source as VariableReference : null);
+            var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
                 if (f.Descriptor.isDefined && message != null)

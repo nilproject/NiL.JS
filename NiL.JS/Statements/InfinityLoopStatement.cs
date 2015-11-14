@@ -34,14 +34,19 @@ namespace NiL.JS.Statements
                 context.lastResult = body.Evaluate(context) ?? context.lastResult;
                 if (context.abortType != AbortType.None)
                 {
-                    var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                    var _break = (context.abortType > AbortType.Continue) || !me;
-                    if (context.abortType < AbortType.Return && me)
+                    if (context.abortType < AbortType.Return)
                     {
-                        context.abortType = AbortType.None;
-                        context.abortInfo = null;
+                        var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                        var _break = (context.abortType > AbortType.Continue) || !me;
+                        if (me)
+                        {
+                            context.abortType = AbortType.None;
+                            context.abortInfo = JSValue.notExists;
+                        }
+                        if (_break)
+                            return null;
                     }
-                    if (_break)
+                    else
                         return null;
                 }
             }

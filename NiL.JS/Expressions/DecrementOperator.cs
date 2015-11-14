@@ -193,7 +193,7 @@ namespace NiL.JS.Expressions
                 first = second;
                 second = null;
             }
-            var f = first as VariableReference ?? ((first is GetValueForAssignmentOperator) ? (first as GetValueForAssignmentOperator).Source as VariableReference : null);
+            var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
                 (f.Descriptor.assignations ??

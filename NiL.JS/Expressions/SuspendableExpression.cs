@@ -22,9 +22,9 @@ namespace NiL.JS.Expressions
         {
             var i = 0;
 
-            if (context.abortType == AbortType.Resume)
+            if (context.abortType >= AbortType.Resume)
             {
-                i = (int)(context as SuspendableContext).SuspendData[this];
+                i = (int)context.SuspendData[this];
             }
 
             for (; i < _parts.Length; i++)
@@ -32,7 +32,7 @@ namespace NiL.JS.Expressions
                 _parts[i].Evaluate(context);
                 if (context.abortType == AbortType.Suspend)
                 {
-                    (context as SuspendableContext).SuspendData[this] = i;
+                    context.SuspendData[this] = i;
                     return null;
                 }
             }
@@ -40,7 +40,7 @@ namespace NiL.JS.Expressions
             var result = _prototype.Evaluate(context);
             if (context.abortType == AbortType.Suspend)
             {
-                (context as SuspendableContext).SuspendData[this] = i;
+                context.SuspendData[this] = i;
                 return null;
             }
 

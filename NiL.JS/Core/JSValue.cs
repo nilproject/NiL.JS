@@ -44,8 +44,8 @@ namespace NiL.JS.Core
     public enum EnumerationMode
     {
         KeysOnly = 0,
-        NeedValues,
-        NeedValuesForWrite
+        RequireValues,
+        RequireValuesForWrite
     }
 
 #if !PORTABLE
@@ -875,7 +875,7 @@ namespace NiL.JS.Core
         [Hidden]
         public IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator()
         {
-            return GetEnumerator(true, EnumerationMode.NeedValuesForWrite);
+            return GetEnumerator(true, EnumerationMode.RequireValuesForWrite);
         }
 
         [Hidden]

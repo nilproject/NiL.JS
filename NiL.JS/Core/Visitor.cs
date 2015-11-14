@@ -360,11 +360,6 @@ namespace NiL.JS.Core
             return Visit(node as CodeNode);
         }
 
-        internal protected virtual T Visit(IfStatement node)
-        {
-            return Visit(node as CodeNode);
-        }
-
         internal protected virtual T Visit(InfinityLoopStatement node)
         {
             return Visit(node as CodeNode);

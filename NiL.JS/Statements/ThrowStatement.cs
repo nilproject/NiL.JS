@@ -47,7 +47,11 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            ExceptionsHelper.Throw(body == null ? JSValue.undefined : body.Evaluate(context));
+            var value = body == null ? JSValue.undefined : body.Evaluate(context);
+            if (context.abortType == AbortType.Suspend)
+                return null;
+
+            ExceptionsHelper.Throw(value);
             return null;
         }
 

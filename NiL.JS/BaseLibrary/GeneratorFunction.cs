@@ -50,6 +50,8 @@ namespace NiL.JS.BaseLibrary
 
     internal sealed class GeneratorIterator : IIterator, IIterable
     {
+        private static readonly Arguments _emptyArguments = new Arguments();
+
         private Context generatorContext;
         private Arguments initialArgs;
         private Function generator;
@@ -59,7 +61,7 @@ namespace NiL.JS.BaseLibrary
         public GeneratorIterator(Function generator, JSValue self, Arguments args)
         {
             this.generator = generator;
-            this.initialArgs = args;
+            this.initialArgs = args ?? _emptyArguments;
             this.targetObject = self;
         }
 
@@ -67,19 +69,24 @@ namespace NiL.JS.BaseLibrary
         {
             if (generatorContext == null)
             {
-                generatorContext = new SuspendableContext(Context.CurrentContext, true, generator);
-                generator.initParameters(initialArgs, generatorContext);
-                generator.initContext(targetObject, initialArgs, true, generatorContext);
-                generator.initVariables(generatorContext);
+                initContext();
             }
             else
             {
-                if (generatorContext.abortType != AbortType.Suspend)
+                switch (generatorContext.abortType)
                 {
-                    return new GeneratorResult(JSValue.undefined, true);
-                }
-
-                generatorContext.abortType = AbortType.Resume;
+                    case AbortType.Suspend:
+                        {
+                            generatorContext.abortType = AbortType.Resume;
+                            break;
+                        }
+                    case AbortType.ResumeThrow:
+                        {
+                            break;
+                        }
+                    default:
+                        return new GeneratorResult(JSValue.undefined, true);
+                };
                 generatorContext.abortInfo = args != null ? args[0] : JSValue.undefined;
             }
             generatorContext.Activate();
@@ -95,14 +102,28 @@ namespace NiL.JS.BaseLibrary
             return new GeneratorResult(result, generatorContext.abortType != AbortType.Suspend);
         }
 
+        private void initContext()
+        {
+            generatorContext = new Context(Context.CurrentContext, true, generator);
+            generator.initParameters(initialArgs, generatorContext);
+            generator.initContext(targetObject, initialArgs, true, generatorContext);
+            generator.initVariables(generatorContext);
+        }
+
         public IIteratorResult @return()
         {
-            throw new NotImplementedException();
+            if (generatorContext == null)
+                initContext();
+            generatorContext.abortType = AbortType.Return;
+            return next(null);
         }
 
         public IIteratorResult @throw(Arguments arguments = null)
         {
-            throw new NotImplementedException();
+            if (generatorContext == null)
+                return new GeneratorResult(JSValue.undefined, true);
+            generatorContext.abortType = AbortType.ResumeThrow;
+            return next(arguments);                
         }
 
         public IIterator iterator()

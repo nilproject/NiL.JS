@@ -1291,7 +1291,7 @@ namespace NiL.JS.BaseLibrary
                     var endIndex = Tools.JSObjectToInt64(args[1], _length, true);
                     if (endIndex < 0)
                         endIndex += _length;
-                    var @enum = self.GetEnumerator(false, EnumerationMode.NeedValues);
+                    var @enum = self.GetEnumerator(false, EnumerationMode.RequireValues);
                     while (@enum.MoveNext())
                     {
                         var i = @enum.Current.Key;
@@ -1825,7 +1825,13 @@ namespace NiL.JS.BaseLibrary
                 if (item.Value != null
                     && item.Value.IsExists
                     && (!hideNonEnum || (item.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                    yield return new KeyValuePair<string, JSValue>(((uint)item.Key).ToString(), item.Value);
+                {
+                    var value = item.Value;
+                    if (enumeratorMode == EnumerationMode.RequireValuesForWrite && (value.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
+                        data[item.Key] = value = value.CloneImpl(true);
+
+                    yield return new KeyValuePair<string, JSValue>(((uint)item.Key).ToString(), value);
+                }
             }
             if (!hideNonEnum)
                 yield return new KeyValuePair<string, JSValue>("length", length);
@@ -1834,7 +1840,15 @@ namespace NiL.JS.BaseLibrary
                 foreach (var f in fields)
                 {
                     if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                        yield return f;
+                    {
+                        var value = f.Value;
+                        if (enumeratorMode == EnumerationMode.RequireValuesForWrite && (value.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
+                        {
+                            fields[f.Key] = value = value.CloneImpl(true);
+                        }
+
+                        yield return new KeyValuePair<string, JSValue>(f.Key, value);
+                    }
                 }
             }
         }

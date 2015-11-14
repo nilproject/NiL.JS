@@ -190,7 +190,8 @@ namespace NiL.JS.Expressions
                     CodeNode lastAssign = null;
                     for (var i = assigns.Count; i-- > 0; )
                     {
-                        if (assigns[i].first == this)
+                        if (assigns[i].first == this 
+                            || ((assigns[i].first is AssignmentOperatorCache) && assigns[i].first.first == this))
                         {
                             // оптимизация не применяется
                             lastAssign = null;

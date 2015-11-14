@@ -20,7 +20,7 @@ namespace NiL.JS
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void Throw(JSValue error)
         {
-            throw new JSException(error);
+            throw new JSException(error ?? JSValue.undefined);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

@@ -35,7 +35,7 @@ namespace NiL.JS.Expressions
             {
                 for (var i = 0; i < elements.Length; i++)
                 {
-                    if (elements[i].NeedDecompose)
+                    if (elements[i] != null && elements[i].NeedDecompose)
                         return true;
                 }
                 return false;

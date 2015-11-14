@@ -21,7 +21,8 @@ namespace NiL.JS.Core
         TailRecursion,
         Exception,
         Suspend,
-        Resume
+        Resume,
+        ResumeThrow
     }
 
     /// <summary>
@@ -163,7 +164,7 @@ namespace NiL.JS.Core
         /// Временное хранилище для передачи значений.
         /// <remarks>
         /// Поскольку в каждом потоке может быть только один головной контекст, 
-        /// а каждый контекст может быть запущен только в одном потоке,
+        /// и наоборот каждый контекст может быть запущен только в одном потоке,
         /// отсутствует вероятность конфликта при использовании данного поля.
         /// </remarks>
         /// </summary>
@@ -179,6 +180,7 @@ namespace NiL.JS.Core
         internal Function owner;
         internal bool strict;
         internal VariableDescriptor[] variables;
+        private Dictionary<CodeNode, object> suspendData;
 
         public Context Root
         {
@@ -254,6 +256,8 @@ namespace NiL.JS.Core
                 return false;
             }
         }
+
+        public Dictionary<CodeNode, object> SuspendData { get { return suspendData ?? (suspendData = new Dictionary<CodeNode, object>()); } }
 
         static Context()
         {

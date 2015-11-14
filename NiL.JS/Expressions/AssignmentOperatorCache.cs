@@ -7,7 +7,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class GetValueForAssignmentOperator : Expression
+    public sealed class AssignmentOperatorCache : Expression
     {
         private JSValue secondResult;
 
@@ -34,9 +34,10 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        internal GetValueForAssignmentOperator(Expression source)
+        internal AssignmentOperatorCache(Expression source)
             : base(source, null, false)
         {
+
         }
 
         internal protected override JSValue EvaluateForWrite(Context context)
@@ -90,6 +91,11 @@ namespace NiL.JS.Expressions
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);
+        }
+
+        protected internal override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        {
+            base.Optimize(ref _this, owner, message, opts, statistic);
         }
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

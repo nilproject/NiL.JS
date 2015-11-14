@@ -13,6 +13,13 @@ namespace NiL.JS.Statements
 #endif
     public sealed class ForOfStatement : CodeNode
     {
+        private sealed class SuspendData
+        {
+            public JSValue source;
+            public JSValue variable;
+            public IIterator iterator;
+        }
+
         private CodeNode _variable;
         private CodeNode _source;
         private CodeNode _body;
@@ -96,13 +103,13 @@ namespace NiL.JS.Statements
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
                 if (defVal == null)
                     return defVal;
-                NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res._variable as GetVariableExpression ?? (res._variable as VariableDefineStatement).initializers[0] as GetVariableExpression);
+                Expression exp = new AssignmentOperatorCache(res._variable as GetVariableExpression ?? (res._variable as VariableDefineStatement).initializers[0] as GetVariableExpression);
                 exp = new AssignmentOperator(
                     exp,
-                    (NiL.JS.Expressions.Expression)defVal)
+                    (Expression)defVal)
                     {
-                        Position = res._variable.Position,
-                        Length = defVal.EndPosition - res._variable.Position
+                        Position = exp.Position,
+                        Length = defVal.EndPosition - exp.Position
                     };
                 if (res._variable == exp.first.first)
                     res._variable = exp;
@@ -143,28 +150,96 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-
-            JSValue variable = null;
-            var source = _source.Evaluate(context);
-
-            if (_variable is AssignmentOperator)
+            SuspendData suspendData = null;
+            if (context.abortType >= AbortType.Resume)
             {
-                _variable.Evaluate(context);
-                variable = (_variable as AssignmentOperator).first.Evaluate(context);
+                suspendData = context.SuspendData[this] as SuspendData;
+            }
+
+
+            JSValue source = null;
+            if (suspendData == null || suspendData.source == null)
+            {
+#if DEV
+                if (context.debugging && !(_source is CodeBlock))
+                    context.raiseDebugger(_source);
+#endif
+                source = _source.Evaluate(context);
+                if (context.abortType == AbortType.Suspend)
+                {
+                    context.SuspendData[this] = null;
+                    return null;
+                }
             }
             else
-                variable = _variable.EvaluateForWrite(context);
+                source = suspendData.source;
+
+            JSValue variable = null;
+            if (suspendData == null || suspendData.variable == null)
+            {
+#if DEV
+                if (context.debugging && !(_variable is CodeBlock))
+                    context.raiseDebugger(_variable);
+#endif
+                if (_variable is AssignmentOperator)
+                {
+                    _variable.Evaluate(context);
+                    variable = (_variable as AssignmentOperator).first.Evaluate(context);
+                }
+                else
+                    variable = _variable.EvaluateForWrite(context);
+                if (context.abortType == AbortType.Suspend)
+                {
+                    if (suspendData == null)
+                        suspendData = new SuspendData();
+                    context.SuspendData[this] = suspendData;
+                    suspendData.source = source;
+                    return null;
+                }
+            }
+            else
+                variable = suspendData.variable;
 
             if (!source.IsDefined || source.IsNull || _body == null)
                 return null;
 
-            var iterator = source.AsIterable().iterator();
-            IIteratorResult iteratorResult = iterator.next();
-
-            while (!iteratorResult.done)
+            var iterator = (suspendData != null ? suspendData.iterator : null) ?? source.AsIterable().iterator();
+            IIteratorResult iteratorResult = context.abortType != AbortType.Resume ? iterator.next() : null;
+            while (context.abortType >= AbortType.Resume || !iteratorResult.done)
             {
-                variable.Assign(iteratorResult.value);
+                if (context.abortType != AbortType.Resume)
+                    variable.Assign(iteratorResult.value);
                 _body.Evaluate(context);
+
+                if (context.abortType != AbortType.None)
+                {
+                    if (context.abortType < AbortType.Return)
+                    {
+                        var me = context.abortInfo == null || System.Array.IndexOf(_labels, context.abortInfo.oValue as string) != -1;
+                        var _break = (context.abortType > AbortType.Continue) || !me;
+                        if (me)
+                        {
+                            context.abortType = AbortType.None;
+                            context.abortInfo = JSValue.notExists;
+                        }
+                        if (_break)
+                            return null;
+                    }
+                    else if (context.abortType == AbortType.Suspend)
+                    {
+                        if (suspendData == null)
+                            suspendData = new SuspendData();
+                        context.SuspendData[this] = suspendData;
+
+                        suspendData.source = source;
+                        suspendData.variable = variable;
+                        suspendData.iterator = iterator;
+                        return null;
+                    }
+                    else
+                        return null;
+                }
+
                 iteratorResult = iterator.next();
             }
 
@@ -229,7 +304,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return "for (" + _variable + " in " + _source + ")" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
+            return "for (" + _variable + " of " + _source + ")" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
         }
     }
 }

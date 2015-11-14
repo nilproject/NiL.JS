@@ -637,12 +637,12 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                                     yield return new KeyValuePair<string, JSValue>(item.Key, null);
                                     break;
                                 }
-                            case EnumerationMode.NeedValues:
-                            case EnumerationMode.NeedValuesForWrite:
+                            case EnumerationMode.RequireValues:
+                            case EnumerationMode.RequireValuesForWrite:
                                 {
                                     yield return new KeyValuePair<string, JSValue>(
                                         item.Key,
-                                        fields[item.Key] = proxyMember(enumerationMode == EnumerationMode.NeedValuesForWrite, item.Value));
+                                        fields[item.Key] = proxyMember(enumerationMode == EnumerationMode.RequireValuesForWrite, item.Value));
                                     break;
                                 }
                         }

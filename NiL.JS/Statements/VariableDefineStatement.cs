@@ -216,9 +216,22 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            for (int i = 0; i < initializers.Length; i++)
+            int i = 0;
+            if (context.abortType >= AbortType.Resume)
+            {
+                i = (int)context.SuspendData[this];
+            }
+
+            for (; i < initializers.Length; i++)
             {
                 initializers[i].Evaluate(context);
+
+                if (context.abortType == AbortType.Suspend)
+                {
+                    context.SuspendData[this] = i;
+                    return null;
+                }
+
                 if (isConst)
                     (this.variables[i].cacheRes ?? this.variables[i].Get(context, false, this.variables[i].defineDepth)).attributes |= JSValueAttributesInternal.ReadOnly;
             }

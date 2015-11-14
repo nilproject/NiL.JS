@@ -8,78 +8,6 @@ namespace NiL.JS.Statements
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class IfStatement : CodeNode
-    {
-        private Expression condition;
-        private CodeNode then;
-
-        public CodeNode Then { get { return then; } }
-        public CodeNode Condition { get { return condition; } }
-
-        internal IfStatement(Expression condition, CodeNode body)
-        {
-            this.condition = condition;
-            this.then = body;
-        }
-
-        public override JSValue Evaluate(Context context)
-        {
-#if DEV
-            if (context.debugging)
-                context.raiseDebugger(condition);
-#endif
-            if ((bool)condition.Evaluate(context))
-            {
-#if DEV
-                if (context.debugging && !(then is CodeBlock))
-                    context.raiseDebugger(then);
-#endif
-                var temp = then.Evaluate(context);
-                if (temp != null)
-                    context.lastResult = temp;
-            }
-            return null;
-        }
-
-        protected internal override CodeNode[] getChildsImpl()
-        {
-            return new[] { then, condition };
-        }
-
-        public override string ToString()
-        {
-            string rp = Environment.NewLine;
-            string rs = Environment.NewLine + "  ";
-            var sbody = then.ToString();
-            return "if (" + condition + ")" + (then is CodeBlock ? sbody : Environment.NewLine + "  " + sbody.Replace(rp, rs));
-        }
-
-        public override T Visit<T>(Visitor<T> visitor)
-        {
-            return visitor.Visit(this);
-        }
-
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
-        {
-            var cc = condition as CodeNode;
-            condition.Optimize(ref cc, owner, message, opts, statistic);
-            condition = (Expression)cc;
-            if (then != null)
-                then.Optimize(ref then, owner, message, opts, statistic);
-            else
-                _this = condition;
-        }
-
-        protected internal override void Decompose(ref CodeNode self)
-        {
-            condition.Decompose(ref condition);
-            then.Decompose(ref then);
-        }
-    }
-
-#if !PORTABLE
-    [Serializable]
-#endif
     public sealed class IfElseStatement : CodeNode
     {
         private Expression condition;
@@ -155,22 +83,33 @@ namespace NiL.JS.Statements
             pos = index;
             index = i;
             return new IfElseStatement()
-                {
-                    then = body,
-                    condition = condition,
-                    @else = elseBody,
-                    Position = pos,
-                    Length = index - pos
-                };
+            {
+                then = body,
+                condition = condition,
+                @else = elseBody,
+                Position = pos,
+                Length = index - pos
+            };
         }
 
         public override JSValue Evaluate(Context context)
         {
+            bool conditionResult;
+            if (context.abortType != AbortType.Resume || !context.SuspendData.ContainsKey(this))
+            {
 #if DEV
-            if (context.debugging)
-                context.raiseDebugger(condition);
+                if (context.debugging)
+                    context.raiseDebugger(condition);
 #endif
-            if ((bool)condition.Evaluate(context))
+                conditionResult = (bool)condition.Evaluate(context);
+                if (context.abortType == AbortType.Suspend)
+                    return null;
+            }
+            else
+            {
+                conditionResult = (bool)context.SuspendData[this];
+            }
+            if (conditionResult)
             {
 #if DEV
                 if (context.debugging && !(then is CodeBlock))
@@ -179,9 +118,8 @@ namespace NiL.JS.Statements
                 var temp = then.Evaluate(context);
                 if (temp != null)
                     context.lastResult = temp;
-                return null;
             }
-            else
+            else if (@else != null)
             {
 #if DEV
                 if (context.debugging && !(@else is CodeBlock))
@@ -190,8 +128,10 @@ namespace NiL.JS.Statements
                 var temp = @else.Evaluate(context);
                 if (temp != null)
                     context.lastResult = temp;
-                return null;
             }
+            if (context.abortType == AbortType.Suspend)
+                context.SuspendData[this] = conditionResult;
+            return null;
         }
 
         protected internal override CodeNode[] getChildsImpl()
@@ -239,8 +179,6 @@ namespace NiL.JS.Statements
                 System.Diagnostics.Debugger.Log(10, "Error", e.Message);
 #endif
             }
-            if (_this == this && @else == null)
-                _this = new IfStatement(this.condition, this.then) { Position = Position, Length = Length };
             return false;
         }
 
@@ -253,6 +191,8 @@ namespace NiL.JS.Statements
                 then.Optimize(ref then, owner, message, opts, statistic);
             if (@else != null)
                 @else.Optimize(ref @else, owner, message, opts, statistic);
+            if (then == null && @else == null)
+                _this = condition;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -276,8 +216,10 @@ namespace NiL.JS.Statements
         protected internal override void Decompose(ref CodeNode self)
         {
             condition.Decompose(ref condition);
-            then.Decompose(ref then);
-            @else.Decompose(ref @else);
+            if (then != null)
+                then.Decompose(ref then);
+            if (@else != null)
+                @else.Decompose(ref @else);
         }
     }
 }

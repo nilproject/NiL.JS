@@ -89,31 +89,46 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
+            JSValue checkResult;
             do
             {
-#if DEV
-                if (context.debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
-#endif
-                context.lastResult = body.Evaluate(context) ?? context.lastResult;
-                if (context.abortType != AbortType.None)
+                if (context.abortType != AbortType.Resume || !context.SuspendData.ContainsKey(this))
                 {
-                    var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                    var _break = (context.abortType > AbortType.Continue) || !me;
-                    if (context.abortType < AbortType.Return && me)
+#if DEV
+                    if (context.debugging && !(body is CodeBlock))
+                        context.raiseDebugger(body);
+#endif
+                    context.lastResult = body.Evaluate(context) ?? context.lastResult;
+                    if (context.abortType != AbortType.None)
                     {
-                        context.abortType = AbortType.None;
-                        context.abortInfo = JSValue.notExists;
+                        if (context.abortType < AbortType.Return)
+                        {
+                            var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
+                            var _break = (context.abortType > AbortType.Continue) || !me;
+                            if (me)
+                            {
+                                context.abortType = AbortType.None;
+                                context.abortInfo = JSValue.notExists;
+                            }
+                            if (_break)
+                                return null;
+                        }
+                        else
+                            return null;
                     }
-                    if (_break)
-                        return null;
                 }
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(condition);
 #endif
+                checkResult = condition.Evaluate(context);
+                if (context.abortType == AbortType.Suspend)
+                {
+                    context.SuspendData[this] = null;
+                    return null;
+                }
             }
-            while ((bool)condition.Evaluate(context));
+            while ((bool)checkResult);
             return null;
         }
 

@@ -33,11 +33,7 @@ namespace NiL.JS.Expressions
 
         public override Core.JSValue Evaluate(Core.Context context)
         {
-            var scontext = context as SuspendableContext;
-            if (scontext == null)
-                throw new ArgumentException("context must be " + typeof(SuspendableContext).Name);
-
-            return (JSValue)scontext.SuspendData[first];
+            return (JSValue)context.SuspendData[first];
         }
 
         protected internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

@@ -1418,7 +1418,7 @@ namespace NiL.JS.Core
                     yield return new KeyValuePair<uint, JSValue>((uint)item.Key, item.Value);
                 }
             }
-            var @enum = src.GetEnumerator(false, EnumerationMode.NeedValues);
+            var @enum = src.GetEnumerator(false, EnumerationMode.RequireValues);
             while (@enum.MoveNext())
             {
                 var i = @enum.Current.Key;

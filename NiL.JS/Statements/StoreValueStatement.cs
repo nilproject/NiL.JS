@@ -40,10 +40,6 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            var scontext = context as SuspendableContext;
-            if (scontext == null)
-                throw new ArgumentException("context must be " + typeof(SuspendableContext).Name);
-
             var temp = _source.Evaluate(context);
             if (context.abortType == AbortType.Suspend)
             {
@@ -51,7 +47,7 @@ namespace NiL.JS.Statements
             }
             else
             {
-                scontext.SuspendData[_source] = temp.CloneImpl(false);
+                context.SuspendData[_source] = temp.CloneImpl(false);
             }
 
             return null;

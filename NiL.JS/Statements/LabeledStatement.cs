@@ -63,7 +63,7 @@ namespace NiL.JS.Statements
 
         protected internal override CodeNode[] getChildsImpl()
         {
-            return null;
+            return new[] { statement };
         }
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

@@ -97,146 +97,33 @@ namespace NiL.JS.Statements
                     Length = index - pos
                 };
         }
-#if !NET35
-        /*internal override System.Linq.Expressions.Expression CompileToIL(Core.JIT.TreeBuildingState state)
+
+        public override JSValue Evaluate(Context context)
         {
-            var except = Expression.Parameter(typeof(object));
-            Expression impl = null;
-            if (finallyBody == null)
+            Exception exception = null;
+            if (context.abortType >= AbortType.Resume)
             {
-                var bd = body.CompileToIL(state);
-                if (bd.Type == typeof(void))
-                    bd = Expression.Block(bd, JITHelpers.UndefinedConstant);
-                impl = Expression.TryCatch(bd, Expression.Catch(except, makeCatch(except, state)));
+                var action = context.SuspendData[this] as Action<Context>;
+                if (action != null)
+                {
+                    action(context);
+                    return null;
+                }
             }
             else
             {
-                var sexcept = Expression.Parameter(typeof(object));
-                var sexceptb = Expression.Parameter(typeof(object));
-                var rethrow = Expression.Parameter(typeof(bool));
-                var finallyProc = Expression.Parameter(typeof(bool));
-                LabelTarget breakTarget = null;
-                if (state.BreakLabels.Count != 0)
-                {
-                    breakTarget = Expression.Label();
-                    state.BreakLabels.Push(breakTarget);
-                }
-                LabelTarget continueTarget = null;
-                if (state.ContinueLabels.Count != 0)
-                {
-                    continueTarget = Expression.Label();
-                    state.ContinueLabels.Push(continueTarget);
-                }
-                LabelTarget finallyBodyTarget = null;
-                var tempResult = Expression.Parameter(typeof(JSObject));
-                finallyBodyTarget = Expression.Label();
-                LabelTarget newReturnTarget = null;
-                LabelTarget oldRetirnTarget = null;
-                if (state.ReturnTarget != null)
-                {
-                    newReturnTarget = Expression.Label();
-                    oldRetirnTarget = state.ReturnTarget;
-                    state.ReturnTarget = newReturnTarget;
-                }
-                var oldNamedBreaks = new Dictionary<string, LabelTarget>(state.NamedBreakLabels);
-                var oldNamedContinies = new Dictionary<string, LabelTarget>(state.NamedContinueLabels);
-                List<KeyValuePair<string, LabelTarget>> nBreaks = new List<KeyValuePair<string, LabelTarget>>();
-                List<KeyValuePair<string, LabelTarget>> nContinues = new List<KeyValuePair<string, LabelTarget>>();
-                if (oldNamedBreaks.Count > 0)
-                    foreach (var i in oldNamedBreaks)
-                    {
-                        nBreaks.Add(new KeyValuePair<string, LabelTarget>(i.Key, Expression.Label()));
-                        state.NamedBreakLabels[i.Key] = nBreaks[nBreaks.Count - 1].Value;
-                    }
-                if (oldNamedContinies.Count > 0)
-                    foreach (var i in oldNamedContinies)
-                    {
-                        nContinues.Add(new KeyValuePair<string, LabelTarget>(i.Key, Expression.Label()));
-                        state.NamedContinueLabels[i.Key] = nContinues[nContinues.Count - 1].Value;
-                    }
-                var labelId = Expression.Parameter(typeof(int));
-                state.TryFinally++;
-                var bd = body.CompileToIL(state);
-                if (bd.Type == typeof(void))
-                    bd = Expression.Block(bd, JITHelpers.UndefinedConstant);
-                List<Expression> implList = new List<Expression>()
-                    {
-                        Expression.TryCatch(bd, Expression.Catch(except, Expression.TryCatch(
-                            makeCatch(except, state),
-                            Expression.Catch(sexcept, Expression.Block(
-                                    Expression.Assign(rethrow, JITHelpers.wrap(true)),
-                                    Expression.Assign(sexceptb, sexcept),
-                                    JITHelpers.UndefinedConstant)
-                        ))))
-                    };
-                implList.Add(Expression.Goto(finallyBodyTarget, Expression.Empty()));
-                if (breakTarget != null)
-                {
-                    implList.Add(Expression.Label(breakTarget));
-                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(0)));
-                    implList.Add(Expression.Goto(finallyBodyTarget));
-                    state.BreakLabels.Pop();
-                }
-                if (continueTarget != null)
-                {
-                    implList.Add(Expression.Label(continueTarget));
-                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(1)));
-                    implList.Add(Expression.Goto(finallyBodyTarget));
-                    state.ContinueLabels.Pop();
-                }
-                if (newReturnTarget != null)
-                {
-                    implList.Add(Expression.Label(newReturnTarget));
-                    implList.Add(Expression.Assign(tempResult, Expression.Field(JITHelpers.ContextParameter, "abortInfo")));
-                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(2)));
-                    implList.Add(Expression.Goto(finallyBodyTarget));
-                }
-                for (var i = nBreaks.Count; i-- > 0; )
-                {
-                    implList.Add(Expression.Label(nBreaks[i].Value));
-                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(i + 3)));
-                    implList.Add(Expression.Goto(finallyBodyTarget));
-                }
-                for (var i = nContinues.Count; i-- > 0; )
-                {
-                    implList.Add(Expression.Label(nContinues[i].Value));
-                    implList.Add(Expression.Assign(labelId, JITHelpers.wrap(-i - 1)));
-                    implList.Add(Expression.Goto(finallyBodyTarget));
-                }
-                state.NamedBreakLabels = oldNamedBreaks;
-                state.NamedContinueLabels = oldNamedContinies;
-                state.ReturnTarget = oldRetirnTarget;
-                state.TryFinally--;
-                implList.Add(Expression.Label(finallyBodyTarget));
-                implList.Add(finallyBody.CompileToIL(state));
-                implList.Add(Expression.IfThen(rethrow, Expression.Throw(sexceptb)));
-                if (state.BreakLabels.Count > 0)
-                    implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(0)), Expression.Goto(state.BreakLabels.Peek())));
-                if (state.ContinueLabels.Count > 0)
-                    implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(1)), Expression.Goto(state.ContinueLabels.Peek())));
-                if (state.ReturnTarget != null)
-                {
-                    if (state.TryFinally <= 0)
-                        implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(2)), Expression.Goto(state.ReturnTarget, tempResult)));
-                    else
-                        implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(2)), Expression.Block(Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abortInfo"), tempResult), Expression.Goto(state.ReturnTarget, tempResult))));
-                }
-                for (var i = nBreaks.Count; i-- > 0; )
-                    implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(i + 3)), Expression.Goto(state.NamedBreakLabels[nBreaks[i].Key])));
-                for (var i = nContinues.Count; i-- > 0; )
-                    implList.Add(Expression.IfThen(Expression.Equal(labelId, JITHelpers.wrap(-i - 1)), Expression.Goto(state.NamedContinueLabels[nContinues[i].Key])));
-                impl = Expression.Block(new[] { sexceptb, rethrow, labelId, tempResult },
-                    implList);
-            }
-            return Expression.Block(new[] { except }, impl);
-        }*/
+#if DEV
+                if (context.debugging && !(body is CodeBlock))
+                    context.raiseDebugger(body);
 #endif
-        public override JSValue Evaluate(Context context)
-        {
-            Exception except = null;
+            }
             try
             {
                 body.Evaluate(context);
+                if (context.abortType == AbortType.Suspend)
+                {
+                    context.SuspendData[this] = null;
+                }
             }
             catch (Exception e)
             {
@@ -249,21 +136,23 @@ namespace NiL.JS.Statements
                 {
                     if (finallyBody == null)
                         throw;
-                    except = e;
+                    exception = e;
                 }
             }
             finally
             {
-                if (finallyBody != null)
-                    if (finallyHandler(context))
-                        except = null;
+                if (context.abortType != AbortType.Suspend && finallyBody != null)
+                {
+                    exception = null;
+                    finallyHandler(context, exception);
+                }
             }
-            if (except != null)
-                throw except;
+            if (context.abortType != AbortType.Suspend && exception != null)
+                throw exception;
             return null;
         }
 
-        private bool finallyHandler(Context context)
+        private void finallyHandler(Context context, Exception exception)
         {
 #if DEV
             if (context.debugging)
@@ -280,48 +169,28 @@ namespace NiL.JS.Statements
             }
             context.abortType = AbortType.None;
             context.abortInfo = JSValue.undefined;
-            context.lastResult = finallyBody.Evaluate(context) ?? context.lastResult;
-            if (context.abortType == AbortType.None)
+
+            Action<Context> finallyAction = null;
+            finallyAction = (c) =>
             {
-                context.abortType = abort;
-                context.abortInfo = ainfo;
-            }
-            else
-                return true;
-            return false;
+                c.lastResult = finallyBody.Evaluate(c) ?? context.lastResult;
+                if (c.abortType == AbortType.None)
+                {
+                    c.abortType = abort;
+                    c.abortInfo = ainfo;
+                    if (exception != null)
+                        throw exception;
+                }
+                else if (c.abortType == AbortType.Suspend)
+                {
+                    c.SuspendData[this] = finallyAction;
+                }
+            };
+            finallyAction(context);
         }
-#if !NET35
-        /*private Expression makeCatch(ParameterExpression except, Core.JIT.TreeBuildingState state)
-        {
-            if (catchBody == null)
-                return JITHelpers.UndefinedConstant;
-            var cb = catchBody.CompileToIL(state);
-            if (cb.Type == typeof(void))
-                cb = Expression.Block(cb, JITHelpers.UndefinedConstant);
-            var catchContext = Expression.Parameter(typeof(Context));
-            var tempContainer = Expression.Parameter(typeof(Context));
-            return Expression.Block(new[] { catchContext, tempContainer }
-                , Expression.Assign(catchContext, Expression.Call(new Func<Context, Context>(createCatchContext).Method, JITHelpers.ContextParameter))
-                , Expression.Call(JITHelpers.methodof(prepareCatchVar), JITHelpers.wrap(catchVariableDesc.name), except, catchContext)
-                , Expression.TryFinally(
-                    Expression.Block(
-                        Expression.Assign(tempContainer, JITHelpers.ContextParameter)
-                        , Expression.Assign(JITHelpers.ContextParameter, catchContext)
-                        , Expression.Call(catchContext, typeof(WithContext).GetMethod("Activate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
-                        , cb
-                    )
-                    , Expression.Block(
-                        Expression.Assign(JITHelpers.ContextParameter, tempContainer)
-                        , Expression.Call(catchContext, typeof(WithContext).GetMethod("Deactivate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
-                        , Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abort"), Expression.Field(catchContext, "abort"))
-                        , Expression.Assign(Expression.Field(JITHelpers.ContextParameter, "abortInfo"), Expression.Field(catchContext, "abortInfo"))
-                    ))
-                );
-        }*/
-#endif
+
         private void catchHandler(Context context, Exception e)
         {
-
 #if DEV
             if (context.debugging)
                 context.raiseDebugger(catchBody);
@@ -344,18 +213,47 @@ namespace NiL.JS.Statements
             if (!(e is JSException))
                 System.Diagnostics.Debugger.Break();
 #endif
-            try
+
+            Action<Context> catchAction = null;
+            catchAction = (c) =>
             {
-                catchContext.Activate();
-                catchContext.lastResult = catchBody.Evaluate(catchContext) ?? catchContext.lastResult;
-            }
-            finally
-            {
-                context.lastResult = catchContext.lastResult ?? context.lastResult;
-                catchContext.Deactivate();
-            }
-            context.abortType = catchContext.abortType;
-            context.abortInfo = catchContext.abortInfo;
+                try
+                {
+                    catchContext.abortType = c.abortType;
+                    catchContext.abortInfo = c.abortInfo;
+                    catchContext.Activate();
+                    catchContext.lastResult = catchBody.Evaluate(catchContext) ?? catchContext.lastResult;
+                }
+                finally
+                {
+                    c.lastResult = catchContext.lastResult ?? c.lastResult;
+                    catchContext.Deactivate();
+                }
+                c.abortType = catchContext.abortType;
+                c.abortInfo = catchContext.abortInfo;
+
+                if (c.abortType == AbortType.Suspend)
+                {
+                    if (finallyBody != null)
+                    {
+                        c.SuspendData[this] = new Action<Context>((c2) =>
+                        {
+                            try
+                            {
+                                catchAction(c2);
+                            }
+                            finally
+                            {
+                                if (c2.abortType != AbortType.Suspend)
+                                    finallyHandler(c2, e);
+                            }
+                        });
+                    }
+                    else
+                        c.SuspendData[this] = catchAction;
+                }
+            };
+            catchAction(context);
         }
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

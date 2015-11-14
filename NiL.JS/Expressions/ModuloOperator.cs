@@ -33,32 +33,29 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            lock (this)
+            var f = first.Evaluate(context);
+            if (f.valueType == JSValueType.Int)
             {
-                var f = first.Evaluate(context);
-                if (f.valueType == JSValueType.Int)
+                var ileft = f.iValue;
+                f = second.Evaluate(context);
+                if (ileft >= 0 && f.valueType == JSValueType.Int && f.iValue != 0)
                 {
-                    var ileft = f.iValue;
-                    f = second.Evaluate(context);
-                    if (ileft >= 0 && f.valueType == JSValueType.Int && f.iValue != 0)
-                    {
-                        tempContainer.valueType = JSValueType.Int;
-                        tempContainer.iValue = ileft % f.iValue;
-                    }
-                    else
-                    {
-                        tempContainer.valueType = JSValueType.Double;
-                        tempContainer.dValue = ileft % Tools.JSObjectToDouble(f);
-                    }
+                    tempContainer.valueType = JSValueType.Int;
+                    tempContainer.iValue = ileft % f.iValue;
                 }
                 else
                 {
-                    double left = Tools.JSObjectToDouble(f);
-                    tempContainer.dValue = left % Tools.JSObjectToDouble(second.Evaluate(context));
                     tempContainer.valueType = JSValueType.Double;
+                    tempContainer.dValue = ileft % Tools.JSObjectToDouble(f);
                 }
-                return tempContainer;
             }
+            else
+            {
+                double left = Tools.JSObjectToDouble(f);
+                tempContainer.dValue = left % Tools.JSObjectToDouble(second.Evaluate(context));
+                tempContainer.valueType = JSValueType.Double;
+            }
+            return tempContainer;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

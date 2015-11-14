@@ -52,7 +52,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var result = body != null ? body.Evaluate(context) : null;
-            if (context.abortType != AbortType.TailRecursion)
+            if (context.abortType == AbortType.None)
             {
                 context.abortInfo = result;
                 if (context.abortType < AbortType.Return)

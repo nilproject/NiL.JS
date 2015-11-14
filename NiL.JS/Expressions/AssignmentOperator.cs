@@ -97,7 +97,7 @@ namespace NiL.JS.Expressions
 #endif
             var r = base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
 
-            var f = first as VariableReference ?? ((first is GetValueForAssignmentOperator) ? (first as GetValueForAssignmentOperator).Source as VariableReference : null);
+            var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
                 var assigns = (f.Descriptor.assignations ?? (f.Descriptor.assignations = new System.Collections.Generic.List<Expression>()));

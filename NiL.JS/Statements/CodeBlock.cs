@@ -205,13 +205,10 @@ namespace NiL.JS.Statements
         {
             var ls = lines;
             int i = 0;
-            SuspendableContext scontext = null;
 
-            if (context.abortType == AbortType.Resume)
+            if (context.abortType >= AbortType.Resume)
             {
-                scontext = context as SuspendableContext;
-                i = (int)scontext.SuspendData[this];
-                scontext.SuspendData.Remove(this);
+                i = (int)context.SuspendData[this];
             }
 
             for (; i < ls.Length; i++)
@@ -263,10 +260,7 @@ namespace NiL.JS.Statements
                 {
                     if (context.abortType == AbortType.Suspend)
                     {
-                        if (scontext == null)
-                            scontext = context as SuspendableContext;
-
-                        scontext.SuspendData[this] = i;
+                        context.SuspendData[this] = i;
                     }
                     break;
                 }

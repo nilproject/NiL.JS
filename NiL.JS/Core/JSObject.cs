@@ -717,7 +717,7 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Object.freeze called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
-            for (var e = obj.GetEnumerator(false, EnumerationMode.NeedValuesForWrite); e.MoveNext(); )
+            for (var e = obj.GetEnumerator(false, EnumerationMode.RequireValuesForWrite); e.MoveNext(); )
             {
                 var value = e.Current.Value;
                 if ((value.attributes & JSValueAttributesInternal.SystemObject) == 0)
@@ -793,7 +793,7 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Object.seal called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
-            for (var e = obj.GetEnumerator(false, EnumerationMode.NeedValuesForWrite); e.MoveNext(); )
+            for (var e = obj.GetEnumerator(false, EnumerationMode.RequireValuesForWrite); e.MoveNext(); )
             {
                 var value = e.Current.Value;
                 if ((value.attributes & JSValueAttributesInternal.SystemObject) == 0)

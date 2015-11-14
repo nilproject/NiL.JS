@@ -627,9 +627,6 @@ namespace NiL.JS.Expressions
                         }
                     case 'y':
                         {
-#if PORTABLE
-                            throw new NotSupportedException("Do not supported in portable version");
-#else
                             if ((state.CodeContext & CodeContext.InGenerator) == 0)
                                 ExceptionsHelper.Throw(new SyntaxError("Invalid use of yield operator"));
                             i += 4;
@@ -644,7 +641,6 @@ namespace NiL.JS.Expressions
                             }
                             first = new Expressions.YieldOperator(first) { Position = index, Length = i - index };
                             break;
-#endif
                         }
                 }
             }
@@ -1242,7 +1238,7 @@ namespace NiL.JS.Expressions
             {
                 root = false; // блокируем вызов дейкстры
                 second = deicstra(second as ExpressionTree);
-                var opassigncache = new GetValueForAssignmentOperator(first);
+                var opassigncache = new AssignmentOperatorCache(first);
                 if (second is ExpressionTree
                     && (second as ExpressionTree)._type == OperationType.None)
                 {

@@ -237,7 +237,6 @@
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
-    <Compile Include="Core\SuspendableContext.cs" />
     <Compile Include="Expressions\ExtractStoredValueExpression.cs" />
     <Compile Include="Expressions\PropertyPairExpression.cs" />
     <Compile Include="Expressions\SuspendableExpression.cs" />
@@ -329,7 +328,7 @@
     <Compile Include="Expressions\YieldOperator.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
-    <Compile Include="Expressions\GetValueForAssignmentOperator.cs" />
+    <Compile Include="Expressions\AssignmentOperatorCache.cs" />
     <Compile Include="Expressions\NotEqualOperator.cs" />
     <Compile Include="Expressions\MoreOrEqualOperator.cs" />
     <Compile Include="Expressions\EqualOperator.cs" />

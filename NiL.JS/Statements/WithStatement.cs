@@ -56,26 +56,57 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
+            JSValue scopeObject = null;
+            WithContext intcontext = null;
+            Action<Context> action = null;
+
+            if (context.abortType >= AbortType.Resume)
+            {
+                action = context.SuspendData[this] as Action<Context>;
+                if (action != null)
+                {
+                    action(context);
+                    return null;
+                }
+            }
+
 #if DEV
-            if (context.debugging)
+            if (context.abortType != AbortType.Resume && context.debugging)
                 context.raiseDebugger(scope);
 #endif
-            var intcontext = new WithContext(scope.Evaluate(context), context);
+            scopeObject = scope.Evaluate(context);
+            if (context.abortType == AbortType.Suspend)
+            {
+                context.SuspendData[this] = null;
+                return null;
+            }
+
+            intcontext = new WithContext(scopeObject, context);
 #if DEV
             if (context.debugging && !(body is CodeBlock))
                 context.raiseDebugger(body);
 #endif
-            try
+            action = (c) =>
             {
-                intcontext.Activate();
-                context.lastResult = body.Evaluate(intcontext) ?? intcontext.lastResult ?? context.lastResult;
-                context.abortType = intcontext.abortType;
-                context.abortInfo = intcontext.abortInfo;
-            }
-            finally
-            {
-                intcontext.Deactivate();
-            }
+                try
+                {
+                    intcontext.abortType = c.abortType;
+                    intcontext.abortInfo = c.abortInfo;
+                    intcontext.Activate();
+                    c.lastResult = body.Evaluate(intcontext) ?? intcontext.lastResult;
+                    c.abortType = intcontext.abortType;
+                    c.abortInfo = intcontext.abortInfo;
+                    if (c.abortType == AbortType.Suspend)
+                    {
+                        c.SuspendData[this] = action;
+                    }
+                }
+                finally
+                {
+                    intcontext.Deactivate();
+                }
+            };
+            action(context);
             return null;
         }
 

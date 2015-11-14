@@ -12,6 +12,14 @@ namespace NiL.JS.Statements
 #endif
     public sealed class ForInStatement : CodeNode
     {
+        private sealed class SuspendData
+        {
+            public JSValue source;
+            public JSValue variable;
+            public HashSet<string> processedKeys;
+            public IEnumerator<KeyValuePair<string, JSValue>> keys;
+        }
+
         private CodeNode _variable;
         private CodeNode _source;
         private CodeNode _body;
@@ -110,13 +118,13 @@ namespace NiL.JS.Statements
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
                 if (defVal == null)
                     return defVal;
-                NiL.JS.Expressions.Expression exp = new GetValueForAssignmentOperator(res._variable as GetVariableExpression ?? (res._variable as VariableDefineStatement).initializers[0] as GetVariableExpression);
+                Expression exp = new AssignmentOperatorCache(res._variable as GetVariableExpression ?? (res._variable as VariableDefineStatement).initializers[0] as GetVariableExpression);
                 exp = new AssignmentOperator(
                     exp,
-                    (NiL.JS.Expressions.Expression)defVal)
+                    (Expression)defVal)
                     {
-                        Position = res._variable.Position,
-                        Length = defVal.EndPosition - res._variable.Position
+                        Position = exp.Position,
+                        Length = defVal.EndPosition - exp.Position
                     };
                 if (res._variable == exp.first.first)
                     res._variable = exp;
@@ -157,54 +165,90 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            var s = _source.Evaluate(context);
-            JSValue v = null;
-            if (_variable is AssignmentOperator)
+            SuspendData suspendData = null;
+            if (context.abortType >= AbortType.Resume)
             {
-                _variable.Evaluate(context);
-                v = (_variable as AssignmentOperator).first.Evaluate(context);
+                suspendData = context.SuspendData[this] as SuspendData;
+            }
+
+            JSValue source = null;
+            if (suspendData == null || suspendData.source == null)
+            {
+#if DEV
+                if (context.debugging && !(_source is CodeBlock))
+                    context.raiseDebugger(_source);
+#endif
+                source = _source.Evaluate(context);
+                if (context.abortType == AbortType.Suspend)
+                {
+                    context.SuspendData[this] = null;
+                    return null;
+                }
             }
             else
-                v = _variable.EvaluateForWrite(context);
-            if (!s.IsDefined
-                || (s.valueType >= JSValueType.Object && s.oValue == null)
+                source = suspendData.source;
+
+            JSValue variable = null;
+            if (suspendData == null || suspendData.variable == null)
+            {
+#if DEV
+                if (context.debugging && !(_variable is CodeBlock))
+                    context.raiseDebugger(_variable);
+#endif
+                if (_variable is AssignmentOperator)
+                {
+                    _variable.Evaluate(context);
+                    variable = (_variable as AssignmentOperator).first.Evaluate(context);
+                }
+                else
+                    variable = _variable.EvaluateForWrite(context);
+                if (context.abortType == AbortType.Suspend)
+                {
+                    if (suspendData == null)
+                        suspendData = new SuspendData();
+                    context.SuspendData[this] = suspendData;
+                    suspendData.source = source;
+                    return null;
+                }
+            }
+            else
+                variable = suspendData.variable;
+
+            if (!source.IsDefined
+                || (source.valueType >= JSValueType.Object && source.oValue == null)
                 || _body == null)
                 return JSValue.undefined;
-            int index = 0;
-            HashSet<string> processedKeys = new HashSet<string>(StringComparer.Ordinal);
-            while (s != null)
+
+            var index = 0;
+            var processedKeys = (suspendData != null ? suspendData.processedKeys : null) ?? new HashSet<string>(StringComparer.Ordinal);
+            while (source != null)
             {
-                if (s.oValue is NiL.JS.BaseLibrary.Array)
+                var keys = (suspendData != null ? suspendData.keys : null) ?? source.GetEnumerator(false, EnumerationMode.RequireValues);
+                while (context.abortType >= AbortType.Resume || keys.MoveNext())
                 {
-                    var src = s.oValue as NiL.JS.BaseLibrary.Array;
-                    foreach (var item in src.data.DirectOrder)
+                    if (context.abortType != AbortType.Resume)
                     {
-                        if (item.Value == null
-                            || !item.Value.IsExists
-                            || (item.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
+                        var key = keys.Current.Key;
+                        variable.valueType = JSValueType.String;
+                        variable.oValue = key;
+                        if (processedKeys.Contains(key))
                             continue;
-                        if (item.Key >= 0)
-                        {
-                            v.oValue = item.Key.ToString();
-                        }
-                        else
-                        {
-                            v.oValue = ((uint)item.Key).ToString();
-                        }
-                        if (processedKeys.Contains(v.oValue.ToString()))
+                        processedKeys.Add(key);
+                        if ((keys.Current.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
                             continue;
-                        processedKeys.Add(v.oValue.ToString());
-                        v.valueType = JSValueType.String;
 #if DEV
                         if (context.debugging && !(_body is CodeBlock))
                             context.raiseDebugger(_body);
 #endif
-                        context.lastResult = _body.Evaluate(context) ?? context.lastResult;
-                        if (context.abortType != AbortType.None)
+                    }
+                    context.lastResult = _body.Evaluate(context) ?? context.lastResult;
+                    if (context.abortType != AbortType.None)
+                    {
+                        if (context.abortType < AbortType.Return)
                         {
                             var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
                             var _break = (context.abortType > AbortType.Continue) || !me;
-                            if (context.abortType < AbortType.Return && me)
+                            if (me)
                             {
                                 context.abortType = AbortType.None;
                                 context.abortInfo = JSValue.notExists;
@@ -212,84 +256,27 @@ namespace NiL.JS.Statements
                             if (_break)
                                 return null;
                         }
-                    }
-                    if (src.fields != null)
-                        foreach (var item in src.fields)
+                        else if (context.abortType == AbortType.Suspend)
                         {
-                            if (item.Value == null
-                                || !item.Value.IsExists
-                                || (item.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
-                                continue;
-                            v.valueType = JSValueType.String;
-                            v.oValue = item.Key;
-                            if (processedKeys.Contains(v.oValue.ToString()))
-                                continue;
-                            processedKeys.Add(v.oValue.ToString());
-#if DEV
-                            if (context.debugging && !(_body is CodeBlock))
-                                context.raiseDebugger(_body);
-#endif
-                            context.lastResult = _body.Evaluate(context) ?? context.lastResult;
-                            if (context.abortType != AbortType.None)
-                            {
+                            if (suspendData == null)
+                                suspendData = new SuspendData();
+                            context.SuspendData[this] = suspendData;
 
-                                var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                                var _break = (context.abortType > AbortType.Continue) || !me;
-                                if (context.abortType < AbortType.Return && me)
-                                {
-                                    context.abortType = AbortType.None;
-                                    context.abortInfo = JSValue.notExists;
-                                }
-                                if (_break)
-                                    return null;
-                            }
+                            suspendData.source = source;
+                            suspendData.variable = variable;
+                            suspendData.processedKeys = processedKeys;
+                            suspendData.keys = keys;
+                            return null;
                         }
-                }
-                else
-                {
-                    var keys = s.GetEnumerator(false, EnumerationMode.NeedValues);
-                    try
-                    {
-                        for (; ; )
-                        {
-                            if (!keys.MoveNext())
-                                break;
-                            var key = keys.Current.Key;
-                            v.valueType = JSValueType.String;
-                            v.oValue = key;
-                            if (processedKeys.Contains(key))
-                                continue;
-                            processedKeys.Add(key);
-                            if ((keys.Current.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
-                                continue;
-#if DEV
-                            if (context.debugging && !(_body is CodeBlock))
-                                context.raiseDebugger(_body);
-#endif
-                            context.lastResult = _body.Evaluate(context) ?? context.lastResult;
-                            if (context.abortType != AbortType.None)
-                            {
+                        else
+                            return null;
+                    }
 
-                                var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                                var _break = (context.abortType > AbortType.Continue) || !me;
-                                if (context.abortType < AbortType.Return && me)
-                                {
-                                    context.abortType = AbortType.None;
-                                    context.abortInfo = JSValue.notExists;
-                                }
-                                if (_break)
-                                    return null;
-                            }
-                            index++;
-                        }
-                    }
-                    finally
-                    {
-                        keys.Dispose();
-                    }
+                    index++;
                 }
-                s = s.__proto__;
-                if (s == JSValue.Null || !s.IsDefined || (s.valueType >= JSValueType.Object && s.oValue == null))
+
+                source = source.__proto__;
+                if (source == JSValue.Null || !source.IsDefined || (source.valueType >= JSValueType.Object && source.oValue == null))
                     break;
             }
             return null;
@@ -333,6 +320,7 @@ namespace NiL.JS.Statements
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
+            _variable.Optimize(ref _variable, owner, message, opts, statistic);
             _source.Optimize(ref _source, owner, message, opts, statistic);
             if (_body != null)
                 _body.Optimize(ref _body, owner, message, opts, statistic);

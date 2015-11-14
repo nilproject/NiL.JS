@@ -45,17 +45,24 @@ namespace NiL.JS.Expressions
             {
                 context.abortInfo = first.Evaluate(context);
                 context.abortType = AbortType.Suspend;
-                return null;
+                return JSValue.notExists;
             }
             else if (context.abortType == AbortType.Resume)
             {
+                context.SuspendData.Clear();
                 context.abortType = AbortType.None;
                 var result = context.abortInfo;
                 context.abortInfo = null;
                 return result;
             }
-            else
-                throw new InvalidOperationException();
+            else if (context.abortType == AbortType.ResumeThrow)
+            {
+                context.SuspendData.Clear();
+                context.abortType = AbortType.None;
+                var exceptionData = context.abortInfo;
+                ExceptionsHelper.Throw(exceptionData);
+            }
+            throw new InvalidOperationException();
         }
 
         protected internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
