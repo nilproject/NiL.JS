@@ -20,7 +20,8 @@ namespace NiL.JS.Core
         Return,
         TailRecursion,
         Exception,
-        Yield
+        Suspend,
+        Resume
     }
 
     /// <summary>

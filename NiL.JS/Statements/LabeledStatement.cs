@@ -86,5 +86,10 @@ namespace NiL.JS.Statements
         {
             return label + ": " + statement;
         }
+
+        protected internal override void Decompose(ref CodeNode self)
+        {
+
+        }
     }
 }

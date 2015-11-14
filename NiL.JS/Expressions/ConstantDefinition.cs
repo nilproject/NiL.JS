@@ -111,5 +111,10 @@ namespace NiL.JS.Expressions
             }
             return value.ToString();
         }
+
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            
+        }
     }
 }

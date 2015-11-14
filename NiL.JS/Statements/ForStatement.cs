@@ -281,6 +281,14 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            initializer.Decompose(ref initializer);
+            condition.Decompose(ref condition);
+            body.Decompose(ref body);
+            post.Decompose(ref post);
+        }
+
         public override string ToString()
         {
             var istring = (initializer as object ?? "").ToString();

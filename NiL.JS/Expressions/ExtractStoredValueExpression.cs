@@ -47,7 +47,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "";
+            return first.ToString();
         }
 
         protected internal override void Decompose(ref Expression self, IList<CodeNode> result)

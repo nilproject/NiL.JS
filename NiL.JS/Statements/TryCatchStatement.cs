@@ -424,9 +424,18 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            body.Decompose(ref body);
+            if (catchBody != null)
+                catchBody.Decompose(ref catchBody);
+            if (finallyBody != null)
+                finallyBody.Decompose(ref finallyBody);
+        }
+
         public override string ToString()
         {
-            var sbody = body.ToString();
+            var sbody = (body as CodeBlock as object ?? "{" + Environment.NewLine + " " + body + Environment.NewLine + "}").ToString();
             var fbody = finallyBody == null ? "" : (finallyBody as CodeBlock as object ?? "{" + Environment.NewLine + " " + finallyBody + Environment.NewLine + "}").ToString();
             var cbody = catchBody == null ? "" : (catchBody as CodeBlock as object ?? "{" + Environment.NewLine + " " + catchBody + Environment.NewLine + "}").ToString();
             return "try" +

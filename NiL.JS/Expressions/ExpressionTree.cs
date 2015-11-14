@@ -630,7 +630,7 @@ namespace NiL.JS.Expressions
 #if PORTABLE
                             throw new NotSupportedException("Do not supported in portable version");
 #else
-                            if (!state.AllowYield.Peek())
+                            if ((state.CodeContext & CodeContext.InGenerator) == 0)
                                 ExceptionsHelper.Throw(new SyntaxError("Invalid use of yield operator"));
                             i += 4;
                             do

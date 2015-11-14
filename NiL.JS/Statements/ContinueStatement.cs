@@ -56,6 +56,11 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
+        internal protected override void Decompose(ref CodeNode self)
+        {
+
+        }
+
         public override string ToString()
         {
             return "continue" + (label != null ? " " + label : "");

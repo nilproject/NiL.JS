@@ -172,6 +172,14 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            if (condition != null)
+                condition.Decompose(ref condition);
+            if (body != null)
+                body.Decompose(ref body);
+        }
+
         public override string ToString()
         {
             return "do" + (body is CodeBlock ? body + " " : Environment.NewLine + "  " + body + ";" + Environment.NewLine) + "while (" + condition + ")";

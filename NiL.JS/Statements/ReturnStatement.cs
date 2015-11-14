@@ -96,6 +96,9 @@ namespace NiL.JS.Statements
                 var t = body as CodeNode;
                 body.Optimize(ref t, owner, message, opts, statistic);
                 body = (Expressions.Expression)t;
+
+                if (body is EmptyExpression || ((body is ConstantDefinition) && body.Evaluate(null) == JSValue.undefined))
+                    body = null;
             }
         }
 #if !PORTABLE && !NET35
@@ -115,6 +118,12 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             return "return" + (body != null ? " " + body : "");
+        }
+
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            if (body != null)
+                body.Decompose(ref body);
         }
     }
 }

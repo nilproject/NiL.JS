@@ -204,7 +204,17 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var ls = lines;
-            for (int i = 0; i < ls.Length; i++)
+            int i = 0;
+            SuspendableContext scontext = null;
+
+            if (context.abortType == AbortType.Resume)
+            {
+                scontext = context as SuspendableContext;
+                i = (int)scontext.SuspendData[this];
+                scontext.SuspendData.Remove(this);
+            }
+
+            for (; i < ls.Length; i++)
             {
 #if DEV
                 if (context.debugging)
@@ -250,7 +260,16 @@ namespace NiL.JS.Statements
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
                 if (context.abortType != AbortType.None)
+                {
+                    if (context.abortType == AbortType.Suspend)
+                    {
+                        if (scontext == null)
+                            scontext = context as SuspendableContext;
+
+                        scontext.SuspendData[this] = i;
+                    }
                     break;
+                }
             }
             return null;
         }
@@ -382,7 +401,12 @@ namespace NiL.JS.Statements
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
+            /*
+             * Дублирование оптимизации для локальных переменных нужно для правильной работы ряда оптимизаций
+             */
+
             if (localVariables != null)
+            {
                 for (var i = 0; i < localVariables.Length; i++)
                 {
                     if (localVariables[i].initializer != null)
@@ -391,6 +415,7 @@ namespace NiL.JS.Statements
                         cn.Optimize(ref cn, owner, message, opts, statistic);
                     }
                 }
+            }
             for (int i = 0; i < lines.Length; i++)
             {
                 var cn = lines[i] as CodeNode;
@@ -428,6 +453,25 @@ namespace NiL.JS.Statements
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);
+        }
+
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            if (localVariables != null)
+            {
+                for (var i = 0; i < localVariables.Length; i++)
+                {
+                    if (localVariables[i].initializer != null)
+                    {
+                        localVariables[i].initializer.Decompose(ref localVariables[i].initializer);
+                    }
+                }
+            }
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                lines[i].Decompose(ref lines[i]);
+            }
         }
 
         public string ToString(bool linewiseStringify)

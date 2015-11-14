@@ -71,5 +71,10 @@ namespace NiL.JS.Statements
         {
             return "for (;;)" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
+
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            body.Decompose(ref body);
+        }
     }
 }

@@ -318,5 +318,13 @@ namespace NiL.JS.Statements
             }
             return res;
         }
+
+        internal protected override void Decompose(ref CodeNode self)
+        {
+            for (var i = 0; i<initializers.Length; i++)
+            {
+                initializers[i].Decompose(ref initializers[i]);
+            }
+        }
     }
 }

@@ -69,6 +69,12 @@ namespace NiL.JS.Statements
             else
                 _this = condition;
         }
+
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            condition.Decompose(ref condition);
+            then.Decompose(ref then);
+        }
     }
 
 #if !PORTABLE
@@ -265,6 +271,13 @@ namespace NiL.JS.Statements
                 (@else != null ? Environment.NewLine +
                 "else" + Environment.NewLine +
                 (@else is CodeBlock ? sebody.Replace(rp, rs) : "  " + sebody) : "");
+        }
+
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            condition.Decompose(ref condition);
+            then.Decompose(ref then);
+            @else.Decompose(ref @else);
         }
     }
 }

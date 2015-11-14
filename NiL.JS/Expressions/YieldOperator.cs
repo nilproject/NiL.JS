@@ -41,26 +41,27 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            //lock (this)
+            if (context.abortType == AbortType.None)
             {
-                var r = first.Evaluate(context).CloneImpl(false);
-                context.abortInfo = r;
-                context.abortType = AbortType.Yield;
-                context.Deactivate();
-                while (context.abortType == AbortType.Yield)
-#if !NET35
-                    Thread.Yield();
-#else
-                    Thread.Sleep(0);
-#endif
-                if (context.abortType == AbortType.Exception)
-                    ExceptionsHelper.Throw(new Error("Execution aborted"));
-                context.abortType = AbortType.None;
-                context.Activate();
-                tempContainer.Assign(context.abortInfo ?? JSValue.notExists);
-                context.abortInfo = null;
-                return tempContainer;
+                context.abortInfo = first.Evaluate(context);
+                context.abortType = AbortType.Suspend;
+                return null;
             }
+            else if (context.abortType == AbortType.Resume)
+            {
+                context.abortType = AbortType.None;
+                var result = context.abortInfo;
+                context.abortInfo = null;
+                return result;
+            }
+            else
+                throw new InvalidOperationException();
+        }
+
+        protected internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        {
+            statistic.ContainsYield = true;
+            return base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -70,8 +71,13 @@ namespace NiL.JS.Expressions
 
         protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
         {
-            result.Add(new StoreValueStatement(this));
-            self = new ExtractStoredValueExpression(this);
+            first.Decompose(ref first, result);
+
+            if ((_codeContext & CodeContext.InExpression) != 0)
+            {
+                result.Add(new StoreValueStatement(this));
+                self = new ExtractStoredValueExpression(this);
+            }
         }
 
         public override string ToString()

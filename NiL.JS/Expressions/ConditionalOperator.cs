@@ -81,8 +81,7 @@ namespace NiL.JS.Expressions
                 else
                 {
                     // Эти оптимизации работают только в тех случаях, когда результат выражения нигде не используется.
-                    if (threads[0] == null
-                        && threads[1] == null)
+                    if (threads[0] == null && threads[1] == null)
                     {
                         _this = first;
                         return true; // можно попытаться удалить и это

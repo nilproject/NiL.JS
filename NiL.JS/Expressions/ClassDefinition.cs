@@ -15,14 +15,14 @@ namespace NiL.JS.Expressions
     public sealed class MemberDescriptor
     {
         internal string _name;
-        internal CodeNode _value;
+        internal Expression _value;
         internal bool _static;
 
         public string Name { get { return _name; } }
-        public CodeNode Value { get { return _value; } }
+        public Expression Value { get { return _value; } }
         public bool Static { get { return _static; } }
 
-        public MemberDescriptor(string name, CodeNode value, bool @static)
+        public MemberDescriptor(string name, Expression value, bool @static)
         {
             _name = name;
             _value = value;
@@ -65,21 +65,37 @@ namespace NiL.JS.Expressions
 
         private ReadOnlyCollection<MemberDescriptor> members;
         private Expression baseType;
-        private FunctionDefinition _ctor;
+        private FunctionDefinition _constructor;
 
         public ICollection<MemberDescriptor> Members { get { return members; } }
         public Expression BaseClassExpression { get { return baseType; } }
-        public FunctionDefinition Constructor { get { return _ctor; } }
+        public FunctionDefinition Constructor { get { return _constructor; } }
         public override bool Hoist
         {
             get { return false; }
+        }
+        protected internal override bool NeedDecompose
+        {
+            get
+            {
+                if (_constructor.NeedDecompose)
+                    return true;
+                
+                for (var i = 0; i < members.Count; i++)
+                {
+                    if (members[i]._value.NeedDecompose)
+                        return true;
+                }
+
+                return false;
+            }
         }
 
         private ClassDefinition(string name, Expression baseType, ICollection<MemberDescriptor> fields, FunctionDefinition ctor)
         {
             this.name = name;
             this.baseType = baseType;
-            this._ctor = ctor;
+            this._constructor = ctor;
             this.members = new List<MemberDescriptor>(fields).AsReadOnly();
         }
 
@@ -282,7 +298,7 @@ namespace NiL.JS.Expressions
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
         {
-            Parser.Build(ref _ctor, depth, variables, codeContext | CodeContext.InClassDefenition | CodeContext.InClassConstructor, message, statistic, opts);
+            Parser.Build(ref _constructor, depth, variables, codeContext | CodeContext.InClassDefenition | CodeContext.InClassConstructor, message, statistic, opts);
             Parser.Build(ref baseType, depth, variables, codeContext, message, statistic, opts);
 
             for (var i = 0; i < members.Count; i++)
@@ -304,7 +320,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var ctor = this._ctor.Evaluate(context) as Function;
+            var ctor = this._constructor.Evaluate(context) as Function;
             ctor.RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
 
             JSValue protoCtor = TypeProxy.GlobalPrototype;
@@ -363,6 +379,18 @@ namespace NiL.JS.Expressions
             }
             result.Append(Environment.NewLine).Append("}");
             return result.ToString();
+        }
+
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            for (var i = 0; i < members.Count; i++)
+            {
+                members[i]._value.Decompose(ref members[i]._value, result); // results will be empty at each iterations
+#if DEBUG
+                if (result.Count != 0)
+                    System.Diagnostics.Debug.Fail("Decompose: results not empty");
+#endif
+            }
         }
     }
 }

@@ -106,6 +106,9 @@ namespace NiL.JS
             }
             var bd = body as CodeNode;
             body.Optimize(ref bd, null, icallback, options, stat);
+
+            if (stat.ContainsYield)
+                body.Decompose(ref bd);
         }
 
         /// <summary>

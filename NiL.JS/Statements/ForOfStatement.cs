@@ -209,6 +209,7 @@ namespace NiL.JS.Statements
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
+            _variable.Optimize(ref _variable, owner, message, opts, statistic);
             _source.Optimize(ref _source, owner, message, opts, statistic);
             if (_body != null)
                 _body.Optimize(ref _body, owner, message, opts, statistic);
@@ -217,6 +218,13 @@ namespace NiL.JS.Statements
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);
+        }
+
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            _variable.Decompose(ref _variable);
+            _source.Decompose(ref _source);
+            _body.Decompose(ref _body);
         }
 
         public override string ToString()

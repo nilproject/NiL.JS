@@ -12,58 +12,61 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
+    public sealed class ParameterDescriptor : VariableDescriptor
+    {
+        public bool IsRest { get; private set; }
+
+        internal ParameterDescriptor(string name, bool rest, int depth)
+            : base(name, depth)
+        {
+            this.IsRest = rest;
+        }
+
+        public override string ToString()
+        {
+            if (IsRest)
+                return "..." + name;
+            return name;
+        }
+    }
+
+#if !PORTABLE
+    [Serializable]
+#endif
+    public sealed class ParameterReference : VariableReference
+    {
+        public override string Name
+        {
+            get { return descriptor.name; }
+        }
+
+        internal ParameterReference(string name, bool rest, int depth)
+        {
+            descriptor = new ParameterDescriptor(name, rest, depth);
+            descriptor.references.Add(this);
+        }
+
+        public override JSValue Evaluate(Context context)
+        {
+            throw new InvalidOperationException();
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
+        public override string ToString()
+        {
+            return Descriptor.ToString();
+        }
+    }
+
+#if !PORTABLE
+    [Serializable]
+#endif
     public sealed class FunctionDefinition : EntityDefinition
     {
-#if !PORTABLE
-        [Serializable]
-#endif
-        public sealed class ParameterDescriptor : VariableDescriptor
-        {
-            public bool IsRest { get; private set; }
-
-            internal ParameterDescriptor(string name, bool rest, int depth)
-                : base(name, depth)
-            {
-                this.IsRest = rest;
-            }
-
-            public override string ToString()
-            {
-                if (IsRest)
-                    return "..." + name;
-                return name;
-            }
-        }
-
-        public sealed class ParameterReference : VariableReference
-        {
-            public override string Name
-            {
-                get { return descriptor.name; }
-            }
-
-            internal ParameterReference(string name, bool rest, int depth)
-            {
-                descriptor = new ParameterDescriptor(name, rest, depth);
-                descriptor.references.Add(this);
-            }
-
-            public override JSValue Evaluate(Context context)
-            {
-                throw new InvalidOperationException();
-            }
-
-            public override T Visit<T>(Visitor<T> visitor)
-            {
-                return visitor.Visit(this);
-            }
-
-            public override string ToString()
-            {
-                return Descriptor.ToString();
-            }
-        }
-
         #region Runtime
         internal int parametersStored;
         internal int recursionDepth;
@@ -84,6 +87,14 @@ namespace NiL.JS.Expressions
         public override bool Hoist
         {
             get { return true; }
+        }
+
+        protected internal override bool NeedDecompose
+        {
+            get
+            {
+                return statistic.ContainsYield;
+            }
         }
 
         protected internal override bool ContextIndependent
@@ -287,14 +298,15 @@ namespace NiL.JS.Expressions
             }
             else
             {
+                var oldCodeContext = state.CodeContext;
+                if (mode == FunctionType.Generator)
+                    state.CodeContext |= CodeContext.InGenerator;
                 var labels = state.Labels;
                 state.Labels = new List<string>();
                 state.functionsDepth++;
                 state.AllowReturn++;
                 try
                 {
-                    if (mode == FunctionType.Generator)
-                        state.AllowYield.Push(true);
                     state.AllowBreak.Push(false);
                     state.AllowContinue.Push(false);
                     state.AllowDirectives = true;
@@ -302,8 +314,7 @@ namespace NiL.JS.Expressions
                 }
                 finally
                 {
-                    if (mode == FunctionType.Generator)
-                        state.AllowYield.Pop();
+                    state.CodeContext = oldCodeContext;
                     state.AllowBreak.Pop();
                     state.AllowContinue.Pop();
                     state.AllowDirectives = false;
@@ -332,6 +343,7 @@ namespace NiL.JS.Expressions
             {
                 parameters = parameters.ToArray(),
                 body = body,
+                strict = body.strict,
                 type = mode,
                 Position = index,
                 Length = i - index,
@@ -562,6 +574,7 @@ namespace NiL.JS.Expressions
                 statistic.ContainsInnerFunction = true;
                 statistic.ContainsTry |= this.statistic.ContainsTry;
                 statistic.ContainsWith |= this.statistic.ContainsWith;
+                statistic.ContainsYield |= this.statistic.ContainsYield;
                 statistic.UseCall |= this.statistic.UseCall;
                 statistic.UseGetMember |= this.statistic.UseGetMember;
                 statistic.UseThis |= this.statistic.UseThis;
@@ -601,6 +614,13 @@ namespace NiL.JS.Expressions
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);
+        }
+
+        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        {
+            CodeNode cn = body;
+            cn.Decompose(ref cn);
+            body = (CodeBlock)cn;
         }
 
         public override string ToString()

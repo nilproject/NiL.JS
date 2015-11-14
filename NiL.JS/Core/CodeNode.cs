@@ -23,7 +23,8 @@ namespace NiL.JS.Core
         InExpression = 64,
         InClassDefenition = 128,
         InClassConstructor = 256,
-        InStaticMember = 512
+        InStaticMember = 512,
+        InGenerator = 1024
     }
 
 #if !PORTABLE
@@ -86,6 +87,9 @@ namespace NiL.JS.Core
             return null;
         }
 #endif
+
+        internal protected abstract void Decompose(ref CodeNode self);
+
         public virtual T Visit<T>(Visitor<T> visitor)
         {
             return default(T);

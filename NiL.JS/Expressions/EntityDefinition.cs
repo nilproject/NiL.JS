@@ -58,14 +58,6 @@ namespace NiL.JS.Expressions
 
         public abstract bool Hoist { get; }
 
-        protected internal override bool NeedDecompose
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         protected EntityDefinition()
         {
             reference = new EntityReference(this);
@@ -95,9 +87,6 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
-        {
-            throw new InvalidOperationException();
-        }
+        protected internal override abstract void Decompose(ref Expression self, IList<CodeNode> result);
     }
 }

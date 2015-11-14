@@ -240,6 +240,7 @@
     <Compile Include="Core\SuspendableContext.cs" />
     <Compile Include="Expressions\ExtractStoredValueExpression.cs" />
     <Compile Include="Expressions\PropertyPairExpression.cs" />
+    <Compile Include="Expressions\SuspendableExpression.cs" />
     <Compile Include="Extensions\IterationProtocolExtensions.cs" />
     <Compile Include="Core\JSValue.cs" />
     <Compile Include="Core\Interop\ConvertValueAttribute.cs" />

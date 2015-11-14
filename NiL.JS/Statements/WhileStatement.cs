@@ -182,5 +182,13 @@ namespace NiL.JS.Statements
         {
             return "while (" + condition + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
         }
+
+        internal protected override void Decompose(ref CodeNode self)
+        {
+            if (condition != null)
+                condition.Decompose(ref condition);
+            if (body != null)
+                body.Decompose(ref body);
+        }
     }
 }

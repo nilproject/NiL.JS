@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " + '')";
+            return "( \"\" + " + first + ")";
         }
     }
 }

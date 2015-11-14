@@ -37,133 +37,77 @@ namespace NiL.JS.BaseLibrary
             return TypeProxy.Proxy(new GeneratorIterator(generator, targetObject, arguments));
         }
 
+        internal void Resume()
+        {
+
+        }
+
         internal override JSObject GetDefaultPrototype()
         {
             return TypeProxy.GetPrototype(typeof(Function));
         }
     }
 
-    internal sealed class GeneratorIterator : IDisposable, IIterator, IIterable
+    internal sealed class GeneratorIterator : IIterator, IIterable
     {
         private Context generatorContext;
         private Arguments initialArgs;
-        private Thread thread;
         private Function generator;
-        private JSValue self;
-        
+        private JSValue targetObject;
+
         [Hidden]
         public GeneratorIterator(Function generator, JSValue self, Arguments args)
         {
             this.generator = generator;
             this.initialArgs = args;
-            this.self = self;
-        }
-
-        [Hidden]
-        ~GeneratorIterator()
-        {
-            Dispose();
+            this.targetObject = self;
         }
 
         public IIteratorResult next(Arguments args)
         {
-            if (thread == null)
+            if (generatorContext == null)
             {
-                thread = new Thread(() =>
-                {
-                    generator.Call(self, initialArgs);
-                    GC.SuppressFinalize(this);
-                });
-                thread.Start();
-                do
-                {
-                    for (var i = 0; i < Context.MaxConcurentContexts; i++)
-                    {
-                        if (Context.runnedContexts[i] == null)
-                            break;
-                        if (Context.runnedContexts[i].threadId == thread.ManagedThreadId)
-                        {
-                            generatorContext = Context.runnedContexts[i];
-                            break;
-                        }
-                    }
-                }
-                while (generatorContext == null);
-
-                while (generatorContext.abortType == AbortType.None)
-                {
-#if !NET35
-                    Thread.Yield();
-#else
-                    Thread.Sleep(0);
-#endif
-                }
-
-                return new GeneratorResult(generatorContext.abortInfo, generatorContext.abortType == AbortType.Return);
+                generatorContext = new SuspendableContext(Context.CurrentContext, true, generator);
+                generator.initParameters(initialArgs, generatorContext);
+                generator.initContext(targetObject, initialArgs, true, generatorContext);
+                generator.initVariables(generatorContext);
             }
             else
             {
-                if (thread.ThreadState == ThreadState.Running || thread.ThreadState == ThreadState.WaitSleepJoin)
+                if (generatorContext.abortType != AbortType.Suspend)
                 {
-                    generatorContext.abortInfo = args != null ? args[0] : JSObject.undefined;
-                    generatorContext.abortType = AbortType.None;
-                    while (generatorContext.abortType == AbortType.None)
-#if !NET35
-                        Thread.Yield();
-#else
-                        Thread.Sleep(0);
-#endif
-                    return new GeneratorResult(generatorContext.abortInfo, generatorContext.abortType == AbortType.Return);
+                    return new GeneratorResult(JSValue.undefined, true);
                 }
-                else
-                {
-                    return new GeneratorResult(null, true);
-                }
+
+                generatorContext.abortType = AbortType.Resume;
+                generatorContext.abortInfo = args != null ? args[0] : JSValue.undefined;
             }
+            generatorContext.Activate();
+            JSValue result = null;
+            try
+            {
+                result = generator.evaluate(generatorContext);
+            }
+            finally
+            {
+                generatorContext.Deactivate();
+            }
+            return new GeneratorResult(result, generatorContext.abortType != AbortType.Suspend);
         }
 
         public IIteratorResult @return()
         {
-            if (thread != null)
-            {
-                if (thread.ThreadState == ThreadState.Suspended)
-                {
-                    generatorContext.abortType = AbortType.Return;
-                }
-            }
-            Dispose();
-            return new GeneratorResult(null, true);
+            throw new NotImplementedException();
         }
 
         public IIteratorResult @throw(Arguments arguments = null)
         {
-            if (thread != null)
-            {
-                if (thread.ThreadState == ThreadState.Suspended)
-                {
-                    generatorContext.abortType = AbortType.Exception;
-                }
-            }
-            return new GeneratorResult(null, true);
+            throw new NotImplementedException();
         }
 
         public IIterator iterator()
         {
             return this;
-        }
-
-        [Hidden]
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            try
-            {
-                thread.Abort();
-            }
-            catch
-            {
-
-            }
         }
 
         [Hidden]

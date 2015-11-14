@@ -80,5 +80,10 @@ namespace NiL.JS.Test.SyntaxExtensions
             context.DefineVariable(aliasName).Assign(new NamespaceProvider(namespaceName));
             return null;
         }
+
+        protected override void Decompose(ref CodeNode self)
+        {
+            
+        }
     }
 }

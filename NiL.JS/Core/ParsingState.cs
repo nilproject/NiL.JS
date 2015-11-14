@@ -7,7 +7,6 @@ namespace NiL.JS.Core
         public int AllowReturn;
         public readonly Stack<bool> AllowBreak;
         public readonly Stack<bool> AllowContinue;
-        public readonly Stack<bool> AllowYield;
         public int functionsDepth;
         public CodeContext CodeContext;
         public int InExpression;
@@ -35,8 +34,6 @@ namespace NiL.JS.Core
             AllowBreak.Push(false);
             AllowContinue = new Stack<bool>();
             AllowContinue.Push(false);
-            AllowYield = new Stack<bool>();
-            AllowYield.Push(false);
             this.message = message;
             stringConstants = new Dictionary<string, JSValue>();
             intConstants = new Dictionary<int, JSValue>();
@@ -52,6 +49,7 @@ namespace NiL.JS.Core
         public bool ContainsRestParameters;
         public bool ContainsEval;
         public bool ContainsWith;
+        public bool ContainsYield;
         public bool ContainsInnerFunction;
         public bool UseThis;
         public bool ContainsDebugger;

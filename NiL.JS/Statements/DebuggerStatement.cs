@@ -57,5 +57,10 @@ namespace NiL.JS.Statements
         {
             return null;
         }
+
+        internal protected override void Decompose(ref CodeNode self)
+        {
+
+        }
     }
 }

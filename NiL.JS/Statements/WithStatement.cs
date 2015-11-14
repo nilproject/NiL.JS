@@ -107,6 +107,14 @@ namespace NiL.JS.Statements
                 body.Optimize(ref body, owner, message, opts, statistic);
         }
 
+        internal protected override void Decompose(ref CodeNode self)
+        {
+            if (scope != null)
+                scope.Decompose(ref scope);
+            if (body != null)
+                body.Decompose(ref body);
+        }
+
         public override string ToString()
         {
             return "with (" + scope + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;

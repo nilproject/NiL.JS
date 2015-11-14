@@ -82,5 +82,11 @@ namespace NiL.JS.Statements
         {
             return "throw" + (body != null ? " " + body : "");
         }
+
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            if (body != null)
+                body.Decompose(ref body);
+        }
     }
 }

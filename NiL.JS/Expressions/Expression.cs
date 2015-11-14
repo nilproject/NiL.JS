@@ -203,6 +203,27 @@ namespace NiL.JS.Expressions
             return null;
         }
 
+        protected internal void Decompose(ref Expression self)
+        {
+            CodeNode cn = self;
+            cn.Decompose(ref cn);
+            self = (Expression)cn;
+        }
+
+        protected internal sealed override void Decompose(ref CodeNode self)
+        {
+            if (NeedDecompose)
+            {
+                var result = new List<CodeNode>();
+                var s = this;
+                s.Decompose(ref s, result);
+                if (result.Count > 0)
+                {
+                    self = new SuspendableExpression(this, result.ToArray());
+                }
+            }
+        }
+
         protected internal virtual void Decompose(ref Expression self, IList<CodeNode> result)
         {
             if (first != null)

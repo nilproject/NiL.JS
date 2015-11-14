@@ -111,7 +111,7 @@ namespace NiL.JS.Expressions
                             var spreadArray = e.oValue as IList<JSValue>;
                             for (var i = 0; i < spreadArray.Count; i++, targetIndex++)
                             {
-                                res.data[targetIndex] = spreadArray[i].CloneImpl(true);
+                                res.data[targetIndex] = spreadArray[i].CloneImpl(false);
                             }
                             targetIndex--;
                         }

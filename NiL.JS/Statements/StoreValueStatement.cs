@@ -44,13 +44,22 @@ namespace NiL.JS.Statements
             if (scontext == null)
                 throw new ArgumentException("context must be " + typeof(SuspendableContext).Name);
 
-            scontext.SuspendData[_source] = _source.Evaluate(context).CloneImpl(false);
+            var temp = _source.Evaluate(context);
+            if (context.abortType == AbortType.Suspend)
+            {
+                return null;
+            }
+            else
+            {
+                scontext.SuspendData[_source] = temp.CloneImpl(false);
+            }
+
             return null;
         }
 
         public override string ToString()
         {
-            return _source.ToString();
+            return "@(" + _source + ")";
         }
 
         protected internal override CodeNode[] getChildsImpl()
@@ -61,6 +70,11 @@ namespace NiL.JS.Statements
         public override T Visit<T>(Visitor<T> visitor)
         {
             return _source.Visit<T>(visitor);
+        }
+
+        internal protected override void Decompose(ref CodeNode self)
+        {
+
         }
     }
 }

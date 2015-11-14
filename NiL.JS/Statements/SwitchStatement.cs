@@ -239,5 +239,21 @@ namespace NiL.JS.Statements
             }
             return res + "}";
         }
+
+        protected internal override void Decompose(ref CodeNode self)
+        {
+            for (var i = 0; i < cases.Length; i++)
+            {
+                if (cases[i].statement != null)
+                {
+                    cases[i].statement.Decompose(ref cases[i].statement);
+                }
+            }
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                lines[i].Decompose(ref lines[i]);
+            }
+        }
     }
 }
