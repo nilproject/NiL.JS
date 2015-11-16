@@ -285,13 +285,6 @@ namespace NiL.JS.Expressions
                             _fastImpl = new Expressions.InOperator(first, second);
                             break;
                         }
-#if !PORTABLE
-                    case OperationType.Yield:
-                        {
-                            _fastImpl = new Expressions.YieldOperator(first);
-                            break;
-                        }
-#endif
                     default:
                         throw new ArgumentException("invalid operation type");
                 }
@@ -352,17 +345,17 @@ namespace NiL.JS.Expressions
             return Parse(state, ref index, false, true, false, true, false, false);
         }
 
-        public static CodeNode Parse(ParsingState state, ref int index, bool forUnary)
+        public static Expression Parse(ParsingState state, ref int index, bool forUnary)
         {
             return Parse(state, ref index, forUnary, true, false, true, false, false);
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index, bool forUnary, bool processComma)
+        internal static Expression Parse(ParsingState state, ref int index, bool forUnary, bool processComma)
         {
             return Parse(state, ref index, forUnary, processComma, false, true, false, false);
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index, bool forUnary, bool processComma, bool forNew, bool root, bool forTernary, bool forEnumeration)
+        internal static Expression Parse(ParsingState state, ref int index, bool forUnary, bool processComma, bool forNew, bool root, bool forTernary, bool forEnumeration)
         {
             int i = index;
             int position;
@@ -489,7 +482,6 @@ namespace NiL.JS.Expressions
                 || Parser.Validate(state.Code, "delete", i)
                 || Parser.Validate(state.Code, "typeof", i)
                 || Parser.Validate(state.Code, "void", i)
-                || Parser.Validate(state.Code, "yield", i)
                 )
             {
                 switch (state.Code[i])
@@ -505,7 +497,7 @@ namespace NiL.JS.Expressions
                                 if (i >= state.Code.Length)
                                     ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
                                 first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
-                                if (((first as GetMemberOperator) as object ?? (first as GetVariableExpression)) == null)
+                                if (((first as GetPropertyOperator) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                     ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
@@ -535,7 +527,7 @@ namespace NiL.JS.Expressions
                                 if (i >= state.Code.Length)
                                     ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
                                 first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
-                                if (((first as GetMemberOperator) as object ?? (first as GetVariableExpression)) == null)
+                                if (((first as GetPropertyOperator) as object ?? (first as GetVariableExpression)) == null)
                                 {
                                     var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                                     ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
@@ -623,23 +615,6 @@ namespace NiL.JS.Expressions
                                 ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
                             }
                             first = new Expressions.DeleteOperator(first) { Position = index, Length = i - index };
-                            break;
-                        }
-                    case 'y':
-                        {
-                            if ((state.CodeContext & CodeContext.InGenerator) == 0)
-                                ExceptionsHelper.Throw(new SyntaxError("Invalid use of yield operator"));
-                            i += 4;
-                            do
-                                i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
-                            first = (Expression)Parse(state, ref i, false, false, false, true, false, forEnumeration);
-                            if (first == null)
-                            {
-                                var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                            }
-                            first = new Expressions.YieldOperator(first) { Position = index, Length = i - index };
                             break;
                         }
                 }
@@ -1076,7 +1051,7 @@ namespace NiL.JS.Expressions
                             JSValue jsname = null;
                             if (!state.stringConstants.TryGetValue(name, out jsname))
                                 state.stringConstants[name] = jsname = name;
-                            first = new GetMemberOperator(first, new ConstantDefinition(name)
+                            first = new GetPropertyOperator(first, new ConstantDefinition(name)
                                                                      {
                                                                          Position = s,
                                                                          Length = i - s
@@ -1105,7 +1080,7 @@ namespace NiL.JS.Expressions
                                 i++;
                             if (state.Code[i] != ']')
                                 ExceptionsHelper.Throw((new SyntaxError("Expected \"]\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
-                            first = new GetMemberOperator(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
+                            first = new GetPropertyOperator(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
                             i++;
                             repeat = true;
                             canAsign = true;

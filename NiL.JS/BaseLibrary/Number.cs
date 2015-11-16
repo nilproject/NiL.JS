@@ -241,7 +241,7 @@ namespace NiL.JS.BaseLibrary
                 if (self.valueType != JSValueType.Int && self.valueType != JSValueType.Double)
                     ExceptionsHelper.Throw((new TypeError("Try to call Number.toString on not Number object")));
                 int r = 10;
-                if (radix != null && radix.GetMember("length").iValue > 0)
+                if (radix != null && radix.GetProperty("length").iValue > 0)
                 {
                     var ar = radix[0];
                     if (ar.valueType == JSValueType.Object && ar.oValue == null)

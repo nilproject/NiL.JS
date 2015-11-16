@@ -101,7 +101,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (args == null)
                 throw new ArgumentNullException("args");
-            var l = Tools.JSObjectToInt32(args.GetMember("length"));
+            var l = Tools.JSObjectToInt32(args.GetProperty("length"));
             if (l == 0)
                 return this;
             if (l == 1)
@@ -111,9 +111,9 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 uint index = 0;
                 double dindex = Tools.JSObjectToDouble(key);
@@ -136,7 +136,7 @@ namespace NiL.JS.BaseLibrary
             return new Element(index, this);
         }
 
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             var be = GetEnumerator();
             while (be.MoveNext())

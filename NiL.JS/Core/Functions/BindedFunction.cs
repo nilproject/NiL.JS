@@ -106,13 +106,13 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode)
         {
             return proto.GetEnumerator(hideNonEnumerable, enumeratorMode);
         }
 
         [Hidden]
-        protected internal override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
+        protected internal override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             return proto.GetMember(key, forWrite, memberScope);
         }

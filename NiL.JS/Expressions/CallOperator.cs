@@ -230,7 +230,7 @@ namespace NiL.JS.Expressions
             {
                 if (!(_arguments[i] is ExtractStoredValueExpression))
                 {
-                    result.Add(new StoreValueStatement(_arguments[i]));
+                    result.Add(new StoreValueStatement(_arguments[i], false));
                     _arguments[i] = new ExtractStoredValueExpression(_arguments[i]);
                 }
             }

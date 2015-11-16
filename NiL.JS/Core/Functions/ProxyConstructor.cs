@@ -107,30 +107,30 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 if (key.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
-                var res = proxy.GetMember(key, forWrite && memberScope == MemberScope.Own, memberScope);
-                if (res.IsExists || (memberScope == MemberScope.Own && forWrite))
+                var res = proxy.GetMember(key, forWrite && memberScope == PropertyScope.Own, memberScope);
+                if (res.IsExists || (memberScope == PropertyScope.Own && forWrite))
                 {
                     if (forWrite && res.IsNeedClone)
                         res = proxy.GetMember(key, true, memberScope);
                     return res;
                 }
                 res = __proto__.GetMember(key, forWrite, memberScope);
-                if (memberScope == MemberScope.Own && (res.valueType != JSValueType.Property || (res.attributes & JSValueAttributesInternal.Field) == 0))
+                if (memberScope == PropertyScope.Own && (res.valueType != JSValueType.Property || (res.attributes & JSValueAttributesInternal.Field) == 0))
                     return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
                 return res;
             }
             return base.GetMember(key, forWrite, memberScope);
         }
 
-        protected internal override bool DeleteMember(JSValue name)
+        protected internal override bool DeleteProperty(JSValue name)
         {
-            return proxy.DeleteMember(name) && __proto__.DeleteMember(name);
+            return proxy.DeleteProperty(name) && __proto__.DeleteProperty(name);
         }
 
         protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
@@ -307,7 +307,7 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             var e = __proto__.GetEnumerator(hideNonEnumerable, enumerationMode);
             while (e.MoveNext())

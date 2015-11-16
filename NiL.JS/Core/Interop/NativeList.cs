@@ -212,9 +212,9 @@ namespace NiL.JS.Core.Interop
                 return TypeProxy.Proxy(result);
         }
 
-        protected internal override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
+        protected internal override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
                 if (key.valueType == JSValueType.String && string.CompareOrdinal("length", key.oValue.ToString()) == 0)
@@ -273,7 +273,7 @@ namespace NiL.JS.Core.Interop
             return base.GetMember(key, forWrite, memberScope);
         }
 
-        protected internal override void SetMember(JSValue key, JSValue value, MemberScope memberScope, bool strict)
+        protected internal override void SetProperty(JSValue key, JSValue value, PropertyScope memberScope, bool strict)
         {
             if (key.valueType != JSValueType.Symbol)
             {
@@ -328,10 +328,10 @@ namespace NiL.JS.Core.Interop
                     return;
                 }
             }
-            base.SetMember(key, value, strict);
+            base.SetProperty(key, value, strict);
         }
 
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             for (var i = 0; i < data.Count; i++)
                 yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumerationMode > 0 ? new Element(this, i) : null);

@@ -8,12 +8,12 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class DeleteMemberExpression : Expression
+    public sealed class DeletePropertyOperator : Expression
     {
         private JSValue cachedMemberName;
 
         public Expression Source { get { return first; } }
-        public Expression FieldName { get { return second; } }
+        public Expression PropertyName { get { return second; } }
 
         protected internal override bool ContextIndependent
         {
@@ -28,7 +28,7 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        internal DeleteMemberExpression(Expression obj, Expression fieldName)
+        internal DeletePropertyOperator(Expression obj, Expression fieldName)
             : base(obj, fieldName, true)
         {
             if (fieldName is ConstantDefinition)
@@ -43,10 +43,10 @@ namespace NiL.JS.Expressions
                 source = source.Clone() as JSValue;
             else
                 source = source.oValue as JSValue ?? source;
-            var res = source.DeleteMember(cachedMemberName ?? second.Evaluate(context));
+            var res = source.DeleteProperty(cachedMemberName ?? second.Evaluate(context));
             context.objectSource = null;
             if (!res && context.strict)
-                ExceptionsHelper.Throw(new TypeError("Can not delete property \"" + first + "\"."));
+                ExceptionsHelper.ThrowTypeError("Cannot delete property \"" + first + "\".");
             return res;
         }
 

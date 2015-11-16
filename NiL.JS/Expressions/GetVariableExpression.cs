@@ -212,8 +212,7 @@ namespace NiL.JS.Expressions
 
                         if (descriptor.isReadOnly)
                         {
-                            if ((assigns[i] is AssignmentOperator)
-                                && (assigns[i] as AssignmentOperator).first is Statements.VariableDefineStatement.AllowWriteCN)
+                            if (assigns[i] is ForceAssignmentOperator)
                             {
                                 lastAssign = assigns[i];
                                 break;

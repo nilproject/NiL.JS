@@ -42,13 +42,13 @@ namespace NiL.JS.Core
             {
                 if (Avatar.oValue is Error)
                 {
-                    var n = Avatar.GetMember("name");
+                    var n = Avatar.GetProperty("name");
                     if (n.valueType == JSValueType.Property)
-                        n = (n.oValue as PropertyPair).get.Call(Avatar, null).ToString();
+                        n = (n.oValue as GsPropertyPair).get.Call(Avatar, null).ToString();
 
-                    var m = Avatar.GetMember("message");
+                    var m = Avatar.GetProperty("message");
                     if (m.valueType == JSValueType.Property)
-                        return n + ": " + (m.oValue as PropertyPair).get.Call(Avatar, null);
+                        return n + ": " + (m.oValue as GsPropertyPair).get.Call(Avatar, null);
                     else
                         return n + ": " + m;
                 }

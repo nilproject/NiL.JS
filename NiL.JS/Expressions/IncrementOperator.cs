@@ -16,6 +16,16 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class IncrementOperator : Expression
     {
+        private IncrimentType _type;
+
+        public IncrimentType Type
+        {
+            get
+            {
+                return _type;
+            }
+        }
+
         protected internal override bool ContextIndependent
         {
             get
@@ -26,7 +36,7 @@ namespace NiL.JS.Expressions
 
         internal override bool ResultInTempContainer
         {
-            get { return second != null; }
+            get { return tempContainer != null; }
         }
 
         protected internal override PredictedType ResultType
@@ -52,27 +62,33 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public IncrementOperator(Expression op, IncrimentType type)
-            : base(op, type == IncrimentType.Postincriment ? op : null, type == IncrimentType.Postincriment)
+        protected internal override bool LValueModifier
         {
-            if (type > IncrimentType.Postincriment)
-                throw new ArgumentException("type");
+            get
+            {
+                return true;
+            }
+        }
+        
+        public IncrementOperator(Expression op, IncrimentType type)
+            : base(op, null, type == IncrimentType.Postincriment)
+        {
             if (op == null)
                 throw new ArgumentNullException("op");
+
+            _type = type;
         }
 
         public override JSValue Evaluate(Context context)
         {
-            // Если это постинкремент, то second не будут равен нулю.
-            // first всегда содержит узел, из которого нужно получать пременную
-            // Определяем тип операции по вторичным признакам.
+            bool post = _type == IncrimentType.Postincriment;
             Function setter = null;
             JSValue res = null;
             var val = first.EvaluateForWrite(context);
             Arguments args = null;
             if (val.valueType == JSValueType.Property)
             {
-                var ppair = val.oValue as PropertyPair;
+                var ppair = val.oValue as GsPropertyPair;
                 setter = ppair.set;
                 if (context.strict && setter == null)
                     ExceptionsHelper.ThrowIncrementPropertyWOSetter(first);
@@ -134,7 +150,7 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
-            if (second != null && val.IsDefined)
+            if (post && val.IsDefined)
             {
                 res = tempContainer;
                 res.Assign(val);
@@ -183,8 +199,8 @@ namespace NiL.JS.Expressions
             _codeContext = codeContext;
 
             Parser.Build(ref first, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-            if (depth <= 1 && second != null)
-                second = null;
+            if (depth <= 1 && _type == IncrimentType.Postincriment)
+                _type = IncrimentType.Preincriment;
             var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
@@ -229,7 +245,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return second == null ? "++" + first : first + "++";
+            return _type == IncrimentType.Preincriment ? "++" + first : first + "++";
         }
     }
 }

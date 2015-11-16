@@ -238,7 +238,7 @@
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
     <Compile Include="Expressions\ExtractStoredValueExpression.cs" />
-    <Compile Include="Expressions\PropertyPairExpression.cs" />
+    <Compile Include="Expressions\GsPropertyPairExpression.cs" />
     <Compile Include="Expressions\SuspendableExpression.cs" />
     <Compile Include="Extensions\IterationProtocolExtensions.cs" />
     <Compile Include="Core\JSValue.cs" />
@@ -309,8 +309,8 @@
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="Expressions\ClassDefinition.cs" />
     <Compile Include="Expressions\ExpressionWrapper.cs" />
-    <Compile Include="Expressions\DeleteMemberExpression.cs" />
-    <Compile Include="Expressions\SetMemberExpression.cs" />
+    <Compile Include="Expressions\DeletePropertyOperator.cs" />
+    <Compile Include="Expressions\SetPropertyExpression.cs" />
     <Compile Include="Expressions\NumberLessOrEqualOperator.cs" />
     <Compile Include="Expressions\NumberMoreOrEqualOperator.cs" />
     <Compile Include="Expressions\NumberMoreOpeartor.cs" />
@@ -324,7 +324,7 @@
     <Compile Include="Expressions\ToUnsignedIntegerExpression.cs" />
     <Compile Include="Expressions\ToNumberOperator.cs" />
     <Compile Include="Expressions\ToIntegerOperator.cs" />
-    <Compile Include="Expressions\AssignOverReplace.cs" />
+    <Compile Include="Expressions\AssignmentOverReplace.cs" />
     <Compile Include="Expressions\YieldOperator.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
@@ -379,7 +379,7 @@
     <Compile Include="Statements\DoWhileStatement.cs" />
     <Compile Include="Statements\ForStatement.cs" />
     <Compile Include="Expressions\FunctionDefinition.cs" />
-    <Compile Include="Expressions\GetMemberOperator.cs" />
+    <Compile Include="Expressions\GetPropertyOperator.cs" />
     <Compile Include="Statements\IfElseStatement.cs" />
     <Compile Include="Expressions\ConstantDefinition.cs" />
     <Compile Include="Core\JSObject.cs" />

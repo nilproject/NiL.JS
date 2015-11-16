@@ -155,11 +155,13 @@ namespace NiL.JS.BaseLibrary
         private JSValue _value;
         private bool _done;
 
+        [Field]
         public JSValue value
         {
             get { return _value; }
         }
 
+        [Field]
         public bool done
         {
             get { return _done; }

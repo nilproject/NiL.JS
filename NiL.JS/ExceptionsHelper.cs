@@ -93,5 +93,10 @@ namespace NiL.JS
         {
             Throw(new TypeError(message));
         }
+
+        internal static void Throw(Exception exception)
+        {
+            throw exception;
+        }
     }
 }

@@ -8,6 +8,38 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
+    internal sealed class ForceAssignmentOperator:AssignmentOperator
+    {
+        public ForceAssignmentOperator(Expression first, Expression second)
+            : base(first, second)
+        {
+        }
+
+        public override JSValue Evaluate(Context context)
+        {
+            JSValue temp;
+            JSValue field = first.EvaluateForWrite(context);
+            if (field.valueType == JSValueType.Property)
+            {
+                return setProperty(context, field);
+            }
+            else
+            {
+                if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0 && context.strict)
+                    throwRoError();
+            }
+            temp = second.Evaluate(context);
+            var oldAttributes = field.attributes;
+            field.attributes &= ~JSValueAttributesInternal.ReadOnly;
+            field.Assign(temp);
+            field.attributes = oldAttributes;
+            return temp;
+        }
+    }
+
+#if !PORTABLE
+    [Serializable]
+#endif
     public class AssignmentOperator : Expression
     {
         private Arguments setterArgs;
@@ -24,6 +56,14 @@ namespace NiL.JS.Expressions
         internal override bool ResultInTempContainer
         {
             get { return false; }
+        }
+
+        protected internal override bool LValueModifier
+        {
+            get
+            {
+                return true;
+            }
         }
 
         public AssignmentOperator(Expression first, Expression second)
@@ -49,12 +89,12 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        private void throwRoError()
+        protected void throwRoError()
         {
             ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
         }
 
-        private JSValue setProperty(Context context, JSValue field)
+        protected JSValue setProperty(Context context, JSValue field)
         {
             JSValue temp;
             lock (this)
@@ -74,7 +114,7 @@ namespace NiL.JS.Expressions
                 setterArgs.Reset();
                 setterArgs.length = 1;
                 setterArgs[0] = temp;
-                var setter = (field.oValue as PropertyPair).set;
+                var setter = (field.oValue as GsPropertyPair).set;
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (context.strict)
@@ -114,9 +154,9 @@ namespace NiL.JS.Expressions
             if (r)
                 System.Diagnostics.Debugger.Break();
 #endif
-            var gme = first as GetMemberOperator;
+            var gme = first as GetPropertyOperator;
             if (gme != null)
-                _this = new SetMemberExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
+                _this = new SetPropertyExpression(gme.first, gme.second, second) { Position = Position, Length = Length };
 
             if ((codeContext & (CodeContext.InExpression | CodeContext.InEval)) != 0)
                 saveResult = true;
@@ -187,7 +227,7 @@ namespace NiL.JS.Expressions
                 }
                 if (_this == this && second.ResultInTempContainer) // это присваивание, не последнее, без with
                 {
-                    _this = new AssignOverReplace(first, second)
+                    _this = new AssignmentOverReplace(first, second)
                     {
                         Position = Position,
                         Length = Length,

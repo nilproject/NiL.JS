@@ -48,7 +48,7 @@ namespace TestsDownloader
             using (var response = wr.GetResponse())
             {
                 var data = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                var tests = JSON.parse(data).GetMember("testSuite");
+                var tests = JSON.parse(data).GetProperty("testSuite");
                 var host = response.ResponseUri.Scheme + "://" + response.ResponseUri.Host + "/";
                 var res = new string[(int)(tests["length"].Value)];
                 int index = 0;
@@ -89,9 +89,9 @@ namespace TestsDownloader
                 title = "saving: " + url;
                 Console.SetCursorPosition(0, line);
                 Console.Write(title + "         ");
-                var tests = JSON.parse(data.ToString()).GetMember("testsCollection");
-                var testsCount = Tools.JSObjectToDouble(tests.GetMember("numTests")) * 0.01;
-                tests = tests.GetMember("tests");
+                var tests = JSON.parse(data.ToString()).GetProperty("testsCollection");
+                var testsCount = Tools.JSObjectToDouble(tests.GetProperty("numTests")) * 0.01;
+                tests = tests.GetProperty("tests");
                 double index = 0;
                 foreach (var item in tests)
                 {

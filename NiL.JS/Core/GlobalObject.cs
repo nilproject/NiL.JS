@@ -35,9 +35,9 @@ namespace NiL.JS.Core
             oValue = this;
         }
 
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 var nameStr = key.ToString();
                 var res = context.GetVariable(nameStr, forWrite);
@@ -46,7 +46,7 @@ namespace NiL.JS.Core
             return base.GetMember(key, forWrite, memberScope);
         }
 
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             foreach (var i in Context.globalContext.fields)
                 if (i.Value.IsExists && (!hideNonEnumerable || (i.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))

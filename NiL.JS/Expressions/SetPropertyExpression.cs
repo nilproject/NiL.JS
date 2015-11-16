@@ -7,7 +7,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class SetMemberExpression : Expression
+    public sealed class SetPropertyExpression : Expression
     {
         private JSValue tempContainer1;
         private JSValue tempContainer2;
@@ -31,7 +31,7 @@ namespace NiL.JS.Expressions
             get { return true; }
         }
 
-        internal SetMemberExpression(Expression obj, Expression fieldName, Expression value)
+        internal SetPropertyExpression(Expression obj, Expression fieldName, Expression value)
             : base(obj, fieldName, true)
         {
             if (fieldName is ConstantDefinition)
@@ -63,7 +63,7 @@ namespace NiL.JS.Expressions
                     tempContainer2.Assign(source);
                     source = tempContainer2;
                 }
-                source.SetMember(
+                source.SetProperty(
                     cachedMemberName ?? safeGet(tempContainer1, second, context),
                     safeGet(tempContainer, value, context),
                     context.strict);

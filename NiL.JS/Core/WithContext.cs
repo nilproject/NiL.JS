@@ -32,7 +32,7 @@ namespace NiL.JS.Core
         internal protected override JSValue GetVariable(string name, bool create)
         {
             thisBind = parent.thisBind;
-            var res = @object.GetMember(name, create, MemberScope.Сommon);
+            var res = @object.GetProperty(name, create, PropertyScope.Сommon);
             if (res.valueType < JSValueType.Undefined)
             {
                 res = parent.GetVariable(name, create);

@@ -49,7 +49,7 @@ namespace NiL.JS.Core
         {
         }
 
-        protected internal override JSValue GetMember(JSValue name, bool forWrite, MemberScope memberScope)
+        protected internal override JSValue GetMember(JSValue name, bool forWrite, PropertyScope memberScope)
         {
             var t = instance as JSValue;
             if (t != null)
@@ -57,23 +57,23 @@ namespace NiL.JS.Core
             return base.GetMember(name, forWrite, memberScope);
         }
 
-        protected internal override void SetMember(JSValue name, JSValue value, MemberScope memberScope, bool strict)
+        protected internal override void SetProperty(JSValue name, JSValue value, PropertyScope memberScope, bool strict)
         {
             var t = instance as JSValue;
             if (t != null)
-                t.SetMember(name, value, memberScope, strict);
-            base.SetMember(name, value, memberScope, strict);
+                t.SetProperty(name, value, memberScope, strict);
+            base.SetProperty(name, value, memberScope, strict);
         }
 
-        protected internal override bool DeleteMember(JSValue name)
+        protected internal override bool DeleteProperty(JSValue name)
         {
             var t = instance as JSValue;
             if (t != null)
-                return t.DeleteMember(name);
-            return base.DeleteMember(name);
+                return t.DeleteProperty(name);
+            return base.DeleteProperty(name);
         }
 
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
         {
             var t = instance as JSValue;
             if (t != null)

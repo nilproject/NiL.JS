@@ -161,7 +161,7 @@ namespace NiL.JS.Extensions
 
             public IIterator iterator()
             {
-                var iteratorFunction = source.GetMember(Symbol.iterator, false, MemberScope.Сommon);
+                var iteratorFunction = source.GetMember(Symbol.iterator, false, PropertyScope.Сommon);
                 if (iteratorFunction.valueType != JSValueType.Function)
                     return null;
                 var iterator = iteratorFunction.As<Function>().Call(source, null);

@@ -8,6 +8,7 @@ namespace NiL.JS.Statements
     public sealed class StoreValueStatement : CodeNode
     {
         private readonly Expression _source;
+        private readonly bool _forWrite;
 
         public override int Position
         {
@@ -33,21 +34,30 @@ namespace NiL.JS.Statements
             }
         }
 
-        public StoreValueStatement(Expression source)
+        public bool ForWrite
+        {
+            get
+            {
+                return _forWrite;
+            }
+        }
+
+        public StoreValueStatement(Expression source, bool forWrite)
         {
             _source = source;
+            _forWrite = forWrite;
         }
 
         public override JSValue Evaluate(Context context)
         {
-            var temp = _source.Evaluate(context);
+            var temp = _forWrite ? _source.EvaluateForWrite(context) : _source.Evaluate(context);
             if (context.abortType == AbortType.Suspend)
             {
                 return null;
             }
             else
             {
-                context.SuspendData[_source] = temp.CloneImpl(false);
+                context.SuspendData[_source] = _forWrite ? temp : temp.CloneImpl(false);
             }
 
             return null;

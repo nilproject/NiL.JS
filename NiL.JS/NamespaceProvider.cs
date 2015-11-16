@@ -76,9 +76,9 @@ namespace NiL.JS
                 unions = new Dictionary<string, GenericType>();
         }
 
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 var name = key.ToString();
                 JSValue res = null;
@@ -144,7 +144,7 @@ namespace NiL.JS
                 yield return type.Value;
         }
 
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool pdef, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool pdef, EnumerationMode enumerationMode)
         {
             yield break;
         }

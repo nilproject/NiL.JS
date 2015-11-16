@@ -7,10 +7,10 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class GetMemberOperator : Expression
+    public sealed class GetPropertyOperator : Expression
     {
         private JSValue cachedMemberName;
-        private MemberScope memberScope;
+        private PropertyScope memberScope;
 
         public CodeNode Source { get { return first; } }
         public CodeNode FieldName { get { return second; } }
@@ -28,7 +28,7 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        internal GetMemberOperator(Expression source, Expression fieldName)
+        internal GetPropertyOperator(Expression source, Expression fieldName)
             : base(source, fieldName, false)
         {
         }
@@ -86,7 +86,7 @@ namespace NiL.JS.Expressions
                     statistic.ContainsArguments = true;
             }
             if (first is SuperExpression)
-                memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? MemberScope.Super : MemberScope.SuperProto;
+                memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.SuperProto;
             return false;
         }
 

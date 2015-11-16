@@ -64,7 +64,7 @@ namespace NiL.JS.BaseLibrary
         internal static readonly JSValue propertiesDummySM = new JSValue()
         {
             valueType = JSValueType.Property,
-            oValue = new PropertyPair() { get = TTEProxy, set = TTEProxy },
+            oValue = new GsPropertyPair() { get = TTEProxy, set = TTEProxy },
             attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
 
@@ -949,9 +949,9 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue nameObj, bool forWrite, MemberScope memberScope)
+        internal protected override JSValue GetMember(JSValue nameObj, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < MemberScope.Super && nameObj.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && nameObj.valueType != JSValueType.Symbol)
             {
                 string name = nameObj.ToString();
                 if (creator.body.strict && (name == "caller" || name == "arguments"))
@@ -1045,7 +1045,7 @@ namespace NiL.JS.BaseLibrary
                     ExceptionsHelper.Throw(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
                 if (len.valueType == JSValueType.Property)
-                    len = (len.oValue as PropertyPair).get.Call(argsSource, null);
+                    len = (len.oValue as GsPropertyPair).get.Call(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
                 if (nargs.length >= 50000)
                     ExceptionsHelper.Throw(new RangeError("Too many arguments."));

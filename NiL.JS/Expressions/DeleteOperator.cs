@@ -68,21 +68,20 @@ namespace NiL.JS.Expressions
             if (first is GetVariableExpression)
             {
                 if ((codeContext & CodeContext.Strict) != 0)
-                    ExceptionsHelper.Throw(new SyntaxError("Can not evalute delete on variable in strict mode"));
+                    ExceptionsHelper.Throw(new SyntaxError("Can not delete variable in strict mode"));
                 (first as GetVariableExpression).suspendThrow = true;
             }
-            var gme = first as GetMemberOperator;
+            var gme = first as GetPropertyOperator;
             if (gme != null)
             {
-                //first = new SafeMemberGetter(gme);
-                _this = new DeleteMemberExpression(gme.first, gme.second);
+                _this = new DeletePropertyOperator(gme.first, gme.second);
                 return false;
             }
             var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
                 if (f.Descriptor.isDefined && message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Try to delete defined variable." + ((codeContext & CodeContext.Strict) != 0 ? " In strict mode it cause exception." : " This is not allowed"));
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Tring to delete defined variable." + ((codeContext & CodeContext.Strict) != 0 ? " In strict mode it cause exception." : " It is not allowed"));
                 (f.Descriptor.assignations ??
                     (f.Descriptor.assignations = new System.Collections.Generic.List<Expression>())).Add(this);
             }

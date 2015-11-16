@@ -261,8 +261,8 @@ namespace NiL.JS.BaseLibrary
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
                     res.data[i] = match.Groups[i].Value;
-                res.SetMember("index", match.Index, false);
-                res.SetMember("input", self, true);
+                res.SetProperty("index", match.Index, false);
+                res.SetProperty("input", self, true);
                 return res;
             }
         }
@@ -913,9 +913,9 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 int index = 0;
                 double dindex = Tools.JSObjectToDouble(key);
@@ -936,7 +936,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
             var str = oValue.ToString();
             var len = str.Length;

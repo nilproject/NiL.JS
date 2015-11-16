@@ -25,12 +25,12 @@ namespace NiL.JS.Core
         }
 
         private static readonly Record[] emptyRecords = new Record[0];
+        
+        private Record[] _records = emptyRecords;
+        private int[] _existsedIndexes;
 
         private bool _emptyKeyValueExists = false;
         private TValue _emptyKeyValue;
-
-        private Record[] _records = emptyRecords;
-        private int[] _existsedIndexes;
 
         private int _count;
         private int _eicount;
@@ -44,11 +44,11 @@ namespace NiL.JS.Core
         private void insert(string key, TValue value, int hash, bool @throw)
         {
             if (key == null)
-                throw new ArgumentNullException();
+                ExceptionsHelper.ThrowArgumentNull("key");
             if (key.Length == 0)
             {
                 if (@throw && _emptyKeyValueExists)
-                    throw new InvalidOperationException("Item already Exists");
+                    ExceptionsHelper.Throw(new InvalidOperationException("Item already Exists"));
                 _emptyKeyValueExists = true;
                 _emptyKeyValue = value;
                 //count++;
@@ -65,7 +65,7 @@ namespace NiL.JS.Core
                 if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
                 {
                     if (@throw)
-                        throw new InvalidOperationException("Item already Exists");
+                        ExceptionsHelper.Throw(new InvalidOperationException("Item already Exists"));
                     _records[index].value = value;
                     return;
                 }
@@ -129,11 +129,11 @@ namespace NiL.JS.Core
         {
             if (key == null)
                 ExceptionsHelper.ThrowArgumentNull("key");
-            value = default(TValue);
             if (key.Length == 0)
             {
                 if (!_emptyKeyValueExists)
                 {
+                    value = default(TValue);
                     return false;
                 }
                 value = _emptyKeyValue;
@@ -141,6 +141,7 @@ namespace NiL.JS.Core
             }
             if (_records.Length == 0)
             {
+                value = default(TValue);
                 return false;
             }
             if (_previousIndex != -1 && string.CompareOrdinal(_records[_previousIndex].key, key) == 0)

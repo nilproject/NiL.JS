@@ -160,7 +160,7 @@ namespace NiL.JS.Expressions
                     var accessorName = (@static ? "static " : "") + propertyAccessor.name;
                     if (!flds.ContainsKey(accessorName))
                     {
-                        var propertyPair = new PropertyPairExpression
+                        var propertyPair = new GsPropertyPairExpression
                         (
                             mode == FunctionType.Getter ? propertyAccessor : null,
                             mode == FunctionType.Setter ? propertyAccessor : null
@@ -169,7 +169,7 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
-                        var vle = flds[accessorName].Value as PropertyPairExpression;
+                        var vle = flds[accessorName].Value as GsPropertyPairExpression;
 
                         if (vle == null)
                             ExceptionsHelper.Throw((new SyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
@@ -333,7 +333,7 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    ctor.prototype.__proto__ = Tools.InvokeGetter(protoCtor.GetMember("prototype"), protoCtor).oValue as JSObject;
+                    ctor.prototype.__proto__ = Tools.InvokeGetter(protoCtor.GetProperty("prototype"), protoCtor).oValue as JSObject;
                 }
                 ctor.__proto__ = protoCtor as JSObject;
             }
@@ -352,7 +352,7 @@ namespace NiL.JS.Expressions
                     target = ctor.prototype;
                 }
 
-                target.SetMember(member.Name, value, true);
+                target.SetProperty(member.Name, value, true);
             }
 
             if ((_codeContext & CodeContext.InExpression) == 0)

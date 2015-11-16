@@ -4,6 +4,7 @@ using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Statements;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Expressions
 {
@@ -12,6 +13,8 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class YieldOperator : Expression
     {
+        private bool _reiterate;
+
         internal override bool ResultInTempContainer
         {
             get { return false; }
@@ -33,34 +36,112 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public YieldOperator(Expression first)
+        public bool Reiterate
+        {
+            get
+            {
+                return _reiterate;
+            }
+        }
+
+        public YieldOperator(Expression first, bool reiterate)
             : base(first, null, true)
         {
+            _reiterate = reiterate;
+        }
 
+        public static CodeNode Parse(ParsingState state, ref int index)
+        {
+            if ((state.CodeContext & CodeContext.InGenerator) == 0)
+                ExceptionsHelper.Throw(new SyntaxError("Invalid use of yield operator"));
+
+            var i = index;
+            if (!Parser.Validate(state.Code, "yield", ref i))
+                return null;
+
+            while (char.IsWhiteSpace(state.Code[i]))
+                i++;
+            bool reiterate = false;
+            if (state.Code[i] == '*')
+            {
+                reiterate = true;
+                do
+                    i++;
+                while (char.IsWhiteSpace(state.Code[i]));
+            }
+
+            var source = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
+            if (source == null)
+            {
+                var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+            }
+
+            index = i;
+
+            return new Expressions.YieldOperator(source, reiterate) { Position = index, Length = i - index };
         }
 
         public override JSValue Evaluate(Context context)
         {
-            if (context.abortType == AbortType.None)
-            {
-                context.abortInfo = first.Evaluate(context);
-                context.abortType = AbortType.Suspend;
-                return JSValue.notExists;
-            }
-            else if (context.abortType == AbortType.Resume)
-            {
-                context.SuspendData.Clear();
-                context.abortType = AbortType.None;
-                var result = context.abortInfo;
-                context.abortInfo = null;
-                return result;
-            }
-            else if (context.abortType == AbortType.ResumeThrow)
+            if (context.abortType == AbortType.ResumeThrow)
             {
                 context.SuspendData.Clear();
                 context.abortType = AbortType.None;
                 var exceptionData = context.abortInfo;
                 ExceptionsHelper.Throw(exceptionData);
+            }
+
+            if (_reiterate)
+            {
+                if (context.abortType == AbortType.None)
+                {
+                    var iterator = first.Evaluate(context).AsIterable().iterator();
+                    var iteratorResult = iterator.next();
+
+                    if (iteratorResult.done)
+                        return JSValue.undefined;
+
+                    context.SuspendData[this] = iterator;
+                    context.abortInfo = iteratorResult.value;
+                    context.abortType = AbortType.Suspend;
+                    return JSValue.notExists;
+                }
+                else if (context.abortType == AbortType.Resume)
+                {
+                    IIterator iterator = context.SuspendData[this] as IIterator;
+                    var iteratorResult = iterator.next(context.abortInfo.IsDefined ? new Arguments { context.abortInfo } : null);
+
+                    context.abortInfo = iteratorResult.value;
+
+                    if (iteratorResult.done)
+                    {
+                        context.abortType = AbortType.None;
+                        return iteratorResult.value;
+                    }
+                    else
+                    {
+                        context.SuspendData[this] = iterator;
+                        context.abortType = AbortType.Suspend;
+                        return JSValue.notExists;
+                    }
+                }
+            }
+            else
+            {
+                if (context.abortType == AbortType.None)
+                {
+                    context.abortInfo = first.Evaluate(context);
+                    context.abortType = AbortType.Suspend;
+                    return JSValue.notExists;
+                }
+                else if (context.abortType == AbortType.Resume)
+                {
+                    context.abortType = AbortType.None;
+                    var result = context.abortInfo;
+                    context.abortInfo = null;
+                    return result;
+                }
             }
             throw new InvalidOperationException();
         }
@@ -82,14 +163,14 @@ namespace NiL.JS.Expressions
 
             if ((_codeContext & CodeContext.InExpression) != 0)
             {
-                result.Add(new StoreValueStatement(this));
+                result.Add(new StoreValueStatement(this, false));
                 self = new ExtractStoredValueExpression(this);
             }
         }
 
         public override string ToString()
         {
-            return "yield " + first;
+            return "yield" + (_reiterate ? "* " : " ") + first;
         }
     }
 }

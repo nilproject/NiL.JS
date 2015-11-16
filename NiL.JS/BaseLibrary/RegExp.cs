@@ -27,7 +27,7 @@ namespace NiL.JS.BaseLibrary
             var ptrn = args[0];
             if (ptrn.valueType == JSValueType.Object && ptrn.Value is RegExp)
             {
-                if (args.GetMember("length").iValue > 1 && args[1].valueType > JSValueType.Undefined)
+                if (args.GetProperty("length").iValue > 1 && args[1].valueType > JSValueType.Undefined)
                     ExceptionsHelper.Throw(new TypeError("Cannot supply flags when constructing one RegExp from another"));
                 oValue = ptrn.oValue;
                 regEx = (ptrn.Value as RegExp).regEx;
@@ -36,7 +36,7 @@ namespace NiL.JS.BaseLibrary
                 return;
             }
             var pattern = ptrn.valueType > JSValueType.Undefined ? ptrn.ToString() : "";
-            var flags = args.GetMember("length").iValue > 1 && args[1].valueType > JSValueType.Undefined ? args[1].ToString() : "";
+            var flags = args.GetProperty("length").iValue > 1 && args[1].valueType > JSValueType.Undefined ? args[1].ToString() : "";
             makeRegex(pattern, flags);
         }
 
@@ -216,8 +216,8 @@ namespace NiL.JS.BaseLibrary
                 res.data[i] = m.Groups[i].Success ? (JSValue)m.Groups[i].Value : null;
             if (_global)
                 lIndex.iValue = m.Index + m.Length;
-            res.DefineMember("index").Assign(m.Index);
-            res.DefineMember("input").Assign(input);
+            res.DefineProperty("index").Assign(m.Index);
+            res.DefineProperty("input").Assign(input);
             return res;
         }
 

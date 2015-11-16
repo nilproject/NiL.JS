@@ -81,7 +81,7 @@ namespace NiL.JS.Expressions
                     var accessorName = propertyAccessor.name;
                     if (!flds.ContainsKey(accessorName))
                     {
-                        var propertyPair = new PropertyPairExpression
+                        var propertyPair = new GsPropertyPairExpression
                         (
                             mode == FunctionType.Getter ? propertyAccessor : null,
                             mode == FunctionType.Setter ? propertyAccessor : null
@@ -90,7 +90,7 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
-                        var vle = flds[accessorName] as PropertyPairExpression;
+                        var vle = flds[accessorName] as GsPropertyPairExpression;
 
                         if (vle == null)
                             ExceptionsHelper.ThrowSyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field", state.Code, s);
@@ -154,7 +154,7 @@ namespace NiL.JS.Expressions
                     if (flds.TryGetValue(fieldName, out aei))
                     {
                         if (state.strict ? (!(aei is ConstantDefinition) || (aei as ConstantDefinition).value != JSValue.undefined)
-                                         : aei is PropertyPairExpression)
+                                         : aei is GsPropertyPairExpression)
                             ExceptionsHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
                         if (state.message != null)
                             state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, initializer.Position, 0), "Duplicate key \"" + fieldName + "\"");
@@ -242,7 +242,7 @@ namespace NiL.JS.Expressions
             {
                 if (!(values[i] is ExtractStoredValueExpression))
                 {
-                    result.Add(new StoreValueStatement(values[i]));
+                    result.Add(new StoreValueStatement(values[i], false));
                     values[i] = new ExtractStoredValueExpression(values[i]);
                 }
             }

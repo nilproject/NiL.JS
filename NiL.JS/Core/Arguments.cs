@@ -148,9 +148,9 @@ namespace NiL.JS.Core
             return GlobalPrototype ?? Null;
         }
 
-        protected internal override JSValue GetMember(JSValue key, bool createMember, MemberScope memberScope)
+        protected internal override JSValue GetMember(JSValue key, bool createMember, PropertyScope memberScope)
         {
-            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 createMember &= (attributes & JSValueAttributesInternal.Immutable) == 0;
                 if (key.valueType == JSValueType.Int)
@@ -231,7 +231,7 @@ namespace NiL.JS.Core
             return base.GetMember(key, createMember, memberScope);
         }
 
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
             if (a0 != null && a0.IsExists && (!hideNonEnum || (a0.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("0", a0);
@@ -254,7 +254,7 @@ namespace NiL.JS.Core
                 yield return be.Current;
         }
 
-        protected internal override bool DeleteMember(JSValue name)
+        protected internal override bool DeleteProperty(JSValue name)
         {
             if (name.valueType == JSValueType.Int)
             {
@@ -297,7 +297,7 @@ namespace NiL.JS.Core
                 //case "7":
                 //    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
             }
-            return base.DeleteMember(name);
+            return base.DeleteProperty(name);
         }
 
         internal void Reset()

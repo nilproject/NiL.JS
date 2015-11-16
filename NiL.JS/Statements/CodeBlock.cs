@@ -205,10 +205,12 @@ namespace NiL.JS.Statements
         {
             var ls = lines;
             int i = 0;
+            bool clearSuspendData = false;
 
             if (context.abortType >= AbortType.Resume)
             {
                 i = (int)context.SuspendData[this];
+                clearSuspendData = true;
             }
 
             for (; i < ls.Length; i++)
@@ -264,6 +266,8 @@ namespace NiL.JS.Statements
                     }
                     break;
                 }
+                if (clearSuspendData)
+                    context.SuspendData.Clear();
             }
             return null;
         }

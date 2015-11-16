@@ -14,6 +14,16 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class DecrementOperator : Expression
     {
+        private DecrimentType _type;
+
+        public DecrimentType Type
+        {
+            get
+            {
+                return _type;
+            }
+        }
+
         protected internal override bool ContextIndependent
         {
             get
@@ -24,7 +34,7 @@ namespace NiL.JS.Expressions
 
         internal override bool ResultInTempContainer
         {
-            get { return second != null; }
+            get { return tempContainer != null; }
         }
 
         protected internal override PredictedType ResultType
@@ -50,24 +60,33 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public DecrementOperator(Expression op, DecrimentType type)
-            : base(op, type == DecrimentType.Postdecriment ? op : null, type == DecrimentType.Postdecriment)
+        protected internal override bool LValueModifier
         {
-            if (type > DecrimentType.Postdecriment)
-                throw new ArgumentException("type");
+            get
+            {
+                return true;
+            }
+        }
+
+        public DecrementOperator(Expression op, DecrimentType type)
+            : base(op, null, type == DecrimentType.Postdecriment)
+        {
             if (op == null)
                 throw new ArgumentNullException("op");
+
+            _type = type;
         }
 
         public override JSValue Evaluate(Context context)
         {
+            bool post = _type == DecrimentType.Postdecriment;
             Function setter = null;
             JSValue res = null;
             var val = first.EvaluateForWrite(context);
             Arguments args = null;
             if (val.valueType == JSValueType.Property)
             {
-                var ppair = val.oValue as PropertyPair;
+                var ppair = val.oValue as GsPropertyPair;
                 setter = ppair.set;
                 if (context.strict && setter == null)
                     raiseErrorProp();
@@ -129,7 +148,7 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
-            if (second != null && val.IsDefined)
+            if (post && val.IsDefined)
             {
                 res = tempContainer;
                 res.Assign(val);
@@ -188,11 +207,8 @@ namespace NiL.JS.Expressions
             _codeContext = codeContext;
 
             Parser.Build(ref first, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-            if (depth <= 1 && second != null)
-            {
-                first = second;
-                second = null;
-            }
+            if (depth <= 1 && _type == DecrimentType.Postdecriment)
+                _type = DecrimentType.Predecriment;
             var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
@@ -237,7 +253,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return first != null ? "--" + first : second + "--";
+            return _type == DecrimentType.Predecriment ? "--" + first : first + "--";
         }
     }
 }

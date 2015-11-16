@@ -180,7 +180,7 @@ namespace NiL.JS.BaseLibrary
                         if (value.IsDefined)
                         {
                             if (t.container != null)
-                                t.container.GetMember(t.fieldName, true, MemberScope.Own).Assign(value);
+                                t.container.GetMember(t.fieldName, true, PropertyScope.Own).Assign(value);
                             else
                             {
                                 t.value = value;
@@ -189,7 +189,7 @@ namespace NiL.JS.BaseLibrary
                         }
                     }
                     else if (t.container != null)
-                        t.container.GetMember(t.fieldName, true, MemberScope.Own).Assign(t.value);
+                        t.container.GetMember(t.fieldName, true, PropertyScope.Own).Assign(t.value);
                     else
                         stack.Push(t);
                 }
@@ -407,7 +407,7 @@ namespace NiL.JS.BaseLibrary
                     if (value.valueType < JSValueType.Undefined)
                         continue;
                     if (value.valueType == JSValueType.Property)
-                        value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Call(obj, null);
+                        value = ((value.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(obj, null);
                     strval = stringifyImpl(member.Key, value, replacer, space, processed, args);
                     if (strval == null)
                     {

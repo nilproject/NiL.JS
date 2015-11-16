@@ -1313,16 +1313,16 @@ namespace NiL.JS.Core
 
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
         {
-            var len = src.GetMember("length", true, MemberScope.Сommon); // тут же проверка на null/undefined с падением если надо
+            var len = src.GetProperty("length", true, PropertyScope.Сommon); // тут же проверка на null/undefined с падением если надо
             if (len.valueType == JSValueType.Property)
             {
                 if (reassignLen && (len.attributes & JSValueAttributesInternal.ReadOnly) == 0)
                 {
                     len.valueType = JSValueType.Undefined;
-                    len.Assign(((len.oValue as PropertyPair).get ?? Function.emptyFunction).Call(src, null));
+                    len.Assign(((len.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(src, null));
                 }
                 else
-                    len = ((len.oValue as PropertyPair).get ?? Function.emptyFunction).Call(src, null);
+                    len = ((len.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(src, null);
             }
             uint res;
             if (len.valueType >= JSValueType.Object)
@@ -1332,7 +1332,7 @@ namespace NiL.JS.Core
             if (reassignLen)
             {
                 if (len.valueType == JSValueType.Property)
-                    ((len.oValue as PropertyPair).set ?? Function.emptyFunction).Call(src, new Arguments() { a0 = res, length = 1 });
+                    ((len.oValue as GsPropertyPair).set ?? Function.emptyFunction).Call(src, new Arguments() { a0 = res, length = 1 });
                 else
                     len.Assign(res);
             }
@@ -1364,7 +1364,7 @@ namespace NiL.JS.Core
                             goDeep = true;
                         }
                         if (evalProps && value.valueType == JSValueType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Call(src, null).CloneImpl(false);
+                            value = (value.oValue as GsPropertyPair).get == null ? JSValue.undefined : (value.oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (temp.data[element.Key] == null)
@@ -1387,7 +1387,7 @@ namespace NiL.JS.Core
                         if (!value.IsExists)
                             continue;
                         if (evalProps && value.valueType == JSValueType.Property)
-                            value = (value.oValue as PropertyPair).get == null ? JSValue.undefined : (value.oValue as PropertyPair).get.Call(src, null).CloneImpl(false);
+                            value = (value.oValue as GsPropertyPair).get == null ? JSValue.undefined : (value.oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
@@ -1449,7 +1449,7 @@ namespace NiL.JS.Core
         {
             if (property.valueType != JSValueType.Property)
                 return property;
-            var getter = property.oValue as PropertyPair;
+            var getter = property.oValue as GsPropertyPair;
             if (getter == null || getter.get == null)
                 return JSValue.undefined;
             property = getter.get.Call(target, null);

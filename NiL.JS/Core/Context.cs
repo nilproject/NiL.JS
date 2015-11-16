@@ -168,16 +168,16 @@ namespace NiL.JS.Core
         /// отсутствует вероятность конфликта при использовании данного поля.
         /// </remarks>
         /// </summary>
-        internal JSValue tempContainer;
-        internal Context parent;
-        internal IDictionary<string, JSValue> fields;
         internal AbortType abortType;
         internal JSValue objectSource;
+        internal JSValue tempContainer;
         internal JSValue abortInfo;
         internal JSValue lastResult;
         internal JSValue arguments;
         internal JSValue thisBind;
         internal Function owner;
+        internal Context parent;
+        internal IDictionary<string, JSValue> fields;
         internal bool strict;
         internal VariableDescriptor[] variables;
         private Dictionary<CodeNode, object> suspendData;
@@ -449,7 +449,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        res = JSObject.GlobalPrototype.GetMember(wrap(name), create, MemberScope.Сommon);
+                        res = JSObject.GlobalPrototype.GetMember(wrap(name), create, PropertyScope.Сommon);
                         if (res.valueType == JSValueType.NotExistsInObject)
                             res.valueType = JSValueType.NotExists;
                     }

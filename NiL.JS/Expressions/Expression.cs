@@ -21,7 +21,10 @@ namespace NiL.JS.Expressions
          * Наследниками Expression являются только те конструкции, которые могут возвращать значени (r-value).
          */
 
+        internal Expression first;
+        internal Expression second;
         internal JSValue tempContainer;
+        internal CodeContext _codeContext;
 
         internal protected virtual PredictedType ResultType
         {
@@ -30,14 +33,11 @@ namespace NiL.JS.Expressions
                 return PredictedType.Unknown;
             }
         }
+
         internal virtual bool ResultInTempContainer
         {
             get { return false; }
         }
-        internal CodeContext _codeContext;
-
-        internal Expression first;
-        internal Expression second;
 
         public Expression FirstOperand { get { return first; } }
         public Expression SecondOperand { get { return second; } }
@@ -57,6 +57,8 @@ namespace NiL.JS.Expressions
                 base.Eliminated = value;
             }
         }
+
+        protected internal virtual bool LValueModifier { get { return false; } }
 
         protected internal virtual bool ContextIndependent
         {
@@ -83,10 +85,10 @@ namespace NiL.JS.Expressions
 
         protected Expression(Expression first, Expression second, bool createTempContainer)
         {
-            if (createTempContainer)
-                tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
             this.first = first;
             this.second = second;
+            if (createTempContainer)
+                tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
         }
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
@@ -230,12 +232,12 @@ namespace NiL.JS.Expressions
             {
                 first.Decompose(ref first, result);
             }
-            
+
             if (second != null)
             {
                 if (second.NeedDecompose && !(first is ExtractStoredValueExpression))
                 {
-                    result.Add(new StoreValueStatement(first));
+                    result.Add(new StoreValueStatement(first, LValueModifier));
                     first = new ExtractStoredValueExpression(first);
                 }
 

@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class PropertyPairExpression : Expression
+    public sealed class GsPropertyPairExpression : Expression
     {
         public Expression Getter
         {
@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public PropertyPairExpression(Expression getter, Expression setter)
+        public GsPropertyPairExpression(Expression getter, Expression setter)
             : base(getter, setter, true)
         {
             tempContainer.valueType = JSValueType.Property;
@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
         
         public override JSValue Evaluate(Context context)
         {
-            tempContainer.oValue = new PropertyPair
+            tempContainer.oValue = new GsPropertyPair
             (
                 Getter == null ? null : (Function)Getter.Evaluate(context),
                 Setter == null ? null : (Function)Setter.Evaluate(context)

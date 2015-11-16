@@ -11,71 +11,6 @@ namespace NiL.JS.Statements
 #endif
     public sealed class VariableDefineStatement : CodeNode
     {
-        internal sealed class AllowWriteCN : Expression
-        {
-            internal VariableReference variable;
-            internal readonly CodeNode source;
-
-            internal override bool ResultInTempContainer
-            {
-                get { return false; }
-            }
-
-            internal AllowWriteCN(VariableReference variable, Expression source)
-            {
-                this.variable = variable;
-                this.source = source;
-            }
-
-            public override JSValue Evaluate(Context context)
-            {
-                var res = source.Evaluate(context);
-                var v = variable.Evaluate(context);
-                if ((v.attributes & JSValueAttributesInternal.SystemObject) == 0)
-                    v.attributes &= ~JSValueAttributesInternal.ReadOnly;
-                return res;
-            }
-
-            internal protected override JSValue EvaluateForWrite(Context context)
-            {
-                var res = source.EvaluateForWrite(context);
-                var v = variable.Evaluate(context);
-                if ((v.attributes & JSValueAttributesInternal.SystemObject) == 0)
-                    v.attributes &= ~JSValueAttributesInternal.ReadOnly;
-                return res;
-            }
-
-            internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
-            {
-                var v = variable as CodeNode;
-                var res = variable.Build(ref v, depth, variables, codeContext, message, statistic, opts);
-                variable = v as VariableReference;
-                return res;
-            }
-
-            internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
-            {
-                var v = variable as CodeNode;
-                variable.Optimize(ref v, owner, message, opts, statistic);
-                variable = v as VariableReference;
-            }
-
-            public override T Visit<T>(Visitor<T> visitor)
-            {
-                return visitor.Visit(variable);
-            }
-
-            protected internal override CodeNode[] getChildsImpl()
-            {
-                return variable.Childs;
-            }
-
-            public override string ToString()
-            {
-                return source.ToString();
-            }
-        }
-
         internal int functionDepth;
         internal VariableDescriptor[] variables;
         internal Expression[] initializers;
@@ -135,8 +70,7 @@ namespace NiL.JS.Statements
                 isDef = true;
                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                     i++;
-                if (i < state.Code.Length && (state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
-                    ExceptionsHelper.Throw((new SyntaxError("Expected \";\", \",\", \"=\" or \"}\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 1))));
+
                 if (i >= state.Code.Length)
                 {
                     initializers.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
@@ -163,14 +97,9 @@ namespace NiL.JS.Statements
                     while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i == state.Code.Length)
                         ExceptionsHelper.ThrowSyntaxError("Unexpected end of line in variable definition.", state.Code, i);
-                    VariableReference accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth };
+                    Expression accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth };
                     Expression source = ExpressionTree.Parse(state, ref i, false, false) as Expression;
-                    if (isConst)
-                        source = new AllowWriteCN(accm, source);
-                    initializers.Add(
-                        new AssignmentOperator(
-                            accm,
-                            source)
+                    initializers.Add(new ForceAssignmentOperator(accm, source)
                         {
                             Position = s,
                             Length = i - s
@@ -178,8 +107,6 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
-                    //if (isConst)
-                    //    ExceptionsHelper.ThrowSyntaxError("Constant must contain value", state.Code, i);
                     initializers.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
                 }
                 if (i >= state.Code.Length)
@@ -231,9 +158,6 @@ namespace NiL.JS.Statements
                     context.SuspendData[this] = i;
                     return null;
                 }
-
-                if (isConst)
-                    (this.variables[i].cacheRes ?? this.variables[i].Get(context, false, this.variables[i].defineDepth)).attributes |= JSValueAttributesInternal.ReadOnly;
             }
             return JSValue.notExists;
         }
@@ -334,7 +258,7 @@ namespace NiL.JS.Statements
 
         internal protected override void Decompose(ref CodeNode self)
         {
-            for (var i = 0; i<initializers.Length; i++)
+            for (var i = 0; i < initializers.Length; i++)
             {
                 initializers[i].Decompose(ref initializers[i]);
             }

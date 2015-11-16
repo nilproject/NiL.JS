@@ -60,7 +60,7 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(DeleteMemberExpression node)
+        internal protected virtual T Visit(DeletePropertyOperator node)
         {
             return Visit(node as Expression);
         }
@@ -85,7 +85,7 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(GetMemberOperator node)
+        internal protected virtual T Visit(GetPropertyOperator node)
         {
             return Visit(node as Expression);
         }
@@ -225,7 +225,7 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(SetMemberExpression node)
+        internal protected virtual T Visit(SetPropertyExpression node)
         {
             return Visit(node as Expression);
         }

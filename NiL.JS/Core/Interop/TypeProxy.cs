@@ -359,16 +359,16 @@ namespace NiL.JS.Core.Interop
                     IList<MemberInfo> iterator = null;
                     if (members.TryGetValue("iterator", out iterator))
                     {
-                        this.SetMember(Symbol.iterator, proxyMember(false, iterator), false);
+                        this.SetProperty(Symbol.iterator, proxyMember(false, iterator), false);
                         members.Remove("iterator");
                     }
                 }
             }
         }
 
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
+        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope == MemberScope.Super || key.valueType == JSValueType.Symbol)
+            if (memberScope == PropertyScope.Super || key.valueType == JSValueType.Symbol)
                 return base.GetMember(key, forWrite, memberScope);
 
             forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
@@ -455,7 +455,7 @@ namespace NiL.JS.Core.Interop
                                 r = new JSValue()
                                 {
                                     valueType = JSValueType.Property,
-                                    oValue = new PropertyPair
+                                    oValue = new GsPropertyPair
                                     (
                                         new ExternalFunction((thisBind, a) => Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value))),
                                         !m[0].IsDefined(typeof(Interop.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
@@ -466,7 +466,7 @@ namespace NiL.JS.Core.Interop
                                     )
                                 };
                                 r.attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
-                                if ((r.oValue as PropertyPair).set == null)
+                                if ((r.oValue as GsPropertyPair).set == null)
                                     r.attributes |= JSValueAttributesInternal.ReadOnly;
 
                             }
@@ -478,7 +478,7 @@ namespace NiL.JS.Core.Interop
                             r = new JSValue()
                             {
                                 valueType = JSValueType.Property,
-                                oValue = new PropertyPair
+                                oValue = new GsPropertyPair
                                     (
 #if PORTABLE
 pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod) : null,
@@ -491,7 +491,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                             };
 
                             r.attributes = JSValueAttributesInternal.Immutable;
-                            if ((r.oValue as PropertyPair).set == null)
+                            if ((r.oValue as GsPropertyPair).set == null)
                                 r.attributes |= JSValueAttributesInternal.ReadOnly;
                             if (pinfo.IsDefined(typeof(FieldAttribute), false))
                                 r.attributes |= JSValueAttributesInternal.Field;
@@ -503,7 +503,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                             r = new JSValue()
                             {
                                 valueType = JSValueType.Property,
-                                oValue = new PropertyPair
+                                oValue = new GsPropertyPair
                                 (
                                     null,
 #if PORTABLE
@@ -554,7 +554,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             return r;
         }
 
-        protected internal override bool DeleteMember(JSValue name)
+        protected internal override bool DeleteProperty(JSValue name)
         {
             if (members == null)
                 fillMembers();
@@ -580,7 +580,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                     }
                 }
                 if (!members.Remove(tname) && prototypeInstance != null)
-                    return _prototypeInstance.DeleteMember(tname);
+                    return _prototypeInstance.DeleteProperty(tname);
             }
             return true;
         }
@@ -604,7 +604,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             return false;
         }
 
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             if (members == null)
                 fillMembers();

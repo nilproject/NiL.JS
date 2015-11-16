@@ -31,8 +31,8 @@ namespace NiL.JS.Core
         internal int defineDepth;
         internal Context cacheContext;
         internal JSValue cacheRes;
-        internal readonly List<VariableReference> references;
         internal readonly string name;
+        internal readonly List<VariableReference> references;
         internal CodeNode owner;
         internal bool captured;
         internal List<Expression> assignations;

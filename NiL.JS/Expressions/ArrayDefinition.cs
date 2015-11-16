@@ -186,7 +186,7 @@ namespace NiL.JS.Expressions
             {
                 if (!(elements[i] is ExtractStoredValueExpression))
                 {
-                    result.Add(new StoreValueStatement(elements[i]));
+                    result.Add(new StoreValueStatement(elements[i], false));
                     elements[i] = new ExtractStoredValueExpression(elements[i]);
                 }
             }

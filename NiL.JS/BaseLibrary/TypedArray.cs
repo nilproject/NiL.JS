@@ -150,10 +150,10 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                     index.iValue = (int)i;
-                var value = src.GetMember(index, false, MemberScope.Сommon);
+                var value = src.GetMember(index, false, PropertyScope.Сommon);
                 if (value.valueType == JSValueType.Property)
                 {
-                    value = ((value.oValue as PropertyPair).get ?? Function.emptyFunction).Call(src, dummyArgs);
+                    value = ((value.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(src, dummyArgs);
                     dummyArgs.Reset();
                 }
                 this[(int)(i + offset)] = value;
@@ -177,9 +177,9 @@ namespace NiL.JS.BaseLibrary
             return r;
         }
 
-        protected internal sealed override JSValue GetMember(JSValue key, bool forWrite, MemberScope memberScope)
+        protected internal sealed override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < MemberScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 if (key.valueType == JSValueType.String && "length".Equals(key.oValue))
                     return length;
@@ -238,7 +238,7 @@ namespace NiL.JS.BaseLibrary
             return base.GetMember(key, forWrite, memberScope);
         }
 
-        protected internal override void SetMember(JSValue name, JSValue value, MemberScope memberScope, bool strict)
+        protected internal override void SetProperty(JSValue name, JSValue value, PropertyScope memberScope, bool strict)
         {
             if (name.valueType == JSValueType.String && "length".Equals(name.oValue))
                 return;
@@ -294,7 +294,7 @@ namespace NiL.JS.BaseLibrary
                 this[index] = value;
                 return;
             }
-            base.SetMember(name, value, strict);
+            base.SetProperty(name, value, strict);
         }
 
         protected internal abstract System.Array ToNativeArray();

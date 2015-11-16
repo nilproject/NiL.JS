@@ -36,7 +36,7 @@ namespace NiL.JS.Core.Functions
             return null;
         }
 
-        public override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
         {
             var pe = proxy.GetEnumerator(hideNonEnum, enumerationMode);
             while (pe.MoveNext())

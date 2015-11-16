@@ -143,8 +143,8 @@ namespace NiL.JS.Statements
             {
                 if (context.abortType != AbortType.Suspend && finallyBody != null)
                 {
-                    exception = null;
                     finallyHandler(context, exception);
+                    exception = null;
                 }
             }
             if (context.abortType != AbortType.Suspend && exception != null)
