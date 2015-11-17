@@ -903,7 +903,7 @@ namespace NiL.JS.Core
             else if (valueType == JSValueType.Object)
             {
                 if (oValue == this)
-                    throw new InvalidOperationException("Internal error. #VaO");
+                    throw new ApplicationException("Internal error. #VaO");
             }
         }
 

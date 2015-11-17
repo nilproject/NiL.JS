@@ -80,7 +80,7 @@ namespace NiL.JS.Expressions
             {
                 if (_constructor.NeedDecompose)
                     return true;
-                
+
                 for (var i = 0; i < members.Count; i++)
                 {
                     if (members[i]._value.NeedDecompose)
@@ -112,18 +112,17 @@ namespace NiL.JS.Expressions
             if (!Parser.Validate(code, "extends ", i))
             {
                 var n = i;
-                if (!Parser.ValidateName(code, ref i, true))
-                    ExceptionsHelper.Throw(new SyntaxError("Invalid class name"));
-                name = code.Substring(n, i - n);
-                do
+                if (Parser.ValidateName(code, ref i, true))
+                    name = code.Substring(n, i - n);
+
+                while (char.IsWhiteSpace(code[i]))
                     i++;
-                while (char.IsWhiteSpace(code[i]));
             }
             if (Parser.Validate(code, "extends ", ref i))
             {
                 var n = i;
                 if (!Parser.ValidateName(code, ref i, true) && !Parser.Validate(code, "null", ref i))
-                    ExceptionsHelper.Throw(new SyntaxError("Invalid base class name"));
+                    ExceptionsHelper.ThrowSyntaxError("Invalid base class name", state.Code, i);
                 var baseClassName = code.Substring(n, i - n);
                 if (baseClassName == "null")
                     baseType = new ConstantDefinition(JSValue.Null) { Position = n, Length = 4 };
@@ -140,7 +139,6 @@ namespace NiL.JS.Expressions
             state.strict = true;
             var flds = new Dictionary<string, MemberDescriptor>();
             var oldCodeContext = state.CodeContext;
-            state.CodeContext |= CodeContext.InClassDefenition;
             while (code[i] != '}')
             {
                 do
@@ -202,6 +200,13 @@ namespace NiL.JS.Expressions
                 {
                     i = s;
                     string fieldName = null;
+                    if (state.Code[i] == '*')
+                    {
+                        do
+                            i++;
+                        while (char.IsWhiteSpace(code[i]));
+                    }
+
                     if (Parser.ValidateName(state.Code, ref i, false, true, state.strict))
                         fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
                     else if (Parser.ValidateValue(state.Code, ref i))
@@ -236,10 +241,11 @@ namespace NiL.JS.Expressions
                     if (flds.ContainsKey(fieldName))
                         ExceptionsHelper.Throw(new SyntaxError("Trying to redefinition member \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
 
+                    state.CodeContext |= CodeContext.InClassDefenition;
+                    state.CodeContext &= ~CodeContext.InGenerator;
+
                     i = s;
                     var method = FunctionDefinition.Parse(state, ref i, FunctionType.Method) as FunctionDefinition;
-
-                    state.CodeContext = oldCodeContext | CodeContext.InClassDefenition;
 
                     if (fieldName == "constructor")
                     {

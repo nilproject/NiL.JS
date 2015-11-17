@@ -172,8 +172,16 @@ namespace NiL.JS.Expressions
                             return null;
                         break;
                     }
+                case FunctionType.MethodGenerator:
                 case FunctionType.Method:
                     {
+                        if (code[i] == '*')
+                        {
+                            mode = FunctionType.MethodGenerator;
+                            i++;
+                        }
+                        else if (mode == FunctionType.MethodGenerator)
+                            throw new ArgumentException("mode");
                         break;
                     }
                 case FunctionType.Arrow:
@@ -299,7 +307,7 @@ namespace NiL.JS.Expressions
             else
             {
                 var oldCodeContext = state.CodeContext;
-                if (mode == FunctionType.Generator)
+                if (mode == FunctionType.Generator || mode == FunctionType.MethodGenerator)
                     state.CodeContext |= CodeContext.InGenerator;
                 var labels = state.Labels;
                 state.Labels = new List<string>();
@@ -438,7 +446,7 @@ namespace NiL.JS.Expressions
         public Function MakeFunction(Context context)
         {
 #if !PORTABLE
-            if (type == FunctionType.Generator)
+            if (type == FunctionType.Generator || type == FunctionType.MethodGenerator)
                 return new GeneratorFunction(new Function(context, this));
 #endif
             return new Function(context, this);

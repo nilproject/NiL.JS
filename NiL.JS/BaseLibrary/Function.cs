@@ -25,6 +25,7 @@ namespace NiL.JS.BaseLibrary
         AnonymousFunction,
         Generator,
         Method,
+        MethodGenerator,
         Arrow
     }
 
@@ -990,6 +991,11 @@ namespace NiL.JS.BaseLibrary
                     break;
                 case FunctionType.Setter:
                     res.Append("set");
+                    break;
+                case FunctionType.Method:
+                    break;
+                case FunctionType.MethodGenerator:
+                    res.Append("*");
                     break;
                 default:
                     res.Append("function");
