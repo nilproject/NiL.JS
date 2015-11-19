@@ -7,7 +7,7 @@ namespace NiL.JS.Core
         public int AllowReturn;
         public readonly Stack<bool> AllowBreak;
         public readonly Stack<bool> AllowContinue;
-        public int functionsDepth;
+        public int scopeDepth;
         public CodeContext CodeContext;
         public int InExpression;
         public List<string> Labels;

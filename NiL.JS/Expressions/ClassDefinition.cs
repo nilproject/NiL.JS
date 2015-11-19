@@ -127,7 +127,7 @@ namespace NiL.JS.Expressions
                 if (baseClassName == "null")
                     baseType = new ConstantDefinition(JSValue.Null) { Position = n, Length = 4 };
                 else
-                    baseType = new GetVariableExpression(baseClassName, state.functionsDepth);
+                    baseType = new GetVariableExpression(baseClassName, state.scopeDepth);
                 while (char.IsWhiteSpace(code[i]))
                     i++;
             }

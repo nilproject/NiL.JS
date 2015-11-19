@@ -185,42 +185,47 @@ namespace NiL.JS.Core
             return Validate(code, patern, ref index);
         }
 
-        public static bool Validate(string code, string patern, ref int index)
+        public static bool Validate(string code, string pattern, ref int index)
         {
-            if (string.IsNullOrEmpty(patern))
+            if (string.IsNullOrEmpty(pattern))
                 return true;
             if (string.IsNullOrEmpty(code))
                 return false;
             int i = 0;
             int j = index;
             bool needInc = false;
-            while (i < patern.Length)
+            while (i < pattern.Length)
             {
                 if (j >= code.Length)
                     return false;
-                while (char.IsWhiteSpace(patern[i])
-                    && code.Length > j
-                    && char.IsWhiteSpace(code[j]))
+                if (char.IsWhiteSpace(pattern[i]))
                 {
-                    j++;
-                    needInc = true;
+                    while (code.Length > j && char.IsWhiteSpace(code[j]))
+                    {
+                        j++;
+                        needInc = true;
+                    }
+                    if (needInc)
+                    {
+                        i++;
+                        if (i == pattern.Length)
+                            break;
+                        if (code.Length <= j)
+                            return false;
+                        needInc = false;
+                    }
+                    else if (i < pattern.Length - 1 && IsIdentificatorTerminator(pattern[i + 1]))
+                    {
+                        i++;
+                    }
                 }
-                if (needInc)
-                {
-                    i++;
-                    if (i == patern.Length)
-                        break;
-                    if (code.Length <= j)
-                        return false;
-                    needInc = false;
-                }
-                if (code[j] != patern[i])
+                if (code[j] != pattern[i])
                     return false;
                 i++;
                 j++;
             }
             index = j;
-            return IsIdentificatorTerminator(patern[patern.Length - 1]) || code.Length <= index || IsIdentificatorTerminator(code[index]);
+            return IsIdentificatorTerminator(pattern[pattern.Length - 1]) || code.Length <= index || IsIdentificatorTerminator(code[index]);
         }
 
         public static bool ValidateName(string code, int index)

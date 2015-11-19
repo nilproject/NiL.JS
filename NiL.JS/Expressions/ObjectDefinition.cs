@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Statements;
+using NiL.JS.Extensions;
+using System.Collections.ObjectModel;
 
 namespace NiL.JS.Expressions
 {
@@ -14,9 +16,11 @@ namespace NiL.JS.Expressions
     {
         private Expression[] values;
         private string[] fieldNames;
+        private KeyValuePair<Expression, Expression>[] computedProperties;
 
         public Expression[] Values { get { return values; } }
         public string[] FieldNames { get { return fieldNames; } }
+        public IEnumerable<KeyValuePair<Expression, Expression>> ComputedProperties { get { return computedProperties; } }
 
         protected internal override bool ContextIndependent
         {
@@ -47,8 +51,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        private ObjectDefinition(Dictionary<string, Expression> fields)
+        private ObjectDefinition(Dictionary<string, Expression> fields, KeyValuePair<Expression, Expression>[] computedProperties)
         {
+            this.computedProperties = computedProperties;
             this.fieldNames = new string[fields.Count];
             this.values = new Expression[fields.Count];
             int i = 0;
@@ -64,6 +69,7 @@ namespace NiL.JS.Expressions
             if (state.Code[index] != '{')
                 throw new ArgumentException("Invalid JSON definition");
             var flds = new Dictionary<string, Expression>();
+            var computedProperties = new List<KeyValuePair<Expression, Expression>>();
             int i = index;
             while (state.Code[i] != '}')
             {
@@ -73,7 +79,62 @@ namespace NiL.JS.Expressions
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
-                if ((Parser.Validate(state.Code, "get ", ref i) || Parser.Validate(state.Code, "set ", ref i)) && state.Code[i] != ':')
+
+                bool getOrSet = Parser.Validate(state.Code, "get", ref i) || Parser.Validate(state.Code, "set", ref i);
+                if (getOrSet)
+                {
+                    while (char.IsWhiteSpace(state.Code[i]))
+                        i++;
+                }
+                var asterisk = state.Code[i] == '*';
+                if (asterisk)
+                {
+                    do
+                        i++;
+                    while (char.IsWhiteSpace(state.Code[i]));
+                }
+
+                if (Parser.Validate(state.Code, "[", ref i))
+                {
+                    var name = ExpressionTree.Parse(state, ref i, false, false, false, true, false, false);
+                    while (char.IsWhiteSpace(state.Code[i]))
+                        i++;
+                    if (state.Code[i] != ']')
+                        ExceptionsHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
+                    do
+                        i++;
+                    while (char.IsWhiteSpace(state.Code[i]));
+
+                    CodeNode initializer;
+                    if (state.Code[i] == '(')
+                    {
+                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionType.AnonymousGenerator : FunctionType.AnonymousFunction);
+                    }
+                    else
+                    {
+                        initializer = ExpressionTree.Parse(state, ref i);
+                    }
+
+                    switch (state.Code[s])
+                    {
+                        case 'g':
+                            {
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new GsPropertyPairExpression((Expression)initializer, null)));
+                                break;
+                            }
+                        case 's':
+                            {
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new GsPropertyPairExpression(null, (Expression)initializer)));
+                                break;
+                            }
+                        default:
+                            {
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, (Expression)initializer));
+                                break;
+                            }
+                    }
+                }
+                else if (getOrSet && state.Code[i] != ':')
                 {
                     i = s;
                     var mode = state.Code[i] == 's' ? FunctionType.Setter : FunctionType.Getter;
@@ -121,6 +182,11 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
+                    if (asterisk)
+                    {
+                        ExceptionsHelper.ThrowSyntaxError("Unexpected token", state.Code, i);
+                    }
+
                     i = s;
                     var fieldName = "";
                     if (Parser.ValidateName(state.Code, ref i, false, true, state.strict))
@@ -142,14 +208,12 @@ namespace NiL.JS.Expressions
                     }
                     else
                         return null;
+
                     while (char.IsWhiteSpace(state.Code[i]))
                         i++;
-                    if (state.Code[i] != ':')
-                        return null;
-                    do
-                        i++;
-                    while (char.IsWhiteSpace(state.Code[i]));
-                    var initializer = (Expression)ExpressionTree.Parse(state, ref i, false, false);
+                    if (state.Code[i] != ':' && state.Code[i] != ',' && state.Code[i] != '}')
+                        ExceptionsHelper.ThrowSyntaxError("Expected ',', ';' or '}'", state.Code, i);
+
                     Expression aei = null;
                     if (flds.TryGetValue(fieldName, out aei))
                     {
@@ -157,8 +221,33 @@ namespace NiL.JS.Expressions
                                          : aei is GsPropertyPairExpression)
                             ExceptionsHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
                         if (state.message != null)
-                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, initializer.Position, 0), "Duplicate key \"" + fieldName + "\"");
+                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 0), "Duplicate key \"" + fieldName + "\"");
                     }
+
+                    Expression initializer = null;
+
+                    if (state.Code[i] == ',' || state.Code[i] == '}')
+                    {
+                        if (!Parser.ValidateName(fieldName, 0))
+                            ExceptionsHelper.ThrowSyntaxError("Invalid variable name", state.Code, i);
+
+                        if (state.Code[i] == ',')
+                        {
+                            do
+                                i++;
+                            while (char.IsWhiteSpace(state.Code[i]));
+                        }
+
+                        initializer = new GetVariableExpression(fieldName, state.scopeDepth);
+                    }
+                    else
+                    {
+                        do
+                            i++;
+                        while (char.IsWhiteSpace(state.Code[i]));
+                        initializer = (Expression)ExpressionTree.Parse(state, ref i, false, false);
+                    }
+
                     flds[fieldName] = initializer;
                 }
                 while (char.IsWhiteSpace(state.Code[i]))
@@ -169,7 +258,7 @@ namespace NiL.JS.Expressions
             i++;
             var pos = index;
             index = i;
-            return new ObjectDefinition(flds)
+            return new ObjectDefinition(flds, computedProperties.ToArray())
                 {
                     Position = pos,
                     Length = index - pos
@@ -179,7 +268,7 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var res = JSObject.CreateObject();
-            if (fieldNames.Length == 0)
+            if (fieldNames.Length == 0 && computedProperties.Length == 0)
                 return res;
             res.fields = JSObject.getFieldsContainer();
             for (int i = 0; i < fieldNames.Length; i++)
@@ -192,6 +281,53 @@ namespace NiL.JS.Expressions
                 else
                     res.fields[this.fieldNames[i]] = val;
             }
+
+            for (var i = 0; i < computedProperties.Length; i++)
+            {
+                var key = computedProperties[i].Key.Evaluate(context).CloneImpl(false);
+                var value = computedProperties[i].Value.Evaluate(context).CloneImpl(false);
+
+                JSValue existedValue;
+                Symbol symbolKey = null;
+                string stringKey = null;
+                if (key.Is<Symbol>())
+                {
+                    symbolKey = key.As<Symbol>();
+                    if (res.symbols == null)
+                        res.symbols = new Dictionary<Symbol, JSValue>();
+
+                    if (!res.symbols.TryGetValue(symbolKey, out existedValue))
+                        res.symbols[symbolKey] = existedValue = value;
+                }
+                else
+                {
+                    stringKey = key.As<string>();
+                    if (!res.fields.TryGetValue(stringKey, out existedValue))
+                        res.fields[stringKey] = existedValue = value;
+                }
+
+                if (existedValue != value)
+                {
+                    if (existedValue.Is(JSValueType.Property) && value.Is(JSValueType.Property))
+                    {
+                        var egs = existedValue.As<GsPropertyPair>();
+                        var ngs = value.As<GsPropertyPair>();
+                        egs.get = ngs.get ?? egs.get;
+                        egs.set = ngs.set ?? egs.set;
+                    }
+                    else
+                    {
+                        if (key.Is<Symbol>())
+                        {
+                            res.symbols[symbolKey] = value;
+                        }
+                        else
+                        {
+                            res.fields[stringKey] = value;
+                        }
+                    }
+                }
+            }
             return res;
         }
 
@@ -199,9 +335,19 @@ namespace NiL.JS.Expressions
         {
             _codeContext = codeContext;
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 Parser.Build(ref values[i], 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+            }
+            for (var i = 0; i < computedProperties.Length; i++)
+            {
+                var key = computedProperties[i].Key;
+                Parser.Build(ref key, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+
+                var value = computedProperties[i].Value;
+                Parser.Build(ref value, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+
+                computedProperties[i] = new KeyValuePair<Expression, Expression>(key, value);
             }
             return false;
         }
@@ -213,6 +359,16 @@ namespace NiL.JS.Expressions
                 var cn = Values[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, statistic);
                 Values[i] = cn as Expression;
+            }
+            for (var i = 0; i < computedProperties.Length; i++)
+            {
+                var key = computedProperties[i].Key;
+                key.Optimize(ref key, owner, message, opts, statistic);
+
+                var value = computedProperties[i].Value;
+                value.Optimize(ref value, owner, message, opts, statistic);
+
+                computedProperties[i] = new KeyValuePair<Expression, Expression>(key, value);
             }
         }
 
@@ -229,6 +385,7 @@ namespace NiL.JS.Expressions
         protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
         {
             var lastDecomposeIndex = -1;
+            var lastComputeDecomposeIndex = -1;
             for (var i = 0; i < values.Length; i++)
             {
                 values[i].Decompose(ref values[i], result);
@@ -237,6 +394,27 @@ namespace NiL.JS.Expressions
                     lastDecomposeIndex = i;
                 }
             }
+            for (var i = 0; i < computedProperties.Length; i++)
+            {
+                var key = computedProperties[i].Key;
+                key.Decompose(ref key, result);
+
+                var value = computedProperties[i].Value;
+                value.Decompose(ref value, result);
+
+                if ((key != computedProperties[i].Key)
+                    || (value != computedProperties[i].Value))
+                    computedProperties[i] = new KeyValuePair<Expression, Expression>(key, value);
+
+                if (computedProperties[i].Value.NeedDecompose
+                    || computedProperties[i].Key.NeedDecompose)
+                {
+                    lastComputeDecomposeIndex = i;
+                }
+            }
+
+            if (lastComputeDecomposeIndex >= 0)
+                lastDecomposeIndex = values.Length;
 
             for (var i = 0; i < lastDecomposeIndex; i++)
             {
@@ -245,6 +423,28 @@ namespace NiL.JS.Expressions
                     result.Add(new StoreValueStatement(values[i], false));
                     values[i] = new ExtractStoredValueExpression(values[i]);
                 }
+            }
+
+            for (var i = 0; i < lastDecomposeIndex; i++)
+            {
+                Expression key = null;
+                Expression value = null;
+
+                if (!(computedProperties[i].Key is ExtractStoredValueExpression))
+                {
+                    result.Add(new StoreValueStatement(computedProperties[i].Key, false));
+                    key = new ExtractStoredValueExpression(computedProperties[i].Key);
+                }
+                if (!(computedProperties[i].Value is ExtractStoredValueExpression))
+                {
+                    result.Add(new StoreValueStatement(computedProperties[i].Value, false));
+                    value = new ExtractStoredValueExpression(computedProperties[i].Value);
+                }
+                if ((key != null)
+                    || (value != null))
+                    computedProperties[i] = new KeyValuePair<Expression, Expression>(
+                        key ?? computedProperties[i].Key,
+                        value ?? computedProperties[i].Value);
             }
         }
 

@@ -28,7 +28,7 @@ namespace NiL.JS.Expressions
             if (ctorMode)
             {
                 context.objectSource = context.thisBind;
-                return context.thisBind.__proto__.__proto__.GetProperty("constructor");
+                return context.owner.__proto__;
             }
             else
             {

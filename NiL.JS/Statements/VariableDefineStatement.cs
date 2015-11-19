@@ -73,7 +73,7 @@ namespace NiL.JS.Statements
 
                 if (i >= state.Code.Length)
                 {
-                    initializers.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
+                    initializers.Add(new GetVariableExpression(name, state.scopeDepth) { Position = s, Length = name.Length, defineScopeDepth = state.scopeDepth });
                     break;
                 }
                 if (Tools.isLineTerminator(state.Code[i]))
@@ -84,7 +84,7 @@ namespace NiL.JS.Statements
                     while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i >= state.Code.Length)
                     {
-                        initializers.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
+                        initializers.Add(new GetVariableExpression(name, state.scopeDepth) { Position = s, Length = name.Length, defineScopeDepth = state.scopeDepth });
                         break;
                     }
                     if (state.Code[i] != '=')
@@ -97,7 +97,7 @@ namespace NiL.JS.Statements
                     while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
                     if (i == state.Code.Length)
                         ExceptionsHelper.ThrowSyntaxError("Unexpected end of line in variable definition.", state.Code, i);
-                    Expression accm = new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth };
+                    Expression accm = new GetVariableExpression(name, state.scopeDepth) { Position = s, Length = name.Length, defineScopeDepth = state.scopeDepth };
                     Expression source = ExpressionTree.Parse(state, ref i, false, false) as Expression;
                     initializers.Add(new ForceAssignmentOperator(accm, source)
                         {
@@ -107,7 +107,7 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
-                    initializers.Add(new GetVariableExpression(name, state.functionsDepth) { Position = s, Length = name.Length, defineFunctionDepth = state.functionsDepth });
+                    initializers.Add(new GetVariableExpression(name, state.scopeDepth) { Position = s, Length = name.Length, defineScopeDepth = state.scopeDepth });
                 }
                 if (i >= state.Code.Length)
                     break;
@@ -134,7 +134,7 @@ namespace NiL.JS.Statements
             var inits = initializers.ToArray();
             var pos = index;
             index = i;
-            return new VariableDefineStatement(names.ToArray(), inits, isConst, state.functionsDepth)
+            return new VariableDefineStatement(names.ToArray(), inits, isConst, state.scopeDepth)
                 {
                     Position = pos,
                     Length = index - pos

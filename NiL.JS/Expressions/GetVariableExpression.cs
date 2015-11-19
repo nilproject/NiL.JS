@@ -60,9 +60,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal GetVariableExpression(string name, int functionDepth)
+        internal GetVariableExpression(string name, int scopeDepth)
         {
-            this.defineFunctionDepth = functionDepth;
+            this.defineScopeDepth = scopeDepth;
             int i = 0;
             if ((name != "this") && (name != "super") && !Parser.ValidateName(name, i, true, true, false))
                 throw new ArgumentException("Invalid variable name");
@@ -73,19 +73,19 @@ namespace NiL.JS.Expressions
         {
             if (context.strict || forceThrow)
             {
-                var res = Descriptor.Get(context, false, defineFunctionDepth);
+                var res = Descriptor.Get(context, false, defineScopeDepth);
                 if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
                     ExceptionsHelper.ThrowVariableNotDefined(variableName);
                 if ((res.attributes & JSValueAttributesInternal.Argument) != 0)
                     context.owner.BuildArgumentsObject();
                 return res;
             }
-            return descriptor.Get(context, true, defineFunctionDepth);
+            return descriptor.Get(context, true, defineScopeDepth);
         }
 
         public override JSValue Evaluate(Context context)
         {
-            var res = descriptor.Get(context, false, defineFunctionDepth);
+            var res = descriptor.Get(context, false, defineScopeDepth);
             switch (res.valueType)
             {
                 case JSValueType.NotExists:
@@ -140,7 +140,7 @@ namespace NiL.JS.Expressions
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                desc = new VariableDescriptor(this, false, defineFunctionDepth);
+                desc = new VariableDescriptor(this, false, defineScopeDepth);
                 descriptor = desc;
                 variables[variableName] = this.Descriptor;
             }
@@ -157,11 +157,11 @@ namespace NiL.JS.Expressions
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused get of defined variable was removed. Maybe, something missing.");
             }
             else if (variableName == "arguments"
-                && defineFunctionDepth > 0)
+                && defineScopeDepth > 0)
             {
                 if (statistic != null)
                     statistic.ContainsArguments = true;
-                _this = new GetArgumentsExpression(defineFunctionDepth) { descriptor = descriptor };
+                _this = new GetArgumentsExpression(defineScopeDepth) { descriptor = descriptor };
             }
             return false;
         }

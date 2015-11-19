@@ -79,7 +79,7 @@ testInstance.FireMyEvent();
             }));
 #endif
             
-            int mode = 2
+            int mode = 0
                     ;
             switch (mode)
             {
@@ -375,7 +375,7 @@ ast.print_to_string();");
             _("Found " + fls.Length + " js-files");
             bool skipedShowed = false;
             sw.Start();
-            for (int i = 0; i < fls.Length; i++)
+            for (int i = 3000; i < fls.Length; i++)
             {
                 if (i != (i ^ i) && !skipedShowed)
                     _("Skiped: " + i);

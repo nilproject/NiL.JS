@@ -73,7 +73,7 @@ namespace NiL.JS.Statements
                     if (varName == "arguments" || varName == "eval")
                         ExceptionsHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
-                res._variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineFunctionDepth = state.functionsDepth }, false, state.functionsDepth) { Position = vStart, Length = i - vStart };
+                res._variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.scopeDepth) { Position = start, Length = i - start, defineScopeDepth = state.scopeDepth }, false, state.scopeDepth) { Position = vStart, Length = i - vStart };
             }
             else
             {
@@ -91,7 +91,7 @@ namespace NiL.JS.Statements
                     if (varName == "arguments" || varName == "eval")
                         ExceptionsHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
-                res._variable = new GetVariableExpression(varName, state.functionsDepth) { Position = start, Length = i - start, defineFunctionDepth = state.functionsDepth };
+                res._variable = new GetVariableExpression(varName, state.scopeDepth) { Position = start, Length = i - start, defineScopeDepth = state.scopeDepth };
             }
             while (char.IsWhiteSpace(state.Code[i]))
                 i++;
@@ -204,6 +204,9 @@ namespace NiL.JS.Statements
                 return null;
 
             var iterator = (suspendData != null ? suspendData.iterator : null) ?? source.AsIterable().iterator();
+            if (iterator == null)
+                return null;
+
             IIteratorResult iteratorResult = context.abortType != AbortType.Resume ? iterator.next() : null;
             while (context.abortType >= AbortType.Resume || !iteratorResult.done)
             {

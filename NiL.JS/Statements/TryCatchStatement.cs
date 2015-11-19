@@ -61,14 +61,14 @@ namespace NiL.JS.Statements
                     i++;
                 if (state.Code[i] != '{')
                     ExceptionsHelper.Throw((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                state.functionsDepth++;
+                state.scopeDepth++;
                 try
                 {
                     cb = CodeBlock.Parse(state, ref i);
                 }
                 finally
                 {
-                    state.functionsDepth--;
+                    state.scopeDepth--;
                 }
                 while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
                     i++;
@@ -92,7 +92,7 @@ namespace NiL.JS.Statements
                     body = (CodeBlock)b,
                     catchBody = (CodeBlock)cb,
                     finallyBody = (CodeBlock)f,
-                    catchVariableDesc = new VariableDescriptor(exptn, state.functionsDepth + 1),
+                    catchVariableDesc = new VariableDescriptor(exptn, state.scopeDepth + 1),
                     Position = pos,
                     Length = index - pos
                 };

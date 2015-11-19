@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
@@ -182,6 +183,8 @@ namespace NiL.JS.Core
                         return dValue;
                     case JSValueType.String:
                         return oValue.ToString();
+                    case JSValueType.Symbol:
+                        return oValue;
                     case JSValueType.Object:
                     case JSValueType.Function:
                     case JSValueType.Property:
@@ -996,6 +999,7 @@ namespace NiL.JS.Core
             return res;
         }
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
         [DoNotEnumerate]
         public virtual JSValue isPrototypeOf(Arguments args)
         {
@@ -1043,76 +1047,6 @@ namespace NiL.JS.Core
 
         #region Члены IConvertible
 #if !PORTABLE
-        [Hidden]
-        public virtual T As<T>()
-        {
-            switch (Type.GetTypeCode(typeof(T)))
-            {
-                case TypeCode.Boolean:
-                    return (T)(object)(bool)this; // оптимизатор разруливает такой каскад преобразований
-                case TypeCode.Byte:
-                    {
-                        return (T)(object)(byte)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.Char:
-                    {
-                        if (valueType == JSValueType.Object
-                            && oValue is char)
-                            return (T)oValue;
-                        break;
-                    }
-                case TypeCode.Decimal:
-                    {
-                        return (T)(object)(decimal)Tools.JSObjectToDouble(this);
-                    }
-                case TypeCode.Double:
-                    {
-                        return (T)(object)Tools.JSObjectToDouble(this);
-                    }
-                case TypeCode.Int16:
-                    {
-                        return (T)(object)(Int16)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.Int32:
-                    {
-                        return (T)(object)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.Int64:
-                    {
-                        return (T)(object)Tools.JSObjectToInt64(this);
-                    }
-                case TypeCode.Object:
-                    {
-                        return (T)Value;
-                    }
-                case TypeCode.SByte:
-                    {
-                        return (T)(object)(sbyte)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.Single:
-                    {
-                        return (T)(object)(float)Tools.JSObjectToDouble(this);
-                    }
-                case TypeCode.String:
-                    {
-                        return (T)(object)this.ToString();
-                    }
-                case TypeCode.UInt16:
-                    {
-                        return (T)(object)(ushort)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.UInt32:
-                    {
-                        return (T)(object)(uint)Tools.JSObjectToInt32(this);
-                    }
-                case TypeCode.UInt64:
-                    {
-                        return (T)(object)(ulong)Tools.JSObjectToInt64(this);
-                    }
-            }
-            throw new InvalidCastException();
-        }
-
         TypeCode IConvertible.GetTypeCode()
         {
             return TypeCode.Object;

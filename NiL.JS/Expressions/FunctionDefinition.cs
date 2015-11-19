@@ -143,6 +143,11 @@ namespace NiL.JS.Expressions
             int i = index;
             switch (mode)
             {
+                case FunctionType.AnonymousFunction:
+                case FunctionType.AnonymousGenerator:
+                    {
+                        break;
+                    }
                 case FunctionType.Function:
                     {
                         if (!Parser.Validate(code, "function", ref i))
@@ -219,7 +224,7 @@ namespace NiL.JS.Expressions
                 }
                 else if (mode == FunctionType.Getter || mode == FunctionType.Setter)
                     ExceptionsHelper.ThrowSyntaxError("Getters and Setters must have name", code, index);
-                else if (mode == FunctionType.Method)
+                else if (mode == FunctionType.Method || mode == FunctionType.MethodGenerator)
                     ExceptionsHelper.ThrowSyntaxError("Methods must have name", code, index);
             }
             else if (code[i] != '(')
@@ -243,7 +248,7 @@ namespace NiL.JS.Expressions
                 if (!Parser.ValidateName(code, ref i, state.strict))
                     ExceptionsHelper.ThrowUnknownToken(code, nameStartPos);
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict);
-                var desc = new ParameterReference(pname, rest, state.functionsDepth + 1)
+                var desc = new ParameterReference(pname, rest, state.scopeDepth + 1)
                 {
                     Position = n,
                     Length = i - n
@@ -307,11 +312,11 @@ namespace NiL.JS.Expressions
             else
             {
                 var oldCodeContext = state.CodeContext;
-                if (mode == FunctionType.Generator || mode == FunctionType.MethodGenerator)
+                if (mode == FunctionType.Generator || mode == FunctionType.MethodGenerator || mode == FunctionType.AnonymousGenerator)
                     state.CodeContext |= CodeContext.InGenerator;
                 var labels = state.Labels;
                 state.Labels = new List<string>();
-                state.functionsDepth++;
+                state.scopeDepth++;
                 state.AllowReturn++;
                 try
                 {
@@ -327,7 +332,7 @@ namespace NiL.JS.Expressions
                     state.AllowContinue.Pop();
                     state.AllowDirectives = false;
                     state.Labels = labels;
-                    state.functionsDepth--;
+                    state.scopeDepth--;
                     state.AllowReturn--;
                 }
                 if (mode == FunctionType.Function && string.IsNullOrEmpty(name))
@@ -404,7 +409,7 @@ namespace NiL.JS.Expressions
             state.InExpression = inExp;
             if (name != null)
             {
-                func.Reference.defineFunctionDepth = state.functionsDepth;
+                func.Reference.defineScopeDepth = state.scopeDepth;
                 func.Reference.Position = nameStartPos;
                 func.Reference.Length = name.Length;
             }
@@ -446,7 +451,7 @@ namespace NiL.JS.Expressions
         public Function MakeFunction(Context context)
         {
 #if !PORTABLE
-            if (type == FunctionType.Generator || type == FunctionType.MethodGenerator)
+            if (type == FunctionType.Generator || type == FunctionType.MethodGenerator || type == FunctionType.AnonymousGenerator)
                 return new GeneratorFunction(new Function(context, this));
 #endif
             return new Function(context, this);
@@ -484,7 +489,7 @@ namespace NiL.JS.Expressions
             {
                 VariableDescriptor fdesc = null;
                 if (Reference.descriptor == null)
-                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.defineFunctionDepth);
+                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.defineScopeDepth);
                 if (System.Array.FindIndex(parameters, x => x.Name == Reference.descriptor.name) == -1)
                 {
                     if (nvars.TryGetValue(name, out fdesc) && !fdesc.IsDefined)

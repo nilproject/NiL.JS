@@ -93,6 +93,7 @@ namespace NiL.JS.Expressions
                     && callMode == 0
                     && (func.Type != FunctionType.Generator)
                     && (func.Type != FunctionType.MethodGenerator)
+                    && (func.Type != FunctionType.AnonymousGenerator)
                     && context.owner != null
                     && func == context.owner.oValue
                     && context.owner.oValue != Script.pseudoCaller)

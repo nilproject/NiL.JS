@@ -410,7 +410,7 @@ namespace NiL.JS.Expressions
                                     && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0))) // вызов конструктора
                                 ExceptionsHelper.ThrowSyntaxError("super keyword unexpected in this coontext", state.Code, i);
 
-                            first = new SuperExpression(state.functionsDepth);
+                            first = new SuperExpression(state.scopeDepth);
                             break;
                         }
                     case "undefined":
@@ -420,7 +420,7 @@ namespace NiL.JS.Expressions
                         }
                     default:
                         {
-                            first = new GetVariableExpression(name, state.functionsDepth);
+                            first = new GetVariableExpression(name, state.scopeDepth);
                             break;
                         }
                 }

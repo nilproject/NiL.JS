@@ -261,7 +261,7 @@ namespace NiL.JS.Statements
                     && post is NiL.JS.Expressions.IncrementOperator
                     && ((post as NiL.JS.Expressions.IncrementOperator).FirstOperand as VariableReference).descriptor == variable.descriptor)
                 {
-                    if (variable.defineFunctionDepth >= 0 && variable.descriptor.defineDepth >= 0)
+                    if (variable.defineScopeDepth >= 0 && variable.descriptor.defineDepth >= 0)
                     {
                         if (initializer is NiL.JS.Expressions.AssignmentOperator
                             && (initializer as NiL.JS.Expressions.AssignmentOperator).FirstOperand is GetVariableExpression

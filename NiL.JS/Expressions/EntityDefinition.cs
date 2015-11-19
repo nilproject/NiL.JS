@@ -28,7 +28,7 @@ namespace NiL.JS.Expressions
 
         public EntityReference(EntityDefinition owner)
         {
-            defineFunctionDepth = -1;
+            defineScopeDepth = -1;
             this.owner = owner;
         }
 
@@ -75,14 +75,14 @@ namespace NiL.JS.Expressions
             {
                 VariableDescriptor desc = null;
                 if (!variables.TryGetValue(name, out desc) || desc == null)
-                    variables[name] = Reference.descriptor ?? new VariableDescriptor(Reference, true, Reference.defineFunctionDepth);
+                    variables[name] = Reference.descriptor ?? new VariableDescriptor(Reference, true, Reference.defineScopeDepth);
                 else
                 {
                     variables[name] = Reference.descriptor;
                     for (var j = 0; j < desc.references.Count; j++)
                         desc.references[j].descriptor = Reference.descriptor;
                     Reference.descriptor.references.AddRange(desc.references);
-                    Reference.descriptor.captured = Reference.descriptor.captured || Reference.descriptor.references.FindIndex(x => x.defineFunctionDepth > x.descriptor.defineDepth) != -1;
+                    Reference.descriptor.captured = Reference.descriptor.captured || Reference.descriptor.references.FindIndex(x => x.defineScopeDepth > x.descriptor.defineDepth) != -1;
                 }
             }
         }

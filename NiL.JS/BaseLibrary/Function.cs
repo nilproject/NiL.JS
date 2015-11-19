@@ -23,6 +23,7 @@ namespace NiL.JS.BaseLibrary
         Getter,
         Setter,
         AnonymousFunction,
+        AnonymousGenerator,
         Generator,
         Method,
         MethodGenerator,

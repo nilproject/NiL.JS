@@ -52,6 +52,7 @@ namespace NiL.JS.BaseLibrary
     {
         private static readonly Arguments _emptyArguments = new Arguments();
 
+        private Context initialContext;
         private Context generatorContext;
         private Arguments initialArgs;
         private Function generator;
@@ -60,6 +61,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public GeneratorIterator(Function generator, JSValue self, Arguments args)
         {
+            this.initialContext = Context.CurrentContext;
             this.generator = generator;
             this.initialArgs = args ?? _emptyArguments;
             this.targetObject = self;
@@ -104,7 +106,7 @@ namespace NiL.JS.BaseLibrary
 
         private void initContext()
         {
-            generatorContext = new Context(Context.CurrentContext, true, generator);
+            generatorContext = new Context(initialContext, true, generator);
             generator.initParameters(initialArgs, generatorContext);
             generator.initContext(targetObject, initialArgs, true, generatorContext);
             generator.initVariables(generatorContext);
