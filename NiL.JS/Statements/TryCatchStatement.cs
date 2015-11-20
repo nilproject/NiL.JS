@@ -162,7 +162,7 @@ namespace NiL.JS.Statements
             var ainfo = context.abortInfo;
             if (abort == AbortType.Return && ainfo != null)
             {
-                if (ainfo.IsDefined)
+                if (ainfo.Defined)
                     ainfo = ainfo.CloneImpl(false);
                 else
                     ainfo = JSValue.Undefined;

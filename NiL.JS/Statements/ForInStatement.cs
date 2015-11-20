@@ -214,7 +214,7 @@ namespace NiL.JS.Statements
             else
                 variable = suspendData.variable;
 
-            if (!source.IsDefined
+            if (!source.Defined
                 || (source.valueType >= JSValueType.Object && source.oValue == null)
                 || _body == null)
                 return JSValue.undefined;
@@ -276,7 +276,7 @@ namespace NiL.JS.Statements
                 }
 
                 source = source.__proto__;
-                if (source == JSValue.Null || !source.IsDefined || (source.valueType >= JSValueType.Object && source.oValue == null))
+                if (source == JSValue.Null || !source.Defined || (source.valueType >= JSValueType.Object && source.oValue == null))
                     break;
             }
             return null;

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
@@ -64,7 +62,7 @@ namespace NiL.JS.Core.Functions
         {
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
-            
+
 #if PORTABLE
             var paramCountAttrbt = del.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
 #else
@@ -78,7 +76,7 @@ namespace NiL.JS.Core.Functions
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
             var res = del(targetObject, arguments);
             if (res == null)

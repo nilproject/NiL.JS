@@ -278,7 +278,7 @@ namespace NiL.JS.Core
                     && oValue != this
                     && (oValue as JSObject) != null)
                     return (oValue as JSObject).__proto__;
-                if (!this.IsDefined || this.IsNull)
+                if (!this.Defined || this.IsNull)
                     ExceptionsHelper.Throw(new TypeError("Can not get prototype of null or undefined"));
                 return GetDefaultPrototype();
             }
@@ -298,7 +298,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public bool IsExists
+        public bool Exists
         {
             [Hidden]
 #if INLINE
@@ -308,7 +308,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public bool IsDefined
+        public bool Defined
         {
             [Hidden]
 #if INLINE
@@ -337,7 +337,7 @@ namespace NiL.JS.Core
             get { return valueType == JSValueType.Int || valueType == JSValueType.Double; }
         }
 
-        internal bool IsNeedClone
+        internal bool NeedClone
         {
 #if INLINE
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -995,7 +995,7 @@ namespace NiL.JS.Core
             var name = args[0];
             string n = name.ToString();
             var res = GetProperty(n, PropertyScope.Own);
-            res = (res.IsExists) && ((res.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0);
+            res = (res.Exists) && ((res.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0);
             return res;
         }
 
@@ -1042,7 +1042,7 @@ namespace NiL.JS.Core
         {
             JSValue name = args[0];
             var res = GetMember(name, false, PropertyScope.Own);
-            return res.IsExists;
+            return res.Exists;
         }
 
         #region Члены IConvertible

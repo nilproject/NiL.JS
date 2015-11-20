@@ -1357,7 +1357,7 @@ namespace NiL.JS.Core
                         if (element.Key >= _length) // эээ...
                             break;
                         var value = element.Value;
-                        if (value == null || !value.IsExists)
+                        if (value == null || !value.Exists)
                             continue;
                         if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
                         {
@@ -1384,7 +1384,7 @@ namespace NiL.JS.Core
                     foreach (var index in EnumerateArraylike(_length, src))
                     {
                         var value = index.Value;
-                        if (!value.IsExists)
+                        if (!value.Exists)
                             continue;
                         if (evalProps && value.valueType == JSValueType.Property)
                             value = (value.oValue as GsPropertyPair).get == null ? JSValue.undefined : (value.oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);

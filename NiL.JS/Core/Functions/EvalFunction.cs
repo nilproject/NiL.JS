@@ -49,7 +49,7 @@ namespace NiL.JS.Core.Functions
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        protected override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             if (arguments == null)
                 return NotExists;

@@ -46,7 +46,7 @@ namespace NiL.JS.Expressions
         }
         public Expression[] Arguments { get { return _arguments; } }
         public bool AllowTCO { get { return allowTCO && callMode == 0; } }
-        
+
         protected internal override bool NeedDecompose
         {
             get
@@ -75,7 +75,11 @@ namespace NiL.JS.Expressions
             var temp = first.Evaluate(context);
             JSValue targetObject = context.objectSource;
 
-            Function func = temp.valueType == JSValueType.Function ? temp.oValue as Function ?? (temp.oValue as TypeProxy).prototypeInstance as Function : null; // будем надеяться, что только в одном случае в oValue не будет лежать функция
+            Function func = temp.valueType != JSValueType.Function ? null :
+                temp.oValue as Function
+                ?? temp.Value as Function
+                ?? (temp.oValue as TypeProxy).prototypeInstance as Function;
+
             if (func == null)
             {
                 for (int i = 0; i < this._arguments.Length; i++)

@@ -15,6 +15,7 @@ namespace NiL.JS.Core
     /// </remarks>
     internal sealed class ObjectContainer : JSObject
     {
+        internal bool ownedFieldsOnly;
         internal object instance;
 
         [Hidden]
@@ -51,25 +52,34 @@ namespace NiL.JS.Core
 
         protected internal override JSValue GetMember(JSValue name, bool forWrite, PropertyScope memberScope)
         {
-            var t = instance as JSValue;
-            if (t != null)
-                return t.GetMember(name, forWrite, memberScope);
+            if (!ownedFieldsOnly)
+            {
+                var t = instance as JSValue;
+                if (t != null)
+                    return t.GetMember(name, forWrite, memberScope);
+            }
             return base.GetMember(name, forWrite, memberScope);
         }
 
         protected internal override void SetProperty(JSValue name, JSValue value, PropertyScope memberScope, bool strict)
         {
-            var t = instance as JSValue;
-            if (t != null)
-                t.SetProperty(name, value, memberScope, strict);
+            if (!ownedFieldsOnly)
+            {
+                var t = instance as JSValue;
+                if (t != null)
+                    t.SetProperty(name, value, memberScope, strict);
+            }
             base.SetProperty(name, value, memberScope, strict);
         }
 
         protected internal override bool DeleteProperty(JSValue name)
         {
-            var t = instance as JSValue;
-            if (t != null)
-                return t.DeleteProperty(name);
+            if (!ownedFieldsOnly)
+            {
+                var t = instance as JSValue;
+                if (t != null)
+                    return t.DeleteProperty(name);
+            }
             return base.DeleteProperty(name);
         }
 

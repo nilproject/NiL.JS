@@ -396,7 +396,7 @@ namespace NiL.JS.Core.Functions
                 for (int i = targetCount; i-- > 0; )
                 {
                     var obj = arguments.Length > i ? Tools.PrepareArg(initiator, arguments[i]) : notExists;
-                    if (obj.IsExists)
+                    if (obj.Exists)
                     {
                         args[i] = marshal(obj, parameters[i].ParameterType);
                         if (paramsConverters != null && paramsConverters[i] != null)
@@ -516,7 +516,7 @@ namespace NiL.JS.Core.Functions
                 for (int i = targetCount; i-- > 0; )
                 {
                     var obj = source[i];
-                    if (obj.IsExists)
+                    if (obj.Exists)
                     {
                         res[i] = marshal(obj, parameters[i].ParameterType);
                         if (paramsConverters != null && paramsConverters[i] != null)
@@ -536,7 +536,7 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-        protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
             return Interop.TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
         }

@@ -259,7 +259,7 @@ namespace NiL.JS.BaseLibrary
             for (int i = 0; i < len; i++)
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function (" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
-            var func = FunctionDefinition.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index, FunctionType.Method);
+            var func = FunctionDefinition.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index, FunctionType.Function);
             if (func != null && code.Length == index)
             {
                 Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), parentContext.strict ? CodeContext.Strict : CodeContext.None, null, null, Options.Default);
@@ -348,7 +348,7 @@ namespace NiL.JS.BaseLibrary
                     }
                     for (int i = 0; i < arguments.Length; i++)
                     {
-                        if (!arguments[i].Evaluate(initiator).IsDefined)
+                        if (!arguments[i].Evaluate(initiator).Defined)
                         {
                             if (creator.parameters.Length > i && creator.parameters[i].initializer != null)
                                 creator.parameters[i].initializer.Evaluate(parentContext);
@@ -384,8 +384,11 @@ namespace NiL.JS.BaseLibrary
             {
                 if (spreadSource != null)
                 {
-                    argumentsObject[targetIndex] = spreadSource[spreadIndex];
-                    spreadIndex++;
+                    if (spreadIndex < spreadSource.Count)
+                    {
+                        argumentsObject[targetIndex] = spreadSource[spreadIndex];
+                        spreadIndex++;
+                    }
                     if (spreadIndex == spreadSource.Count)
                     {
                         spreadSource = null;
@@ -512,7 +515,7 @@ namespace NiL.JS.BaseLibrary
             return Invoke(false, targetObject, arguments);
         }
 
-        protected virtual JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        protected internal virtual JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
 
 #if DEBUG && !PORTABLE
@@ -709,7 +712,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
                 value.attributes &= ~JSValueAttributesInternal.Cloned;
-            if (!value.IsDefined && creator.parameters.Length > index && creator.parameters[index].initializer != null)
+            if (!value.Defined && creator.parameters.Length > index && creator.parameters[index].initializer != null)
                 value.Assign(creator.parameters[index].initializer.Evaluate(context));
             creator.parameters[index].cacheRes = value;
             creator.parameters[index].cacheContext = context;
@@ -791,7 +794,7 @@ namespace NiL.JS.BaseLibrary
             {
                 JSValue t = args[i];
                 var prm = creator.parameters[i];
-                if (!t.IsDefined && prm.initializer != null)
+                if (!t.Defined && prm.initializer != null)
                     t = prm.initializer.Evaluate(internalContext);
                 if (creator.body.strict)
                 {
@@ -851,7 +854,7 @@ namespace NiL.JS.BaseLibrary
                     else
                     {
                         arg.cacheRes = arg.initializer.Evaluate(internalContext);
-                        if (!arg.cacheRes.IsDefined)
+                        if (!arg.cacheRes.Defined)
                             arg.cacheRes = undefined;
                     }
                 }
@@ -1002,7 +1005,9 @@ namespace NiL.JS.BaseLibrary
                     res.Append("function");
                     break;
             }
-            res.Append(" ").Append(name).Append("(");
+            if (res.Length != 0)
+                res.Append(" ");
+            res.Append(name).Append("(");
             if (creator != null && creator.parameters != null)
                 for (int i = 0; i < creator.parameters.Length; )
                     res.Append(creator.parameters[i].Name).Append(++i < creator.parameters.Length ? "," : "");
@@ -1046,7 +1051,7 @@ namespace NiL.JS.BaseLibrary
             var self = nargs[0];
             if (args != null)
                 nargs.Reset();
-            if (argsSource.IsDefined)
+            if (argsSource.Defined)
             {
                 if (argsSource.valueType < JSValueType.Object)
                     ExceptionsHelper.Throw(new TypeError("Argument list has wrong type."));

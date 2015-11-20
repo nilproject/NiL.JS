@@ -472,7 +472,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(2)]
         public static JSValue split(JSValue self, Arguments args)
         {
-            if (args.Length == 0 || !args[0].IsDefined)
+            if (args.Length == 0 || !args[0].Defined)
                 return new Array(new object[] { self.ToString() });
             uint limit = uint.MaxValue;
             if (args.Length > 1)
@@ -948,7 +948,7 @@ namespace NiL.JS.BaseLibrary
             {
                 foreach (var f in fields)
                 {
-                    if (f.Value.IsExists && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                    if (f.Value.Exists && (!hideNonEnum || (f.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                         yield return f;
                 }
             }

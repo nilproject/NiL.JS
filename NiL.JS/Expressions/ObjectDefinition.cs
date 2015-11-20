@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using NiL.JS.Core;
+using System.Linq;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Statements;
+using NiL.JS.Core;
 using NiL.JS.Extensions;
-using System.Collections.ObjectModel;
+using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
@@ -339,6 +338,7 @@ namespace NiL.JS.Expressions
             {
                 Parser.Build(ref values[i], 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
             }
+
             for (var i = 0; i < computedProperties.Length; i++)
             {
                 var key = computedProperties[i].Key;
@@ -349,6 +349,7 @@ namespace NiL.JS.Expressions
 
                 computedProperties[i] = new KeyValuePair<Expression, Expression>(key, value);
             }
+
             return false;
         }
 

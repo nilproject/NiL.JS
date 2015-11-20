@@ -449,7 +449,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        res = JSObject.GlobalPrototype.GetMember(wrap(name), create, PropertyScope.Сommon);
+                        res = JSObject.GlobalPrototype.GetMember(wrap(name), false, PropertyScope.Сommon);
                         if (res.valueType == JSValueType.NotExistsInObject)
                             res.valueType = JSValueType.NotExists;
                     }

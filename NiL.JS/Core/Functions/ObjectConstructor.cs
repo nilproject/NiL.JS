@@ -16,7 +16,7 @@ namespace NiL.JS.Core.Functions
             _length = new Number(1);
         }
 
-        protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
             JSValue oVal = null;
             if (arguments != null && arguments.length > 0)

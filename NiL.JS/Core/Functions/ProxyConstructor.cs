@@ -114,9 +114,9 @@ namespace NiL.JS.Core.Functions
                 if (key.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
                 var res = proxy.GetMember(key, forWrite && memberScope == PropertyScope.Own, memberScope);
-                if (res.IsExists || (memberScope == PropertyScope.Own && forWrite))
+                if (res.Exists || (memberScope == PropertyScope.Own && forWrite))
                 {
-                    if (forWrite && res.IsNeedClone)
+                    if (forWrite && res.NeedClone)
                         res = proxy.GetMember(key, true, memberScope);
                     return res;
                 }
@@ -133,10 +133,10 @@ namespace NiL.JS.Core.Functions
             return proxy.DeleteProperty(name) && __proto__.DeleteProperty(name);
         }
 
-        protected override NiL.JS.Core.JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
             var objc = targetObject as ObjectContainer;
-            if (objc != null) // new
+            if (construct) // new
             {
 
             }
@@ -205,8 +205,8 @@ namespace NiL.JS.Core.Functions
                 }
 
                 JSValue res = obj as JSValue;
-
-                if (objc != null)
+                
+                if (construct)
                 {
                     if (res != null)
                     {
@@ -234,6 +234,8 @@ namespace NiL.JS.Core.Functions
                         objc.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
                         if (obj.GetType() == typeof(Date))
                             objc.valueType = JSValueType.Date;
+                        else if (res != null)
+                            objc.valueType = (JSValueType)System.Math.Max((int)objc.valueType, (int)res.valueType);
 
                         res = objc;
                     }

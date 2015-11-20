@@ -42,7 +42,7 @@ namespace NiL.JS.Core.Interop
         {
             if (fields != null)
                 foreach (var r in fields)
-                    if (r.Value.IsExists && (!hideNonEnum || (r.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                    if (r.Value.Exists && (!hideNonEnum || (r.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                         yield return r;
         }
     }

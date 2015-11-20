@@ -200,7 +200,7 @@ namespace NiL.JS.Statements
             else
                 variable = suspendData.variable;
 
-            if (!source.IsDefined || source.IsNull || _body == null)
+            if (!source.Defined || source.IsNull || _body == null)
                 return null;
 
             var iterator = (suspendData != null ? suspendData.iterator : null) ?? source.AsIterable().iterator();

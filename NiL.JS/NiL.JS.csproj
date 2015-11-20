@@ -249,7 +249,7 @@
     <Compile Include="Core\PropertyPair.cs" />
     <Compile Include="Core\RopeString.cs" />
     <Compile Include="Core\SparseArray.cs" />
-    <Compile Include="Core\StringMap2.cs" />
+    <Compile Include="Core\StringMap.cs" />
     <Compile Include="Core\Interop\AllowNullArgumentsAttribute.cs" />
     <Compile Include="Core\Interop\CustomType.cs" />
     <Compile Include="BaseLibrary\Date.cs" />

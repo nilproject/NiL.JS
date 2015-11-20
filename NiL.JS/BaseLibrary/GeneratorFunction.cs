@@ -32,7 +32,7 @@ namespace NiL.JS.BaseLibrary
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        protected override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             return TypeProxy.Proxy(new GeneratorIterator(generator, targetObject, arguments));
         }

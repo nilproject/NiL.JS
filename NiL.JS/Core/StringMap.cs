@@ -1,11 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core
 {
+    internal sealed class StringMapDebugView<TValue>
+    {
+        private StringMap2<TValue> stringMap;
+
+        public StringMapDebugView(StringMap2<TValue> stringMap)
+        {
+            this.stringMap = stringMap;
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, TValue>[] Items
+        {
+            get
+            {
+                return new List<KeyValuePair<string, TValue>>(stringMap).ToArray();
+            }
+        }
+    }
+
+    [Serializable]
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(StringMapDebugView<>))]
     public sealed class StringMap2<TValue> : IDictionary<string, TValue>
     {
         [StructLayout(LayoutKind.Sequential)]
@@ -25,7 +48,7 @@ namespace NiL.JS.Core
         }
 
         private static readonly Record[] emptyRecords = new Record[0];
-        
+
         private Record[] _records = emptyRecords;
         private int[] _existsedIndexes;
 
@@ -330,7 +353,8 @@ namespace NiL.JS.Core
 
         public void CopyTo(KeyValuePair<string, TValue>[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            foreach (var item in this)
+                array[arrayIndex++] = item;
         }
 
         public int Count

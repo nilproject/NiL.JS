@@ -110,7 +110,7 @@ namespace NiL.JS.Expressions
                 else if (context.abortType == AbortType.Resume)
                 {
                     IIterator iterator = context.SuspendData[this] as IIterator;
-                    var iteratorResult = iterator.next(context.abortInfo.IsDefined ? new Arguments { context.abortInfo } : null);
+                    var iteratorResult = iterator.next(context.abortInfo.Defined ? new Arguments { context.abortInfo } : null);
 
                     context.abortInfo = iteratorResult.value;
 

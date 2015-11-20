@@ -543,7 +543,7 @@ namespace NiL.JS.BaseLibrary
             {
                 for (var i = 0; i < 9 && !error; i++)
                 {
-                    if (args[i].IsExists && !args[i].IsDefined)
+                    if (args[i].Exists && !args[i].Defined)
                     {
                         error = true;
                         return;
@@ -625,7 +625,7 @@ namespace NiL.JS.BaseLibrary
         private void offsetTimeValue(JSValue value, long amort, long mul)
         {
             if (value == null
-               || !value.IsDefined
+               || !value.Defined
                || (value.valueType == JSValueType.Double && (double.IsNaN(value.dValue) || double.IsInfinity(value.dValue))))
             {
                 error = true;
@@ -873,7 +873,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue setTime(JSValue time)
         {
             if (time == null
-                || !time.IsDefined
+                || !time.Defined
                 || (time.valueType == JSValueType.Double && (double.IsNaN(time.dValue) || double.IsInfinity(time.dValue))))
             {
                 error = true;
@@ -903,9 +903,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue setSeconds(JSValue seconds, JSValue milliseconds)
         {
-            if (seconds != null && seconds.IsExists)
+            if (seconds != null && seconds.Exists)
                 offsetTimeValue(seconds, getSecondsImpl(), 1000);
-            if (!error && milliseconds != null && milliseconds.IsExists)
+            if (!error && milliseconds != null && milliseconds.Exists)
                 setMilliseconds(milliseconds);
             return getSeconds();
         }
@@ -919,7 +919,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue setMinutes(JSValue minutes, JSValue seconds, JSValue milliseconds)
         {
-            if (minutes != null && minutes.IsExists)
+            if (minutes != null && minutes.Exists)
                 offsetTimeValue(minutes, getMinutesImpl(), _minuteMillisecond);
             if (!error)
                 setSeconds(seconds, milliseconds);
@@ -935,7 +935,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue setHours(JSValue hours, JSValue minutes, JSValue seconds, JSValue milliseconds)
         {
-            if (hours != null && hours.IsExists)
+            if (hours != null && hours.Exists)
                 offsetTimeValue(hours, getHoursImpl(), _hourMilliseconds);
             setMinutes(minutes, seconds, milliseconds);
             return getHours();
@@ -950,7 +950,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue setDate(JSValue days)
         {
-            if (days != null && days.IsExists)
+            if (days != null && days.Exists)
                 offsetTimeValue(days, getDateImpl(), _dayMilliseconds);
             return getDate();
         }
@@ -966,7 +966,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (monthO != null)
             {
-                if (!monthO.IsDefined
+                if (!monthO.Defined
                 || (monthO.valueType == JSValueType.Double && (double.IsNaN(monthO.dValue) || double.IsInfinity(monthO.dValue))))
                 {
                     error = true;
@@ -1010,9 +1010,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue setFullYear(JSValue year, JSValue month, JSValue day)
         {
-            if (year != null && year.IsExists)
+            if (year != null && year.Exists)
             {
-                if (!year.IsDefined
+                if (!year.Defined
                    || (year.valueType == JSValueType.Double && (double.IsNaN(year.dValue) || double.IsInfinity(year.dValue))))
                 {
                     error = true;

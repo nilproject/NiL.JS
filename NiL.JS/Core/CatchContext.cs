@@ -33,7 +33,7 @@ namespace NiL.JS.Core
 
         protected internal override JSValue GetVariable(string name, bool create)
         {
-            if (name == errorVariableName && errorContainer.IsExists)
+            if (name == errorVariableName && errorContainer.Exists)
                 return errorContainer;
             return base.GetVariable(name, create);
         }

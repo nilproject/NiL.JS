@@ -238,7 +238,7 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("undefined has been rewitten");
-                if (JSObject.notExists.IsExists)
+                if (JSObject.notExists.Exists)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
