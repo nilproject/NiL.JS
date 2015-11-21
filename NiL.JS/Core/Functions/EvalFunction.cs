@@ -90,14 +90,14 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        protected internal override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
+        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 if (key.ToString() == "prototype")
                     return undefined;
             }
-            return base.GetMember(key, forWrite, memberScope);
+            return base.GetProperty(key, forWrite, memberScope);
         }
     }
 }

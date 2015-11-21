@@ -50,15 +50,15 @@ namespace NiL.JS.Core
         {
         }
 
-        protected internal override JSValue GetMember(JSValue name, bool forWrite, PropertyScope memberScope)
+        protected internal override JSValue GetProperty(JSValue name, bool forWrite, PropertyScope memberScope)
         {
             if (!ownedFieldsOnly)
             {
                 var t = instance as JSValue;
                 if (t != null)
-                    return t.GetMember(name, forWrite, memberScope);
+                    return t.GetProperty(name, forWrite, memberScope);
             }
-            return base.GetMember(name, forWrite, memberScope);
+            return base.GetProperty(name, forWrite, memberScope);
         }
 
         protected internal override void SetProperty(JSValue name, JSValue value, PropertyScope memberScope, bool strict)

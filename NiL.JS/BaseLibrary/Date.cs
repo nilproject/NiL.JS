@@ -113,7 +113,7 @@ namespace NiL.JS.BaseLibrary
                     prevPos = position;
                     continue;
                 }
-                if (!char.IsWhiteSpace(source[position]))
+                if (!Tools.IsWhiteSpace(source[position]))
                 {
                     position++;
                     continue;
@@ -413,7 +413,7 @@ namespace NiL.JS.BaseLibrary
                         {
                             if (format[i] != timeStr[j])
                                 return false;
-                            while (j < timeStr.Length && char.IsWhiteSpace(timeStr[j]))
+                            while (j < timeStr.Length && Tools.IsWhiteSpace(timeStr[j]))
                                 j++;
                             j--;
                             break;

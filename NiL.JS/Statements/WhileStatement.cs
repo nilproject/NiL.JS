@@ -29,10 +29,10 @@ namespace NiL.JS.Statements
                 return null;
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             var condition = Parser.Parse(state, ref i, CodeFragmentType.Expression);
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
@@ -40,7 +40,7 @@ namespace NiL.JS.Statements
                 throw new ArgumentException("code (" + i + ")");
             do
                 i++;
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
             if (i >= state.Code.Length)
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
             state.AllowBreak.Push(true);

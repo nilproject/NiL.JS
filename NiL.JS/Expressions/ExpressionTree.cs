@@ -376,7 +376,7 @@ namespace NiL.JS.Expressions
                     ExceptionsHelper.Throw(new SyntaxError("Invalid char in ternary operator"));
                 do
                     i++;
-                while (char.IsWhiteSpace(state.Code[i]));
+                while (Tools.IsWhiteSpace(state.Code[i]));
                 first = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
                 threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration);
                 first.Length = i - first.Position;
@@ -401,7 +401,7 @@ namespace NiL.JS.Expressions
                              * только внутри конструктора класса-потомка.
                              */
 
-                            while (char.IsWhiteSpace(state.Code[i]))
+                            while (Tools.IsWhiteSpace(state.Code[i]))
                                 i++;
 
                             if ((state.CodeContext & CodeContext.InClassDefenition) == 0
@@ -493,7 +493,7 @@ namespace NiL.JS.Expressions
                             {
                                 do
                                     i++;
-                                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
                                 first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
@@ -509,7 +509,7 @@ namespace NiL.JS.Expressions
                             }
                             else
                             {
-                                while (char.IsWhiteSpace(state.Code[i]))
+                                while (Tools.IsWhiteSpace(state.Code[i]))
                                     i++;
                                 var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
                                 first = new Expressions.ToNumberOperator(f) { Position = index, Length = i - index };
@@ -523,7 +523,7 @@ namespace NiL.JS.Expressions
                             {
                                 do
                                     i++;
-                                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
                                     ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
                                 first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
@@ -539,7 +539,7 @@ namespace NiL.JS.Expressions
                             }
                             else
                             {
-                                while (char.IsWhiteSpace(state.Code[i]))
+                                while (Tools.IsWhiteSpace(state.Code[i]))
                                     i++;
                                 var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
                                 first = new Expressions.NegationOperator(f) { Position = index, Length = i - index };
@@ -550,7 +550,7 @@ namespace NiL.JS.Expressions
                         {
                             do
                                 i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
+                            while (Tools.IsWhiteSpace(state.Code[i]));
                             first = new Expressions.LogicalNegationOperator((Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration)) { Position = index, Length = i - index };
                             if (first == null)
                             {
@@ -563,7 +563,7 @@ namespace NiL.JS.Expressions
                         {
                             do
                                 i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
+                            while (Tools.IsWhiteSpace(state.Code[i]));
                             first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
                             if (first == null)
                             {
@@ -578,7 +578,7 @@ namespace NiL.JS.Expressions
                             i += 5;
                             do
                                 i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
+                            while (Tools.IsWhiteSpace(state.Code[i]));
                             first = (Expression)Parse(state, ref i, true, false, false, true, false, forEnumeration);
                             if (first == null)
                             {
@@ -593,7 +593,7 @@ namespace NiL.JS.Expressions
                             i += 3;
                             do
                                 i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
+                            while (Tools.IsWhiteSpace(state.Code[i]));
                             first = new Expressions.CommaOperator((Expression)Parse(state, ref i, true, false, false, true, false, forEnumeration), new ConstantDefinition(JSValue.undefined)) { Position = index, Length = i - index };
                             if (first == null)
                             {
@@ -607,7 +607,7 @@ namespace NiL.JS.Expressions
                             i += 5;
                             do
                                 i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
+                            while (Tools.IsWhiteSpace(state.Code[i]));
                             first = (Expression)Parse(state, ref i, true, false, false, true, false, forEnumeration);
                             if (first == null)
                             {
@@ -625,13 +625,13 @@ namespace NiL.JS.Expressions
                 {
                     do
                         i++;
-                    while (char.IsWhiteSpace(state.Code[i]));
+                    while (Tools.IsWhiteSpace(state.Code[i]));
                     var temp = (Expression)ExpressionTree.Parse(state, ref i, false, false);
                     if (first == null)
                         first = temp;
                     else
                         first = new CommaOperator(first, temp);
-                    while (char.IsWhiteSpace(state.Code[i]))
+                    while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
                     if (state.Code[i] != ')' && state.Code[i] != ',')
                         ExceptionsHelper.Throw((new SyntaxError("Expected \")\"")));
@@ -655,12 +655,12 @@ namespace NiL.JS.Expressions
             do
             {
                 repeat = false;
-                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                     i++;
                 if (state.Code.Length <= i)
                     break;
                 rollbackPos = i;
-                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code.Length <= i)
                 {
@@ -1042,7 +1042,7 @@ namespace NiL.JS.Expressions
                         {
                             binary = true;
                             i++;
-                            while (char.IsWhiteSpace(state.Code[i]))
+                            while (Tools.IsWhiteSpace(state.Code[i]))
                                 i++;
                             s = i;
                             if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict))
@@ -1069,14 +1069,14 @@ namespace NiL.JS.Expressions
                             Expression mname = null;
                             do
                                 i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
+                            while (Tools.IsWhiteSpace(state.Code[i]));
                             int startPos = i;
                             mname = (Expression)ExpressionTree.Parse(state, ref i, false, true, false, true, false, false);
                             //if (forEnumeration) // why?! (o_O)
                             //    return null;
                             if (mname == null)
                                 ExceptionsHelper.Throw((new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
-                            while (char.IsWhiteSpace(state.Code[i]))
+                            while (Tools.IsWhiteSpace(state.Code[i]))
                                 i++;
                             if (state.Code[i] != ']')
                                 ExceptionsHelper.Throw((new SyntaxError("Expected \"]\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
@@ -1105,7 +1105,7 @@ namespace NiL.JS.Expressions
                             bool withSpread = false;
                             for (; ; )
                             {
-                                while (char.IsWhiteSpace(state.Code[i]))
+                                while (Tools.IsWhiteSpace(state.Code[i]))
                                     i++;
                                 if (state.Code[i] == ')')
                                     break;
@@ -1115,7 +1115,7 @@ namespace NiL.JS.Expressions
                                         ExceptionsHelper.ThrowSyntaxError("Empty argument of function call", state.Code, i);
                                     do
                                         i++;
-                                    while (char.IsWhiteSpace(state.Code[i]));
+                                    while (Tools.IsWhiteSpace(state.Code[i]));
                                 }
                                 if (i + 1 == state.Code.Length)
                                     ExceptionsHelper.ThrowSyntaxError("Unexpected end of source", state.Code, i);
@@ -1202,7 +1202,7 @@ namespace NiL.JS.Expressions
             {
                 do
                     i++;
-                while (state.Code.Length > i && char.IsWhiteSpace(state.Code[i]));
+                while (state.Code.Length > i && Tools.IsWhiteSpace(state.Code[i]));
                 if (state.Code.Length > i)
                     second = (Expression)ExpressionTree.Parse(state, ref i, false, processComma, false, false, type == OperationType.Ternary, forEnumeration);
             }

@@ -76,7 +76,7 @@ namespace NiL.JS
                 unions = new Dictionary<string, GenericType>();
         }
 
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
+        internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
@@ -118,7 +118,7 @@ namespace NiL.JS
                     return res;
                 }
             }
-            return base.GetMember(key, forWrite, memberScope);
+            return base.GetProperty(key, forWrite, memberScope);
         }
 
         /// <summary>

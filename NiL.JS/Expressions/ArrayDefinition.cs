@@ -54,7 +54,7 @@ namespace NiL.JS.Expressions
                 throw new ArgumentException("Syntax error. Expected '['");
             do
                 i++;
-            while (char.IsWhiteSpace(state.Code[i]));
+            while (Tools.IsWhiteSpace(state.Code[i]));
             var elms = new List<Expression>();
             while (state.Code[i] != ']')
             {
@@ -70,13 +70,13 @@ namespace NiL.JS.Expressions
                     elms.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
                 if (spread)
                     elms[elms.Count - 1] = new SpreadOperator(elms[elms.Count - 1]) { Position = start, Length = i - start };
-                while (char.IsWhiteSpace(state.Code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] == ',')
                 {
                     do
                         i++;
-                    while (char.IsWhiteSpace(state.Code[i]));
+                    while (Tools.IsWhiteSpace(state.Code[i]));
                 }
                 else if (state.Code[i] != ']')
                     ExceptionsHelper.ThrowSyntaxError("Expected ']'", state.Code, i);

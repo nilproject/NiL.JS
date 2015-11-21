@@ -636,7 +636,7 @@ namespace NiL.JS.BaseLibrary
                             temp.dValue = i;
                             temp.valueType = JSValueType.Double;
                         }
-                        if (((t != null && t.Exists) || null != (t = self.GetMember(temp, false, PropertyScope.Сommon)))
+                        if (((t != null && t.Exists) || null != (t = self.GetProperty(temp, false, PropertyScope.Сommon)))
                             && t.Defined)
                         {
                             if (t.valueType < JSValueType.String || t.oValue != null)
@@ -763,7 +763,7 @@ namespace NiL.JS.BaseLibrary
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
                 length--;
-                var tres = self.GetMember(Context.CurrentContext.wrap(length.ToString()), true, PropertyScope.Сommon);
+                var tres = self.GetProperty(Context.CurrentContext.wrap(length.ToString()), true, PropertyScope.Сommon);
                 JSValue res;
                 if (tres.valueType == JSValueType.Property)
                     res = ((tres.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(self, null);
@@ -874,8 +874,8 @@ namespace NiL.JS.BaseLibrary
                 {
                     JSValue i0 = i.ToString();
                     JSValue i1 = (length - 1 - i).ToString();
-                    var item0 = self.GetMember(i0, false, PropertyScope.Сommon);
-                    var item1 = self.GetMember(i1, false, PropertyScope.Сommon);
+                    var item0 = self.GetProperty(i0, false, PropertyScope.Сommon);
+                    var item1 = self.GetProperty(i1, false, PropertyScope.Сommon);
                     var value0 = item0;
                     var value1 = item1;
                     if (value0.valueType == JSValueType.Property)
@@ -899,7 +899,7 @@ namespace NiL.JS.BaseLibrary
                         self.SetProperty(i0, value1, false);
                     else
                     {
-                        var t = self.GetMember(i0, true, PropertyScope.Own);
+                        var t = self.GetProperty(i0, true, PropertyScope.Own);
                         if ((t.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
                         {
                             t.oValue = null;
@@ -918,7 +918,7 @@ namespace NiL.JS.BaseLibrary
                         self.SetProperty(i1, value0, false);
                     else
                     {
-                        var t = self.GetMember(i1, true, PropertyScope.Own);
+                        var t = self.GetProperty(i1, true, PropertyScope.Own);
                         if ((t.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
                         {
                             t.oValue = null;
@@ -1153,7 +1153,7 @@ namespace NiL.JS.BaseLibrary
                     return notExists;
                 }
                 var ti = new JSValue() { valueType = JSValueType.String, oValue = "0" };
-                var t = self.GetMember(ti, true, PropertyScope.Сommon);
+                var t = self.GetProperty(ti, true, PropertyScope.Сommon);
                 var res = t;
                 if (res.valueType == JSValueType.Property)
                     res = Tools.InvokeGetter(res, self).CloneImpl(false);
@@ -1194,7 +1194,7 @@ namespace NiL.JS.BaseLibrary
                 for (var i = 0; i < keysToRemove.Count; i++)
                 {
                     tjo.oValue = keysToRemove[i];
-                    var to = self.GetMember(tjo, true, PropertyScope.Сommon);
+                    var to = self.GetProperty(tjo, true, PropertyScope.Сommon);
                     if ((to.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete)) == 0)
                     {
                         to.oValue = null;
@@ -1213,7 +1213,7 @@ namespace NiL.JS.BaseLibrary
                         tjo.iValue = (item.Key - 1);
                     if (item.Value != null && item.Value.Exists)
                     {
-                        var temp = self.GetMember(tjo, true, PropertyScope.Сommon);
+                        var temp = self.GetProperty(tjo, true, PropertyScope.Сommon);
                         if (temp.valueType == JSValueType.Property)
                             ((temp.oValue as GsPropertyPair).set ?? Function.emptyFunction).Call(self, new Arguments { item.Value });
                         else
@@ -1511,7 +1511,7 @@ namespace NiL.JS.BaseLibrary
                             tjo.valueType = JSValueType.Double;
                             tjo.dValue = i + delta;
                         }
-                        var dst = self.GetMember(tjo, true, PropertyScope.Сommon);
+                        var dst = self.GetProperty(tjo, true, PropertyScope.Сommon);
                         if (i + delta <= int.MaxValue)
                         {
                             tjo.valueType = JSValueType.Int;
@@ -1522,7 +1522,7 @@ namespace NiL.JS.BaseLibrary
                             tjo.valueType = JSValueType.Double;
                             tjo.dValue = i;
                         }
-                        var src = self.GetMember(tjo, true, PropertyScope.Сommon);
+                        var src = self.GetProperty(tjo, true, PropertyScope.Сommon);
                         if (src.valueType == JSValueType.Property)
                             src = Tools.InvokeGetter(src, self);
 
@@ -1546,7 +1546,7 @@ namespace NiL.JS.BaseLibrary
                             tjo.valueType = JSValueType.Double;
                             tjo.dValue = i;
                         }
-                        var src = self.GetMember(tjo, true, PropertyScope.Сommon);
+                        var src = self.GetProperty(tjo, true, PropertyScope.Сommon);
                         if (i >= _length + delta)
                         {
                             if ((src.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
@@ -1569,7 +1569,7 @@ namespace NiL.JS.BaseLibrary
                             tjo.valueType = JSValueType.Double;
                             tjo.dValue = i + delta;
                         }
-                        var dst = self.GetMember(tjo, true, PropertyScope.Сommon);
+                        var dst = self.GetProperty(tjo, true, PropertyScope.Сommon);
                         if (i + delta <= int.MaxValue)
                         {
                             tjo.valueType = JSValueType.Int;
@@ -1580,7 +1580,7 @@ namespace NiL.JS.BaseLibrary
                             tjo.valueType = JSValueType.Double;
                             tjo.dValue = i;
                         }
-                        var srcItem = self.GetMember(tjo, true, PropertyScope.Сommon);
+                        var srcItem = self.GetProperty(tjo, true, PropertyScope.Сommon);
                         var src = srcItem;
                         if (src.valueType == JSValueType.Property)
                             src = Tools.InvokeGetter(src, self);
@@ -1611,7 +1611,7 @@ namespace NiL.JS.BaseLibrary
                         tjo.valueType = JSValueType.Double;
                         tjo.dValue = (i - 2 + pos0);
                     }
-                    var dst = self.GetMember(tjo, true, PropertyScope.Сommon);
+                    var dst = self.GetProperty(tjo, true, PropertyScope.Сommon);
                     if (dst.valueType == JSValueType.Property)
                         ((dst.oValue as GsPropertyPair).set ?? Function.emptyFunction).Call(self, new Arguments() { a0 = args[i], length = 1 });
                     else
@@ -1730,7 +1730,7 @@ namespace NiL.JS.BaseLibrary
                     for (var i = keysToRemove.Count; i-- > 0; )
                     {
                         tjo.oValue = keysToRemove[i];
-                        var t = self.GetMember(tjo, true, PropertyScope.Сommon);
+                        var t = self.GetProperty(tjo, true, PropertyScope.Сommon);
                         if ((t.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
                         {
                             t.oValue = null;
@@ -1862,7 +1862,7 @@ namespace NiL.JS.BaseLibrary
                 notExists.valueType = JSValueType.NotExistsInObject;
                 var res = data[(int)index] ?? notExists;
                 if (res.valueType < JSValueType.Undefined)
-                    return __proto__.GetMember(index, false, PropertyScope.Сommon);
+                    return __proto__.GetProperty(index, false, PropertyScope.Сommon);
                 return res;
             }
             [Hidden]
@@ -1893,7 +1893,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
+        internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
@@ -1965,13 +1965,13 @@ namespace NiL.JS.BaseLibrary
                         notExists.valueType = JSValueType.NotExistsInObject;
                         var res = data[index] ?? notExists;
                         if (res.valueType < JSValueType.Undefined && memberScope != PropertyScope.Own)
-                            return __proto__.GetMember(key, false, memberScope);
+                            return __proto__.GetProperty(key, false, memberScope);
                         return res;
                     }
                 }
             }
 
-            return base.GetMember(key, forWrite, memberScope);
+            return base.GetProperty(key, forWrite, memberScope);
         }
 
         /*internal override bool DeleteMember(JSObject name)

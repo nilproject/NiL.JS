@@ -29,13 +29,13 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (!Parser.Validate(state.Code, "do", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
@@ -55,21 +55,21 @@ namespace NiL.JS.Statements
             state.AllowContinue.Pop();
             if (!(body is CodeBlock) && state.Code[i] == ';')
                 i++;
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
             if (!Parser.Validate(state.Code, "while", ref i))
                 ExceptionsHelper.Throw((new SyntaxError("Expected \"while\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != '(')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \"(\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do
                 i++;
-            while (char.IsWhiteSpace(state.Code[i]));
+            while (Tools.IsWhiteSpace(state.Code[i]));
             var condition = Parser.Parse(state, ref i, CodeFragmentType.Expression);
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));

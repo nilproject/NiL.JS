@@ -97,7 +97,7 @@ namespace NiL.JS.Core.Functions
             }
             if ((construct || _thisBind == null || _thisBind.IsNull || !_thisBind.Defined) && (targetObject != null && targetObject.Defined))
                 return proto.Invoke(construct, targetObject, arguments);
-            return proto.Invoke(construct, _thisBind, arguments);
+            return proto.Call(_thisBind, arguments);
         }
 
         protected internal override JSValue ConstructObject()
@@ -112,9 +112,9 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        protected internal override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
+        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            return proto.GetMember(key, forWrite, memberScope);
+            return proto.GetProperty(key, forWrite, memberScope);
         }
 
         internal override JSObject GetDefaultPrototype()

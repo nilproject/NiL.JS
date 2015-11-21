@@ -18,7 +18,7 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "break", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
-            while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                 i++;
             int sl = i;
             JSValue label = null;

@@ -111,7 +111,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
+        internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
@@ -124,7 +124,7 @@ namespace NiL.JS.BaseLibrary
                     return getElement((int)index);
                 }
             }
-            return base.GetMember(key, forWrite, memberScope);
+            return base.GetProperty(key, forWrite, memberScope);
         }
 
         private JSValue getElement(int index)

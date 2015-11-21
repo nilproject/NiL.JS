@@ -168,7 +168,7 @@ namespace NiL.JS.Core
                             double x = double.NaN;
                             int ix = 0;
                             string s = (arg.oValue.ToString());
-                            if (s.Length > 0 && (char.IsWhiteSpace(s[0]) || char.IsWhiteSpace(s[s.Length - 1])))
+                            if (s.Length > 0 && (Tools.IsWhiteSpace(s[0]) || Tools.IsWhiteSpace(s[s.Length - 1])))
                                 s = s.Trim(Tools.TrimChars);
                             if (Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
                                 return double.NaN;
@@ -804,7 +804,7 @@ namespace NiL.JS.Core
                 return true;
             }
             int i = index;
-            while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
+            while (i < code.Length && Tools.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
                 i++;
             if (i >= code.Length)
             {
@@ -1226,7 +1226,7 @@ namespace NiL.JS.Core
                 }
             } while (work);
             if (skipSpaces)
-                while ((index < code.Length) && (char.IsWhiteSpace(code[index])))
+                while ((index < code.Length) && (Tools.IsWhiteSpace(code[index])))
                     index++;
         }
 
@@ -1235,7 +1235,7 @@ namespace NiL.JS.Core
             StringBuilder res = null;// new StringBuilder(code.Length);
             for (int i = startPosition; i < code.Length; )
             {
-                while (i < code.Length && char.IsWhiteSpace(code[i]))
+                while (i < code.Length && Tools.IsWhiteSpace(code[i]))
                 {
                     if (res != null)
                         res.Append(code[i++]);
@@ -1252,7 +1252,7 @@ namespace NiL.JS.Core
                 }
                 for (; s < i; s++)
                 {
-                    if (char.IsWhiteSpace(code[s]))
+                    if (Tools.IsWhiteSpace(code[s]))
                         res.Append(code[s]);
                     else
                         res.Append(' ');
@@ -1469,6 +1469,11 @@ namespace NiL.JS.Core
                 a.attributes |= JSValueAttributesInternal.Cloned;
             }
             return a;
+        }
+
+        internal static bool IsWhiteSpace(char p)
+        {
+            return System.Array.IndexOf(TrimChars, p) != -1;
         }
     }
 }

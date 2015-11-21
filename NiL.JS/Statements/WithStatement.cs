@@ -26,13 +26,13 @@ namespace NiL.JS.Statements
             if (state.message != null)
                 state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, index, 4), "Do not use \"with\".");
             var obj = Parser.Parse(state, ref i, CodeFragmentType.Expression);
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid syntax WithStatement.")));
             do
                 i++;
-            while (char.IsWhiteSpace(state.Code[i]));
+            while (Tools.IsWhiteSpace(state.Code[i]));
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionDefinition)
             {

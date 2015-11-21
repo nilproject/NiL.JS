@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
             var i = index;
             if (!Parser.Validate(state.Code, "new", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             var result = (Expression)ExpressionTree.Parse(state, ref i, true, false, true, true, false, false);
             if (result == null)

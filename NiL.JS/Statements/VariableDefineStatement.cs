@@ -40,14 +40,14 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             bool isConst = false;
             if (!Parser.Validate(state.Code, "var ", ref i)
                 && !(isConst = Parser.Validate(state.Code, "const ", ref i)))
                 return null;
             bool isDef = false;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             var initializers = new List<Expression>();
             var names = new List<string>();
@@ -68,7 +68,7 @@ namespace NiL.JS.Statements
                 }
                 names.Add(name);
                 isDef = true;
-                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                     i++;
 
                 if (i >= state.Code.Length)
@@ -81,7 +81,7 @@ namespace NiL.JS.Statements
                     s = i;
                     do
                         i++;
-                    while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                    while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
                     if (i >= state.Code.Length)
                     {
                         initializers.Add(new GetVariableExpression(name, state.scopeDepth) { Position = s, Length = name.Length, defineScopeDepth = state.scopeDepth });
@@ -94,7 +94,7 @@ namespace NiL.JS.Statements
                 {
                     do
                         i++;
-                    while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                    while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
                     if (i == state.Code.Length)
                         ExceptionsHelper.ThrowSyntaxError("Unexpected end of line in variable definition.", state.Code, i);
                     Expression accm = new GetVariableExpression(name, state.scopeDepth) { Position = s, Length = name.Length, defineScopeDepth = state.scopeDepth };
@@ -114,7 +114,7 @@ namespace NiL.JS.Statements
                 s = i;
                 if ((state.Code[i] != ',') && (state.Code[i] != ';') && (state.Code[i] != '=') && (state.Code[i] != '}') && (!Tools.isLineTerminator(state.Code[i])))
                     ExceptionsHelper.Throw(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
-                while (s < state.Code.Length && char.IsWhiteSpace(state.Code[s]))
+                while (s < state.Code.Length && Tools.IsWhiteSpace(state.Code[s]))
                     s++;
                 if (s >= state.Code.Length)
                     break;
@@ -123,10 +123,10 @@ namespace NiL.JS.Statements
                     i = s;
                     do
                         i++;
-                    while (char.IsWhiteSpace(state.Code[i]));
+                    while (Tools.IsWhiteSpace(state.Code[i]));
                 }
                 else
-                    while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+                    while (Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                         i++;
             }
             if (!isDef)

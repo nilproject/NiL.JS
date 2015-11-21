@@ -212,7 +212,7 @@ namespace NiL.JS.Core.Interop
                 return TypeProxy.Proxy(result);
         }
 
-        protected internal override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
+        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
@@ -270,7 +270,7 @@ namespace NiL.JS.Core.Interop
                     return new Element(this, index);
                 }
             }
-            return base.GetMember(key, forWrite, memberScope);
+            return base.GetProperty(key, forWrite, memberScope);
         }
 
         protected internal override void SetProperty(JSValue key, JSValue value, PropertyScope memberScope, bool strict)

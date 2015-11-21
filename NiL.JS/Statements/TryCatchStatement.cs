@@ -31,14 +31,14 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "try", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
                 ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != '{')
                 ExceptionsHelper.Throw((new SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             var b = CodeBlock.Parse(state, ref i);
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             CodeNode cb = null;
             string exptn = null;
@@ -53,11 +53,11 @@ namespace NiL.JS.Statements
                     if (exptn == "arguments" || exptn == "eval")
                         ExceptionsHelper.Throw((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
-                while (char.IsWhiteSpace(state.Code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (!Parser.Validate(state.Code, ")", ref i))
                     ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                while (char.IsWhiteSpace(state.Code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != '{')
                     ExceptionsHelper.Throw((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
@@ -70,14 +70,14 @@ namespace NiL.JS.Statements
                 {
                     state.scopeDepth--;
                 }
-                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                     i++;
             }
             CodeNode f = null;
             if (Parser.Validate(state.Code, "finally", i) && Parser.IsIdentificatorTerminator(state.Code[i + 7]))
             {
                 i += 7;
-                while (char.IsWhiteSpace(state.Code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != '{')
                     ExceptionsHelper.Throw((new SyntaxError("Invalid finally block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));

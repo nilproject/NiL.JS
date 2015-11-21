@@ -59,7 +59,7 @@ namespace NiL.JS.Expressions
             if (!Parser.Validate(state.Code, "yield", ref i))
                 return null;
 
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             bool reiterate = false;
             if (state.Code[i] == '*')
@@ -67,7 +67,7 @@ namespace NiL.JS.Expressions
                 reiterate = true;
                 do
                     i++;
-                while (char.IsWhiteSpace(state.Code[i]));
+                while (Tools.IsWhiteSpace(state.Code[i]));
             }
 
             var source = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);

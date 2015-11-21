@@ -36,7 +36,7 @@ namespace NiL.JS.Statements
                 return null;
             if (state.AllowReturn == 0)
                 ExceptionsHelper.Throw(new SyntaxError("Invalid use of return statement."));
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                 i++;
             var body = state.Code[i] == ';' || Tools.isLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, CodeFragmentType.Expression);
             var pos = index;

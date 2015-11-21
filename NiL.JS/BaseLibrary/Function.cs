@@ -954,7 +954,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue nameObj, bool forWrite, PropertyScope memberScope)
+        internal protected override JSValue GetProperty(JSValue nameObj, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && nameObj.valueType != JSValueType.Symbol)
             {
@@ -964,7 +964,7 @@ namespace NiL.JS.BaseLibrary
                 if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
                     return prototype;
             }
-            return base.GetMember(nameObj, forWrite, memberScope);
+            return base.GetProperty(nameObj, forWrite, memberScope);
         }
 
         [CLSCompliant(false)]

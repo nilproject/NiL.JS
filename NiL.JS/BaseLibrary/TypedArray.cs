@@ -150,7 +150,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                     index.iValue = (int)i;
-                var value = src.GetMember(index, false, PropertyScope.Сommon);
+                var value = src.GetProperty(index, false, PropertyScope.Сommon);
                 if (value.valueType == JSValueType.Property)
                 {
                     value = ((value.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(src, dummyArgs);
@@ -177,7 +177,7 @@ namespace NiL.JS.BaseLibrary
             return r;
         }
 
-        protected internal sealed override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
+        protected internal sealed override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
@@ -235,7 +235,7 @@ namespace NiL.JS.BaseLibrary
                     return this[index];
                 }
             }
-            return base.GetMember(key, forWrite, memberScope);
+            return base.GetProperty(key, forWrite, memberScope);
         }
 
         protected internal override void SetProperty(JSValue name, JSValue value, PropertyScope memberScope, bool strict)

@@ -48,11 +48,11 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
                 return null;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             var res = new ForInStatement()
             {
@@ -61,7 +61,7 @@ namespace NiL.JS.Statements
             var vStart = i;
             if (Parser.Validate(state.Code, "var", ref i))
             {
-                while (char.IsWhiteSpace(state.Code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 int start = i;
                 string varName;
@@ -79,7 +79,7 @@ namespace NiL.JS.Statements
             {
                 if (state.Code[i] == ';')
                     return null;
-                while (char.IsWhiteSpace(state.Code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 int start = i;
                 string varName;
@@ -87,7 +87,7 @@ namespace NiL.JS.Statements
                 {
                     if (Parser.ValidateValue(state.Code, ref i))
                     {
-                        while (char.IsWhiteSpace(state.Code[i]))
+                        while (Tools.IsWhiteSpace(state.Code[i]))
                             i++;
                         if (Parser.Validate(state.Code, "in", ref i))
                             ExceptionsHelper.Throw(new SyntaxError("Invalid accumulator name at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start)));
@@ -108,13 +108,13 @@ namespace NiL.JS.Statements
                 }
                 res._variable = new GetVariableExpression(varName, state.scopeDepth) { Position = start, Length = i - start, defineScopeDepth = state.scopeDepth };
             }
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] == '=')
             {
                 do
                     i++;
-                while (char.IsWhiteSpace(state.Code[i]));
+                while (Tools.IsWhiteSpace(state.Code[i]));
                 var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
                 if (defVal == null)
                     return defVal;
@@ -130,15 +130,15 @@ namespace NiL.JS.Statements
                     res._variable = exp;
                 else
                     (res._variable as VariableDefineStatement).initializers[0] = exp;
-                while (char.IsWhiteSpace(state.Code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
             }
             if (!Parser.Validate(state.Code, "in", ref i))
                 return null;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             res._source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));

@@ -381,14 +381,14 @@ namespace NiL.JS.Core
         {
             var cc = Context.CurrentContext;
             if (cc == null)
-                return GetMember((JSValue)name, false, PropertyScope.Сommon);
+                return GetProperty((JSValue)name, false, PropertyScope.Сommon);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc.wrap(name), false, PropertyScope.Сommon);
+                return GetProperty(cc.wrap(name), false, PropertyScope.Сommon);
             }
             finally
             {
@@ -404,14 +404,14 @@ namespace NiL.JS.Core
         {
             var cc = Context.CurrentContext;
             if (cc == null)
-                return GetMember((JSValue)name, false, propertyScope);
+                return GetProperty((JSValue)name, false, propertyScope);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc.wrap(name), false, propertyScope);
+                return GetProperty(cc.wrap(name), false, propertyScope);
             }
             finally
             {
@@ -427,14 +427,14 @@ namespace NiL.JS.Core
         {
             var cc = Context.CurrentContext;
             if (cc == null)
-                return GetMember((JSValue)name, true, PropertyScope.Own);
+                return GetProperty((JSValue)name, true, PropertyScope.Own);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc.wrap(name), true, PropertyScope.Own);
+                return GetProperty(cc.wrap(name), true, PropertyScope.Own);
             }
             finally
             {
@@ -474,14 +474,14 @@ namespace NiL.JS.Core
         {
             var cc = Context.CurrentContext;
             if (cc == null)
-                return GetMember((JSValue)name, forWrite, propertyScope);
+                return GetProperty((JSValue)name, forWrite, propertyScope);
             var oi = cc.tempContainer.iValue;
             var od = cc.tempContainer.dValue;
             object oo = cc.tempContainer.oValue;
             var ovt = cc.tempContainer.valueType;
             try
             {
-                return GetMember(cc.wrap(name), forWrite, propertyScope);
+                return GetProperty(cc.wrap(name), forWrite, propertyScope);
             }
             finally
             {
@@ -492,7 +492,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal protected virtual JSValue GetMember(JSValue key, bool forWrite, PropertyScope propertyScope)
+        internal protected virtual JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
         {
             switch (valueType)
             {
@@ -501,7 +501,7 @@ namespace NiL.JS.Core
                         if (propertyScope == PropertyScope.Own)
                             return notExists;
                         forWrite = false;
-                        return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean)).GetMember(key, false, PropertyScope.Сommon);
+                        return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Сommon);
                     }
                 case JSValueType.Int:
                 case JSValueType.Double:
@@ -509,7 +509,7 @@ namespace NiL.JS.Core
                         if (propertyScope == PropertyScope.Own)
                             return notExists;
                         forWrite = false;
-                        return TypeProxy.GetPrototype(typeof(Number)).GetMember(key, false, PropertyScope.Сommon);
+                        return TypeProxy.GetPrototype(typeof(Number)).GetProperty(key, false, PropertyScope.Сommon);
                     }
                 case JSValueType.String:
                     {
@@ -518,30 +518,24 @@ namespace NiL.JS.Core
                 case JSValueType.Undefined:
                 case JSValueType.NotExists:
                 case JSValueType.NotExistsInObject:
-                    throw canNotGetPropertyOfUndefined(key);
+                    {
+                        ExceptionsHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, key, "undefined"));
+                        return null;
+                    }
                 default:
                     {
                         if (oValue == this)
                             break;
                         if (oValue == null)
-                            throw canNotGetPropertyOfNull(key);
+                            ExceptionsHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, key, "null"));
                         var inObj = oValue as JSObject;
                         if (inObj != null)
-                            return inObj.GetMember(key, forWrite, propertyScope);
+                            return inObj.GetProperty(key, forWrite, propertyScope);
                         break;
                     }
             }
-            throw new InvalidOperationException("Cannot get member of object with type '" + valueType + "'");
-        }
-
-        private static Exception canNotGetPropertyOfUndefined(JSValue name)
-        {
-            return new JSException(new TypeError("Can't get property \"" + name + "\" of \"undefined\""));
-        }
-
-        private static Exception canNotGetPropertyOfNull(JSValue name)
-        {
-            return new JSException(new TypeError("Can't get property \"" + name + "\" of \"null\""));
+            ExceptionsHelper.Throw(new ApplicationException("Method GetProperty(...) of custom types must be overriden"));
+            return null;
         }
 
         private JSValue stringGetProperty(JSValue name, bool forWrite, PropertyScope propertyScope)
@@ -562,7 +556,7 @@ namespace NiL.JS.Core
             if (propertyScope == PropertyScope.Own)
                 return notExists;
 
-            return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String)).GetMember(name, false, PropertyScope.Сommon);
+            return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String)).GetProperty(name, false, PropertyScope.Сommon);
         }
 
         internal protected void SetProperty(JSValue name, JSValue value, bool throwOnError)
@@ -582,7 +576,7 @@ namespace NiL.JS.Core
                 {
                     System.Diagnostics.Debug.Write(typeof(JSValue).Name + "." + JIT.JITHelpers.methodof(SetProperty).Name + " must be overridden for objects");
 
-                    GetMember(name, true, propertyScope).Assign(value);
+                    GetProperty(name, true, propertyScope).Assign(value);
                 }
 
                 field = oValue as JSObject;
@@ -1041,7 +1035,7 @@ namespace NiL.JS.Core
         public virtual JSValue hasOwnProperty(Arguments args)
         {
             JSValue name = args[0];
-            var res = GetMember(name, false, PropertyScope.Own);
+            var res = GetProperty(name, false, PropertyScope.Own);
             return res.Exists;
         }
 

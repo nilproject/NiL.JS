@@ -366,10 +366,10 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
+        internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope == PropertyScope.Super || key.valueType == JSValueType.Symbol)
-                return base.GetMember(key, forWrite, memberScope);
+                return base.GetProperty(key, forWrite, memberScope);
 
             forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
 
@@ -381,7 +381,7 @@ namespace NiL.JS.Core.Interop
                 {
                     if (!forWrite)
                     {
-                        var t = base.GetMember(key, false, memberScope);
+                        var t = base.GetProperty(key, false, memberScope);
                         if (t.Exists)
                         {
                             r.Assign(t);
@@ -402,9 +402,9 @@ namespace NiL.JS.Core.Interop
             {
                 var pi = prototypeInstance as JSValue;
                 if (pi != null)
-                    return pi.GetMember(key, forWrite, memberScope);
+                    return pi.GetProperty(key, forWrite, memberScope);
                 else
-                    return base.GetMember(key, forWrite, memberScope);
+                    return base.GetProperty(key, forWrite, memberScope);
             }
 
             var result = proxyMember(forWrite, m);

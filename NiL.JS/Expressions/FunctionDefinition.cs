@@ -157,7 +157,7 @@ namespace NiL.JS.Expressions
                             mode = FunctionType.Generator;
                             i++;
                         }
-                        else if ((code[i] != '(') && (!char.IsWhiteSpace(code[i])))
+                        else if ((code[i] != '(') && (!Tools.IsWhiteSpace(code[i])))
                             return null;
                         break;
                     }
@@ -165,7 +165,7 @@ namespace NiL.JS.Expressions
                     {
                         if (!Parser.Validate(code, "get", ref i))
                             return null;
-                        if ((!char.IsWhiteSpace(code[i])))
+                        if ((!Tools.IsWhiteSpace(code[i])))
                             return null;
                         break;
                     }
@@ -173,7 +173,7 @@ namespace NiL.JS.Expressions
                     {
                         if (!Parser.Validate(code, "set", ref i))
                             return null;
-                        if ((!char.IsWhiteSpace(code[i])))
+                        if ((!Tools.IsWhiteSpace(code[i])))
                             return null;
                         break;
                     }
@@ -198,7 +198,7 @@ namespace NiL.JS.Expressions
             }
             var inExp = state.InExpression;
             state.InExpression = 0;
-            while (char.IsWhiteSpace(code[i]))
+            while (Tools.IsWhiteSpace(code[i]))
                 i++;
             var parameters = new List<ParameterDescriptor>();
             string name = null;
@@ -217,7 +217,7 @@ namespace NiL.JS.Expressions
                         name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
                     else
                         ExceptionsHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, i - nameStartPos);
-                    while (char.IsWhiteSpace(code[i]))
+                    while (Tools.IsWhiteSpace(code[i]))
                         i++;
                     if (code[i] != '(')
                         ExceptionsHelper.ThrowUnknownToken(code, i);
@@ -234,7 +234,7 @@ namespace NiL.JS.Expressions
             }
             do
                 i++;
-            while (char.IsWhiteSpace(code[i]));
+            while (Tools.IsWhiteSpace(code[i]));
             if (code[i] == ',')
                 ExceptionsHelper.ThrowSyntaxError("Unexpected char at ", code, i);
             while (code[i] != ')')
@@ -254,7 +254,7 @@ namespace NiL.JS.Expressions
                     Length = i - n
                 }.Descriptor as ParameterDescriptor;
                 parameters.Add(desc);
-                while (char.IsWhiteSpace(code[i]))
+                while (Tools.IsWhiteSpace(code[i]))
                     i++;
                 if (arrowWithSunglePrm)
                 {
@@ -270,7 +270,7 @@ namespace NiL.JS.Expressions
                         ExceptionsHelper.ThrowSyntaxError("Rest parameters can not have an initializer", code, i);
                     do
                         i++;
-                    while (char.IsWhiteSpace(code[i]));
+                    while (Tools.IsWhiteSpace(code[i]));
                     desc.initializer = ExpressionTree.Parse(state, ref i, false, false) as Expression;
                 }
                 if (code[i] == ',')
@@ -279,7 +279,7 @@ namespace NiL.JS.Expressions
                         ExceptionsHelper.ThrowSyntaxError("Rest parameters must be the last in parameters list", code, i);
                     do
                         i++;
-                    while (char.IsWhiteSpace(code[i]));
+                    while (Tools.IsWhiteSpace(code[i]));
                 }
             }
             switch (mode)
@@ -293,13 +293,13 @@ namespace NiL.JS.Expressions
             }
             do
                 i++;
-            while (char.IsWhiteSpace(code[i]));
+            while (Tools.IsWhiteSpace(code[i]));
             CodeBlock body = null;
             if (mode == FunctionType.Arrow)
             {
                 if (!Parser.Validate(code, "=>", ref i))
                     ExceptionsHelper.ThrowSyntaxError("Expected \"=>\"", code, i);
-                while (char.IsWhiteSpace(code[i]))
+                while (Tools.IsWhiteSpace(code[i]))
                     i++;
             }
             if (code[i] != '{')
@@ -377,7 +377,7 @@ namespace NiL.JS.Expressions
             // что не разумно
             {
                 var tindex = i;
-                while (i < code.Length && char.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
+                while (i < code.Length && Tools.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
                     i++;
                 if (i < code.Length && code[i] == '(')
                 {
@@ -385,19 +385,19 @@ namespace NiL.JS.Expressions
                     i++;
                     for (; ; )
                     {
-                        while (char.IsWhiteSpace(code[i]))
+                        while (Tools.IsWhiteSpace(code[i]))
                             i++;
                         if (code[i] == ')')
                             break;
                         else if (code[i] == ',')
                             do
                                 i++;
-                            while (char.IsWhiteSpace(code[i]));
+                            while (Tools.IsWhiteSpace(code[i]));
                         args.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
                     }
                     i++;
                     index = i;
-                    while (i < code.Length && char.IsWhiteSpace(code[i]))
+                    while (i < code.Length && Tools.IsWhiteSpace(code[i]))
                         i++;
                     if (i < code.Length && code[i] == ';')
                         ExceptionsHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));

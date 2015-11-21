@@ -19,7 +19,7 @@ namespace NiL.JS.Statements
                 return null;
             if (!state.AllowContinue.Peek())
                 ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use continue statement")));
-            while (char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
+            while (Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
             int sl = i;
             JSValue label = null;
             if (Parser.ValidateName(state.Code, ref i, state.strict))

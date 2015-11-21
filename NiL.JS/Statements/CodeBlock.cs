@@ -87,7 +87,7 @@ namespace NiL.JS.Statements
                     throw new ArgumentException("code (" + i + ")");
                 i++;
             }
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             var body = new List<CodeNode>();
             state.LabelCount = 0;
@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
                         break;
                     if (Parser.ValidateValue(state.Code, ref i))
                     {
-                        while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+                        while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                             i++;
                         if (i < state.Code.Length && (Parser.IsOperator(state.Code[i])
                             || Parser.Validate(state.Code, "instanceof", i)
@@ -139,7 +139,7 @@ namespace NiL.JS.Statements
                             break;
                         do
                             i++;
-                        while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                        while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
                     }
                     else
                         break;

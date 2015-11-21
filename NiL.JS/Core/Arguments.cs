@@ -148,7 +148,7 @@ namespace NiL.JS.Core
             return GlobalPrototype ?? Null;
         }
 
-        protected internal override JSValue GetMember(JSValue key, bool createMember, PropertyScope memberScope)
+        protected internal override JSValue GetProperty(JSValue key, bool createMember, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
@@ -228,7 +228,7 @@ namespace NiL.JS.Core
                         }
                 }
             }
-            return base.GetMember(key, createMember, memberScope);
+            return base.GetProperty(key, createMember, memberScope);
         }
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)

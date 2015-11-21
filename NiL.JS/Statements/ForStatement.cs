@@ -32,11 +32,11 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParsingState state, ref int index)
         {
             int i = index;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
                 return null;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             CodeNode init = null;
             int labelsCount = state.LabelCount;
@@ -52,21 +52,21 @@ namespace NiL.JS.Statements
                 ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do
                 i++;
-            while (char.IsWhiteSpace(state.Code[i]));
+            while (Tools.IsWhiteSpace(state.Code[i]));
             var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i);
             if (state.Code[i] != ';')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do
                 i++;
-            while (char.IsWhiteSpace(state.Code[i]));
+            while (Tools.IsWhiteSpace(state.Code[i]));
             var post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i);
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do
                 i++;
-            while (char.IsWhiteSpace(state.Code[i]));
+            while (Tools.IsWhiteSpace(state.Code[i]));
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             var body = Parser.Parse(state, ref i, 0);

@@ -74,7 +74,7 @@ namespace NiL.JS.Expressions
             {
                 do
                     i++;
-                while (char.IsWhiteSpace(state.Code[i]));
+                while (Tools.IsWhiteSpace(state.Code[i]));
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
@@ -82,7 +82,7 @@ namespace NiL.JS.Expressions
                 bool getOrSet = Parser.Validate(state.Code, "get", ref i) || Parser.Validate(state.Code, "set", ref i);
                 if (getOrSet)
                 {
-                    while (char.IsWhiteSpace(state.Code[i]))
+                    while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
                 }
                 var asterisk = state.Code[i] == '*';
@@ -90,19 +90,19 @@ namespace NiL.JS.Expressions
                 {
                     do
                         i++;
-                    while (char.IsWhiteSpace(state.Code[i]));
+                    while (Tools.IsWhiteSpace(state.Code[i]));
                 }
 
                 if (Parser.Validate(state.Code, "[", ref i))
                 {
                     var name = ExpressionTree.Parse(state, ref i, false, false, false, true, false, false);
-                    while (char.IsWhiteSpace(state.Code[i]))
+                    while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
                     if (state.Code[i] != ']')
                         ExceptionsHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
                     do
                         i++;
-                    while (char.IsWhiteSpace(state.Code[i]));
+                    while (Tools.IsWhiteSpace(state.Code[i]));
 
                     CodeNode initializer;
                     if (state.Code[i] == '(')
@@ -208,7 +208,7 @@ namespace NiL.JS.Expressions
                     else
                         return null;
 
-                    while (char.IsWhiteSpace(state.Code[i]))
+                    while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
                     if (state.Code[i] != ':' && state.Code[i] != ',' && state.Code[i] != '}')
                         ExceptionsHelper.ThrowSyntaxError("Expected ',', ';' or '}'", state.Code, i);
@@ -234,7 +234,7 @@ namespace NiL.JS.Expressions
                         {
                             do
                                 i++;
-                            while (char.IsWhiteSpace(state.Code[i]));
+                            while (Tools.IsWhiteSpace(state.Code[i]));
                         }
 
                         initializer = new GetVariableExpression(fieldName, state.scopeDepth);
@@ -243,13 +243,13 @@ namespace NiL.JS.Expressions
                     {
                         do
                             i++;
-                        while (char.IsWhiteSpace(state.Code[i]));
+                        while (Tools.IsWhiteSpace(state.Code[i]));
                         initializer = (Expression)ExpressionTree.Parse(state, ref i, false, false);
                     }
 
                     flds[fieldName] = initializer;
                 }
-                while (char.IsWhiteSpace(state.Code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if ((state.Code[i] != ',') && (state.Code[i] != '}'))
                     return null;

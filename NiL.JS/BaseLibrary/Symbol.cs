@@ -58,11 +58,11 @@ namespace NiL.JS.BaseLibrary
             return "Symbol(" + Description + ")";
         }
 
-        protected internal override JSValue GetMember(JSValue name, bool forWrite, PropertyScope memberScope)
+        protected internal override JSValue GetProperty(JSValue name, bool forWrite, PropertyScope memberScope)
         {
             if (forWrite)
                 return undefined;
-            return base.GetMember(name, false, memberScope);
+            return base.GetProperty(name, false, memberScope);
         }
     }
 }

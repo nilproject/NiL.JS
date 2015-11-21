@@ -11,48 +11,64 @@ namespace NiL.JS
 {
     internal static class ExceptionsHelper
     {
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void Throw(BaseLibrary.Error error)
         {
             throw new JSException(error);
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void Throw(JSValue error)
         {
             throw new JSException(error ?? JSValue.undefined);
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void Throw(Error error, Exception innerException)
         {
             throw new JSException(error, innerException);
         }
 
+        /// <exception cref="System.ArgumentNullException">
+        /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowArgumentNull(string message)
         {
             throw new ArgumentNullException(message);
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowVariableNotDefined(object variableName)
         {
             Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)));
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowIncrementPropertyWOSetter(object proprtyName)
         {
             Throw(new TypeError(string.Format(Strings.IncrementPropertyWOSetter, proprtyName)));
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowIncrementReadonly(object entityName)
         {
             Throw(new TypeError(string.Format(Strings.IncrementReadonly, entityName)));
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowUnknownToken(string code, int index)
         {
@@ -63,17 +79,23 @@ namespace NiL.JS
                 cord)));
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         internal static void ThrowSyntaxError(string message, string code, int position)
         {
             ThrowSyntaxError(message, code, position, 0);
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         internal static void ThrowSyntaxError(string message, string code, int position, int length)
         {
             var cord = CodeCoordinates.FromTextPosition(code, position, 0);
             Throw(new SyntaxError(message + " " + cord));
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
@@ -84,11 +106,15 @@ namespace NiL.JS
             return obj;
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         internal static void ThrowReferenceError(string message)
         {
             Throw(new ReferenceError(message));
         }
 
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
         internal static void ThrowTypeError(string message)
         {
             Throw(new TypeError(message));

@@ -35,16 +35,16 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "if (", ref i) && !Parser.Validate(state.Code, "if(", ref i))
                 return null;
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             var condition = (Expression)ExpressionTree.Parse(state, ref i);
-            while (char.IsWhiteSpace(state.Code[i]))
+            while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
             do
                 i++;
-            while (char.IsWhiteSpace(state.Code[i]));
+            while (Tools.IsWhiteSpace(state.Code[i]));
             CodeNode body = Parser.Parse(state, ref i, 0);
             if (body is FunctionDefinition)
             {
@@ -57,15 +57,15 @@ namespace NiL.JS.Statements
             }
             CodeNode elseBody = null;
             var pos = i;
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]))
+            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i < state.Code.Length && !(body is CodeBlock) && (state.Code[i] == ';'))
                 do
                     i++;
-                while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]));
+                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
             if (Parser.Validate(state.Code, "else", ref i))
             {
-                while (char.IsWhiteSpace(state.Code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 elseBody = Parser.Parse(state, ref i, 0);
                 if (elseBody is FunctionDefinition)

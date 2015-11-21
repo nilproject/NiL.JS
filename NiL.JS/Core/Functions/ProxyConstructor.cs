@@ -107,25 +107,25 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        internal protected override JSValue GetMember(JSValue key, bool forWrite, PropertyScope memberScope)
+        internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 if (key.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
-                var res = proxy.GetMember(key, forWrite && memberScope == PropertyScope.Own, memberScope);
+                var res = proxy.GetProperty(key, forWrite && memberScope == PropertyScope.Own, memberScope);
                 if (res.Exists || (memberScope == PropertyScope.Own && forWrite))
                 {
                     if (forWrite && res.NeedClone)
-                        res = proxy.GetMember(key, true, memberScope);
+                        res = proxy.GetProperty(key, true, memberScope);
                     return res;
                 }
-                res = __proto__.GetMember(key, forWrite, memberScope);
+                res = __proto__.GetProperty(key, forWrite, memberScope);
                 if (memberScope == PropertyScope.Own && (res.valueType != JSValueType.Property || (res.attributes & JSValueAttributesInternal.Field) == 0))
                     return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
                 return res;
             }
-            return base.GetMember(key, forWrite, memberScope);
+            return base.GetProperty(key, forWrite, memberScope);
         }
 
         protected internal override bool DeleteProperty(JSValue name)

@@ -160,6 +160,15 @@ namespace NiL.JS {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Can&apos;t get property &quot;{0}&quot; of &quot;{1}&quot;.
+        /// </summary>
+        internal static string TryingToGetProperty {
+            get {
+                return ResourceManager.GetString("TryingToGetProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Unexpected token.
         /// </summary>
         internal static string UnexpectedToken {

@@ -128,7 +128,7 @@ namespace NiL.JS.Core
             if (code.Length == index)
                 return false;
 
-            while (char.IsWhiteSpace(code[index]))
+            while (Tools.IsWhiteSpace(code[index]))
             {
                 index++;
                 if (code.Length == index)
@@ -146,14 +146,14 @@ namespace NiL.JS.Core
                         if (code.Length == index)
                             return false;
                     }
-                    while (char.IsWhiteSpace(code[index]));
+                    while (Tools.IsWhiteSpace(code[index]));
 
                     Validate(code, "...", ref index);
 
                     if (!ValidateName(code, ref index))
                         return false;
 
-                    while (char.IsWhiteSpace(code[index]))
+                    while (Tools.IsWhiteSpace(code[index]))
                     {
                         index++;
                         if (code.Length == index)
@@ -170,7 +170,7 @@ namespace NiL.JS.Core
                     if (code.Length == index)
                         return false;
                 }
-                while (char.IsWhiteSpace(code[index]));
+                while (Tools.IsWhiteSpace(code[index]));
             }
 
             if (!Validate(code, "=>", index))
@@ -198,9 +198,9 @@ namespace NiL.JS.Core
             {
                 if (j >= code.Length)
                     return false;
-                if (char.IsWhiteSpace(pattern[i]))
+                if (Tools.IsWhiteSpace(pattern[i]))
                 {
-                    while (code.Length > j && char.IsWhiteSpace(code[j]))
+                    while (code.Length > j && Tools.IsWhiteSpace(code[j]))
                     {
                         j++;
                         needInc = true;
@@ -537,7 +537,7 @@ namespace NiL.JS.Core
             return c == ' '
                 || Tools.isLineTerminator(c)
                 || IsOperator(c)
-                || char.IsWhiteSpace(c)
+                || Tools.IsWhiteSpace(c)
                 || (c == '{')
                 || (c == '\v')
                 || (c == '}')
@@ -558,7 +558,7 @@ namespace NiL.JS.Core
 
         internal static CodeNode Parse(ParsingState state, ref int index, CodeFragmentType ruleSet, bool throwError)
         {
-            while ((index < state.Code.Length) && (char.IsWhiteSpace(state.Code[index])))
+            while ((index < state.Code.Length) && (Tools.IsWhiteSpace(state.Code[index])))
                 index++;
             if (index >= state.Code.Length || state.Code[index] == '}')
                 return null;

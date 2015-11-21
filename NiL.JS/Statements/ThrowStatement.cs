@@ -31,7 +31,7 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "throw", ref i) || (!Parser.IsIdentificatorTerminator(state.Code[i])))
                 return null;
-            while (i < state.Code.Length && char.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
                 i++;
             var b = state.Code[i] == ';' || Tools.isLineTerminator(state.Code[i]) ? null : (Expression)Parser.Parse(state, ref i, CodeFragmentType.Expression);
             if (b is EmptyExpression)

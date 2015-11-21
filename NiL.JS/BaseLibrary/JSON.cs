@@ -180,7 +180,7 @@ namespace NiL.JS.BaseLibrary
                         if (value.Defined)
                         {
                             if (t.container != null)
-                                t.container.GetMember(t.fieldName, true, PropertyScope.Own).Assign(value);
+                                t.container.GetProperty(t.fieldName, true, PropertyScope.Own).Assign(value);
                             else
                             {
                                 t.value = value;
@@ -189,7 +189,7 @@ namespace NiL.JS.BaseLibrary
                         }
                     }
                     else if (t.container != null)
-                        t.container.GetMember(t.fieldName, true, PropertyScope.Own).Assign(t.value);
+                        t.container.GetProperty(t.fieldName, true, PropertyScope.Own).Assign(t.value);
                     else
                         stack.Push(t);
                 }

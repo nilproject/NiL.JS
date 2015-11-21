@@ -127,7 +127,7 @@ namespace NiL.JS.Expressions
             int i = index;
             if (!Parser.Validate(code, "class", ref i))
                 return null;
-            while (char.IsWhiteSpace(code[i]))
+            while (Tools.IsWhiteSpace(code[i]))
                 i++;
             string name = null;
             Expression baseType = null;
@@ -137,7 +137,7 @@ namespace NiL.JS.Expressions
                 if (Parser.ValidateName(code, ref i, true))
                     name = code.Substring(n, i - n);
 
-                while (char.IsWhiteSpace(code[i]))
+                while (Tools.IsWhiteSpace(code[i]))
                     i++;
             }
             if (Parser.Validate(code, "extends ", ref i))
@@ -150,7 +150,7 @@ namespace NiL.JS.Expressions
                     baseType = new ConstantDefinition(JSValue.Null) { Position = n, Length = 4 };
                 else
                     baseType = new GetVariableExpression(baseClassName, state.scopeDepth);
-                while (char.IsWhiteSpace(code[i]))
+                while (Tools.IsWhiteSpace(code[i]))
                     i++;
             }
             if (code[i] != '{')
@@ -167,7 +167,7 @@ namespace NiL.JS.Expressions
             {
                 do
                     i++;
-                while (char.IsWhiteSpace(code[i]) || code[i] == ';');
+                while (Tools.IsWhiteSpace(code[i]) || code[i] == ';');
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
@@ -175,13 +175,13 @@ namespace NiL.JS.Expressions
                 bool @static = Parser.Validate(state.Code, "static", ref i);
                 if (@static)
                 {
-                    while (char.IsWhiteSpace(state.Code[i]))
+                    while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
                 }
                 bool getOrSet = Parser.Validate(state.Code, "get", ref i) || Parser.Validate(state.Code, "set", ref i);
                 if (getOrSet)
                 {
-                    while (char.IsWhiteSpace(state.Code[i]))
+                    while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
                 }
                 var asterisk = state.Code[i] == '*';
@@ -189,19 +189,19 @@ namespace NiL.JS.Expressions
                 {
                     do
                         i++;
-                    while (char.IsWhiteSpace(state.Code[i]));
+                    while (Tools.IsWhiteSpace(state.Code[i]));
                 }
 
                 if (Parser.Validate(state.Code, "[", ref i))
                 {
                     var propertyName = ExpressionTree.Parse(state, ref i, false, false, false, true, false, false);
-                    while (char.IsWhiteSpace(state.Code[i]))
+                    while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
                     if (state.Code[i] != ']')
                         ExceptionsHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
                     do
                         i++;
-                    while (char.IsWhiteSpace(state.Code[i]));
+                    while (Tools.IsWhiteSpace(state.Code[i]));
 
                     CodeNode initializer;
                     if (state.Code[i] == '(')
@@ -286,7 +286,7 @@ namespace NiL.JS.Expressions
                     {
                         do
                             i++;
-                        while (char.IsWhiteSpace(code[i]));
+                        while (Tools.IsWhiteSpace(code[i]));
                     }
 
                     if (Parser.ValidateName(state.Code, ref i, false, true, state.strict))
