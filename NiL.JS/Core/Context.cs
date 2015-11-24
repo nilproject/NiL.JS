@@ -140,7 +140,7 @@ namespace NiL.JS.Core
                 globalContext.fields["undefined"] = JSValue.undefined;
                 globalContext.fields["Infinity"] = Number.POSITIVE_INFINITY;
                 globalContext.fields["NaN"] = Number.NaN;
-                globalContext.fields["null"] = JSValue.Null;
+                globalContext.fields["null"] = JSValue.@null;
                 #endregion
 
                 foreach (var v in globalContext.fields.Values)
@@ -557,7 +557,7 @@ namespace NiL.JS.Core
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
                 CodeNode cb = body;
-                Parser.Build(ref cb, 0, vars, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, null, Options.Default);
+                Parser.Build(ref cb, 0, vars, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, null, Options.None);
                 body = cb as CodeBlock;
                 Context context = null;
                 if (leak)

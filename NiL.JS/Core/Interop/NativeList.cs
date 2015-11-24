@@ -52,7 +52,7 @@ namespace NiL.JS.Core.Interop
                             case TypeCode.DateTime:
                                 {
                                     var dateTime = (DateTime)value;
-                                    base.Assign(new ObjectContainer(new Date(dateTime.ToUniversalTime().Ticks, dateTime.ToLocalTime().Ticks - dateTime.ToUniversalTime().Ticks)));
+                                    base.Assign(new ObjectWrapper(new Date(dateTime.ToUniversalTime().Ticks, dateTime.ToLocalTime().Ticks - dateTime.ToUniversalTime().Ticks)));
                                     break;
                                 }
                             case TypeCode.Decimal:
@@ -209,7 +209,7 @@ namespace NiL.JS.Core.Interop
             if (result is IList)
                 return new NativeList(result as IList);
             else
-                return TypeProxy.Proxy(result);
+                return TypeProxy.Marshal(result);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)

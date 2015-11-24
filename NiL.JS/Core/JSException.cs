@@ -16,7 +16,7 @@ namespace NiL.JS.Core
 
         public JSException(Error avatar)
         {
-            Avatar = TypeProxy.Proxy(avatar);
+            Avatar = TypeProxy.Marshal(avatar);
         }
 
         public JSException(JSValue avatar)
@@ -33,7 +33,7 @@ namespace NiL.JS.Core
         public JSException(Error avatar, Exception innerException)
             : base("", innerException)
         {
-            Avatar = TypeProxy.Proxy(avatar);
+            Avatar = TypeProxy.Marshal(avatar);
         }
 
         public override string Message

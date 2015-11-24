@@ -9,7 +9,7 @@ namespace NiL.JS
     [Flags]
     public enum Options
     {
-        Default = 0,
+        None = 0,
         SuppressUselessExpressionsElimination = 1,
         SuppressUselessStatementsElimination = 2,
         SuppressConstantPropogation = 4,
@@ -41,7 +41,7 @@ namespace NiL.JS
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         public Script(string code)
-            : this(code, null, null, Options.Default)
+            : this(code, null, null, Options.None)
         {
 
         }
@@ -52,7 +52,7 @@ namespace NiL.JS
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
         public Script(string code, CompilerMessageCallback messageCallback)
-            : this(code, null, messageCallback, Options.Default)
+            : this(code, null, messageCallback, Options.None)
         {
 
         }
@@ -64,7 +64,7 @@ namespace NiL.JS
         /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
         public Script(string code, Context parentContext)
-            : this(code, parentContext, null, Options.Default)
+            : this(code, parentContext, null, Options.None)
         { }
 
         /// <summary>

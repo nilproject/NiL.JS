@@ -5,7 +5,6 @@ using System.Text;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
-using NiL.JS.Statements;
 using NiL.JS.Extensions;
 
 namespace NiL.JS.Expressions
@@ -53,7 +52,7 @@ namespace NiL.JS.Expressions
 
             protected internal override JSValue ConstructObject()
             {
-                return new ObjectContainer(null)
+                return new ObjectWrapper(null)
                 {
                     __proto__ = prototype.oValue as JSObject,
                     ownedFieldsOnly = true
@@ -147,7 +146,7 @@ namespace NiL.JS.Expressions
                     ExceptionsHelper.ThrowSyntaxError("Invalid base class name", state.Code, i);
                 var baseClassName = code.Substring(n, i - n);
                 if (baseClassName == "null")
-                    baseType = new ConstantDefinition(JSValue.Null) { Position = n, Length = 4 };
+                    baseType = new ConstantDefinition(JSValue.@null) { Position = n, Length = 4 };
                 else
                     baseType = new GetVariableExpression(baseClassName, state.scopeDepth);
                 while (Tools.IsWhiteSpace(code[i]))

@@ -421,7 +421,7 @@ namespace NiL.JS.Core.Functions
                         }
                     }
                 }
-                return Interop.TypeProxy.Proxy(InvokeImpl(targetObject, args, null));
+                return Interop.TypeProxy.Marshal(InvokeImpl(targetObject, args, null));
             }
         }
 
@@ -538,7 +538,7 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
-            return Interop.TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
+            return Interop.TypeProxy.Marshal(InvokeImpl(targetObject, null, arguments));
         }
 
         private static object[] convertArray(NiL.JS.BaseLibrary.Array array)
@@ -569,8 +569,8 @@ namespace NiL.JS.Core.Functions
             if (v != null)
                 return v;
             v = obj.Value;
-            if (v is NiL.JS.BaseLibrary.Array)
-                return convertArray(v as NiL.JS.BaseLibrary.Array);
+            if (v is BaseLibrary.Array)
+                return convertArray(v as BaseLibrary.Array);
             else if (v is ProxyConstructor)
                 return (v as ProxyConstructor).proxy.hostedType;
             else if (v is Function && targetType.IsSubclassOf(typeof(Delegate)))

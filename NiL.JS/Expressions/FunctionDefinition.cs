@@ -137,7 +137,7 @@ namespace NiL.JS.Expressions
             return Parse(state, ref index, FunctionType.Arrow);
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index, FunctionType mode)
+        internal static Expression Parse(ParsingState state, ref int index, FunctionType mode)
         {
             string code = state.Code;
             int i = index;

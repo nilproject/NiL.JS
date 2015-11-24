@@ -34,7 +34,7 @@ namespace NiL.JS.BaseLibrary
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            return TypeProxy.Proxy(new GeneratorIterator(generator, targetObject, arguments));
+            return TypeProxy.Marshal(new GeneratorIterator(generator, targetObject, arguments));
         }
 
         internal void Resume()
@@ -125,7 +125,7 @@ namespace NiL.JS.BaseLibrary
             if (generatorContext == null)
                 return new GeneratorResult(JSValue.undefined, true);
             generatorContext.abortType = AbortType.ResumeThrow;
-            return next(arguments);                
+            return next(arguments);
         }
 
         public IIterator iterator()

@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
 
         public ThrowStatement(Exception e)
         {
-            body = new ConstantDefinition(TypeProxy.Proxy(e));
+            body = new ConstantDefinition(TypeProxy.Marshal(e));
         }
 
         internal ThrowStatement(Expression statement)

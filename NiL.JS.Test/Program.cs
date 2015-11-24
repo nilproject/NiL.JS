@@ -10,42 +10,20 @@ using System.Linq.Expressions;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Test
 {
     class Program
     {
-        private sealed class ClassWithEvent
+        internal interface TestInterface
         {
-            public event EventHandler MyEvent;
-
-            public void FireMyEvent()
-            {
-                var @event = MyEvent;
-                if (@event != null)
-                    @event(this, EventArgs.Empty);
-            }
+            object testFunction();
         }
 
         private static void testEx()
         {
-            Context.GlobalContext.DefineVariable("testInstance").Assign(JSValue.Wrap(new ClassWithEvent()));
-
-            Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
-            Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.KeysOfOperator));
-
-            var t = new Script(@"
-function func(){
-    console.log('Hello');
-}
-
-testInstance.MyEvent = func;
-testInstance.FireMyEvent();
-testInstance.remove_MyEvent(func);
-testInstance.FireMyEvent();
-");
-            t.Context.AttachModule(typeof(object));
-            t.Invoke();
+            //var obj = new Context().Eval("({ testFunction(){ return 'hello, world!'; } })").AsImplementationOf<TestInterface>();
         }
 
         static void Main(string[] args)
@@ -53,7 +31,7 @@ testInstance.FireMyEvent();
             //Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
 
-            Context.GlobalContext.DebuggerCallback += (sender, e) => System.Diagnostics.Debugger.Break();
+            Context.GlobalContext.DebuggerCallback += (sender, e) => Debugger.Break();
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
             Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
             {
@@ -78,8 +56,8 @@ testInstance.FireMyEvent();
                 })
             }));
 #endif
-            
-            int mode = 100
+
+            int mode = 3
                     ;
             switch (mode)
             {
@@ -941,7 +919,7 @@ for (var i = 0; i < 10000000; )
             {
                 TimeSpan total = new TimeSpan();
 
-                for (var i = 0; i < fls.Length; )
+                for (var i = 0; i < fls.Length;)
                 {
                     string data, body;
                     using (var f = new FileStream(fls[i++], FileMode.Open, FileAccess.Read))

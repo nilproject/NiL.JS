@@ -105,7 +105,7 @@ namespace NiL.JS.BaseLibrary
             while (source.MoveNext())
             {
                 var e = source.Current;
-                data[index++] = (e as JSValue ?? TypeProxy.Proxy(e)).CloneImpl(false);
+                data[index++] = (e as JSValue ?? TypeProxy.Marshal(e)).CloneImpl(false);
             }
             attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -1322,7 +1322,7 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 var crnt = self;
-                if (self.__proto__ == Null)
+                if (self.__proto__ == @null)
                     break;
                 self = self.__proto__;
                 if (self == null || (self.valueType >= JSValueType.String && self.oValue == null))

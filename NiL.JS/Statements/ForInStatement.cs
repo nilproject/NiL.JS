@@ -276,7 +276,7 @@ namespace NiL.JS.Statements
                 }
 
                 source = source.__proto__;
-                if (source == JSValue.Null || !source.Defined || (source.valueType >= JSValueType.Object && source.oValue == null))
+                if (source == JSValue.@null || !source.Defined || (source.valueType >= JSValueType.Object && source.oValue == null))
                     break;
             }
             return null;

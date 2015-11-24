@@ -145,7 +145,7 @@ namespace NiL.JS.Core
 
         internal override JSObject GetDefaultPrototype()
         {
-            return GlobalPrototype ?? Null;
+            return GlobalPrototype ?? @null;
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool createMember, PropertyScope memberScope)

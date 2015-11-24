@@ -135,7 +135,7 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
         {
-            var objc = targetObject as ObjectContainer;
+            var objc = targetObject as ObjectWrapper;
             if (construct) // new
             {
 
@@ -247,7 +247,7 @@ namespace NiL.JS.Core.Functions
                         if ((res.oValue is JSValue) && (res.oValue as JSValue).valueType >= JSValueType.Object)
                             return res.oValue as JSValue;
                     }
-                    res = res ?? new ObjectContainer(obj)
+                    res = res ?? new ObjectWrapper(obj)
                     {
                         attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
                     };
@@ -266,7 +266,7 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue ConstructObject()
         {
-            return new ObjectContainer(null) { __prototype = TypeProxy.GetPrototype(proxy.hostedType) };
+            return new ObjectWrapper(null) { __prototype = TypeProxy.GetPrototype(proxy.hostedType) };
         }
 
         [Hidden]

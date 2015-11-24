@@ -44,7 +44,7 @@ namespace NiL.JS.Core.Interop
                             if (hostedType == typeof(JSObject))
                             {
                                 _prototypeInstance = CreateObject();
-                                (_prototypeInstance as JSObject).__prototype = Null;
+                                (_prototypeInstance as JSObject).__prototype = @null;
                                 (_prototypeInstance as JSObject).fields = fields;
                                 (_prototypeInstance as JSObject).attributes |= JSValueAttributesInternal.ProxyPrototype;
                             }
@@ -59,7 +59,7 @@ namespace NiL.JS.Core.Interop
                             }
                             else
                             {
-                                _prototypeInstance = new ObjectContainer(ictor.Invoke(null))
+                                _prototypeInstance = new ObjectWrapper(ictor.Invoke(null))
                                 {
                                     attributes = attributes | JSValueAttributesInternal.ProxyPrototype,
                                     fields = fields,
@@ -153,7 +153,7 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        public static JSValue Proxy(object value)
+        public static JSValue Marshal(object value)
         {
             JSValue res;
             if (value == null)
@@ -164,41 +164,177 @@ namespace NiL.JS.Core.Interop
                 if (res != null)
                     return res;
             }
-            if (value is sbyte)
-                return (int)(sbyte)value;
-            if (value is byte)
-                return (int)(byte)value;
-            if (value is short)
-                return (int)(short)value;
-            if (value is ushort)
-                return (int)(ushort)value;
-            if (value is int)
-                return (int)value;
-            if (value is uint)
-                return new Number((long)(uint)value);
-            if (value is long)
-                return new Number((long)value);
-            if (value is ulong)
-                return (double)(ulong)value;
-            if (value is float)
-                return (double)(float)value;
-            if (value is double)
-                return (double)value;
-            if (value is string)
-                return value.ToString();
-            if (value is char)
-                return value.ToString();
-            if (value is bool)
-                return (bool)value;
+            switch (Type.GetTypeCode(value.GetType()))
+            {
+                case TypeCode.Boolean:
+                    {
+                        return new JSValue
+                        {
+                            iValue = (bool)value ? 1 : 0,
+                            valueType = JSValueType.Bool
+                        };
+                    }
+                case TypeCode.Byte:
+                    {
+                        return new JSValue
+                           {
+                               iValue = (byte)value,
+                               valueType = JSValueType.Int
+                           };
+                    }
+                case TypeCode.Char:
+                    {
+                        return new JSValue
+                           {
+                               oValue = ((char)value).ToString(),
+                               valueType = JSValueType.String
+                           };
+                    }
+                case TypeCode.DateTime:
+                    {
+                        var dateTime = (DateTime)value;
+                        return new ObjectWrapper(new Date(dateTime.ToUniversalTime().Ticks, dateTime.ToLocalTime().Ticks - dateTime.ToUniversalTime().Ticks));
+                    }
+                case TypeCode.Decimal:
+                    {
+                        return new JSValue
+                           {
+                               dValue = (double)(decimal)value,
+                               valueType = JSValueType.Double
+                           };
+                    }
+                case TypeCode.Double:
+                    {
+                        return new JSValue
+                           {
+                               dValue = (double)value,
+                               valueType = JSValueType.Double
+                           };
+                    }
+                case TypeCode.Int16:
+                    {
+                        return new JSValue
+                           {
+                               iValue = (short)value,
+                               valueType = JSValueType.Int
+                           };
+                    }
+                case TypeCode.Int32:
+                    {
+                        return new JSValue
+                           {
+                               iValue = (int)value,
+                               valueType = JSValueType.Int
+                           };
+                    }
+                case TypeCode.Int64:
+                    {
+                        return new JSValue
+                           {
+                               dValue = (long)value,
+                               valueType = JSValueType.Double
+                           };
+                    }
+                case TypeCode.SByte:
+                    {
+                        return new JSValue
+                           {
+                               iValue = (sbyte)value,
+                               valueType = JSValueType.Int
+                           };
+                    }
+                case TypeCode.Single:
+                    {
+                        return new JSValue
+                           {
+                               dValue = (float)value,
+                               valueType = JSValueType.Double
+                           };
+                    }
+                case TypeCode.String:
+                    {
+                        return new JSValue
+                           {
+                               oValue = value,
+                               valueType = JSValueType.String
+                           };
+                    }
+                case TypeCode.UInt16:
+                    {
+                        return new JSValue
+                           {
+                               iValue = (ushort)value,
+                               valueType = JSValueType.Int
+                           };
+                    }
+                case TypeCode.UInt32:
+                    {
+                        var v = (uint)value;
+                        if (v > int.MaxValue)
+                        {
+                            return new JSValue
+                                {
+                                    dValue = v,
+                                    valueType = JSValueType.Double
+                                };
+                        }
+                        else
+                        {
+                            return new JSValue
+                                {
+                                    iValue = (int)v,
+                                    valueType = JSValueType.Int
+                                };
+                        }
+                    }
+                case TypeCode.UInt64:
+                    {
+                        var v = (long)value;
+                        if (v > int.MaxValue)
+                        {
+                            return new JSValue
+                                {
+                                    dValue = v,
+                                    valueType = JSValueType.Double
+                                };
+                        }
+                        else
+                        {
+                            return new JSValue
+                                {
+                                    iValue = (int)v,
+                                    valueType = JSValueType.Int
+                                };
+                        }
+                    }
+                default:
+                    {
+                        if (value is Delegate)
+                        {
+                            return new JSValue
+                                {
 #if PORTABLE
-            if (value is Delegate)
-                return new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
+                                    oValue = new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target),
 #else
-            if (value is Delegate)
-                return new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
+                                    oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target),
 #endif
-            res = new ObjectContainer(value);
-            return res;
+                                    valueType = JSValueType.Function
+                                };
+                        }
+                        else if (value is IList)
+                        {
+                            return new JSValue
+                                {
+                                    oValue = new NativeList(value as IList),
+                                    valueType = JSValueType.Object
+                                };
+                        }
+                        else
+                        {
+                            return new ObjectWrapper(value);
+                        }
+                    }
+            }
         }
 
         public static TypeProxy GetPrototype(Type type)
@@ -420,7 +556,7 @@ namespace NiL.JS.Core.Interop
             {
                 for (int i = 0; i < m.Count; i++)
                     if (!(m[i] is MethodBase))
-                        ExceptionsHelper.Throw(Proxy(new TypeError("Incompatible fields types.")));
+                        ExceptionsHelper.Throw(Marshal(new TypeError("Incompatible fields types.")));
                 var cache = new MethodProxy[m.Count];
                 for (int i = 0; i < m.Count; i++)
                     cache[i] = new MethodProxy(m[i] as MethodBase);
@@ -447,7 +583,7 @@ namespace NiL.JS.Core.Interop
                             if ((field.Attributes & (FieldAttributes.Literal | FieldAttributes.InitOnly)) != 0
                                 && (field.Attributes & FieldAttributes.Static) != 0)
                             {
-                                r = Proxy(field.GetValue(null));
+                                r = Marshal(field.GetValue(null));
                                 r.attributes |= JSValueAttributesInternal.ReadOnly;
                             }
                             else
@@ -457,7 +593,7 @@ namespace NiL.JS.Core.Interop
                                     valueType = JSValueType.Property,
                                     oValue = new GsPropertyPair
                                     (
-                                        new ExternalFunction((thisBind, a) => Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value))),
+                                        new ExternalFunction((thisBind, a) => Marshal(field.GetValue(field.IsStatic ? null : thisBind.Value))),
                                         !m[0].IsDefined(typeof(Interop.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
                                         {
                                             field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);

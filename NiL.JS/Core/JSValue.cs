@@ -117,7 +117,7 @@ namespace NiL.JS.Core
         [Hidden]
         internal static readonly JSValue notExists = new JSValue() { valueType = JSValueType.NotExists, attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly JSObject Null = new JSObject() { valueType = JSValueType.Object, oValue = null, attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
+        internal static readonly JSObject @null = new JSObject() { valueType = JSValueType.Object, oValue = null, attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
         [Hidden]
         internal static readonly JSValue nullString = new JSValue() { valueType = JSValueType.String, oValue = "null", attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
@@ -144,7 +144,7 @@ namespace NiL.JS.Core
             }
         }
         [Hidden]
-        public static JSValue JSNull { [Hidden] get { return Null; } }
+        public static JSValue Null { [Hidden] get { return @null; } }
 
         [Hidden]
         public virtual JSValue this[string name]
@@ -369,7 +369,7 @@ namespace NiL.JS.Core
             {
                 var rojso = oValue as JSValue;
                 if (rojso != null)
-                    return rojso.GetDefaultPrototype() ?? Null;
+                    return rojso.GetDefaultPrototype() ?? @null;
                 else
                     return TypeProxy.GetPrototype(oValue.GetType());
             }
@@ -698,13 +698,7 @@ namespace NiL.JS.Core
             }
             return false;
         }
-
-        [Hidden]
-        public static JSValue Wrap(object @object)
-        {
-            return TypeProxy.Proxy(@object);
-        }
-
+        
         [Hidden]
         public object Clone()
         {
@@ -784,7 +778,7 @@ namespace NiL.JS.Core
             if (valueType == JSValueType.Property)
                 throw new InvalidOperationException("Try to assign to property.");
 #endif
-            if (this == value || (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) != 0)
+            if ((attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) != 0)
                 return;
             this.valueType = value.valueType | JSValueType.Undefined;
             this.iValue = value.iValue;
@@ -851,15 +845,15 @@ namespace NiL.JS.Core
             switch (valueType)
             {
                 case JSValueType.Bool:
-                    return new ObjectContainer(this is BaseLibrary.Boolean ? this : new BaseLibrary.Boolean(iValue != 0));
+                    return new ObjectWrapper(this is BaseLibrary.Boolean ? this : new BaseLibrary.Boolean(iValue != 0));
                 case JSValueType.Int:
-                    return new ObjectContainer(this is BaseLibrary.Number ? this : new BaseLibrary.Number(iValue));
+                    return new ObjectWrapper(this is BaseLibrary.Number ? this : new BaseLibrary.Number(iValue));
                 case JSValueType.Double:
-                    return new ObjectContainer(this is BaseLibrary.Number ? this : new BaseLibrary.Number(dValue));
+                    return new ObjectWrapper(this is BaseLibrary.Number ? this : new BaseLibrary.Number(dValue));
                 case JSValueType.String:
-                    return new ObjectContainer(this is BaseLibrary.String ? this : new BaseLibrary.String(oValue.ToString()));
+                    return new ObjectWrapper(this is BaseLibrary.String ? this : new BaseLibrary.String(oValue.ToString()));
                 case JSValueType.Symbol:
-                    return new ObjectContainer(oValue);
+                    return new ObjectWrapper(oValue);
             }
             return new JSObject() { valueType = JSValueType.Object };
         }

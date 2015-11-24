@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using NiL.JS.Core;
@@ -61,11 +60,10 @@ namespace NiL.JS.Expressions
             this.sources = sources;
         }
 
-        private static object prep(JSValue x, ref bool metString)
+        private static object prep(JSValue x)
         {
             if (x.valueType == JSValueType.String)
             {
-                metString = true;
                 return x.oValue;
             }
             if (x.valueType == JSValueType.Date)
@@ -74,7 +72,6 @@ namespace NiL.JS.Expressions
                 x = x.ToPrimitiveValue_Value_String();
             if (x.valueType == JSValueType.String)
             {
-                metString = true;
                 return x.oValue;
             }
             return x.ToString();
@@ -82,18 +79,12 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            //lock (this)
-            {
-                bool metString = false;
-                object res = prep(sources[0].Evaluate(context), ref metString);
-                for (var i = 1; i < sources.Count; i++)
-                    res = new RopeString(res, prep(sources[i].Evaluate(context), ref metString));
-                if (!metString)
-                    throw new InvalidOperationException("metString == false");
-                tempContainer.valueType = JSValueType.String;
-                tempContainer.oValue = res;
-                return tempContainer;
-            }
+            object res = prep(sources[0].Evaluate(context));
+            for (var i = 1; i < sources.Count; i++)
+                res = new RopeString(res, prep(sources[i].Evaluate(context)));
+            tempContainer.valueType = JSValueType.String;
+            tempContainer.oValue = res;
+            return tempContainer;
         }
 
         internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)

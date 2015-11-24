@@ -70,7 +70,7 @@ namespace NiL.JS.Core.Functions
                 for (var i = 0; i < methods.Length; i++)
                 {
                     if (methods[i].Parameters.Length == 1 && methods[i].Parameters[0].ParameterType == typeof(Arguments))
-                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, null, arguments));
+                        return TypeProxy.Marshal(methods[i].InvokeImpl(targetObject, null, arguments));
                     if (pass == 1 || methods[i].Parameters.Length == l)
                     {
                         if (l != 0)
@@ -88,7 +88,7 @@ namespace NiL.JS.Core.Functions
                             if (cargs == null)
                                 continue;
                         }
-                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, cargs, arguments));
+                        return TypeProxy.Marshal(methods[i].InvokeImpl(targetObject, cargs, arguments));
                     }
                 }
             }

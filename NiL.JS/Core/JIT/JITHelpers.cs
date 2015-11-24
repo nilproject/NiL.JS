@@ -155,7 +155,7 @@ namespace NiL.JS.Core.JIT
                     }
                 default:
                     {
-                        dest.oValue = new ObjectContainer(source);
+                        dest.oValue = new ObjectWrapper(source);
                         dest.valueType = JSValueType.Object;
                         break;
                     }

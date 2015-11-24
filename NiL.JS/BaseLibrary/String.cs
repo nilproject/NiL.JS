@@ -284,7 +284,7 @@ namespace NiL.JS.BaseLibrary
                 if (!regex._global)
                 {
                     var res = regex.exec(self);
-                    if ((res ?? Null) != Null)
+                    if ((res ?? @null) != @null)
                         return res["index"];
                     return -1;
                 }
@@ -307,8 +307,8 @@ namespace NiL.JS.BaseLibrary
         {
             if (args == null || args.length == 0)
                 return self;
-            if ((args[0] ?? Null).valueType == JSValueType.Object
-                && (args[0] ?? Null).Value != null
+            if ((args[0] ?? @null).valueType == JSValueType.Object
+                && (args[0] ?? @null).Value != null
                 && args[0].Value.GetType() == typeof(RegExp))
             {
                 var f = args[1].oValue as Function;
@@ -824,7 +824,7 @@ namespace NiL.JS.BaseLibrary
                 if (sb.Length != initialLength)
                 {
                     index = 0;
-                    for (; ; )
+                    for (;;)
                     {
                         while (index < sb.Length && sb[index] != '\n' && sb[index] != '\r')
                             index++;

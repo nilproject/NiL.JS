@@ -442,7 +442,7 @@ namespace NiL.JS.Expressions
                 {
                     bool b = false;
                     if (value == "null")
-                        first = new ConstantDefinition(JSValue.Null) { Position = s, Length = i - s };
+                        first = new ConstantDefinition(JSValue.@null) { Position = s, Length = i - s };
                     else if (bool.TryParse(value, out b))
                         first = new ConstantDefinition(b ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False) { Position = index, Length = i - s };
                     else

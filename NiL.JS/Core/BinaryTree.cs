@@ -299,7 +299,7 @@ namespace NiL.JS.Core
                 Insert(nodes[i].key, nodes[i].value, false);
         }
 
-        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("root", root);
             info.AddValue("count", Count);

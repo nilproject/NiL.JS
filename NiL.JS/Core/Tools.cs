@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
+using NiL.JS.Core.JIT;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Core
 {
@@ -72,10 +76,10 @@ namespace NiL.JS.Core
 
         internal static readonly char[] TrimChars = new[] { '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u0020', '\u00A0', '\u1680', '\u180E', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF' };
 
-        internal static readonly char[] NumChars = new[] 
-        { 
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' 
+        internal static readonly char[] NumChars = new[]
+        {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
         };
 
         //internal static readonly string[] charStrings = (from x in Enumerable.Range(char.MinValue, char.MaxValue) select ((char)x).ToString()).ToArray();
@@ -511,7 +515,7 @@ namespace NiL.JS.Core
             if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
             {
                 jsobj = tpres.prototypeInstance;
-                if (jsobj is ObjectContainer)
+                if (jsobj is ObjectWrapper)
                     return jsobj.Value;
                 return jsobj;
             }
@@ -554,7 +558,7 @@ namespace NiL.JS.Core
                 return "-Infinity";
             if (double.IsNaN(d))
                 return "NaN";
-            for (var i = 8; i-- > 0; )
+            for (var i = 8; i-- > 0;)
             {
                 if (cachedDoubleString[i].key == d)
                     return cachedDoubleString[i].value;
@@ -699,7 +703,7 @@ namespace NiL.JS.Core
                     else
                     {
                         res.Append("0.");
-                        for (var i = -count - ts.Length; i-- > 0; )
+                        for (var i = -count - ts.Length; i-- > 0;)
                             res.Append('0');
                         res.Append(ts);
                     }
@@ -712,7 +716,7 @@ namespace NiL.JS.Core
                             res.Append('.');
                         res.Append(ts[i]);
                     }
-                    for (var i = res.Length; i-- > 0; )
+                    for (var i = res.Length; i-- > 0;)
                     {
                         if (res[i] == '0')
                             res.Length--;
@@ -740,7 +744,7 @@ namespace NiL.JS.Core
         {
             if (value == 0)
                 return "0";
-            for (var i = cacheSize; i-- > 0; )
+            for (var i = cacheSize; i-- > 0;)
             {
                 if (intStringCache[i].key == value)
                     return intStringCache[i].value;
@@ -1233,7 +1237,7 @@ namespace NiL.JS.Core
         internal static string RemoveComments(string code, int startPosition)
         {
             StringBuilder res = null;// new StringBuilder(code.Length);
-            for (int i = startPosition; i < code.Length; )
+            for (int i = startPosition; i < code.Length;)
             {
                 while (i < code.Length && Tools.IsWhiteSpace(code[i]))
                 {
@@ -1286,7 +1290,7 @@ namespace NiL.JS.Core
             }
             return (res as object ?? code).ToString();
         }
-        
+
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
@@ -1343,7 +1347,7 @@ namespace NiL.JS.Core
         {
             var temp = new BaseLibrary.Array();
             bool goDeep = true;
-            for (; goDeep; )
+            for (; goDeep;)
             {
                 goDeep = false;
                 var srca = src as BaseLibrary.Array;
@@ -1399,7 +1403,7 @@ namespace NiL.JS.Core
                     }
                     goDeep |= System.Math.Abs(prew - _length) > 1;
                 }
-                if (src.__proto__ == JSValue.Null)
+                if (src.__proto__ == JSValue.@null)
                     break;
                 src = src.__proto__.oValue as JSValue ?? src.__proto__;
                 if (src == null || (src.valueType >= JSValueType.String && src.oValue == null))
@@ -1474,6 +1478,55 @@ namespace NiL.JS.Core
         internal static bool IsWhiteSpace(char p)
         {
             return System.Array.IndexOf(TrimChars, p) != -1;
+        }
+
+        internal static LambdaExpression BuildJsCallTree(string name, Expression functionGetter, ParameterExpression thisParameter, MethodInfo method, Type delegateType)
+        {
+            var prms = method.GetParameters();
+
+            var handlerArgumentsParameters = new ParameterExpression[prms.Length + (thisParameter != null ? 1 : 0)];
+            {
+                var i = 0;
+
+                if (thisParameter != null)
+                    handlerArgumentsParameters[i++] = thisParameter;
+
+                for (; i < prms.Length; i++)
+                {
+                    handlerArgumentsParameters[i] = Expression.Parameter(prms[i].ParameterType, prms[i].Name);
+                }
+            }
+
+            var argumentsParameter = Expression.Parameter(typeof(Arguments), "arguments");
+            var expressions = new List<Expression>();
+
+            if (prms.Length != 0)
+            {
+                expressions.Add(Expression.Assign(argumentsParameter, Expression.New(typeof(Arguments))));
+                for (var i = 0; i < handlerArgumentsParameters.Length; i++)
+                {
+                    expressions.Add(Expression.Call(argumentsParameter, typeof(Arguments).GetMethod("Add"),
+                        Expression.Call(JITHelpers.methodof(TypeProxy.Marshal), handlerArgumentsParameters[i])));
+                }
+            }
+
+            var callTree = Expression.Call(functionGetter, typeof(Function).GetMethod(nameof(Function.Call), new[] { typeof(Arguments) }), argumentsParameter);
+
+            expressions.Add(callTree);
+            if (method.ReturnParameter.ParameterType != typeof(void)
+                && method.ReturnParameter.ParameterType != typeof(object)
+                && !typeof(JSValue).IsAssignableFrom(method.ReturnParameter.ParameterType))
+            {
+                var asMethod = typeof(JSValueExtensions).GetMethod("As").MakeGenericMethod(method.ReturnParameter.ParameterType);
+                expressions[expressions.Count - 1] = Expression.Call(asMethod, callTree);
+            }
+
+            var result = Expression.Block(new[] { argumentsParameter }, expressions);
+
+            if (delegateType != null)
+                return Expression.Lambda(delegateType, result, name, handlerArgumentsParameters);
+            else
+                return Expression.Lambda(result, name, handlerArgumentsParameters);
         }
     }
 }

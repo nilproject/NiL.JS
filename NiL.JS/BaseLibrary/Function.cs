@@ -53,12 +53,12 @@ namespace NiL.JS.BaseLibrary
 #else
 .GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic))
 #endif
-            {
-                attributes = JSValueAttributesInternal.DoNotDelete
+        {
+            attributes = JSValueAttributesInternal.DoNotDelete
                 | JSValueAttributesInternal.Immutable
                 | JSValueAttributesInternal.DoNotEnumerate
                 | JSValueAttributesInternal.ReadOnly
-            };
+        };
         protected static void ThrowTypeError()
         {
             ExceptionsHelper.Throw(new TypeError("Properties caller, callee and arguments not allowed in strict mode."));
@@ -79,7 +79,10 @@ namespace NiL.JS.BaseLibrary
         public Context Context
         {
             [Hidden]
-            get { return parentContext; }
+            get
+            {
+                return parentContext;
+            }
         }
         [Field]
         [DoNotDelete]
@@ -87,7 +90,10 @@ namespace NiL.JS.BaseLibrary
         public virtual string name
         {
             [Hidden]
-            get { return creator.name; }
+            get
+            {
+                return creator.name;
+            }
         }
         [Hidden]
         internal Number _length = null;
@@ -113,7 +119,10 @@ namespace NiL.JS.BaseLibrary
         public virtual FunctionType Type
         {
             [Hidden]
-            get { return creator.type; }
+            get
+            {
+                return creator.type;
+            }
         }
         [Hidden]
         public virtual bool Strict
@@ -262,7 +271,7 @@ namespace NiL.JS.BaseLibrary
             var func = FunctionDefinition.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index, FunctionType.Function);
             if (func != null && code.Length == index)
             {
-                Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), parentContext.strict ? CodeContext.Strict : CodeContext.None, null, null, Options.Default);
+                Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), parentContext.strict ? CodeContext.Strict : CodeContext.None, null, null, Options.None);
                 creator = func as FunctionDefinition;
             }
             else
@@ -323,7 +332,7 @@ namespace NiL.JS.BaseLibrary
                 var body = creator.body;
                 var result = notExists;
                 notExists.valueType = JSValueType.NotExists;
-                for (; ; )
+                for (;;)
                 {
                     if (body != null)
                     {
@@ -444,7 +453,7 @@ namespace NiL.JS.BaseLibrary
             JSValue res = null;
             Arguments args = null;
             bool tailCall = true;
-            for (; ; )
+            for (;;)
             {
                 var internalContext = new Context(parentContext, false, this);
                 if (creator.type == FunctionType.Arrow)
@@ -540,7 +549,7 @@ namespace NiL.JS.BaseLibrary
             {
                 arguments = new Arguments(Context.CurrentContext);
             }
-            for (; ; ) // tail recursion catcher
+            for (;;) // tail recursion catcher
             {
                 creator.recursionDepth++;
                 var internalContext = new Context(parentContext, ceocw, this);
@@ -598,12 +607,12 @@ namespace NiL.JS.BaseLibrary
             if (internalContext.abortType != AbortType.TailRecursion && creator.recursionDepth == 0)
             {
                 var i = creator.body.localVariables.Length;
-                for (; i-- > 0; )
+                for (; i-- > 0;)
                 {
                     creator.body.localVariables[i].cacheContext = null;
                     creator.body.localVariables[i].cacheRes = null;
                 }
-                for (i = creator.parameters.Length; i-- > 0; )
+                for (i = creator.parameters.Length; i-- > 0;)
                 {
                     creator.parameters[i].cacheContext = null;
                     creator.parameters[i].cacheRes = null;
@@ -893,7 +902,7 @@ namespace NiL.JS.BaseLibrary
             if (creator.body.localVariables != null)
             {
                 var cew = creator.statistic.ContainsEval || creator.statistic.ContainsWith || creator.statistic.ContainsYield;
-                for (var i = creator.body.localVariables.Length; i-- > 0; )
+                for (var i = creator.body.localVariables.Length; i-- > 0;)
                 {
                     var v = creator.body.localVariables[i];
                     bool isArg = string.CompareOrdinal(v.name, "arguments") == 0;
@@ -1009,7 +1018,7 @@ namespace NiL.JS.BaseLibrary
                 res.Append(" ");
             res.Append(name).Append("(");
             if (creator != null && creator.parameters != null)
-                for (int i = 0; i < creator.parameters.Length; )
+                for (int i = 0; i < creator.parameters.Length;)
                     res.Append(creator.parameters[i].Name).Append(++i < creator.parameters.Length ? "," : "");
             res.Append(")");
             if (!headerOnly)
@@ -1061,7 +1070,7 @@ namespace NiL.JS.BaseLibrary
                 nargs.length = Tools.JSObjectToInt32(len);
                 if (nargs.length >= 50000)
                     ExceptionsHelper.Throw(new RangeError("Too many arguments."));
-                for (var i = nargs.length; i-- > 0; )
+                for (var i = nargs.length; i-- > 0;)
                     nargs[i] = argsSource[Tools.Int32ToString(i)];
             }
             return Call(self, nargs);
@@ -1087,40 +1096,7 @@ namespace NiL.JS.BaseLibrary
                     return cachedDelegate;
             }
 
-            var invokeMethod = delegateType.GetMethod("Invoke");
-            var prms = invokeMethod.GetParameters();
-
-            var handlerArgumentsParameters = new linqEx.ParameterExpression[prms.Length];
-            for (var i = 0; i < prms.Length; i++)
-            {
-                handlerArgumentsParameters[i] = linqEx.Expression.Parameter(prms[i].ParameterType, prms[i].Name);
-            }
-
-            var argumentsParameter = linqEx.Expression.Parameter(typeof(Arguments), "arguments");
-            var expressions = new List<linqEx.Expression>();
-
-            if (prms.Length != 0)
-            {
-                expressions.Add(linqEx.Expression.Assign(argumentsParameter, linqEx.Expression.New(typeof(Arguments))));
-                for (var i = 0; i < handlerArgumentsParameters.Length; i++)
-                {
-                    expressions.Add(linqEx.Expression.Call(argumentsParameter, typeof(Arguments).GetMethod("Add"),
-                        linqEx.Expression.Call(JITHelpers.methodof(TypeProxy.Proxy), handlerArgumentsParameters[i])));
-                }
-            }
-
-            var callTree = linqEx.Expression.Call(linqEx.Expression.Constant(this), JITHelpers.methodof(Call), argumentsParameter);
-
-            if (invokeMethod.ReturnParameter.ParameterType != typeof(void))
-            {
-                var asMethod = typeof(JSValue).GetMethod("As").MakeGenericMethod(invokeMethod.ReturnParameter.ParameterType);
-                callTree = linqEx.Expression.Call(callTree, asMethod);
-            }
-
-            expressions.Add(callTree);
-            var result = linqEx.Expression.Block(new[] { argumentsParameter }, expressions);
-
-            var @delegate = linqEx.Expression.Lambda(delegateType, result, "<delegateWrapper>" + name, handlerArgumentsParameters).Compile();
+            var @delegate = Tools.BuildJsCallTree("<delegate>" + name, linqEx.Expression.Constant(this), null, delegateType.GetMethod("Invoke"), delegateType).Compile();
 
             if (delegateCache == null)
                 delegateCache = new Dictionary<Type, Delegate>();

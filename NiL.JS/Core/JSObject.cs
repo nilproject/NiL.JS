@@ -28,7 +28,7 @@ namespace NiL.JS.Core
             get
             {
                 if (GlobalPrototype == this)
-                    return Null;
+                    return @null;
                 if (!this.Defined || this.IsNull)
                     ExceptionsHelper.Throw(new TypeError("Can not get prototype of null or undefined"));
                 if (valueType >= JSValueType.Object
@@ -40,7 +40,7 @@ namespace NiL.JS.Core
                     if (__prototype.valueType < JSValueType.Object)
                         __prototype = GetDefaultPrototype(); // такого тоже
                     else if (__prototype.oValue == null)
-                        return Null;
+                        return @null;
                     return __prototype;
                 }
                 return __prototype = GetDefaultPrototype();
@@ -62,12 +62,12 @@ namespace NiL.JS.Core
                 }
                 if (value == null || value.oValue == null)
                 {
-                    __prototype = Null;
+                    __prototype = @null;
                 }
                 else
                 {
                     var c = value.oValue as JSObject ?? value;
-                    while (c != null && c != Null && c.valueType > JSValueType.Undefined)
+                    while (c != null && c != @null && c.valueType > JSValueType.Undefined)
                     {
                         if (c == this || c.oValue == this)
                             ExceptionsHelper.Throw(new Error("Try to set cyclic __proto__ value."));
@@ -108,7 +108,7 @@ namespace NiL.JS.Core
 #if DEBUG
             // Это ошибочная ситуация, но, по крайней мере, так положение будет исправлено
             if (oValue != this && oValue is JSValue)
-                return base.GetMember(key, forWrite, memberScope);
+                return base.GetProperty(key, forWrite, memberScope);
 #endif
             JSValue res = null;
             JSObject proto = null;
@@ -319,8 +319,8 @@ namespace NiL.JS.Core
         {
             if (args[0].valueType < JSValueType.Object)
                 ExceptionsHelper.Throw(new TypeError("Prototype may be only Object or null."));
-            var proto = args[0].oValue as JSObject ?? Null;
-            var members = args[1].oValue as JSObject ?? Null;
+            var proto = args[0].oValue as JSObject ?? @null;
+            var members = args[1].oValue as JSObject ?? @null;
             if (args[1].valueType >= JSValueType.Object && members.oValue == null)
                 ExceptionsHelper.Throw(new TypeError("Properties descriptor may be only Object."));
             var res = CreateObject(true);
@@ -422,8 +422,8 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Property define may only for Objects."));
             if (args[0].oValue == null)
                 ExceptionsHelper.Throw(new TypeError("Can not define properties of null."));
-            var target = args[0].oValue as JSObject ?? Null;
-            var members = args[1].oValue as JSObject ?? Null;
+            var target = args[0].oValue as JSObject ?? @null;
+            var members = args[1].oValue as JSObject ?? @null;
             if (!args[1].Defined)
                 ExceptionsHelper.Throw(new TypeError("Properties descriptor can not be undefined."));
             if (args[1].valueType < JSValueType.Object)
@@ -459,8 +459,8 @@ namespace NiL.JS.Core
         {
             if (args[0].valueType < JSValueType.Object || args[0].oValue == null)
                 ExceptionsHelper.Throw(new TypeError("Object.defineProperty cannot apply to non-object."));
-            var target = args[0].oValue as JSObject ?? Null;
-            var desc = args[2].oValue as JSObject ?? Null;
+            var target = args[0].oValue as JSObject ?? @null;
+            var desc = args[2].oValue as JSObject ?? @null;
             if (desc.valueType < JSValueType.Object || desc.oValue == null)
                 ExceptionsHelper.Throw(new TypeError("Invalid property descriptor."));
             if (target.valueType < JSValueType.Object || target.oValue == null)
@@ -878,7 +878,7 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Object.getOwnPropertyDescriptor called on undefined."));
             if (args[0].valueType < JSValueType.Object)
                 ExceptionsHelper.Throw(new TypeError("Object.getOwnPropertyDescriptor called on non-object."));
-            var source = args[0].oValue as JSObject ?? Null;
+            var source = args[0].oValue as JSObject ?? @null;
             var obj = source.GetProperty(args[1], false, PropertyScope.Own);
             if (obj.valueType < JSValueType.Undefined)
                 return undefined;

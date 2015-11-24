@@ -183,7 +183,9 @@ namespace NiL.JS.Expressions
                 {
                     if (asterisk)
                     {
-                        ExceptionsHelper.ThrowSyntaxError("Unexpected token", state.Code, i);
+                        do
+                            i++;
+                        while (Tools.IsWhiteSpace(state.Code[i]));
                     }
 
                     i = s;
@@ -210,43 +212,56 @@ namespace NiL.JS.Expressions
 
                     while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
-                    if (state.Code[i] != ':' && state.Code[i] != ',' && state.Code[i] != '}')
-                        ExceptionsHelper.ThrowSyntaxError("Expected ',', ';' or '}'", state.Code, i);
-
-                    Expression aei = null;
-                    if (flds.TryGetValue(fieldName, out aei))
-                    {
-                        if (state.strict ? (!(aei is ConstantDefinition) || (aei as ConstantDefinition).value != JSValue.undefined)
-                                         : aei is GsPropertyPairExpression)
-                            ExceptionsHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
-                        if (state.message != null)
-                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 0), "Duplicate key \"" + fieldName + "\"");
-                    }
 
                     Expression initializer = null;
 
-                    if (state.Code[i] == ',' || state.Code[i] == '}')
+                    if (state.Code[i] == '(')
                     {
-                        if (!Parser.ValidateName(fieldName, 0))
-                            ExceptionsHelper.ThrowSyntaxError("Invalid variable name", state.Code, i);
+                        i = s;
+                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionType.MethodGenerator : FunctionType.Method);
+                    }
+                    else
+                    {
+                        if (asterisk)
+                        {
+                            ExceptionsHelper.ThrowSyntaxError("Unexpected token", state.Code, i);
+                        }
 
-                        if (state.Code[i] == ',')
+                        if (state.Code[i] != ':' && state.Code[i] != ',' && state.Code[i] != '}')
+                            ExceptionsHelper.ThrowSyntaxError("Expected ',', ';' or '}'", state.Code, i);
+
+                        Expression aei = null;
+                        if (flds.TryGetValue(fieldName, out aei))
+                        {
+                            if (state.strict ? (!(aei is ConstantDefinition) || (aei as ConstantDefinition).value != JSValue.undefined)
+                                             : aei is GsPropertyPairExpression)
+                                ExceptionsHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
+                            if (state.message != null)
+                                state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 0), "Duplicate key \"" + fieldName + "\"");
+                        }
+
+                        if (state.Code[i] == ',' || state.Code[i] == '}')
+                        {
+                            if (!Parser.ValidateName(fieldName, 0))
+                                ExceptionsHelper.ThrowSyntaxError("Invalid variable name", state.Code, i);
+
+                            if (state.Code[i] == ',')
+                            {
+                                do
+                                    i++;
+                                while (Tools.IsWhiteSpace(state.Code[i]));
+                            }
+
+                            initializer = new GetVariableExpression(fieldName, state.scopeDepth);
+                        }
+                        else
                         {
                             do
                                 i++;
                             while (Tools.IsWhiteSpace(state.Code[i]));
+                            initializer = (Expression)ExpressionTree.Parse(state, ref i, false, false);
                         }
-
-                        initializer = new GetVariableExpression(fieldName, state.scopeDepth);
                     }
-                    else
-                    {
-                        do
-                            i++;
-                        while (Tools.IsWhiteSpace(state.Code[i]));
-                        initializer = (Expression)ExpressionTree.Parse(state, ref i, false, false);
-                    }
-
                     flds[fieldName] = initializer;
                 }
                 while (Tools.IsWhiteSpace(state.Code[i]))
@@ -258,10 +273,10 @@ namespace NiL.JS.Expressions
             var pos = index;
             index = i;
             return new ObjectDefinition(flds, computedProperties.ToArray())
-                {
-                    Position = pos,
-                    Length = index - pos
-                };
+            {
+                Position = pos,
+                Length = index - pos
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -355,7 +370,7 @@ namespace NiL.JS.Expressions
 
         internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
         {
-            for (var i = Values.Length; i-- > 0; )
+            for (var i = Values.Length; i-- > 0;)
             {
                 var cn = Values[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, statistic);

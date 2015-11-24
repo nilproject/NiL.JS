@@ -100,7 +100,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     Parser.ValidateString(code, ref pos, true);
                     string value = code.Substring(start + 1, pos - start - 2);
-                    for (var i = value.Length; i-- > 0; )
+                    for (var i = value.Length; i-- > 0;)
                     {
                         if ((value[i] >= 0 && value[i] <= 0x1f))
                             ExceptionsHelper.Throw(new SyntaxError("Invalid string char '\\u000" + (int)value[i] + "'"));
@@ -131,7 +131,7 @@ namespace NiL.JS.BaseLibrary
                         ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
-                    v.value = JSValue.Null;
+                    v.value = JSValue.@null;
                 }
                 else if (Parser.Validate(code, "true", ref pos))
                 {
@@ -260,7 +260,7 @@ namespace NiL.JS.BaseLibrary
                 var sa = args[2];
                 if (sa.valueType >= JSValueType.Object)
                     sa = sa.oValue as JSValue ?? sa;
-                if (sa is ObjectContainer)
+                if (sa is ObjectWrapper)
                     sa = sa.Value as JSValue ?? sa;
                 if (sa.valueType == JSValueType.Int
                     || sa.valueType == JSValueType.Double

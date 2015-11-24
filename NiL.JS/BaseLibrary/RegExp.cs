@@ -145,7 +145,10 @@ namespace NiL.JS.BaseLibrary
         public Boolean global
         {
             [Hidden]
-            get { return _global; }
+            get
+            {
+                return _global;
+            }
         }
 
         [Field]
@@ -203,13 +206,13 @@ namespace NiL.JS.BaseLibrary
             if (lIndex.iValue >= input.Length && input.Length > 0)
             {
                 lIndex.iValue = 0;
-                return JSValue.Null;
+                return JSValue.@null;
             }
             var m = regEx.Match(input, lIndex.iValue);
             if (!m.Success)
             {
                 lIndex.iValue = 0;
-                return JSValue.Null;
+                return JSValue.@null;
             }
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)

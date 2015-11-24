@@ -281,7 +281,7 @@
     <Compile Include="Expressions\RegExpCreateExpression.cs" />
     <Compile Include="Core\Interop\InstanceMemberAttribute.cs" />
     <Compile Include="Core\Interop\NativeList.cs" />
-    <Compile Include="Core\ObjectContainer.cs" />
+    <Compile Include="Core\ObjectWrapper.cs" />
     <Compile Include="Core\VariableDescriptor.cs" />
     <Compile Include="Core\Interop\GenericType.cs" />
     <Compile Include="Core\VariableReference.cs" />
@@ -327,6 +327,7 @@
     <Compile Include="Expressions\AssignmentOverReplace.cs" />
     <Compile Include="Expressions\YieldOperator.cs" />
     <Compile Include="Extensions\JSValueExtensions.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Expressions\AssignmentOperatorCache.cs" />

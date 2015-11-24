@@ -13,7 +13,7 @@ namespace NiL.JS.Core
     /// Был создан так как вместе с объектом требуется ещё хранить его аттрибуты, 
     /// которые могли разъехаться при переприсваиваниях
     /// </remarks>
-    internal sealed class ObjectContainer : JSObject
+    internal sealed class ObjectWrapper : JSObject
     {
         internal bool ownedFieldsOnly;
         internal object instance;
@@ -28,7 +28,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public ObjectContainer(object instance, JSObject proto)
+        public ObjectWrapper(object instance, JSObject proto)
         {
             this.instance = instance;
             if (instance is Date)
@@ -45,7 +45,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public ObjectContainer(object instance)
+        public ObjectWrapper(object instance)
             : this(instance, instance != null ? TypeProxy.GetPrototype(instance.GetType()) : null)
         {
         }
