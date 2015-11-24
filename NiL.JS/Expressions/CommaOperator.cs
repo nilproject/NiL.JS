@@ -40,6 +40,8 @@ namespace NiL.JS.Expressions
             }
             if (context != null)
                 context.objectSource = null;
+            if (temp.valueType >= JSValueType.Object)
+                return temp.oValue as JSValue ?? temp;
             return temp;
         }
 

@@ -119,3 +119,15 @@ a = 1;
 
 if ((new class extends null { get test() { return "hello" } }).test != "hello")
     console.log("Something wrong with classes");
+
+(function () {
+    var e = eval;
+    e("var mustBeDeclaredInGlobalContext = " + eval("'2'"));
+
+    (1, eval)("var mustBeDeclaredInGlobalContext_second = 2");
+})();
+
+if (typeof mustBeDeclaredInGlobalContext === "undefined")
+    console.log("Incorrect processing of eval function");
+if (typeof mustBeDeclaredInGlobalContext_second === "undefined")
+    console.log("Incorrect processing of eval function");

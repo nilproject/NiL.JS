@@ -4,22 +4,22 @@ using System.Resources;
 using System.Runtime.InteropServices;
 
 #if DEV
-[assembly: AssemblyTitleAttribute("NiL.JS for Developers")]
-[assembly: AssemblyProductAttribute("NiL.JS Dev")]
+[assembly: AssemblyTitle("NiL.JS for Developers")]
+[assembly: AssemblyProduct("NiL.JS Dev")]
 #else
-[assembly: AssemblyTitleAttribute("NiL.JS")]
-[assembly: AssemblyProductAttribute("NiL.JS")]
+[assembly: AssemblyTitle("NiL.JS")]
+[assembly: AssemblyProduct("NiL.JS")]
 #endif
-[assembly: AssemblyDescriptionAttribute("JavaScript engine for .NET")]
-[assembly: AssemblyCompanyAttribute("NiLProject")]
-[assembly: AssemblyCopyrightAttribute("Copyright © NiLProject 2015")]
-[assembly: AssemblyTrademarkAttribute("NiL.JS")]
-[assembly: AssemblyVersionAttribute("2.0.831")]
-[assembly: AssemblyFileVersionAttribute("2.0.831")]
-[assembly: NeutralResourcesLanguageAttribute("en-US")]
-[assembly: ComVisibleAttribute(false)]
+[assembly: AssemblyDescription("JavaScript engine for .NET")]
+[assembly: AssemblyCompany("NiLProject")]
+[assembly: AssemblyCopyright("Copyright © NiLProject 2015")]
+[assembly: AssemblyTrademark("NiL.JS")]
+[assembly: AssemblyVersion("2.0.843")]
+[assembly: AssemblyFileVersion("2.0.843")]
+[assembly: NeutralResourcesLanguage("en-US")]
+[assembly: ComVisible(false)]
 [assembly: CLSCompliant(true)]
 
 #if !PORTABLE
-[assembly: GuidAttribute("a70afe5a-2b29-49fd-afbf-28794042ea21")]
+[assembly: Guid("a70afe5a-2b29-49fd-afbf-28794042ea21")]
 #endif

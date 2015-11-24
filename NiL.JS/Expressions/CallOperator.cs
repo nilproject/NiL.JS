@@ -109,11 +109,12 @@ namespace NiL.JS.Expressions
                 else
                     context.objectSource = null;
             }
-            func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
 
             checkStack();
             if (callMode == CallMode.Construct)
                 targetObject = null;
+
+            func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
             return func.InternalInvoke(targetObject, this._arguments, context, withSpread, callMode != 0);
         }
 
