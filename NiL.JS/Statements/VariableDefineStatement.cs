@@ -170,7 +170,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             this.variables = new VariableDescriptor[names.Length];
             for (var i = 0; i < names.Length; i++)
@@ -205,7 +205,7 @@ namespace NiL.JS.Statements
             int actualChilds = 0;
             for (int i = 0; i < initializers.Length; i++)
             {
-                Parser.Build(ref initializers[i], message != null ? 2 : depth, variables, codeContext, message, statistic, opts);
+                Parser.Build(ref initializers[i], message != null ? 2 : expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
                 if (initializers[i] != null)
                     actualChilds++;
             }
@@ -226,11 +226,11 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             for (int i = 0; i < initializers.Length; i++)
             {
-                initializers[i].Optimize(ref initializers[i], owner, message, opts, statistic);
+                initializers[i].Optimize(ref initializers[i], owner, message, opts, stats);
             }
         }
 

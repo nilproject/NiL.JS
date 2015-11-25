@@ -68,9 +68,9 @@ namespace NiL.JS.Statements
             return new CodeNode[0];
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            Parser.Build(ref body, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref body, expressionDepth + 1, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             // Улучшает работу оптимизатора хвостовой рекурсии
             if (message == null && body is NiL.JS.Expressions.ConditionalOperator)
             {
@@ -84,17 +84,17 @@ namespace NiL.JS.Statements
                 (body as NiL.JS.Expressions.CallOperator).allowTCO = true;
             }
 
-            statistic.Returns.Add(body ?? EmptyExpression.Instance);
+            stats.Returns.Add(body ?? EmptyExpression.Instance);
 
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             if (body != null)
             {
                 var t = body as CodeNode;
-                body.Optimize(ref t, owner, message, opts, statistic);
+                body.Optimize(ref t, owner, message, opts, stats);
                 body = (Expressions.Expression)t;
 
                 if (body is EmptyExpression || ((body is ConstantDefinition) && body.Evaluate(null) == JSValue.undefined))

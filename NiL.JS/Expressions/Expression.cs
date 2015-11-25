@@ -91,13 +91,13 @@ namespace NiL.JS.Expressions
                 tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             _codeContext = codeContext;
             codeContext = codeContext | CodeContext.InExpression;
 
-            Parser.Build(ref first, depth + 1, variables, codeContext, message, statistic, opts);
-            Parser.Build(ref second, depth + 1, variables, codeContext, message, statistic, opts);
+            Parser.Build(ref first, expressionDepth + 1, scopeVariables, variables, codeContext, message, stats, opts);
+            Parser.Build(ref second, expressionDepth + 1, scopeVariables, variables, codeContext, message, stats, opts);
             if (this.ContextIndependent)
             {
                 if (message != null && !(this is RegExpExpression))
@@ -131,30 +131,30 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal void Optimize(ref Expression self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal void Optimize(ref Expression self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             CodeNode cn = self;
-            Optimize(ref cn, owner, message, opts, statistic);
+            Optimize(ref cn, owner, message, opts, stats);
             self = (Expression)cn;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            baseOptimize(ref _this, owner, message, opts, statistic);
+            baseOptimize(ref _this, owner, message, opts, stats);
         }
 
-        internal void baseOptimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal void baseOptimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             var f = first as CodeNode;
             var s = second as CodeNode;
             if (f != null)
             {
-                f.Optimize(ref f, owner, message, opts, statistic);
+                f.Optimize(ref f, owner, message, opts, stats);
                 first = f as Expression;
             }
             if (s != null)
             {
-                s.Optimize(ref s, owner, message, opts, statistic);
+                s.Optimize(ref s, owner, message, opts, stats);
                 second = s as Expression;
             }
             if (ContextIndependent && !(this is ConstantDefinition))

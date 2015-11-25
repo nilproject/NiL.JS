@@ -77,11 +77,11 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             this._codeContext = codeContext;
 
-            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && depth <= 1)
+            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && expressionDepth <= 1)
             {
                 _this = null;
                 Eliminated = true;
@@ -105,7 +105,7 @@ namespace NiL.JS.Expressions
             if (value.oValue is CodeNode[])
             {
                 string res = "";
-                for (var i = (value.oValue as CodeNode[]).Length; i-- > 0; )
+                for (var i = (value.oValue as CodeNode[]).Length; i-- > 0;)
                     res = (i != 0 ? ", " : "") + (value.oValue as CodeNode[])[i] + res;
                 return res;
             }
@@ -114,7 +114,7 @@ namespace NiL.JS.Expressions
 
         protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
         {
-            
+
         }
     }
 }

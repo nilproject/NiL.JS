@@ -38,7 +38,7 @@ namespace NiL.JS.Expressions
                     var desc = (first as VariableReference).descriptor;
                     var fe = desc.initializer as FunctionDefinition;
                     if (fe != null)
-                        return fe.statistic.ResultType; // для рекурсивных функций будет Unknown
+                        return fe._stats.ResultType; // для рекурсивных функций будет Unknown
                 }
 
                 return PredictedType.Unknown;
@@ -148,10 +148,10 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            if (statistic != null)
-                statistic.UseCall = true;
+            if (stats != null)
+                stats.UseCall = true;
 
             this._codeContext = codeContext;
 
@@ -165,15 +165,15 @@ namespace NiL.JS.Expressions
 
             for (var i = 0; i < _arguments.Length; i++)
             {
-                Parser.Build(ref _arguments[i], depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref _arguments[i], expressionDepth + 1, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             }
 
-            base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
+            base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
             if (first is GetVariableExpression)
             {
                 var name = first.ToString();
-                if (name == "eval" && statistic != null)
-                    statistic.ContainsEval = true;
+                if (name == "eval" && stats != null)
+                    stats.ContainsEval = true;
                 VariableDescriptor f = null;
                 if (variables.TryGetValue(name, out f))
                 {
@@ -195,13 +195,13 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            base.Optimize(ref _this, owner, message, opts, statistic);
-            for (var i = _arguments.Length; i-- > 0; )
+            base.Optimize(ref _this, owner, message, opts, stats);
+            for (var i = _arguments.Length; i-- > 0;)
             {
                 var cn = _arguments[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message, opts, statistic);
+                cn.Optimize(ref cn, owner, message, opts, stats);
                 _arguments[i] = cn as Expression;
             }
         }

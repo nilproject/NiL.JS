@@ -2,6 +2,7 @@
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Statements;
+using System.Collections.Generic;
 
 namespace NiL.JS.Expressions
 {
@@ -125,7 +126,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -135,7 +136,7 @@ namespace NiL.JS.Expressions
                     fs.name = (first as VariableReference).Name;
             }
 #endif
-            var r = base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
+            var r = base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
 
             var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
@@ -164,9 +165,9 @@ namespace NiL.JS.Expressions
             return r;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            baseOptimize(ref _this, owner, message, opts, statistic);
+            baseOptimize(ref _this, owner, message, opts, stats);
             var vr = first as VariableReference;
             if (vr != null)
             {
@@ -197,10 +198,10 @@ namespace NiL.JS.Expressions
                 if (owner != null // не будем это применять в корневом узле. Только в функциях. Иначе это может задумываться как настройка контекста для последующего использования в Eval
                     && !gve.descriptor.captured
                     && (opts & Options.SuppressUselessExpressionsElimination) == 0
-                    && !statistic.ContainsEval
-                    && !statistic.ContainsWith) // можем упустить присваивание
+                    && !stats.ContainsEval
+                    && !stats.ContainsWith) // можем упустить присваивание
                 {
-                    if ((owner.body.strict || gve.descriptor.owner != owner || !owner.statistic.ContainsArguments) // аргументы это одна сущность с двумя именами
+                    if ((owner.body.strict || gve.descriptor.owner != owner || !owner._stats.ContainsArguments) // аргументы это одна сущность с двумя именами
                         && (_codeContext & CodeContext.InLoop) == 0)
                     {
                         bool last = true;

@@ -143,23 +143,23 @@ namespace NiL.JS.Expressions
             return elements;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             _codeContext = codeContext;
 
             for (int i = 0; i < elements.Length; i++)
-                Parser.Build(ref elements[i], 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref elements[i], 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             for (var i = elements.Length; i-- > 0; )
             {
                 var cn = elements[i] as CodeNode;
                 if (cn != null)
                 {
-                    cn.Optimize(ref cn, owner, message, opts, statistic);
+                    cn.Optimize(ref cn, owner, message, opts, stats);
                     elements[i] = cn as Expression;
                 }
             }

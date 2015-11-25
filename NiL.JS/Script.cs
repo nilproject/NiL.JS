@@ -87,13 +87,13 @@ namespace NiL.JS
                     messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message);
                 } : null as CompilerMessageCallback;
             var stat = new FunctionStatistics();
-            Parser.Build(ref root, 0, new System.Collections.Generic.Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
+            Parser.Build(ref root, 0, new List<string>(), new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
             var body = root as CodeBlock;
             Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
             Context.thisBind = new GlobalObject(Context);
             Context.variables = (root as CodeBlock).variables;
             Context.strict = (root as CodeBlock).strict;
-            for (i = body.localVariables.Length; i-- > 0; )
+            /*for (i = body.localVariables.Length; i-- > 0; )
             {
                 var f = Context.DefineVariable(body.localVariables[i].name);
                 body.localVariables[i].cacheRes = f;
@@ -103,7 +103,7 @@ namespace NiL.JS
                 if (body.localVariables[i].isReadOnly)
                     body.localVariables[i].cacheRes.attributes |= JSValueAttributesInternal.ReadOnly;
                 body.localVariables[i].captured |= stat.ContainsEval;
-            }
+            }*/
             var bd = body as CodeNode;
             body.Optimize(ref bd, null, icallback, options, stat);
 

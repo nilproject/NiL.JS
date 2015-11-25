@@ -32,7 +32,7 @@ namespace NiL.JS.Expressions
                 return PredictedType.Object;
             }
         }
-        
+
         internal NewOperator(CallOperator call)
             : base(call, null, false)
         {
@@ -69,9 +69,9 @@ namespace NiL.JS.Expressions
             throw new InvalidOperationException();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            if (message != null && depth <= 1)
+            if (message != null && expressionDepth <= 1)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use NewOperator for side effect");
 
             (first as CallOperator).callMode = CallMode.Construct;

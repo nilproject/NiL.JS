@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
                 return true;
             }
         }
-        
+
         public IncrementOperator(Expression op, IncrimentType type)
             : base(op, null, type == IncrimentType.Postincriment)
         {
@@ -194,12 +194,12 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             _codeContext = codeContext;
 
-            Parser.Build(ref first, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-            if (depth <= 1 && _type == IncrimentType.Postincriment)
+            Parser.Build(ref first, expressionDepth + 1, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            if (expressionDepth <= 1 && _type == IncrimentType.Postincriment)
                 _type = IncrimentType.Preincriment;
             var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
@@ -210,7 +210,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             var vr = first as VariableReference;
             if (vr != null && vr.descriptor.isDefined)

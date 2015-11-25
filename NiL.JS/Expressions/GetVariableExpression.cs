@@ -131,12 +131,12 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             _codeContext = codeContext;
 
-            if (statistic != null && variableName == "this")
-                statistic.UseThis = true;
+            if (stats != null && variableName == "this")
+                stats.UseThis = true;
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
@@ -149,7 +149,7 @@ namespace NiL.JS.Expressions
                 desc.references.Add(this);
                 descriptor = desc;
             }
-            if (depth >= 0 && depth < 2 && desc.IsDefined && (opts & Options.SuppressUselessExpressionsElimination) == 0)
+            if (expressionDepth >= 0 && expressionDepth < 2 && desc.IsDefined && (opts & Options.SuppressUselessExpressionsElimination) == 0)
             {
                 _this = null;
                 Eliminated = true;
@@ -159,22 +159,22 @@ namespace NiL.JS.Expressions
             else if (variableName == "arguments"
                 && defineScopeDepth > 0)
             {
-                if (statistic != null)
-                    statistic.ContainsArguments = true;
+                if (stats != null)
+                    stats.ContainsArguments = true;
                 _this = new GetArgumentsExpression(defineScopeDepth) { descriptor = descriptor };
             }
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            base.Optimize(ref _this, owner, message, opts, statistic);
+            base.Optimize(ref _this, owner, message, opts, stats);
             if ((opts & Options.SuppressConstantPropogation) == 0
                 && !descriptor.captured
                 && descriptor.isDefined
-                && !statistic.ContainsWith
-                && !statistic.ContainsEval
-                && (descriptor.owner != owner || !owner.statistic.ContainsArguments))
+                && !stats.ContainsWith
+                && !stats.ContainsEval
+                && (descriptor.owner != owner || !owner._stats.ContainsArguments))
             {
                 var assigns = descriptor.assignations;
                 if (assigns != null && assigns.Count > 0)
@@ -188,9 +188,9 @@ namespace NiL.JS.Expressions
                      * присваивается значение
                      */
                     CodeNode lastAssign = null;
-                    for (var i = assigns.Count; i-- > 0; )
+                    for (var i = assigns.Count; i-- > 0;)
                     {
-                        if (assigns[i].first == this 
+                        if (assigns[i].first == this
                             || ((assigns[i].first is AssignmentOperatorCache) && assigns[i].first.first == this))
                         {
                             // оптимизация не применяется

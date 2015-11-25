@@ -37,7 +37,7 @@ namespace NiL.JS.Core
         {
             // 0
             new List<Rule> // Общий
-            {                
+            {
                 new Rule("[", ExpressionTree.Parse),
                 new Rule("{", CodeBlock.Parse),
                 new Rule("var ", VariableDefineStatement.Parse),
@@ -584,18 +584,18 @@ namespace NiL.JS.Core
             return null;
         }
 
-        internal static void Build<T>(ref T self, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts) where T : CodeNode
+        internal static void Build<T>(ref T self, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts) where T : CodeNode
         {
             var t = (CodeNode)self;
-            while (t != null && t.Build(ref t, depth, variables, codeContext, message, statistic, opts))
+            while (t != null && t.Build(ref t, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts))
                 self = (T)t;
             self = (T)t;
         }
 
-        internal static void Build(ref Expressions.Expression s, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal static void Build(ref Expression s, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             CodeNode t = s;
-            Build(ref t, depth, variables, codeContext, message, statistic, opts);
+            Build(ref t, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
             if (t == null)
             {
                 s = null;

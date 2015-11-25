@@ -72,7 +72,7 @@ namespace NiL.JS.Expressions
         internal int recursionDepth;
         #endregion
 
-        internal readonly FunctionStatistics statistic;
+        internal readonly FunctionStatistics _stats;
         internal ParameterDescriptor[] parameters;
         internal CodeBlock body;
         internal FunctionType type;
@@ -93,7 +93,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return statistic.ContainsYield;
+                return _stats.ContainsYield;
             }
         }
 
@@ -123,7 +123,7 @@ namespace NiL.JS.Expressions
             parameters = new ParameterDescriptor[0];
             body = new CodeBlock(new CodeNode[0]);
             body.variables = new VariableDescriptor[0];
-            statistic = new FunctionStatistics();
+            _stats = new FunctionStatistics();
             this.name = name;
         }
 
@@ -457,7 +457,7 @@ namespace NiL.JS.Expressions
             return new Function(context, this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             if (body.builded)
                 return false;
@@ -479,12 +479,12 @@ namespace NiL.JS.Expressions
                 if (parameters[i].initializer != null)
                 {
                     CodeNode initializer = parameters[i].initializer;
-                    parameters[i].initializer.Build(ref initializer, depth, variables, codeContext, message, statistic, opts);
+                    parameters[i].initializer.Build(ref initializer, expressionDepth, scopeVariables, variables, codeContext, message, _stats, opts);
                     parameters[i].initializer = (Expression)initializer;
                 }
             }
-            statistic.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
-            bodyCode.Build(ref bodyCode, 0, nvars, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval), message, statistic, opts);
+            _stats.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
+            bodyCode.Build(ref bodyCode, 0, scopeVariables, nvars, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval), message, _stats, opts);
             if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
             {
                 VariableDescriptor fdesc = null;
@@ -527,7 +527,7 @@ namespace NiL.JS.Expressions
                         && (type == FunctionType.Arrow
                             || (body.variables[i].name != "this"
                                 && body.variables[i].name != "arguments")))
-                    // все необъявленные переменные нужно прокинуть вниз для того,
+                    // все необъявленные переменные нужно прокинуть наружу для того,
                     // чтобы во всех местах их использования был один дескриптор и один кеш
                     {
                         VariableDescriptor desc = null;
@@ -555,43 +555,43 @@ namespace NiL.JS.Expressions
                 }
             }
             checkUsings();
+            if (stats != null)
+            {
+                stats.ContainsDebugger |= this._stats.ContainsDebugger;
+                stats.ContainsEval |= this._stats.ContainsEval;
+                stats.ContainsInnerFunction = true;
+                stats.ContainsTry |= this._stats.ContainsTry;
+                stats.ContainsWith |= this._stats.ContainsWith;
+                stats.ContainsYield |= this._stats.ContainsYield;
+                stats.UseCall |= this._stats.UseCall;
+                stats.UseGetMember |= this._stats.UseGetMember;
+                stats.UseThis |= this._stats.UseThis;
+            }
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             var bd = body as CodeNode;
-            body.Optimize(ref bd, this, message, opts, this.statistic);
-            if (this.statistic.Returns.Count > 0)
+            body.Optimize(ref bd, this, message, opts, this._stats);
+            if (this._stats.Returns.Count > 0)
             {
-                this.statistic.ResultType = this.statistic.Returns[0].ResultType;
-                for (var i = 1; i < this.statistic.Returns.Count; i++)
+                this._stats.ResultType = this._stats.Returns[0].ResultType;
+                for (var i = 1; i < this._stats.Returns.Count; i++)
                 {
-                    if (this.statistic.ResultType != this.statistic.Returns[i].ResultType)
+                    if (this._stats.ResultType != this._stats.Returns[i].ResultType)
                     {
-                        this.statistic.ResultType = PredictedType.Ambiguous;
+                        this._stats.ResultType = PredictedType.Ambiguous;
                         if (message != null
-                            && this.statistic.ResultType >= PredictedType.Undefined
-                            && this.statistic.Returns[i].ResultType >= PredictedType.Undefined)
+                            && this._stats.ResultType >= PredictedType.Undefined
+                            && this._stats.Returns[i].ResultType >= PredictedType.Undefined)
                             message(MessageLevel.Warning, new CodeCoordinates(0, parameters[i].references[0].Position, 0), "Type of return value is ambiguous");
                         break;
                     }
                 }
             }
             else
-                this.statistic.ResultType = PredictedType.Undefined;
-            if (statistic != null)
-            {
-                statistic.ContainsDebugger |= this.statistic.ContainsDebugger;
-                statistic.ContainsEval |= this.statistic.ContainsEval;
-                statistic.ContainsInnerFunction = true;
-                statistic.ContainsTry |= this.statistic.ContainsTry;
-                statistic.ContainsWith |= this.statistic.ContainsWith;
-                statistic.ContainsYield |= this.statistic.ContainsYield;
-                statistic.UseCall |= this.statistic.UseCall;
-                statistic.UseGetMember |= this.statistic.UseGetMember;
-                statistic.UseThis |= this.statistic.UseThis;
-            }
+                this._stats.ResultType = PredictedType.Undefined;            
         }
 
         private void checkUsings()
@@ -600,20 +600,20 @@ namespace NiL.JS.Expressions
                 || body.lines == null
                 || body.lines.Length == 0)
                 return;
-            var containsFunctions = statistic.ContainsInnerFunction;
+            var containsFunctions = _stats.ContainsInnerFunction;
             if (!containsFunctions)
             {
                 for (var i = 0; !containsFunctions && i < body.localVariables.Length; i++)
                     containsFunctions |= body.localVariables[i].initializer != null;
-                statistic.ContainsInnerFunction = containsFunctions;
+                _stats.ContainsInnerFunction = containsFunctions;
             }
             if (body.variables != null)
             {
                 for (var i = 0; i < body.variables.Length; i++)
                 {
-                    statistic.IsRecursive |= body.variables[i].name == name;
-                    body.variables[i].captured |= statistic.ContainsEval;
-                    statistic.ContainsArguments |= body.variables[i].name == "arguments";
+                    _stats.IsRecursive |= body.variables[i].name == name;
+                    body.variables[i].captured |= _stats.ContainsEval;
+                    _stats.ContainsArguments |= body.variables[i].name == "arguments";
                 }
             }
         }

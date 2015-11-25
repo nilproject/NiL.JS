@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
@@ -36,11 +37,11 @@ namespace NiL.JS.Expressions
                 return second.Evaluate(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            if (message != null && depth <= 1)
+            if (message != null && expressionDepth <= 1)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use logical operator as a conditional statement");
-            return base.Build(ref _this, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
+            return base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

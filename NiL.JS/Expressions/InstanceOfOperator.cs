@@ -1,6 +1,7 @@
 ﻿using System;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
+using System.Collections.Generic;
 
 namespace NiL.JS.Expressions
 {
@@ -51,9 +52,9 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            var res = base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
+            var res = base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
             if (!res)
             {
                 if (first is ConstantDefinition)

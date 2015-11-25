@@ -345,22 +345,22 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             _codeContext = codeContext;
 
             for (var i = 0; i < values.Length; i++)
             {
-                Parser.Build(ref values[i], 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref values[i], 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             }
 
             for (var i = 0; i < computedProperties.Length; i++)
             {
                 var key = computedProperties[i].Key;
-                Parser.Build(ref key, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref key, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
                 var value = computedProperties[i].Value;
-                Parser.Build(ref value, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref value, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
                 computedProperties[i] = new KeyValuePair<Expression, Expression>(key, value);
             }
@@ -368,21 +368,21 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             for (var i = Values.Length; i-- > 0;)
             {
                 var cn = Values[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message, opts, statistic);
+                cn.Optimize(ref cn, owner, message, opts, stats);
                 Values[i] = cn as Expression;
             }
             for (var i = 0; i < computedProperties.Length; i++)
             {
                 var key = computedProperties[i].Key;
-                key.Optimize(ref key, owner, message, opts, statistic);
+                key.Optimize(ref key, owner, message, opts, stats);
 
                 var value = computedProperties[i].Value;
-                value.Optimize(ref value, owner, message, opts, statistic);
+                value.Optimize(ref value, owner, message, opts, stats);
 
                 computedProperties[i] = new KeyValuePair<Expression, Expression>(key, value);
             }

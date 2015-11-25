@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
@@ -46,9 +47,9 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            if (depth < 2)
+            if (expressionDepth < 2)
             {
                 _this = null;
                 Eliminated = true;

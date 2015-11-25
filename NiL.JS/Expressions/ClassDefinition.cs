@@ -362,33 +362,34 @@ namespace NiL.JS.Expressions
             return new ClassDefinition(name, baseType, flds.Values, ctor as FunctionDefinition, computedProperties.ToArray());
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            Parser.Build(ref _constructor, depth, variables, codeContext | CodeContext.InClassDefenition | CodeContext.InClassConstructor, message, statistic, opts);
-            Parser.Build(ref baseType, depth, variables, codeContext, message, statistic, opts);
+            Parser.Build(ref _constructor, expressionDepth, scopeVariables, variables, codeContext | CodeContext.InClassDefenition | CodeContext.InClassConstructor, message, stats, opts);
+            Parser.Build(ref baseType, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
 
             for (var i = 0; i < members.Count; i++)
             {
                 Parser.Build
                 (
                     ref members[i]._value,
-                    depth,
+                    expressionDepth,
+                    scopeVariables,
                     variables,
                     codeContext | CodeContext.InClassDefenition | (members[i]._static ? CodeContext.InStaticMember : 0),
                     message,
-                    statistic,
+                    stats,
                     opts
                 );
             }
 
             for (var i = 0; i < computedProperties.Length; i++)
             {
-                Parser.Build(ref computedProperties[i]._name, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref computedProperties[i]._name, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
-                Parser.Build(ref computedProperties[i]._value, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref computedProperties[i]._value, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             }
 
-            return base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
+            return base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
         }
 
         public override JSValue Evaluate(Context context)
@@ -566,18 +567,18 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        protected internal override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             for (var i = members.Count; i-- > 0; )
             {
-                members[i]._value.Optimize(ref members[i]._value, owner, message, opts, statistic);
+                members[i]._value.Optimize(ref members[i]._value, owner, message, opts, stats);
             }
 
             for (var i = 0; i < computedProperties.Length; i++)
             {
-                computedProperties[i]._name.Optimize(ref computedProperties[i]._name, owner, message, opts, statistic);
+                computedProperties[i]._name.Optimize(ref computedProperties[i]._name, owner, message, opts, stats);
 
-                computedProperties[i]._value.Optimize(ref computedProperties[i]._value, owner, message, opts, statistic);
+                computedProperties[i]._value.Optimize(ref computedProperties[i]._value, owner, message, opts, stats);
             }
         }
     }

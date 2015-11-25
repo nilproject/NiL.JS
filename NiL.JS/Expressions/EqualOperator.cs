@@ -274,9 +274,9 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            base.Optimize(ref _this, owner, message, opts, statistic);
+            base.Optimize(ref _this, owner, message, opts, stats);
             if (message != null)
             {
                 var fc = first as ConstantDefinition ?? second as ConstantDefinition;

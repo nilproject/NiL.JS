@@ -62,14 +62,14 @@ namespace NiL.JS.Statements
             var pos = index;
             index = i;
             return new WhileStatement()
-                {
-                    allowRemove = ccs == state.continiesCount && cbs == state.breaksCount,
-                    body = body,
-                    condition = condition,
-                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
-                    Position = pos,
-                    Length = index - pos
-                };
+            {
+                allowRemove = ccs == state.continiesCount && cbs == state.breaksCount,
+                body = body,
+                condition = condition,
+                labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
+                Position = pos,
+                Length = index - pos
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -156,11 +156,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            depth = System.Math.Max(1, depth);
-            Parser.Build(ref body, depth, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
-            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
+            expressionDepth = System.Math.Max(1, expressionDepth);
+            Parser.Build(ref body, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
+            Parser.Build(ref condition, 2, scopeVariables, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
                 if (message != null)
@@ -205,12 +205,12 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             if (condition != null)
-                condition.Optimize(ref condition, owner, message, opts, statistic);
+                condition.Optimize(ref condition, owner, message, opts, stats);
             if (body != null)
-                body.Optimize(ref body, owner, message, opts, statistic);
+                body.Optimize(ref body, owner, message, opts, stats);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

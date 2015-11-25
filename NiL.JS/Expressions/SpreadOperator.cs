@@ -50,10 +50,10 @@ namespace NiL.JS.Expressions
             return new CodeNode[] { first };
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             CodeNode f = first;
-            var res = first.Build(ref f, depth, variables, codeContext, message, statistic, opts);
+            var res = first.Build(ref f, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
             first = f as Expression ?? first;
             return res;
         }

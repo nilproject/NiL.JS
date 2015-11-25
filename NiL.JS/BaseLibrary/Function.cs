@@ -271,7 +271,7 @@ namespace NiL.JS.BaseLibrary
             var func = FunctionDefinition.Parse(new ParsingState(Tools.RemoveComments(code, 0), code, null), ref index, FunctionType.Function);
             if (func != null && code.Length == index)
             {
-                Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), parentContext.strict ? CodeContext.Strict : CodeContext.None, null, null, Options.None);
+                Parser.Build(ref func, 0, new List<string>(), new Dictionary<string, VariableDescriptor>(), parentContext.strict ? CodeContext.Strict : CodeContext.None, null, null, Options.None);
                 creator = func as FunctionDefinition;
             }
             else
@@ -369,11 +369,11 @@ namespace NiL.JS.BaseLibrary
                 // быстро выполнить не получилось. 
                 // Попробуем чуточку медленее
                 if (creator != null
-                    && !creator.statistic.ContainsArguments
-                    && !creator.statistic.ContainsRestParameters
-                    && !creator.statistic.ContainsEval
-                    && !creator.statistic.ContainsWith
-                    //&& !creator.statistic.ContainsYield // всегда true потому, что простые функции не могут содержать yield
+                    && !creator._stats.ContainsArguments
+                    && !creator._stats.ContainsRestParameters
+                    && !creator._stats.ContainsEval
+                    && !creator._stats.ContainsWith
+                    //&& !creator.stats.ContainsYield // всегда true потому, что простые функции не могут содержать yield
                     && creator.parameters.Length == arguments.Length // из-за необходимости иметь возможность построить аргументы, если они потребуются
                     && arguments.Length < 9)
                 {
@@ -452,7 +452,7 @@ namespace NiL.JS.BaseLibrary
 
             JSValue res = null;
             Arguments args = null;
-            bool tailCall = true;
+            bool tailCall = false;
             for (;;)
             {
                 var internalContext = new Context(parentContext, false, this);
@@ -461,9 +461,9 @@ namespace NiL.JS.BaseLibrary
                 else
                     internalContext.thisBind = targetObject;
                 if (tailCall)
-                    initParametersFast(arguments, initiator, internalContext);
-                else
                     initParameters(args, internalContext);
+                else
+                    initParametersFast(arguments, initiator, internalContext);
 
                 // Эта строка обязательно должна находиться после инициализации параметров
                 creator.recursionDepth++;
@@ -478,15 +478,14 @@ namespace NiL.JS.BaseLibrary
                 internalContext.Activate();
                 try
                 {
-                    initVariables(internalContext);
                     res = evaluate(internalContext);
                     if (internalContext.abortType == AbortType.TailRecursion)
                     {
-                        tailCall = false;
+                        tailCall = true;
                         args = internalContext.abortInfo as Arguments;
                     }
                     else
-                        tailCall = true;
+                        tailCall = false;
                 }
                 finally
                 {
@@ -499,7 +498,7 @@ namespace NiL.JS.BaseLibrary
                         creator.parametersStored--;
                     exit(internalContext);
                 }
-                if (tailCall)
+                if (!tailCall)
                     break;
                 targetObject = correctTargetObject(internalContext.objectSource, body.strict);
             }
@@ -538,7 +537,7 @@ namespace NiL.JS.BaseLibrary
                 notExists.valueType = JSValueType.NotExists;
                 return notExists;
             }
-            var ceocw = creator.statistic.ContainsEval || creator.statistic.ContainsWith || creator.statistic.ContainsYield;
+            var ceocw = creator._stats.ContainsEval || creator._stats.ContainsWith || creator._stats.ContainsYield;
             if (creator.recursionDepth > creator.parametersStored) // рекурсивный вызов.
             {
                 if (!ceocw)
@@ -558,7 +557,6 @@ namespace NiL.JS.BaseLibrary
                 {
                     initContext(targetObject, arguments, ceocw, internalContext);
                     initParameters(arguments, internalContext);
-                    initVariables(internalContext);
                     res = evaluate(internalContext);
                 }
                 finally
@@ -790,11 +788,11 @@ namespace NiL.JS.BaseLibrary
 
         internal void initParameters(Arguments args, Context internalContext)
         {
-            var ceaw = creator.statistic.ContainsEval || creator.statistic.ContainsArguments || creator.statistic.ContainsWith;
-            int min = System.Math.Min(args.length, creator.parameters.Length - (creator.statistic.ContainsRestParameters ? 1 : 0));
+            var ceaw = creator._stats.ContainsEval || creator._stats.ContainsArguments || creator._stats.ContainsWith;
+            int min = System.Math.Min(args.length, creator.parameters.Length - (creator._stats.ContainsRestParameters ? 1 : 0));
 
             Array restArray = null;
-            if (creator.statistic.ContainsRestParameters)
+            if (creator._stats.ContainsRestParameters)
             {
                 restArray = new Array();
             }
@@ -894,32 +892,6 @@ namespace NiL.JS.BaseLibrary
                 }
                 if (string.CompareOrdinal(arg.name, "arguments") == 0)
                     internalContext.arguments = arg.cacheRes;
-            }
-        }
-
-        internal void initVariables(Context internalContext)
-        {
-            if (creator.body.localVariables != null)
-            {
-                var cew = creator.statistic.ContainsEval || creator.statistic.ContainsWith || creator.statistic.ContainsYield;
-                for (var i = creator.body.localVariables.Length; i-- > 0;)
-                {
-                    var v = creator.body.localVariables[i];
-                    bool isArg = string.CompareOrdinal(v.name, "arguments") == 0;
-                    if (isArg && v.initializer == null)
-                        continue;
-                    JSValue f = new JSValue() { valueType = JSValueType.Undefined, attributes = JSValueAttributesInternal.DoNotDelete };
-                    if (v.captured || cew)
-                        (internalContext.fields ?? (internalContext.fields = getFieldsContainer()))[v.name] = f;
-                    if (v.initializer != null)
-                        f.Assign(v.initializer.Evaluate(internalContext));
-                    if (v.isReadOnly)
-                        f.attributes |= JSValueAttributesInternal.ReadOnly;
-                    v.cacheRes = f;
-                    v.cacheContext = internalContext;
-                    if (isArg)
-                        internalContext.arguments = f;
-                }
             }
         }
 

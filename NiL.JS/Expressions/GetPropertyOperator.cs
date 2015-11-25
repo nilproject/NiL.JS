@@ -74,16 +74,16 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            if (statistic != null)
-                statistic.UseGetMember = true;
-            base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
+            if (stats != null)
+                stats.UseGetMember = true;
+            base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
             if (second is ConstantDefinition)
             {
                 cachedMemberName = second.Evaluate(null);
-                if (statistic != null && cachedMemberName.ToString() == "arguments")
-                    statistic.ContainsArguments = true;
+                if (stats != null && cachedMemberName.ToString() == "arguments")
+                    stats.ContainsArguments = true;
             }
             if (first is SuperExpression)
                 memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.SuperProto;

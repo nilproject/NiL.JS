@@ -66,15 +66,15 @@ namespace NiL.JS.Statements
             return new[] { statement };
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            Parser.Build(ref statement, depth, variables, codeContext, message, statistic, opts);
+            Parser.Build(ref statement, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            statement.Optimize(ref statement, owner, message, opts, statistic);
+            statement.Optimize(ref statement, owner, message, opts, stats);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

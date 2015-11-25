@@ -36,14 +36,14 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override bool Build(ref Core.CodeNode _this, int depth, Dictionary<string, Core.VariableDescriptor> variables, Core.CodeContext codeContext, CompilerMessageCallback message, Core.FunctionStatistics statistic, Options opts)
+        protected internal override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             return false;
         }
 
-        protected internal override void Optimize(ref Core.CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, Core.FunctionStatistics statistic)
+        protected internal override void Optimize(ref Core.CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, Core.FunctionStatistics stats)
         {
-            
+
         }
     }
 }

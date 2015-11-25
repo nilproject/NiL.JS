@@ -2,6 +2,7 @@
 #define TYPE_SAFE
 
 using System;
+using System.Collections.Generic;
 using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
@@ -93,9 +94,9 @@ namespace NiL.JS.Expressions
 #endif
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            var res = base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
+            var res = base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
             if (!res)
             {
                 var exp = first as ConstantDefinition;

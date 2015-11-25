@@ -146,10 +146,10 @@ namespace NiL.JS.Expressions
             throw new InvalidOperationException();
         }
 
-        protected internal override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        protected internal override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            statistic.ContainsYield = true;
-            return base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
+            stats.ContainsYield = true;
+            return base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

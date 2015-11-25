@@ -122,13 +122,13 @@ namespace NiL.JS.Statements
             var pos = index;
             index = i;
             return new SwitchStatement(body.ToArray())
-                {
-                    functions = funcs.ToArray(),
-                    cases = cases.ToArray(),
-                    image = image,
-                    Position = pos,
-                    Length = index - pos
-                };
+            {
+                functions = funcs.ToArray(),
+                cases = cases.ToArray(),
+                image = image,
+                Position = pos,
+                Length = index - pos
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -216,23 +216,23 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            if (depth < 1)
+            if (expressionDepth < 1)
                 throw new InvalidOperationException();
-            Parser.Build(ref image, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref image, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             for (int i = 0; i < lines.Length; i++)
-                Parser.Build(ref lines[i], 1, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
+                Parser.Build(ref lines[i], 1, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
             for (int i = 0; functions != null && i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
-                Parser.Build(ref stat, 1, variables, codeContext, message, statistic, opts);
+                Parser.Build(ref stat, 1, scopeVariables, variables, codeContext, message, stats, opts);
 
                 functions[i].Register(variables, codeContext);
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
-                Parser.Build(ref cases[i].statement, 2, variables, codeContext, message, statistic, opts);
+                Parser.Build(ref cases[i].statement, 2, scopeVariables, variables, codeContext, message, stats, opts);
             return false;
         }
 
@@ -251,17 +251,17 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            image.Optimize(ref image, owner, message, opts, statistic);
+            image.Optimize(ref image, owner, message, opts, stats);
             for (var i = 1; i < cases.Length; i++)
-                cases[i].statement.Optimize(ref cases[i].statement, owner, message, opts, statistic);
-            for (var i = lines.Length; i-- > 0; )
+                cases[i].statement.Optimize(ref cases[i].statement, owner, message, opts, stats);
+            for (var i = lines.Length; i-- > 0;)
             {
                 if (lines[i] == null)
                     continue;
                 var cn = lines[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message, opts, statistic);
+                cn.Optimize(ref cn, owner, message, opts, stats);
                 lines[i] = cn;
             }
         }
@@ -276,7 +276,7 @@ namespace NiL.JS.Statements
             string res = "switch (" + image + ") {" + Environment.NewLine;
             var replp = Environment.NewLine;
             var replt = Environment.NewLine + "  ";
-            for (int i = lines.Length; i-- > 0; )
+            for (int i = lines.Length; i-- > 0;)
             {
                 for (int j = 0; j < cases.Length; j++)
                 {

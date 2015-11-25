@@ -57,7 +57,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 3
+            int mode = 1
                     ;
             switch (mode)
             {
@@ -478,7 +478,7 @@ ast.print_to_string();");
                     if (refresh || s == null)
                     {
                         Context.RefreshGlobalContext();
-                        s = new Script(preCode);// инициализация
+                        s = new Script(preCode);
                         s.Invoke();
                         econtext = s.Context;
                         s.Context.DefineVariable("print").Assign(new ExternalFunction((t, e) =>
@@ -498,7 +498,7 @@ ast.print_to_string();");
                             if (fail)
                             {
                                 failed++;
-                                System.Diagnostics.Debugger.Break();
+                                Debugger.Break();
                             }
                             else
                                 passed++;

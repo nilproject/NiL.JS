@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using NiL.JS.Core;
+﻿using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
@@ -109,7 +103,6 @@ namespace NiL.JS.BaseLibrary
             generatorContext = new Context(initialContext, true, generator);
             generator.initParameters(initialArgs, generatorContext);
             generator.initContext(targetObject, initialArgs, true, generatorContext);
-            generator.initVariables(generatorContext);
         }
 
         public IIteratorResult @return()

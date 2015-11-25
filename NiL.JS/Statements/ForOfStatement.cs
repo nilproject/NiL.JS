@@ -107,10 +107,10 @@ namespace NiL.JS.Statements
                 exp = new AssignmentOperator(
                     exp,
                     (Expression)defVal)
-                    {
-                        Position = exp.Position,
-                        Length = defVal.EndPosition - exp.Position
-                    };
+                {
+                    Position = exp.Position,
+                    Length = defVal.EndPosition - exp.Position
+                };
                 if (res._variable == exp.first.first)
                     res._variable = exp;
                 else
@@ -261,16 +261,16 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            Parser.Build(ref _variable, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref _variable, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             var tvar = _variable as VariableDefineStatement;
             if (tvar != null)
                 _variable = tvar.initializers[0];
             if (_variable is AssignmentOperator)
                 ((_variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
-            Parser.Build(ref _source, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-            Parser.Build(ref _body, System.Math.Max(1, depth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
+            Parser.Build(ref _source, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _body, System.Math.Max(1, expressionDepth), scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
             if (_variable is Expressions.CommaOperator)
             {
                 if ((_variable as Expressions.CommaOperator).SecondOperand != null)
@@ -285,12 +285,12 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            _variable.Optimize(ref _variable, owner, message, opts, statistic);
-            _source.Optimize(ref _source, owner, message, opts, statistic);
+            _variable.Optimize(ref _variable, owner, message, opts, stats);
+            _source.Optimize(ref _source, owner, message, opts, stats);
             if (_body != null)
-                _body.Optimize(ref _body, owner, message, opts, statistic);
+                _body.Optimize(ref _body, owner, message, opts, stats);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

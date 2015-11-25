@@ -54,11 +54,11 @@ namespace NiL.JS.Expressions
             return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            Parser.Build(ref threads[0], depth, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, statistic, opts);
-            Parser.Build(ref threads[1], depth, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, statistic, opts);
-            base.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
+            Parser.Build(ref threads[0], expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref threads[1], expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+            base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && first is ConstantDefinition)
             {
                 _this = ((bool)first.Evaluate(null) ? threads[0] : threads[1]);
@@ -67,9 +67,9 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                if (statistic != null
+                if (stats != null
                     && threads[0] != null
-                    && !statistic.ContainsWith
+                    && !stats.ContainsWith
                     && (first is VariableReference && threads[0] is VariableReference)
                     && (first as VariableReference).descriptor == (threads[0] as VariableReference).descriptor)
                 {
@@ -95,13 +95,13 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            base.Optimize(ref _this, owner, message, opts, statistic);
+            base.Optimize(ref _this, owner, message, opts, stats);
             for (var i = threads.Length; i-- > 0; )
             {
                 var cn = threads[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message, opts, statistic);
+                cn.Optimize(ref cn, owner, message, opts, stats);
                 threads[i] = cn as Expression;
             }
             if (message != null

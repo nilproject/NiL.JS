@@ -78,18 +78,18 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
             this._codeContext = codeContext;
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             var cn = value as CodeNode;
-            value.Optimize(ref cn, owner, message, opts, statistic);
+            value.Optimize(ref cn, owner, message, opts, stats);
             value = cn as Expression;
-            base.Optimize(ref _this, owner, message, opts, statistic);
+            base.Optimize(ref _this, owner, message, opts, stats);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

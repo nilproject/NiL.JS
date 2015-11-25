@@ -23,8 +23,10 @@ namespace NiL.JS.Statements
                 return null;
             if (state.strict)
                 ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
+
             if (state.message != null)
                 state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, index, 4), "Do not use \"with\".");
+
             var obj = Parser.Parse(state, ref i, CodeFragmentType.Expression);
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
@@ -33,7 +35,18 @@ namespace NiL.JS.Statements
             do
                 i++;
             while (Tools.IsWhiteSpace(state.Code[i]));
-            var body = Parser.Parse(state, ref i, 0);
+
+            CodeNode body = null;
+            state.scopeDepth++;
+            try
+            {
+                body = Parser.Parse(state, ref i, 0);
+            }
+            finally
+            {
+                state.scopeDepth--;
+            }
+
             if (body is FunctionDefinition)
             {
                 if (state.strict)
@@ -121,21 +134,21 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            if (statistic != null)
-                statistic.ContainsWith = true;
-            Parser.Build(ref scope, depth + 1, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-            Parser.Build(ref body, depth, variables, codeContext | CodeContext.InWith, message, statistic, opts);
+            if (stats != null)
+                stats.ContainsWith = true;
+            Parser.Build(ref scope, expressionDepth + 1, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref body, expressionDepth, scopeVariables, variables, codeContext | CodeContext.InWith, message, stats, opts);
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             if (scope != null)
-                scope.Optimize(ref scope, owner, message, opts, statistic);
+                scope.Optimize(ref scope, owner, message, opts, stats);
             if (body != null)
-                body.Optimize(ref body, owner, message, opts, statistic);
+                body.Optimize(ref body, owner, message, opts, stats);
         }
 
         internal protected override void Decompose(ref CodeNode self)

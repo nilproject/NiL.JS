@@ -150,14 +150,14 @@ namespace NiL.JS.Core
             return original.EvaluateForWrite(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            return original.Build(ref _this, depth, variables, codeContext, message, statistic, opts);
+            return original.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            original.Optimize(ref _this, owner, message, opts, statistic);
+            original.Optimize(ref _this, owner, message, opts, stats);
         }
 
         internal override Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)

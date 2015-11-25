@@ -256,11 +256,11 @@ namespace NiL.JS.Statements
             catchAction(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            if (statistic != null)
-                statistic.ContainsTry = true;
-            Parser.Build(ref body, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
+            if (stats != null)
+                stats.ContainsTry = true;
+            Parser.Build(ref body, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
             if (catchBody != null)
             {
                 this.@catch = true;
@@ -269,7 +269,7 @@ namespace NiL.JS.Statements
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
 
-                Parser.Build(ref catchBody, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
+                Parser.Build(ref catchBody, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
 
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
@@ -279,7 +279,7 @@ namespace NiL.JS.Statements
                     v.Value.captured = true;
             }
             if (finallyBody != null)
-                Parser.Build(ref finallyBody, depth, variables, codeContext, message, statistic, opts);
+                Parser.Build(ref finallyBody, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
             if (body == null || (body is EmptyExpression))
             {
                 if (message != null)
@@ -294,15 +294,15 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
-            body.Optimize(ref body, owner, message, opts, statistic);
+            body.Optimize(ref body, owner, message, opts, stats);
             if (catchBody != null)
             {
-                catchBody.Optimize(ref catchBody, owner, message, opts, statistic);
+                catchBody.Optimize(ref catchBody, owner, message, opts, stats);
             }
             if (finallyBody != null)
-                finallyBody.Optimize(ref finallyBody, owner, message, opts, statistic);
+                finallyBody.Optimize(ref finallyBody, owner, message, opts, stats);
         }
 
         protected internal override CodeNode[] getChildsImpl()

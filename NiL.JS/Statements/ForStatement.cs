@@ -84,15 +84,15 @@ namespace NiL.JS.Statements
             int startPos = index;
             index = i;
             return new ForStatement()
-                {
-                    body = body,
-                    condition = condition,
-                    initializer = init,
-                    post = post,
-                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
-                    Position = startPos,
-                    Length = index - startPos
-                };
+            {
+                body = body,
+                condition = condition,
+                initializer = init,
+                post = post,
+                labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
+                Position = startPos,
+                Length = index - startPos
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -198,7 +198,7 @@ namespace NiL.JS.Statements
         {
             var res = new List<CodeNode>()
             {
-                initializer, 
+                initializer,
                 condition,
                 post,
                 body
@@ -207,22 +207,22 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            Parser.Build(ref initializer, 1, variables, codeContext, message, statistic, opts);
+            Parser.Build(ref initializer, 1, scopeVariables, variables, codeContext, message, stats, opts);
             if ((opts & Options.SuppressUselessStatementsElimination) == 0
                 && initializer is VariableDefineStatement
                 && !(initializer as VariableDefineStatement).isConst
                 && (initializer as VariableDefineStatement).initializers.Length == 1)
                 initializer = (initializer as VariableDefineStatement).initializers[0];
-            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
+            Parser.Build(ref condition, 2, scopeVariables, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
             if (post != null)
             {
-                Parser.Build(ref post, 1, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, statistic, opts);
+                Parser.Build(ref post, 1, scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
                 if (post == null && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
-            Parser.Build(ref body, System.Math.Max(1, depth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, statistic, opts);
+            Parser.Build(ref body, System.Math.Max(1, expressionDepth), scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
             if (condition == null)
                 condition = new ConstantDefinition(NiL.JS.BaseLibrary.Boolean.True);
             else if ((condition is Expressions.Expression)
@@ -300,16 +300,16 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             if (initializer != null)
-                initializer.Optimize(ref initializer, owner, message, opts, statistic);
+                initializer.Optimize(ref initializer, owner, message, opts, stats);
             if (condition != null)
-                condition.Optimize(ref condition, owner, message, opts, statistic);
+                condition.Optimize(ref condition, owner, message, opts, stats);
             if (post != null)
-                post.Optimize(ref post, owner, message, opts, statistic);
+                post.Optimize(ref post, owner, message, opts, stats);
             if (body != null)
-                body.Optimize(ref body, owner, message, opts, statistic);
+                body.Optimize(ref body, owner, message, opts, stats);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

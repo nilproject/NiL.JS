@@ -86,38 +86,38 @@ namespace NiL.JS.Core
                 globalContext.fields["Object"].attributes = JSValueAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
                 Core.GlobalObject.refreshGlobalObjectProto();
-                globalContext.AttachModule(typeof(BaseLibrary.Math));
-                globalContext.AttachModule(typeof(BaseLibrary.Array));
-                globalContext.AttachModule(typeof(JSON));
-                globalContext.AttachModule(typeof(BaseLibrary.String));
-                globalContext.AttachModule(typeof(Function));
-                globalContext.AttachModule(typeof(Date));
-                globalContext.AttachModule(typeof(Number));
-                globalContext.AttachModule(typeof(Symbol));
-                globalContext.AttachModule(typeof(BaseLibrary.Boolean));
-                globalContext.AttachModule(typeof(Error));
-                globalContext.AttachModule(typeof(TypeError));
-                globalContext.AttachModule(typeof(ReferenceError));
-                globalContext.AttachModule(typeof(EvalError));
-                globalContext.AttachModule(typeof(RangeError));
-                globalContext.AttachModule(typeof(URIError));
-                globalContext.AttachModule(typeof(SyntaxError));
-                globalContext.AttachModule(typeof(RegExp));
+                globalContext.DefineConstructor(typeof(BaseLibrary.Math));
+                globalContext.DefineConstructor(typeof(BaseLibrary.Array));
+                globalContext.DefineConstructor(typeof(JSON));
+                globalContext.DefineConstructor(typeof(BaseLibrary.String));
+                globalContext.DefineConstructor(typeof(Function));
+                globalContext.DefineConstructor(typeof(Date));
+                globalContext.DefineConstructor(typeof(Number));
+                globalContext.DefineConstructor(typeof(Symbol));
+                globalContext.DefineConstructor(typeof(BaseLibrary.Boolean));
+                globalContext.DefineConstructor(typeof(Error));
+                globalContext.DefineConstructor(typeof(TypeError));
+                globalContext.DefineConstructor(typeof(ReferenceError));
+                globalContext.DefineConstructor(typeof(EvalError));
+                globalContext.DefineConstructor(typeof(RangeError));
+                globalContext.DefineConstructor(typeof(URIError));
+                globalContext.DefineConstructor(typeof(SyntaxError));
+                globalContext.DefineConstructor(typeof(RegExp));
 #if !PORTABLE
-                globalContext.AttachModule(typeof(console));
+                globalContext.DefineConstructor(typeof(console));
 #endif
-                globalContext.AttachModule(typeof(ArrayBuffer));
-                globalContext.AttachModule(typeof(Int8Array));
-                globalContext.AttachModule(typeof(Uint8Array));
-                globalContext.AttachModule(typeof(Uint8ClampedArray));
-                globalContext.AttachModule(typeof(Int16Array));
-                globalContext.AttachModule(typeof(Uint16Array));
-                globalContext.AttachModule(typeof(Int32Array));
-                globalContext.AttachModule(typeof(Uint32Array));
-                globalContext.AttachModule(typeof(Float32Array));
-                globalContext.AttachModule(typeof(Float64Array));
+                globalContext.DefineConstructor(typeof(ArrayBuffer));
+                globalContext.DefineConstructor(typeof(Int8Array));
+                globalContext.DefineConstructor(typeof(Uint8Array));
+                globalContext.DefineConstructor(typeof(Uint8ClampedArray));
+                globalContext.DefineConstructor(typeof(Int16Array));
+                globalContext.DefineConstructor(typeof(Uint16Array));
+                globalContext.DefineConstructor(typeof(Int32Array));
+                globalContext.DefineConstructor(typeof(Uint32Array));
+                globalContext.DefineConstructor(typeof(Float32Array));
+                globalContext.DefineConstructor(typeof(Float64Array));
 
-                globalContext.AttachModule(typeof(Debug));
+                globalContext.DefineConstructor(typeof(Debug));
 
                 #region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());
@@ -203,7 +203,7 @@ namespace NiL.JS.Core
                 {
                     if (strict)
                         return JSValue.undefined;
-                    for (; c.thisBind == null; )
+                    for (; c.thisBind == null;)
                     {
                         if (c.parent == globalContext)
                         {
@@ -233,7 +233,7 @@ namespace NiL.JS.Core
         /// Указывает, присутствует ли контекст в каскаде выполняющихся контекстов непосредственно
         /// или в качестве одного из прототипов
         /// </summary>
-        public bool IsExcecuting
+        public bool Excecuting
         {
             get
             {
@@ -353,7 +353,7 @@ namespace NiL.JS.Core
         {
 #if PORTABLE
             if (currentContext != this)
-                throw new InvalidOperationException("Context not runned");
+                throw new InvalidOperationException("Context is not runing");
             currentContext = oldContext;
             var res = oldContext;
             oldContext = null;
@@ -368,13 +368,13 @@ namespace NiL.JS.Core
                 if (c != null && c.threadId == threadId)
                 {
                     if (c != this)
-                        throw new InvalidOperationException("Context not runned");
+                        throw new InvalidOperationException("Context is not runing");
                     runnedContexts[i] = c = oldContext;
                     break;
                 }
             }
             if (i == -1)
-                throw new InvalidOperationException("Context not runned");
+                throw new InvalidOperationException("Context is not runing");
             oldContext = null;
             return c;
 #endif
@@ -488,7 +488,7 @@ namespace NiL.JS.Core
         /// Если тип не являлся статическим, то созданный объект будет функцией (с поздним связыванием), представляющей конструкторы указанного типа.
         /// </summary>
         /// <param name="moduleType">Тип, для которого будет создан внутренний объект.</param>
-        public void AttachModule(Type moduleType)
+        public void DefineConstructor(Type moduleType)
         {
             if (fields == null)
                 fields = new StringMap2<JSValue>();
@@ -501,7 +501,7 @@ namespace NiL.JS.Core
                 name = moduleType.Name.Substring(0, moduleType.Name.LastIndexOf('`'));
             else
                 name = moduleType.Name;
-            AttachModule(moduleType, name);
+            DefineConstructor(moduleType, name);
         }
 
         /// <summary>
@@ -510,10 +510,10 @@ namespace NiL.JS.Core
         /// Статические члены типа будут доступны как поля созданного объекта. 
         /// Если тип не являлся статическим, то созданный объект будет функцией (с поздним связыванием), представляющей конструкторы указанного типа.
         /// </summary>
-        /// <param name="moduleType">Тип, для которого будет создан внутренний объект.</param>
-        public void AttachModule(Type moduleType, string name)
+        /// <param name="type">Тип, для которого будет создан внутренний объект.</param>
+        public void DefineConstructor(Type type, string name)
         {
-            fields.Add(name, TypeProxy.GetConstructor(moduleType).CloneImpl(false));
+            fields.Add(name, TypeProxy.GetConstructor(type).CloneImpl(false));
             fields[name].attributes = JSValueAttributesInternal.DoNotEnumerate;
         }
 
@@ -557,54 +557,53 @@ namespace NiL.JS.Core
                     throw new System.ArgumentException("Invalid char");
                 var vars = new Dictionary<string, VariableDescriptor>();
                 CodeNode cb = body;
-                Parser.Build(ref cb, 0, vars, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, null, Options.None);
+                Parser.Build(ref cb, 0, new List<string>(), vars, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, null, Options.None);
                 body = cb as CodeBlock;
                 Context context = null;
                 if (leak)
                     context = this;
                 else
                     context = new Context(this, true, this.owner) { strict = true, variables = body.variables };
-                if (leak)
+                if (leak && context.variables != null)
                 {
-                    if (context.variables != null)
-                        for (i = context.variables.Length; i-- > 0; )
+                    for (i = context.variables.Length; i-- > 0;)
+                    {
+                        VariableDescriptor desc = null;
+                        if (vars.TryGetValue(context.variables[i].name, out desc))
                         {
-                            VariableDescriptor desc = null;
-                            if (vars.TryGetValue(context.variables[i].name, out desc))
+                            if (desc.IsDefined)
                             {
-                                if (desc.IsDefined)
-                                {
-                                    context.variables[i].defineDepth = -1; // Кеш будет игнорироваться.
-                                    context.variables[i].captured = true;
-                                    // чистить кэш тут не достаточно. 
-                                    // Мы не знаем, где объявлена одноимённая переменная 
-                                    // и в тех случаях, когда она пришла из функции выше
-                                    // или даже глобального контекста, её кэш может быть 
-                                    // не сброшен вовремя и значение будет браться из контекста
-                                    // eval'а, а не того контекста, в котором её позовут.
-                                    /*
-                                     * function a(){
-                                     *  var c = 1;
-                                     *  function b(){
-                                     *      eval("var c = 2");
-                                     *      // переменная объявлена в контексте b, значит и значение должно быть из
-                                     *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
-                                     *      // то в a её значение будет 2
-                                     *  }
-                                     * }
-                                     */
-                                }
-                                else
-                                {
-                                    for (var r = 0; r < desc.references.Count; r++)
-                                        desc.references[r].descriptor = context.variables[i];
-                                }
+                                context.variables[i].defineDepth = -1; // Кеш будет игнорироваться.
+                                context.variables[i].captured = true;
+                                // чистить кэш тут не достаточно. 
+                                // Мы не знаем, где объявлена одноимённая переменная 
+                                // и в тех случаях, когда она пришла из функции выше
+                                // или даже глобального контекста, её кэш может быть 
+                                // не сброшен вовремя и значение будет браться из контекста
+                                // eval'а, а не того контекста, в котором её позовут.
+                                /*
+                                 * function a(){
+                                 *  var c = 1;
+                                 *  function b(){
+                                 *      eval("var c = 2");
+                                 *      // переменная объявлена в контексте b, значит и значение должно быть из
+                                 *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
+                                 *      // то в a её значение будет 2
+                                 *  }
+                                 * }
+                                 */
+                            }
+                            else
+                            {
+                                for (var r = 0; r < desc.references.Count; r++)
+                                    desc.references[r].descriptor = context.variables[i];
                             }
                         }
+                    }
                 }
-                if (body.localVariables != null)
+                if (leak && body.localVariables != null)
                 {
-                    for (i = body.localVariables.Length; i-- > 0; )
+                    for (i = body.localVariables.Length; i-- > 0;)
                     {
                         var f = context.DefineVariable(body.localVariables[i].name);
                         if (!inplace)
@@ -615,6 +614,8 @@ namespace NiL.JS.Core
                             f.attributes |= JSValueAttributesInternal.ReadOnly;
                         body.localVariables[i].captured = true;
                     }
+
+                    body.localVariables = null;
                 }
 
                 cb = body;

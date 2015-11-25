@@ -146,11 +146,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int depth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics statistic, Options opts)
+        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
         {
-            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InExpression, message, statistic, opts);
-            Parser.Build(ref then, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
-            Parser.Build(ref @else, depth, variables, codeContext | CodeContext.Conditional, message, statistic, opts);
+            Parser.Build(ref condition, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref then, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+            Parser.Build(ref @else, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
 
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
@@ -182,15 +182,15 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics statistic)
+        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
         {
             var cc = condition as CodeNode;
-            condition.Optimize(ref cc, owner, message, opts, statistic);
+            condition.Optimize(ref cc, owner, message, opts, stats);
             condition = (Expression)cc;
             if (then != null)
-                then.Optimize(ref then, owner, message, opts, statistic);
+                then.Optimize(ref then, owner, message, opts, stats);
             if (@else != null)
-                @else.Optimize(ref @else, owner, message, opts, statistic);
+                @else.Optimize(ref @else, owner, message, opts, stats);
             if (then == null && @else == null)
                 _this = condition;
         }
