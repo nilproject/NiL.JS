@@ -37,11 +37,11 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             this._codeContext = codeContext;
 
-            return node.Build(ref node, expressionDepth, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            return node.Build(ref node, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
         }
     }
 }

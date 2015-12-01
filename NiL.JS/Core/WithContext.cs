@@ -24,7 +24,7 @@ namespace NiL.JS.Core
             @object = obj.oValue as JSValue ?? obj;
         }
 
-        public override JSValue DefineVariable(string name)
+        public override JSValue DefineVariable(string name, bool deletable)
         {
             return parent.DefineVariable(name);
         }

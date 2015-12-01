@@ -54,11 +54,11 @@ namespace NiL.JS.Expressions
             return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref threads[0], expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref threads[1], expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
-            base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            Parser.Build(ref threads[0], expressionDepth,  variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref threads[1], expressionDepth,  variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+            base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && first is ConstantDefinition)
             {
                 _this = ((bool)first.Evaluate(null) ? threads[0] : threads[1]);
@@ -71,7 +71,7 @@ namespace NiL.JS.Expressions
                     && threads[0] != null
                     && !stats.ContainsWith
                     && (first is VariableReference && threads[0] is VariableReference)
-                    && (first as VariableReference).descriptor == (threads[0] as VariableReference).descriptor)
+                    && (first as VariableReference)._descriptor == (threads[0] as VariableReference)._descriptor)
                 {
                     if (threads[0] == null)
                         _this = first;
@@ -95,7 +95,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             base.Optimize(ref _this, owner, message, opts, stats);
             for (var i = threads.Length; i-- > 0; )
@@ -109,6 +109,14 @@ namespace NiL.JS.Expressions
                 && (threads[1] is GetVariableExpression || threads[1] is ConstantDefinition)
                 && ResultType == PredictedType.Ambiguous)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Type of an expression is ambiguous");
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            base.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
+            threads[0]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            threads[1]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

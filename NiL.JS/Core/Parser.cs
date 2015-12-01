@@ -40,8 +40,9 @@ namespace NiL.JS.Core
             {
                 new Rule("[", ExpressionTree.Parse),
                 new Rule("{", CodeBlock.Parse),
-                new Rule("var ", VariableDefineStatement.Parse),
-                new Rule("const ", VariableDefineStatement.Parse),
+                new Rule("var ", VariableDefinitionStatement.Parse),
+                new Rule("let ", VariableDefinitionStatement.Parse),
+                new Rule("const ", VariableDefinitionStatement.Parse),
                 new Rule("if", IfElseStatement.Parse),
                 new Rule("for", ForOfStatement.Parse),
                 new Rule("for", ForInStatement.Parse),
@@ -363,12 +364,12 @@ namespace NiL.JS.Core
                 j++;
                 while ((j < code.Length) && (code[j] != '/'))
                 {
-                    if (Tools.isLineTerminator(code[j]))
+                    if (Tools.IsLineTerminator(code[j]))
                         return false;
                     if (code[j] == '\\')
                     {
                         j++;
-                        if (Tools.isLineTerminator(code[j]))
+                        if (Tools.IsLineTerminator(code[j]))
                             return false;
                     }
                     j++;
@@ -462,7 +463,7 @@ namespace NiL.JS.Core
                         else if ((code[j] == '\n') && (code[j + 1] == '\r'))
                             j++;
                     }
-                    else if (Tools.isLineTerminator(code[j]) || (j + 1 >= code.Length))
+                    else if (Tools.IsLineTerminator(code[j]) || (j + 1 >= code.Length))
                     {
                         if (!@throw)
                             return false;
@@ -535,7 +536,7 @@ namespace NiL.JS.Core
         public static bool IsIdentificatorTerminator(char c)
         {
             return c == ' '
-                || Tools.isLineTerminator(c)
+                || Tools.IsLineTerminator(c)
                 || IsOperator(c)
                 || Tools.IsWhiteSpace(c)
                 || (c == '{')
@@ -551,12 +552,12 @@ namespace NiL.JS.Core
                 || (c == '~');
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index, CodeFragmentType ruleSet)
+        internal static CodeNode Parse(ParseInfo state, ref int index, CodeFragmentType ruleSet)
         {
             return Parse(state, ref index, ruleSet, true);
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index, CodeFragmentType ruleSet, bool throwError)
+        internal static CodeNode Parse(ParseInfo state, ref int index, CodeFragmentType ruleSet, bool throwError)
         {
             while ((index < state.Code.Length) && (Tools.IsWhiteSpace(state.Code[index])))
                 index++;
@@ -584,18 +585,18 @@ namespace NiL.JS.Core
             return null;
         }
 
-        internal static void Build<T>(ref T self, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts) where T : CodeNode
+        internal static void Build<T>(ref T self, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts) where T : CodeNode
         {
             var t = (CodeNode)self;
-            while (t != null && t.Build(ref t, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts))
+            while (t != null && t.Build(ref t, expressionDepth,  variables, codeContext, message, stats, opts))
                 self = (T)t;
             self = (T)t;
         }
 
-        internal static void Build(ref Expression s, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        internal static void Build(ref Expression s, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             CodeNode t = s;
-            Build(ref t, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            Build(ref t, expressionDepth,  variables, codeContext, message, stats, opts);
             if (t == null)
             {
                 s = null;
@@ -631,9 +632,9 @@ namespace NiL.JS.Core
             if (validateMethod == null || validateMethod.ReturnType != typeof(bool))
                 throw new ArgumentException("type must contain static method \"Validate\" which get String and Int32 and returns Boolean");
 
-            var parserMethod = type.GetMethod("Parse", new[] { typeof(ParsingState), typeof(int).MakeByRefType() });
+            var parserMethod = type.GetMethod("Parse", new[] { typeof(ParseInfo), typeof(int).MakeByRefType() });
             if (parserMethod == null || parserMethod.ReturnType != typeof(CodeNode))
-                throw new ArgumentException("type must contain static method \"Parse\" which get " + typeof(ParsingState).Name + " and Int32 by reference and returns " + typeof(CodeNode).Name);
+                throw new ArgumentException("type must contain static method \"Parse\" which get " + typeof(ParseInfo).Name + " and Int32 by reference and returns " + typeof(CodeNode).Name);
 
             var validateDelegate = validateMethod.CreateDelegate(typeof(ValidateDelegate)) as ValidateDelegate;
             var parseDelegate = parserMethod.CreateDelegate(typeof(ParseDelegate)) as ParseDelegate;

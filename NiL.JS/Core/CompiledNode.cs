@@ -16,8 +16,8 @@ namespace NiL.JS.Core
 
         private static readonly ParameterExpression wrapContainerParameter = Expression.Parameter(typeof(JSValue), "wrapContainer");
 
-        private static readonly ParameterExpression[] lambdaArgs = new[] 
-                { 
+        private static readonly ParameterExpression[] lambdaArgs = new[]
+                {
                     JITHelpers.ContextParameter,
                     JITHelpers.DynamicValuesParameter,
                     wrapContainerParameter
@@ -150,12 +150,12 @@ namespace NiL.JS.Core
             return original.EvaluateForWrite(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            return original.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            return original.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             original.Optimize(ref _this, owner, message, opts, stats);
         }

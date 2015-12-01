@@ -390,7 +390,7 @@ namespace NiL.JS.Core
             return Visit(node as CodeNode);
         }
 
-        internal protected virtual T Visit(VariableDefineStatement node)
+        internal protected virtual T Visit(VariableDefinitionStatement node)
         {
             return Visit(node as CodeNode);
         }

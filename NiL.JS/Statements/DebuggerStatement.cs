@@ -9,19 +9,19 @@ namespace NiL.JS.Statements
 #endif
     public sealed class DebuggerStatement : CodeNode
     {
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "debugger", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+            if (!Parser.Validate(state.Code, "debugger", ref i))
                 return null;
             i ^= index;
             index ^= i;
             i ^= index;
             return new DebuggerStatement()
-                {
-                    Position = i,
-                    Length = index - i
-                };
+            {
+                Position = i,
+                Length = index - i
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -47,11 +47,11 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (stats != null)
                 stats.ContainsDebugger = true;
-            return base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
         }
 
         protected internal override CodeNode[] getChildsImpl()
@@ -59,7 +59,12 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal protected override void Decompose(ref CodeNode self)
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+
+        }
+
+        public override void Decompose(ref CodeNode self)
         {
 
         }

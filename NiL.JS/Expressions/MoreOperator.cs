@@ -261,7 +261,7 @@ namespace NiL.JS.Expressions
             return Check(tempContainer, s, !trueMore);
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             baseOptimize(ref _this, owner, message, opts, stats);
             if (_this == this)

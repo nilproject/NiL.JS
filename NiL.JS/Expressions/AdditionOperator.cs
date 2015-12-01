@@ -284,20 +284,20 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            var res = base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (!res && _this == this)
             {
                 if (first is StringConcatenationExpression)
                 {
                     _this = first;
-                    (first as StringConcatenationExpression).sources.Add(second);
+                    (first as StringConcatenationExpression)._parts.Add(second);
                 }
                 else if (second is StringConcatenationExpression)
                 {
                     _this = second;
-                    (second as StringConcatenationExpression).sources.Insert(0, first);
+                    (second as StringConcatenationExpression)._parts.Insert(0, first);
                 }
                 else
                 {
@@ -320,7 +320,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             base.Optimize(ref _this, owner, message, opts, stats);
 
@@ -363,7 +363,7 @@ namespace NiL.JS.Expressions
             return "(" + first + " + " + second + ")";
         }
 
-        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
             throw new NotImplementedException();
         }

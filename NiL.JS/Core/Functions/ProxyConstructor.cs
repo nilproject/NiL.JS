@@ -33,12 +33,12 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override FunctionType Type
+        public override FunctionKind Type
         {
             [Hidden]
             get
             {
-                return FunctionType.Function;
+                return FunctionKind.Function;
             }
         }
 
@@ -133,7 +133,7 @@ namespace NiL.JS.Core.Functions
             return proxy.DeleteProperty(name) && __proto__.DeleteProperty(name);
         }
 
-        protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
             var objc = targetObject as ObjectWrapper;
             if (construct) // new

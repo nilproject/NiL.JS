@@ -15,23 +15,28 @@ namespace NiL.JS.Statements
 #endif
     public sealed class CodeBlock : CodeNode
     {
+        private sealed class SuspendData
+        {
+            public int LineIndex;
+            public Context Context;
+        }
+
         private static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];
 
         private string code;
 #if (NET40 || INLINE) && JIT
         internal Func<Context, JSObject> compiledVersion;
 #endif
-        internal bool builded;
 #if DEBUG
         internal HashSet<string> directives;
 #endif
-        internal VariableDescriptor[] variables;
-        internal VariableDescriptor[] localVariables;
+        internal VariableDescriptor[] _variables;
         internal CodeNode[] lines;
         internal bool strict;
+        internal bool builded;
+        internal bool suppressScopeIsolation;
 
-        public VariableDescriptor[] Variables { get { return variables; } }
-        public VariableDescriptor[] LocalVariables { get { return localVariables; } }
+        public VariableDescriptor[] Variables { get { return _variables; } }
         public CodeNode[] Body { get { return lines; } }
         public bool Strict { get { return strict; } }
         public string Code
@@ -73,128 +78,183 @@ namespace NiL.JS.Statements
                 throw new ArgumentNullException("body");
             code = "";
             this.lines = body;
-            variables = null;
+            _variables = null;
             this.strict = false;
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
-            int i = index;
-            bool sroot = i == 0 && state.AllowDirectives;
+            int position = index;
+            bool sroot = position == 0 && state.AllowDirectives;
             if (!sroot)
             {
-                if (state.Code[i] != '{')
-                    throw new ArgumentException("code (" + i + ")");
-                i++;
+                if (state.Code[position] != '{')
+                    throw new ArgumentException("code (" + position + ")");
+                position++;
             }
-            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
-                i++;
+
+            Tools.SkipSpaces(state.Code, ref position);
+
             var body = new List<CodeNode>();
-            state.LabelCount = 0;
             bool strictSwitch = false;
             bool allowDirectives = state.AllowDirectives;
             HashSet<string> directives = null;
             state.AllowDirectives = false;
+
+            var oldFunctionScopeLevel = state.functionScopeLevel;
+            state.lexicalScopeLevel++;
             if (allowDirectives)
+                state.functionScopeLevel = state.lexicalScopeLevel;
+
+            var oldVariablesCount = state.Variables.Count;
+            VariableDescriptor[] variables = null;
+            state.LabelCount = 0;
+            try
             {
-                int start = i;
-                do
+                if (allowDirectives)
                 {
-                    var s = i;
-                    if (i >= state.Code.Length)
-                        break;
-                    if (Parser.ValidateValue(state.Code, ref i))
+                    int start = position;
+                    do
                     {
-                        while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
-                            i++;
-                        if (i < state.Code.Length && (Parser.IsOperator(state.Code[i])
-                            || Parser.Validate(state.Code, "instanceof", i)
-                            || Parser.Validate(state.Code, "in", i)))
-                        {
-                            i = s;
+                        var s = position;
+                        if (position >= state.Code.Length)
                             break;
-                        }
-                        var t = s;
-                        if (Parser.ValidateString(state.Code, ref t, true))
+                        if (Parser.ValidateValue(state.Code, ref position))
                         {
-                            var str = state.Code.Substring(s + 1, t - s - 2);
-                            if (!strictSwitch && str == "use strict" && !state.strict)
+                            while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]))
+                                position++;
+                            if (position < state.Code.Length && (Parser.IsOperator(state.Code[position])
+                                || Parser.Validate(state.Code, "instanceof", position)
+                                || Parser.Validate(state.Code, "in", position)))
                             {
-                                state.strict = true;
-                                strictSwitch = true;
+                                position = s;
+                                break;
                             }
+                            var t = s;
+                            if (Parser.ValidateString(state.Code, ref t, true))
+                            {
+                                var str = state.Code.Substring(s + 1, t - s - 2);
+                                if (!strictSwitch && str == "use strict" && !state.strict)
+                                {
+                                    state.strict = true;
+                                    strictSwitch = true;
+                                }
+                                if (directives == null)
+                                    directives = new HashSet<string>();
+                                directives.Add(str);
+                            }
+                            else
+                            {
+                                position = s;
+                                break;
+                            }
+                        }
+                        else if (state.Code[position] == ';')
+                        {
                             if (directives == null)
-                                directives = new HashSet<string>();
-                            directives.Add(str);
+                                break;
+                            do
+                                position++;
+                            while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]));
                         }
                         else
-                        {
-                            i = s;
                             break;
-                        }
                     }
-                    else if (state.Code[i] == ';')
-                    {
-                        if (directives == null)
-                            break;
-                        do
-                            i++;
-                        while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
-                    }
-                    else
-                        break;
-                } while (true);
-                i = start;
-            }
-            for (var j = body.Count; j-- > 0;)
-                (body[j] as ConstantDefinition).value.oValue = Tools.Unescape((body[j] as ConstantDefinition).value.oValue.ToString(), state.strict);
+                    while (true);
+                    position = start;
+                }
 
-            bool expectSemicolon = false;
-            while ((sroot && i < state.Code.Length) || (!sroot && state.Code[i] != '}'))
-            {
-                var t = Parser.Parse(state, ref i, 0);
-                if (t == null)
+                for (var j = body.Count; j-- > 0;)
+                    (body[j] as ConstantDefinition).value.oValue = Tools.Unescape((body[j] as ConstantDefinition).value.oValue.ToString(), state.strict);
+
+                bool expectSemicolon = false;
+                while ((sroot && position < state.Code.Length) || (!sroot && state.Code[position] != '}'))
                 {
-                    if (i < state.Code.Length)
+                    var t = Parser.Parse(state, ref position, 0);
+                    if (t == null)
                     {
-                        if (sroot && state.Code[i] == '}')
-                            ExceptionsHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
-                        if ((state.Code[i] == ';' || state.Code[i] == ','))
+                        if (position < state.Code.Length)
                         {
-                            if (state.message != null
-                                && !expectSemicolon)
-                                state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 1), "Unnecessary semicolon.");
-                            i++;
+                            if (sroot && state.Code[position] == '}')
+                                ExceptionsHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
+
+                            if ((state.Code[position] == ';' || state.Code[position] == ','))
+                            {
+                                if (state.message != null && !expectSemicolon)
+                                    state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, position, 1), "Unnecessary semicolon.");
+
+                                position++;
+                            }
+
+                            expectSemicolon = false;
                         }
+                        continue;
+                    }
+
+                    if (t is EntityDefinition)
+                    {
                         expectSemicolon = false;
                     }
-                    continue;
+                    else
+                    {
+                        expectSemicolon = true;
+                    }
+
+                    body.Add(t);
                 }
-                if (t is FunctionDefinition)
+            }
+            finally
+            {
+                if (oldVariablesCount != state.Variables.Count)
                 {
-                    if (state.strict && !allowDirectives)
-                        ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    if (state.InExpression == 0 && string.IsNullOrEmpty((t as FunctionDefinition).Name))
-                        ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Declarated function must have name.")));
-                    expectSemicolon = false;
+                    var count = 0;
+                    for (var i = oldVariablesCount; i < state.Variables.Count; i++)
+                    {
+                        if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
+                            count++;
+                    }
+                    if (count > 0)
+                    {
+                        variables = new VariableDescriptor[count];
+                        HashSet<string> declaredVariables = null;
+                        if (state.lexicalScopeLevel != state.functionScopeLevel)
+                            declaredVariables = new HashSet<string>();
+                        for (int i = oldVariablesCount, targetIndex = 0; i < state.Variables.Count; i++)
+                        {
+                            if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
+                            {
+                                variables[targetIndex] = state.Variables[i];
+                                if (declaredVariables != null)
+                                {
+                                    if (declaredVariables.Contains(variables[targetIndex].name))
+                                        ExceptionsHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" has already been defined", state.Code, i);
+                                    declaredVariables.Add(variables[targetIndex].name);
+                                }
+                                targetIndex++;
+                            }
+                            else if (targetIndex != 0)
+                            {
+                                state.Variables[i - targetIndex] = state.Variables[i];
+                            }
+                        }
+                        state.Variables.RemoveRange(state.Variables.Count - count, count);
+                    }
                 }
-                else
-                {
-                    expectSemicolon = true;
-                }
-                body.Add(t);
+
+                state.functionScopeLevel = oldFunctionScopeLevel;
+                state.lexicalScopeLevel--;
             }
             if (!sroot)
-                i++;
+                position++;
             int startPos = index;
-            index = i;
+            index = position;
             return new CodeBlock(body.ToArray())
             {
                 strict = (state.strict ^= strictSwitch) || strictSwitch,
-                variables = emptyVariables,
+                _variables = variables ?? emptyVariables,
                 Position = startPos,
                 code = state.SourceCode,
-                Length = i - startPos,
+                Length = position - startPos,
 #if DEBUG
                 directives = directives
 #endif
@@ -207,71 +267,117 @@ namespace NiL.JS.Statements
             int i = 0;
             bool clearSuspendData = false;
 
+            if (ls.Length == 0)
+                return null;
+
             if (context.abortType >= AbortType.Resume)
             {
-                i = (int)context.SuspendData[this];
+                var suspendData = context.SuspendData[this] as SuspendData;
+                context = suspendData.Context;
+                i = suspendData.LineIndex;
                 clearSuspendData = true;
             }
-            else if (localVariables != null)
-                initVariables(context);
-
-            for (; i < ls.Length; i++)
+            else
             {
-#if DEV
-                if (context.debugging)
-                    context.raiseDebugger(lines[i]);
-#endif
-                var t = ls[i].Evaluate(context);
-                if (t != null)
-                    context.lastResult = t;
-#if DEBUG && !PORTABLE
-                if (!context.Excecuting)
-                    if (System.Diagnostics.Debugger.IsAttached)
-                        System.Diagnostics.Debugger.Break();
-                    else
-                        throw new ApplicationException("Context was stopped");
-                if (NiL.JS.BaseLibrary.Number.NaN.valueType != JSValueType.Double || !double.IsNaN(NiL.JS.BaseLibrary.Number.NaN.dValue))
-                    if (System.Diagnostics.Debugger.IsAttached)
-                        System.Diagnostics.Debugger.Break();
-                    else
-                        throw new ApplicationException("NaN has been rewitten");
-                if (JSObject.undefined.valueType != JSValueType.Undefined)
-                    if (System.Diagnostics.Debugger.IsAttached)
-                        System.Diagnostics.Debugger.Break();
-                    else
-                        throw new ApplicationException("undefined has been rewitten");
-                if (JSObject.notExists.Exists)
-                    if (System.Diagnostics.Debugger.IsAttached)
-                        System.Diagnostics.Debugger.Break();
-                    else
-                        throw new ApplicationException("notExists has been rewitten");
-                if (BaseLibrary.Boolean.False.valueType != JSValueType.Bool
-                    || BaseLibrary.Boolean.False.iValue != 0
-                    || BaseLibrary.Boolean.False.attributes != JSValueAttributesInternal.SystemObject)
-                    if (System.Diagnostics.Debugger.IsAttached)
-                        System.Diagnostics.Debugger.Break();
-                    else
-                        throw new ApplicationException("Boolean.False has been rewitten");
-                if (BaseLibrary.Boolean.True.valueType != JSValueType.Bool
-                    || BaseLibrary.Boolean.True.iValue != 1
-                    || BaseLibrary.Boolean.True.attributes != JSValueAttributesInternal.SystemObject)
-                    if (System.Diagnostics.Debugger.IsAttached)
-                        System.Diagnostics.Debugger.Break();
-                    else
-                        throw new ApplicationException("Boolean.True has been rewitten");
-#endif
-                if (context.abortType != AbortType.None)
+                if (!suppressScopeIsolation)
                 {
-                    if (context.abortType == AbortType.Suspend)
+                    context = new Context(context, false, context.owner)
                     {
-                        context.SuspendData[this] = i;
-                    }
-                    break;
+                        suspendData = context.suspendData,
+                        variables = _variables,
+                        thisBind = context.thisBind,
+                        strict = context.strict
+                    };
                 }
-                if (clearSuspendData)
-                    context.SuspendData.Clear();
+
+                if (_variables.Length != 0)
+                    initVariables(context);
             }
-            return null;
+
+            var activated = !suppressScopeIsolation && context.Activate();
+            try
+            {
+                for (; i < ls.Length; i++)
+                {
+#if DEV
+                    if (context.debugging)
+                        context.raiseDebugger(lines[i]);
+#endif
+                    var t = ls[i].Evaluate(context);
+                    if (t != null)
+                        context.lastResult = t;
+#if DEBUG && !PORTABLE
+                    if (!context.Excecuting)
+                        if (System.Diagnostics.Debugger.IsAttached)
+                            System.Diagnostics.Debugger.Break();
+                        else
+                            throw new ApplicationException("Context was stopped");
+                    if (NiL.JS.BaseLibrary.Number.NaN.valueType != JSValueType.Double || !double.IsNaN(Number.NaN.dValue))
+                        if (System.Diagnostics.Debugger.IsAttached)
+                            System.Diagnostics.Debugger.Break();
+                        else
+                            throw new ApplicationException("NaN has been rewitten");
+                    if (JSObject.undefined.valueType != JSValueType.Undefined)
+                        if (System.Diagnostics.Debugger.IsAttached)
+                            System.Diagnostics.Debugger.Break();
+                        else
+                            throw new ApplicationException("undefined has been rewitten");
+                    if (JSObject.notExists.Exists)
+                        if (System.Diagnostics.Debugger.IsAttached)
+                            System.Diagnostics.Debugger.Break();
+                        else
+                            throw new ApplicationException("notExists has been rewitten");
+                    if (BaseLibrary.Boolean.False.valueType != JSValueType.Bool
+                        || BaseLibrary.Boolean.False.iValue != 0
+                        || BaseLibrary.Boolean.False.attributes != JSValueAttributesInternal.SystemObject)
+                        if (System.Diagnostics.Debugger.IsAttached)
+                            System.Diagnostics.Debugger.Break();
+                        else
+                            throw new ApplicationException("Boolean.False has been rewitten");
+                    if (BaseLibrary.Boolean.True.valueType != JSValueType.Bool
+                        || BaseLibrary.Boolean.True.iValue != 1
+                        || BaseLibrary.Boolean.True.attributes != JSValueAttributesInternal.SystemObject)
+                        if (System.Diagnostics.Debugger.IsAttached)
+                            System.Diagnostics.Debugger.Break();
+                        else
+                            throw new ApplicationException("Boolean.True has been rewitten");
+#endif
+                    if (context.abortType != AbortType.None)
+                    {
+                        if (context.abortType == AbortType.Suspend)
+                        {
+                            context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
+                        }
+                        break;
+                    }
+                    if (clearSuspendData)
+                        context.SuspendData.Clear();
+                }
+
+                return null;
+            }
+            finally
+            {
+                if (!suppressScopeIsolation)
+                {
+                    if (activated)
+                        context.Deactivate();
+                    context.parent.lastResult = context.lastResult;
+                    context.parent.abortInfo = context.abortInfo;
+                    context.parent.abortType = context.abortType;
+                    if (_variables.Length != 0)
+                        clearVariablesCache();
+                }
+            }
+        }
+
+        internal void clearVariablesCache()
+        {
+            for (var i = 0; i < _variables.Length; i++)
+            {
+                _variables[i].cacheContext = null;
+                _variables[i].cacheRes = null;
+            }
         }
 
         protected internal override CodeNode[] getChildsImpl()
@@ -284,38 +390,48 @@ namespace NiL.JS.Statements
                     break;
                 res.Add(node);
             }
-            if (variables != null)
-                res.AddRange(from v in variables where v.initializer != null && (!(v.initializer is FunctionDefinition) || (v.initializer as FunctionDefinition).body != this) select v.initializer);
+            if (_variables != null)
+                res.AddRange(from v in _variables where v.initializer != null && (!(v.initializer is FunctionDefinition) || (v.initializer as FunctionDefinition).body != this) select v.initializer);
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (builded)
                 return false;
+            builded = true;
 
-            for (int i = 0; i < lines.Length; i++)
+            List<VariableDescriptor> variablesToRestore = null;
+            if (_variables.Length != 0)
+            {
+                for (var i = 0; i < _variables.Length; i++)
+                {
+                    VariableDescriptor desc = null;
+                    if (variables.TryGetValue(_variables[i].name, out desc))
+                    {
+                        if (variablesToRestore == null)
+                            variablesToRestore = new List<VariableDescriptor>();
+                        variablesToRestore.Add(desc);
+                    }
+
+                    variables[_variables[i].name] = _variables[i];
+
+                    _variables[i].owner = this;
+                }
+            }
+
+            for (var i = 0; i < lines.Length; i++)
             {
                 var fe = lines[i] as EntityDefinition;
                 if (fe != null)
-                {
-                    Parser.Build(
-                        ref lines[i],
-                        (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth),
-                        scopeVariables,
-                        variables,
-                        codeContext | (this.strict ? CodeContext.Strict : CodeContext.None),
-                        message,
-                        stats,
-                        opts);
-
-                    if (fe.Hoist)
-                    {
-                        lines[i] = null;
-                        fe.Register(variables, codeContext);
-                    }
-                }
+                    lines[i] = null;
             }
+
+            for (var i = 0; i < _variables.Length; i++)
+            {
+                Parser.Build(ref _variables[i].initializer, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
+            }
+
             bool unreachable = false;
             for (int i = 0; i < lines.Length; i++)
             {
@@ -328,8 +444,11 @@ namespace NiL.JS.Statements
                         if (unreachable && message != null)
                             message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position, lines[i].Length), "Unreachable code detected.");
                         var cn = lines[i];
-                        Parser.Build(ref cn, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), scopeVariables, variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
-                        lines[i] = cn;
+                        Parser.Build(ref cn, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
+                        if (cn is EmptyExpression)
+                            lines[i] = null;
+                        else
+                            lines[i] = cn;
                         unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement || cn is ThrowStatement;
                     }
                 }
@@ -347,42 +466,24 @@ namespace NiL.JS.Statements
                     t--;
             }
 
-            if (expressionDepth > 0)
+            if (expressionDepth > 0 && _variables.Length == 0)
             {
-                variables = null;
-                if (lines.Length == 1 || (t >= 0 && (lines.Length - t - 1) == 1))
-                    _this = (lines[lines.Length - 1] ?? EmptyExpression.Instance); // блок не должен быть null, так как он может быть вложен в выражение
-                else if (lines.Length == 0)
+                if (lines.Length == 0)
                     _this = EmptyExpression.Instance;
             }
             else
             {
-                if (variables.Count != 0 &&
-                    (this.variables == null || this.variables.Length != variables.Count))
-                    this.variables = variables.Values.ToArray();
-                if (this.variables != null)
-                {
-                    int localVariablesCount = 0;
-                    for (var i = this.variables.Length; i-- > 0;)
-                    {
-                        if (this.variables[i].IsDefined && this.variables[i].Owner == null) // все объявленные переменные без хозяина наши
-                            this.variables[i].owner = this;
-                        if (this.variables[i].owner == this)
-                            localVariablesCount++;
-                    }
-                    this.localVariables = new VariableDescriptor[localVariablesCount];
-                    for (var i = this.variables.Length; i-- > 0;)
-                    {
-                        if (this.variables[i].owner == this)
-                            localVariables[--localVariablesCount] = this.variables[i];
-                    }
-                }
                 if (message != null)
                 {
-                    for (var i = 0; i < localVariables.Length; i++)
+                    for (var i = 0; i < _variables.Length; i++)
                     {
-                        if (localVariables[i].ReferenceCount == 1)
-                            message(MessageLevel.Recomendation, new CodeCoordinates(0, localVariables[i].references[0].Position, 0), "Unused variable \"" + localVariables[i].name + "\"");
+                        if (_variables[i].ReferenceCount == 1)
+                        {
+                            message(
+                                MessageLevel.Recomendation,
+                                new CodeCoordinates(0, _variables[i].references[0].Position, 0),
+                                "Unused variable \"" + _variables[i].name + "\"");
+                        }
                     }
                 }
 #if (NET40 || INLINE) && JIT
@@ -397,30 +498,43 @@ namespace NiL.JS.Statements
                     newBody[f++] = lines[t];
                 lines = newBody;
             }
-            builded = true;
+            if (_variables.Length != 0)
+            {
+                for (var i = 0; i < _variables.Length; i++)
+                {
+                    variables.Remove(_variables[i].name);
+                }
+            }
+            if (variablesToRestore != null)
+            {
+                for (var i = 0; i < variablesToRestore.Count; i++)
+                {
+                    variables[variablesToRestore[i].name] = variablesToRestore[i];
+                }
+            }
             return false;
         }
 
-        internal void Optimize(ref CodeBlock self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        internal void Optimize(ref CodeBlock self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             CodeNode cn = self;
             Optimize(ref cn, owner, message, opts, stats);
             self = (CodeBlock)cn;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             /*
              * Дублирование оптимизации для локальных переменных нужно для правильной работы ряда оптимизаций
              */
 
-            if (localVariables != null)
+            if (_variables != null)
             {
-                for (var i = 0; i < localVariables.Length; i++)
+                for (var i = 0; i < _variables.Length; i++)
                 {
-                    if (localVariables[i].initializer != null)
+                    if (_variables[i].initializer != null)
                     {
-                        var cn = localVariables[i].initializer as CodeNode;
+                        var cn = _variables[i].initializer as CodeNode;
                         cn.Optimize(ref cn, owner, message, opts, stats);
                     }
                 }
@@ -431,26 +545,90 @@ namespace NiL.JS.Statements
                 cn.Optimize(ref cn, owner, message, opts, stats);
                 lines[i] = cn;
             }
-            if (localVariables != null)
+            if (_variables != null)
             {
-                for (var i = 0; i < localVariables.Length; i++)
+                for (var i = 0; i < _variables.Length; i++)
                 {
-                    if (localVariables[i].initializer != null)
+                    if (_variables[i].initializer != null)
                     {
-                        var cn = localVariables[i].initializer as CodeNode;
+                        var cn = _variables[i].initializer as CodeNode;
                         cn.Optimize(ref cn, owner, message, opts, stats);
                     }
                 }
             }
         }
 
+        public override void Decompose(ref CodeNode self)
+        {
+            if (_variables != null)
+            {
+                for (var i = 0; i < _variables.Length; i++)
+                {
+                    if (_variables[i].initializer != null)
+                    {
+                        _variables[i].initializer.Decompose(ref _variables[i].initializer);
+                    }
+                }
+            }
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                lines[i].Decompose(ref lines[i]);
+            }
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            var initialVariables = _variables;
+
+            if (_variables.Length != 0 && !functionInfo.WithLexicalEnvironment)
+            {
+                for(var i = 0; i < _variables.Length; i++)
+                {
+                    if (!transferedVariables.ContainsKey(_variables[i].name))
+                        transferedVariables.Add(_variables[i].name, _variables[i]);
+                }
+                _variables = emptyVariables;
+            }
+
+            if (_variables.Length == 0)
+            {
+                suppressScopeIsolation = true;
+                scopeBias--;
+            }
+
+            for (var i = 0; i < initialVariables.Length; i++)
+            {
+                initialVariables[i].definitionScopeLevel -= initialVariables[i].scopeBias;
+                initialVariables[i].scopeBias = scopeBias;
+                initialVariables[i].definitionScopeLevel += scopeBias;
+
+                initialVariables[i].initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            }
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                lines[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
+            }
+        }
+
         internal void initVariables(Context context)
         {
-            var stats = context.owner?.creator._stats;
+            var stats = context.owner?.creator._functionInfo;
             var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.ContainsYield;
-            for (var i = localVariables.Length; i-- > 0;)
+            for (var i = _variables.Length; i-- > 0;)
             {
-                var v = localVariables[i];
+                var v = _variables[i];
+
+                if (v.cacheContext != null)
+                {
+                    if (v.cacheContext.fields == null)
+                        v.cacheContext.fields = JSObject.getFieldsContainer();
+                    v.cacheContext.fields[v.name] = v.cacheRes;
+                }
+
+                if (v.lexicalScope)
+                    continue;
 
                 bool isArg = stats != null && string.CompareOrdinal(v.name, "arguments") == 0;
                 if (isArg && v.initializer == null)
@@ -461,14 +639,14 @@ namespace NiL.JS.Statements
                     valueType = JSValueType.Undefined,
                     attributes = JSValueAttributesInternal.DoNotDelete
                 };
+                v.cacheRes = f;
+                v.cacheContext = context;
                 if (v.captured || cew)
                     (context.fields ?? (context.fields = JSObject.getFieldsContainer()))[v.name] = f;
                 if (v.initializer != null)
                     f.Assign(v.initializer.Evaluate(context));
                 if (v.isReadOnly)
                     f.attributes |= JSValueAttributesInternal.ReadOnly;
-                v.cacheRes = f;
-                v.cacheContext = context;
 
                 if (isArg)
                     context.arguments = f;
@@ -480,9 +658,9 @@ namespace NiL.JS.Statements
         {
             for (int i = 0; i < lines.Length; i++)
                 lines[i].TryCompile(true, false, null, dynamicValues);
-            for (int i = localVariables.Length; i-- > 0;)
-                if (localVariables[i].initializer != null)
-                    localVariables[i].initializer.TryCompile(true, false, null, dynamicValues);
+            for (int i = _variables.Length; i-- > 0;)
+                if (_variables[i].initializer != null)
+                    _variables[i].initializer.TryCompile(true, false, null, dynamicValues);
             return null;
         }
 #endif
@@ -494,25 +672,6 @@ namespace NiL.JS.Statements
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);
-        }
-
-        protected internal override void Decompose(ref CodeNode self)
-        {
-            if (localVariables != null)
-            {
-                for (var i = 0; i < localVariables.Length; i++)
-                {
-                    if (localVariables[i].initializer != null)
-                    {
-                        localVariables[i].initializer.Decompose(ref localVariables[i].initializer);
-                    }
-                }
-            }
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                lines[i].Decompose(ref lines[i]);
-            }
         }
 
         public string ToString(bool linewiseStringify)

@@ -130,7 +130,7 @@
     <value>Can not increment readonly "{0}"</value>
   </data>
   <data name="InvalidLefthandSideInAssignment" xml:space="preserve">
-    <value>"Invalid left-hand side in assignment."</value>
+    <value>Invalid left-hand side in assignment.</value>
   </data>
   <data name="InvalidPropertyName" xml:space="preserve">
     <value>Invalid property name at {0}</value>
@@ -149,6 +149,9 @@
   </data>
   <data name="InvalidTryToCreateWithoutNew" xml:space="preserve">
     <value>Type "{0}" can not be created without new keyword</value>
+  </data>
+  <data name="TooManyArgumentsForFunction" xml:space="preserve">
+    <value>Too many arguments for function "{0}"</value>
   </data>
   <data name="TryingToGetProperty" xml:space="preserve">
     <value>Can't get property "{0}" of "{1}"</value>

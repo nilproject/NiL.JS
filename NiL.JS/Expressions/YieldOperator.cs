@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
             _reiterate = reiterate;
         }
 
-        public static CodeNode Parse(ParsingState state, ref int index)
+        public static CodeNode Parse(ParseInfo state, ref int index)
         {
             if ((state.CodeContext & CodeContext.InGenerator) == 0)
                 ExceptionsHelper.Throw(new SyntaxError("Invalid use of yield operator"));
@@ -146,10 +146,10 @@ namespace NiL.JS.Expressions
             throw new InvalidOperationException();
         }
 
-        protected internal override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             stats.ContainsYield = true;
-            return base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            return base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -157,7 +157,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
             first.Decompose(ref first, result);
 

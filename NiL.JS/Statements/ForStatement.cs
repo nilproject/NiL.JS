@@ -29,7 +29,7 @@ namespace NiL.JS.Statements
 
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -41,7 +41,7 @@ namespace NiL.JS.Statements
             CodeNode init = null;
             int labelsCount = state.LabelCount;
             state.LabelCount = 0;
-            init = VariableDefineStatement.Parse(state, ref i);
+            init = VariableDefinitionStatement.Parse(state, ref i, true);
             if (init == null)
                 init = Parser.Parse(state, ref i, CodeFragmentType.Expression);
             if ((init is ExpressionTree)
@@ -207,22 +207,21 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref initializer, 1, scopeVariables, variables, codeContext, message, stats, opts);
+            Parser.Build(ref initializer, 1, variables, codeContext, message, stats, opts);
             if ((opts & Options.SuppressUselessStatementsElimination) == 0
-                && initializer is VariableDefineStatement
-                && !(initializer as VariableDefineStatement).isConst
-                && (initializer as VariableDefineStatement).initializers.Length == 1)
-                initializer = (initializer as VariableDefineStatement).initializers[0];
-            Parser.Build(ref condition, 2, scopeVariables, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+                && initializer is VariableDefinitionStatement
+                && (initializer as VariableDefinitionStatement).initializers.Length == 1)
+                initializer = (initializer as VariableDefinitionStatement).initializers[0];
+            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
             if (post != null)
             {
-                Parser.Build(ref post, 1, scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref post, 1, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
                 if (post == null && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
-            Parser.Build(ref body, System.Math.Max(1, expressionDepth), scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
+            Parser.Build(ref body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
             if (condition == null)
                 condition = new ConstantDefinition(NiL.JS.BaseLibrary.Boolean.True);
             else if ((condition is Expressions.Expression)
@@ -259,13 +258,13 @@ namespace NiL.JS.Statements
                 if (variable != null
                     && limit != null
                     && post is NiL.JS.Expressions.IncrementOperator
-                    && ((post as NiL.JS.Expressions.IncrementOperator).FirstOperand as VariableReference).descriptor == variable.descriptor)
+                    && ((post as NiL.JS.Expressions.IncrementOperator).FirstOperand as VariableReference)._descriptor == variable._descriptor)
                 {
-                    if (variable.defineScopeDepth >= 0 && variable.descriptor.defineDepth >= 0)
+                    if (variable.ScopeLevel >= 0 && variable._descriptor.definitionScopeLevel >= 0)
                     {
                         if (initializer is NiL.JS.Expressions.AssignmentOperator
                             && (initializer as NiL.JS.Expressions.AssignmentOperator).FirstOperand is GetVariableExpression
-                            && ((initializer as NiL.JS.Expressions.AssignmentOperator).FirstOperand as GetVariableExpression).descriptor == variable.descriptor)
+                            && ((initializer as NiL.JS.Expressions.AssignmentOperator).FirstOperand as GetVariableExpression)._descriptor == variable._descriptor)
                         {
                             var value = (initializer as NiL.JS.Expressions.AssignmentOperator).SecondOperand;
                             if (value is ConstantDefinition)
@@ -300,7 +299,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             if (initializer != null)
                 initializer.Optimize(ref initializer, owner, message, opts, stats);
@@ -317,12 +316,20 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
         {
-            initializer.Decompose(ref initializer);
-            condition.Decompose(ref condition);
-            body.Decompose(ref body);
-            post.Decompose(ref post);
+            initializer?.Decompose(ref initializer);
+            condition?.Decompose(ref condition);
+            body?.Decompose(ref body);
+            post?.Decompose(ref post);
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            post?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override string ToString()

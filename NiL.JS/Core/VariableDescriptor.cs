@@ -28,26 +28,28 @@ namespace NiL.JS.Core
 #endif
     public class VariableDescriptor
     {
-        internal int defineDepth;
+        internal int definitionScopeLevel;
         internal Context cacheContext;
         internal JSValue cacheRes;
+        internal bool lexicalScope;
         internal readonly string name;
+        internal Expression initializer;
         internal readonly List<VariableReference> references;
         internal CodeNode owner;
         internal bool captured;
-        internal List<Expression> assignations;
+        internal List<Expression> assignments;
         internal PredictedType lastPredictedType;
-        internal bool isDefined;
         internal bool isReadOnly;
-        internal Expression initializer;
+        internal int scopeBias;
 
-        public bool IsDefined { get { return isDefined; } }
+        public bool IsDefined { get { return definitionScopeLevel > 0; } }
         public CodeNode Owner { get { return owner; } }
         public bool IsReadOnly { get { return isReadOnly; } }
         public Expression Initializer { get { return initializer; } }
         public string Name { get { return name; } }
         public int ReferenceCount { get { return references.Count; } }
-        public ReadOnlyCollection<Expression> Assignations { get { return assignations == null ? null : assignations.AsReadOnly(); } }
+        public bool LexicalScope { get { return lexicalScope; } }
+        public ReadOnlyCollection<Expression> Assignments { get { return assignments == null ? null : assignments.AsReadOnly(); } }
 
         public IEnumerable<VariableReference> References
         {
@@ -58,79 +60,75 @@ namespace NiL.JS.Core
             }
         }
 
-        internal JSValue Get(Context context, bool create, int depth)
+        internal JSValue Get(Context context, bool forWrite, int depth)
         {
             context.objectSource = null;
-            if (((defineDepth | depth) & int.MinValue) != 0)
-                return context.GetVariable(name, create);
+            if (((definitionScopeLevel | depth) & int.MinValue) != 0)
+                return context.GetVariable(name, forWrite);
             if (context == cacheContext)
                 return cacheRes;
-            return deepGet(context, create, depth);
+            return deepGet(context, forWrite, depth);
         }
 
-        private JSValue deepGet(Context context, bool create, int depth)
+        private JSValue deepGet(Context context, bool forWrite, int depth)
         {
             TypeProxy tp = null;
             JSValue res = null;
-            if (cacheRes != null && depth > defineDepth)
+            while (depth > definitionScopeLevel)
             {
-                do
-                {
-                    if (context is WithContext)
-                    {
-                        cacheContext = null;
-                        break;
-                    }
-                    context = context.parent;
-                    depth--;
-                }
-                while (depth > defineDepth);
+                context = context.parent;
+                depth--;
             }
             if (context != cacheContext)
                 cacheRes = null;
             else if (cacheRes != null)
                 return cacheRes;
-            res = context.GetVariable(name, create);
-            if (create
-                && !isDefined
-                && res.valueType == JSValueType.NotExists)
-                res.attributes = JSValueAttributesInternal.None;
+            if (lexicalScope)
+            {
+                if (context.fields == null || !context.fields.TryGetValue(name, out res))
+                    return JSValue.NotExists;
+            }
             else
             {
-                tp = res.oValue as TypeProxy;
-                if (tp != null)
-                    res = tp.prototypeInstance ?? res;
+                res = context.GetVariable(name, forWrite);
+                if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0)
+                    return res;
+                if (forWrite
+                    && !IsDefined
+                    && res.valueType == JSValueType.NotExists)
+                    res.attributes = JSValueAttributesInternal.None;
+                else
+                {
+                    tp = res.oValue as TypeProxy;
+                    if (tp != null)
+                        res = tp.prototypeInstance ?? res;
+                }
             }
-            if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0)
-                return res;
             cacheContext = context;
             cacheRes = res;
             return res;
         }
 
-        internal VariableDescriptor(string name, int defineDepth)
+        internal VariableDescriptor(string name, int definitionDepth)
         {
-            this.defineDepth = defineDepth;
+            this.definitionScopeLevel = definitionDepth;
             this.name = name;
             references = new List<VariableReference>();
-            isDefined = true;
         }
 
-        internal VariableDescriptor(VariableReference proto, bool defined, int defineDepth)
+        internal VariableDescriptor(VariableReference proto, int definitionDepth)
         {
-            this.defineDepth = defineDepth;
+            this.definitionScopeLevel = definitionDepth;
             this.name = proto.Name;
             if (proto is EntityReference)
                 initializer = (proto as EntityReference).Entity;
             references = new List<VariableReference>() { proto };
-            proto.descriptor = this;
-            this.isDefined = defined;
+            proto._descriptor = this;
         }
 
         public override string ToString()
         {
             return name;
-            //return "Name: \"" + name + "\". Reference count: " + references.Count;
         }
     }
 }

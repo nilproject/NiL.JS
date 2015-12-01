@@ -46,7 +46,7 @@ namespace NiL.JS.Statements
             this.lines = body;
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             if (!Parser.Validate(state.Code, "switch (", ref i) && !Parser.Validate(state.Code, "switch(", ref i))
@@ -216,23 +216,21 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (expressionDepth < 1)
                 throw new InvalidOperationException();
-            Parser.Build(ref image, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref image, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             for (int i = 0; i < lines.Length; i++)
-                Parser.Build(ref lines[i], 1, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+                Parser.Build(ref lines[i], 1, variables, codeContext | CodeContext.Conditional, message, stats, opts);
             for (int i = 0; functions != null && i < functions.Length; i++)
             {
                 CodeNode stat = functions[i];
-                Parser.Build(ref stat, 1, scopeVariables, variables, codeContext, message, stats, opts);
-
-                functions[i].Register(variables, codeContext);
+                Parser.Build(ref stat, 1, variables, codeContext, message, stats, opts);
             }
             functions = null;
             for (int i = 1; i < cases.Length; i++)
-                Parser.Build(ref cases[i].statement, 2, scopeVariables, variables, codeContext, message, stats, opts);
+                Parser.Build(ref cases[i].statement, 2, variables, codeContext, message, stats, opts);
             return false;
         }
 
@@ -251,7 +249,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             image.Optimize(ref image, owner, message, opts, stats);
             for (var i = 1; i < cases.Length; i++)
@@ -299,7 +297,7 @@ namespace NiL.JS.Statements
             return res + "}";
         }
 
-        protected internal override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
         {
             for (var i = 0; i < cases.Length; i++)
             {
@@ -312,6 +310,22 @@ namespace NiL.JS.Statements
             for (var i = 0; i < lines.Length; i++)
             {
                 lines[i].Decompose(ref lines[i]);
+            }
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            for (var i = 0; i < cases.Length; i++)
+            {
+                if (cases[i].statement != null)
+                {
+                    cases[i].statement.RebuildScope(functionInfo, transferedVariables, scopeBias);
+                }
+            }
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                lines[i]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
             }
         }
     }

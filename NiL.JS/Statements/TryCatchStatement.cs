@@ -25,7 +25,7 @@ namespace NiL.JS.Statements
         public CodeNode FinalBody { get { return finallyBody; } }
         public string ExceptionVariableName { get { return catchVariableDesc.name; } }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             //string code = state.Code;
             int i = index;
@@ -61,14 +61,14 @@ namespace NiL.JS.Statements
                     i++;
                 if (state.Code[i] != '{')
                     ExceptionsHelper.Throw((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                state.scopeDepth++;
+                state.lexicalScopeLevel++;
                 try
                 {
                     cb = CodeBlock.Parse(state, ref i);
                 }
                 finally
                 {
-                    state.scopeDepth--;
+                    state.lexicalScopeLevel--;
                 }
                 while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                     i++;
@@ -88,14 +88,14 @@ namespace NiL.JS.Statements
             var pos = index;
             index = i;
             return new TryCatchStatement()
-                {
-                    body = (CodeBlock)b,
-                    catchBody = (CodeBlock)cb,
-                    finallyBody = (CodeBlock)f,
-                    catchVariableDesc = new VariableDescriptor(exptn, state.scopeDepth + 1),
-                    Position = pos,
-                    Length = index - pos
-                };
+            {
+                body = (CodeBlock)b,
+                catchBody = (CodeBlock)cb,
+                finallyBody = (CodeBlock)f,
+                catchVariableDesc = new VariableDescriptor(exptn, state.lexicalScopeLevel + 1),
+                Position = pos,
+                Length = index - pos
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -256,11 +256,11 @@ namespace NiL.JS.Statements
             catchAction(context);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (stats != null)
                 stats.ContainsTry = true;
-            Parser.Build(ref body, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+            Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
             if (catchBody != null)
             {
                 this.@catch = true;
@@ -269,17 +269,15 @@ namespace NiL.JS.Statements
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
 
-                Parser.Build(ref catchBody, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+                Parser.Build(ref catchBody, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
 
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
                 else
                     variables.Remove(catchVariableDesc.name);
-                foreach (var v in variables)
-                    v.Value.captured = true;
             }
             if (finallyBody != null)
-                Parser.Build(ref finallyBody, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+                Parser.Build(ref finallyBody, expressionDepth, variables, codeContext, message, stats, opts);
             if (body == null || (body is EmptyExpression))
             {
                 if (message != null)
@@ -294,7 +292,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             body.Optimize(ref body, owner, message, opts, stats);
             if (catchBody != null)
@@ -322,13 +320,20 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
         {
             body.Decompose(ref body);
             if (catchBody != null)
                 catchBody.Decompose(ref catchBody);
             if (finallyBody != null)
                 finallyBody.Decompose(ref finallyBody);
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            body.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            catchBody?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            finallyBody?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override string ToString()

@@ -35,10 +35,10 @@ namespace NiL.JS.Expressions
 
                 if (first is VariableReference)
                 {
-                    var desc = (first as VariableReference).descriptor;
+                    var desc = (first as VariableReference)._descriptor;
                     var fe = desc.initializer as FunctionDefinition;
                     if (fe != null)
-                        return fe._stats.ResultType; // для рекурсивных функций будет Unknown
+                        return fe._functionInfo.ResultType; // для рекурсивных функций будет Unknown
                 }
 
                 return PredictedType.Unknown;
@@ -95,12 +95,11 @@ namespace NiL.JS.Expressions
             {
                 if (allowTCO
                     && callMode == 0
-                    && (func.Type != FunctionType.Generator)
-                    && (func.Type != FunctionType.MethodGenerator)
-                    && (func.Type != FunctionType.AnonymousGenerator)
+                    && (func.Type != FunctionKind.Generator)
+                    && (func.Type != FunctionKind.MethodGenerator)
+                    && (func.Type != FunctionKind.AnonymousGenerator)
                     && context.owner != null
-                    && func == context.owner.oValue
-                    && context.owner.oValue != Script.pseudoCaller)
+                    && func == context.owner.oValue)
                 {
                     tailCall(context, func);
                     context.objectSource = targetObject;
@@ -115,7 +114,7 @@ namespace NiL.JS.Expressions
                 targetObject = null;
 
             func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
-            return func.InternalInvoke(targetObject, this._arguments, context, withSpread, callMode != 0);
+            return func.InternalInvoke(targetObject, this._arguments, context, callMode != 0 ? func : null, withSpread, callMode != 0);
         }
 
         private void tailCall(Context context, Function func)
@@ -148,7 +147,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (stats != null)
                 stats.UseCall = true;
@@ -165,15 +164,21 @@ namespace NiL.JS.Expressions
 
             for (var i = 0; i < _arguments.Length; i++)
             {
-                Parser.Build(ref _arguments[i], expressionDepth + 1, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref _arguments[i], expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             }
 
-            base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
             if (first is GetVariableExpression)
             {
                 var name = first.ToString();
                 if (name == "eval" && stats != null)
+                {
                     stats.ContainsEval = true;
+                    foreach (var variable in variables)
+                    {
+                        variable.Value.captured = true;
+                    }
+                }
                 VariableDescriptor f = null;
                 if (variables.TryGetValue(name, out f))
                 {
@@ -195,7 +200,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             base.Optimize(ref _this, owner, message, opts, stats);
             for (var i = _arguments.Length; i-- > 0;)
@@ -219,7 +224,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
             first.Decompose(ref first, result);
 
@@ -240,6 +245,16 @@ namespace NiL.JS.Expressions
                     result.Add(new StoreValueStatement(_arguments[i], false));
                     _arguments[i] = new ExtractStoredValueExpression(_arguments[i]);
                 }
+            }
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            base.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
+            for (var i = 0; i < _arguments.Length; i++)
+            {
+                _arguments[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
             }
         }
 

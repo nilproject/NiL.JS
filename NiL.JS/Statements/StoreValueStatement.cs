@@ -78,9 +78,14 @@ namespace NiL.JS.Statements
             return _source.Visit<T>(visitor);
         }
 
-        internal protected override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
         {
 
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            _source.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
     }
 }

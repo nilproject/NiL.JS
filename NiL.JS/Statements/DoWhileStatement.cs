@@ -26,7 +26,7 @@ namespace NiL.JS.Statements
 
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -143,11 +143,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             expressionDepth = System.Math.Max(1, expressionDepth);
-            Parser.Build(ref body, expressionDepth, scopeVariables, variables, codeContext | CodeContext.InLoop, message, stats, opts);
-            Parser.Build(ref condition, 2, scopeVariables, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.InLoop, message, stats, opts);
+            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
             try
             {
                 if (allowRemove
@@ -176,7 +176,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             condition.Optimize(ref condition, owner, message, opts, stats);
             body.Optimize(ref body, owner, message, opts, stats);
@@ -187,12 +187,18 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
         {
             if (condition != null)
                 condition.Decompose(ref condition);
             if (body != null)
                 body.Decompose(ref body);
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override string ToString()

@@ -28,12 +28,12 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override FunctionType Type
+        public override FunctionKind Type
         {
             [Hidden]
             get
             {
-                return FunctionType.Function;
+                return FunctionKind.Function;
             }
         }
         [Field]
@@ -76,7 +76,7 @@ namespace NiL.JS.Core.Functions
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
             var res = del(targetObject, arguments);
             if (res == null)

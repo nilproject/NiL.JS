@@ -21,7 +21,7 @@ namespace NiL.JS.Statements
         public CodeNode Body { get { return body; } }
         public ICollection<string> Labels { get { return new ReadOnlyCollection<string>(labels); } }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             //string code = state.Code;
             int i = index;
@@ -156,11 +156,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             expressionDepth = System.Math.Max(1, expressionDepth);
-            Parser.Build(ref body, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
-            Parser.Build(ref condition, 2, scopeVariables, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
+            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
                 if (message != null)
@@ -205,12 +205,26 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             if (condition != null)
                 condition.Optimize(ref condition, owner, message, opts, stats);
             if (body != null)
                 body.Optimize(ref body, owner, message, opts, stats);
+        }
+
+        public override void Decompose(ref CodeNode self)
+        {
+            if (condition != null)
+                condition.Decompose(ref condition);
+            if (body != null)
+                body.Decompose(ref body);
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -221,14 +235,6 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             return "while (" + condition + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
-        }
-
-        internal protected override void Decompose(ref CodeNode self)
-        {
-            if (condition != null)
-                condition.Decompose(ref condition);
-            if (body != null)
-                body.Decompose(ref body);
         }
     }
 }

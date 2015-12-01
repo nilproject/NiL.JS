@@ -126,7 +126,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -136,23 +136,23 @@ namespace NiL.JS.Expressions
                     fs.name = (first as VariableReference).Name;
             }
 #endif
-            var r = base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            var repeat = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
 
             var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
-                var assigns = (f.Descriptor.assignations ?? (f.Descriptor.assignations = new System.Collections.Generic.List<Expression>()));
+                var assigns = (f.Descriptor.assignments ?? (f.Descriptor.assignments = new List<Expression>()));
                 if (assigns.IndexOf(this) == -1)
                     assigns.Add(this);
                 if (second is ConstantDefinition)
                 {
                     var pt = second.ResultType;
-                    if (f.descriptor.lastPredictedType == PredictedType.Unknown)
-                        f.descriptor.lastPredictedType = pt;
+                    if (f._descriptor.lastPredictedType == PredictedType.Unknown)
+                        f._descriptor.lastPredictedType = pt;
                 }
             }
 #if DEBUG
-            if (r)
+            if (repeat)
                 System.Diagnostics.Debugger.Break();
 #endif
             var gme = first as GetPropertyOperator;
@@ -162,29 +162,29 @@ namespace NiL.JS.Expressions
             if ((codeContext & (CodeContext.InExpression | CodeContext.InEval)) != 0)
                 saveResult = true;
 
-            return r;
+            return repeat;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             baseOptimize(ref _this, owner, message, opts, stats);
             var vr = first as VariableReference;
             if (vr != null)
             {
-                if (vr.descriptor.isDefined)
+                if (vr._descriptor.IsDefined)
                 {
                     var stype = second.ResultType;
-                    if (vr.descriptor.lastPredictedType == PredictedType.Unknown)
-                        vr.descriptor.lastPredictedType = stype;
-                    else if (vr.descriptor.lastPredictedType != stype)
+                    if (vr._descriptor.lastPredictedType == PredictedType.Unknown)
+                        vr._descriptor.lastPredictedType = stype;
+                    else if (vr._descriptor.lastPredictedType != stype)
                     {
-                        if (Tools.IsEqual(vr.descriptor.lastPredictedType, stype, PredictedType.Group))
-                            vr.descriptor.lastPredictedType = stype & PredictedType.Group;
+                        if (Tools.IsEqual(vr._descriptor.lastPredictedType, stype, PredictedType.Group))
+                            vr._descriptor.lastPredictedType = stype & PredictedType.Group;
                         else
                         {
-                            if (message != null && stype >= PredictedType.Undefined && vr.descriptor.lastPredictedType >= PredictedType.Undefined)
+                            if (message != null && stype >= PredictedType.Undefined && vr._descriptor.lastPredictedType >= PredictedType.Undefined)
                                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
-                            vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+                            vr._descriptor.lastPredictedType = PredictedType.Ambiguous;
                         }
                     }
                 }
@@ -193,21 +193,21 @@ namespace NiL.JS.Expressions
             }
 
             var gve = first as GetVariableExpression;
-            if (gve != null && gve.descriptor.isDefined && (_codeContext & CodeContext.InWith) == 0)
+            if (gve != null && gve._descriptor.IsDefined && (_codeContext & CodeContext.InWith) == 0)
             {
                 if (owner != null // не будем это применять в корневом узле. Только в функциях. Иначе это может задумываться как настройка контекста для последующего использования в Eval
-                    && !gve.descriptor.captured
+                    && !gve._descriptor.captured
                     && (opts & Options.SuppressUselessExpressionsElimination) == 0
                     && !stats.ContainsEval
                     && !stats.ContainsWith) // можем упустить присваивание
                 {
-                    if ((owner.body.strict || gve.descriptor.owner != owner || !owner._stats.ContainsArguments) // аргументы это одна сущность с двумя именами
+                    if ((owner.body.strict || gve._descriptor.owner != owner || !owner._functionInfo.ContainsArguments) // аргументы это одна сущность с двумя именами
                         && (_codeContext & CodeContext.InLoop) == 0)
                     {
                         bool last = true;
-                        for (var i = 0; last && i < gve.descriptor.references.Count; i++)
+                        for (var i = 0; last && i < gve._descriptor.references.Count; i++)
                         {
-                            last &= gve.descriptor.references[i].Eliminated || gve.descriptor.references[i].Position <= Position;
+                            last &= gve._descriptor.references[i].Eliminated || gve._descriptor.references[i].Position <= Position;
                         }
                         if (last)
                         {

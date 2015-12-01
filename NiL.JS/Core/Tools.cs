@@ -213,6 +213,12 @@ namespace NiL.JS.Core
             return JSObjectToInt32(arg, 0, false);
         }
 
+        internal static void SkipSpaces(string code, ref int i)
+        {
+            while (i < code.Length && IsWhiteSpace(code[i]))
+                i++;
+        }
+
         /// <summary>
         /// Преобразует JSObject в значение типа integer.
         /// </summary>
@@ -808,7 +814,7 @@ namespace NiL.JS.Core
                 return true;
             }
             int i = index;
-            while (i < code.Length && Tools.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
+            while (i < code.Length && Tools.IsWhiteSpace(code[i]) && !Tools.IsLineTerminator(code[i]))
                 i++;
             if (i >= code.Length)
             {
@@ -1190,12 +1196,12 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        internal static bool isLineTerminator(char c)
+        internal static bool IsLineTerminator(char c)
         {
             return (c == '\u000A') || (c == '\u000D') || (c == '\u2028') || (c == '\u2029');
         }
 
-        internal static void skipComment(string code, ref int index, bool skipSpaces)
+        internal static void SkipComment(string code, ref int index, bool skipSpaces)
         {
             bool work;
             do
@@ -1210,7 +1216,7 @@ namespace NiL.JS.Core
                         case '/':
                             {
                                 index += 2;
-                                while (index < code.Length && !Tools.isLineTerminator(code[index]))
+                                while (index < code.Length && !Tools.IsLineTerminator(code[index]))
                                     index++;
                                 work = true;
                                 break;
@@ -1247,7 +1253,7 @@ namespace NiL.JS.Core
                         i++;
                 }
                 var s = i;
-                skipComment(code, ref i, false);
+                SkipComment(code, ref i, false);
                 if (s != i && res == null)
                 {
                     res = new StringBuilder(code.Length);

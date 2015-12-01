@@ -62,9 +62,9 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts))
+            if (base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts))
                 return true;
             if (first is GetVariableExpression)
             {
@@ -81,10 +81,10 @@ namespace NiL.JS.Expressions
             var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
-                if (f.Descriptor.isDefined && message != null)
+                if (f.Descriptor.IsDefined && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Tring to delete defined variable." + ((codeContext & CodeContext.Strict) != 0 ? " In strict mode it cause exception." : " It is not allowed"));
-                (f.Descriptor.assignations ??
-                    (f.Descriptor.assignations = new System.Collections.Generic.List<Expression>())).Add(this);
+                (f.Descriptor.assignments ??
+                    (f.Descriptor.assignments = new System.Collections.Generic.List<Expression>())).Add(this);
             }
             return false;
         }

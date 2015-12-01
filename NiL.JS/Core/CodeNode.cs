@@ -52,7 +52,7 @@ namespace NiL.JS.Core
 
         private CodeNode[] childs;
         public CodeNode[] Childs { get { return childs ?? (childs = getChildsImpl() ?? emptyCodeNodeArray); } }
-        
+
         protected internal virtual CodeNode[] getChildsImpl()
         {
             return new CodeNode[0];
@@ -65,13 +65,13 @@ namespace NiL.JS.Core
         }
 
         public abstract JSValue Evaluate(Context context);
-        
-        internal protected virtual bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+
+        public virtual bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             return false;
         }
-        
-        internal protected virtual void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+
+        public virtual void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
 
         }
@@ -82,7 +82,9 @@ namespace NiL.JS.Core
         }
 #endif
 
-        internal protected abstract void Decompose(ref CodeNode self);
+        public abstract void Decompose(ref CodeNode self);
+
+        public abstract void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias);
 
         public virtual T Visit<T>(Visitor<T> visitor)
         {

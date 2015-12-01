@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
         public CodeNode Body { get { return body; } }
         public CodeNode Scope { get { return scope; } }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
@@ -37,25 +37,19 @@ namespace NiL.JS.Statements
             while (Tools.IsWhiteSpace(state.Code[i]));
 
             CodeNode body = null;
-            state.scopeDepth++;
+            state.lexicalScopeLevel++;
+            var oldCodeContext = state.CodeContext;
+            state.CodeContext |= CodeContext.InWith;
             try
             {
                 body = Parser.Parse(state, ref i, 0);
             }
             finally
             {
-                state.scopeDepth--;
+                state.lexicalScopeLevel--;
+                state.CodeContext = oldCodeContext;
             }
-
-            if (body is FunctionDefinition)
-            {
-                if (state.strict)
-                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
-                body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
-                // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
-            }
+            
             var pos = index;
             index = i;
             return new WithStatement()
@@ -134,29 +128,38 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (stats != null)
                 stats.ContainsWith = true;
-            Parser.Build(ref scope, expressionDepth + 1, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref body, expressionDepth, scopeVariables, variables, codeContext | CodeContext.InWith, message, stats, opts);
+            Parser.Build(ref scope, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref body, expressionDepth,  variables, codeContext | CodeContext.InWith, message, stats, opts);
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             if (scope != null)
                 scope.Optimize(ref scope, owner, message, opts, stats);
             if (body != null)
                 body.Optimize(ref body, owner, message, opts, stats);
+
+            if (body == null)
+                _this = scope;
         }
 
-        internal protected override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
         {
             if (scope != null)
                 scope.Decompose(ref scope);
             if (body != null)
                 body.Decompose(ref body);
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo,Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            scope?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override string ToString()

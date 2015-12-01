@@ -45,7 +45,7 @@ namespace NiL.JS.Expressions
             this.flags = flags;
         }
 
-        public static CodeNode Parse(ParsingState state, ref int position)
+        public static CodeNode Parse(ParseInfo state, ref int position)
         {
             var i = position;
             if (!Parser.ValidateRegex(state.Code, ref i, false))

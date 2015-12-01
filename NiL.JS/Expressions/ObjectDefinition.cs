@@ -63,7 +63,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             if (state.Code[index] != '{')
                 throw new ArgumentException("Invalid JSON definition");
@@ -107,7 +107,7 @@ namespace NiL.JS.Expressions
                     CodeNode initializer;
                     if (state.Code[i] == '(')
                     {
-                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionType.AnonymousGenerator : FunctionType.AnonymousFunction);
+                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionKind.AnonymousGenerator : FunctionKind.AnonymousFunction);
                     }
                     else
                     {
@@ -136,15 +136,15 @@ namespace NiL.JS.Expressions
                 else if (getOrSet && state.Code[i] != ':')
                 {
                     i = s;
-                    var mode = state.Code[i] == 's' ? FunctionType.Setter : FunctionType.Getter;
+                    var mode = state.Code[i] == 's' ? FunctionKind.Setter : FunctionKind.Getter;
                     var propertyAccessor = FunctionDefinition.Parse(state, ref i, mode) as FunctionDefinition;
                     var accessorName = propertyAccessor.name;
                     if (!flds.ContainsKey(accessorName))
                     {
                         var propertyPair = new GsPropertyPairExpression
                         (
-                            mode == FunctionType.Getter ? propertyAccessor : null,
-                            mode == FunctionType.Setter ? propertyAccessor : null
+                            mode == FunctionKind.Getter ? propertyAccessor : null,
+                            mode == FunctionKind.Setter ? propertyAccessor : null
                         );
                         flds.Add(accessorName, propertyPair);
                     }
@@ -157,7 +157,7 @@ namespace NiL.JS.Expressions
 
                         do
                         {
-                            if (mode == FunctionType.Getter)
+                            if (mode == FunctionKind.Getter)
                             {
                                 if (vle.Getter == null)
                                 {
@@ -218,7 +218,7 @@ namespace NiL.JS.Expressions
                     if (state.Code[i] == '(')
                     {
                         i = s;
-                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionType.MethodGenerator : FunctionType.Method);
+                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionKind.MethodGenerator : FunctionKind.Method);
                     }
                     else
                     {
@@ -252,7 +252,7 @@ namespace NiL.JS.Expressions
                                 while (Tools.IsWhiteSpace(state.Code[i]));
                             }
 
-                            initializer = new GetVariableExpression(fieldName, state.scopeDepth);
+                            initializer = new GetVariableExpression(fieldName, state.lexicalScopeLevel);
                         }
                         else
                         {
@@ -345,22 +345,22 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
 
             for (var i = 0; i < values.Length; i++)
             {
-                Parser.Build(ref values[i], 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref values[i], 2,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
             }
 
             for (var i = 0; i < computedProperties.Length; i++)
             {
                 var key = computedProperties[i].Key;
-                Parser.Build(ref key, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref key, 2,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
                 var value = computedProperties[i].Value;
-                Parser.Build(ref value, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref value, 2,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
                 computedProperties[i] = new KeyValuePair<Expression, Expression>(key, value);
             }
@@ -368,7 +368,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             for (var i = Values.Length; i-- > 0;)
             {
@@ -398,7 +398,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
             var lastDecomposeIndex = -1;
             var lastComputeDecomposeIndex = -1;

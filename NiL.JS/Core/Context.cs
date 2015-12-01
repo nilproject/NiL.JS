@@ -53,7 +53,7 @@ namespace NiL.JS.Core
                     var c = runnedContexts[i];
                     if (c == null)
                         break;
-                    if (c.threadId == threadId)
+                    if (c._threadId == threadId)
                         return c;
                 }
                 return null;
@@ -157,7 +157,7 @@ namespace NiL.JS.Core
         }
 
 #if !PORTABLE
-        internal int threadId;
+        internal int _threadId;
 #endif
         internal Context oldContext;
         /// <summary>
@@ -179,8 +179,8 @@ namespace NiL.JS.Core
         internal Context parent;
         internal IDictionary<string, JSValue> fields;
         internal bool strict;
+        internal Dictionary<CodeNode, object> suspendData;
         internal VariableDescriptor[] variables;
-        private Dictionary<CodeNode, object> suspendData;
 
         public Context Root
         {
@@ -322,11 +322,15 @@ namespace NiL.JS.Core
             return true;
 #else
             int threadId = Thread.CurrentThread.ManagedThreadId;
+            if (this._threadId == threadId)
+                return false;
+            if (_threadId != 0)
+                throw new InvalidOperationException("Context already running in another thread");
             var i = 0;
             do
             {
                 var c = runnedContexts[i];
-                if (c == null || c.threadId == threadId)
+                if (c == null || c._threadId == threadId)
                 {
                     if (c == this)
                         return false;
@@ -334,7 +338,7 @@ namespace NiL.JS.Core
                         throw new ApplicationException("Try to reactivate context");
                     this.oldContext = c;
                     runnedContexts[i] = this;
-                    this.threadId = threadId;
+                    this._threadId = threadId;
                     return true;
                 }
                 i++;
@@ -365,17 +369,18 @@ namespace NiL.JS.Core
             for (; i < runnedContexts.Length; i++)
             {
                 c = runnedContexts[i];
-                if (c != null && c.threadId == threadId)
+                if (c != null && c._threadId == _threadId)
                 {
                     if (c != this)
-                        throw new InvalidOperationException("Context is not runing");
+                        throw new InvalidOperationException("Context is not running");
                     runnedContexts[i] = c = oldContext;
                     break;
                 }
             }
             if (i == -1)
-                throw new InvalidOperationException("Context is not runing");
+                throw new InvalidOperationException("Context is not running");
             oldContext = null;
+            _threadId = 0;
             return c;
 #endif
         }
@@ -395,17 +400,19 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="name">Имя поля, которое необходимо вернуть.</param>
         /// <returns>Поле, соответствующее указанному имени.</returns>
-        public virtual JSValue DefineVariable(string name)
+        public virtual JSValue DefineVariable(string name, bool deletable = false)
         {
             if (name == "this")
                 return thisBind;
             JSValue res = null;
-            if (!fields.TryGetValue(name, out res))
+            if (fields == null || !fields.TryGetValue(name, out res))
             {
-                fields[name] = res = new JSValue()
-                {
-                    attributes = JSValueAttributesInternal.DoNotDelete
-                };
+                if (fields == null)
+                    fields = JSObject.getFieldsContainer();
+
+                fields[name] = res = new JSValue();
+                if (!deletable)
+                    res.attributes = JSValueAttributesInternal.DoNotDelete;
             }
             else if ((res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                 fields[name] = res = res.CloneImpl(false);
@@ -547,80 +554,101 @@ namespace NiL.JS.Core
 #endif
             try
             {
-                int i = 0;
-                string c = Tools.RemoveComments(code, 0);
-                var ps = new ParsingState(c, code, null);
-                ps.strict = strict;
-                var body = CodeBlock.Parse(ps, ref i) as CodeBlock;
-                bool leak = !(strict || body.strict);
-                if (i < c.Length)
-                    throw new System.ArgumentException("Invalid char");
-                var vars = new Dictionary<string, VariableDescriptor>();
-                CodeNode cb = body;
-                Parser.Build(ref cb, 0, new List<string>(), vars, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, null, Options.None);
-                body = cb as CodeBlock;
-                Context context = null;
-                if (leak)
-                    context = this;
-                else
-                    context = new Context(this, true, this.owner) { strict = true, variables = body.variables };
-                if (leak && context.variables != null)
+                // чистить кэш тут не достаточно. 
+                // Мы не знаем, где объявлена одноимённая переменная 
+                // и в тех случаях, когда она пришла из функции выше
+                // или даже глобального контекста, её кэш может быть 
+                // не сброшен вовремя и значение будет браться из контекста
+                // eval'а, а не того контекста, в котором её позовут.
+                /*
+                 * function a(){
+                 *  var c = 1;
+                 *  function b(){
+                 *      eval("var c = 2");
+                 *      // переменная объявлена в контексте b, значит и значение должно быть из
+                 *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
+                 *      // то в a её значение будет 2
+                 *  }
+                 * }
+                 */
+
+                var mainContext = this;
+                while (mainContext.oldContext != null && mainContext.oldContext == mainContext.parent && mainContext.owner == mainContext.oldContext.owner)
                 {
-                    for (i = context.variables.Length; i-- > 0;)
+                    mainContext = mainContext.oldContext;
+                }
+
+                int index = 0;
+                string c = Tools.RemoveComments(code, 0);
+                var ps = new ParseInfo(c, code, null)
+                {
+                    strict = strict,
+                    AllowDirectives = true
+                };
+                var body = CodeBlock.Parse(ps, ref index) as CodeBlock;
+                if (index < c.Length)
+                    throw new System.ArgumentException("Invalid char");
+                var variables = new Dictionary<string, VariableDescriptor>();
+                var stats = new FunctionInfo();
+                var context = new Context(this, false, owner)
+                {
+                    strict = strict || body.strict
+                };
+                CodeNode cb = body;
+                Parser.Build(ref cb, 0, variables, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, stats, Options.None);
+
+                body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
+                body = cb as CodeBlock;
+                
+                if (stats.ContainsYield)
+                    body.Decompose(ref cb);
+
+                body.suppressScopeIsolation = true;
+
+                if (!strict && !body.strict)
+                {
+                    for (var i = 0; i < body._variables.Length; i++)
                     {
-                        VariableDescriptor desc = null;
-                        if (vars.TryGetValue(context.variables[i].name, out desc))
+                        if (!body._variables[i].lexicalScope)
                         {
-                            if (desc.IsDefined)
+                            JSValue variable = null;
+                            var cc = mainContext;
+                            while (cc.parent != globalContext
+                               && (cc.fields == null || !cc.fields.TryGetValue(body._variables[i].name, out variable)))
                             {
-                                context.variables[i].defineDepth = -1; // Кеш будет игнорироваться.
-                                context.variables[i].captured = true;
-                                // чистить кэш тут не достаточно. 
-                                // Мы не знаем, где объявлена одноимённая переменная 
-                                // и в тех случаях, когда она пришла из функции выше
-                                // или даже глобального контекста, её кэш может быть 
-                                // не сброшен вовремя и значение будет браться из контекста
-                                // eval'а, а не того контекста, в котором её позовут.
-                                /*
-                                 * function a(){
-                                 *  var c = 1;
-                                 *  function b(){
-                                 *      eval("var c = 2");
-                                 *      // переменная объявлена в контексте b, значит и значение должно быть из
-                                 *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
-                                 *      // то в a её значение будет 2
-                                 *  }
-                                 * }
-                                 */
+                                variable = null;
+                                cc = cc.parent;
                             }
-                            else
+                            if (cc.variables != null)
                             {
-                                for (var r = 0; r < desc.references.Count; r++)
-                                    desc.references[r].descriptor = context.variables[i];
+                                for (var j = 0; j < cc.variables.Length; j++)
+                                {
+                                    if (cc.variables[j].name == body._variables[i].name)
+                                    {
+                                        cc.variables[j].definitionScopeLevel = -1;
+                                    }
+                                }
                             }
+                            variable = mainContext.DefineVariable(body._variables[i].name, !inplace);
+
+                            if (body._variables[i].initializer != null)
+                            {
+                                variable.Assign(body._variables[i].initializer.Evaluate(context));
+                            }
+
+                            body._variables[i].lexicalScope = true;
+                            body._variables[i].definitionScopeLevel = -1;
                         }
                     }
                 }
-                if (leak && body.localVariables != null)
-                {
-                    for (i = body.localVariables.Length; i-- > 0;)
-                    {
-                        var f = context.DefineVariable(body.localVariables[i].name);
-                        if (!inplace)
-                            f.attributes = JSValueAttributesInternal.None;
-                        if (body.localVariables[i].initializer != null)
-                            f.Assign(body.localVariables[i].initializer.Evaluate(context));
-                        if (body.localVariables[i].isReadOnly)
-                            f.attributes |= JSValueAttributesInternal.ReadOnly;
-                        body.localVariables[i].captured = true;
-                    }
 
-                    body.localVariables = null;
-                }
+                var tv = stats.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
+                body.RebuildScope(stats, tv, body._variables.Length == 0 || !stats.WithLexicalEnvironment ? 1 : 0);
+                if (tv != null)
+                    body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
 
-                cb = body;
-                body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
-                body = cb as CodeBlock;
+                if (body.lines.Length == 0)
+                    return JSValue.undefined;
 
                 var run = context.Activate();
                 try

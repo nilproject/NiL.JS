@@ -212,7 +212,7 @@ if (!(function () {
     do {
 
         break;
-} while (false);
+    } while (false);
     console.log("dead do-while pass");
     return true;
 })())
@@ -224,7 +224,7 @@ function mul(a, mul) {
 if (mul(2, 2) != 4)
     console.log("function args link fail")
 
-for (var a = 2; a; (a--, a--));
+for (var a = 2; a; (a-- , a--));
 
 (function () {
     function selfReferencedFunction() {
@@ -302,7 +302,7 @@ if (__func(3) != 6)
         return true;
     }
 
-}());
+} ());
 
 (function () {
     a;
@@ -316,21 +316,22 @@ if (__func(3) != 6)
     a;
     a = 1;
     for (var a = false of {});
-if (a !== false)
-    throw "for..of with default value";
+    if (a !== false)
+        throw "for..of with default value";
 })();
 
-for ( a = 1 ; false;);
+for (a = 1; false;);
 
-for ( a == 1 ; false;);
+for (a == 1; false;);
 
 for (var p in { a: 1, b: 2 });
 
-for(undefinedVariable in {});
+for (undefinedVariable in {});
 
-(function(){
+(function () {
     if (isNaN(+undefined))
-        return})();
+        return
+})();
 
 (function () {
     function macro() {
@@ -375,28 +376,33 @@ if (jsonprs["Negative one"] !== -1)
 if (jsonprs["Negative Pi"] !== -3.14159265358)
     throw "Negative Pi parsed with error"
 
-function sum(x, r)
-{
+function sum(x, r) {
     if (x <= 0)
         return r;
     return sum(x - 1, r + x);
 }
 sum(10000, 0);
 
-if (Const != undefined)
-    throw "Invalid const predefined value";
+try {
+    if (Const != undefined)
+        throw "Invalid const predefined value";
+    console.log("TDZ didn't throw exception");
+}
+catch (e) {
+
+}
 const Const = 0;
 Const++;
 if (Const != 0)
-    throw "Const was rewrite";
+    throw "Const was rewrited";
 
 if (Object);
 
-if (Object);else;
+if (Object); else;
 
-while(!Object);
+while (!Object);
 
-do;while(!Object);
+do; while (!Object);
 
 if ((function (x) {
     var x;
@@ -419,7 +425,7 @@ if ((true ? undefined = 0 * 1 + 2 : false) != 2)
 if ((false ? false : 0 * 1 + 2) != 2)
     throw "Tree of condition of conditional operator has not been rebuilded #5";
 
-if ((false ? false : undefined = 0 * 1 + 2 ) != 2)
+if ((false ? false : undefined = 0 * 1 + 2) != 2)
     throw "Tree of condition of conditional operator has not been rebuilded #6";
 
 console.log((function (x) {

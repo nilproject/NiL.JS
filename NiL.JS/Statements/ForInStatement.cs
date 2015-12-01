@@ -45,7 +45,7 @@ namespace NiL.JS.Statements
 
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -59,21 +59,8 @@ namespace NiL.JS.Statements
                 labels = state.Labels.GetRange(state.Labels.Count - state.LabelCount, state.LabelCount).ToArray()
             };
             var vStart = i;
-            if (Parser.Validate(state.Code, "var", ref i))
+            if ((res._variable = VariableDefinitionStatement.Parse(state, ref i, true)) != null)
             {
-                while (Tools.IsWhiteSpace(state.Code[i]))
-                    i++;
-                int start = i;
-                string varName;
-                if (!Parser.ValidateName(state.Code, ref i, state.strict))
-                    throw new ArgumentException();
-                varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
-                if (state.strict)
-                {
-                    if (varName == "arguments" || varName == "eval")
-                        ExceptionsHelper.Throw(new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start)));
-                }
-                res._variable = new VariableDefineStatement(varName, new GetVariableExpression(varName, state.scopeDepth) { Position = start, Length = i - start, defineScopeDepth = state.scopeDepth }, false, state.scopeDepth) { Position = vStart, Length = i - vStart };
             }
             else
             {
@@ -96,65 +83,62 @@ namespace NiL.JS.Statements
                     }
                     else
                         return null;
-                    //ExceptionsHelper.Throw(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, start)));
                 }
-                //if (!Parser.ValidateName(state.Code, ref i, state.strict))
-                //    return null; // for (1 in {};;); должен вызвать синтаксическую ошибку, но это проверка заставляет перейти в обычный for, для которого такое выражение допустимо
                 varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
                 if (state.strict)
                 {
                     if (varName == "arguments" || varName == "eval")
                         ExceptionsHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                 }
-                res._variable = new GetVariableExpression(varName, state.scopeDepth) { Position = start, Length = i - start, defineScopeDepth = state.scopeDepth };
-            }
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
-            if (state.Code[i] == '=')
-            {
-                do
-                    i++;
-                while (Tools.IsWhiteSpace(state.Code[i]));
-                var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
-                if (defVal == null)
-                    return defVal;
-                Expression exp = new AssignmentOperatorCache(res._variable as GetVariableExpression ?? (res._variable as VariableDefineStatement).initializers[0] as GetVariableExpression);
-                exp = new AssignmentOperator(
-                    exp,
-                    (Expression)defVal)
-                {
-                    Position = exp.Position,
-                    Length = defVal.EndPosition - exp.Position
-                };
-                if (res._variable == exp.first.first)
-                    res._variable = exp;
-                else
-                    (res._variable as VariableDefineStatement).initializers[0] = exp;
+                res._variable = new GetVariableExpression(varName, state.lexicalScopeLevel) { Position = start, Length = i - start, ScopeLevel = state.lexicalScopeLevel };
+
                 while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
+                if (state.Code[i] == '=')
+                {
+                    do
+                        i++;
+                    while (Tools.IsWhiteSpace(state.Code[i]));
+                    var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
+                    if (defVal == null)
+                        return defVal;
+                    Expression exp = new AssignmentOperatorCache(res._variable as GetVariableExpression ?? (res._variable as VariableDefinitionStatement).initializers[0] as GetVariableExpression);
+                    exp = new AssignmentOperator(
+                        exp,
+                        (Expression)defVal)
+                    {
+                        Position = exp.Position,
+                        Length = defVal.EndPosition - exp.Position
+                    };
+                    if (res._variable == exp.first.first)
+                        res._variable = exp;
+                    else
+                        (res._variable as VariableDefinitionStatement).initializers[0] = exp;
+                    while (Tools.IsWhiteSpace(state.Code[i]))
+                        i++;
+                }
+
             }
             if (!Parser.Validate(state.Code, "in", ref i))
                 return null;
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
+            Tools.SkipSpaces(state.Code, ref i);
+
+            if (res._variable is VariableDefinitionStatement)
+            {
+                if ((res._variable as VariableDefinitionStatement).variables.Length > 1)
+                    ExceptionsHelper.ThrowSyntaxError("Too many variables in for-in loop", state.Code, i);
+            }
+
             res._source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
+            Tools.SkipSpaces(state.Code, ref i);
+
             if (state.Code[i] != ')')
                 ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+
             i++;
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             res._body = Parser.Parse(state, ref i, 0);
-            if (res._body is FunctionDefinition)
-            {
-                if (state.strict)
-                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, res._body.Position, 0), "Do not declare function in nested blocks.");
-                res._body = new CodeBlock(new[] { res._body }); // для того, чтобы не дублировать код по декларации функции, 
-                // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
-            }
             state.AllowBreak.Pop();
             state.AllowContinue.Pop();
             res.Position = index;
@@ -195,7 +179,13 @@ namespace NiL.JS.Statements
                 if (context.debugging && !(_variable is CodeBlock))
                     context.raiseDebugger(_variable);
 #endif
-                if (_variable is AssignmentOperator)
+                var varialeDefStat = _variable as VariableDefinitionStatement;
+                if (varialeDefStat != null)
+                {
+                    _variable.Evaluate(context);
+                    variable = (varialeDefStat.initializers[0].first ?? varialeDefStat.initializers[0]).EvaluateForWrite(context);
+                }
+                else if (_variable is AssignmentOperator)
                 {
                     _variable.Evaluate(context);
                     variable = (_variable as AssignmentOperator).first.Evaluate(context);
@@ -294,16 +284,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref _variable, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            var tvar = _variable as VariableDefineStatement;
-            if (tvar != null)
-                _variable = tvar.initializers[0];
-            if (_variable is AssignmentOperator)
-                ((_variable as AssignmentOperator).first.first as GetVariableExpression).forceThrow = false;
-            Parser.Build(ref _source, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref _body, System.Math.Max(1, expressionDepth), scopeVariables, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
+            Parser.Build(ref _variable, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _source, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
             if (_variable is Expressions.CommaOperator)
             {
                 if ((_variable as Expressions.CommaOperator).SecondOperand != null)
@@ -318,7 +303,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             _variable.Optimize(ref _variable, owner, message, opts, stats);
             _source.Optimize(ref _source, owner, message, opts, stats);
@@ -331,11 +316,18 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
         {
             _variable.Decompose(ref _variable);
             _source.Decompose(ref _source);
-            _body.Decompose(ref _body);
+            _body?.Decompose(ref _body);
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            _variable.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _source.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override string ToString()

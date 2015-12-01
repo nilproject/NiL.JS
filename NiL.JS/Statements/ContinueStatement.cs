@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NiL.JS.Core;
 
 namespace NiL.JS.Statements
@@ -12,14 +13,14 @@ namespace NiL.JS.Statements
 
         public JSValue Label { get { return label; } }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
             if (!state.AllowContinue.Peek())
                 ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use continue statement")));
-            while (Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i])) i++;
+            while (Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i])) i++;
             int sl = i;
             JSValue label = null;
             if (Parser.ValidateName(state.Code, ref i, state.strict))
@@ -32,11 +33,11 @@ namespace NiL.JS.Statements
             index = i;
             state.continiesCount++;
             return new ContinueStatement()
-                {
-                    label = label,
-                    Position = pos,
-                    Length = index - pos
-                };
+            {
+                label = label,
+                Position = pos,
+                Length = index - pos
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -56,7 +57,12 @@ namespace NiL.JS.Statements
             return visitor.Visit(this);
         }
 
-        internal protected override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
+        {
+
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
 
         }

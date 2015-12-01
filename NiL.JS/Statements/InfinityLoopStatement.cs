@@ -25,7 +25,7 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            for (; ; )
+            for (;;)
             {
 #if DEV
                 if (context.debugging && !(body is CodeBlock))
@@ -57,14 +57,24 @@ namespace NiL.JS.Statements
             return new[] { body };
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             body.Optimize(ref body, owner, message, opts, stats);
+        }
+
+        public override void Decompose(ref CodeNode self)
+        {
+            body.Decompose(ref body);
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            body.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -75,11 +85,6 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             return "for (;;)" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
-        }
-
-        protected internal override void Decompose(ref CodeNode self)
-        {
-            body.Decompose(ref body);
         }
     }
 }

@@ -26,18 +26,18 @@ namespace NiL.JS.Test
 
             protected override Visitor Visit(JS.Statements.CodeBlock node)
             {
-                if (node.LocalVariables.Length > 0)
+                if (node.Variables.Length > 0)
                 {
-                    for (var i = 0; i < node.LocalVariables.Length; i++)
+                    for (var i = 0; i < node.Variables.Length; i++)
                     {
                         if (i == 0)
-                            result.Append("object ").Append(node.LocalVariables[i].Name);
+                            result.Append("object ").Append(node.Variables[i].Name);
                         else
-                            result.Append(", ").Append(node.LocalVariables[i].Name);
-                        if (node.LocalVariables[i].Initializer != null)
+                            result.Append(", ").Append(node.Variables[i].Name);
+                        if (node.Variables[i].Initializer != null)
                         {
                             result.Append(" = ");
-                            node.LocalVariables[i].Initializer.Visit(this);
+                            node.Variables[i].Initializer.Visit(this);
                         }
                     }
                     result.Append(";").Append(Environment.NewLine);
@@ -50,7 +50,7 @@ namespace NiL.JS.Test
                 return this;
             }
 
-            protected override Visitor Visit(JS.Statements.VariableDefineStatement node)
+            protected override Visitor Visit(JS.Statements.VariableDefinitionStatement node)
             {
                 for (var i = 0; i < node.Initializers.Length; i++)
                     node.Initializers[i].Visit(this);

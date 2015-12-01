@@ -194,34 +194,34 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
 
-            Parser.Build(ref first, expressionDepth + 1, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref first, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
             if (expressionDepth <= 1 && _type == IncrimentType.Postincriment)
                 _type = IncrimentType.Preincriment;
             var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
-                (f.Descriptor.assignations ??
-                    (f.Descriptor.assignations = new System.Collections.Generic.List<Expression>())).Add(this);
+                (f.Descriptor.assignments ??
+                    (f.Descriptor.assignments = new System.Collections.Generic.List<Expression>())).Add(this);
             }
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             var vr = first as VariableReference;
-            if (vr != null && vr.descriptor.isDefined)
+            if (vr != null && vr._descriptor.IsDefined)
             {
-                var pd = vr.descriptor.lastPredictedType;
+                var pd = vr._descriptor.lastPredictedType;
                 switch (pd)
                 {
                     case PredictedType.Int:
                     case PredictedType.Unknown:
                         {
-                            vr.descriptor.lastPredictedType = PredictedType.Number;
+                            vr._descriptor.lastPredictedType = PredictedType.Number;
                             break;
                         }
                     case PredictedType.Double:
@@ -231,7 +231,7 @@ namespace NiL.JS.Expressions
                         }
                     default:
                         {
-                            vr.descriptor.lastPredictedType = PredictedType.Ambiguous;
+                            vr._descriptor.lastPredictedType = PredictedType.Ambiguous;
                             break;
                         }
                 }

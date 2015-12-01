@@ -21,10 +21,8 @@ namespace NiL.JS
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class Script
+    public sealed class Module
     {
-        internal static readonly Function pseudoCaller = null;//new Function(Context.globalContext, FunctionStatement.Parse("function superCaller(){ }"));
-
         private CodeNode root;
         public CodeBlock Root { get { return root as CodeBlock; } }
         /// <summary>
@@ -40,8 +38,8 @@ namespace NiL.JS
         /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript.</param>
-        public Script(string code)
-            : this(code, null, null, Options.None)
+        public Module(string code)
+            : this(code, null, Options.None)
         {
 
         }
@@ -51,8 +49,8 @@ namespace NiL.JS
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
-        public Script(string code, CompilerMessageCallback messageCallback)
-            : this(code, null, messageCallback, Options.None)
+        public Module(string code, CompilerMessageCallback messageCallback)
+            : this(code, messageCallback, Options.None)
         {
 
         }
@@ -61,51 +59,36 @@ namespace NiL.JS
         /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
         /// </summary>
         /// <param name="code">Код скрипта на языке JavaScript.</param>
-        /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
         /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
-        public Script(string code, Context parentContext)
-            : this(code, parentContext, null, Options.None)
-        { }
-
-        /// <summary>
-        /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
-        /// </summary>
-        /// <param name="code">Код скрипта на языке JavaScript.</param>
-        /// <param name="parentContext">Родительский контекст для контекста выполнения сценария.</param>
-        /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
-        public Script(string code, Context parentContext, CompilerMessageCallback messageCallback, Options options)
+        public Module(string code, CompilerMessageCallback messageCallback, Options options)
         {
             if (code == null)
                 throw new ArgumentNullException();
             Code = code;
             int i = 0;
-            root = CodeBlock.Parse(new ParsingState(Tools.RemoveComments(code, 0), Code, messageCallback), ref i);
-            if (i < code.Length)
-                throw new System.ArgumentException("Invalid char");
+            root = CodeBlock.Parse(new ParseInfo(Tools.RemoveComments(code, 0), Code, messageCallback), ref i);
+
             CompilerMessageCallback icallback = messageCallback != null ? (level, cord, message) =>
                 {
                     messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message);
-                } : null as CompilerMessageCallback;
-            var stat = new FunctionStatistics();
-            Parser.Build(ref root, 0, new List<string>(), new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
+                }
+            : null as CompilerMessageCallback;
+
+            var stat = new FunctionInfo();
+            Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
             var body = root as CodeBlock;
-            Context = new Context(parentContext ?? NiL.JS.Core.Context.globalContext, true, pseudoCaller);
+            body.suppressScopeIsolation = true;
+            Context = new Context(Context.globalContext, true, null);
             Context.thisBind = new GlobalObject(Context);
-            Context.variables = (root as CodeBlock).variables;
-            Context.strict = (root as CodeBlock).strict;
-            /*for (i = body.localVariables.Length; i-- > 0; )
-            {
-                var f = Context.DefineVariable(body.localVariables[i].name);
-                body.localVariables[i].cacheRes = f;
-                body.localVariables[i].cacheContext = Context;
-                if (body.localVariables[i].initializer != null)
-                    f.Assign(body.localVariables[i].initializer.Evaluate(Context));
-                if (body.localVariables[i].isReadOnly)
-                    body.localVariables[i].cacheRes.attributes |= JSValueAttributesInternal.ReadOnly;
-                body.localVariables[i].captured |= stat.ContainsEval;
-            }*/
+            Context.strict = body.strict;
+
             var bd = body as CodeNode;
             body.Optimize(ref bd, null, icallback, options, stat);
+
+            var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
+            body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
+            if (tv != null)
+                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
 
             if (stat.ContainsYield)
                 body.Decompose(ref bd);

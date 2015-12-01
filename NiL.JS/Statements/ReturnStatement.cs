@@ -29,24 +29,24 @@ namespace NiL.JS.Statements
             this.body = body;
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             if (!Parser.Validate(state.Code, "return", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
             if (state.AllowReturn == 0)
                 ExceptionsHelper.Throw(new SyntaxError("Invalid use of return statement."));
-            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+            while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i]))
                 i++;
-            var body = state.Code[i] == ';' || Tools.isLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, CodeFragmentType.Expression);
+            var body = state.Code[i] == ';' || Tools.IsLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, CodeFragmentType.Expression);
             var pos = index;
             index = i;
             return new ReturnStatement()
-                {
-                    body = (Expressions.Expression)body,
-                    Position = pos,
-                    Length = index - pos
-                };
+            {
+                body = (Expressions.Expression)body,
+                Position = pos,
+                Length = index - pos
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -68,9 +68,9 @@ namespace NiL.JS.Statements
             return new CodeNode[0];
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref body, expressionDepth + 1, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref body, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             // Улучшает работу оптимизатора хвостовой рекурсии
             if (message == null && body is NiL.JS.Expressions.ConditionalOperator)
             {
@@ -89,7 +89,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             if (body != null)
             {
@@ -101,6 +101,18 @@ namespace NiL.JS.Statements
                     body = null;
             }
         }
+
+        public override void Decompose(ref CodeNode self)
+        {
+            if (body != null)
+                body.Decompose(ref body);
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+        }
+
 #if !PORTABLE && !NET35
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
@@ -118,12 +130,6 @@ namespace NiL.JS.Statements
         public override string ToString()
         {
             return "return" + (body != null ? " " + body : "");
-        }
-
-        protected internal override void Decompose(ref CodeNode self)
-        {
-            if (body != null)
-                body.Decompose(ref body);
         }
     }
 }

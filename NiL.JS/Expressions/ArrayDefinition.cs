@@ -47,7 +47,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             if (state.Code[index] != '[')
@@ -143,16 +143,16 @@ namespace NiL.JS.Expressions
             return elements;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
 
             for (int i = 0; i < elements.Length; i++)
-                Parser.Build(ref elements[i], 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref elements[i], 2,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             for (var i = elements.Length; i-- > 0; )
             {
@@ -170,7 +170,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
             var lastDecomposeIndex = -1;
             for (var i = 0; i < elements.Length; i++)
@@ -190,6 +190,14 @@ namespace NiL.JS.Expressions
                     elements[i] = new ExtractStoredValueExpression(elements[i]);
                 }
             }
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            base.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
+            for (var i = 0; i < elements.Length; i++)
+                elements[i]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override string ToString()

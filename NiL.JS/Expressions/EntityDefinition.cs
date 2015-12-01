@@ -28,7 +28,7 @@ namespace NiL.JS.Expressions
 
         public EntityReference(EntityDefinition owner)
         {
-            defineScopeDepth = -1;
+            ScopeLevel = -1;
             this.owner = owner;
         }
 
@@ -56,37 +56,30 @@ namespace NiL.JS.Expressions
         public string Name { get { return name; } }
         public VariableReference Reference { get { return reference; } }
 
-        public abstract bool Hoist { get; }
-
         protected EntityDefinition()
         {
             reference = new EntityReference(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
             return false;
         }
 
-        internal protected virtual void Register(Dictionary<string, VariableDescriptor> variables, CodeContext codeContext)
+        public override abstract void Decompose(ref Expression self, IList<CodeNode> result);
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            if ((codeContext & CodeContext.InExpression) == 0 && name != null) // имя не задано только для случая Function("<some string>")
+            reference.ScopeBias = scopeBias;
+            if (reference._descriptor != null)
             {
-                VariableDescriptor desc = null;
-                if (!variables.TryGetValue(name, out desc) || desc == null)
-                    variables[name] = Reference.descriptor ?? new VariableDescriptor(Reference, true, Reference.defineScopeDepth);
-                else
+                if (reference._descriptor.definitionScopeLevel >= 0)
                 {
-                    variables[name] = Reference.descriptor;
-                    for (var j = 0; j < desc.references.Count; j++)
-                        desc.references[j].descriptor = Reference.descriptor;
-                    Reference.descriptor.references.AddRange(desc.references);
-                    Reference.descriptor.captured = Reference.descriptor.captured || Reference.descriptor.references.FindIndex(x => x.defineScopeDepth > x.descriptor.defineDepth) != -1;
+                    reference._descriptor.definitionScopeLevel = reference.ScopeLevel;
+                    reference._descriptor.scopeBias = scopeBias;
                 }
             }
         }
-
-        protected internal override abstract void Decompose(ref Expression self, IList<CodeNode> result);
     }
 }

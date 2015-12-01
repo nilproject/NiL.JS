@@ -19,7 +19,7 @@ namespace NiL.JS.Expressions
 
         internal protected override JSValue EvaluateForWrite(Context context)
         {
-            if (context.owner.creator.type == BaseLibrary.FunctionType.Arrow)
+            if (context.owner.creator.type == BaseLibrary.FunctionKind.Arrow)
                 context = context.parent;
             if (context.arguments == null)
                 context.owner.BuildArgumentsObject();
@@ -33,7 +33,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (context.owner.creator.type == BaseLibrary.FunctionType.Arrow)
+            if (context.owner.creator.type == BaseLibrary.FunctionKind.Arrow)
                 context = context.parent;
             if (context.arguments == null)
                 context.owner.BuildArgumentsObject();
@@ -62,7 +62,7 @@ namespace NiL.JS.Expressions
 
         internal GetVariableExpression(string name, int scopeDepth)
         {
-            this.defineScopeDepth = scopeDepth;
+            this.ScopeLevel = scopeDepth;
             int i = 0;
             if ((name != "this") && (name != "super") && !Parser.ValidateName(name, i, true, true, false))
                 throw new ArgumentException("Invalid variable name");
@@ -73,19 +73,22 @@ namespace NiL.JS.Expressions
         {
             if (context.strict || forceThrow)
             {
-                var res = Descriptor.Get(context, false, defineScopeDepth);
+                var res = Descriptor.Get(context, false, ScopeLevel);
                 if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
                     ExceptionsHelper.ThrowVariableNotDefined(variableName);
-                if ((res.attributes & JSValueAttributesInternal.Argument) != 0)
-                    context.owner.BuildArgumentsObject();
+                if (context.strict)
+                {
+                    if ((res.attributes & JSValueAttributesInternal.Argument) != 0)
+                        context.owner.BuildArgumentsObject();
+                }
                 return res;
             }
-            return descriptor.Get(context, true, defineScopeDepth);
+            return _descriptor.Get(context, true, ScopeLevel);
         }
 
         public override JSValue Evaluate(Context context)
         {
-            var res = descriptor.Get(context, false, defineScopeDepth);
+            var res = _descriptor.Get(context, false, ScopeLevel);
             switch (res.valueType)
             {
                 case JSValueType.NotExists:
@@ -131,52 +134,61 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
 
             if (stats != null && variableName == "this")
-                stats.UseThis = true;
+            {
+                stats.ContainsThis = true;
+                ScopeLevel = -1;
+            }
+
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                desc = new VariableDescriptor(this, false, defineScopeDepth);
-                descriptor = desc;
+                desc = new VariableDescriptor(this, -1);
                 variables[variableName] = this.Descriptor;
             }
             else
             {
                 desc.references.Add(this);
-                descriptor = desc;
+                _descriptor = desc;
             }
-            if (expressionDepth >= 0 && expressionDepth < 2 && desc.IsDefined && (opts & Options.SuppressUselessExpressionsElimination) == 0)
+
+            if ((codeContext & CodeContext.InWith) != 0)
+                ScopeLevel = -1;
+
+            forceThrow |= desc.lexicalScope; // часть TDZ
+
+            if (expressionDepth >= 0 && expressionDepth < 2 && desc.IsDefined && !desc.lexicalScope && (opts & Options.SuppressUselessExpressionsElimination) == 0)
             {
                 _this = null;
                 Eliminated = true;
                 if (message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused get of defined variable was removed. Maybe, something missing.");
+                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused getting of defined variable was removed. Maybe something missing.");
             }
-            else if (variableName == "arguments"
-                && defineScopeDepth > 0)
+            else if (variableName == "arguments" && ScopeLevel > 0)
             {
                 if (stats != null)
                     stats.ContainsArguments = true;
-                _this = new GetArgumentsExpression(defineScopeDepth) { descriptor = descriptor };
+                _this = new GetArgumentsExpression(ScopeLevel) { _descriptor = _descriptor };
             }
+
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             base.Optimize(ref _this, owner, message, opts, stats);
             if ((opts & Options.SuppressConstantPropogation) == 0
-                && !descriptor.captured
-                && descriptor.isDefined
+                && !_descriptor.captured
+                && _descriptor.IsDefined
                 && !stats.ContainsWith
                 && !stats.ContainsEval
-                && (descriptor.owner != owner || !owner._stats.ContainsArguments))
+                && (_descriptor.owner != owner || !owner._functionInfo.ContainsArguments))
             {
-                var assigns = descriptor.assignations;
+                var assigns = _descriptor.assignments;
                 if (assigns != null && assigns.Count > 0)
                 {
                     /*
@@ -210,7 +222,7 @@ namespace NiL.JS.Expressions
                             continue; // пропускаем ноду
                         }
 
-                        if (descriptor.isReadOnly)
+                        if (_descriptor.isReadOnly)
                         {
                             if (assigns[i] is ForceAssignmentOperator)
                             {

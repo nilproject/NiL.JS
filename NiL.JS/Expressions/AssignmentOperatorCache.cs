@@ -93,12 +93,12 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected internal override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             base.Optimize(ref _this, owner, message, opts, stats);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             // second будем использовать как флаг isVisited
             if (second != null)
@@ -107,7 +107,7 @@ namespace NiL.JS.Expressions
 
             _codeContext = codeContext;
 
-            var res = first.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            var res = first.Build(ref _this, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
             if (!res && first is GetVariableExpression)
                 (first as GetVariableExpression).forceThrow = true;
             return res;

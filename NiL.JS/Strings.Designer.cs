@@ -97,7 +97,7 @@ namespace NiL.JS {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на &quot;Invalid left-hand side in assignment.&quot;.
+        ///   Ищет локализованную строку, похожую на Invalid left-hand side in assignment..
         /// </summary>
         internal static string InvalidLefthandSideInAssignment {
             get {
@@ -156,6 +156,15 @@ namespace NiL.JS {
         internal static string InvalidTryToCreateWithoutNew {
             get {
                 return ResourceManager.GetString("InvalidTryToCreateWithoutNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Too many arguments for function &quot;{0}&quot;.
+        /// </summary>
+        internal static string TooManyArgumentsForFunction {
+            get {
+                return ResourceManager.GetString("TooManyArgumentsForFunction", resourceCulture);
             }
         }
         

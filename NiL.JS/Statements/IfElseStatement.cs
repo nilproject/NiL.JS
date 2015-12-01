@@ -30,7 +30,7 @@ namespace NiL.JS.Statements
             this.@else = elseBody;
         }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             if (!Parser.Validate(state.Code, "if (", ref i) && !Parser.Validate(state.Code, "if(", ref i))
@@ -146,11 +146,11 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref condition, 2, scopeVariables, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref then, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
-            Parser.Build(ref @else, expressionDepth, scopeVariables, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref then, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+            Parser.Build(ref @else, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
 
             if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ToBooleanOperator)
             {
@@ -182,7 +182,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, stats);
@@ -193,6 +193,22 @@ namespace NiL.JS.Statements
                 @else.Optimize(ref @else, owner, message, opts, stats);
             if (then == null && @else == null)
                 _this = condition;
+        }
+
+        public override void Decompose(ref CodeNode self)
+        {
+            condition.Decompose(ref condition);
+            if (then != null)
+                then.Decompose(ref then);
+            if (@else != null)
+                @else.Decompose(ref @else);
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            then?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            @else?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -211,15 +227,6 @@ namespace NiL.JS.Statements
                 (@else != null ? Environment.NewLine +
                 "else" + Environment.NewLine +
                 (@else is CodeBlock ? sebody.Replace(rp, rs) : "  " + sebody) : "");
-        }
-
-        protected internal override void Decompose(ref CodeNode self)
-        {
-            condition.Decompose(ref condition);
-            if (then != null)
-                then.Decompose(ref then);
-            if (@else != null)
-                @else.Decompose(ref @else);
         }
     }
 }

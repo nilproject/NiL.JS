@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
     internal enum OperationType
     {
         None = OperationTypeGroups.None + 0,
-        Assign = OperationTypeGroups.Assign + 0,
+        Assignment = OperationTypeGroups.Assign + 0,
         Ternary = OperationTypeGroups.Choice + 0,
 
         LogicalOr = OperationTypeGroups.LOr,
@@ -92,8 +92,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class ExpressionTree : Expression
     {
-        private Expression _fastImpl;
-        private OperationType _type;
+        private OperationType _operationType;
 
         internal override bool ResultInTempContainer
         {
@@ -104,191 +103,156 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return _type;
+                return _operationType;
             }
-            private set
+        }
+
+        private Expression getFastImpl()
+        {
+            switch (_operationType)
             {
-                _fastImpl = null;
-                switch (value)
-                {
-                    case OperationType.Multiply:
-                        {
-                            _fastImpl = new Expressions.MultiplicationOperator(first, second);
-                            break;
-                        }
-                    case OperationType.None:
-                        {
-                            _fastImpl = new Expressions.CommaOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Assign:
-                        {
-                            _fastImpl = new Expressions.AssignmentOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Less:
-                        {
-                            _fastImpl = new Expressions.LessOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Incriment:
-                        {
-                            _fastImpl = new Expressions.IncrementOperator(first ?? second, first == null ? Expressions.IncrimentType.Postincriment : Expressions.IncrimentType.Preincriment);
-                            break;
-                        }
-                    case OperationType.Call:
-                        {
-                            throw new InvalidOperationException("Call instance mast be created immediatly.");
-                        }
-                    case OperationType.Decriment:
-                        {
-                            _fastImpl = new Expressions.DecrementOperator(first ?? second, first == null ? Expressions.DecrimentType.Postdecriment : Expressions.DecrimentType.Postdecriment);
-                            break;
-                        }
-                    case OperationType.LessOrEqual:
-                        {
-                            _fastImpl = new Expressions.LessOrEqualOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Addition:
-                        {
-                            _fastImpl = new Expressions.AdditionOperator(first, second);
-                            break;
-                        }
-                    case OperationType.StrictNotEqual:
-                        {
-                            _fastImpl = new Expressions.StrictNotEqualOperator(first, second);
-                            break;
-                        }
-                    case OperationType.More:
-                        {
-                            _fastImpl = new Expressions.MoreOperator(first, second);
-                            break;
-                        }
-                    case OperationType.MoreOrEqual:
-                        {
-                            _fastImpl = new Expressions.MoreOrEqualOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Division:
-                        {
-                            _fastImpl = new Expressions.DivisionOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Equal:
-                        {
-                            _fastImpl = new Expressions.EqualOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Substract:
-                        {
-                            _fastImpl = new Expressions.SubstractOperator(first, second);
-                            break;
-                        }
-                    case OperationType.StrictEqual:
-                        {
-                            _fastImpl = new Expressions.StrictEqualOperator(first, second);
-                            break;
-                        }
-                    case OperationType.LogicalOr:
-                        {
-                            _fastImpl = new Expressions.LogicalDisjunctionOperator(first, second);
-                            break;
-                        }
-                    case OperationType.LogicalAnd:
-                        {
-                            _fastImpl = new Expressions.LogicalConjunctionOperator(first, second);
-                            break;
-                        }
-                    case OperationType.NotEqual:
-                        {
-                            _fastImpl = new Expressions.NotEqualOperator(first, second);
-                            break;
-                        }
-                    case OperationType.UnsignedShiftRight:
-                        {
-                            _fastImpl = new Expressions.UnsignedShiftRightOperator(first, second);
-                            break;
-                        }
-                    case OperationType.SignedShiftLeft:
-                        {
-                            _fastImpl = new Expressions.SignedShiftLeftOperator(first, second);
-                            break;
-                        }
-                    case OperationType.SignedShiftRight:
-                        {
-                            _fastImpl = new Expressions.SignedShiftRightOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Module:
-                        {
-                            _fastImpl = new Expressions.ModuloOperator(first, second);
-                            break;
-                        }
-                    case OperationType.LogicalNot:
-                        {
-                            _fastImpl = new Expressions.LogicalNegationOperator(first);
-                            break;
-                        }
-                    case OperationType.Not:
-                        {
-                            _fastImpl = new Expressions.BitwiseNegationOperator(first);
-                            break;
-                        }
-                    case OperationType.Xor:
-                        {
-                            _fastImpl = new Expressions.BitwiseExclusiveDisjunctionOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Or:
-                        {
-                            _fastImpl = new Expressions.BitwiseDisjunctionOperator(first, second);
-                            break;
-                        }
-                    case OperationType.And:
-                        {
-                            _fastImpl = new Expressions.BitwiseConjunctionOperator(first, second);
-                            break;
-                        }
-                    case OperationType.Ternary:
-                        {
-                            while ((second is ExpressionTree)
-                                && (second as ExpressionTree)._type == OperationType.None
-                                && (second as ExpressionTree).second == null)
-                                second = (second as ExpressionTree).first;
-                            _fastImpl = new Expressions.ConditionalOperator(first, (Expression[])second.Evaluate(null).oValue);
-                            break;
-                        }
-                    case OperationType.TypeOf:
-                        {
-                            _fastImpl = new Expressions.TypeOfOperator(first);
-                            break;
-                        }
-                    case OperationType.New:
-                        {
-                            throw new InvalidOperationException("New instance mast be created immediatly.");
-                            //fastImpl = new Expressions.New(first, second);
-                            //break;
-                        }
-                    case OperationType.Delete:
-                        {
-                            _fastImpl = new Expressions.DeleteOperator(first);
-                            break;
-                        }
-                    case OperationType.InstanceOf:
-                        {
-                            _fastImpl = new Expressions.InstanceOfOperator(first, second);
-                            break;
-                        }
-                    case OperationType.In:
-                        {
-                            _fastImpl = new Expressions.InOperator(first, second);
-                            break;
-                        }
-                    default:
-                        throw new ArgumentException("invalid operation type");
-                }
-                _type = value;
+                case OperationType.Multiply:
+                    {
+                        return new MultiplicationOperator(first, second);
+                    }
+                case OperationType.None:
+                    {
+                        return new CommaOperator(first, second);
+                    }
+                case OperationType.Assignment:
+                    {
+                        return new AssignmentOperator(first, second);
+                    }
+                case OperationType.Less:
+                    {
+                        return new LessOperator(first, second);
+                    }
+                case OperationType.Incriment:
+                    {
+                        return new IncrementOperator(first ?? second, first == null ? IncrimentType.Postincriment : IncrimentType.Preincriment);
+                    }
+                case OperationType.Call:
+                    {
+                        throw new InvalidOperationException("Call instance mast be created immediatly.");
+                    }
+                case OperationType.Decriment:
+                    {
+                        return new DecrementOperator(first ?? second, first == null ? DecrimentType.Postdecriment : DecrimentType.Postdecriment);
+                    }
+                case OperationType.LessOrEqual:
+                    {
+                        return new LessOrEqualOperator(first, second);
+                    }
+                case OperationType.Addition:
+                    {
+                        return new AdditionOperator(first, second);
+                    }
+                case OperationType.StrictNotEqual:
+                    {
+                        return new StrictNotEqualOperator(first, second);
+                    }
+                case OperationType.More:
+                    {
+                        return new MoreOperator(first, second);
+                    }
+                case OperationType.MoreOrEqual:
+                    {
+                        return new MoreOrEqualOperator(first, second);
+                    }
+                case OperationType.Division:
+                    {
+                        return new DivisionOperator(first, second);
+                    }
+                case OperationType.Equal:
+                    {
+                        return new EqualOperator(first, second);
+                    }
+                case OperationType.Substract:
+                    {
+                        return new SubstractOperator(first, second);
+                    }
+                case OperationType.StrictEqual:
+                    {
+                        return new StrictEqualOperator(first, second);
+                    }
+                case OperationType.LogicalOr:
+                    {
+                        return new LogicalDisjunctionOperator(first, second);
+                    }
+                case OperationType.LogicalAnd:
+                    {
+                        return new LogicalConjunctionOperator(first, second);
+                    }
+                case OperationType.NotEqual:
+                    {
+                        return new NotEqualOperator(first, second);
+                    }
+                case OperationType.UnsignedShiftRight:
+                    {
+                        return new UnsignedShiftRightOperator(first, second);
+                    }
+                case OperationType.SignedShiftLeft:
+                    {
+                        return new SignedShiftLeftOperator(first, second);
+                    }
+                case OperationType.SignedShiftRight:
+                    {
+                        return new SignedShiftRightOperator(first, second);
+                    }
+                case OperationType.Module:
+                    {
+                        return new ModuloOperator(first, second);
+                    }
+                case OperationType.LogicalNot:
+                    {
+                        return new LogicalNegationOperator(first);
+                    }
+                case OperationType.Not:
+                    {
+                        return new BitwiseNegationOperator(first);
+                    }
+                case OperationType.Xor:
+                    {
+                        return new BitwiseExclusiveDisjunctionOperator(first, second);
+                    }
+                case OperationType.Or:
+                    {
+                        return new BitwiseDisjunctionOperator(first, second);
+                    }
+                case OperationType.And:
+                    {
+                        return new BitwiseConjunctionOperator(first, second);
+                    }
+                case OperationType.Ternary:
+                    {
+                        while ((second is ExpressionTree)
+                            && (second as ExpressionTree)._operationType == OperationType.None
+                            && (second as ExpressionTree).second == null)
+                            second = (second as ExpressionTree).first;
+                        return new ConditionalOperator(first, (Expression[])second.Evaluate(null).oValue);
+                    }
+                case OperationType.TypeOf:
+                    {
+                        return new TypeOfOperator(first);
+                    }
+                case OperationType.New:
+                    {
+                        throw new InvalidOperationException("New instance mast be created immediatly.");
+                    }
+                case OperationType.Delete:
+                    {
+                        return new DeleteOperator(first);
+                    }
+                case OperationType.InstanceOf:
+                    {
+                        return new InstanceOfOperator(first, second);
+                    }
+                case OperationType.In:
+                    {
+                        return new InOperator(first, second);
+                    }
+                default:
+                    throw new ArgumentException("invalid operation type");
             }
         }
 
@@ -306,12 +270,12 @@ namespace NiL.JS.Expressions
             while (cur != null)
             {
                 stats.Push(cur.first);
-                for (; types.Count > 0; )
+                for (; types.Count > 0;)
                 {
-                    var topType = (int)(types.Peek() as ExpressionTree)._type;
-                    if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._type & (int)OperationTypeGroups.Special))
-                        || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._type & (int)OperationTypeGroups.Special))
-                            && (((int)cur._type & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)))
+                    var topType = (int)(types.Peek() as ExpressionTree)._operationType;
+                    if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._operationType & (int)OperationTypeGroups.Special))
+                        || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._operationType & (int)OperationTypeGroups.Special))
+                            && (((int)cur._operationType & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)))
                     {
                         var stat = types.Pop() as ExpressionTree;
                         stat.second = stats.Pop();
@@ -340,22 +304,17 @@ namespace NiL.JS.Expressions
             return stats.Peek();
         }
 
-        public static CodeNode Parse(ParsingState state, ref int index)
+        public static CodeNode Parse(ParseInfo state, ref int index)
         {
             return Parse(state, ref index, false, true, false, true, false, false);
         }
 
-        public static Expression Parse(ParsingState state, ref int index, bool forUnary)
+        public static Expression Parse(ParseInfo state, ref int index, bool forUnaryOperator)
         {
-            return Parse(state, ref index, forUnary, true, false, true, false, false);
+            return Parse(state, ref index, forUnaryOperator, true, false, true, false, false);
         }
 
-        internal static Expression Parse(ParsingState state, ref int index, bool forUnary, bool processComma)
-        {
-            return Parse(state, ref index, forUnary, processComma, false, true, false, false);
-        }
-
-        internal static Expression Parse(ParsingState state, ref int index, bool forUnary, bool processComma, bool forNew, bool root, bool forTernary, bool forEnumeration)
+        internal static Expression Parse(ParseInfo state, ref int index, bool forUnary = false, bool processComma = true, bool forNew = false, bool root = true, bool forTernary = false, bool forEnumeration = false)
         {
             int i = index;
             int position;
@@ -363,27 +322,39 @@ namespace NiL.JS.Expressions
             Expression first = null;
             Expression second = null;
             int s = i;
-            state.InExpression++;
-            if (forTernary)
+
+            var oldCodeContext = state.CodeContext;
+            state.CodeContext |= CodeContext.InExpression;
+            try
             {
-                position = i;
-                var threads = new Expression[]
-                    {
-                        (Expression)ExpressionTree.Parse(state, ref i, false, true, false, true, false, false),
+                if (forTernary)
+                {
+                    position = i;
+                    var threads = new Expression[]
+                        {
+                        Parse(state, ref i, false, true, false, true, false, false),
                         null
-                    };
-                if (state.Code[i] != ':')
-                    ExceptionsHelper.Throw(new SyntaxError("Invalid char in ternary operator"));
-                do
-                    i++;
-                while (Tools.IsWhiteSpace(state.Code[i]));
-                first = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
-                threads[1] = (Expression)ExpressionTree.Parse(state, ref i, false, false, false, true, false, forEnumeration);
-                first.Length = i - first.Position;
+                        };
+                    if (state.Code[i] != ':')
+                        ExceptionsHelper.Throw(new SyntaxError("Invalid char in ternary operator"));
+                    do
+                        i++;
+                    while (Tools.IsWhiteSpace(state.Code[i]));
+                    first = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
+                    threads[1] = Parse(state, ref i, false, false, false, true, false, forEnumeration);
+                    first.Length = i - first.Position;
+                }
+                else
+                    first = (Expression)Parser.Parse(state, ref i, (CodeFragmentType)2, false);
             }
-            else if ((first = (Expression)Parser.Parse(state, ref i, (CodeFragmentType)2, false)) != null)
+            finally
             {
-                // do nothing
+                state.CodeContext = oldCodeContext;
+            }
+
+            if (first != null)
+            {
+
             }
             else if (Parser.ValidateName(state.Code, ref i, state.strict)
                 || Parser.Validate(state.Code, "this", ref i)
@@ -410,7 +381,7 @@ namespace NiL.JS.Expressions
                                     && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0))) // вызов конструктора
                                 ExceptionsHelper.ThrowSyntaxError("super keyword unexpected in this coontext", state.Code, i);
 
-                            first = new SuperExpression(state.scopeDepth);
+                            first = new SuperExpression(state.lexicalScopeLevel);
                             break;
                         }
                     case "undefined":
@@ -420,7 +391,7 @@ namespace NiL.JS.Expressions
                         }
                     default:
                         {
-                            first = new GetVariableExpression(name, state.scopeDepth);
+                            first = new GetVariableExpression(name, state.lexicalScopeLevel);
                             break;
                         }
                 }
@@ -481,8 +452,7 @@ namespace NiL.JS.Expressions
                 || (state.Code[i] == '-')
                 || Parser.Validate(state.Code, "delete", i)
                 || Parser.Validate(state.Code, "typeof", i)
-                || Parser.Validate(state.Code, "void", i)
-                )
+                || Parser.Validate(state.Code, "void", i))
             {
                 switch (state.Code[i])
                 {
@@ -637,7 +607,7 @@ namespace NiL.JS.Expressions
                         ExceptionsHelper.Throw((new SyntaxError("Expected \")\"")));
                 }
                 i++;
-                if ((state.InExpression > 0 && first is FunctionDefinition) || (forNew && first is CallOperator))
+                if (((state.CodeContext & CodeContext.InExpression) != 0 && first is FunctionDefinition) || (forNew && first is CallOperator))
                     first = new Expressions.CommaOperator(first, null) { Position = index, Length = i - index };
             }
             else
@@ -655,7 +625,7 @@ namespace NiL.JS.Expressions
             do
             {
                 repeat = false;
-                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.isLineTerminator(state.Code[i]))
+                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i]))
                     i++;
                 if (state.Code.Length <= i)
                     break;
@@ -758,7 +728,7 @@ namespace NiL.JS.Expressions
                                     type = OperationType.Equal;
                             }
                             else
-                                type = OperationType.Assign;
+                                type = OperationType.Assignment;
                             binary = true;
                             break;
                         }
@@ -1052,14 +1022,14 @@ namespace NiL.JS.Expressions
                             if (!state.stringConstants.TryGetValue(name, out jsname))
                                 state.stringConstants[name] = jsname = name;
                             first = new GetPropertyOperator(first, new ConstantDefinition(name)
-                                                                     {
-                                                                         Position = s,
-                                                                         Length = i - s
-                                                                     })
-                                    {
-                                        Position = first.Position,
-                                        Length = i - first.Position
-                                    };
+                            {
+                                Position = s,
+                                Length = i - s
+                            })
+                            {
+                                Position = first.Position,
+                                Length = i - first.Position
+                            };
                             repeat = true;
                             canAsign = true;
                             break;
@@ -1103,7 +1073,7 @@ namespace NiL.JS.Expressions
                             i++;
                             int startPos = i;
                             bool withSpread = false;
-                            for (; ; )
+                            for (;;)
                             {
                                 while (Tools.IsWhiteSpace(state.Code[i]))
                                     i++;
@@ -1171,7 +1141,7 @@ namespace NiL.JS.Expressions
                         }
                     default:
                         {
-                            if (Tools.isLineTerminator(state.Code[i]))
+                            if (Tools.IsLineTerminator(state.Code[i]))
                                 goto case '\n';
                             if (i != rollbackPos)
                             {
@@ -1191,12 +1161,12 @@ namespace NiL.JS.Expressions
             if (state.strict
                 && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
             {
-                if (assign || type == OperationType.Assign)
+                if (assign || type == OperationType.Assignment)
                     ExceptionsHelper.ThrowSyntaxError("Assignment to eval or arguments is not allowed in strict mode", state.Code, i);
                 //if (type == OperationType.Incriment || type == OperationType.Decriment)
                 //    ExceptionsHelper.Throw(new SyntaxError("Can not " + type.ToString().ToLower() + " \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
             }
-            if ((!canAsign) && ((type == OperationType.Assign) || (assign)))
+            if ((!canAsign) && ((type == OperationType.Assignment) || (assign)))
                 ExceptionsHelper.ThrowSyntaxError("Invalid left-hand side in assignment", state.Code, i);
             if (binary && !forUnary)
             {
@@ -1205,6 +1175,8 @@ namespace NiL.JS.Expressions
                 while (state.Code.Length > i && Tools.IsWhiteSpace(state.Code[i]));
                 if (state.Code.Length > i)
                     second = (Expression)ExpressionTree.Parse(state, ref i, false, processComma, false, false, type == OperationType.Ternary, forEnumeration);
+                else
+                    ExceptionsHelper.ThrowSyntaxError("Expected second operand", state.Code, i);
             }
             Expression res = null;
             if (first == second && first == null)
@@ -1215,13 +1187,13 @@ namespace NiL.JS.Expressions
                 second = deicstra(second as ExpressionTree);
                 var opassigncache = new AssignmentOperatorCache(first);
                 if (second is ExpressionTree
-                    && (second as ExpressionTree)._type == OperationType.None)
+                    && (second as ExpressionTree)._operationType == OperationType.None)
                 {
                     second.first = new AssignmentOperator(opassigncache, new ExpressionTree()
                     {
                         first = opassigncache,
                         second = second.first,
-                        _type = type,
+                        _operationType = type,
                         Position = index,
                         Length = i - index
                     })
@@ -1237,7 +1209,7 @@ namespace NiL.JS.Expressions
                     {
                         first = opassigncache,
                         second = second,
-                        _type = type,
+                        _operationType = type,
                         Position = index,
                         Length = i - index
                     })
@@ -1254,7 +1226,7 @@ namespace NiL.JS.Expressions
                     if (forUnary && (type == OperationType.None) && (first is ExpressionTree))
                         res = first as Expression;
                     else
-                        res = new ExpressionTree() { first = first, second = second, _type = type, Position = index, Length = i - index };
+                        res = new ExpressionTree() { first = first, second = second, _operationType = type, Position = index, Length = i - index };
                 }
                 else
                     res = first;
@@ -1262,7 +1234,6 @@ namespace NiL.JS.Expressions
             if (root)
                 res = deicstra(res as ExpressionTree) ?? res;
             index = i;
-            state.InExpression--;
             return res;
         }
 
@@ -1281,12 +1252,11 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Type = Type;
-            _this = _fastImpl;
-            _fastImpl.Position = Position;
-            _fastImpl.Length = Length;
+            _this = getFastImpl();
+            _this.Position = Position;
+            _this.Length = Length;
             return true;
         }
     }

@@ -60,7 +60,7 @@ namespace NiL.JS.Core.Functions
             return TypeProxy.GetPrototype(typeof(Function));
         }
 
-        protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
             int l = arguments == null ? 0 : arguments.length;
             object[] cargs = null;

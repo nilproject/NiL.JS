@@ -292,7 +292,7 @@
     <Compile Include="Core\Interop\ArgumentsLengthAttribute.cs" />
     <Compile Include="Core\Interop\PrototypeAttribute.cs" />
     <Compile Include="Core\Functions\ObjectConstructor.cs" />
-    <Compile Include="Core\ParsingState.cs" />
+    <Compile Include="Core\ParseInfo.cs" />
     <Compile Include="Core\CodeNode.cs" />
     <Compile Include="Core\Context.cs" />
     <Compile Include="Core\Parser.cs" />
@@ -386,10 +386,10 @@
     <Compile Include="Expressions\ConstantDefinition.cs" />
     <Compile Include="Core\JSObject.cs" />
     <Compile Include="Expressions\ExpressionTree.cs" />
-    <Compile Include="Script.cs" />
+    <Compile Include="Module.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Statements\TryCatchStatement.cs" />
-    <Compile Include="Statements\VariableDefineStatement.cs" />
+    <Compile Include="Statements\VariableDefinitionStatement.cs" />
     <Compile Include="Statements\InfinityLoopStatement.cs" />
     <Compile Include="Statements\WhileStatement.cs" />
     <Compile Include="Statements\WithStatement.cs" />

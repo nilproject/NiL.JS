@@ -39,7 +39,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        public static CodeNode Parse(ParsingState state, ref int index)
+        public static CodeNode Parse(ParseInfo state, ref int index)
         {
             var i = index;
             if (!Parser.Validate(state.Code, "new", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
             throw new InvalidOperationException();
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (message != null && expressionDepth <= 1)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use NewOperator for side effect");

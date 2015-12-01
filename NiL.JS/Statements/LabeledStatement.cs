@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
         public CodeNode Statement { get { return statement; } }
         public string Label { get { return label; } }
 
-        internal static CodeNode Parse(ParsingState state, ref int index)
+        internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
             if (!Parser.ValidateName(state.Code, ref i, state.strict))
@@ -42,12 +42,12 @@ namespace NiL.JS.Statements
             var pos = index;
             index = i;
             return new LabeledStatement()
-                {
-                    statement = stat,
-                    label = label,
-                    Position = pos,
-                    Length = index - pos
-                };
+            {
+                statement = stat,
+                label = label,
+                Position = pos,
+                Length = index - pos
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -66,13 +66,13 @@ namespace NiL.JS.Statements
             return new[] { statement };
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref statement, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            Parser.Build(ref statement, expressionDepth, variables, codeContext, message, stats, opts);
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             statement.Optimize(ref statement, owner, message, opts, stats);
         }
@@ -87,9 +87,14 @@ namespace NiL.JS.Statements
             return label + ": " + statement;
         }
 
-        protected internal override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
         {
+            statement.Decompose(ref statement);
+        }
 
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            statement.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
     }
 }

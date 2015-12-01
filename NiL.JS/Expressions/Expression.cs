@@ -10,17 +10,6 @@ namespace NiL.JS.Expressions
 #endif
     public abstract class Expression : CodeNode
     {
-        /*
-         * Правила именования:
-         *      Один оператор в выражении:                  <смысл выражения>Operator. Конструкция "!!" рассматривается как один унарный оператор
-         *      Два или более оператора в выражении:        <смысл выражения>Expression. StringConcatenationExpression может содержать более одного оператора "+", а ToIntExpression состоит из операторов "|0" и "()"
-         *      Операторов нет, но есть описание сущности:  <смысл выражения>Notation.
-         *      Исключения: 
-         *          GetVariableExpression - оператора получения переменной нет, сущность не описывается
-         *          
-         * Наследниками Expression являются только те конструкции, которые могут возвращать значени (r-value).
-         */
-
         internal Expression first;
         internal Expression second;
         internal JSValue tempContainer;
@@ -91,13 +80,13 @@ namespace NiL.JS.Expressions
                 tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
             codeContext = codeContext | CodeContext.InExpression;
 
-            Parser.Build(ref first, expressionDepth + 1, scopeVariables, variables, codeContext, message, stats, opts);
-            Parser.Build(ref second, expressionDepth + 1, scopeVariables, variables, codeContext, message, stats, opts);
+            Parser.Build(ref first, expressionDepth + 1, variables, codeContext, message, stats, opts);
+            Parser.Build(ref second, expressionDepth + 1, variables, codeContext, message, stats, opts);
             if (this.ContextIndependent)
             {
                 if (message != null && !(this is RegExpExpression))
@@ -131,19 +120,19 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal void Optimize(ref Expression self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        internal void Optimize(ref Expression self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             CodeNode cn = self;
             Optimize(ref cn, owner, message, opts, stats);
             self = (Expression)cn;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             baseOptimize(ref _this, owner, message, opts, stats);
         }
 
-        internal void baseOptimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        internal void baseOptimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             var f = first as CodeNode;
             var s = second as CodeNode;
@@ -212,7 +201,7 @@ namespace NiL.JS.Expressions
             self = (Expression)cn;
         }
 
-        protected internal sealed override void Decompose(ref CodeNode self)
+        public sealed override void Decompose(ref CodeNode self)
         {
             if (NeedDecompose)
             {
@@ -226,7 +215,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal virtual void Decompose(ref Expression self, IList<CodeNode> result)
+        public virtual void Decompose(ref Expression self, IList<CodeNode> result)
         {
             if (first != null)
             {
@@ -243,6 +232,12 @@ namespace NiL.JS.Expressions
 
                 second.Decompose(ref second, result);
             }
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            first?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            second?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
     }
 }

@@ -131,3 +131,30 @@ if (typeof mustBeDeclaredInGlobalContext === "undefined")
     console.log("Incorrect processing of eval function");
 if (typeof mustBeDeclaredInGlobalContext_second === "undefined")
     console.log("Incorrect processing of eval function");
+
+var functionInExpression = function () {
+    function test() {
+        return 1;
+    }
+
+    return test();
+}
+
+functionInExpression();
+
+function runEvalTest(x) {
+    x();
+}
+
+eval('\
+function testEval() {\
+}\
+\
+runEvalTest(testEval);');
+
+function twoParametersWithSameName(x, x) {
+  return x;
+}
+if(!(twoParametersWithSameName(1, 2) === 2)) {
+  $ERROR("#1: twoParametersWithSameName(1, 2) === 2");
+}

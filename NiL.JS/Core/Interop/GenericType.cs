@@ -450,14 +450,17 @@ namespace NiL.JS.Core.Interop
             get { return name; }
         }
 
-        public override Module Module
-        {
-            get { return null; }
-        }
-
         public override Type UnderlyingSystemType
         {
             get { return this; }
+        }
+
+        public override System.Reflection.Module Module
+        {
+            get
+            {
+                return null;
+            }
         }
     }
 }

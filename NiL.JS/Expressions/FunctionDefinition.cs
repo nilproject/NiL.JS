@@ -20,6 +20,7 @@ namespace NiL.JS.Expressions
             : base(name, depth)
         {
             this.IsRest = rest;
+            this.lexicalScope = true;
         }
 
         public override string ToString()
@@ -37,13 +38,13 @@ namespace NiL.JS.Expressions
     {
         public override string Name
         {
-            get { return descriptor.name; }
+            get { return _descriptor.name; }
         }
 
         internal ParameterReference(string name, bool rest, int depth)
         {
-            descriptor = new ParameterDescriptor(name, rest, depth);
-            descriptor.references.Add(this);
+            _descriptor = new ParameterDescriptor(name, rest, depth);
+            _descriptor.references.Add(this);
         }
 
         public override JSValue Evaluate(Context context)
@@ -72,11 +73,10 @@ namespace NiL.JS.Expressions
         internal int recursionDepth;
         #endregion
 
-        internal readonly FunctionStatistics _stats;
+        internal readonly FunctionInfo _functionInfo;
         internal ParameterDescriptor[] parameters;
         internal CodeBlock body;
-        internal FunctionType type;
-        internal bool strict;
+        internal FunctionKind type;
 #if DEBUG
         internal bool trace;
 #endif
@@ -84,16 +84,11 @@ namespace NiL.JS.Expressions
         public CodeBlock Body { get { return body; } }
         public ReadOnlyCollection<ParameterDescriptor> Parameters { get { return new ReadOnlyCollection<ParameterDescriptor>(parameters); } }
 
-        public override bool Hoist
-        {
-            get { return true; }
-        }
-
         protected internal override bool NeedDecompose
         {
             get
             {
-                return _stats.ContainsYield;
+                return _functionInfo.ContainsYield;
             }
         }
 
@@ -122,46 +117,46 @@ namespace NiL.JS.Expressions
         {
             parameters = new ParameterDescriptor[0];
             body = new CodeBlock(new CodeNode[0]);
-            body.variables = new VariableDescriptor[0];
-            _stats = new FunctionStatistics();
+            body._variables = new VariableDescriptor[0];
+            _functionInfo = new FunctionInfo();
             this.name = name;
         }
 
-        internal static CodeNode ParseFunction(ParsingState state, ref int index)
+        internal static CodeNode ParseFunction(ParseInfo state, ref int index)
         {
-            return Parse(state, ref index, FunctionType.Function);
+            return Parse(state, ref index, FunctionKind.Function);
         }
 
-        internal static CodeNode ParseArrow(ParsingState state, ref int index)
+        internal static CodeNode ParseArrow(ParseInfo state, ref int index)
         {
-            return Parse(state, ref index, FunctionType.Arrow);
+            return Parse(state, ref index, FunctionKind.Arrow);
         }
 
-        internal static Expression Parse(ParsingState state, ref int index, FunctionType mode)
+        internal static Expression Parse(ParseInfo state, ref int index, FunctionKind mode)
         {
             string code = state.Code;
             int i = index;
             switch (mode)
             {
-                case FunctionType.AnonymousFunction:
-                case FunctionType.AnonymousGenerator:
+                case FunctionKind.AnonymousFunction:
+                case FunctionKind.AnonymousGenerator:
                     {
                         break;
                     }
-                case FunctionType.Function:
+                case FunctionKind.Function:
                     {
                         if (!Parser.Validate(code, "function", ref i))
                             return null;
                         if (code[i] == '*')
                         {
-                            mode = FunctionType.Generator;
+                            mode = FunctionKind.Generator;
                             i++;
                         }
                         else if ((code[i] != '(') && (!Tools.IsWhiteSpace(code[i])))
                             return null;
                         break;
                     }
-                case FunctionType.Getter:
+                case FunctionKind.Getter:
                     {
                         if (!Parser.Validate(code, "get", ref i))
                             return null;
@@ -169,7 +164,7 @@ namespace NiL.JS.Expressions
                             return null;
                         break;
                     }
-                case FunctionType.Setter:
+                case FunctionKind.Setter:
                     {
                         if (!Parser.Validate(code, "set", ref i))
                             return null;
@@ -177,55 +172,57 @@ namespace NiL.JS.Expressions
                             return null;
                         break;
                     }
-                case FunctionType.MethodGenerator:
-                case FunctionType.Method:
+                case FunctionKind.MethodGenerator:
+                case FunctionKind.Method:
                     {
                         if (code[i] == '*')
                         {
-                            mode = FunctionType.MethodGenerator;
+                            mode = FunctionKind.MethodGenerator;
                             i++;
                         }
-                        else if (mode == FunctionType.MethodGenerator)
+                        else if (mode == FunctionKind.MethodGenerator)
                             throw new ArgumentException("mode");
                         break;
                     }
-                case FunctionType.Arrow:
+                case FunctionKind.Arrow:
                     {
                         break;
                     }
                 default:
                     throw new NotImplementedException(mode.ToString());
             }
-            var inExp = state.InExpression;
-            state.InExpression = 0;
-            while (Tools.IsWhiteSpace(code[i]))
-                i++;
+
+            Tools.SkipSpaces(state.Code, ref i);
+
             var parameters = new List<ParameterDescriptor>();
+            CodeBlock body = null;
             string name = null;
             bool arrowWithSunglePrm = false;
             int nameStartPos = 0;
-            if (mode != FunctionType.Arrow)
+
+            if (mode != FunctionKind.Arrow)
             {
                 if (code[i] != '(')
                 {
                     nameStartPos = i;
                     if (Parser.ValidateName(code, ref i, false, true, state.strict))
                         name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
-                    else if ((mode == FunctionType.Getter || mode == FunctionType.Setter) && Parser.ValidateString(code, ref i, false))
+                    else if ((mode == FunctionKind.Getter || mode == FunctionKind.Setter) && Parser.ValidateString(code, ref i, false))
                         name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict);
-                    else if ((mode == FunctionType.Getter || mode == FunctionType.Setter) && Parser.ValidateNumber(code, ref i))
+                    else if ((mode == FunctionKind.Getter || mode == FunctionKind.Setter) && Parser.ValidateNumber(code, ref i))
                         name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
                     else
                         ExceptionsHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, i - nameStartPos);
-                    while (Tools.IsWhiteSpace(code[i]))
-                        i++;
+
+                    Tools.SkipSpaces(code, ref i);
+
                     if (code[i] != '(')
                         ExceptionsHelper.ThrowUnknownToken(code, i);
                 }
-                else if (mode == FunctionType.Getter || mode == FunctionType.Setter)
-                    ExceptionsHelper.ThrowSyntaxError("Getters and Setters must have name", code, index);
-                else if (mode == FunctionType.Method || mode == FunctionType.MethodGenerator)
-                    ExceptionsHelper.ThrowSyntaxError("Methods must have name", code, index);
+                else if (mode == FunctionKind.Getter || mode == FunctionKind.Setter)
+                    ExceptionsHelper.ThrowSyntaxError("Getter and Setter must have name", code, index);
+                else if (mode == FunctionKind.Method || mode == FunctionKind.MethodGenerator)
+                    ExceptionsHelper.ThrowSyntaxError("Method must have name", code, index);
             }
             else if (code[i] != '(')
             {
@@ -239,8 +236,8 @@ namespace NiL.JS.Expressions
                 ExceptionsHelper.ThrowSyntaxError("Unexpected char at ", code, i);
             while (code[i] != ')')
             {
-                if (parameters.Count == 255 || (mode == FunctionType.Setter && parameters.Count == 1) || mode == FunctionType.Getter)
-                    ExceptionsHelper.ThrowSyntaxError(string.Format("Too many arguments for function \"{0}\"", name), code, index);
+                if (parameters.Count == 255 || (mode == FunctionKind.Setter && parameters.Count == 1) || mode == FunctionKind.Getter)
+                    ExceptionsHelper.ThrowSyntaxError(string.Format(Strings.TooManyArgumentsForFunction, name), code, index);
 
                 bool rest = Parser.Validate(code, "...", ref i);
 
@@ -248,14 +245,14 @@ namespace NiL.JS.Expressions
                 if (!Parser.ValidateName(code, ref i, state.strict))
                     ExceptionsHelper.ThrowUnknownToken(code, nameStartPos);
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict);
-                var desc = new ParameterReference(pname, rest, state.scopeDepth + 1)
+                var desc = new ParameterReference(pname, rest, state.lexicalScopeLevel + 1)
                 {
                     Position = n,
                     Length = i - n
                 }.Descriptor as ParameterDescriptor;
                 parameters.Add(desc);
-                while (Tools.IsWhiteSpace(code[i]))
-                    i++;
+
+                Tools.SkipSpaces(state.Code, ref i);
                 if (arrowWithSunglePrm)
                 {
                     i--;
@@ -263,8 +260,8 @@ namespace NiL.JS.Expressions
                 }
                 if (code[i] == '=')
                 {
-                    if (mode == FunctionType.Arrow)
-                        ExceptionsHelper.ThrowSyntaxError("Parameters of arrow-function cannot have initializer", code, i);
+                    if (mode == FunctionKind.Arrow)
+                        ExceptionsHelper.ThrowSyntaxError("Parameters of arrow-function cannot have an initializer", code, i);
 
                     if (rest)
                         ExceptionsHelper.ThrowSyntaxError("Rest parameters can not have an initializer", code, i);
@@ -284,39 +281,50 @@ namespace NiL.JS.Expressions
             }
             switch (mode)
             {
-                case FunctionType.Setter:
+                case FunctionKind.Setter:
                     {
                         if (parameters.Count != 1)
                             ExceptionsHelper.ThrowSyntaxError("Setter must have only one argument", code, index);
                         break;
                     }
             }
-            do
-                i++;
-            while (Tools.IsWhiteSpace(code[i]));
-            CodeBlock body = null;
-            if (mode == FunctionType.Arrow)
+
+            i++;
+            Tools.SkipSpaces(code, ref i);
+
+            if (mode == FunctionKind.Arrow)
             {
                 if (!Parser.Validate(code, "=>", ref i))
                     ExceptionsHelper.ThrowSyntaxError("Expected \"=>\"", code, i);
-                while (Tools.IsWhiteSpace(code[i]))
-                    i++;
+                Tools.SkipSpaces(code, ref i);
             }
             if (code[i] != '{')
             {
-                if (mode == FunctionType.Arrow)
-                    body = new CodeBlock(new CodeNode[] { new ReturnStatement(ExpressionTree.Parse(state, ref i) as Expression) });
-                else
-                    ExceptionsHelper.ThrowUnknownToken(code, i);
+                var oldFunctionScopeLevel = state.functionScopeLevel;
+                state.functionScopeLevel = ++state.lexicalScopeLevel;
+                try
+                {
+                    if (mode == FunctionKind.Arrow)
+                        body = new CodeBlock(new CodeNode[] { new ReturnStatement(ExpressionTree.Parse(state, ref i) as Expression) });
+                    else
+                        ExceptionsHelper.ThrowUnknownToken(code, i);
+                }
+                finally
+                {
+                    state.functionScopeLevel = oldFunctionScopeLevel;
+                    state.lexicalScopeLevel--;
+
+                    System.Diagnostics.Debug.Assert(state.lexicalScopeLevel == oldFunctionScopeLevel, "state.lexicalScopeLevel == oldFunctionScopeLevel");
+                }
             }
             else
             {
                 var oldCodeContext = state.CodeContext;
-                if (mode == FunctionType.Generator || mode == FunctionType.MethodGenerator || mode == FunctionType.AnonymousGenerator)
+                if (mode == FunctionKind.Generator || mode == FunctionKind.MethodGenerator || mode == FunctionKind.AnonymousGenerator)
                     state.CodeContext |= CodeContext.InGenerator;
+                state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional);
                 var labels = state.Labels;
                 state.Labels = new List<string>();
-                state.scopeDepth++;
                 state.AllowReturn++;
                 try
                 {
@@ -332,21 +340,20 @@ namespace NiL.JS.Expressions
                     state.AllowContinue.Pop();
                     state.AllowDirectives = false;
                     state.Labels = labels;
-                    state.scopeDepth--;
                     state.AllowReturn--;
                 }
-                if (mode == FunctionType.Function && string.IsNullOrEmpty(name))
-                    mode = FunctionType.AnonymousFunction;
+                if (mode == FunctionKind.Function && string.IsNullOrEmpty(name))
+                    mode = FunctionKind.AnonymousFunction;
             }
-            if (body.strict || (parameters.Count > 0 && parameters[parameters.Count - 1].IsRest) || mode == FunctionType.Arrow)
+            if (body.strict || (parameters.Count > 0 && parameters[parameters.Count - 1].IsRest) || mode == FunctionKind.Arrow)
             {
-                for (var j = parameters.Count; j-- > 1; )
-                    for (var k = j; k-- > 0; )
+                for (var j = parameters.Count; j-- > 1;)
+                    for (var k = j; k-- > 0;)
                         if (parameters[j].Name == parameters[k].Name)
                             ExceptionsHelper.ThrowSyntaxError("Duplicate names of function parameters not allowed in strict mode", code, index);
                 if (name == "arguments" || name == "eval")
-                    ExceptionsHelper.ThrowSyntaxError("Functions name cannot be \"arguments\" or \"eval\" in strict mode at", code, index);
-                for (int j = parameters.Count; j-- > 0; )
+                    ExceptionsHelper.ThrowSyntaxError("Functions name can not be \"arguments\" or \"eval\" in strict mode at", code, index);
+                for (int j = parameters.Count; j-- > 0;)
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
                         ExceptionsHelper.ThrowSyntaxError("Parameters name cannot be \"arguments\" or \"eval\" in strict mode at", code, parameters[j].references[0].Position, parameters[j].references[0].Length);
@@ -356,7 +363,6 @@ namespace NiL.JS.Expressions
             {
                 parameters = parameters.ToArray(),
                 body = body,
-                strict = body.strict,
                 type = mode,
                 Position = index,
                 Length = i - index,
@@ -364,7 +370,56 @@ namespace NiL.JS.Expressions
                 trace = body.directives != null ? body.directives.Contains("debug trace") : false
 #endif
             };
-            if (inExp == 0 && mode == FunctionType.Function)
+            if (!string.IsNullOrEmpty(name))
+            {
+                func.Reference.ScopeLevel = state.lexicalScopeLevel;
+                func.Reference.Position = nameStartPos;
+                func.Reference.Length = name.Length;
+
+                new VariableDescriptor(func.reference, func.reference.ScopeLevel);
+            }
+            if (!string.IsNullOrEmpty(name) || parameters.Count != 0)
+            {
+                var newVariablesCount = body._variables.Length + parameters.Count;
+
+                for (var j = 0; j < body._variables.Length; j++)
+                {
+                    for (var k = 0; k < parameters.Count; k++)
+                    {
+                        if (body._variables[j].name == parameters[k].name)
+                        {
+                            newVariablesCount--;
+                            break;
+                        }
+                    }
+                }
+
+                var newVariables = new VariableDescriptor[newVariablesCount];
+                for (var j = 0; j < parameters.Count; j++)
+                {
+                    newVariables[j] = parameters[parameters.Count - j - 1]; // порядок определяет приоритет
+                    for (var k = 0; k < body._variables.Length; k++)
+                    {
+                        if (body._variables[k].name == parameters[j].name)
+                        {
+                            if (body._variables[k].initializer != null)
+                                newVariables[j] = body._variables[k];
+                            else
+                                body._variables[k].lexicalScope = false;
+                            body._variables[k] = null;
+                            break;
+                        }
+                    }
+                }
+                for (int j = 0, k = parameters.Count; j < body._variables.Length; j++)
+                {
+                    if (body._variables[j] != null)
+                        newVariables[k++] = body._variables[j];
+                }
+
+                body._variables = newVariables;
+            }
+            if ((state.CodeContext & CodeContext.InExpression) == 0 && mode == FunctionKind.Function)
             // Позволяет делать вызов сразу при объявлении функции 
             // (в таком случае функция не добавляется в контекст).
             // Если убрать проверку, то в тех сулчаях,
@@ -377,13 +432,13 @@ namespace NiL.JS.Expressions
             // что не разумно
             {
                 var tindex = i;
-                while (i < code.Length && Tools.IsWhiteSpace(code[i]) && !Tools.isLineTerminator(code[i]))
+                while (i < code.Length && Tools.IsWhiteSpace(code[i]) && !Tools.IsLineTerminator(code[i]))
                     i++;
                 if (i < code.Length && code[i] == '(')
                 {
                     var args = new List<Expression>();
                     i++;
-                    for (; ; )
+                    for (;;)
                     {
                         while (Tools.IsWhiteSpace(code[i]))
                             i++;
@@ -406,12 +461,18 @@ namespace NiL.JS.Expressions
                 else
                     i = tindex;
             }
-            state.InExpression = inExp;
-            if (name != null)
+            if ((state.CodeContext & CodeContext.InExpression) == 0)
             {
-                func.Reference.defineScopeDepth = state.scopeDepth;
-                func.Reference.Position = nameStartPos;
-                func.Reference.Length = name.Length;
+                if (string.IsNullOrEmpty(name))
+                {
+                    ExceptionsHelper.ThrowSyntaxError("Function must have name", state.Code, index);
+                }
+                if (state.strict && state.functionScopeLevel != state.lexicalScopeLevel)
+                {
+                    ExceptionsHelper.ThrowSyntaxError("In strict mode code, functions can only be declared at top level or immediately within other function.", state.Code, index);
+                }
+
+                state.Variables.Add(func.reference._descriptor);
             }
             index = i;
             return func;
@@ -438,7 +499,7 @@ namespace NiL.JS.Expressions
         /// </summary>
         /// <param name="script">Сценарий, контекст которого будет родительским для контекста выполнения функции.</param>
         /// <returns></returns>
-        public Function MakeFunction(Script script)
+        public Function MakeFunction(Module script)
         {
             return MakeFunction(script.Context);
         }
@@ -451,66 +512,49 @@ namespace NiL.JS.Expressions
         public Function MakeFunction(Context context)
         {
 #if !PORTABLE
-            if (type == FunctionType.Generator || type == FunctionType.MethodGenerator || type == FunctionType.AnonymousGenerator)
+            if (type == FunctionKind.Generator || type == FunctionKind.MethodGenerator || type == FunctionKind.AnonymousGenerator)
                 return new GeneratorFunction(new Function(context, this));
 #endif
             return new Function(context, this);
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (body.builded)
                 return false;
             if (stats != null)
-                stats.ContainsInnerFunction = true;
+                stats.ContainsInnerEntities = true;
             _codeContext = codeContext;
 
             if ((codeContext & CodeContext.InLoop) != 0 && message != null)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), Strings.FunctionInLoop);
 
-            var bodyCode = body as CodeNode;
-            var nvars = new Dictionary<string, VariableDescriptor>();
-            for (var i = 0; i < parameters.Length; i++)
+            /*
+                Если переменная за время построения функции получит хоть одну ссылку плюсом, 
+                значит её следует пометить захваченной. Для этого необходимо запомнить количество
+                ссылок для всех пеменных
+            */
+            var referenceRegister = new Dictionary<string, int>();
+            foreach (var variable in variables)
             {
-                nvars[parameters[i].name] = parameters[i];
-                parameters[i].owner = this;
-                parameters[i].isDefined = true;
+                referenceRegister[variable.Key] = variable.Value.references.Count;
+            }
 
-                if (parameters[i].initializer != null)
-                {
-                    CodeNode initializer = parameters[i].initializer;
-                    parameters[i].initializer.Build(ref initializer, expressionDepth, scopeVariables, variables, codeContext, message, _stats, opts);
-                    parameters[i].initializer = (Expression)initializer;
-                }
-            }
-            _stats.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
-            bodyCode.Build(ref bodyCode, 0, scopeVariables, nvars, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval), message, _stats, opts);
-            if (type == FunctionType.Function && !string.IsNullOrEmpty(name))
+            VariableDescriptor descriptorToRestore = null;
+            if (!string.IsNullOrEmpty(name))
             {
-                VariableDescriptor fdesc = null;
-                if (Reference.descriptor == null)
-                    Reference.descriptor = new VariableDescriptor(Reference, true, Reference.defineScopeDepth);
-                if (System.Array.FindIndex(parameters, x => x.Name == Reference.descriptor.name) == -1)
-                {
-                    if (nvars.TryGetValue(name, out fdesc) && !fdesc.IsDefined)
-                    {
-                        foreach (var r in fdesc.references)
-                            r.descriptor = Reference.Descriptor;
-                        Reference.descriptor.references.AddRange(fdesc.references);
-                        for (var i = body.variables.Length; i-- > 0; )
-                        {
-                            if (body.variables[i] == fdesc)
-                            {
-                                body.variables[i] = Reference.Descriptor;
-                                break;
-                            }
-                        }
-                    }
-                }
+                if (variables.TryGetValue(name, out descriptorToRestore) && descriptorToRestore == reference._descriptor)
+                    descriptorToRestore = null;
+                else
+                    variables[name] = reference._descriptor;
             }
+
+            var bodyCode = body as CodeNode;
+            _functionInfo.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
+            bodyCode.Build(ref bodyCode, 0, variables, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval), message, _functionInfo, opts);
             if (message != null)
             {
-                for (var i = parameters.Length; i-- > 0; )
+                for (var i = parameters.Length; i-- > 0;)
                 {
                     if (parameters[i].ReferenceCount == 1)
                         message(MessageLevel.Recomendation, new CodeCoordinates(0, parameters[i].references[0].Position, 0), "Unused variable \"" + parameters[i].name + "\"");
@@ -519,79 +563,58 @@ namespace NiL.JS.Expressions
                 }
             }
             body = bodyCode as CodeBlock;
-            if (body.variables != null)
-            {
-                for (var i = body.variables.Length; i-- > 0; )
-                {
-                    if (!body.variables[i].IsDefined
-                        && (type == FunctionType.Arrow
-                            || (body.variables[i].name != "this"
-                                && body.variables[i].name != "arguments")))
-                    // все необъявленные переменные нужно прокинуть наружу для того,
-                    // чтобы во всех местах их использования был один дескриптор и один кеш
-                    {
-                        VariableDescriptor desc = null;
-                        if (variables.TryGetValue(body.variables[i].name, out desc))
-                        {
-                            desc.captured = true;
-                            foreach (var r in body.variables[i].References)
-                            {
-                                desc.references.Add(r);
-                                r.descriptor = desc;
-                            }
-                            if (body.variables[i].assignations != null)
-                                if (desc.assignations == null)
-                                    desc.assignations = body.variables[i].assignations;
-                                else
-                                    desc.assignations.AddRange(body.variables[i].assignations);
-                            body.variables[i] = desc;
-                        }
-                        else
-                        {
-                            body.variables[i].captured = true;
-                            variables.Add(body.variables[i].name, body.variables[i]);
-                        }
-                    }
-                }
-            }
+            body.suppressScopeIsolation = true;
             checkUsings();
             if (stats != null)
             {
-                stats.ContainsDebugger |= this._stats.ContainsDebugger;
-                stats.ContainsEval |= this._stats.ContainsEval;
-                stats.ContainsInnerFunction = true;
-                stats.ContainsTry |= this._stats.ContainsTry;
-                stats.ContainsWith |= this._stats.ContainsWith;
-                stats.ContainsYield |= this._stats.ContainsYield;
-                stats.UseCall |= this._stats.UseCall;
-                stats.UseGetMember |= this._stats.UseGetMember;
-                stats.UseThis |= this._stats.UseThis;
+                stats.ContainsDebugger |= this._functionInfo.ContainsDebugger;
+                stats.ContainsEval |= this._functionInfo.ContainsEval;
+                stats.ContainsInnerEntities = true;
+                stats.ContainsTry |= this._functionInfo.ContainsTry;
+                stats.ContainsWith |= this._functionInfo.ContainsWith;
+                stats.ContainsYield |= this._functionInfo.ContainsYield;
+                stats.UseCall |= this._functionInfo.UseCall;
+                stats.UseGetMember |= this._functionInfo.UseGetMember;
+                stats.ContainsThis |= this._functionInfo.ContainsThis;
             }
+
+            if (descriptorToRestore != null)
+            {
+                variables[descriptorToRestore.name] = descriptorToRestore;
+            }
+
+            foreach (var variable in variables)
+            {
+                int count = 0;
+                if (!referenceRegister.TryGetValue(variable.Key, out count) || count != variable.Value.references.Count)
+                    variable.Value.captured = true;
+            }
+
             return false;
         }
 
-        internal protected override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionStatistics stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             var bd = body as CodeNode;
-            body.Optimize(ref bd, this, message, opts, this._stats);
-            if (this._stats.Returns.Count > 0)
+            body.Optimize(ref bd, this, message, opts, this._functionInfo);
+            if (this._functionInfo.Returns.Count > 0)
             {
-                this._stats.ResultType = this._stats.Returns[0].ResultType;
-                for (var i = 1; i < this._stats.Returns.Count; i++)
+                this._functionInfo.ResultType = this._functionInfo.Returns[0].ResultType;
+                for (var i = 1; i < this._functionInfo.Returns.Count; i++)
                 {
-                    if (this._stats.ResultType != this._stats.Returns[i].ResultType)
+                    if (this._functionInfo.ResultType != this._functionInfo.Returns[i].ResultType)
                     {
-                        this._stats.ResultType = PredictedType.Ambiguous;
+                        this._functionInfo.ResultType = PredictedType.Ambiguous;
                         if (message != null
-                            && this._stats.ResultType >= PredictedType.Undefined
-                            && this._stats.Returns[i].ResultType >= PredictedType.Undefined)
+                            && this._functionInfo.ResultType >= PredictedType.Undefined
+                            && this._functionInfo.Returns[i].ResultType >= PredictedType.Undefined)
                             message(MessageLevel.Warning, new CodeCoordinates(0, parameters[i].references[0].Position, 0), "Type of return value is ambiguous");
                         break;
                     }
                 }
             }
             else
-                this._stats.ResultType = PredictedType.Undefined;            
+                this._functionInfo.ResultType = PredictedType.Undefined;
         }
 
         private void checkUsings()
@@ -600,20 +623,18 @@ namespace NiL.JS.Expressions
                 || body.lines == null
                 || body.lines.Length == 0)
                 return;
-            var containsFunctions = _stats.ContainsInnerFunction;
-            if (!containsFunctions)
+            var containsEntities = _functionInfo.ContainsInnerEntities;
+            if (!containsEntities)
             {
-                for (var i = 0; !containsFunctions && i < body.localVariables.Length; i++)
-                    containsFunctions |= body.localVariables[i].initializer != null;
-                _stats.ContainsInnerFunction = containsFunctions;
+                for (var i = 0; !containsEntities && i < body._variables.Length; i++)
+                    containsEntities |= body._variables[i].initializer != null;
+                _functionInfo.ContainsInnerEntities = containsEntities;
             }
-            if (body.variables != null)
+            if (body._variables != null)
             {
-                for (var i = 0; i < body.variables.Length; i++)
+                for (var i = 0; i < body._variables.Length; i++)
                 {
-                    _stats.IsRecursive |= body.variables[i].name == name;
-                    body.variables[i].captured |= _stats.ContainsEval;
-                    _stats.ContainsArguments |= body.variables[i].name == "arguments";
+                    _functionInfo.ContainsArguments |= body._variables[i].name == "arguments";
                 }
             }
         }
@@ -629,11 +650,21 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
             CodeNode cn = body;
             cn.Decompose(ref cn);
             body = (CodeBlock)cn;
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            base.RebuildScope(functionInfo, null, scopeBias);
+
+            var tv = _functionInfo.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
+            body.RebuildScope(_functionInfo, tv, scopeBias + (body._variables.Length == 0 || !_functionInfo.WithLexicalEnvironment ? 1 : 0));
+            if (tv != null)
+                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
         }
 
         public override string ToString()
@@ -641,22 +672,22 @@ namespace NiL.JS.Expressions
             string res;
             switch (type)
             {
-                case FunctionType.Generator:
+                case FunctionKind.Generator:
                     {
                         res = "functions* ";
                         break;
                     }
-                case FunctionType.Method:
+                case FunctionKind.Method:
                     {
                         res = "";
                         break;
                     }
-                case FunctionType.Getter:
+                case FunctionKind.Getter:
                     {
                         res = "get ";
                         break;
                     }
-                case FunctionType.Setter:
+                case FunctionKind.Setter:
                     {
                         res = "set ";
                         break;
@@ -669,7 +700,7 @@ namespace NiL.JS.Expressions
             }
             res += name + "(";
             if (parameters != null)
-                for (int i = 0; i < parameters.Length; )
+                for (int i = 0; i < parameters.Length;)
                     res += parameters[i] + (++i < parameters.Length ? "," : "");
             res += ")" + ((object)body ?? "{ [native code] }").ToString();
             return res;

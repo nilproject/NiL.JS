@@ -18,12 +18,12 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public override FunctionType Type
+        public override FunctionKind Type
         {
             [Hidden]
             get
             {
-                return FunctionType.Function;
+                return FunctionKind.Function;
             }
         }
         [Field]
@@ -50,13 +50,13 @@ namespace NiL.JS.Core.Functions
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        internal override JSValue InternalInvoke(JSValue targetObject, Expression[] arguments, Context initiator, bool withSpread, bool construct)
+        internal override JSValue InternalInvoke(JSValue targetObject, Expression[] arguments, Context initiator, Function newTarget, bool withSpread, bool construct)
         {
             if (construct)
                 ExceptionsHelper.ThrowTypeError("eval can not be called as constructor");
 
             if ((this.attributes & JSValueAttributesInternal.Eval) == 0)
-                return base.InternalInvoke(targetObject, arguments, initiator, withSpread, construct);
+                return base.InternalInvoke(targetObject, arguments, initiator, newTarget, withSpread, construct);
 
             this.attributes &= ~JSValueAttributesInternal.Eval;
 
@@ -80,7 +80,7 @@ namespace NiL.JS.Core.Functions
             return initiator.Eval(arg.oValue.ToString(), false);
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
             if (arguments == null)
                 return NotExists;

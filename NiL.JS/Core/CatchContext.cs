@@ -23,10 +23,9 @@ namespace NiL.JS.Core
             strict = proto.strict;
             tempContainer = proto.tempContainer;
             fields = proto.fields;
-            variables = proto.variables;
         }
 
-        public override JSValue DefineVariable(string name)
+        public override JSValue DefineVariable(string name, bool deletable)
         {
             return prototype.DefineVariable(name);
         }

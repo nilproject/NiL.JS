@@ -11,15 +11,15 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class StringConcatenationExpression : Expression
     {
-        internal IList<Expression> sources;
+        internal IList<Expression> _parts;
 
         protected internal override bool ContextIndependent
         {
             get
             {
-                for (var i = 0; i < sources.Count; i++)
+                for (var i = 0; i < _parts.Count; i++)
                 {
-                    if (!sources[i].ContextIndependent)
+                    if (!_parts[i].ContextIndependent)
                         return false;
                 }
                 return true;
@@ -30,9 +30,9 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                for (var i = 0; i < sources.Count; i++)
+                for (var i = 0; i < _parts.Count; i++)
                 {
-                    if (sources[i].NeedDecompose)
+                    if (_parts[i].NeedDecompose)
                         return true;
                 }
                 return false;
@@ -57,7 +57,7 @@ namespace NiL.JS.Expressions
         {
             if (sources.Count < 2)
                 throw new ArgumentException("sources too short");
-            this.sources = sources;
+            this._parts = sources;
         }
 
         private static object prep(JSValue x)
@@ -79,19 +79,19 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            object res = prep(sources[0].Evaluate(context));
-            for (var i = 1; i < sources.Count; i++)
-                res = new RopeString(res, prep(sources[i].Evaluate(context)));
+            object res = prep(_parts[0].Evaluate(context));
+            for (var i = 1; i < _parts.Count; i++)
+                res = new RopeString(res, prep(_parts[i].Evaluate(context)));
             tempContainer.valueType = JSValueType.String;
             tempContainer.oValue = res;
             return tempContainer;
         }
 
-        internal protected override bool Build(ref CodeNode _this, int expressionDepth, List<string> scopeVariables, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionStatistics stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            var res = base.Build(ref _this, expressionDepth, scopeVariables, variables, codeContext, message, stats, opts);
+            var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (!res)
-                second = sources[sources.Count - 1];
+                second = _parts[_parts.Count - 1];
             return res;
         }
 
@@ -100,15 +100,15 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
             var lastDecomposeIndex = -1;
-            for (var i = 0; i < sources.Count; i++)
+            for (var i = 0; i < _parts.Count; i++)
             {
-                Expression s = sources[i];
-                sources[i].Decompose(ref s, result);
-                sources[i] = s;
-                if (sources[i].NeedDecompose)
+                Expression s = _parts[i];
+                _parts[i].Decompose(ref s, result);
+                _parts[i] = s;
+                if (_parts[i].NeedDecompose)
                 {
                     lastDecomposeIndex = i;
                 }
@@ -116,19 +116,27 @@ namespace NiL.JS.Expressions
 
             for (var i = 0; i < lastDecomposeIndex; i++)
             {
-                if (!(sources[i] is ExtractStoredValueExpression))
+                if (!(_parts[i] is ExtractStoredValueExpression))
                 {
-                    result.Add(new StoreValueStatement(sources[i], false));
-                    sources[i] = new ExtractStoredValueExpression(sources[i]);
+                    result.Add(new StoreValueStatement(_parts[i], false));
+                    _parts[i] = new ExtractStoredValueExpression(_parts[i]);
                 }
             }
         }
 
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            base.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
+            for (var i = 0; i < _parts.Count; i++)
+                _parts[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
+        }
+
         public override string ToString()
         {
-            StringBuilder res = new StringBuilder("(", sources.Count * 10).Append(sources[0]);
-            for (var i = 1; i < sources.Count; i++)
-                res.Append(" + ").Append(sources[i]);
+            StringBuilder res = new StringBuilder("(", _parts.Count * 10).Append(_parts[0]);
+            for (var i = 1; i < _parts.Count; i++)
+                res.Append(" + ").Append(_parts[i]);
             return res.Append(")").ToString();
         }
     }

@@ -58,7 +58,7 @@ namespace NiL.JS.Expressions
             return tempContainer;
         }
 
-        protected internal override void Decompose(ref Expression self, IList<CodeNode> result)
+        public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
             throw new InvalidOperationException();
         }

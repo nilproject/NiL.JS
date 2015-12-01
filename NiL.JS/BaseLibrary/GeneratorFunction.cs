@@ -26,8 +26,11 @@ namespace NiL.JS.BaseLibrary
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
+            if (construct)
+                ExceptionsHelper.ThrowTypeError("Generators cannot be invoked as a constructor");
+
             return TypeProxy.Marshal(new GeneratorIterator(generator, targetObject, arguments));
         }
 
@@ -101,6 +104,7 @@ namespace NiL.JS.BaseLibrary
         private void initContext()
         {
             generatorContext = new Context(initialContext, true, generator);
+            generatorContext.variables = generator.creator.body._variables;
             generator.initParameters(initialArgs, generatorContext);
             generator.initContext(targetObject, initialArgs, true, generatorContext);
         }

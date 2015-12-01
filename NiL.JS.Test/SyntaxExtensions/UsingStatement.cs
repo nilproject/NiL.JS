@@ -26,7 +26,7 @@ namespace NiL.JS.Test.SyntaxExtensions
             return Parser.Validate(code, "using", position);
         }
 
-        public static CodeNode Parse(ParsingState state, ref int position)
+        public static CodeNode Parse(ParseInfo state, ref int position)
         {
             if (!Parser.Validate(state.Code, "using", ref position))
                 return null;
@@ -81,9 +81,14 @@ namespace NiL.JS.Test.SyntaxExtensions
             return null;
         }
 
-        protected override void Decompose(ref CodeNode self)
+        public override void Decompose(ref CodeNode self)
         {
-            
+
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> newVariables, int scopeBias)
+        {
+
         }
     }
 }

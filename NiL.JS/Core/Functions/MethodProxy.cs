@@ -364,7 +364,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        internal override JSValue InternalInvoke(JSValue targetObject, Expressions.Expression[] arguments, NiL.JS.Core.Context initiator, bool withSpread, bool withNew)
+        internal override JSValue InternalInvoke(JSValue targetObject, Expressions.Expression[] arguments, Context initiator, Function newTarget, bool withSpread, bool withNew)
         {
             if (withNew)
             {
@@ -381,11 +381,11 @@ namespace NiL.JS.Core.Functions
                 }
             }
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
-                return Invoke(withNew, correctTargetObject(targetObject, creator.body.strict), null);
+                return Invoke(withNew, correctTargetObject(targetObject, creator.body.strict), null, newTarget);
 
             if (raw || withSpread)
             {
-                return base.InternalInvoke(targetObject, arguments, initiator, true, withNew);
+                return base.InternalInvoke(targetObject, arguments, initiator, newTarget, true, withNew);
             }
             else
             {
@@ -536,7 +536,7 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-        protected internal override JSValue Invoke(bool construct, NiL.JS.Core.JSValue targetObject, NiL.JS.Core.Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
             return Interop.TypeProxy.Marshal(InvokeImpl(targetObject, null, arguments));
         }

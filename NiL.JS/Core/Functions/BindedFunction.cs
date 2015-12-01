@@ -83,7 +83,7 @@ namespace NiL.JS.Core.Functions
             RequireNewKeywordLevel = proto.RequireNewKeywordLevel;
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
             if (bindedArguments != null)
             {
@@ -96,7 +96,7 @@ namespace NiL.JS.Core.Functions
                     arguments[i] = bindedArguments[i];
             }
             if ((construct || _thisBind == null || _thisBind.IsNull || !_thisBind.Defined) && (targetObject != null && targetObject.Defined))
-                return proto.Invoke(construct, targetObject, arguments);
+                return proto.Invoke(construct, targetObject, arguments, newTarget);
             return proto.Call(_thisBind, arguments);
         }
 

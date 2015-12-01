@@ -57,7 +57,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 1
+            int mode = 2
                     ;
             switch (mode)
             {
@@ -341,7 +341,7 @@ ast.print_to_string();");
             string code;
             bool negative = false;
             string staCode = "";
-            Script s = null;
+            Module s = null;
             _("Sputnik testing begun...");
             _("Load sta.js...");
             using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
@@ -373,7 +373,7 @@ ast.print_to_string();");
                     if (refresh || s == null)
                     {
                         Context.RefreshGlobalContext();
-                        s = new Script(staCode);// инициализация
+                        s = new Module(staCode);// инициализация
                         s.Invoke();
                         econtext = s.Context;
                     }
@@ -442,7 +442,7 @@ ast.print_to_string();");
             string code;
             string preCode = "";
             string postCode = "";
-            Script s = null;
+            Module s = null;
             _("webkit testing begun...");
             _("Load standalone-pre.js...");
             using (var staFile = new FileStream(folderPath + "resources\\standalone-pre.js", FileMode.Open, FileAccess.Read))
@@ -478,7 +478,7 @@ ast.print_to_string();");
                     if (refresh || s == null)
                     {
                         Context.RefreshGlobalContext();
-                        s = new Script(preCode);
+                        s = new Module(preCode);
                         s.Invoke();
                         econtext = s.Context;
                         s.Context.DefineVariable("print").Assign(new ExternalFunction((t, e) =>
@@ -534,14 +534,14 @@ ast.print_to_string();");
 
         private static void benchmark()
         {
-            Script s = null;
+            Module s = null;
             var sw = new Stopwatch();
             int @case = 0;
             switch (@case)
             {
                 case 0:
                     {
-                        s = new Script(
+                        s = new Module(
             @"
 function fib(x)
 {
@@ -555,7 +555,7 @@ for (var i = 0; i < 700; i++) fib(20);
                     }
                 case 1:
                     {
-                        s = new Script(
+                        s = new Module(
             @"
 for (var i = 0; i < 24000000; i++) Math.abs(i);
 ");
@@ -563,7 +563,7 @@ for (var i = 0; i < 24000000; i++) Math.abs(i);
                     }
                 case 2:
                     {
-                        s = new Script(
+                        s = new Module(
             @"
 function abs(x)
 {
@@ -600,7 +600,7 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
              * и блуждания по AST. Но нет, результат, всё равно, медленнее.
              */
             var sw = new Stopwatch();
-            var s = new Script(
+            var s = new Module(
 @"
 function isum(a, b)
 {    
@@ -640,7 +640,7 @@ for (var i = 0; i < 10000000; )
             var sr = new StreamReader(f);
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
-            var s = new Script(sr.ReadToEnd(), (level, coords, message) =>
+            var s = new Module(sr.ReadToEnd(), (level, coords, message) =>
             {
                 switch (level)
                 {
@@ -818,7 +818,7 @@ for (var i = 0; i < 10000000; )
             var sr = new StreamReader(f);
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
-            var s = new Script(sr.ReadToEnd());
+            var s = new Module(sr.ReadToEnd());
             sr.Dispose();
             f.Dispose();
             sw.Stop();
@@ -843,7 +843,7 @@ for (var i = 0; i < 10000000; )
             var sr = new StreamReader(f);
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
-            var s = new Script(staCode);
+            var s = new Module(staCode);
             sw.Stop();
             Console.WriteLine("Compile time: " + sw.Elapsed);
             sw.Restart();
@@ -886,7 +886,7 @@ for (var i = 0; i < 10000000; )
                     f.Dispose();
 
                     sw.Restart();
-                    new Script(script).Invoke();
+                    new Module(script).Invoke();
                     sw.Stop();
                     total += sw.Elapsed;
                     _(sw.Elapsed.ToString());
@@ -931,7 +931,7 @@ for (var i = 0; i < 10000000; )
                         body = sr.ReadToEnd();
 
                     sw.Restart();
-                    var script = new Script(data);
+                    var script = new Module(data);
                     script.Context.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
                     {
                         for (var j = 0; j < a.Length; j++)

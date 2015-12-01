@@ -23,7 +23,7 @@ namespace NiL.JS.Test.SyntaxExtensions
             return Parser.Validate(code, "keysof", position);
         }
 
-        public static CodeNode Parse(ParsingState state, ref int position)
+        public static CodeNode Parse(ParseInfo state, ref int position)
         {
             if (!Parser.Validate(state.Code, "keysof", ref position))
                 return null;
