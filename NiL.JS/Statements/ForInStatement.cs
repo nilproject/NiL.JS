@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
                         do
                             i++;
                         while (Tools.IsWhiteSpace(state.Code[i]));
-                        var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
+                        var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, true);
                         if (defVal == null)
                             return defVal;
                         Expression exp = new AssignmentOperatorCache(result._variable as GetVariableExpression ?? (result._variable as VariableDefinitionStatement).initializers[0] as GetVariableExpression);

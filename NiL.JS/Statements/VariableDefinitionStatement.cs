@@ -62,11 +62,12 @@ namespace NiL.JS.Statements
             var level = mode == 0 ? state.functionScopeLevel : state.lexicalScopeLevel;
             var initializers = new List<Expression>();
             var names = new List<string>();
+            int s = position;
             while ((state.Code[position] != ';') && (state.Code[position] != '}') && !Tools.IsLineTerminator(state.Code[position]))
             {
                 Tools.SkipSpaces(state.Code, ref position);
 
-                int s = position;
+                s = position;
                 if (!Parser.ValidateName(state.Code, ref position, state.strict))
                 {
                     if (Parser.ValidateName(state.Code, ref position, false, true, state.strict))
@@ -83,10 +84,17 @@ namespace NiL.JS.Statements
                 names.Add(name);
 
                 position = s;
-                var expression = ExpressionTree.Parse(state, ref position, processComma: false, forEnumeration: forForLoop);
+                var expression = ExpressionTree.Parse(state, ref position, processComma: false, forForLoop: forForLoop);
 
-                if (!(expression is VariableReference) && (expression.first as ExpressionTree)?.Type != OperationType.Assignment)
-                    ExceptionsHelper.ThrowSyntaxError("Invalid variable initializer", state.Code, position);
+                if (!(expression is VariableReference))
+                {
+                    var et = expression as ExpressionTree;
+                    if (et != null && et.Type == OperationType.None && et.second == null)
+                        et = et.first as ExpressionTree;
+
+                    if (et == null || et.Type != OperationType.Assignment)
+                        ExceptionsHelper.ThrowSyntaxError("Invalid variable initializer", state.Code, position);
+                }
 
                 initializers.Add(expression);
 
@@ -94,12 +102,6 @@ namespace NiL.JS.Statements
                     break;
 
                 s = position;
-                if ((state.Code[position] != ',')
-                    && (state.Code[position] != ';')
-                    && (state.Code[position] != '}')
-                    && (!forForLoop || (!Parser.Validate(state.Code, "in", position) && !Parser.Validate(state.Code, "of", position)))
-                    && (!Tools.IsLineTerminator(state.Code[position])))
-                    ExceptionsHelper.Throw(new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
 
                 Tools.SkipSpaces(state.Code, ref s);
                 if (s >= state.Code.Length)
@@ -115,6 +117,11 @@ namespace NiL.JS.Statements
 
             if (names.Count == 0)
                 throw new ApplicationException("code (" + position + ")");
+            
+            if (!forForLoop && position < state.Code.Length && state.Code[position] == ';')
+                position++;
+            else
+                position = s;
 
             var variables = new VariableDescriptor[names.Count];
             for (int i = 0, skiped = 0; i < names.Count; i++)

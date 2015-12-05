@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
     {
         None = OperationTypeGroups.None + 0,
         Assignment = OperationTypeGroups.Assign + 0,
-        Ternary = OperationTypeGroups.Choice + 0,
+        Conditional = OperationTypeGroups.Choice + 0,
 
         LogicalOr = OperationTypeGroups.LOr,
         LogicalAnd = OperationTypeGroups.LAnd,
@@ -92,7 +92,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class ExpressionTree : Expression
     {
-        private OperationType _operationType;
+        private OperationType _operationKind;
 
         internal override bool ResultInTempContainer
         {
@@ -103,13 +103,13 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return _operationType;
+                return _operationKind;
             }
         }
 
         private Expression getFastImpl()
         {
-            switch (_operationType)
+            switch (_operationKind)
             {
                 case OperationType.Multiply:
                     {
@@ -223,10 +223,10 @@ namespace NiL.JS.Expressions
                     {
                         return new BitwiseConjunctionOperator(first, second);
                     }
-                case OperationType.Ternary:
+                case OperationType.Conditional:
                     {
                         while ((second is ExpressionTree)
-                            && (second as ExpressionTree)._operationType == OperationType.None
+                            && (second as ExpressionTree)._operationKind == OperationType.None
                             && (second as ExpressionTree).second == null)
                             second = (second as ExpressionTree).first;
                         return new ConditionalOperator(first, (Expression[])second.Evaluate(null).oValue);
@@ -272,10 +272,10 @@ namespace NiL.JS.Expressions
                 stats.Push(cur.first);
                 for (; types.Count > 0;)
                 {
-                    var topType = (int)(types.Peek() as ExpressionTree)._operationType;
-                    if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._operationType & (int)OperationTypeGroups.Special))
-                        || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._operationType & (int)OperationTypeGroups.Special))
-                            && (((int)cur._operationType & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)))
+                    var topType = (int)(types.Peek() as ExpressionTree)._operationKind;
+                    if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._operationKind & (int)OperationTypeGroups.Special))
+                        || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._operationKind & (int)OperationTypeGroups.Special))
+                            && (((int)cur._operationKind & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)))
                     {
                         var stat = types.Pop() as ExpressionTree;
                         stat.second = stats.Pop();
@@ -306,355 +306,38 @@ namespace NiL.JS.Expressions
 
         public static CodeNode Parse(ParseInfo state, ref int index)
         {
-            return Parse(state, ref index, false, true, false, true, false, false);
+            return Parse(state, ref index, false, true, false, true, false);
         }
 
         public static Expression Parse(ParseInfo state, ref int index, bool forUnaryOperator)
         {
-            return Parse(state, ref index, forUnaryOperator, true, false, true, false, false);
+            return Parse(state, ref index, forUnaryOperator, true, false, true, false);
         }
 
-        internal static Expression Parse(ParseInfo state, ref int index, bool forUnary = false, bool processComma = true, bool forNew = false, bool root = true, bool forTernary = false, bool forEnumeration = false)
+        internal static Expression Parse(ParseInfo state, ref int index, bool forUnary = false, bool processComma = true, bool forNew = false, bool root = true, bool forForLoop = false)
         {
             int i = index;
-            int position;
-            OperationType type = OperationType.None;
-            Expression first = null;
-            Expression second = null;
-            int s = i;
 
-            if (Parser.Validate(state.Code, "this", ref i)
-                || Parser.Validate(state.Code, "super", ref i)
-                || Parser.Validate(state.Code, "new.target", ref i))
-            {
-                var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
-                switch (name)
-                {
-                    case "super":
-                        {
-                            /*
-                             * Это ключевое слово. Не переменная.
-                             * Оно может быть использовано только для получения свойств
-                             * или вызова конструктора. При том, вызов конструктора допускается 
-                             * только внутри конструктора класса-потомка.
-                             */
-
-                            while (Tools.IsWhiteSpace(state.Code[i]))
-                                i++;
-
-                            if ((state.CodeContext & CodeContext.InClassDefenition) == 0
-                                || (state.Code[i] != '.' // получение свойства
-                                    && state.Code[i] != '['
-                                    && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0))) // вызов конструктора
-                                ExceptionsHelper.ThrowSyntaxError("super keyword unexpected in this coontext", state.Code, i);
-
-                            first = new GetSuper();
-                            break;
-                        }
-                    case "new.target":
-                        {
-                            first = new GetNewTarget();
-                            break;
-                        }
-                    case "this":
-                        {
-                            first = new GetThis();
-                            break;
-                        }
-                    default:
-                        {
-                            first = new GetVariableExpression(name, state.lexicalScopeLevel);
-                            break;
-                        }
-                }
-            }
-            else
-            {
-                var oldCodeContext = state.CodeContext;
-                state.CodeContext |= CodeContext.InExpression;
-                try
-                {
-                    if (forTernary)
-                    {
-                        position = i;
-                        var threads = new[]
-                            {
-                                Parse(state, ref i, false, true, false, true, false, false),
-                                null
-                            };
-
-                        if (state.Code[i] != ':')
-                            ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
-                        do
-                            i++;
-                        while (Tools.IsWhiteSpace(state.Code[i]));
-                        first = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
-                        threads[1] = Parse(state, ref i, false, false, false, true, false, forEnumeration);
-                        first.Length = i - first.Position;
-                    }
-                    else
-                        first = (Expression)Parser.Parse(state, ref i, (CodeFragmentType)2, false);
-                }
-                finally
-                {
-                    state.CodeContext = oldCodeContext;
-                }
-            }
-
+            var first = parseOperand(state, ref i, forNew, forForLoop);
             if (first == null)
-            {
-                if (Parser.ValidateName(state.Code, ref i, state.strict))
-                {
-                    var name = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
-                    if (name == "undefined")
-                    {
-                        first = new ConstantDefinition(JSValue.undefined);
-                    }
-                    else
-                    {
-                        first = new GetVariableExpression(name, state.lexicalScopeLevel);
-                    }
-                }
-                else if (Parser.ValidateValue(state.Code, ref i))
-                {
-                    string value = state.Code.Substring(s, i - s);
-                    if ((value[0] == '\'') || (value[0] == '"'))
-                    {
-                        value = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict);
-                        if (state.stringConstants.ContainsKey(value))
-                            first = new ConstantDefinition(state.stringConstants[value]) { Position = index, Length = i - s };
-                        else
-                            first = new ConstantDefinition(state.stringConstants[value] = value) { Position = index, Length = i - s };
-                    }
-                    else
-                    {
-                        bool b = false;
-                        if (value == "null")
-                            first = new ConstantDefinition(JSValue.@null) { Position = s, Length = i - s };
-                        else if (bool.TryParse(value, out b))
-                            first = new ConstantDefinition(b ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False) { Position = index, Length = i - s };
-                        else
-                        {
-                            int n = 0;
-                            double d = 0;
-                            if (Tools.ParseNumber(state.Code, ref s, out d, 0, Tools.ParseNumberOptions.Default | (state.strict ? Tools.ParseNumberOptions.RaiseIfOctal : Tools.ParseNumberOptions.None)))
-                            {
-                                if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
-                                {
-                                    if (state.intConstants.ContainsKey(n))
-                                        first = new ConstantDefinition(state.intConstants[n]) { Position = index, Length = i - index };
-                                    else
-                                        first = new ConstantDefinition(state.intConstants[n] = n) { Position = index, Length = i - index };
-                                }
-                                else
-                                {
-                                    if (state.doubleConstants.ContainsKey(d))
-                                        first = new ConstantDefinition(state.doubleConstants[d]) { Position = index, Length = i - index };
-                                    else
-                                        first = new ConstantDefinition(state.doubleConstants[d] = d) { Position = index, Length = i - index };
-                                }
-                            }
-                            else if (Parser.ValidateRegex(state.Code, ref s, true))
-                                throw new ApplicationException("This case was moved");
-                            else
-                                throw new ArgumentException("Unable to process value (" + value + ")");
-                        }
-                    }
-                }
-                else if ((state.Code[i] == '!')
-                    || (state.Code[i] == '~')
-                    || (state.Code[i] == '+')
-                    || (state.Code[i] == '-')
-                    || Parser.Validate(state.Code, "delete", i)
-                    || Parser.Validate(state.Code, "typeof", i)
-                    || Parser.Validate(state.Code, "void", i))
-                {
-                    switch (state.Code[i])
-                    {
-                        case '+':
-                            {
-                                i++;
-                                if (state.Code[i] == '+')
-                                {
-                                    do
-                                        i++;
-                                    while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
-                                    if (i >= state.Code.Length)
-                                        ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
+                return null;
 
-                                    first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
+            var res = parseContinuation(state, first, index, ref i, ref root, forUnary, processComma, forNew, forForLoop);
 
-                                    if (((first as GetPropertyOperator) as object ?? (first as GetVariableExpression)) == null)
-                                    {
-                                        ExceptionsHelper.ThrowSyntaxError("Invalid prefix operation. ", state.Code, i);
-                                    }
+            if (root)
+                res = deicstra(res as ExpressionTree) ?? res;
 
-                                    if (state.strict
-                                        && (first is GetVariableExpression)
-                                        && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
-                                    {
-                                        ExceptionsHelper.ThrowSyntaxError("Can not incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode.", state.Code, i);
-                                    }
+            if (!forForLoop && processComma && !forUnary && i < state.Code.Length && state.Code[i] == ';')
+                i++;
 
-                                    first = new IncrementOperator(first, IncrimentType.Preincriment);
-                                }
-                                else
-                                {
-                                    while (Tools.IsWhiteSpace(state.Code[i]))
-                                        i++;
-                                    var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
-                                    first = new ToNumberOperator(f);
-                                }
-                                break;
-                            }
-                        case '-':
-                            {
-                                i++;
-                                if (state.Code[i] == '-')
-                                {
-                                    do
-                                        i++;
-                                    while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
-                                    if (i >= state.Code.Length)
-                                        ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
+            index = i;
+            return res;
+        }
 
-                                    first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
-
-                                    if (((first as GetPropertyOperator) as object ?? (first as GetVariableExpression)) == null)
-                                    {
-                                        ExceptionsHelper.ThrowSyntaxError("Invalid prefix operation.", state.Code, i);
-                                    }
-
-                                    if (state.strict
-                                        && (first is GetVariableExpression)
-                                        && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
-                                        ExceptionsHelper.Throw(new SyntaxError("Can not decriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
-
-                                    first = new DecrementOperator(first, DecrimentType.Predecriment);
-                                }
-                                else
-                                {
-                                    while (Tools.IsWhiteSpace(state.Code[i]))
-                                        i++;
-                                    var f = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
-                                    first = new NegationOperator(f);
-                                }
-                                break;
-                            }
-                        case '!':
-                            {
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-                                first = new LogicalNegationOperator((Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration));
-                                if (first == null)
-                                {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                                }
-                                break;
-                            }
-                        case '~':
-                            {
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-                                first = (Expression)Parse(state, ref i, true, true, false, true, false, forEnumeration);
-                                if (first == null)
-                                {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                                }
-                                first = new BitwiseNegationOperator(first);
-                                break;
-                            }
-                        case 't':
-                            {
-                                i += 5;
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-                                first = (Expression)Parse(state, ref i, true, false, false, true, false, forEnumeration);
-                                if (first == null)
-                                {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                                }
-                                first = new TypeOfOperator(first);
-                                break;
-                            }
-                        case 'v':
-                            {
-                                i += 3;
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-
-                                first = new CommaOperator(
-                                    (Expression)Parse(state, ref i, true, false, false, true, false, forEnumeration),
-                                    new ConstantDefinition(JSValue.undefined));
-
-                                if (first == null)
-                                {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                                }
-                                break;
-                            }
-                        case 'd':
-                            {
-                                i += 5;
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-                                first = (Expression)Parse(state, ref i, true, false, false, true, false, forEnumeration);
-                                if (first == null)
-                                {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                                }
-                                first = new Expressions.DeleteOperator(first);
-                                break;
-                            }
-                    }
-                }
-                else if (state.Code[i] == '(')
-                {
-                    while (state.Code[i] != ')')
-                    {
-                        do
-                            i++;
-                        while (Tools.IsWhiteSpace(state.Code[i]));
-                        var temp = (Expression)ExpressionTree.Parse(state, ref i, false, false);
-                        if (first == null)
-                            first = temp;
-                        else
-                            first = new CommaOperator(first, temp);
-                        while (Tools.IsWhiteSpace(state.Code[i]))
-                            i++;
-                        if (state.Code[i] != ')' && state.Code[i] != ',')
-                            ExceptionsHelper.Throw((new SyntaxError("Expected \")\"")));
-                    }
-                    i++;
-                    if (((state.CodeContext & CodeContext.InExpression) != 0 && first is FunctionDefinition)
-                        || (forNew && first is CallOperator))
-                    {
-                        first = new Expressions.CommaOperator(first, null);
-                    }
-                }
-                else
-                {
-                    if (forEnumeration)
-                        return null;
-                }
-            }
-
-            if (first == null || first is EmptyExpression)
-                ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
-
-            first.Position = index;
-            first.Length = i - index;
-
+        private static Expression parseContinuation(ParseInfo state, Expression first, int startIndex, ref int i, ref bool root, bool forUnary, bool processComma, bool forNew, bool forForLoop)
+        {
+            Expression second = null;
+            OperationType kind = OperationType.None;
             bool canAsign = !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binary = false;
@@ -705,12 +388,12 @@ namespace NiL.JS.Expressions
                                 {
                                     i++;
                                     binary = true;
-                                    type = OperationType.StrictNotEqual;
+                                    kind = OperationType.StrictNotEqual;
                                 }
                                 else
                                 {
                                     binary = true;
-                                    type = OperationType.NotEqual;
+                                    kind = OperationType.NotEqual;
                                 }
                             }
                             else
@@ -726,7 +409,7 @@ namespace NiL.JS.Expressions
                                 i = rollbackPos;
                                 break;
                             }
-                            type = OperationType.None;
+                            kind = OperationType.None;
                             binary = true;
                             repeat = false;
                             break;
@@ -740,9 +423,9 @@ namespace NiL.JS.Expressions
                                 i = rollbackPos;
                                 break;
                             }
-                            type = OperationType.Ternary;
                             binary = true;
                             repeat = false;
+                            kind = OperationType.Conditional;
                             break;
                         }
                     case '=':
@@ -760,13 +443,13 @@ namespace NiL.JS.Expressions
                                 if (state.Code[i + 1] == '=')
                                 {
                                     i++;
-                                    type = OperationType.StrictEqual;
+                                    kind = OperationType.StrictEqual;
                                 }
                                 else
-                                    type = OperationType.Equal;
+                                    kind = OperationType.Equal;
                             }
                             else
-                                type = OperationType.Assignment;
+                                kind = OperationType.Assignment;
                             binary = true;
                             break;
                         }
@@ -783,8 +466,7 @@ namespace NiL.JS.Expressions
                                         && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                         ExceptionsHelper.ThrowSyntaxError("Cannot incriment \"" + (first as GetVariableExpression).Name + "\" in strict mode.", state.Code, i);
                                 }
-                                first = new Expressions.IncrementOperator(first, Expressions.IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
-                                //first = new OperatorStatement() { second = first, _type = OperationType.Incriment, Position = first.Position, Length = i + 2 - first.Position };
+                                first = new IncrementOperator(first, IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
                             }
@@ -798,7 +480,7 @@ namespace NiL.JS.Expressions
                             else
                             {
                                 binary = true;
-                                type = OperationType.Addition;
+                                kind = OperationType.Addition;
                                 if (state.Code[i + 1] == '=')
                                 {
                                     assign = true;
@@ -820,8 +502,7 @@ namespace NiL.JS.Expressions
                                         && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
                                         ExceptionsHelper.Throw(new SyntaxError("Can not decriment \"" + (first as GetVariableExpression).Name + "\" in strict mode."));
                                 }
-                                first = new Expressions.DecrementOperator(first, Expressions.DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
-                                //first = new OperatorStatement() { second = first, _type = OperationType.Decriment, Position = first.Position, Length = i + 2 - first.Position };
+                                first = new DecrementOperator(first, DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
                                 i += 2;
                             }
@@ -835,7 +516,7 @@ namespace NiL.JS.Expressions
                             else
                             {
                                 binary = true;
-                                type = OperationType.Substract;
+                                kind = OperationType.Substract;
                                 if (state.Code[i + 1] == '=')
                                 {
                                     assign = true;
@@ -854,7 +535,7 @@ namespace NiL.JS.Expressions
                                 break;
                             }
                             binary = true;
-                            type = OperationType.Multiply;
+                            kind = OperationType.Multiply;
                             if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
@@ -876,14 +557,14 @@ namespace NiL.JS.Expressions
                                 i++;
                                 binary = true;
                                 assign = false;
-                                type = OperationType.LogicalAnd;
+                                kind = OperationType.LogicalAnd;
                                 break;
                             }
                             else
                             {
                                 binary = true;
                                 assign = false;
-                                type = OperationType.And;
+                                kind = OperationType.And;
                                 if (state.Code[i + 1] == '=')
                                 {
                                     assign = true;
@@ -906,14 +587,14 @@ namespace NiL.JS.Expressions
                                 i++;
                                 binary = true;
                                 assign = false;
-                                type = OperationType.LogicalOr;
+                                kind = OperationType.LogicalOr;
                                 break;
                             }
                             else
                             {
                                 binary = true;
                                 assign = false;
-                                type = OperationType.Or;
+                                kind = OperationType.Or;
                                 if (state.Code[i + 1] == '=')
                                 {
                                     assign = true;
@@ -932,7 +613,7 @@ namespace NiL.JS.Expressions
                                 break;
                             }
                             binary = true;
-                            type = OperationType.Xor;
+                            kind = OperationType.Xor;
                             if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
@@ -951,7 +632,7 @@ namespace NiL.JS.Expressions
                             }
                             state.Code = Tools.RemoveComments(state.SourceCode, i + 1);
                             binary = true;
-                            type = OperationType.Division;
+                            kind = OperationType.Division;
                             if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
@@ -968,7 +649,7 @@ namespace NiL.JS.Expressions
                                 break;
                             }
                             binary = true;
-                            type = OperationType.Module;
+                            kind = OperationType.Module;
                             if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
@@ -989,14 +670,14 @@ namespace NiL.JS.Expressions
                             if (state.Code[i + 1] == '<')
                             {
                                 i++;
-                                type = OperationType.SignedShiftLeft;
+                                kind = OperationType.SignedShiftLeft;
                             }
                             else
                             {
-                                type = OperationType.Less;
+                                kind = OperationType.Less;
                                 if (state.Code[i + 1] == '=')
                                 {
-                                    type = OperationType.LessOrEqual;
+                                    kind = OperationType.LessOrEqual;
                                     i++;
                                 }
                             }
@@ -1022,20 +703,20 @@ namespace NiL.JS.Expressions
                                 i++;
                                 if (state.Code[i + 1] == '>')
                                 {
-                                    type = OperationType.UnsignedShiftRight;
+                                    kind = OperationType.UnsignedShiftRight;
                                     i++;
                                 }
                                 else
                                 {
-                                    type = OperationType.SignedShiftRight;
+                                    kind = OperationType.SignedShiftRight;
                                 }
                             }
                             else
                             {
-                                type = OperationType.More;
+                                kind = OperationType.More;
                                 if (state.Code[i + 1] == '=')
                                 {
-                                    type = OperationType.MoreOrEqual;
+                                    kind = OperationType.MoreOrEqual;
                                     i++;
                                 }
                             }
@@ -1051,7 +732,7 @@ namespace NiL.JS.Expressions
                             i++;
                             while (Tools.IsWhiteSpace(state.Code[i]))
                                 i++;
-                            s = i;
+                            var s = i;
                             if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict))
                                 ExceptionsHelper.Throw(new SyntaxError(string.Format(Strings.InvalidPropertyName, CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                             string name = state.Code.Substring(s, i - s);
@@ -1078,9 +759,7 @@ namespace NiL.JS.Expressions
                                 i++;
                             while (Tools.IsWhiteSpace(state.Code[i]));
                             int startPos = i;
-                            mname = (Expression)ExpressionTree.Parse(state, ref i, false, true, false, true, false, false);
-                            //if (forEnumeration) // why?! (o_O)
-                            //    return null;
+                            mname = (Expression)ExpressionTree.Parse(state, ref i, false, true, false, true, false);
                             if (mname == null)
                                 ExceptionsHelper.Throw((new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
                             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -1159,18 +838,18 @@ namespace NiL.JS.Expressions
                             }
                             if (Parser.Validate(state.Code, "instanceof", ref i))
                             {
-                                type = OperationType.InstanceOf;
+                                kind = OperationType.InstanceOf;
                                 binary = true;
                                 break;
                             }
                             else if (Parser.Validate(state.Code, "in", ref i))
                             {
-                                if (forEnumeration)
+                                if (forForLoop)
                                 {
                                     i = rollbackPos;
                                     goto case ';';
                                 }
-                                type = OperationType.In;
+                                kind = OperationType.In;
                                 binary = true;
                                 break;
                             }
@@ -1198,12 +877,10 @@ namespace NiL.JS.Expressions
             if (state.strict
                 && (first is GetVariableExpression) && ((first as GetVariableExpression).Name == "arguments" || (first as GetVariableExpression).Name == "eval"))
             {
-                if (assign || type == OperationType.Assignment)
+                if (assign || kind == OperationType.Assignment)
                     ExceptionsHelper.ThrowSyntaxError("Assignment to eval or arguments is not allowed in strict mode", state.Code, i);
-                //if (type == OperationType.Incriment || type == OperationType.Decriment)
-                //    ExceptionsHelper.Throw(new SyntaxError("Can not " + type.ToString().ToLower() + " \"" + (first as GetVariableStatement).Name + "\" in strict mode."));
             }
-            if ((!canAsign) && ((type == OperationType.Assignment) || (assign)))
+            if ((!canAsign) && ((kind == OperationType.Assignment) || (assign)))
                 ExceptionsHelper.ThrowSyntaxError("Invalid left-hand side in assignment", state.Code, i);
             if (binary && !forUnary)
             {
@@ -1211,32 +888,40 @@ namespace NiL.JS.Expressions
                     i++;
                 while (state.Code.Length > i && Tools.IsWhiteSpace(state.Code[i]));
                 if (state.Code.Length > i)
-                    second = (Expression)ExpressionTree.Parse(state, ref i, false, processComma, false, false, type == OperationType.Ternary, forEnumeration);
+                {
+                    if (kind == OperationType.Conditional)
+                    {
+                        bool proot = false;
+                        second = parseContinuation(state, parseTernaryBranches(state, forForLoop, ref i), startIndex, ref i, ref proot, forUnary, processComma, false, forForLoop);
+                    }
+                    else
+                        second = (Expression)ExpressionTree.Parse(state, ref i, false, processComma, false, false, forForLoop);
+                }
                 else
+                {
                     ExceptionsHelper.ThrowSyntaxError("Expected second operand", state.Code, i);
+                }
             }
+
             Expression res = null;
-            if (first == second && first == null)
-                return null;
             if (assign)
             {
                 root = false; // блокируем вызов дейкстры
                 second = deicstra(second as ExpressionTree);
                 var opassigncache = new AssignmentOperatorCache(first);
-                if (second is ExpressionTree
-                    && (second as ExpressionTree)._operationType == OperationType.None)
+                if (second is ExpressionTree && (second as ExpressionTree)._operationKind == OperationType.None)
                 {
                     second.first = new AssignmentOperator(opassigncache, new ExpressionTree()
                     {
                         first = opassigncache,
                         second = second.first,
-                        _operationType = type,
-                        Position = index,
-                        Length = i - index
+                        _operationKind = kind,
+                        Position = startIndex,
+                        Length = i - startIndex
                     })
                     {
-                        Position = index,
-                        Length = i - index
+                        Position = startIndex,
+                        Length = i - startIndex
                     };
                     res = second;
                 }
@@ -1246,32 +931,384 @@ namespace NiL.JS.Expressions
                     {
                         first = opassigncache,
                         second = second,
-                        _operationType = type,
-                        Position = index,
-                        Length = i - index
+                        _operationKind = kind,
+                        Position = startIndex,
+                        Length = i - startIndex
                     })
                     {
-                        Position = index,
-                        Length = i - index
+                        Position = startIndex,
+                        Length = i - startIndex
                     };
                 }
             }
             else
             {
-                if (!root || type != OperationType.None || second != null)
+                if (!root || kind != OperationType.None || second != null)
                 {
-                    if (forUnary && (type == OperationType.None) && (first is ExpressionTree))
+                    if (forUnary && (kind == OperationType.None) && (first is ExpressionTree))
                         res = first as Expression;
                     else
-                        res = new ExpressionTree() { first = first, second = second, _operationType = type, Position = index, Length = i - index };
+                        res = new ExpressionTree() { first = first, second = second, _operationKind = kind, Position = startIndex, Length = i - startIndex };
                 }
                 else
                     res = first;
             }
-            if (root)
-                res = deicstra(res as ExpressionTree) ?? res;
-            index = i;
+
             return res;
+        }
+
+        private static Expression parseOperand(ParseInfo state, ref int i, bool forNew, bool forForLoop)
+        {
+            int start = i;
+            Expression operand;
+            if (Parser.Validate(state.Code, "this", ref i)
+                || Parser.Validate(state.Code, "super", ref i)
+                || Parser.Validate(state.Code, "new.target", ref i))
+            {
+                var name = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
+                switch (name)
+                {
+                    case "super":
+                        {
+                            /*
+                             * Это ключевое слово. Не переменная.
+                             * Оно может быть использовано только для получения свойств
+                             * или вызова конструктора. При том, вызов конструктора допускается 
+                             * только внутри конструктора класса-потомка.
+                             */
+
+                            while (Tools.IsWhiteSpace(state.Code[i]))
+                                i++;
+
+                            if ((state.CodeContext & CodeContext.InClassDefenition) == 0
+                                || (state.Code[i] != '.' // получение свойства
+                                    && state.Code[i] != '['
+                                    && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0))) // вызов конструктора
+                                ExceptionsHelper.ThrowSyntaxError("super keyword unexpected in this coontext", state.Code, i);
+
+                            operand = new GetSuper();
+                            break;
+                        }
+                    case "new.target":
+                        {
+                            operand = new GetNewTarget();
+                            break;
+                        }
+                    case "this":
+                        {
+                            operand = new GetThis();
+                            break;
+                        }
+                    default:
+                        {
+                            operand = new GetVariableExpression(name, state.lexicalScopeLevel);
+                            break;
+                        }
+                }
+            }
+            else
+            {
+                var oldCodeContext = state.CodeContext;
+                state.CodeContext |= CodeContext.InExpression;
+                try
+                {
+                    operand = (Expression)Parser.Parse(state, ref i, (CodeFragmentType)2, false);
+                }
+                finally
+                {
+                    state.CodeContext = oldCodeContext;
+                }
+            }
+
+            if (operand == null)
+            {
+                if (Parser.ValidateName(state.Code, ref i, state.strict))
+                {
+                    var name = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
+                    if (name == "undefined")
+                    {
+                        operand = new ConstantDefinition(JSValue.undefined);
+                    }
+                    else
+                    {
+                        operand = new GetVariableExpression(name, state.lexicalScopeLevel);
+                    }
+                }
+                else if (Parser.ValidateValue(state.Code, ref i))
+                {
+                    string value = state.Code.Substring(start, i - start);
+                    if ((value[0] == '\'') || (value[0] == '"'))
+                    {
+                        value = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict);
+                        if (state.stringConstants.ContainsKey(value))
+                            operand = new ConstantDefinition(state.stringConstants[value]) { Position = start, Length = i - start };
+                        else
+                            operand = new ConstantDefinition(state.stringConstants[value] = value) { Position = start, Length = i - start };
+                    }
+                    else
+                    {
+                        bool b = false;
+                        if (value == "null")
+                            operand = new ConstantDefinition(JSValue.@null) { Position = start, Length = i - start };
+                        else if (bool.TryParse(value, out b))
+                            operand = new ConstantDefinition(b ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False) { Position = start, Length = i - start };
+                        else
+                        {
+                            int n = 0;
+                            double d = 0;
+                            if (Tools.ParseNumber(state.Code, ref start, out d, 0, Tools.ParseNumberOptions.Default | (state.strict ? Tools.ParseNumberOptions.RaiseIfOctal : Tools.ParseNumberOptions.None)))
+                            {
+                                if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
+                                {
+                                    if (state.intConstants.ContainsKey(n))
+                                        operand = new ConstantDefinition(state.intConstants[n]) { Position = start, Length = i - start };
+                                    else
+                                        operand = new ConstantDefinition(state.intConstants[n] = n) { Position = start, Length = i - start };
+                                }
+                                else
+                                {
+                                    if (state.doubleConstants.ContainsKey(d))
+                                        operand = new ConstantDefinition(state.doubleConstants[d]) { Position = start, Length = i - start };
+                                    else
+                                        operand = new ConstantDefinition(state.doubleConstants[d] = d) { Position = start, Length = i - start };
+                                }
+                            }
+                            else if (Parser.ValidateRegex(state.Code, ref start, true))
+                                throw new ApplicationException("This case was moved");
+                            else
+                                throw new ArgumentException("Unable to process value (" + value + ")");
+                        }
+                    }
+                }
+                else if ((state.Code[i] == '!')
+                    || (state.Code[i] == '~')
+                    || (state.Code[i] == '+')
+                    || (state.Code[i] == '-')
+                    || Parser.Validate(state.Code, "delete", i)
+                    || Parser.Validate(state.Code, "typeof", i)
+                    || Parser.Validate(state.Code, "void", i))
+                {
+                    switch (state.Code[i])
+                    {
+                        case '+':
+                            {
+                                i++;
+                                if (state.Code[i] == '+')
+                                {
+                                    do
+                                        i++;
+                                    while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
+                                    if (i >= state.Code.Length)
+                                        ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
+
+                                    operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+
+                                    if (((operand as GetPropertyOperator) as object ?? (operand as GetVariableExpression)) == null)
+                                    {
+                                        ExceptionsHelper.ThrowSyntaxError("Invalid prefix operation. ", state.Code, i);
+                                    }
+
+                                    if (state.strict
+                                        && (operand is GetVariableExpression)
+                                        && ((operand as GetVariableExpression).Name == "arguments" || (operand as GetVariableExpression).Name == "eval"))
+                                    {
+                                        ExceptionsHelper.ThrowSyntaxError("Can not incriment \"" + (operand as GetVariableExpression).Name + "\" in strict mode.", state.Code, i);
+                                    }
+
+                                    operand = new IncrementOperator(operand, IncrimentType.Preincriment);
+                                }
+                                else
+                                {
+                                    while (Tools.IsWhiteSpace(state.Code[i]))
+                                        i++;
+                                    var f = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                                    operand = new ToNumberOperator(f);
+                                }
+                                break;
+                            }
+                        case '-':
+                            {
+                                i++;
+                                if (state.Code[i] == '-')
+                                {
+                                    do
+                                        i++;
+                                    while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
+                                    if (i >= state.Code.Length)
+                                        ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
+
+                                    operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+
+                                    if (((operand as GetPropertyOperator) as object ?? (operand as GetVariableExpression)) == null)
+                                    {
+                                        ExceptionsHelper.ThrowSyntaxError("Invalid prefix operation.", state.Code, i);
+                                    }
+
+                                    if (state.strict
+                                        && (operand is GetVariableExpression)
+                                        && ((operand as GetVariableExpression).Name == "arguments" || (operand as GetVariableExpression).Name == "eval"))
+                                        ExceptionsHelper.Throw(new SyntaxError("Can not decriment \"" + (operand as GetVariableExpression).Name + "\" in strict mode."));
+
+                                    operand = new DecrementOperator(operand, DecrimentType.Predecriment);
+                                }
+                                else
+                                {
+                                    while (Tools.IsWhiteSpace(state.Code[i]))
+                                        i++;
+                                    var f = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                                    operand = new NegationOperator(f);
+                                }
+                                break;
+                            }
+                        case '!':
+                            {
+                                do
+                                    i++;
+                                while (Tools.IsWhiteSpace(state.Code[i]));
+                                operand = new LogicalNegationOperator((Expression)Parse(state, ref i, true, true, false, true, forForLoop));
+                                if (operand == null)
+                                {
+                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                                }
+                                break;
+                            }
+                        case '~':
+                            {
+                                do
+                                    i++;
+                                while (Tools.IsWhiteSpace(state.Code[i]));
+                                operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                                if (operand == null)
+                                {
+                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                                }
+                                operand = new BitwiseNegationOperator(operand);
+                                break;
+                            }
+                        case 't':
+                            {
+                                i += 5;
+                                do
+                                    i++;
+                                while (Tools.IsWhiteSpace(state.Code[i]));
+                                operand = (Expression)Parse(state, ref i, true, false, false, true, forForLoop);
+                                if (operand == null)
+                                {
+                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                                }
+                                operand = new TypeOfOperator(operand);
+                                break;
+                            }
+                        case 'v':
+                            {
+                                i += 3;
+                                do
+                                    i++;
+                                while (Tools.IsWhiteSpace(state.Code[i]));
+
+                                operand = new CommaOperator(
+                                    (Expression)Parse(state, ref i, true, false, false, true, forForLoop),
+                                    new ConstantDefinition(JSValue.undefined));
+
+                                if (operand == null)
+                                {
+                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                                }
+                                break;
+                            }
+                        case 'd':
+                            {
+                                i += 5;
+                                do
+                                    i++;
+                                while (Tools.IsWhiteSpace(state.Code[i]));
+                                operand = (Expression)Parse(state, ref i, true, false, false, true, forForLoop);
+                                if (operand == null)
+                                {
+                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                    ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                                }
+                                operand = new Expressions.DeleteOperator(operand);
+                                break;
+                            }
+                    }
+                }
+                else if (state.Code[i] == '(')
+                {
+                    while (state.Code[i] != ')')
+                    {
+                        do
+                            i++;
+                        while (Tools.IsWhiteSpace(state.Code[i]));
+                        var temp = (Expression)ExpressionTree.Parse(state, ref i, false, false);
+                        if (operand == null)
+                            operand = temp;
+                        else
+                            operand = new CommaOperator(operand, temp);
+                        while (Tools.IsWhiteSpace(state.Code[i]))
+                            i++;
+                        if (state.Code[i] != ')' && state.Code[i] != ',')
+                            ExceptionsHelper.Throw((new SyntaxError("Expected \")\"")));
+                    }
+                    i++;
+                    if (((state.CodeContext & CodeContext.InExpression) != 0 && operand is FunctionDefinition)
+                        || (forNew && operand is CallOperator))
+                    {
+                        operand = new Expressions.CommaOperator(operand, null);
+                    }
+                }
+                else
+                {
+                    if (forForLoop)
+                        return null;
+                }
+            }
+
+            if (operand == null || operand is EmptyExpression)
+                ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
+
+            if (operand.Position == 0)
+            {
+                operand.Position = start;
+                operand.Length = i - start;
+            }
+
+            return operand;
+        }
+
+        private static Expression parseTernaryBranches(ParseInfo state, bool forEnumeration, ref int i)
+        {
+            ConstantDefinition result = null;
+            var oldCodeContext = state.CodeContext;
+            state.CodeContext |= CodeContext.InExpression;
+            try
+            {
+                var position = i;
+                var threads = new[]
+                    {
+                        Parse(state, ref i, false, true, false, true, false),
+                        null
+                    };
+
+                if (state.Code[i] != ':')
+                    ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
+                do
+                    i++;
+                while (Tools.IsWhiteSpace(state.Code[i]));
+                result = new ConstantDefinition(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
+                threads[1] = Parse(state, ref i, false, false, false, true, forEnumeration);
+                result.Length = i - position;
+            }
+            finally
+            {
+                state.CodeContext = oldCodeContext;
+            }
+
+            return result;
         }
 
         public override JSValue Evaluate(Context context)
@@ -1295,6 +1332,11 @@ namespace NiL.JS.Expressions
             _this.Position = Position;
             _this.Length = Length;
             return true;
+        }
+
+        public override string ToString()
+        {
+            return _operationKind + "(" + first + (second != null ? ", " + second : "") + ")";
         }
     }
 }

@@ -33,7 +33,7 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue ConstructObject()
         {
-            return null;
+            return JSObject.CreateObject();
         }
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)

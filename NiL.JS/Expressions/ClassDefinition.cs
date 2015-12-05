@@ -44,10 +44,19 @@ namespace NiL.JS.Expressions
     {
         private sealed class ClassConstructor : Function
         {
-            public ClassConstructor(Context context, FunctionDefinition creator)
+            private readonly string className;
+            public override string name
+            {
+                get
+                {
+                    return className;
+                }
+            }
+
+            public ClassConstructor(Context context, FunctionDefinition creator, string className)
                 : base(context, creator)
             {
-
+                this.className = className;
             }
 
             protected internal override JSValue ConstructObject()
@@ -160,6 +169,7 @@ namespace NiL.JS.Expressions
                 ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
 
             FunctionDefinition ctor = null;
+            ClassDefinition result = null;
             var oldStrict = state.strict;
             state.strict = true;
             var flds = new Dictionary<string, MemberDescriptor>();
@@ -200,7 +210,7 @@ namespace NiL.JS.Expressions
 
                     if (Parser.Validate(state.Code, "[", ref i))
                     {
-                        var propertyName = ExpressionTree.Parse(state, ref i, false, false, false, true, false, false);
+                        var propertyName = ExpressionTree.Parse(state, ref i, false, false, false, true, false);
                         while (Tools.IsWhiteSpace(state.Code[i]))
                             i++;
                         if (state.Code[i] != ']')
@@ -243,7 +253,7 @@ namespace NiL.JS.Expressions
                         i = s;
                         var mode = state.Code[i] == 's' ? FunctionKind.Setter : FunctionKind.Getter;
                         var propertyAccessor = FunctionDefinition.Parse(state, ref i, mode) as FunctionDefinition;
-                        var accessorName = (@static ? "static " : "") + propertyAccessor.name;
+                        var accessorName = (@static ? "static " : "") + propertyAccessor._name;
                         if (!flds.ContainsKey(accessorName))
                         {
                             var propertyPair = new GsPropertyPairExpression
@@ -251,7 +261,7 @@ namespace NiL.JS.Expressions
                                 mode == FunctionKind.Getter ? propertyAccessor : null,
                                 mode == FunctionKind.Setter ? propertyAccessor : null
                             );
-                            flds.Add(accessorName, new MemberDescriptor(new ConstantDefinition(propertyAccessor.name), propertyPair, @static));
+                            flds.Add(accessorName, new MemberDescriptor(new ConstantDefinition(propertyAccessor._name), propertyPair, @static));
                         }
                         else
                         {
@@ -343,7 +353,7 @@ namespace NiL.JS.Expressions
                         }
                         else
                         {
-                            flds[fieldName] = new MemberDescriptor(new ConstantDefinition(method.name), method, @static);
+                            flds[fieldName] = new MemberDescriptor(new ConstantDefinition(method._name), method, @static);
                         }
                         if (method == null)
                             ExceptionsHelper.Throw(new SyntaxError());
@@ -366,31 +376,29 @@ namespace NiL.JS.Expressions
                         ref ctorIndex,
                         FunctionKind.Method);
                 }
+                
+                result = new ClassDefinition(name, baseType, new List<MemberDescriptor>(flds.Values).ToArray(), ctor as FunctionDefinition, computedProperties.ToArray());
+
+                if ((oldCodeContext & CodeContext.InExpression) == 0)
+                {
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        ExceptionsHelper.ThrowSyntaxError("Class must have name", state.Code, index);
+                    }
+                    if (state.strict && state.functionScopeLevel != state.lexicalScopeLevel)
+                    {
+                        ExceptionsHelper.ThrowSyntaxError("In strict mode code, class can only be declared at top level or immediately within other function.", state.Code, index);
+                    }
+
+                    state.Variables.Add(result.reference._descriptor);
+                }
+
             }
             finally
             {
-                state.CodeContext &= ~CodeContext.InExpression;
+                state.CodeContext = oldCodeContext;
+                state.strict = oldStrict;
             }
-
-            ctor.name = name;
-            var result = new ClassDefinition(name, baseType, new List<MemberDescriptor>(flds.Values).ToArray(), ctor as FunctionDefinition, computedProperties.ToArray());
-
-            if ((state.CodeContext & CodeContext.InExpression) == 0)
-            {
-                if (string.IsNullOrEmpty(name))
-                {
-                    ExceptionsHelper.ThrowSyntaxError("Class must have name", state.Code, index);
-                }
-                if (state.strict && state.functionScopeLevel != state.lexicalScopeLevel)
-                {
-                    ExceptionsHelper.ThrowSyntaxError("In strict mode code, class can only be declared at top level or immediately within other function.", state.Code, index);
-                }
-
-                state.Variables.Add(result.reference._descriptor);
-            }
-
-            state.CodeContext = oldCodeContext;
-            state.strict = oldStrict;
             index = i + 1;
             return result;
         }
@@ -407,10 +415,10 @@ namespace NiL.JS.Expressions
                 stats.WithLexicalEnvironment = true;
 
             VariableDescriptor descriptorToRestore = null;
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(_name))
             {
-                variables.TryGetValue(name, out descriptorToRestore);
-                variables[name] = reference._descriptor;
+                variables.TryGetValue(_name, out descriptorToRestore);
+                variables[_name] = reference._descriptor;
             }
 
             Parser.Build(ref _constructor, expressionDepth, variables, codeContext | CodeContext.InClassDefenition | CodeContext.InClassConstructor, message, stats, opts);
@@ -440,9 +448,9 @@ namespace NiL.JS.Expressions
             {
                 variables[descriptorToRestore.name] = descriptorToRestore;
             }
-            else if (!string.IsNullOrEmpty(name))
+            else if (!string.IsNullOrEmpty(_name))
             {
-                variables.Remove(name);
+                variables.Remove(_name);
             }
 
             return false;
@@ -453,10 +461,10 @@ namespace NiL.JS.Expressions
             JSValue variable = null;
             if ((_codeContext & CodeContext.InExpression) == 0)
             {
-                variable = context.DefineVariable(name, false);
+                variable = context.DefineVariable(_name, false);
             }
 
-            var ctor = new ClassConstructor(context, this._constructor);
+            var ctor = new ClassConstructor(context, this._constructor, _name);
             ctor.RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
 
             JSValue baseProto = TypeProxy.GlobalPrototype;
@@ -584,14 +592,14 @@ namespace NiL.JS.Expressions
         public override string ToString()
         {
             var result = new StringBuilder();
-            result.Append("class ").Append(name);
+            result.Append("class ").Append(_name);
             if (_baseClass != null)
                 result.Append(" extends ").Append(_baseClass);
             result.Append(" {").Append(Environment.NewLine);
 
             var temp = _constructor.ToString().Replace(Environment.NewLine, Environment.NewLine + "  ");
             result.Append("constructor");
-            result.Append(temp.Substring(name.Length));
+            result.Append(temp.Substring(_name.Length));
 
             for (var i = 0; i < _members.Length; i++)
             {

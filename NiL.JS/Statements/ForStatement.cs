@@ -52,7 +52,7 @@ namespace NiL.JS.Statements
             {
                 init = VariableDefinitionStatement.Parse(state, ref i, true);
                 if (init == null)
-                    init = Parser.Parse(state, ref i, CodeFragmentType.Expression);
+                    init = ExpressionTree.Parse(state, ref i, forForLoop: true);
                 if ((init is ExpressionTree)
                     && (init as ExpressionTree).Type == OperationType.None
                     && (init as ExpressionTree).second == null)
@@ -62,13 +62,13 @@ namespace NiL.JS.Statements
                 do
                     i++;
                 while (Tools.IsWhiteSpace(state.Code[i]));
-                condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i);
+                condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i, forForLoop: true);
                 if (state.Code[i] != ';')
                     ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 do
                     i++;
                 while (Tools.IsWhiteSpace(state.Code[i]));
-                post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i);
+                post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i, forForLoop: true);
                 while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != ')')

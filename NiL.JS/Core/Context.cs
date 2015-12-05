@@ -449,30 +449,28 @@ namespace NiL.JS.Core
             JSValue res = null;
             bool fromProto = fields == null || (!fields.TryGetValue(name, out res) && (parent != null));
             if (fromProto)
-            {
                 res = parent.GetVariable(name, create);
-                if (res == null) // значит вышли из глобального контекста
+            if (res == null) // значит вышли из глобального контекста
+            {
+                if (this == globalContext)
+                    return null;
+                else
                 {
-                    if (this == globalContext)
-                        return null;
+                    if (create)
+                    {
+                        res = new JSValue() { valueType = JSValueType.NotExists };
+                        fields[name] = res;
+                    }
                     else
                     {
-                        if (create)
-                        {
-                            res = new JSValue() { valueType = JSValueType.NotExists };
-                            fields[name] = res;
-                        }
-                        else
-                        {
-                            res = JSObject.GlobalPrototype.GetProperty(wrap(name), false, PropertyScope.Сommon);
-                            if (res.valueType == JSValueType.NotExistsInObject)
-                                res.valueType = JSValueType.NotExists;
-                        }
+                        res = JSObject.GlobalPrototype.GetProperty(wrap(name), false, PropertyScope.Сommon);
+                        if (res.valueType == JSValueType.NotExistsInObject)
+                            res.valueType = JSValueType.NotExists;
                     }
                 }
-                else if (fromProto)
-                    objectSource = parent.objectSource;
             }
+            else if (fromProto)
+                objectSource = parent.objectSource;
             else
             {
                 if (create && (res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)

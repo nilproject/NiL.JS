@@ -17,8 +17,8 @@ namespace NiL.JS.Expressions
             get
             {
                 return base.ContextIndependent
-                    && (threads[0].ContextIndependent)
-                    && (threads[1].ContextIndependent);
+                    && (threads[0] == null || threads[0].ContextIndependent)
+                    && (threads[1] == null || threads[1].ContextIndependent);
             }
         }
 
@@ -56,49 +56,49 @@ namespace NiL.JS.Expressions
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref threads[0], expressionDepth,  variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref threads[1], expressionDepth,  variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
-            base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
-            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && first is ConstantDefinition)
+            Parser.Build(ref first, expressionDepth + 1, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref threads[0], expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref threads[1], expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+
+            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && expressionDepth <= 1)
             {
-                _this = ((bool)first.Evaluate(null) ? threads[0] : threads[1]);
-                if (message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Constant expression.");
-            }
-            else
-            {
-                if (stats != null
-                    && threads[0] != null
-                    && !stats.ContainsWith
-                    && (first is VariableReference && threads[0] is VariableReference)
-                    && (first as VariableReference)._descriptor == (threads[0] as VariableReference)._descriptor)
+                if (threads[0] == null && threads[1] == null)
                 {
-                    if (threads[0] == null)
-                        _this = first;
-                    else
-                        _this = new LogicalDisjunctionOperator(first, threads[1]) { Position = Position, Length = Length };
-                }
-                else
-                {
-                    // Эти оптимизации работают только в тех случаях, когда результат выражения нигде не используется.
-                    if (threads[0] == null && threads[1] == null)
+                    if (first.ContextIndependent)
                     {
-                        _this = first;
-                        return true; // можно попытаться удалить и это
+                        _this = null;
+                        return false;
                     }
-                    else if (threads[0] == null)
-                        _this = new LogicalDisjunctionOperator(first, threads[1]) { Position = Position, Length = Length };
-                    else if (threads[1] == null)
-                        _this = new LogicalConjunctionOperator(first, threads[0]) { Position = Position, Length = Length };
+                    else
+                    {
+                        _this = new CommaOperator(first, new ConstantDefinition(JSValue.undefined));
+                    }
+                }
+                else if (threads[0] == null)
+                {
+                    _this = new LogicalDisjunctionOperator(first, threads[1]) { Position = Position, Length = Length };
+                    return true;
+                }
+                else if (threads[1] == null)
+                {
+                    _this = new LogicalConjunctionOperator(first, threads[0]) { Position = Position, Length = Length };
+                    return true;
+                }
+                else if (first.ContextIndependent)
+                {
+                    _this = ((bool)first.Evaluate(null) ? threads[0] : threads[1]);
+                    return false;
                 }
             }
+
+            base.Build(ref _this, expressionDepth + 1, variables, codeContext, message, stats, opts);
             return false;
         }
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             base.Optimize(ref _this, owner, message, opts, stats);
-            for (var i = threads.Length; i-- > 0; )
+            for (var i = threads.Length; i-- > 0;)
             {
                 var cn = threads[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, stats);

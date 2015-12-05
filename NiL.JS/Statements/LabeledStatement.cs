@@ -67,12 +67,21 @@ namespace NiL.JS.Statements
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             Parser.Build(ref statement, expressionDepth, variables, codeContext, message, stats, opts);
+            if (statement == null)
+            {
+                _this = null;
+            }
+
             return false;
         }
 
         public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             statement.Optimize(ref statement, owner, message, opts, stats);
+            if (statement == null)
+            {
+                _this = null;
+            }
         }
 
         public override T Visit<T>(Visitor<T> visitor)

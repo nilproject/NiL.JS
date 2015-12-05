@@ -46,7 +46,7 @@ namespace NiL.JS.Expressions
                 return null;
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
-            var result = (Expression)ExpressionTree.Parse(state, ref i, true, false, true, true, false, false);
+            var result = (Expression)ExpressionTree.Parse(state, ref i, true, false, true, true, false);
             if (result == null)
             {
                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);

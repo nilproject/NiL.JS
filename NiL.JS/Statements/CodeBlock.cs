@@ -730,7 +730,7 @@ namespace NiL.JS.Statements
 
         public string ToString(bool linewiseStringify)
         {
-            if (linewiseStringify)
+            if (linewiseStringify || code == null)
             {
                 if (lines == null || lines.Length == 0)
                     return "{ }";

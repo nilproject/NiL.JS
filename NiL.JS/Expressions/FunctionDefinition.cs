@@ -560,10 +560,10 @@ namespace NiL.JS.Expressions
             }
 
             VariableDescriptor descriptorToRestore = null;
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(_name))
             {
-                variables.TryGetValue(name, out descriptorToRestore);
-                variables[name] = reference._descriptor;
+                variables.TryGetValue(_name, out descriptorToRestore);
+                variables[_name] = reference._descriptor;
             }
 
             var bodyCode = body as CodeNode;
@@ -599,9 +599,9 @@ namespace NiL.JS.Expressions
             {
                 variables[descriptorToRestore.name] = descriptorToRestore;
             }
-            else if (!string.IsNullOrEmpty(name))
+            else if (!string.IsNullOrEmpty(_name))
             {
-                variables.Remove(name);
+                variables.Remove(_name);
             }
 
             foreach (var variable in variables)
@@ -730,7 +730,7 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
-            res += name + "(";
+            res += _name + "(";
             if (parameters != null)
                 for (int i = 0; i < parameters.Length;)
                     res += parameters[i] + (++i < parameters.Length ? "," : "");

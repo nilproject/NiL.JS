@@ -70,7 +70,7 @@ namespace NiL.JS.Expressions
                 while (Tools.IsWhiteSpace(state.Code[i]));
             }
 
-            var source = ExpressionTree.Parse(state, ref i, false, false, false, true, false, true);
+            var source = ExpressionTree.Parse(state, ref i, false, false, false, true, true);
             if (source == null)
             {
                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);

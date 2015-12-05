@@ -96,16 +96,16 @@ function bindedConstruct() {
 if (bindedConstruct().fake !== undefined)
     console.log("Invalid [[Construct]] of binded function");
 
-var a = 1;
-(function (p) { (function (x, y) { if (x != 1) console.log("Incorrect parameters processing #1"); })(p, a = 2) })(a);
+var i = 1;
+(function (p) { (function (x, y) { if (x != 1) console.log("Incorrect parameters processing #1"); })(p, i = 2) })(i);
 
-a = 1;
-(function (p) { (function (x, y) { a = 2; if (x != 1) console.log("Incorrect parameters processing #2"); })(p) })(a);
+i = 1;
+(function (p) { (function (x, y) { i = 2; if (x != 1) console.log("Incorrect parameters processing #2"); })(p) })(i);
 
-a = 1;
-(function (p) { (function (x, y) { a = 2; if (x != 1) console.log("Incorrect parameters processing #3"); })(p, p) })(a);
+i = 1;
+(function (p) { (function (x, y) { i = 2; if (x != 1) console.log("Incorrect parameters processing #3"); })(p, p) })(i);
 
-(function (p) { (function (x, y) { if (x != true) console.log("Incorrect parameters processing #4"); })(p, a = 2) })(true);
+(function (p) { (function (x, y) { if (x != true) console.log("Incorrect parameters processing #4"); })(p, i = 2) })(true);
 
 (function (p) { (function (x, y) { p = 2; if (x != true) console.log("Incorrect parameters processing #5"); })(p) })(true);
 
@@ -153,8 +153,36 @@ function testEval() {\
 runEvalTest(testEval);');
 
 function twoParametersWithSameName(x, x) {
-  return x;
+    return x;
 }
-if(!(twoParametersWithSameName(1, 2) === 2)) {
-  $ERROR("#1: twoParametersWithSameName(1, 2) === 2");
+if (!(twoParametersWithSameName(1, 2) === 2)) {
+    $ERROR("#1: twoParametersWithSameName(1, 2) === 2");
 }
+
+class A {
+    constructor() {
+        this.text = new.target.name;
+    }
+}
+
+class B extends A { constructor() { super(); } }
+
+var a = new A().text; // logs "A"
+var b = new B().text; // logs "B"
+
+if (a != "A")
+    console.log("new.target works incorrectly");
+if (b != "B")
+    console.log("new.target works incorrectly");
+
+a = console ? 1 : 2, { test: 1 };
+
+(function () {
+    // parse only
+    var r;
+    if (r) for (t = 0; u > t; t++) n[t][e][1] /= r; else for (t = 0; u > t; t++) n[t][e][1] = o;
+});
+
+console.log("test completed");
+    
+    

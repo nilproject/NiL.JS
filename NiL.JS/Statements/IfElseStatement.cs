@@ -60,9 +60,12 @@ namespace NiL.JS.Statements
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i < state.Code.Length && !(body is CodeBlock) && (state.Code[i] == ';'))
+            {
                 do
                     i++;
                 while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
+            }
+
             if (Parser.Validate(state.Code, "else", ref i))
             {
                 while (Tools.IsWhiteSpace(state.Code[i]))

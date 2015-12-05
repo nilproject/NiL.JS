@@ -18,7 +18,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return Entity.name;
+                return Entity._name;
             }
         }
 
@@ -30,7 +30,7 @@ namespace NiL.JS.Expressions
         public EntityReference(EntityDefinition entityDefinition)
         {
             _scopeLevel = 1;
-            this._descriptor = new VariableDescriptor(entityDefinition.name, 1)
+            this._descriptor = new VariableDescriptor(entityDefinition._name, 1)
             {
                 lexicalScope = !entityDefinition.Hoist,
                 initializer = entityDefinition
@@ -60,15 +60,15 @@ namespace NiL.JS.Expressions
 
         internal readonly VariableReference reference;
 
-        internal string name;
-        public string Name { get { return name; } }
+        internal readonly string _name;
+        public string Name { get { return _name; } }
         public VariableReference Reference { get { return reference; } }
 
         public abstract bool Hoist { get; }
 
         protected EntityDefinition(string name)
         {
-            this.name = name;
+            _name = name;
             reference = new EntityReference(this);
         }
 

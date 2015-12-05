@@ -95,7 +95,7 @@ namespace NiL.JS.Expressions
 
                 if (Parser.Validate(state.Code, "[", ref i))
                 {
-                    var name = ExpressionTree.Parse(state, ref i, false, false, false, true, false, false);
+                    var name = ExpressionTree.Parse(state, ref i, false, false, false, true, false);
                     while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
                     if (state.Code[i] != ']')
@@ -138,7 +138,7 @@ namespace NiL.JS.Expressions
                     i = s;
                     var mode = state.Code[i] == 's' ? FunctionKind.Setter : FunctionKind.Getter;
                     var propertyAccessor = FunctionDefinition.Parse(state, ref i, mode) as FunctionDefinition;
-                    var accessorName = propertyAccessor.name;
+                    var accessorName = propertyAccessor._name;
                     if (!flds.ContainsKey(accessorName))
                     {
                         var propertyPair = new GsPropertyPairExpression

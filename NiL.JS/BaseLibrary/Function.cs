@@ -92,7 +92,7 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get
             {
-                return creator.name;
+                return creator._name;
             }
         }
         [Hidden]
