@@ -57,7 +57,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 2
+            int mode = 0
                     ;
             switch (mode)
             {
@@ -885,9 +885,12 @@ for (var i = 0; i < 10000000; )
                     sr.Dispose();
                     f.Dispose();
 
+                    var m = new Module(script);
+
                     sw.Restart();
-                    new Module(script).Invoke();
+                    m.Invoke();
                     sw.Stop();
+
                     total += sw.Elapsed;
                     _(sw.Elapsed.ToString());
                 }

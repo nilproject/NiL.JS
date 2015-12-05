@@ -138,32 +138,35 @@ namespace NiL.JS.Core
 
             if (bracket)
             {
-                index--;
-                do
+                if (code[index] != ')')
                 {
+                    index--;
                     do
                     {
-                        index++;
-                        if (code.Length == index)
+                        do
+                        {
+                            index++;
+                            if (code.Length == index)
+                                return false;
+                        }
+                        while (Tools.IsWhiteSpace(code[index]));
+
+                        Validate(code, "...", ref index);
+
+                        if (!ValidateName(code, ref index))
                             return false;
+
+                        while (Tools.IsWhiteSpace(code[index]))
+                        {
+                            index++;
+                            if (code.Length == index)
+                                return false;
+                        }
                     }
-                    while (Tools.IsWhiteSpace(code[index]));
-
-                    Validate(code, "...", ref index);
-
-                    if (!ValidateName(code, ref index))
+                    while (code[index] == ',');
+                    if (code[index] != ')')
                         return false;
-
-                    while (Tools.IsWhiteSpace(code[index]))
-                    {
-                        index++;
-                        if (code.Length == index)
-                            return false;
-                    }
                 }
-                while (code[index] == ',');
-                if (code[index] != ')')
-                    return false;
 
                 do
                 {
@@ -588,7 +591,7 @@ namespace NiL.JS.Core
         internal static void Build<T>(ref T self, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts) where T : CodeNode
         {
             var t = (CodeNode)self;
-            while (t != null && t.Build(ref t, expressionDepth,  variables, codeContext, message, stats, opts))
+            while (t != null && t.Build(ref t, expressionDepth, variables, codeContext, message, stats, opts))
                 self = (T)t;
             self = (T)t;
         }
@@ -596,7 +599,7 @@ namespace NiL.JS.Core
         internal static void Build(ref Expression s, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             CodeNode t = s;
-            Build(ref t, expressionDepth,  variables, codeContext, message, stats, opts);
+            Build(ref t, expressionDepth, variables, codeContext, message, stats, opts);
             if (t == null)
             {
                 s = null;

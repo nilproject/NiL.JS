@@ -1483,7 +1483,13 @@ namespace NiL.JS.Core
 
         internal static bool IsWhiteSpace(char p)
         {
-            return System.Array.IndexOf(TrimChars, p) != -1;
+            var fb = p >> 8;
+            if (fb != 0x0 && fb != 0x16 && fb != 0x18 && fb != 0x20 && fb != 0x30 && fb != 0xFE)
+                return false;
+            for (var i = TrimChars.Length; i-- > 0;)
+                if (p == TrimChars[i])
+                    return true;
+            return false;
         }
 
         internal static LambdaExpression BuildJsCallTree(string name, Expression functionGetter, ParameterExpression thisParameter, MethodInfo method, Type delegateType)

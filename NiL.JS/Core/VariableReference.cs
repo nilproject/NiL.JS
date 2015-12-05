@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
@@ -9,7 +10,10 @@ namespace NiL.JS.Core
 #endif
     public abstract class VariableReference : Expression
     {
-        private int _scopeLevel;
+        internal VariableDescriptor _descriptor;
+        public VariableDescriptor Descriptor { get { return _descriptor; } }
+
+        internal int _scopeLevel;
         public int ScopeLevel
         {
             get
@@ -22,6 +26,14 @@ namespace NiL.JS.Core
             }
         }
 
+        public bool IsCacheEnabled
+        {
+            get
+            {
+                return _scopeLevel >= 0;
+            }
+        }
+
         private int _scopeBias;
         internal int ScopeBias
         {
@@ -31,17 +43,15 @@ namespace NiL.JS.Core
             }
             set
             {
-                _scopeLevel -= _scopeBias;
-                _scopeLevel += value;
+                var sign = Math.Sign(_scopeLevel);
+                _scopeLevel -= _scopeBias * sign;
+                _scopeLevel += value * sign;
                 _scopeBias = value;
             }
         }
 
         public abstract string Name { get; }
-
-        internal VariableDescriptor _descriptor;
-        public VariableDescriptor Descriptor { get { return _descriptor; } }
-
+        
         protected internal override bool ContextIndependent
         {
             get
@@ -65,7 +75,7 @@ namespace NiL.JS.Core
 
         protected VariableReference()
         {
-            _scopeLevel = -1;
+
         }
 
         protected internal override CodeNode[] getChildsImpl()
@@ -76,7 +86,7 @@ namespace NiL.JS.Core
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
             ScopeBias = scopeBias;
-            
+
             VariableDescriptor desc = null;
             if (transferedVariables != null && transferedVariables.TryGetValue(Name, out desc))
             {

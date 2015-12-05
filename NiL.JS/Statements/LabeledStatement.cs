@@ -27,17 +27,15 @@ namespace NiL.JS.Statements
 
             var label = state.Code.Substring(index, l - index);
             state.Labels.Add(label);
-            int oldlc = state.LabelCount;
-            state.LabelCount++;
+            int oldlc = state.LabelsCount;
+            state.LabelsCount++;
             var stat = Parser.Parse(state, ref i, 0);
             state.Labels.Remove(label);
-            state.LabelCount = oldlc;
+            state.LabelsCount = oldlc;
             if (stat is FunctionDefinition)
             {
                 if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, stat.Position, stat.Length), "Labeled function. Are you sure?.");
-                stat = new CodeBlock(new[] { stat }); // для того, чтобы не дублировать код по декларации функции, 
-                // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
+                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, stat.Position, stat.Length), "Labeled function. Are you sure?");
             }
             var pos = index;
             index = i;

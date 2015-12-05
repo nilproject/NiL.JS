@@ -31,18 +31,19 @@ namespace NiL.JS.Core
         internal int definitionScopeLevel;
         internal Context cacheContext;
         internal JSValue cacheRes;
-        internal bool lexicalScope;
         internal readonly string name;
+        internal bool captured;
+        internal bool lexicalScope;
         internal Expression initializer;
+        internal List<Expression> assignments;
         internal readonly List<VariableReference> references;
         internal CodeNode owner;
-        internal bool captured;
-        internal List<Expression> assignments;
         internal PredictedType lastPredictedType;
         internal bool isReadOnly;
+        internal bool isDefined;
         internal int scopeBias;
 
-        public bool IsDefined { get { return definitionScopeLevel > 0; } }
+        public bool IsDefined { get { return isDefined; } }
         public CodeNode Owner { get { return owner; } }
         public bool IsReadOnly { get { return isReadOnly; } }
         public Expression Initializer { get { return initializer; } }
@@ -74,10 +75,11 @@ namespace NiL.JS.Core
         {
             TypeProxy tp = null;
             JSValue res = null;
-            while (depth > definitionScopeLevel)
+            var defsl = depth - definitionScopeLevel;
+            while (defsl > 0)
             {
+                defsl--;
                 context = context.parent;
-                depth--;
             }
             if (context != cacheContext)
                 cacheRes = null;
@@ -111,9 +113,10 @@ namespace NiL.JS.Core
 
         internal VariableDescriptor(string name, int definitionDepth)
         {
+            this.isDefined = true;
             this.definitionScopeLevel = definitionDepth;
             this.name = name;
-            references = new List<VariableReference>();
+            this.references = new List<VariableReference>();
         }
 
         internal VariableDescriptor(VariableReference proto, int definitionDepth)
@@ -122,7 +125,7 @@ namespace NiL.JS.Core
             this.name = proto.Name;
             if (proto is EntityReference)
                 initializer = (proto as EntityReference).Entity;
-            references = new List<VariableReference>() { proto };
+            this.references = new List<VariableReference>() { proto };
             proto._descriptor = this;
         }
 

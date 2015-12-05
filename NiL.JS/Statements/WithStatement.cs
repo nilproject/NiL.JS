@@ -49,16 +49,16 @@ namespace NiL.JS.Statements
                 state.lexicalScopeLevel--;
                 state.CodeContext = oldCodeContext;
             }
-            
+
             var pos = index;
             index = i;
             return new WithStatement()
-                {
-                    scope = obj,
-                    body = body,
-                    Position = pos,
-                    Length = index - pos
-                };
+            {
+                scope = obj,
+                body = body,
+                Position = pos,
+                Length = index - pos
+            };
         }
 
         public override JSValue Evaluate(Context context)
@@ -132,8 +132,8 @@ namespace NiL.JS.Statements
         {
             if (stats != null)
                 stats.ContainsWith = true;
-            Parser.Build(ref scope, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref body, expressionDepth,  variables, codeContext | CodeContext.InWith, message, stats, opts);
+            Parser.Build(ref scope, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.InWith, message, stats, opts);
             return false;
         }
 
@@ -156,7 +156,7 @@ namespace NiL.JS.Statements
                 body.Decompose(ref body);
         }
 
-        public override void RebuildScope(FunctionInfo functionInfo,Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
             scope?.RebuildScope(functionInfo, transferedVariables, scopeBias);
             body?.RebuildScope(functionInfo, transferedVariables, scopeBias);

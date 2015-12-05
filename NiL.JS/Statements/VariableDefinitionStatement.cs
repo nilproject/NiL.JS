@@ -9,7 +9,7 @@ namespace NiL.JS.Statements
 #if !PORTABLE
     [Serializable]
 #endif
-    public enum VariableDefinitionMode
+    public enum VariableKind
     {
         FunctionScope,
         LexicalScope,
@@ -22,16 +22,16 @@ namespace NiL.JS.Statements
     public sealed class VariableDefinitionStatement : CodeNode
     {
         private readonly int scopeLevel;
-        private VariableDefinitionMode mode;
+        private VariableKind mode;
 
         internal readonly VariableDescriptor[] variables;
         internal Expression[] initializers;
 
         public CodeNode[] Initializers { get { return initializers; } }
         public VariableDescriptor[] Variables { get { return variables; } }
-        public VariableDefinitionMode Mode { get { return mode; } }
+        public VariableKind Kind { get { return mode; } }
 
-        private VariableDefinitionStatement(VariableDescriptor[] variables, Expression[] initializers, int scopeDepth, VariableDefinitionMode mode)
+        private VariableDefinitionStatement(VariableDescriptor[] variables, Expression[] initializers, int scopeDepth, VariableKind mode)
         {
             this.initializers = initializers;
             this.variables = variables;
@@ -49,13 +49,13 @@ namespace NiL.JS.Statements
             int position = index;
             Tools.SkipSpaces(state.Code, ref position);
 
-            var mode = VariableDefinitionMode.FunctionScope;
+            var mode = VariableKind.FunctionScope;
             if (Parser.Validate(state.Code, "var ", ref position))
-                mode = VariableDefinitionMode.FunctionScope;
+                mode = VariableKind.FunctionScope;
             else if (Parser.Validate(state.Code, "let ", ref position))
-                mode = VariableDefinitionMode.LexicalScope;
+                mode = VariableKind.LexicalScope;
             else if (Parser.Validate(state.Code, "const ", ref position))
-                mode = VariableDefinitionMode.ConstantInLexicalScope;
+                mode = VariableKind.ConstantInLexicalScope;
             else
                 return null;
 
@@ -84,6 +84,10 @@ namespace NiL.JS.Statements
 
                 position = s;
                 var expression = ExpressionTree.Parse(state, ref position, processComma: false, forEnumeration: forForLoop);
+
+                if (!(expression is VariableReference) && (expression.first as ExpressionTree)?.Type != OperationType.Assignment)
+                    ExceptionsHelper.ThrowSyntaxError("Invalid variable initializer", state.Code, position);
+
                 initializers.Add(expression);
 
                 if (position >= state.Code.Length)
@@ -118,7 +122,8 @@ namespace NiL.JS.Statements
                 bool skip = false;
                 for (var j = 0; j < state.Variables.Count - i + skiped; j++)
                 {
-                    if (state.Variables[j].name == names[i] && state.Variables[j].definitionScopeLevel >= state.functionScopeLevel)
+                    if (state.Variables[j].name == names[i] 
+                        && state.Variables[j].definitionScopeLevel >= level)
                     {
                         skip = true;
                         variables[i] = state.Variables[j];
@@ -132,8 +137,8 @@ namespace NiL.JS.Statements
 
                 variables[i] = new VariableDescriptor(names[i], level)
                 {
-                    lexicalScope = mode > VariableDefinitionMode.FunctionScope,
-                    isReadOnly = mode == VariableDefinitionMode.ConstantInLexicalScope
+                    lexicalScope = mode > VariableKind.FunctionScope,
+                    isReadOnly = mode == VariableKind.ConstantInLexicalScope
                 };
 
                 state.Variables.Add(variables[i]);
@@ -159,14 +164,14 @@ namespace NiL.JS.Statements
 
             for (; i < initializers.Length; i++)
             {
-                if (context.abortType == AbortType.None && mode > VariableDefinitionMode.FunctionScope && variables[i].lexicalScope)
+                if (context.abortType == AbortType.None && mode > VariableKind.FunctionScope && variables[i].lexicalScope)
                 {
                     JSValue f = new JSValue()
                     {
                         valueType = JSValueType.Undefined,
                         attributes = JSValueAttributesInternal.DoNotDelete
                     };
-                    if (mode == VariableDefinitionMode.ConstantInLexicalScope)
+                    if (mode == VariableKind.ConstantInLexicalScope)
                         f.attributes |= JSValueAttributesInternal.ReadOnly;
 
                     variables[i].cacheRes = f;
@@ -196,7 +201,7 @@ namespace NiL.JS.Statements
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (mode > VariableDefinitionMode.FunctionScope)
+            if (mode > VariableKind.FunctionScope)
                 stats.WithLexicalEnvironment = true;
 
             int actualChilds = 0;
@@ -207,7 +212,7 @@ namespace NiL.JS.Statements
                 {
                     actualChilds++;
 
-                    if (mode == VariableDefinitionMode.ConstantInLexicalScope && initializers[i] is AssignmentOperator)
+                    if (mode == VariableKind.ConstantInLexicalScope && initializers[i] is AssignmentOperator)
                     {
                         initializers[i] = new ForceAssignmentOperator(initializers[i].first, initializers[i].second)
                         {

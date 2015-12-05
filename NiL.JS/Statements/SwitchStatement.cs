@@ -67,68 +67,76 @@ namespace NiL.JS.Statements
             var body = new List<CodeNode>();
             var funcs = new List<FunctionDefinition>();
             var cases = new List<SwitchCase>();
+            CodeNode result = null;
             cases.Add(new SwitchCase() { index = int.MaxValue });
             state.AllowBreak.Push(true);
-            while (state.Code[i] != '}')
+            var oldVariablesCount = state.Variables.Count;
+            state.lexicalScopeLevel++;
+            try
             {
-                do
+                while (state.Code[i] != '}')
                 {
-                    if (Parser.Validate(state.Code, "case", i) && Parser.IsIdentificatorTerminator(state.Code[i + 4]))
+                    do
                     {
-                        i += 4;
-                        while (Tools.IsWhiteSpace(state.Code[i]))
+                        if (Parser.Validate(state.Code, "case", i) && Parser.IsIdentificatorTerminator(state.Code[i + 4]))
+                        {
+                            i += 4;
+                            while (Tools.IsWhiteSpace(state.Code[i]))
+                                i++;
+                            var sample = ExpressionTree.Parse(state, ref i);
+                            if (state.Code[i] != ':')
+                                ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                             i++;
-                        var sample = ExpressionTree.Parse(state, ref i);
-                        if (state.Code[i] != ':')
-                            ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                        i++;
-                        cases.Add(new SwitchCase() { index = body.Count, statement = sample });
-                    }
-                    else if (Parser.Validate(state.Code, "default", i) && Parser.IsIdentificatorTerminator(state.Code[i + 7]))
-                    {
-                        i += 7;
-                        while (Tools.IsWhiteSpace(state.Code[i]))
+                            cases.Add(new SwitchCase() { index = body.Count, statement = sample });
+                        }
+                        else if (Parser.Validate(state.Code, "default", i) && Parser.IsIdentificatorTerminator(state.Code[i + 7]))
+                        {
+                            i += 7;
+                            while (Tools.IsWhiteSpace(state.Code[i]))
+                                i++;
+                            if (cases[0].index != int.MaxValue)
+                                ExceptionsHelper.Throw((new SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                            if (state.Code[i] != ':')
+                                ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                             i++;
-                        if (cases[0].index != int.MaxValue)
-                            ExceptionsHelper.Throw((new SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                        if (state.Code[i] != ':')
-                            ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                        i++;
-                        cases[0].index = body.Count;
-                    }
-                    else
-                        break;
+                            cases[0].index = body.Count;
+                        }
+                        else
+                            break;
+                        while (Tools.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';'))
+                            i++;
+                    } while (true);
+                    if (cases.Count == 1 && cases[0].index == int.MaxValue)
+                        ExceptionsHelper.Throw((new SyntaxError("Switch statement must contain cases. " + CodeCoordinates.FromTextPosition(state.Code, index, 0))));
+
+                    var t = Parser.Parse(state, ref i, 0);
+                    if (t == null)
+                        continue;
+
+                    body.Add(t);
                     while (Tools.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';'))
                         i++;
-                } while (true);
-                if (cases.Count == 1 && cases[0].index == int.MaxValue)
-                    ExceptionsHelper.Throw((new SyntaxError("Switch statement must contain cases. " + CodeCoordinates.FromTextPosition(state.Code, index, 0))));
-                var t = Parser.Parse(state, ref i, 0);
-                if (t == null)
-                    continue;
-                if (t is FunctionDefinition)
-                {
-                    if (state.strict)
-                        ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                    funcs.Add(t as FunctionDefinition);
                 }
-                else
-                    body.Add(t);
-                while (Tools.IsWhiteSpace(state.Code[i]) || (state.Code[i] == ';'))
-                    i++;
+                state.AllowBreak.Pop();
+                i++;
+                var pos = index;
+                index = i;
+                result = new SwitchStatement(body.ToArray())
+                {
+                    functions = funcs.ToArray(),
+                    cases = cases.ToArray(),
+                    image = image,
+                    Position = pos,
+                    Length = index - pos
+                };
             }
-            state.AllowBreak.Pop();
-            i++;
-            var pos = index;
-            index = i;
-            return new SwitchStatement(body.ToArray())
+            finally
             {
-                functions = funcs.ToArray(),
-                cases = cases.ToArray(),
-                image = image,
-                Position = pos,
-                Length = index - pos
-            };
+                state.lexicalScopeLevel--;
+            }
+
+            var vars = CodeBlock.extractVariables(state, oldVariablesCount);
+            return new CodeBlock(new[] { result }) { _variables = vars, Position = result.Position, Length = result.Length };
         }
 
         public override JSValue Evaluate(Context context)
@@ -315,6 +323,8 @@ namespace NiL.JS.Statements
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
+            image.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
             for (var i = 0; i < cases.Length; i++)
             {
                 if (cases[i].statement != null)

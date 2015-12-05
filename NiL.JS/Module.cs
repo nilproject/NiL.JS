@@ -82,14 +82,14 @@ namespace NiL.JS
             Context.thisBind = new GlobalObject(Context);
             Context.strict = body.strict;
 
-            var bd = body as CodeNode;
-            body.Optimize(ref bd, null, icallback, options, stat);
-
             var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
             if (tv != null)
                 body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
 
+            var bd = body as CodeNode;
+            body.Optimize(ref bd, null, icallback, options, stat);
+            
             if (stat.ContainsYield)
                 body.Decompose(ref bd);
         }

@@ -1010,7 +1010,6 @@ namespace NiL.JS.Expressions
                         }
                     case '.':
                         {
-                            binary = true;
                             i++;
                             while (Tools.IsWhiteSpace(state.Code[i]))
                                 i++;

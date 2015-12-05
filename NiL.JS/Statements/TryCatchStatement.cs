@@ -27,7 +27,6 @@ namespace NiL.JS.Statements
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             if (!Parser.Validate(state.Code, "try", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
@@ -332,7 +331,22 @@ namespace NiL.JS.Statements
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
             body.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            catchBody?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
+            if (catchBody != null)
+            {
+                VariableDescriptor variableToRestore = null;
+                if (transferedVariables != null)
+                {
+                    transferedVariables.TryGetValue(catchVariableDesc.name, out variableToRestore);
+                    transferedVariables[catchVariableDesc.name] = catchVariableDesc;
+                }
+
+                catchBody.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
+                if (variableToRestore != null)
+                    transferedVariables[variableToRestore.name] = variableToRestore;
+            }
+
             finallyBody?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 

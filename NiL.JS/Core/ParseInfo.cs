@@ -13,12 +13,12 @@ namespace NiL.JS.Core
         public readonly Dictionary<double, JSValue> doubleConstants;
 
         public List<string> Labels;
+        public int LabelsCount;
         public int AllowReturn;
         public int lexicalScopeLevel;
         public int functionScopeLevel;
         public CodeContext CodeContext;
         public bool strict;
-        public int LabelCount;
         public string Code;
         public bool AllowDirectives;
         public int breaksCount;

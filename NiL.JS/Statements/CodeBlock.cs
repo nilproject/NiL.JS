@@ -108,7 +108,7 @@ namespace NiL.JS.Statements
 
             var oldVariablesCount = state.Variables.Count;
             VariableDescriptor[] variables = null;
-            state.LabelCount = 0;
+            state.LabelsCount = 0;
             try
             {
                 if (allowDirectives)
@@ -207,38 +207,7 @@ namespace NiL.JS.Statements
             {
                 if (oldVariablesCount != state.Variables.Count)
                 {
-                    var count = 0;
-                    for (var i = oldVariablesCount; i < state.Variables.Count; i++)
-                    {
-                        if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
-                            count++;
-                    }
-                    if (count > 0)
-                    {
-                        variables = new VariableDescriptor[count];
-                        HashSet<string> declaredVariables = null;
-                        if (state.lexicalScopeLevel != state.functionScopeLevel)
-                            declaredVariables = new HashSet<string>();
-                        for (int i = oldVariablesCount, targetIndex = 0; i < state.Variables.Count; i++)
-                        {
-                            if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
-                            {
-                                variables[targetIndex] = state.Variables[i];
-                                if (declaredVariables != null)
-                                {
-                                    if (declaredVariables.Contains(variables[targetIndex].name))
-                                        ExceptionsHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" has already been defined", state.Code, i);
-                                    declaredVariables.Add(variables[targetIndex].name);
-                                }
-                                targetIndex++;
-                            }
-                            else if (targetIndex != 0)
-                            {
-                                state.Variables[i - targetIndex] = state.Variables[i];
-                            }
-                        }
-                        state.Variables.RemoveRange(state.Variables.Count - count, count);
-                    }
+                    variables = extractVariables(state, oldVariablesCount);
                 }
 
                 state.functionScopeLevel = oldFunctionScopeLevel;
@@ -261,14 +230,49 @@ namespace NiL.JS.Statements
             };
         }
 
+        internal static VariableDescriptor[] extractVariables(ParseInfo state, int oldVariablesCount)
+        {
+            VariableDescriptor[] variables = emptyVariables;
+            var count = 0;
+            for (var i = oldVariablesCount; i < state.Variables.Count; i++)
+            {
+                if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
+                    count++;
+            }
+            if (count > 0)
+            {
+                variables = new VariableDescriptor[count];
+                HashSet<string> declaredVariables = null;
+                if (state.lexicalScopeLevel != state.functionScopeLevel)
+                    declaredVariables = new HashSet<string>();
+                for (int i = oldVariablesCount, targetIndex = 0; i < state.Variables.Count; i++)
+                {
+                    if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
+                    {
+                        variables[targetIndex] = state.Variables[i];
+                        if (declaredVariables != null)
+                        {
+                            if (declaredVariables.Contains(variables[targetIndex].name))
+                                ExceptionsHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" has already been defined", state.Code, i);
+                            declaredVariables.Add(variables[targetIndex].name);
+                        }
+                        targetIndex++;
+                    }
+                    else if (targetIndex != 0)
+                    {
+                        state.Variables[i - targetIndex] = state.Variables[i];
+                    }
+                }
+                state.Variables.RemoveRange(state.Variables.Count - count, count);
+            }
+
+            return variables;
+        }
+
         public override JSValue Evaluate(Context context)
         {
-            var ls = lines;
             int i = 0;
             bool clearSuspendData = false;
-
-            if (ls.Length == 0)
-                return null;
 
             if (context.abortType >= AbortType.Resume)
             {
@@ -286,75 +290,30 @@ namespace NiL.JS.Statements
                         suspendData = context.suspendData,
                         variables = _variables,
                         thisBind = context.thisBind,
-                        strict = context.strict
+                        strict = context.strict,
+                        abortInfo = context.abortInfo,
+                        abortType = context.abortType
                     };
                 }
 
-                if (_variables.Length != 0)
+                if (_variables != null && _variables.Length != 0)
                     initVariables(context);
             }
 
+            if (!suppressScopeIsolation)
+                evaluateWithScope(context, i, clearSuspendData);
+            else
+                evaluateLines(context, i, clearSuspendData);
+
+            return null;
+        }
+
+        private void evaluateWithScope(Context context, int i, bool clearSuspendData)
+        {
             var activated = !suppressScopeIsolation && context.Activate();
             try
             {
-                for (; i < ls.Length; i++)
-                {
-#if DEV
-                    if (context.debugging)
-                        context.raiseDebugger(lines[i]);
-#endif
-                    var t = ls[i].Evaluate(context);
-                    if (t != null)
-                        context.lastResult = t;
-#if DEBUG && !PORTABLE
-                    if (!context.Excecuting)
-                        if (System.Diagnostics.Debugger.IsAttached)
-                            System.Diagnostics.Debugger.Break();
-                        else
-                            throw new ApplicationException("Context was stopped");
-                    if (NiL.JS.BaseLibrary.Number.NaN.valueType != JSValueType.Double || !double.IsNaN(Number.NaN.dValue))
-                        if (System.Diagnostics.Debugger.IsAttached)
-                            System.Diagnostics.Debugger.Break();
-                        else
-                            throw new ApplicationException("NaN has been rewitten");
-                    if (JSObject.undefined.valueType != JSValueType.Undefined)
-                        if (System.Diagnostics.Debugger.IsAttached)
-                            System.Diagnostics.Debugger.Break();
-                        else
-                            throw new ApplicationException("undefined has been rewitten");
-                    if (JSObject.notExists.Exists)
-                        if (System.Diagnostics.Debugger.IsAttached)
-                            System.Diagnostics.Debugger.Break();
-                        else
-                            throw new ApplicationException("notExists has been rewitten");
-                    if (BaseLibrary.Boolean.False.valueType != JSValueType.Bool
-                        || BaseLibrary.Boolean.False.iValue != 0
-                        || BaseLibrary.Boolean.False.attributes != JSValueAttributesInternal.SystemObject)
-                        if (System.Diagnostics.Debugger.IsAttached)
-                            System.Diagnostics.Debugger.Break();
-                        else
-                            throw new ApplicationException("Boolean.False has been rewitten");
-                    if (BaseLibrary.Boolean.True.valueType != JSValueType.Bool
-                        || BaseLibrary.Boolean.True.iValue != 1
-                        || BaseLibrary.Boolean.True.attributes != JSValueAttributesInternal.SystemObject)
-                        if (System.Diagnostics.Debugger.IsAttached)
-                            System.Diagnostics.Debugger.Break();
-                        else
-                            throw new ApplicationException("Boolean.True has been rewitten");
-#endif
-                    if (context.abortType != AbortType.None)
-                    {
-                        if (context.abortType == AbortType.Suspend)
-                        {
-                            context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
-                        }
-                        break;
-                    }
-                    if (clearSuspendData)
-                        context.SuspendData.Clear();
-                }
-
-                return null;
+                evaluateLines(context, i, clearSuspendData);
             }
             finally
             {
@@ -368,6 +327,66 @@ namespace NiL.JS.Statements
                     if (_variables.Length != 0)
                         clearVariablesCache();
                 }
+            }
+        }
+
+        private void evaluateLines(Context context, int i, bool clearSuspendData)
+        {
+            for (var ls = lines; i < ls.Length; i++)
+            {
+#if DEV
+                if (context.debugging)
+                    context.raiseDebugger(lines[i]);
+#endif
+                var t = ls[i].Evaluate(context);
+                if (t != null)
+                    context.lastResult = t;
+#if DEBUG && !PORTABLE
+                if (!context.Excecuting)
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("Context was stopped");
+                if (NiL.JS.BaseLibrary.Number.NaN.valueType != JSValueType.Double || !double.IsNaN(Number.NaN.dValue))
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("NaN has been rewitten");
+                if (JSObject.undefined.valueType != JSValueType.Undefined)
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("undefined has been rewitten");
+                if (JSObject.notExists.Exists)
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("notExists has been rewitten");
+                if (BaseLibrary.Boolean.False.valueType != JSValueType.Bool
+                    || BaseLibrary.Boolean.False.iValue != 0
+                    || BaseLibrary.Boolean.False.attributes != JSValueAttributesInternal.SystemObject)
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("Boolean.False has been rewitten");
+                if (BaseLibrary.Boolean.True.valueType != JSValueType.Bool
+                    || BaseLibrary.Boolean.True.iValue != 1
+                    || BaseLibrary.Boolean.True.attributes != JSValueAttributesInternal.SystemObject)
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+                    else
+                        throw new ApplicationException("Boolean.True has been rewitten");
+#endif
+                if (context.abortType != AbortType.None)
+                {
+                    if (context.abortType == AbortType.Suspend)
+                    {
+                        context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
+                    }
+                    break;
+                }
+                if (clearSuspendData)
+                    context.SuspendData.Clear();
             }
         }
 
@@ -402,7 +421,7 @@ namespace NiL.JS.Statements
             builded = true;
 
             List<VariableDescriptor> variablesToRestore = null;
-            if (_variables.Length != 0)
+            if (_variables != null && _variables.Length != 0)
             {
                 for (var i = 0; i < _variables.Length; i++)
                 {
@@ -418,6 +437,11 @@ namespace NiL.JS.Statements
 
                     _variables[i].owner = this;
                 }
+
+                for (var i = 0; i < _variables.Length; i++)
+                {
+                    Parser.Build(ref _variables[i].initializer, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
+                }
             }
 
             for (var i = 0; i < lines.Length; i++)
@@ -425,11 +449,6 @@ namespace NiL.JS.Statements
                 var fe = lines[i] as EntityDefinition;
                 if (fe != null)
                     lines[i] = null;
-            }
-
-            for (var i = 0; i < _variables.Length; i++)
-            {
-                Parser.Build(ref _variables[i].initializer, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
             }
 
             bool unreachable = false;
@@ -466,7 +485,7 @@ namespace NiL.JS.Statements
                     t--;
             }
 
-            if (expressionDepth > 0 && _variables.Length == 0)
+            if (expressionDepth > 0 && (_variables == null || _variables.Length == 0))
             {
                 if (lines.Length == 0)
                     _this = EmptyExpression.Instance;
@@ -498,7 +517,7 @@ namespace NiL.JS.Statements
                     newBody[f++] = lines[t];
                 lines = newBody;
             }
-            if (_variables.Length != 0)
+            if (_variables != null && _variables.Length != 0)
             {
                 for (var i = 0; i < _variables.Length; i++)
                 {
@@ -556,6 +575,11 @@ namespace NiL.JS.Statements
                     }
                 }
             }
+
+            if (lines.Length == 1 && suppressScopeIsolation)
+            {
+                _this = lines[0];
+            }
         }
 
         public override void Decompose(ref CodeNode self)
@@ -579,36 +603,64 @@ namespace NiL.JS.Statements
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            var initialVariables = _variables;
-
-            if (_variables.Length != 0 && !functionInfo.WithLexicalEnvironment)
+            if (_variables != null)
             {
-                for(var i = 0; i < _variables.Length; i++)
+                var initialVariables = _variables;
+
+                if (_variables.Length != 0 && !functionInfo.WithLexicalEnvironment)
                 {
-                    if (!transferedVariables.ContainsKey(_variables[i].name))
-                        transferedVariables.Add(_variables[i].name, _variables[i]);
+                    for (var i = 0; i < _variables.Length; i++)
+                    {
+                        VariableDescriptor desc;
+                        if (!transferedVariables.TryGetValue(_variables[i].name, out desc) || (desc.initializer == null && _variables[i].initializer != null))
+                            transferedVariables[_variables[i].name] = _variables[i];
+                    }
+                    _variables = emptyVariables;
                 }
-                _variables = emptyVariables;
-            }
 
-            if (_variables.Length == 0)
-            {
+                if (_variables.Length == 0)
+                {
+                    suppressScopeIsolation = true;
+                    scopeBias--;
+                }
+
+                for (var i = 0; i < initialVariables.Length; i++)
+                {
+                    if (initialVariables[i].definitionScopeLevel != -1)
+                    {
+                        initialVariables[i].definitionScopeLevel -= initialVariables[i].scopeBias;
+                        initialVariables[i].definitionScopeLevel += scopeBias;
+                    }
+                    initialVariables[i].scopeBias = scopeBias;
+
+                    initialVariables[i].initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+                }
+            }
+            else
                 suppressScopeIsolation = true;
-                scopeBias--;
-            }
 
-            for (var i = 0; i < initialVariables.Length; i++)
+            if (transferedVariables == null)
             {
-                initialVariables[i].definitionScopeLevel -= initialVariables[i].scopeBias;
-                initialVariables[i].scopeBias = scopeBias;
-                initialVariables[i].definitionScopeLevel += scopeBias;
-
-                initialVariables[i].initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    lines[i].RebuildScope(functionInfo, null, scopeBias);
+                }
             }
-
-            for (var i = 0; i < lines.Length; i++)
+            else
             {
-                lines[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
+                bool needRerun;
+                do
+                {
+                    needRerun = false;
+                    for (var i = 0; i < lines.Length; i++)
+                    {
+                        var oldVariablesCount = transferedVariables.Count;
+                        lines[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
+                        if (transferedVariables.Count > oldVariablesCount && i > 0)
+                            needRerun = true;
+                    }
+                }
+                while (needRerun);
             }
         }
 
@@ -625,6 +677,8 @@ namespace NiL.JS.Statements
                     if (v.cacheContext.fields == null)
                         v.cacheContext.fields = JSObject.getFieldsContainer();
                     v.cacheContext.fields[v.name] = v.cacheRes;
+                    v.cacheContext = null;
+                    v.cacheRes = null;
                 }
 
                 if (v.lexicalScope)
@@ -641,7 +695,7 @@ namespace NiL.JS.Statements
                 };
                 v.cacheRes = f;
                 v.cacheContext = context;
-                if (v.captured || cew)
+                if (v.definitionScopeLevel < 0 || v.captured || cew)
                     (context.fields ?? (context.fields = JSObject.getFieldsContainer()))[v.name] = f;
                 if (v.initializer != null)
                     f.Assign(v.initializer.Evaluate(context));

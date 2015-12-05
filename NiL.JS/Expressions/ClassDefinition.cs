@@ -377,8 +377,17 @@ namespace NiL.JS.Expressions
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
+            _codeContext = codeContext;
+
             if ((codeContext & CodeContext.InExpression) == 0)
                 stats.WithLexicalEnvironment = true;
+
+            VariableDescriptor descriptorToRestore = null;
+            if (!string.IsNullOrEmpty(name))
+            {
+                variables.TryGetValue(name, out descriptorToRestore);
+                variables[name] = reference._descriptor;
+            }
 
             Parser.Build(ref _constructor, expressionDepth, variables, codeContext | CodeContext.InClassDefenition | CodeContext.InClassConstructor, message, stats, opts);
             Parser.Build(ref _baseClass, expressionDepth, variables, codeContext, message, stats, opts);
@@ -404,7 +413,16 @@ namespace NiL.JS.Expressions
                 Parser.Build(ref computedProperties[i]._value, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             }
 
-            return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+            if (descriptorToRestore != null)
+            {
+                variables[descriptorToRestore.name] = descriptorToRestore;
+            }
+            else if (!string.IsNullOrEmpty(name))
+            {
+                variables.Remove(name);
+            }
+
+            return false;
         }
 
         public override JSValue Evaluate(Context context)

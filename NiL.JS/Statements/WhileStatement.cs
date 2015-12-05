@@ -27,8 +27,8 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "while (", ref i) && !Parser.Validate(state.Code, "while(", ref i))
                 return null;
-            int labelsCount = state.LabelCount;
-            state.LabelCount = 0;
+            int labelsCount = state.LabelsCount;
+            state.LabelsCount = 0;
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             var condition = Parser.Parse(state, ref i, CodeFragmentType.Expression);

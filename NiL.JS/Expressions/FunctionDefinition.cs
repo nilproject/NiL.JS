@@ -322,7 +322,8 @@ namespace NiL.JS.Expressions
                 var oldCodeContext = state.CodeContext;
                 if (mode == FunctionKind.Generator || mode == FunctionKind.MethodGenerator || mode == FunctionKind.AnonymousGenerator)
                     state.CodeContext |= CodeContext.InGenerator;
-                state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional);
+                state.CodeContext |= CodeContext.InFunction;
+                state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional | CodeContext.InEval | CodeContext.InWith);
                 var labels = state.Labels;
                 state.Labels = new List<string>();
                 state.AllowReturn++;
@@ -400,7 +401,7 @@ namespace NiL.JS.Expressions
                     newVariables[j] = parameters[parameters.Count - j - 1]; // порядок определяет приоритет
                     for (var k = 0; k < body._variables.Length; k++)
                     {
-                        if (body._variables[k].name == parameters[j].name)
+                        if (body._variables[k] != null && body._variables[k].name == parameters[j].name)
                         {
                             if (body._variables[k].initializer != null)
                                 newVariables[j] = body._variables[k];
@@ -534,24 +535,22 @@ namespace NiL.JS.Expressions
                 значит её следует пометить захваченной. Для этого необходимо запомнить количество
                 ссылок для всех пеменных
             */
-            var referenceRegister = new Dictionary<string, int>();
+            var numbersOfReferences = new Dictionary<string, int>();
             foreach (var variable in variables)
             {
-                referenceRegister[variable.Key] = variable.Value.references.Count;
+                numbersOfReferences[variable.Key] = variable.Value.references.Count;
             }
 
             VariableDescriptor descriptorToRestore = null;
             if (!string.IsNullOrEmpty(name))
             {
-                if (variables.TryGetValue(name, out descriptorToRestore) && descriptorToRestore == reference._descriptor)
-                    descriptorToRestore = null;
-                else
-                    variables[name] = reference._descriptor;
+                variables.TryGetValue(name, out descriptorToRestore);
+                variables[name] = reference._descriptor;
             }
 
             var bodyCode = body as CodeNode;
             _functionInfo.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
-            bodyCode.Build(ref bodyCode, 0, variables, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval), message, _functionInfo, opts);
+            bodyCode.Build(ref bodyCode, 0, variables, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval | CodeContext.InWith) | CodeContext.InFunction, message, _functionInfo, opts);
             if (message != null)
             {
                 for (var i = parameters.Length; i-- > 0;)
@@ -582,12 +581,23 @@ namespace NiL.JS.Expressions
             {
                 variables[descriptorToRestore.name] = descriptorToRestore;
             }
+            else if (!string.IsNullOrEmpty(name))
+            {
+                variables.Remove(name);
+            }
 
             foreach (var variable in variables)
             {
                 int count = 0;
-                if (!referenceRegister.TryGetValue(variable.Key, out count) || count != variable.Value.references.Count)
+                if (!numbersOfReferences.TryGetValue(variable.Key, out count) || count != variable.Value.references.Count)
+                {
                     variable.Value.captured = true;
+                    if ((codeContext & CodeContext.InWith) != 0)
+                    {
+                        for (var i = count; i < variable.Value.references.Count; i++)
+                            variable.Value.references[i].ScopeLevel = -System.Math.Abs(variable.Value.references[i].ScopeLevel);
+                    }
+                }
             }
 
             return false;
@@ -623,15 +633,15 @@ namespace NiL.JS.Expressions
                 || body.lines == null
                 || body.lines.Length == 0)
                 return;
-            var containsEntities = _functionInfo.ContainsInnerEntities;
-            if (!containsEntities)
-            {
-                for (var i = 0; !containsEntities && i < body._variables.Length; i++)
-                    containsEntities |= body._variables[i].initializer != null;
-                _functionInfo.ContainsInnerEntities = containsEntities;
-            }
             if (body._variables != null)
             {
+                var containsEntities = _functionInfo.ContainsInnerEntities;
+                if (!containsEntities)
+                {
+                    for (var i = 0; !containsEntities && i < body._variables.Length; i++)
+                        containsEntities |= body._variables[i].initializer != null;
+                    _functionInfo.ContainsInnerEntities = containsEntities;
+                }
                 for (var i = 0; i < body._variables.Length; i++)
                 {
                     _functionInfo.ContainsArguments |= body._variables[i].name == "arguments";
@@ -662,9 +672,13 @@ namespace NiL.JS.Expressions
             base.RebuildScope(functionInfo, null, scopeBias);
 
             var tv = _functionInfo.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
-            body.RebuildScope(_functionInfo, tv, scopeBias + (body._variables.Length == 0 || !_functionInfo.WithLexicalEnvironment ? 1 : 0));
+            body.RebuildScope(_functionInfo, tv, scopeBias + (body._variables == null || body._variables.Length == 0 || !_functionInfo.WithLexicalEnvironment ? 1 : 0));
             if (tv != null)
-                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
+            {
+                var vars = new List<VariableDescriptor>(tv.Values);
+                vars.RemoveAll(x => x is ParameterDescriptor);
+                body._variables = vars.ToArray();
+            }
         }
 
         public override string ToString()

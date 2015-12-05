@@ -167,7 +167,7 @@ namespace NiL.JS.Core
                 value = default(TValue);
                 return false;
             }
-            if (_previousIndex != -1 && string.CompareOrdinal(_records[_previousIndex].key, key) == 0)
+            if (_previousIndex != -1 && string.CompareOrdinal(key, _records[_previousIndex].key) == 0)
             {
                 value = _records[_previousIndex].value;
                 return true;
@@ -176,10 +176,10 @@ namespace NiL.JS.Core
             int index = hash & (_records.Length - 1);
             do
             {
-                if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
+                if (_records[index].hash == hash && string.CompareOrdinal(key, _records[index].key) == 0)
                 {
-                    _previousIndex = index;
                     value = _records[index].value;
+                    _previousIndex = index;
                     return true;
                 }
                 index = _records[index].next - 1;

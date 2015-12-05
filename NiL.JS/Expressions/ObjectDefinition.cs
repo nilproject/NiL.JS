@@ -13,12 +13,12 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class ObjectDefinition : Expression
     {
-        private Expression[] values;
         private string[] fieldNames;
+        private Expression[] values;
         private KeyValuePair<Expression, Expression>[] computedProperties;
 
-        public Expression[] Values { get { return values; } }
         public string[] FieldNames { get { return fieldNames; } }
+        public Expression[] Values { get { return values; } }
         public IEnumerable<KeyValuePair<Expression, Expression>> ComputedProperties { get { return computedProperties; } }
 
         protected internal override bool ContextIndependent
@@ -385,6 +385,22 @@ namespace NiL.JS.Expressions
                 value.Optimize(ref value, owner, message, opts, stats);
 
                 computedProperties[i] = new KeyValuePair<Expression, Expression>(key, value);
+            }
+        }
+
+        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        {
+            base.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
+            for (var i = 0; i < values.Length; i++)
+            {
+                values[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
+            }
+
+            for (var i = 0; i < computedProperties.Length; i++)
+            {
+                computedProperties[i].Key.RebuildScope(functionInfo, transferedVariables, scopeBias);
+                computedProperties[i].Value.RebuildScope(functionInfo, transferedVariables, scopeBias);
             }
         }
 

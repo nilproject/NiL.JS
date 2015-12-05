@@ -33,8 +33,8 @@ namespace NiL.JS.Statements
                 i++;
             if (!Parser.Validate(state.Code, "do", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
-            int labelsCount = state.LabelCount;
-            state.LabelCount = 0;
+            int labelsCount = state.LabelsCount;
+            state.LabelsCount = 0;
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             state.AllowBreak.Push(true);

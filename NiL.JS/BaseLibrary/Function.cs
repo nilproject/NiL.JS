@@ -261,7 +261,7 @@ namespace NiL.JS.BaseLibrary
             attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
             parentContext = (Context.CurrentContext ?? Context.GlobalContext).Root;
             if (parentContext == Context.globalContext)
-                throw new InvalidOperationException("Special Functions constructor can be called only in runtime.");
+                throw new InvalidOperationException("Special Functions constructor can be called only while javascript running.");
             var index = 0;
             int len = args.Length - 1;
             var argn = "";
@@ -272,6 +272,11 @@ namespace NiL.JS.BaseLibrary
             if (func != null && code.Length == index)
             {
                 Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), parentContext.strict ? CodeContext.Strict : CodeContext.None, null, null, Options.None);
+
+                func.RebuildScope(null, null, 0);
+                func.Optimize(ref func, null, null, Options.None, null);
+                func.Decompose(ref func);
+
                 creator = func as FunctionDefinition;
             }
             else
@@ -550,7 +555,6 @@ namespace NiL.JS.BaseLibrary
             }
             for (;;) // tail recursion catcher
             {
-                creator.recursionDepth++;
                 var internalContext = new Context(parentContext, ceocw, this);
                 internalContext.variables = body._variables;
                 internalContext.Activate();
@@ -558,6 +562,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     initContext(targetObject, arguments, ceocw, internalContext);
                     initParameters(arguments, internalContext);
+                    creator.recursionDepth++;
                     res = evaluate(internalContext);
                 }
                 finally

@@ -39,67 +39,94 @@ namespace NiL.JS.Statements
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             CodeNode init = null;
-            int labelsCount = state.LabelCount;
-            state.LabelCount = 0;
-            init = VariableDefinitionStatement.Parse(state, ref i, true);
-            if (init == null)
-                init = Parser.Parse(state, ref i, CodeFragmentType.Expression);
-            if ((init is ExpressionTree)
-                && (init as ExpressionTree).Type == OperationType.None
-                && (init as ExpressionTree).second == null)
-                init = (init as ExpressionTree).first;
-            if (state.Code[i] != ';')
-                ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            do
-                i++;
-            while (Tools.IsWhiteSpace(state.Code[i]));
-            var condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i);
-            if (state.Code[i] != ';')
-                ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            do
-                i++;
-            while (Tools.IsWhiteSpace(state.Code[i]));
-            var post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i);
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
-            if (state.Code[i] != ')')
-                ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            do
-                i++;
-            while (Tools.IsWhiteSpace(state.Code[i]));
-            state.AllowBreak.Push(true);
-            state.AllowContinue.Push(true);
-            var body = Parser.Parse(state, ref i, 0);
-            if (body is FunctionDefinition)
+            CodeNode body = null;
+            CodeNode condition = null;
+            CodeNode post = null;
+            CodeNode result = null;
+
+            var labelsCount = state.LabelsCount;
+            var oldVariablesCount = state.Variables.Count;
+            state.LabelsCount = 0;
+            state.lexicalScopeLevel++;
+            try
             {
-                if (state.strict)
-                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-                if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
-                body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
-                // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
+                init = VariableDefinitionStatement.Parse(state, ref i, true);
+                if (init == null)
+                    init = Parser.Parse(state, ref i, CodeFragmentType.Expression);
+                if ((init is ExpressionTree)
+                    && (init as ExpressionTree).Type == OperationType.None
+                    && (init as ExpressionTree).second == null)
+                    init = (init as ExpressionTree).first;
+                if (state.Code[i] != ';')
+                    ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                do
+                    i++;
+                while (Tools.IsWhiteSpace(state.Code[i]));
+                condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i);
+                if (state.Code[i] != ';')
+                    ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                do
+                    i++;
+                while (Tools.IsWhiteSpace(state.Code[i]));
+                post = state.Code[i] == ')' ? null as CodeNode : ExpressionTree.Parse(state, ref i);
+                while (Tools.IsWhiteSpace(state.Code[i]))
+                    i++;
+                if (state.Code[i] != ')')
+                    ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                do
+                    i++;
+                while (Tools.IsWhiteSpace(state.Code[i]));
+                state.AllowBreak.Push(true);
+                state.AllowContinue.Push(true);
+                try
+                {
+                    body = Parser.Parse(state, ref i, 0);
+                    var vds = body as VariableDefinitionStatement;
+                    if (vds != null)
+                    {
+                        if (vds.Kind >= VariableKind.ConstantInLexicalScope)
+                        {
+                            ExceptionsHelper.ThrowSyntaxError("Block scope variables can not be declared in for-loop directly", state.Code, body.Position);
+                        }
+
+                        if (state.message != null)
+                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare variables in for-loop directly");
+                    }
+                }
+                finally
+                {
+                    state.AllowBreak.Pop();
+                    state.AllowContinue.Pop();
+                }
+
+                int startPos = index;
+                index = i;
+
+                result = new ForStatement()
+                {
+                    body = body,
+                    condition = condition,
+                    initializer = init,
+                    post = post,
+                    labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
+                    Position = startPos,
+                    Length = index - startPos
+                };
+
+                var vars = CodeBlock.extractVariables(state, oldVariablesCount);
+                result = new CodeBlock(new[] { result }) { _variables = vars, Position = result.Position, Length = result.Length };
             }
-            state.AllowBreak.Pop();
-            state.AllowContinue.Pop();
-            int startPos = index;
-            index = i;
-            return new ForStatement()
+            finally
             {
-                body = body,
-                condition = condition,
-                initializer = init,
-                post = post,
-                labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
-                Position = startPos,
-                Length = index - startPos
-            };
+                state.lexicalScopeLevel--;
+            }
+
+            return result;
         }
 
         public override JSValue Evaluate(Context context)
         {
-            if (initializer != null
-                && (context.abortType != AbortType.Resume
-                    || context.SuspendData[this] == initializer))
+            if (initializer != null && (context.abortType != AbortType.Resume || context.SuspendData[this] == initializer))
             {
 #if DEV
                 if (context.abortType != AbortType.Resume && context.debugging)
@@ -134,9 +161,7 @@ namespace NiL.JS.Statements
 
             do
             {
-                if (be
-                 && (context.abortType != AbortType.Resume
-                    || context.SuspendData[this] == body))
+                if (be && (context.abortType != AbortType.Resume || context.SuspendData[this] == body))
                 {
 #if DEV
                     if (context.abortType != AbortType.Resume && context.debugging && !(body is CodeBlock))
@@ -210,10 +235,12 @@ namespace NiL.JS.Statements
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             Parser.Build(ref initializer, 1, variables, codeContext, message, stats, opts);
-            if ((opts & Options.SuppressUselessStatementsElimination) == 0
-                && initializer is VariableDefinitionStatement
-                && (initializer as VariableDefinitionStatement).initializers.Length == 1)
-                initializer = (initializer as VariableDefinitionStatement).initializers[0];
+            if ((opts & Options.SuppressUselessStatementsElimination) == 0)
+            {
+                var initAsVds = initializer as VariableDefinitionStatement;
+                if (initAsVds != null && initAsVds.initializers.Length == 1 && initAsVds.Kind == VariableKind.FunctionScope)
+                    initializer = (initializer as VariableDefinitionStatement).initializers[0];
+            }
             Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
             if (post != null)
             {

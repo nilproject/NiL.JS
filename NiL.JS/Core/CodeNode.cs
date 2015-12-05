@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
+using System.Runtime.InteropServices;
 
 #if !PORTABLE
 using NiL.JS.Core.JIT;
@@ -24,7 +25,8 @@ namespace NiL.JS.Core
         InClassDefenition = 128,
         InClassConstructor = 256,
         InStaticMember = 512,
-        InGenerator = 1024
+        InGenerator = 1024,
+        InFunction = 2048
     }
 
 #if !PORTABLE

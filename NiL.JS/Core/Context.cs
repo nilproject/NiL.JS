@@ -597,12 +597,6 @@ namespace NiL.JS.Core
                 CodeNode cb = body;
                 Parser.Build(ref cb, 0, variables, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, stats, Options.None);
 
-                body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
-                body = cb as CodeBlock;
-                
-                if (stats.ContainsYield)
-                    body.Decompose(ref cb);
-
                 body.suppressScopeIsolation = true;
 
                 if (!strict && !body.strict)
@@ -646,6 +640,12 @@ namespace NiL.JS.Core
                 body.RebuildScope(stats, tv, body._variables.Length == 0 || !stats.WithLexicalEnvironment ? 1 : 0);
                 if (tv != null)
                     body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
+
+                body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
+                body = cb as CodeBlock ?? body;
+
+                if (stats.ContainsYield)
+                    body.Decompose(ref cb);
 
                 if (body.lines.Length == 0)
                     return JSValue.undefined;

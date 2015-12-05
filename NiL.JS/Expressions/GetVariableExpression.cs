@@ -73,7 +73,7 @@ namespace NiL.JS.Expressions
         {
             if (context.strict || forceThrow)
             {
-                var res = Descriptor.Get(context, false, ScopeLevel);
+                var res = Descriptor.Get(context, false, _scopeLevel);
                 if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
                     ExceptionsHelper.ThrowVariableNotDefined(variableName);
                 if (context.strict)
@@ -83,12 +83,12 @@ namespace NiL.JS.Expressions
                 }
                 return res;
             }
-            return _descriptor.Get(context, true, ScopeLevel);
+            return _descriptor.Get(context, true, _scopeLevel);
         }
 
         public override JSValue Evaluate(Context context)
         {
-            var res = _descriptor.Get(context, false, ScopeLevel);
+            var res = _descriptor.Get(context, false, _scopeLevel);
             switch (res.valueType)
             {
                 case JSValueType.NotExists:
@@ -138,26 +138,29 @@ namespace NiL.JS.Expressions
         {
             _codeContext = codeContext;
 
-            if (stats != null && variableName == "this")
-            {
-                stats.ContainsThis = true;
-                ScopeLevel = -1;
-            }
-
             VariableDescriptor desc = null;
             if (!variables.TryGetValue(variableName, out desc) || desc == null)
             {
-                desc = new VariableDescriptor(this, -1);
+                desc = new VariableDescriptor(this, 1) { isDefined = false };
                 variables[variableName] = this.Descriptor;
             }
             else
             {
-                desc.references.Add(this);
+                if (!desc.references.Contains(this))
+                    desc.references.Add(this);
                 _descriptor = desc;
             }
 
-            if ((codeContext & CodeContext.InWith) != 0)
-                ScopeLevel = -1;
+            if (variableName == "this")
+            {
+                stats.ContainsThis = true;
+                desc.definitionScopeLevel = -1;
+            }
+            else if (((codeContext & CodeContext.InWith) != 0) || (stats.ContainsEval && !desc.isDefined))
+            {
+                ScopeLevel = -Math.Abs(ScopeLevel);
+                desc.definitionScopeLevel = -Math.Abs(desc.definitionScopeLevel);
+            }
 
             forceThrow |= desc.lexicalScope; // часть TDZ
 
@@ -168,7 +171,7 @@ namespace NiL.JS.Expressions
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused getting of defined variable was removed. Maybe something missing.");
             }
-            else if (variableName == "arguments" && ScopeLevel > 0)
+            else if (variableName == "arguments" && (codeContext & CodeContext.InFunction) != 0)
             {
                 if (stats != null)
                     stats.ContainsArguments = true;
@@ -180,10 +183,9 @@ namespace NiL.JS.Expressions
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            base.Optimize(ref _this, owner, message, opts, stats);
             if ((opts & Options.SuppressConstantPropogation) == 0
                 && !_descriptor.captured
-                && _descriptor.IsDefined
+                && _descriptor.isDefined
                 && !stats.ContainsWith
                 && !stats.ContainsEval
                 && (_descriptor.owner != owner || !owner._functionInfo.ContainsArguments))

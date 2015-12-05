@@ -15,7 +15,6 @@ namespace NiL.JS.Statements
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
-            //string code = state.Code;
             int i = index;
             if (!Parser.Validate(state.Code, "break", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;

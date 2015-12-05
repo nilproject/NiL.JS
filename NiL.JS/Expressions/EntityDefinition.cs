@@ -28,7 +28,6 @@ namespace NiL.JS.Expressions
 
         public EntityReference(EntityDefinition owner)
         {
-            ScopeLevel = -1;
             this.owner = owner;
         }
 
