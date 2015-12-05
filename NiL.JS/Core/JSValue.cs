@@ -70,10 +70,7 @@ namespace NiL.JS.Core
         Cloned = 1 << 22,
         Reassign = 1 << 25,
         IntrinsicFunction = 1 << 26,
-        /// <summary>
-        /// Аттрибуты, которые передаются при при присваивании
-        /// </summary>
-        PrivateAttributes = Immutable | ProxyPrototype | Field | IntrinsicFunction,
+        ConstructingObject = 1 << 27
     }
 
 #if !PORTABLE

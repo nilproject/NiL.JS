@@ -85,7 +85,7 @@ namespace NiL.JS.Expressions
                 if (stats != null && cachedMemberName.ToString() == "arguments")
                     stats.ContainsArguments = true;
             }
-            if (first is SuperExpression)
+            if (first is GetSuper)
                 memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.SuperProto;
             return false;
         }

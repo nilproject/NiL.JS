@@ -95,14 +95,14 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             bool conditionResult;
-            if (context.abortType != AbortType.Resume || !context.SuspendData.ContainsKey(this))
+            if (context.abortReason != AbortReason.Resume || !context.SuspendData.ContainsKey(this))
             {
 #if DEV
                 if (context.debugging)
                     context.raiseDebugger(condition);
 #endif
                 conditionResult = (bool)condition.Evaluate(context);
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                     return null;
             }
             else
@@ -129,7 +129,7 @@ namespace NiL.JS.Statements
                 if (temp != null)
                     context.lastResult = temp;
             }
-            if (context.abortType == AbortType.Suspend)
+            if (context.abortReason == AbortReason.Suspend)
                 context.SuspendData[this] = conditionResult;
             return null;
         }

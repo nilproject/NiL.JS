@@ -61,14 +61,14 @@ namespace NiL.JS.Core
             }
         }
 
-        internal JSValue Get(Context context, bool forWrite, int depth)
+        internal JSValue Get(Context context, bool forWrite, int scopeLevel)
         {
             context.objectSource = null;
-            if (((definitionScopeLevel | depth) & int.MinValue) != 0)
+            if (((definitionScopeLevel | scopeLevel) & int.MinValue) != 0)
                 return context.GetVariable(name, forWrite);
             if (context == cacheContext)
                 return cacheRes;
-            return deepGet(context, forWrite, depth);
+            return deepGet(context, forWrite, scopeLevel);
         }
 
         private JSValue deepGet(Context context, bool forWrite, int depth)
@@ -111,20 +111,21 @@ namespace NiL.JS.Core
             return res;
         }
 
-        internal VariableDescriptor(string name, int definitionDepth)
+        internal VariableDescriptor(string name, int definitionScopeLevel)
         {
             this.isDefined = true;
-            this.definitionScopeLevel = definitionDepth;
+            this.definitionScopeLevel = definitionScopeLevel;
             this.name = name;
             this.references = new List<VariableReference>();
         }
 
         internal VariableDescriptor(VariableReference proto, int definitionDepth)
         {
+            if (proto._descriptor != null)
+                throw new ArgumentException("proto");
+
             this.definitionScopeLevel = definitionDepth;
             this.name = proto.Name;
-            if (proto is EntityReference)
-                initializer = (proto as EntityReference).Entity;
             this.references = new List<VariableReference>() { proto };
             proto._descriptor = this;
         }

@@ -16,16 +16,7 @@ namespace NiL.JS.Core.Functions
                 return "eval";
             }
         }
-
-        [Hidden]
-        public override FunctionKind Type
-        {
-            [Hidden]
-            get
-            {
-                return FunctionKind.Function;
-            }
-        }
+        
         [Field]
         [DoNotDelete]
         [DoNotEnumerate]

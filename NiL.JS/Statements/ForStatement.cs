@@ -126,14 +126,14 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            if (initializer != null && (context.abortType != AbortType.Resume || context.SuspendData[this] == initializer))
+            if (initializer != null && (context.abortReason != AbortReason.Resume || context.SuspendData[this] == initializer))
             {
 #if DEV
-                if (context.abortType != AbortType.Resume && context.debugging)
+                if (context.abortReason != AbortReason.Resume && context.debugging)
                     context.raiseDebugger(initializer);
 #endif
                 initializer.Evaluate(context);
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = initializer;
                     return null;
@@ -143,14 +143,14 @@ namespace NiL.JS.Statements
             bool pe = post != null;
             JSValue checkResult;
 
-            if (context.abortType != AbortType.Resume || context.SuspendData[this] == condition)
+            if (context.abortReason != AbortReason.Resume || context.SuspendData[this] == condition)
             {
 #if DEV
-                if (context.abortType != AbortType.Resume && context.debugging)
+                if (context.abortReason != AbortReason.Resume && context.debugging)
                     context.raiseDebugger(condition);
 #endif
                 checkResult = condition.Evaluate(context);
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = condition;
                     return null;
@@ -161,30 +161,30 @@ namespace NiL.JS.Statements
 
             do
             {
-                if (be && (context.abortType != AbortType.Resume || context.SuspendData[this] == body))
+                if (be && (context.abortReason != AbortReason.Resume || context.SuspendData[this] == body))
                 {
 #if DEV
-                    if (context.abortType != AbortType.Resume && context.debugging && !(body is CodeBlock))
+                    if (context.abortReason != AbortReason.Resume && context.debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
 #endif
                     var temp = body.Evaluate(context);
                     if (temp != null)
                         context.lastResult = temp;
-                    if (context.abortType != AbortType.None)
+                    if (context.abortReason != AbortReason.None)
                     {
-                        if (context.abortType < AbortType.Return)
+                        if (context.abortReason < AbortReason.Return)
                         {
                             var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                            var _break = (context.abortType > AbortType.Continue) || !me;
+                            var _break = (context.abortReason > AbortReason.Continue) || !me;
                             if (me)
                             {
-                                context.abortType = AbortType.None;
+                                context.abortReason = AbortReason.None;
                                 context.abortInfo = null;
                             }
                             if (_break)
                                 return null;
                         }
-                        else if (context.abortType == AbortType.Suspend)
+                        else if (context.abortReason == AbortReason.Suspend)
                         {
                             context.SuspendData[this] = body;
                             return null;
@@ -195,21 +195,21 @@ namespace NiL.JS.Statements
                 }
 
                 if (pe
-                 && (context.abortType != AbortType.Resume
+                 && (context.abortReason != AbortReason.Resume
                     || context.SuspendData[this] == post))
                 {
 #if DEV
-                    if (context.abortType != AbortType.Resume && context.debugging)
+                    if (context.abortReason != AbortReason.Resume && context.debugging)
                         context.raiseDebugger(post);
 #endif
                     post.Evaluate(context);
                 }
 #if DEV
-                if (context.abortType != AbortType.Resume && context.debugging)
+                if (context.abortReason != AbortReason.Resume && context.debugging)
                     context.raiseDebugger(condition);
 #endif
                 checkResult = condition.Evaluate(context);
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = condition;
                     return null;

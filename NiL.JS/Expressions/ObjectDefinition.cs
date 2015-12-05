@@ -450,10 +450,10 @@ namespace NiL.JS.Expressions
 
             for (var i = 0; i < lastDecomposeIndex; i++)
             {
-                if (!(values[i] is ExtractStoredValueExpression))
+                if (!(values[i] is ExtractStoredValue))
                 {
                     result.Add(new StoreValueStatement(values[i], false));
-                    values[i] = new ExtractStoredValueExpression(values[i]);
+                    values[i] = new ExtractStoredValue(values[i]);
                 }
             }
 
@@ -462,15 +462,15 @@ namespace NiL.JS.Expressions
                 Expression key = null;
                 Expression value = null;
 
-                if (!(computedProperties[i].Key is ExtractStoredValueExpression))
+                if (!(computedProperties[i].Key is ExtractStoredValue))
                 {
                     result.Add(new StoreValueStatement(computedProperties[i].Key, false));
-                    key = new ExtractStoredValueExpression(computedProperties[i].Key);
+                    key = new ExtractStoredValue(computedProperties[i].Key);
                 }
-                if (!(computedProperties[i].Value is ExtractStoredValueExpression))
+                if (!(computedProperties[i].Value is ExtractStoredValue))
                 {
                     result.Add(new StoreValueStatement(computedProperties[i].Value, false));
-                    value = new ExtractStoredValueExpression(computedProperties[i].Value);
+                    value = new ExtractStoredValue(computedProperties[i].Value);
                 }
                 if ((key != null)
                     || (value != null))

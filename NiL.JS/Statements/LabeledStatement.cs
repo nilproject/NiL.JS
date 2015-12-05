@@ -51,9 +51,9 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var res = statement.Evaluate(context);
-            if ((context.abortType == AbortType.Break) && (context.abortInfo != null) && (context.abortInfo.oValue as string == label))
+            if ((context.abortReason == AbortReason.Break) && (context.abortInfo != null) && (context.abortInfo.oValue as string == label))
             {
-                context.abortType = AbortType.None;
+                context.abortReason = AbortReason.None;
                 context.abortInfo = JSValue.notExists;
             }
             return res;

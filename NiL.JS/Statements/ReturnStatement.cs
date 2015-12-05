@@ -52,11 +52,11 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var result = body != null ? body.Evaluate(context) : null;
-            if (context.abortType == AbortType.None)
+            if (context.abortReason == AbortReason.None)
             {
                 context.abortInfo = result;
-                if (context.abortType < AbortType.Return)
-                    context.abortType = AbortType.Return;
+                if (context.abortReason < AbortReason.Return)
+                    context.abortReason = AbortReason.Return;
             }
             return JSValue.notExists;
         }

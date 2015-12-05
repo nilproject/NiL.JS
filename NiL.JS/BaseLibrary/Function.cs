@@ -61,7 +61,7 @@ namespace NiL.JS.BaseLibrary
         };
         protected static void ThrowTypeError()
         {
-            ExceptionsHelper.Throw(new TypeError("Properties caller, callee and arguments not allowed in strict mode."));
+            ExceptionsHelper.Throw(new TypeError("Properties \"caller\", \"callee\" and \"arguments\" may not be accessed in strict mode."));
         }
         internal static readonly JSValue propertiesDummySM = new JSValue()
         {
@@ -116,21 +116,12 @@ namespace NiL.JS.BaseLibrary
             }
         }
         [Hidden]
-        public virtual FunctionKind Type
-        {
-            [Hidden]
-            get
-            {
-                return creator.type;
-            }
-        }
-        [Hidden]
         public virtual bool Strict
         {
             [Hidden]
             get
             {
-                return creator.body.strict;
+                return creator?.body.strict ?? true;
             }
         }
         [Hidden]
@@ -202,7 +193,7 @@ namespace NiL.JS.BaseLibrary
                 if (context == null)
                     return null;
                 if (creator.body.strict)
-                    ExceptionsHelper.Throw(new TypeError("Property arguments not allowed in strict mode."));
+                    ExceptionsHelper.Throw(new TypeError("Property \"arguments\" may not be accessed in strict mode."));
                 if (context.arguments == null && creator.recursionDepth > 0)
                     BuildArgumentsObject();
                 return context.arguments;
@@ -214,7 +205,7 @@ namespace NiL.JS.BaseLibrary
                 if (context == null)
                     return;
                 if (creator.body.strict)
-                    ExceptionsHelper.Throw(new TypeError("Property arguments not allowed in strict mode."));
+                    ExceptionsHelper.Throw(new TypeError("Property \"arguments\" may not be accessed in strict mode."));
                 context.arguments = value;
             }
         }
@@ -231,7 +222,7 @@ namespace NiL.JS.BaseLibrary
                 if (context == null || context.oldContext == null)
                     return null;
                 if (context.strict || (context.oldContext.strict && context.oldContext.owner != null))
-                    ExceptionsHelper.Throw(new TypeError("Property caller not allowed in strict mode."));
+                    ExceptionsHelper.Throw(new TypeError("Property \"caller\" may not be accessed in strict mode."));
                 return context.oldContext.owner;
             }
             [Hidden]
@@ -241,7 +232,7 @@ namespace NiL.JS.BaseLibrary
                 if (context == null || context.oldContext == null)
                     return;
                 if (context.strict || (context.oldContext.strict && context.oldContext.owner != null))
-                    ExceptionsHelper.Throw(new TypeError("Property caller not allowed in strict mode."));
+                    ExceptionsHelper.Throw(new TypeError("Property \"caller\" may not be accessed in strict mode."));
             }
         }
         #endregion
@@ -296,7 +287,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public JSValue Construct(Arguments arguments, Function newTarget)
+        public JSValue Construct(Arguments arguments)
         {
             if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
             {
@@ -304,7 +295,10 @@ namespace NiL.JS.BaseLibrary
             }
 
             JSValue targetObject = ConstructObject();
-            return Construct(targetObject, arguments, newTarget);
+            targetObject.attributes |= JSValueAttributesInternal.ConstructingObject;
+            var result = Construct(targetObject, arguments, this);
+            targetObject.attributes &= ~JSValueAttributesInternal.ConstructingObject;
+            return result;
         }
 
         [Hidden]
@@ -434,7 +428,7 @@ namespace NiL.JS.BaseLibrary
             if (construct)
             {
                 if (targetObject == null || targetObject.valueType < JSValueType.Object)
-                    return Construct(argumentsObject, newTarget);
+                    return Construct(argumentsObject);
                 return Construct(targetObject, argumentsObject, newTarget);
             }
             else
@@ -462,7 +456,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var internalContext = new Context(parentContext, false, this);
                 internalContext.variables = body._variables;
-                if (creator.type == FunctionKind.Arrow)
+                if (creator.kind == FunctionKind.Arrow)
                     internalContext.thisBind = parentContext.thisBind;
                 else
                     internalContext.thisBind = targetObject;
@@ -484,7 +478,7 @@ namespace NiL.JS.BaseLibrary
                 try
                 {
                     res = evaluate(internalContext);
-                    if (internalContext.abortType == AbortType.TailRecursion)
+                    if (internalContext.abortReason == AbortReason.TailRecursion)
                     {
                         tailCall = true;
                         args = internalContext.abortInfo as Arguments;
@@ -587,7 +581,7 @@ namespace NiL.JS.BaseLibrary
         internal JSValue evaluate(Context internalContext)
         {
             creator.body.Evaluate(internalContext);
-            if (internalContext.abortType == AbortType.TailRecursion)
+            if (internalContext.abortReason == AbortReason.TailRecursion)
                 return null;
             var ai = internalContext.abortInfo;
             if (ai == null || ai.valueType < JSValueType.Undefined)
@@ -609,7 +603,7 @@ namespace NiL.JS.BaseLibrary
         private void exit(Context internalContext)
         {
             creator?.body?.clearVariablesCache();
-            internalContext.abortType = AbortType.Return;
+            internalContext.abortReason = AbortReason.Return;
             internalContext.Deactivate();
         }
 
@@ -755,7 +749,7 @@ namespace NiL.JS.BaseLibrary
             }
             internalContext.thisBind = targetObject;
             internalContext.strict |= creator.body.strict;
-            if (creator.type == FunctionKind.Arrow)
+            if (creator.kind == FunctionKind.Arrow)
             {
                 internalContext.arguments = internalContext.parent.arguments;
                 internalContext.thisBind = internalContext.parent.thisBind;
@@ -950,7 +944,7 @@ namespace NiL.JS.BaseLibrary
         public virtual string ToString(bool headerOnly)
         {
             StringBuilder res = new StringBuilder();
-            switch (creator.type)
+            switch (creator.kind)
             {
                 case FunctionKind.Generator:
                     res.Append("function*");

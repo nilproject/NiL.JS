@@ -224,10 +224,10 @@ namespace NiL.JS.Expressions
 
             if (second != null)
             {
-                if (second.NeedDecompose && !(first is ExtractStoredValueExpression))
+                if (second.NeedDecompose && !(first is ExtractStoredValue))
                 {
                     result.Add(new StoreValueStatement(first, LValueModifier));
-                    first = new ExtractStoredValueExpression(first);
+                    first = new ExtractStoredValue(first);
                 }
 
                 second.Decompose(ref second, result);

@@ -72,14 +72,14 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                switch (generatorContext.abortType)
+                switch (generatorContext.abortReason)
                 {
-                    case AbortType.Suspend:
+                    case AbortReason.Suspend:
                         {
-                            generatorContext.abortType = AbortType.Resume;
+                            generatorContext.abortReason = AbortReason.Resume;
                             break;
                         }
-                    case AbortType.ResumeThrow:
+                    case AbortReason.ResumeThrow:
                         {
                             break;
                         }
@@ -98,7 +98,7 @@ namespace NiL.JS.BaseLibrary
             {
                 generatorContext.Deactivate();
             }
-            return new GeneratorResult(result, generatorContext.abortType != AbortType.Suspend);
+            return new GeneratorResult(result, generatorContext.abortReason != AbortReason.Suspend);
         }
 
         private void initContext()
@@ -113,7 +113,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (generatorContext == null)
                 initContext();
-            generatorContext.abortType = AbortType.Return;
+            generatorContext.abortReason = AbortReason.Return;
             return next(null);
         }
 
@@ -121,7 +121,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (generatorContext == null)
                 return new GeneratorResult(JSValue.undefined, true);
-            generatorContext.abortType = AbortType.ResumeThrow;
+            generatorContext.abortReason = AbortReason.ResumeThrow;
             return next(arguments);
         }
 

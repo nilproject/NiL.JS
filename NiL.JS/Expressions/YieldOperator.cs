@@ -84,17 +84,17 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (context.abortType == AbortType.ResumeThrow)
+            if (context.abortReason == AbortReason.ResumeThrow)
             {
                 context.SuspendData.Clear();
-                context.abortType = AbortType.None;
+                context.abortReason = AbortReason.None;
                 var exceptionData = context.abortInfo;
                 ExceptionsHelper.Throw(exceptionData);
             }
 
             if (_reiterate)
             {
-                if (context.abortType == AbortType.None)
+                if (context.abortReason == AbortReason.None)
                 {
                     var iterator = first.Evaluate(context).AsIterable().iterator();
                     var iteratorResult = iterator.next();
@@ -104,10 +104,10 @@ namespace NiL.JS.Expressions
 
                     context.SuspendData[this] = iterator;
                     context.abortInfo = iteratorResult.value;
-                    context.abortType = AbortType.Suspend;
+                    context.abortReason = AbortReason.Suspend;
                     return JSValue.notExists;
                 }
-                else if (context.abortType == AbortType.Resume)
+                else if (context.abortReason == AbortReason.Resume)
                 {
                     IIterator iterator = context.SuspendData[this] as IIterator;
                     var iteratorResult = iterator.next(context.abortInfo.Defined ? new Arguments { context.abortInfo } : null);
@@ -116,28 +116,28 @@ namespace NiL.JS.Expressions
 
                     if (iteratorResult.done)
                     {
-                        context.abortType = AbortType.None;
+                        context.abortReason = AbortReason.None;
                         return iteratorResult.value;
                     }
                     else
                     {
                         context.SuspendData[this] = iterator;
-                        context.abortType = AbortType.Suspend;
+                        context.abortReason = AbortReason.Suspend;
                         return JSValue.notExists;
                     }
                 }
             }
             else
             {
-                if (context.abortType == AbortType.None)
+                if (context.abortReason == AbortReason.None)
                 {
                     context.abortInfo = first.Evaluate(context);
-                    context.abortType = AbortType.Suspend;
+                    context.abortReason = AbortReason.Suspend;
                     return JSValue.notExists;
                 }
-                else if (context.abortType == AbortType.Resume)
+                else if (context.abortReason == AbortReason.Resume)
                 {
-                    context.abortType = AbortType.None;
+                    context.abortReason = AbortReason.None;
                     var result = context.abortInfo;
                     context.abortInfo = null;
                     return result;
@@ -164,7 +164,7 @@ namespace NiL.JS.Expressions
             if ((_codeContext & CodeContext.InExpression) != 0)
             {
                 result.Add(new StoreValueStatement(this, false));
-                self = new ExtractStoredValueExpression(this);
+                self = new ExtractStoredValue(this);
             }
         }
 

@@ -33,7 +33,7 @@ namespace NiL.JS.Statements
         internal VariableDescriptor[] _variables;
         internal CodeNode[] lines;
         internal bool strict;
-        internal bool builded;
+        internal bool built;
         internal bool suppressScopeIsolation;
 
         public VariableDescriptor[] Variables { get { return _variables; } }
@@ -274,7 +274,7 @@ namespace NiL.JS.Statements
             int i = 0;
             bool clearSuspendData = false;
 
-            if (context.abortType >= AbortType.Resume)
+            if (context.abortReason >= AbortReason.Resume)
             {
                 var suspendData = context.SuspendData[this] as SuspendData;
                 context = suspendData.Context;
@@ -292,7 +292,7 @@ namespace NiL.JS.Statements
                         thisBind = context.thisBind,
                         strict = context.strict,
                         abortInfo = context.abortInfo,
-                        abortType = context.abortType
+                        abortReason = context.abortReason
                     };
                 }
 
@@ -323,7 +323,7 @@ namespace NiL.JS.Statements
                         context.Deactivate();
                     context.parent.lastResult = context.lastResult;
                     context.parent.abortInfo = context.abortInfo;
-                    context.parent.abortType = context.abortType;
+                    context.parent.abortReason = context.abortReason;
                     if (_variables.Length != 0)
                         clearVariablesCache();
                 }
@@ -342,7 +342,7 @@ namespace NiL.JS.Statements
                 if (t != null)
                     context.lastResult = t;
 #if DEBUG && !PORTABLE
-                if (!context.Excecuting)
+                if (!context.Running)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
@@ -377,9 +377,9 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
-                if (context.abortType != AbortType.None)
+                if (context.abortReason != AbortReason.None)
                 {
-                    if (context.abortType == AbortType.Suspend)
+                    if (context.abortReason == AbortReason.Suspend)
                     {
                         context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
                     }
@@ -416,9 +416,9 @@ namespace NiL.JS.Statements
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (builded)
+            if (built)
                 return false;
-            builded = true;
+            built = true;
 
             List<VariableDescriptor> variablesToRestore = null;
             if (_variables != null && _variables.Length != 0)
@@ -446,8 +446,8 @@ namespace NiL.JS.Statements
 
             for (var i = 0; i < lines.Length; i++)
             {
-                var fe = lines[i] as EntityDefinition;
-                if (fe != null)
+                var ed = lines[i] as EntityDefinition;
+                if (ed != null && ed.Hoist)
                     lines[i] = null;
             }
 

@@ -14,8 +14,8 @@ namespace NiL.JS.Core
 
     internal class Rule
     {
-        public ValidateDelegate Validate;
-        public ParseDelegate Parse;
+        public ValidateDelegate Validate { get; private set; }
+        public ParseDelegate Parse { get; private set; }
 
         public Rule(string token, ParseDelegate parseDel)
         {
@@ -126,6 +126,7 @@ namespace NiL.JS.Core
                 index++;
             else if (!ValidateName(code, ref index))
                 return false;
+
             if (code.Length == index)
                 return false;
 

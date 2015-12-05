@@ -7,12 +7,35 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
-    public sealed class SuperExpression : GetVariableExpression
+    public sealed class GetSuper : Expression
     {
         public bool ctorMode;
 
-        internal SuperExpression(int functionDepth)
-            : base("super", functionDepth)
+        protected internal override bool ContextIndependent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        protected internal override bool NeedDecompose
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        protected internal override bool LValueModifier
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        internal GetSuper()
         {
 
         }
@@ -44,6 +67,16 @@ namespace NiL.JS.Expressions
         public override void Optimize(ref Core.CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
 
+        }
+
+        public override T Visit<T>(Visitor<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
+        public override string ToString()
+        {
+            return "super";
         }
     }
 }

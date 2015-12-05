@@ -12,7 +12,7 @@ namespace NiL.JS.Core
 #if !PORTABLE
     [Serializable]
 #endif
-    internal enum AbortType
+    public enum AbortReason
     {
         None = 0,
         Continue,
@@ -168,7 +168,7 @@ namespace NiL.JS.Core
         /// отсутствует вероятность конфликта при использовании данного поля.
         /// </remarks>
         /// </summary>
-        internal AbortType abortType;
+        internal AbortReason abortReason;
         internal JSValue objectSource;
         internal JSValue tempContainer;
         internal JSValue abortInfo;
@@ -233,7 +233,7 @@ namespace NiL.JS.Core
         /// Указывает, присутствует ли контекст в каскаде выполняющихся контекстов непосредственно
         /// или в качестве одного из прототипов
         /// </summary>
-        public bool Excecuting
+        public bool Running
         {
             get
             {
@@ -254,6 +254,22 @@ namespace NiL.JS.Core
                     ccontext = ccontext.oldContext;
                 } while (ccontext != null);
                 return false;
+            }
+        }
+
+        public AbortReason AbortReason
+        {
+            get
+            {
+                return abortReason;
+            }
+        }
+
+        public JSValue AbortInfo
+        {
+            get
+            {
+                return abortInfo;
             }
         }
 
@@ -402,8 +418,6 @@ namespace NiL.JS.Core
         /// <returns>Поле, соответствующее указанному имени.</returns>
         public virtual JSValue DefineVariable(string name, bool deletable = false)
         {
-            if (name == "this")
-                return thisBind;
             JSValue res = null;
             if (fields == null || !fields.TryGetValue(name, out res))
             {
@@ -432,38 +446,33 @@ namespace NiL.JS.Core
 
         internal protected virtual JSValue GetVariable(string name, bool create)
         {
-            if (name.Length == 4 // такое странное решение показало лучшую скорость
-                && name[0] == 't'
-                && name[1] == 'h'
-                && name[2] == 'i'
-                && name[3] == 's')
-                return ThisBind;
-
             JSValue res = null;
             bool fromProto = fields == null || (!fields.TryGetValue(name, out res) && (parent != null));
             if (fromProto)
-                res = parent.GetVariable(name, create);
-            if (res == null) // значит вышли из глобального контекста
             {
-                if (this == globalContext)
-                    return null;
-                else
+                res = parent.GetVariable(name, create);
+                if (res == null) // значит вышли из глобального контекста
                 {
-                    if (create)
-                    {
-                        res = new JSValue() { valueType = JSValueType.NotExists };
-                        fields[name] = res;
-                    }
+                    if (this == globalContext)
+                        return null;
                     else
                     {
-                        res = JSObject.GlobalPrototype.GetProperty(wrap(name), false, PropertyScope.Сommon);
-                        if (res.valueType == JSValueType.NotExistsInObject)
-                            res.valueType = JSValueType.NotExists;
+                        if (create)
+                        {
+                            res = new JSValue() { valueType = JSValueType.NotExists };
+                            fields[name] = res;
+                        }
+                        else
+                        {
+                            res = JSObject.GlobalPrototype.GetProperty(wrap(name), false, PropertyScope.Сommon);
+                            if (res.valueType == JSValueType.NotExistsInObject)
+                                res.valueType = JSValueType.NotExists;
+                        }
                     }
                 }
+                else if (fromProto)
+                    objectSource = parent.objectSource;
             }
-            else if (fromProto)
-                objectSource = parent.objectSource;
             else
             {
                 if (create && (res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
@@ -522,6 +531,12 @@ namespace NiL.JS.Core
         {
             fields.Add(name, TypeProxy.GetConstructor(type).CloneImpl(false));
             fields[name].attributes = JSValueAttributesInternal.DoNotEnumerate;
+        }
+
+        public void SetAbortState(AbortReason abortReason, JSValue abortInfo)
+        {
+            this.abortReason = abortReason;
+            this.abortInfo = abortInfo;
         }
 
         /// <summary>

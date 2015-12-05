@@ -31,17 +31,7 @@ namespace NiL.JS.Core.Functions
                 return proxy.hostedType.Name;
             }
         }
-
-        [Hidden]
-        public override FunctionKind Type
-        {
-            [Hidden]
-            get
-            {
-                return FunctionKind.Function;
-            }
-        }
-
+        
         [Field]
         [ReadOnly]
         [DoNotDelete]

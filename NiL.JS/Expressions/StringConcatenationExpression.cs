@@ -116,10 +116,10 @@ namespace NiL.JS.Expressions
 
             for (var i = 0; i < lastDecomposeIndex; i++)
             {
-                if (!(_parts[i] is ExtractStoredValueExpression))
+                if (!(_parts[i] is ExtractStoredValue))
                 {
                     result.Add(new StoreValueStatement(_parts[i], false));
-                    _parts[i] = new ExtractStoredValueExpression(_parts[i]);
+                    _parts[i] = new ExtractStoredValue(_parts[i]);
                 }
             }
         }

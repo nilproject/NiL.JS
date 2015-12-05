@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            context.abortType = AbortType.Break;
+            context.abortReason = AbortReason.Break;
             context.abortInfo = label;
             return null;
         }

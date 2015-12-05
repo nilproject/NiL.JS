@@ -156,7 +156,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             SuspendData suspendData = null;
-            if (context.abortType >= AbortType.Resume)
+            if (context.abortReason >= AbortReason.Resume)
             {
                 suspendData = context.SuspendData[this] as SuspendData;
             }
@@ -169,7 +169,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(_source);
 #endif
                 source = _source.Evaluate(context);
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;
@@ -198,7 +198,7 @@ namespace NiL.JS.Statements
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                 {
                     if (suspendData == null)
                         suspendData = new SuspendData();
@@ -217,28 +217,28 @@ namespace NiL.JS.Statements
             if (iterator == null)
                 return null;
 
-            IIteratorResult iteratorResult = context.abortType != AbortType.Resume ? iterator.next() : null;
-            while (context.abortType >= AbortType.Resume || !iteratorResult.done)
+            IIteratorResult iteratorResult = context.abortReason != AbortReason.Resume ? iterator.next() : null;
+            while (context.abortReason >= AbortReason.Resume || !iteratorResult.done)
             {
-                if (context.abortType != AbortType.Resume)
+                if (context.abortReason != AbortReason.Resume)
                     variable.Assign(iteratorResult.value);
                 _body.Evaluate(context);
 
-                if (context.abortType != AbortType.None)
+                if (context.abortReason != AbortReason.None)
                 {
-                    if (context.abortType < AbortType.Return)
+                    if (context.abortReason < AbortReason.Return)
                     {
                         var me = context.abortInfo == null || System.Array.IndexOf(_labels, context.abortInfo.oValue as string) != -1;
-                        var _break = (context.abortType > AbortType.Continue) || !me;
+                        var _break = (context.abortReason > AbortReason.Continue) || !me;
                         if (me)
                         {
-                            context.abortType = AbortType.None;
+                            context.abortReason = AbortReason.None;
                             context.abortInfo = JSValue.notExists;
                         }
                         if (_break)
                             return null;
                     }
-                    else if (context.abortType == AbortType.Suspend)
+                    else if (context.abortReason == AbortReason.Suspend)
                     {
                         if (suspendData == null)
                             suspendData = new SuspendData();

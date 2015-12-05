@@ -95,9 +95,9 @@ namespace NiL.JS.Expressions
             {
                 if (allowTCO
                     && callMode == 0
-                    && (func.Type != FunctionKind.Generator)
-                    && (func.Type != FunctionKind.MethodGenerator)
-                    && (func.Type != FunctionKind.AnonymousGenerator)
+                    && (func.creator.kind != FunctionKind.Generator)
+                    && (func.creator.kind != FunctionKind.MethodGenerator)
+                    && (func.creator.kind != FunctionKind.AnonymousGenerator)
                     && context.owner != null
                     && func == context.owner.oValue)
                 {
@@ -119,7 +119,7 @@ namespace NiL.JS.Expressions
 
         private void tailCall(Context context, Function func)
         {
-            context.abortType = AbortType.TailRecursion;
+            context.abortReason = AbortReason.TailRecursion;
 
             var arguments = new Arguments(context)
             {
@@ -154,7 +154,7 @@ namespace NiL.JS.Expressions
 
             this._codeContext = codeContext;
 
-            var super = first as SuperExpression;
+            var super = first as GetSuper;
 
             if (super != null)
             {
@@ -240,10 +240,10 @@ namespace NiL.JS.Expressions
 
             for (var i = 0; i < lastDecomposeIndex; i++)
             {
-                if (!(_arguments[i] is ExtractStoredValueExpression))
+                if (!(_arguments[i] is ExtractStoredValue))
                 {
                     result.Add(new StoreValueStatement(_arguments[i], false));
-                    _arguments[i] = new ExtractStoredValueExpression(_arguments[i]);
+                    _arguments[i] = new ExtractStoredValue(_arguments[i]);
                 }
             }
         }

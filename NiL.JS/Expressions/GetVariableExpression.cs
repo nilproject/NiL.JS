@@ -19,7 +19,7 @@ namespace NiL.JS.Expressions
 
         internal protected override JSValue EvaluateForWrite(Context context)
         {
-            if (context.owner.creator.type == BaseLibrary.FunctionKind.Arrow)
+            if (context.owner.creator.kind == BaseLibrary.FunctionKind.Arrow)
                 context = context.parent;
             if (context.arguments == null)
                 context.owner.BuildArgumentsObject();
@@ -33,7 +33,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (context.owner.creator.type == BaseLibrary.FunctionKind.Arrow)
+            if (context.owner.creator.kind == BaseLibrary.FunctionKind.Arrow)
                 context = context.parent;
             if (context.arguments == null)
                 context.owner.BuildArgumentsObject();
@@ -64,8 +64,9 @@ namespace NiL.JS.Expressions
         {
             this.ScopeLevel = scopeDepth;
             int i = 0;
-            if ((name != "this") && (name != "super") && !Parser.ValidateName(name, i, true, true, false))
+            if (!Parser.ValidateName(name, i, true, true, false))
                 throw new ArgumentException("Invalid variable name");
+
             this.variableName = name;
         }
 

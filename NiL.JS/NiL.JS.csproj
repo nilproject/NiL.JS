@@ -237,9 +237,11 @@
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
-    <Compile Include="Expressions\ExtractStoredValueExpression.cs" />
+    <Compile Include="Expressions\ExtractStoredValue.cs" />
     <Compile Include="Expressions\GsPropertyPairExpression.cs" />
+    <Compile Include="Expressions\GetNewTarget.cs" />
     <Compile Include="Expressions\SuspendableExpression.cs" />
+    <Compile Include="Expressions\GetThis.cs" />
     <Compile Include="Extensions\IterationProtocolExtensions.cs" />
     <Compile Include="Core\JSValue.cs" />
     <Compile Include="Core\Interop\ConvertValueAttribute.cs" />
@@ -318,7 +320,7 @@
     <Compile Include="Expressions\NumberAdditionOperator.cs" />
     <Compile Include="Expressions\StringConcatenationExpression.cs" />
     <Compile Include="Expressions\NegationOperator.cs" />
-    <Compile Include="Expressions\SuperExpression.cs" />
+    <Compile Include="Expressions\GetSuper.cs" />
     <Compile Include="Expressions\ToBooleanOperator.cs" />
     <Compile Include="Expressions\ToStringExpression.cs" />
     <Compile Include="Expressions\ToUnsignedIntegerExpression.cs" />

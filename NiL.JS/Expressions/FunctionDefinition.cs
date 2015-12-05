@@ -76,7 +76,7 @@ namespace NiL.JS.Expressions
         internal readonly FunctionInfo _functionInfo;
         internal ParameterDescriptor[] parameters;
         internal CodeBlock body;
-        internal FunctionKind type;
+        internal FunctionKind kind;
 #if DEBUG
         internal bool trace;
 #endif
@@ -113,13 +113,29 @@ namespace NiL.JS.Expressions
             }
         }
 
+        public override bool Hoist
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public FunctionKind Kind
+        {
+            get
+            {
+                return kind;
+            }
+        }
+
         internal FunctionDefinition(string name)
+            : base(name)
         {
             parameters = new ParameterDescriptor[0];
             body = new CodeBlock(new CodeNode[0]);
             body._variables = new VariableDescriptor[0];
             _functionInfo = new FunctionInfo();
-            this.name = name;
         }
 
         internal static CodeNode ParseFunction(ParseInfo state, ref int index)
@@ -364,7 +380,7 @@ namespace NiL.JS.Expressions
             {
                 parameters = parameters.ToArray(),
                 body = body,
-                type = mode,
+                kind = mode,
                 Position = index,
                 Length = i - index,
 #if DEBUG
@@ -377,7 +393,7 @@ namespace NiL.JS.Expressions
                 func.Reference.Position = nameStartPos;
                 func.Reference.Length = name.Length;
 
-                new VariableDescriptor(func.reference, func.reference.ScopeLevel);
+                func.reference._descriptor.definitionScopeLevel = func.reference.ScopeLevel;
             }
             if (!string.IsNullOrEmpty(name) || parameters.Count != 0)
             {
@@ -513,7 +529,7 @@ namespace NiL.JS.Expressions
         public Function MakeFunction(Context context)
         {
 #if !PORTABLE
-            if (type == FunctionKind.Generator || type == FunctionKind.MethodGenerator || type == FunctionKind.AnonymousGenerator)
+            if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
                 return new GeneratorFunction(new Function(context, this));
 #endif
             return new Function(context, this);
@@ -521,10 +537,12 @@ namespace NiL.JS.Expressions
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (body.builded)
+            if (body.built)
                 return false;
+
             if (stats != null)
                 stats.ContainsInnerEntities = true;
+
             _codeContext = codeContext;
 
             if ((codeContext & CodeContext.InLoop) != 0 && message != null)
@@ -684,7 +702,7 @@ namespace NiL.JS.Expressions
         public override string ToString()
         {
             string res;
-            switch (type)
+            switch (kind)
             {
                 case FunctionKind.Generator:
                     {

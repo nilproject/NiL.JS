@@ -157,32 +157,27 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             int i = 0;
-            if (context.abortType >= AbortType.Resume)
+            if (context.abortReason >= AbortReason.Resume)
             {
                 i = (int)context.SuspendData[this];
             }
 
             for (; i < initializers.Length; i++)
             {
-                if (context.abortType == AbortType.None && mode > VariableKind.FunctionScope && variables[i].lexicalScope)
+                if (context.abortReason == AbortReason.None && mode > VariableKind.FunctionScope && variables[i].lexicalScope)
                 {
-                    JSValue f = new JSValue()
-                    {
-                        valueType = JSValueType.Undefined,
-                        attributes = JSValueAttributesInternal.DoNotDelete
-                    };
-                    if (mode == VariableKind.ConstantInLexicalScope)
-                        f.attributes |= JSValueAttributesInternal.ReadOnly;
+                    JSValue f = context.DefineVariable(variables[i].name, false);
 
                     variables[i].cacheRes = f;
                     variables[i].cacheContext = context;
-                    if (variables[i].captured || context.fields != null)
-                        (context.fields ?? (context.fields = JSObject.getFieldsContainer()))[variables[i].name] = f;
+
+                    if (mode == VariableKind.ConstantInLexicalScope)
+                        f.attributes |= JSValueAttributesInternal.ReadOnly;
                 }
 
                 initializers[i].Evaluate(context);
 
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = i;
                     return null;

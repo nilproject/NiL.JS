@@ -92,22 +92,22 @@ namespace NiL.JS.Statements
             JSValue checkResult;
             do
             {
-                if (context.abortType != AbortType.Resume || !context.SuspendData.ContainsKey(this))
+                if (context.abortReason != AbortReason.Resume || !context.SuspendData.ContainsKey(this))
                 {
 #if DEV
                     if (context.debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
 #endif
                     context.lastResult = body.Evaluate(context) ?? context.lastResult;
-                    if (context.abortType != AbortType.None)
+                    if (context.abortReason != AbortReason.None)
                     {
-                        if (context.abortType < AbortType.Return)
+                        if (context.abortReason < AbortReason.Return)
                         {
                             var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                            var _break = (context.abortType > AbortType.Continue) || !me;
+                            var _break = (context.abortReason > AbortReason.Continue) || !me;
                             if (me)
                             {
-                                context.abortType = AbortType.None;
+                                context.abortReason = AbortReason.None;
                                 context.abortInfo = JSValue.notExists;
                             }
                             if (_break)
@@ -122,7 +122,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(condition);
 #endif
                 checkResult = condition.Evaluate(context);
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;

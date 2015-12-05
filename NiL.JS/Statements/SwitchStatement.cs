@@ -149,7 +149,7 @@ namespace NiL.JS.Statements
             int caseIndex = 1;
             int lineIndex = cases[0].index;
 
-            if (context.abortType >= AbortType.Resume)
+            if (context.abortReason >= AbortReason.Resume)
             {
                 var sdata = context.SuspendData[this] as SuspendData;
                 if (sdata.imageValue == null)
@@ -167,7 +167,7 @@ namespace NiL.JS.Statements
 #endif
                 imageValue = image.Evaluate(context);
             }
-            if (context.abortType == AbortType.Suspend)
+            if (context.abortReason == AbortReason.Suspend)
             {
                 context.SuspendData[this] = new SuspendData() { caseIndex = 1 };
                 return null;
@@ -180,7 +180,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(cases[caseIndex].statement);
 #endif
                 var cseResult = cases[caseIndex].statement.Evaluate(context);
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = new SuspendData()
                     {
@@ -203,13 +203,13 @@ namespace NiL.JS.Statements
                     continue;
 
                 context.lastResult = lines[lineIndex].Evaluate(context) ?? context.lastResult;
-                if (context.abortType != AbortType.None)
+                if (context.abortReason != AbortReason.None)
                 {
-                    if (context.abortType == AbortType.Break)
+                    if (context.abortReason == AbortReason.Break)
                     {
-                        context.abortType = AbortType.None;
+                        context.abortReason = AbortReason.None;
                     }
-                    else if (context.abortType == AbortType.Suspend)
+                    else if (context.abortReason == AbortReason.Suspend)
                     {
                         context.SuspendData[this] = new SuspendData()
                         {

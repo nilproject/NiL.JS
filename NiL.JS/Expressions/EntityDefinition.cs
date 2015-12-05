@@ -12,23 +12,29 @@ namespace NiL.JS.Expressions
 #endif
     internal sealed class EntityReference : VariableReference
     {
-        private EntityDefinition owner;
-
-        public EntityDefinition Entity { get { return owner; } }
+        public EntityDefinition Entity { get { return (EntityDefinition)Descriptor.initializer; } }
 
         public override string Name
         {
-            get { return owner.name; }
+            get
+            {
+                return Entity.name;
+            }
         }
 
         public override JSValue Evaluate(Context context)
         {
-            return owner.Evaluate(context);
+            throw new InvalidOperationException();
         }
 
-        public EntityReference(EntityDefinition owner)
+        public EntityReference(EntityDefinition entityDefinition)
         {
-            this.owner = owner;
+            _scopeLevel = 1;
+            this._descriptor = new VariableDescriptor(entityDefinition.name, 1)
+            {
+                lexicalScope = !entityDefinition.Hoist,
+                initializer = entityDefinition
+            };
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -38,7 +44,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return owner.ToString();
+            return Descriptor.ToString();
         }
     }
 
@@ -49,14 +55,20 @@ namespace NiL.JS.Expressions
     /// </summary>
     public abstract class EntityDefinition : Expression
     {
-        internal VariableReference reference;
-        internal string name;
+        [CLSCompliant(false)]
+        protected bool Built { get; set; }
 
+        internal readonly VariableReference reference;
+
+        internal string name;
         public string Name { get { return name; } }
         public VariableReference Reference { get { return reference; } }
 
-        protected EntityDefinition()
+        public abstract bool Hoist { get; }
+
+        protected EntityDefinition(string name)
         {
+            this.name = name;
             reference = new EntityReference(this);
         }
 

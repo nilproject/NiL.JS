@@ -7,7 +7,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
-    public sealed class ExtractStoredValueExpression : Expression
+    public sealed class GetThis : Expression
     {
         protected internal override bool ContextIndependent
         {
@@ -25,20 +25,22 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public ExtractStoredValueExpression(Expression source)
-            : base(source, null, false)
+        protected internal override bool LValueModifier
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public GetThis()
         {
 
         }
 
-        protected internal override JSValue EvaluateForWrite(Context context)
+        public override JSValue Evaluate(Context context)
         {
-            return Evaluate(context);
-        }
-
-        public override Core.JSValue Evaluate(Core.Context context)
-        {
-            return (JSValue)context.SuspendData[first];
+            return context.thisBind ?? JSValue.undefined;
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
@@ -46,14 +48,19 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        public override string ToString()
+        public override void Optimize(ref Core.CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            return first.ToString();
+
         }
 
-        public override void Decompose(ref Expression self, IList<CodeNode> result)
+        public override T Visit<T>(Visitor<T> visitor)
         {
+            return visitor.Visit(this);
+        }
 
+        public override string ToString()
+        {
+            return "this";
         }
     }
 }

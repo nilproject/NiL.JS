@@ -100,7 +100,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             Exception exception = null;
-            if (context.abortType >= AbortType.Resume)
+            if (context.abortReason >= AbortReason.Resume)
             {
                 var action = context.SuspendData[this] as Action<Context>;
                 if (action != null)
@@ -119,7 +119,7 @@ namespace NiL.JS.Statements
             try
             {
                 body.Evaluate(context);
-                if (context.abortType == AbortType.Suspend)
+                if (context.abortReason == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = null;
                 }
@@ -140,13 +140,13 @@ namespace NiL.JS.Statements
             }
             finally
             {
-                if (context.abortType != AbortType.Suspend && finallyBody != null)
+                if (context.abortReason != AbortReason.Suspend && finallyBody != null)
                 {
                     finallyHandler(context, exception);
                     exception = null;
                 }
             }
-            if (context.abortType != AbortType.Suspend && exception != null)
+            if (context.abortReason != AbortReason.Suspend && exception != null)
                 throw exception;
             return null;
         }
@@ -157,30 +157,30 @@ namespace NiL.JS.Statements
             if (context.debugging)
                 context.raiseDebugger(finallyBody);
 #endif
-            var abort = context.abortType;
+            var abort = context.abortReason;
             var ainfo = context.abortInfo;
-            if (abort == AbortType.Return && ainfo != null)
+            if (abort == AbortReason.Return && ainfo != null)
             {
                 if (ainfo.Defined)
                     ainfo = ainfo.CloneImpl(false);
                 else
                     ainfo = JSValue.Undefined;
             }
-            context.abortType = AbortType.None;
+            context.abortReason = AbortReason.None;
             context.abortInfo = JSValue.undefined;
 
             Action<Context> finallyAction = null;
             finallyAction = (c) =>
             {
                 c.lastResult = finallyBody.Evaluate(c) ?? context.lastResult;
-                if (c.abortType == AbortType.None)
+                if (c.abortReason == AbortReason.None)
                 {
-                    c.abortType = abort;
+                    c.abortReason = abort;
                     c.abortInfo = ainfo;
                     if (exception != null)
                         throw exception;
                 }
-                else if (c.abortType == AbortType.Suspend)
+                else if (c.abortReason == AbortReason.Suspend)
                 {
                     c.SuspendData[this] = finallyAction;
                 }
@@ -218,7 +218,7 @@ namespace NiL.JS.Statements
             {
                 try
                 {
-                    catchContext.abortType = c.abortType;
+                    catchContext.abortReason = c.abortReason;
                     catchContext.abortInfo = c.abortInfo;
                     catchContext.Activate();
                     catchContext.lastResult = catchBody.Evaluate(catchContext) ?? catchContext.lastResult;
@@ -228,10 +228,10 @@ namespace NiL.JS.Statements
                     c.lastResult = catchContext.lastResult ?? c.lastResult;
                     catchContext.Deactivate();
                 }
-                c.abortType = catchContext.abortType;
+                c.abortReason = catchContext.abortReason;
                 c.abortInfo = catchContext.abortInfo;
 
-                if (c.abortType == AbortType.Suspend)
+                if (c.abortReason == AbortReason.Suspend)
                 {
                     if (finallyBody != null)
                     {
@@ -243,7 +243,7 @@ namespace NiL.JS.Statements
                             }
                             finally
                             {
-                                if (c2.abortType != AbortType.Suspend)
+                                if (c2.abortReason != AbortReason.Suspend)
                                     finallyHandler(c2, e);
                             }
                         });
