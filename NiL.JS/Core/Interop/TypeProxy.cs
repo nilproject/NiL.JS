@@ -152,7 +152,7 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        public static JSValue Marshal(object value)
+        public static JSValue Proxy(object value)
         {
             JSValue res;
             if (value == null)
@@ -559,7 +559,7 @@ namespace NiL.JS.Core.Interop
             {
                 for (int i = 0; i < m.Count; i++)
                     if (!(m[i] is MethodBase))
-                        ExceptionsHelper.Throw(Marshal(new TypeError("Incompatible fields types.")));
+                        ExceptionsHelper.Throw(Proxy(new TypeError("Incompatible fields types.")));
                 var cache = new MethodProxy[m.Count];
                 for (int i = 0; i < m.Count; i++)
                     cache[i] = new MethodProxy(m[i] as MethodBase);
@@ -586,7 +586,7 @@ namespace NiL.JS.Core.Interop
                             if ((field.Attributes & (FieldAttributes.Literal | FieldAttributes.InitOnly)) != 0
                                 && (field.Attributes & FieldAttributes.Static) != 0)
                             {
-                                r = Marshal(field.GetValue(null));
+                                r = Proxy(field.GetValue(null));
                                 r.attributes |= JSValueAttributesInternal.ReadOnly;
                             }
                             else
@@ -596,7 +596,7 @@ namespace NiL.JS.Core.Interop
                                     valueType = JSValueType.Property,
                                     oValue = new GsPropertyPair
                                     (
-                                        new ExternalFunction((thisBind, a) => Marshal(field.GetValue(field.IsStatic ? null : thisBind.Value))),
+                                        new ExternalFunction((thisBind, a) => Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value))),
                                         !m[0].IsDefined(typeof(Interop.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
                                         {
                                             field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);

@@ -105,7 +105,7 @@ namespace NiL.JS.BaseLibrary
             while (source.MoveNext())
             {
                 var e = source.Current;
-                data[index++] = (e as JSValue ?? TypeProxy.Marshal(e)).CloneImpl(false);
+                data[index++] = (e as JSValue ?? TypeProxy.Proxy(e)).CloneImpl(false);
             }
             attributes |= JSValueAttributesInternal.SystemObject;
         }

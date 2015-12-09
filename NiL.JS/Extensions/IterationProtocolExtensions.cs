@@ -41,7 +41,7 @@ namespace NiL.JS.Extensions
 
         public IIteratorResult next(Arguments arguments = null)
         {
-            return new EnumeratorResult(!enumerator.MoveNext(), TypeProxy.Marshal(enumerator.Current));
+            return new EnumeratorResult(!enumerator.MoveNext(), TypeProxy.Proxy(enumerator.Current));
         }
 
         public IIteratorResult @return()

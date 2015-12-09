@@ -343,7 +343,8 @@ namespace NiL.JS.Core
 #if INLINE
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-            get { return (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject; }
+            get
+            { return (attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject; }
         }
 
         internal bool IsBox
@@ -1161,5 +1162,17 @@ namespace NiL.JS.Core
         }
 
         #endregion
+
+        public static JSValue Marshal(object value)
+        {
+            return TypeProxy.Proxy(value);
+        }
+
+        public static JSValue Wrap(object value)
+        {
+            if (value == null)
+                return JSValue.Null;
+            return new ObjectWrapper(value);
+        }
     }
 }

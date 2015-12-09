@@ -99,7 +99,7 @@ namespace Portable.Test.Phone
 
                     Context.RefreshGlobalContext();
                     var s = new Module(staCode); // инициализация
-                    s.Context.DefineVariable("console").Assign(logger.WrapToJSValue());
+                    s.Context.DefineVariable("console").Assign(JSValue.Marshal(logger));
                     s.Invoke();
                     try
                     {

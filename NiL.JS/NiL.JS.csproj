@@ -335,7 +335,6 @@
     <Compile Include="Expressions\AssignmentOverReplace.cs" />
     <Compile Include="Expressions\Yield.cs" />
     <Compile Include="Extensions\JSValueExtensions.cs" />
-    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Expressions\AssignmentOperatorCache.cs" />

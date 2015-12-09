@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Reflection.Emit;
 using NiL.JS.Core;
 
 namespace NiL.JS.Extensions
@@ -165,70 +161,5 @@ namespace NiL.JS.Extensions
             }
             throw new InvalidCastException();
         }
-
-#if DEBUG && !PORTABLE // TODO
-        private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
-
-        public static T AsImplementationOf<T>(this JSValue self)
-        {
-            if (!typeof(T).IsInterface)
-                throw new ArgumentException(typeof(T).FullName + " is not an interface type");
-
-            if (self.oValue is T)
-                return (T)self.oValue;
-            if (typeof(T) == typeof(IIterable))
-                return (T)self.AsIterable();
-            if (typeof(T) == typeof(IIterator))
-                return (T)(object)new IteratorAdapter(self);
-
-            AssemblyBuilder assemblyBuilder;
-            if (!dynamicAssembly.TryGetTarget(out assemblyBuilder))
-            {
-                assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("<nil.js>DynamicAssembly"), AssemblyBuilderAccess.RunAndCollect);
-                dynamicAssembly.SetTarget(assemblyBuilder);
-            }
-
-            var module = assemblyBuilder.GetDynamicModule("InterfaceImplementations") ?? assemblyBuilder.DefineDynamicModule("InterfaceImplementations");
-            var typename = "<jswrapper>" + typeof(T).FullName;
-            var type = (TypeBuilder)module.GetType(typename);
-            if (type == null)
-            {
-                type = module.DefineType(typename, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed, typeof(object), new[] { typeof(T) });
-                var methods = typeof(T).GetMethods();
-
-                var jsobjectField = type.DefineField("_jsvalue", typeof(JSValue), FieldAttributes.Private);
-                var ctor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(JSValue) });
-                {
-                    var ilgen = ctor.GetILGenerator();
-                    ilgen.Emit(OpCodes.Ldarg_0);
-                    ilgen.Emit(OpCodes.Ldarg_1);
-                    ilgen.Emit(OpCodes.Stfld, jsobjectField);
-                }
-
-                var thisParameter = Expression.Parameter(type, "self");
-
-                var getPropertyMethod = typeof(JSValue).GetMethod(nameof(JSValue.GetProperty), BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(JSValue), typeof(bool), typeof(PropertyScope) }, null);
-
-                for (var i = 0; i < methods.Length; i++)
-                {
-                    var method = type.DefineMethod(
-                        methods[i].Name,
-                        MethodAttributes.Public,
-                        methods[i].ReturnParameter.ParameterType,
-                        methods[i].GetParameters().Select(x => x.ParameterType).ToArray());
-
-                    //var tree = Tools.BuildJsCallTree(method.Name,
-                    //    Expression.Convert(Expression.Field(Expression.Call(Expression.Field(thisParameter, jsobjectField), getPropertyMethod,
-                    //        Expression.Constant((JSValue)method.Name), Expression.Constant(false), Expression.Constant(PropertyScope.Сommon)), "oValue"), typeof(Function)),
-                    //    thisParameter,
-                    //    methods[i],
-                    //    null);
-                    //tree.CompileToMethod(method);
-                }
-            }
-
-            return default(T);
-        }
-#endif
     }
 }

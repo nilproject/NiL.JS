@@ -1520,7 +1520,7 @@ namespace NiL.JS.Core
                     expressions.Add(Expression.Call(
                         argumentsParameter,
                         typeof(Arguments).GetRuntimeMethod("Add", new[] { typeof(JSValue) }),
-                        Expression.Call(Tools.methodof<object, JSValue>(TypeProxy.Marshal), handlerArgumentsParameters[i])));
+                        Expression.Call(Tools.methodof<object, JSValue>(TypeProxy.Proxy), handlerArgumentsParameters[i])));
                 }
             }
 

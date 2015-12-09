@@ -41,7 +41,7 @@ namespace NiL.JS.Test
             }));
 
 #if PORTABLE
-            Context.GlobalContext.DefineVariable("console").Assign(new
+            Context.GlobalContext.DefineVariable("console").Assign(JSValue.Marshal(new
             {
                 log = new Action<Arguments>(arguments =>
                 {
@@ -54,7 +54,7 @@ namespace NiL.JS.Test
                     }
                     System.Console.WriteLine();
                 })
-            }.WrapToJSValue());
+            }));
 #endif
 
             int mode = 103

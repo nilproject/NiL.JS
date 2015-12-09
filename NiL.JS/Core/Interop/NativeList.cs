@@ -213,7 +213,7 @@ namespace NiL.JS.Core.Interop
             if (result is IList)
                 return new NativeList(result as IList);
             else
-                return TypeProxy.Marshal(result);
+                return TypeProxy.Proxy(result);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
