@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using NiL.JS.Core;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
-using NiL.JS.Core.JIT;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
 using linqEx = System.Linq.Expressions;
@@ -289,7 +289,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public JSValue Construct(Arguments arguments)
         {
-            if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
+            if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
             {
                 ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
             }
@@ -304,7 +304,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal JSValue Construct(JSValue targetObject, Arguments arguments, Function newTarget)
         {
-            if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
+            if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
             {
                 ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
             }
@@ -337,13 +337,13 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (body.lines.Length == 1)
                         {
-                            var ret = body.lines[0] as ReturnStatement;
+                            var ret = body.lines[0] as Return;
                             if (ret != null)
                             {
-                                if (ret.Body != null)
+                                if (ret.Value != null)
                                 {
-                                    if (ret.Body.ContextIndependent)
-                                        result = ret.Body.Evaluate(null);
+                                    if (ret.Value.ContextIndependent)
+                                        result = ret.Value.Evaluate(null);
                                     else
                                         break;
                                 }
@@ -513,7 +513,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public JSValue Call(JSValue targetObject, Arguments arguments)
         {
-            if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithNewOnly)
+            if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithNewOnly)
             {
                 ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
             }
@@ -524,7 +524,6 @@ namespace NiL.JS.BaseLibrary
 
         protected internal virtual JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
-
 #if DEBUG && !PORTABLE
             if (creator.trace)
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
@@ -536,6 +535,7 @@ namespace NiL.JS.BaseLibrary
                 notExists.valueType = JSValueType.NotExists;
                 return notExists;
             }
+
             var ceocw = creator._functionInfo.ContainsEval || creator._functionInfo.ContainsWith || creator._functionInfo.ContainsYield;
             if (creator.recursionDepth > creator.parametersStored) // рекурсивный вызов.
             {
@@ -543,10 +543,10 @@ namespace NiL.JS.BaseLibrary
                     storeParameters();
                 creator.parametersStored = creator.recursionDepth;
             }
+
             if (arguments == null)
-            {
                 arguments = new Arguments(Context.CurrentContext);
-            }
+
             for (;;) // tail recursion catcher
             {
                 var internalContext = new Context(parentContext, ceocw, this);
@@ -1046,7 +1046,13 @@ namespace NiL.JS.BaseLibrary
                     return cachedDelegate;
             }
 
-            var @delegate = Tools.BuildJsCallTree("<delegate>" + name, linqEx.Expression.Constant(this), null, delegateType.GetMethod("Invoke"), delegateType).Compile();
+            MethodInfo invokeMethod = null;
+#if PORTABLE
+            invokeMethod = System.Linq.Enumerable.First(delegateType.GetRuntimeMethods(), x => x.Name == "Invoke");
+#else
+            invokeMethod = delegateType.GetMethod("Invoke");
+#endif
+            var @delegate = Tools.BuildJsCallTree("<delegate>" + name, linqEx.Expression.Constant(this), null, invokeMethod, delegateType).Compile();
 
             if (delegateCache == null)
                 delegateCache = new Dictionary<Type, Delegate>();

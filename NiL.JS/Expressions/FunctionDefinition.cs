@@ -249,7 +249,7 @@ namespace NiL.JS.Expressions
                 i++;
             while (Tools.IsWhiteSpace(code[i]));
             if (code[i] == ',')
-                ExceptionsHelper.ThrowSyntaxError("Unexpected char at ", code, i);
+                ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
             while (code[i] != ')')
             {
                 if (parameters.Count == 255 || (mode == FunctionKind.Setter && parameters.Count == 1) || mode == FunctionKind.Getter)
@@ -260,6 +260,7 @@ namespace NiL.JS.Expressions
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict))
                     ExceptionsHelper.ThrowUnknownToken(code, nameStartPos);
+
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict);
                 var desc = new ParameterReference(pname, rest, state.lexicalScopeLevel + 1)
                 {
@@ -295,6 +296,7 @@ namespace NiL.JS.Expressions
                     while (Tools.IsWhiteSpace(code[i]));
                 }
             }
+
             switch (mode)
             {
                 case FunctionKind.Setter:
@@ -321,7 +323,7 @@ namespace NiL.JS.Expressions
                 try
                 {
                     if (mode == FunctionKind.Arrow)
-                        body = new CodeBlock(new CodeNode[] { new ReturnStatement(ExpressionTree.Parse(state, ref i) as Expression) });
+                        body = new CodeBlock(new CodeNode[] { new Return(ExpressionTree.Parse(state, ref i) as Expression) });
                     else
                         ExceptionsHelper.ThrowUnknownToken(code, i);
                 }
@@ -395,7 +397,7 @@ namespace NiL.JS.Expressions
 
                 func.reference._descriptor.definitionScopeLevel = func.reference.ScopeLevel;
             }
-            if (!string.IsNullOrEmpty(name) || parameters.Count != 0)
+            if (parameters.Count != 0)
             {
                 var newVariablesCount = body._variables.Length + parameters.Count;
 
@@ -473,7 +475,7 @@ namespace NiL.JS.Expressions
                         i++;
                     if (i < code.Length && code[i] == ';')
                         ExceptionsHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
-                    return new CallOperator(func, args.ToArray());
+                    return new Call(func, args.ToArray());
                 }
                 else
                     i = tindex;
@@ -528,10 +530,9 @@ namespace NiL.JS.Expressions
         /// <returns></returns>
         public Function MakeFunction(Context context)
         {
-#if !PORTABLE
             if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
-                return new GeneratorFunction(new Function(context, this));
-#endif
+                return new GeneratorFunction(context, this);
+
             return new Function(context, this);
         }
 

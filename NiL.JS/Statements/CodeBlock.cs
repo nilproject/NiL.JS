@@ -165,7 +165,7 @@ namespace NiL.JS.Statements
                 }
 
                 for (var j = body.Count; j-- > 0;)
-                    (body[j] as ConstantDefinition).value.oValue = Tools.Unescape((body[j] as ConstantDefinition).value.oValue.ToString(), state.strict);
+                    (body[j] as Constant).value.oValue = Tools.Unescape((body[j] as Constant).value.oValue.ToString(), state.strict);
 
                 bool expectSemicolon = false;
                 while ((sroot && position < state.Code.Length) || (!sroot && state.Code[position] != '}'))
@@ -252,8 +252,9 @@ namespace NiL.JS.Statements
                         variables[targetIndex] = state.Variables[i];
                         if (declaredVariables != null)
                         {
-                            if (declaredVariables.Contains(variables[targetIndex].name))
+                            if (declaredVariables.Contains(variables[targetIndex].name) && variables[targetIndex].lexicalScope)
                                 ExceptionsHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" has already been defined", state.Code, i);
+
                             declaredVariables.Add(variables[targetIndex].name);
                         }
                         targetIndex++;
@@ -426,7 +427,7 @@ namespace NiL.JS.Statements
                 for (var i = 0; i < _variables.Length; i++)
                 {
                     VariableDescriptor desc = null;
-                    if (variables.TryGetValue(_variables[i].name, out desc))
+                    if (variables.TryGetValue(_variables[i].name, out desc) && desc.definitionScopeLevel < _variables[i].definitionScopeLevel)
                     {
                         if (variablesToRestore == null)
                             variablesToRestore = new List<VariableDescriptor>();
@@ -456,7 +457,7 @@ namespace NiL.JS.Statements
             {
                 if (lines[i] != null)
                 {
-                    if (lines[i] is EmptyExpression)
+                    if (lines[i] is Empty)
                         lines[i] = null;
                     else
                     {
@@ -464,11 +465,11 @@ namespace NiL.JS.Statements
                             message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position, lines[i].Length), "Unreachable code detected.");
                         var cn = lines[i];
                         Parser.Build(ref cn, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
-                        if (cn is EmptyExpression)
+                        if (cn is Empty)
                             lines[i] = null;
                         else
                             lines[i] = cn;
-                        unreachable |= cn is ReturnStatement || cn is BreakStatement || cn is ContinueStatement || cn is ThrowStatement;
+                        unreachable |= cn is Return || cn is Break || cn is Continue || cn is Throw;
                     }
                 }
             }
@@ -488,7 +489,7 @@ namespace NiL.JS.Statements
             if (expressionDepth > 0 && (_variables == null || _variables.Length == 0))
             {
                 if (lines.Length == 0)
-                    _this = EmptyExpression.Instance;
+                    _this = Empty.Instance;
             }
             else
             {
@@ -612,7 +613,7 @@ namespace NiL.JS.Statements
                     for (var i = 0; i < _variables.Length; i++)
                     {
                         VariableDescriptor desc;
-                        if (!transferedVariables.TryGetValue(_variables[i].name, out desc) || (desc.initializer == null && _variables[i].initializer != null))
+                        if (!transferedVariables.TryGetValue(_variables[i].name, out desc) || _variables[i].initializer != null)
                             transferedVariables[_variables[i].name] = _variables[i];
                     }
                     _variables = emptyVariables;
@@ -668,7 +669,7 @@ namespace NiL.JS.Statements
         {
             var stats = context.owner?.creator._functionInfo;
             var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.ContainsYield;
-            for (var i = _variables.Length; i-- > 0;)
+            for (var i = 0; i < _variables.Length; i++)
             {
                 var v = _variables[i];
 
@@ -677,8 +678,6 @@ namespace NiL.JS.Statements
                     if (v.cacheContext.fields == null)
                         v.cacheContext.fields = JSObject.getFieldsContainer();
                     v.cacheContext.fields[v.name] = v.cacheRes;
-                    v.cacheContext = null;
-                    v.cacheRes = null;
                 }
 
                 if (v.lexicalScope)

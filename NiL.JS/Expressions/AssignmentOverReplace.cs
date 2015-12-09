@@ -7,7 +7,7 @@ namespace NiL.JS.Expressions
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class AssignmentOverReplace : AssignmentOperator
+    public sealed class AssignmentOverReplace : Assignment
     {
         public AssignmentOverReplace(Expression first, Expression second)
             : base(first, second)

@@ -586,7 +586,7 @@ namespace NiL.JS.BaseLibrary
                         continue;
                     if (value.valueType == JSValueType.Property)
                         value = (value.oValue as GsPropertyPair).get == null ? undefined : (value.oValue as GsPropertyPair).get.Call(self, null);
-                    if (Expressions.StrictEqualOperator.Check(value, image))
+                    if (Expressions.StrictEqual.Check(value, image))
                         return key;
                 }
                 while (alter);
@@ -730,7 +730,7 @@ namespace NiL.JS.BaseLibrary
                         continue;
                     if (value.valueType == JSValueType.Property)
                         value = (value.oValue as GsPropertyPair).get == null ? undefined : (value.oValue as GsPropertyPair).get.Call(self, null);
-                    if (Expressions.StrictEqualOperator.Check(value, image))
+                    if (Expressions.StrictEqual.Check(value, image))
                         return key;
                 }
                 while (alter);
@@ -822,7 +822,7 @@ namespace NiL.JS.BaseLibrary
             var selfa = self as Array;
             if (selfa != null)
             {
-                for (var i = selfa.data.Length >> 1; i-- > 0; )
+                for (var i = selfa.data.Length >> 1; i-- > 0;)
                 {
                     var item0 = selfa.data[(int)(selfa.data.Length - 1 - i)];
                     var item1 = selfa.data[(int)(i)];
@@ -979,7 +979,7 @@ namespace NiL.JS.BaseLibrary
             bool called = false;
             var length = src.data.Length;
             long prewIndex = right ? length - 1 : 0;
-            for (var e = (right ? src.data.ReversOrder : src.data.DirectOrder).GetEnumerator(); ; )
+            for (var e = (right ? src.data.ReversOrder : src.data.DirectOrder).GetEnumerator(); ;)
             {
                 KeyValuePair<int, JSValue> element;
                 if (e.MoveNext())
@@ -1072,7 +1072,7 @@ namespace NiL.JS.BaseLibrary
                 JSValue prw = res;
                 var length = src.data.Length;
                 long prewIndex = 0;
-                for (var e = src.data.DirectOrder.GetEnumerator(); ; )
+                for (var e = src.data.DirectOrder.GetEnumerator(); ;)
                 {
                     KeyValuePair<int, JSValue> element;
                     if (e.MoveNext())
@@ -1235,7 +1235,7 @@ namespace NiL.JS.BaseLibrary
                 ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.slice for null or undefined"));
             HashSet<string> processedKeys = new HashSet<string>();
             Array res = new Array();
-            for (; ; )
+            for (;;)
             {
                 var selfa = self as Array;
                 if (selfa != null)
@@ -1499,7 +1499,7 @@ namespace NiL.JS.BaseLibrary
                 var tjo = new JSValue();
                 if (delta > 0)
                 {
-                    for (var i = _length; i-- > pos1; )
+                    for (var i = _length; i-- > pos1;)
                     {
                         if (i <= int.MaxValue)
                         {
@@ -1727,7 +1727,7 @@ namespace NiL.JS.BaseLibrary
                         }
                     }
                     var tjo = new JSValue() { valueType = JSValueType.String };
-                    for (var i = keysToRemove.Count; i-- > 0; )
+                    for (var i = keysToRemove.Count; i-- > 0;)
                     {
                         tjo.oValue = keysToRemove[i];
                         var t = self.GetProperty(tjo, true, PropertyScope.Сommon);
@@ -1740,7 +1740,7 @@ namespace NiL.JS.BaseLibrary
                     var index = 0u;
                     foreach (var node in tt.Nodes)
                     {
-                        for (var i = node.value.Count; i-- > 0; )
+                        for (var i = node.value.Count; i-- > 0;)
                             self[(index++).ToString()] = node.value[i];
                     }
                 }
@@ -1768,12 +1768,12 @@ namespace NiL.JS.BaseLibrary
                             }
                         }
                     }
-                    for (var i = keysToRemove.Count; i-- > 0; )
+                    for (var i = keysToRemove.Count; i-- > 0;)
                         self[keysToRemove[i]].valueType = JSValueType.NotExists;
                     var index = 0u;
                     foreach (var node in tt.Nodes)
                     {
-                        for (var i = node.value.Count; i-- > 0; )
+                        for (var i = node.value.Count; i-- > 0;)
                             self[(index++).ToString()] = node.value[i];
                     }
                 }
@@ -1786,7 +1786,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue unshift(JSValue self, Arguments args)
         {
-            for (var i = args.length; i-- > 0; )
+            for (var i = args.length; i-- > 0;)
                 args[i + 2] = args[i];
             args.length += 2;
             args.a0 = 0;

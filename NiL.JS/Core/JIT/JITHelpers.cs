@@ -7,7 +7,6 @@ using NiL.JS.Statements;
 namespace NiL.JS.Core.JIT
 {
 #if !NET35
-
     internal static class JITHelpers
     {
         public static readonly FieldInfo _items = typeof(List<CodeNode>).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -161,61 +160,6 @@ namespace NiL.JS.Core.JIT
                     }
             }
             return dest;
-        }
-
-        internal static MethodInfo methodof(Action<JSValue, JSValue, PropertyScope, bool> method)
-        {
-            return method.Method;
-        }
-
-        internal static MethodInfo methodof(Func<Context, JSValue> method)
-        {
-            return method.Method;
-        }
-
-        internal static MethodInfo methodof(Func<Context, CodeNode[], JSValue> method)
-        {
-            return method.Method;
-        }
-
-        internal static MethodInfo methodof(Func<Context, Exception, Exception> method)
-        {
-            return method.Method;
-        }
-
-        internal static MethodInfo methodof(Func<JSValue, object> func)
-        {
-            return func.Method;
-        }
-
-        internal static MethodInfo methodof(Func<object, JSValue> func)
-        {
-            return func.Method;
-        }
-
-        internal static MethodInfo methodof(Func<Arguments, JSValue> func)
-        {
-            return func.Method;
-        }
-
-        internal static MethodInfo methodof(Action<Context, Exception> method)
-        {
-            return method.Method;
-        }
-
-        internal static MethodInfo methodof(Func<Context, JSValue, Context> method)
-        {
-            return method.Method;
-        }
-
-        internal static MethodInfo methodof(Action<string, Exception, Context> method)
-        {
-            return method.Method;
-        }
-
-        internal static MethodInfo methodof(Action<Exception, Context> method)
-        {
-            return method.Method;
         }
     }
 #endif

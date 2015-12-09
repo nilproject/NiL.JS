@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
@@ -40,20 +41,20 @@ namespace NiL.JS.Core
             {
                 new Rule("[", ExpressionTree.Parse),
                 new Rule("{", CodeBlock.Parse),
-                new Rule("var ", VariableDefinitionStatement.Parse),
-                new Rule("let ", VariableDefinitionStatement.Parse),
-                new Rule("const ", VariableDefinitionStatement.Parse),
-                new Rule("if", IfElseStatement.Parse),
-                new Rule("for", ForOfStatement.Parse),
-                new Rule("for", ForInStatement.Parse),
-                new Rule("for", ForStatement.Parse),
-                new Rule("while", WhileStatement.Parse),
-                new Rule("return", ReturnStatement.Parse),
+                new Rule("var ", VariableDefinition.Parse),
+                new Rule("let ", VariableDefinition.Parse),
+                new Rule("const ", VariableDefinition.Parse),
+                new Rule("if", IfElse.Parse),
+                new Rule("for", ForOf.Parse),
+                new Rule("for", ForIn.Parse),
+                new Rule("for", For.Parse),
+                new Rule("while", While.Parse),
+                new Rule("return", Return.Parse),
                 new Rule("function", FunctionDefinition.ParseFunction),
                 new Rule("class", ClassDefinition.Parse),
-                new Rule("switch", SwitchStatement.Parse),
-                new Rule("with", WithStatement.Parse),
-                new Rule("do", DoWhileStatement.Parse),
+                new Rule("switch", Switch.Parse),
+                new Rule("with", With.Parse),
+                new Rule("do", DoWhile.Parse),
                 new Rule(ValidateArrow, FunctionDefinition.ParseArrow),
                 new Rule("(", ExpressionTree.Parse),
                 new Rule("+", ExpressionTree.Parse),
@@ -66,18 +67,18 @@ namespace NiL.JS.Core
                 new Rule("this", ExpressionTree.Parse),
                 new Rule("super", ExpressionTree.Parse),
                 new Rule("typeof", ExpressionTree.Parse),
-                new Rule("try", TryCatchStatement.Parse),
+                new Rule("try", TryCatch.Parse),
                 new Rule("new", ExpressionTree.Parse),
                 new Rule("delete", ExpressionTree.Parse),
                 new Rule("void", ExpressionTree.Parse),
-                new Rule("yield", YieldOperator.Parse),
-                new Rule("break", BreakStatement.Parse),
-                new Rule("continue", ContinueStatement.Parse),
-                new Rule("throw", ThrowStatement.Parse),
+                new Rule("yield", Yield.Parse),
+                new Rule("break", Break.Parse),
+                new Rule("continue", Continue.Parse),
+                new Rule("throw", Throw.Parse),
                 new Rule(ValidateName, LabeledStatement.Parse),
                 new Rule(ValidateName, ExpressionTree.Parse),
                 new Rule(ValidateValue, ExpressionTree.Parse),
-                new Rule("debugger", DebuggerStatement.Parse)
+                new Rule("debugger", Debugger.Parse)
             },
             // 1
             new List<Rule> // Начало выражения
@@ -100,7 +101,7 @@ namespace NiL.JS.Core
                 new Rule("new", ExpressionTree.Parse),
                 new Rule("delete", ExpressionTree.Parse),
                 new Rule("void", ExpressionTree.Parse),
-                new Rule("yield", YieldOperator.Parse),
+                new Rule("yield", Yield.Parse),
                 new Rule(ValidateName, ExpressionTree.Parse),
                 new Rule(ValidateValue, ExpressionTree.Parse),
             },
@@ -108,11 +109,11 @@ namespace NiL.JS.Core
             new List<Rule> // Сущности внутри выражения
             {
                 new Rule("[", ArrayDefinition.Parse),
-                new Rule("{", ObjectDefinition.Parse),
+                new Rule("{", Expressions.ObjectDefinition.Parse),
                 new Rule("function", FunctionDefinition.ParseFunction),
                 new Rule("class", ClassDefinition.Parse),
-                new Rule("new", NewOperator.Parse),
-                new Rule("yield", YieldOperator.Parse),
+                new Rule("new", New.Parse),
+                new Rule("yield", Yield.Parse),
                 new Rule(ValidateArrow, FunctionDefinition.ParseArrow),
                 new Rule(ValidateRegex, RegExpExpression.Parse),
             }
@@ -632,11 +633,11 @@ namespace NiL.JS.Core
             else
                 throw new ArgumentException();
 
-            var validateMethod = type.GetMethod("Validate", new[] { typeof(string), typeof(int) });
+            var validateMethod = type.GetRuntimeMethod("Validate", new[] { typeof(string), typeof(int) });
             if (validateMethod == null || validateMethod.ReturnType != typeof(bool))
                 throw new ArgumentException("type must contain static method \"Validate\" which get String and Int32 and returns Boolean");
 
-            var parserMethod = type.GetMethod("Parse", new[] { typeof(ParseInfo), typeof(int).MakeByRefType() });
+            var parserMethod = type.GetRuntimeMethod("Parse", new[] { typeof(ParseInfo), typeof(int).MakeByRefType() });
             if (parserMethod == null || parserMethod.ReturnType != typeof(CodeNode))
                 throw new ArgumentException("type must contain static method \"Parse\" which get " + typeof(ParseInfo).Name + " and Int32 by reference and returns " + typeof(CodeNode).Name);
 

@@ -1,5 +1,6 @@
 ﻿using NiL.JS.Core;
 using NiL.JS.Core.Interop;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.BaseLibrary
 {
@@ -17,13 +18,11 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        private Function generator;
-
         [Hidden]
-        public GeneratorFunction(Function generator)
+        public GeneratorFunction(Context context, FunctionDefinition generator)
+            : base(context, generator)
         {
-            this.generator = generator;
-            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
+            RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
@@ -31,12 +30,7 @@ namespace NiL.JS.BaseLibrary
             if (construct)
                 ExceptionsHelper.ThrowTypeError("Generators cannot be invoked as a constructor");
 
-            return TypeProxy.Marshal(new GeneratorIterator(generator, targetObject, arguments));
-        }
-
-        internal void Resume()
-        {
-
+            return TypeProxy.Marshal(new GeneratorIterator(this, targetObject, arguments));
         }
 
         internal override JSObject GetDefaultPrototype()
@@ -56,7 +50,7 @@ namespace NiL.JS.BaseLibrary
         private JSValue targetObject;
 
         [Hidden]
-        public GeneratorIterator(Function generator, JSValue self, Arguments args)
+        public GeneratorIterator(GeneratorFunction generator, JSValue self, Arguments args)
         {
             this.initialContext = Context.CurrentContext;
             this.generator = generator;

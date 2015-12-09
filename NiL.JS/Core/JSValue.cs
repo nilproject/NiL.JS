@@ -119,7 +119,7 @@ namespace NiL.JS.Core
         internal static readonly JSValue nullString = new JSValue() { valueType = JSValueType.String, oValue = "null", attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
         [Hidden]
-        public static JSValue Undefined { [Hidden] get { return undefined; } }
+        public static JSValue Undefined {[Hidden] get { return undefined; } }
         [Hidden]
         public static JSValue NotExists
         {
@@ -141,7 +141,7 @@ namespace NiL.JS.Core
             }
         }
         [Hidden]
-        public static JSValue Null { [Hidden] get { return @null; } }
+        public static JSValue Null {[Hidden] get { return @null; } }
 
         [Hidden]
         public virtual JSValue this[string name]
@@ -301,7 +301,8 @@ namespace NiL.JS.Core
 #if INLINE
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-            get { return valueType >= JSValueType.Undefined; }
+            get
+            { return valueType >= JSValueType.Undefined; }
         }
 
         [Hidden]
@@ -311,7 +312,8 @@ namespace NiL.JS.Core
 #if INLINE
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-            get { return valueType > JSValueType.Undefined; }
+            get
+            { return valueType > JSValueType.Undefined; }
         }
 
         [Hidden]
@@ -321,7 +323,8 @@ namespace NiL.JS.Core
 #if INLINE
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-            get { return valueType >= JSValueType.Object && oValue == null; }
+            get
+            { return valueType >= JSValueType.Object && oValue == null; }
         }
 
         [Hidden]
@@ -331,7 +334,8 @@ namespace NiL.JS.Core
 #if INLINE
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-            get { return valueType == JSValueType.Int || valueType == JSValueType.Double; }
+            get
+            { return valueType == JSValueType.Int || valueType == JSValueType.Double; }
         }
 
         internal bool NeedClone
@@ -531,7 +535,7 @@ namespace NiL.JS.Core
                         break;
                     }
             }
-            ExceptionsHelper.Throw(new ApplicationException("Method GetProperty(...) of custom types must be overriden"));
+            ExceptionsHelper.Throw(new InvalidOperationException("Method GetProperty(...) of custom types must be overriden"));
             return null;
         }
 
@@ -567,11 +571,11 @@ namespace NiL.JS.Core
             if (valueType >= JSValueType.Object)
             {
                 if (oValue == null)
-                    ExceptionsHelper.ThrowTypeError("Can not get property \"" + name + "\" of \"null\"");
+                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.TryingToSetProperty, name, "null"));
 
                 if (oValue == this)
                 {
-                    System.Diagnostics.Debug.Write(typeof(JSValue).Name + "." + JIT.JITHelpers.methodof(SetProperty).Name + " must be overridden for objects");
+                    System.Diagnostics.Debug.WriteLine(typeof(JSValue).Name + "." + nameof(SetProperty) + " must be overridden for objects");
 
                     GetProperty(name, true, propertyScope).Assign(value);
                 }
@@ -582,6 +586,10 @@ namespace NiL.JS.Core
                     field.SetProperty(name, value, propertyScope, throwOnError);
                     return;
                 }
+            }
+            else if (valueType <= JSValueType.Undefined)
+            {
+                ExceptionsHelper.ThrowTypeError(string.Format(Strings.TryingToSetProperty, name, "undefined"));
             }
         }
 
@@ -607,7 +615,7 @@ namespace NiL.JS.Core
                 return false;
             if (object.ReferenceEquals(obj, this))
                 return true;
-            return Expressions.StrictEqualOperator.Check(this, obj as JSValue);
+            return Expressions.StrictEqual.Check(this, obj as JSValue);
         }
 
         #region Do not remove
@@ -659,25 +667,25 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public static explicit operator int(JSValue obj)
+        public static explicit operator int (JSValue obj)
         {
             return Tools.JSObjectToInt32(obj);
         }
 
         [Hidden]
-        public static explicit operator long(JSValue obj)
+        public static explicit operator long (JSValue obj)
         {
             return Tools.JSObjectToInt64(obj);
         }
 
         [Hidden]
-        public static explicit operator double(JSValue obj)
+        public static explicit operator double (JSValue obj)
         {
             return Tools.JSObjectToDouble(obj);
         }
 
         [Hidden]
-        public static explicit operator bool(JSValue obj)
+        public static explicit operator bool (JSValue obj)
         {
             switch (obj.valueType)
             {
@@ -695,7 +703,7 @@ namespace NiL.JS.Core
             }
             return false;
         }
-        
+
         [Hidden]
         public object Clone()
         {
@@ -891,7 +899,7 @@ namespace NiL.JS.Core
             else if (valueType == JSValueType.Object)
             {
                 if (oValue == this)
-                    throw new ApplicationException("Internal error. #VaO");
+                    throw new InvalidOperationException("Internal error. #VaO");
             }
         }
 

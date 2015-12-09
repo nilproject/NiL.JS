@@ -13,6 +13,7 @@ using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+using NiL.JS.Extensions;
 
 // Документацию по шаблону элемента "Пустая страница" см. по адресу http://go.microsoft.com/fwlink/?LinkId=391641
 
@@ -85,8 +86,8 @@ namespace Portable.Test.Phone
                 {
 
                     Context.RefreshGlobalContext();
-                    var s = new Script(staCode); // инициализация
-                    s.Context.DefineVariable("console").Assign(TypeProxy.Proxy(logger));
+                    var s = new Module(staCode); // инициализация
+                    s.Context.DefineVariable("console").Assign(logger.WrapToJSValue());
                     s.Invoke();
                     try
                     {

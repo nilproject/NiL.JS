@@ -54,9 +54,9 @@ if (Math.max(...[1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) != 9)
 
 function func1(a, b, ...rest) {
     if (JSON.stringify(rest) !== JSON.stringify([2, 3, 4]))
-        console.log("Incorrect rest parameters container");
+        console.log("Invalid rest parameters container");
     if (JSON.stringify(arguments) !== JSON.stringify({ 0: 0, 1: 1, 2: 2, 3: 3, 4: 4 }))
-        console.log("Incorrect arguments object inside function with rest parameters");
+        console.log("Invalid arguments object inside function with rest parameters");
     return arguments.length;
 }
 
@@ -182,6 +182,15 @@ a = console ? 1 : 2, { test: 1 };
     var r;
     if (r) for (t = 0; u > t; t++) n[t][e][1] /= r; else for (t = 0; u > t; t++) n[t][e][1] = o;
 });
+
+var undefined;
+
+try {
+	undefined.test = 1;
+	console.log("'undefined.test = 1' did not thrown exception")
+}
+catch (e) {
+}
 
 console.log("test completed");
     

@@ -155,9 +155,9 @@ namespace NiL.JS.Expressions
 
                 var baseClassName = code.Substring(n, i - n);
                 if (baseClassName == "null")
-                    baseType = new ConstantDefinition(JSValue.@null);
+                    baseType = new Constant(JSValue.@null);
                 else
-                    baseType = new GetVariableExpression(baseClassName, 1);
+                    baseType = new GetVariable(baseClassName, 1);
 
                 baseType.Position = n;
                 baseType.Length = i - n;
@@ -233,12 +233,12 @@ namespace NiL.JS.Expressions
                         {
                             case 'g':
                                 {
-                                    computedProperties.Add(new MemberDescriptor((Expression)propertyName, new GsPropertyPairExpression((Expression)initializer, null), @static));
+                                    computedProperties.Add(new MemberDescriptor((Expression)propertyName, new GetSetPropertyPair((Expression)initializer, null), @static));
                                     break;
                                 }
                             case 's':
                                 {
-                                    computedProperties.Add(new MemberDescriptor((Expression)propertyName, new GsPropertyPairExpression(null, (Expression)initializer), @static));
+                                    computedProperties.Add(new MemberDescriptor((Expression)propertyName, new GetSetPropertyPair(null, (Expression)initializer), @static));
                                     break;
                                 }
                             default:
@@ -256,16 +256,16 @@ namespace NiL.JS.Expressions
                         var accessorName = (@static ? "static " : "") + propertyAccessor._name;
                         if (!flds.ContainsKey(accessorName))
                         {
-                            var propertyPair = new GsPropertyPairExpression
+                            var propertyPair = new GetSetPropertyPair
                             (
                                 mode == FunctionKind.Getter ? propertyAccessor : null,
                                 mode == FunctionKind.Setter ? propertyAccessor : null
                             );
-                            flds.Add(accessorName, new MemberDescriptor(new ConstantDefinition(propertyAccessor._name), propertyPair, @static));
+                            flds.Add(accessorName, new MemberDescriptor(new Constant(propertyAccessor._name), propertyPair, @static));
                         }
                         else
                         {
-                            var vle = flds[accessorName].Value as GsPropertyPairExpression;
+                            var vle = flds[accessorName].Value as GetSetPropertyPair;
 
                             if (vle == null)
                                 ExceptionsHelper.Throw((new SyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
@@ -353,7 +353,7 @@ namespace NiL.JS.Expressions
                         }
                         else
                         {
-                            flds[fieldName] = new MemberDescriptor(new ConstantDefinition(method._name), method, @static);
+                            flds[fieldName] = new MemberDescriptor(new Constant(method._name), method, @static);
                         }
                         if (method == null)
                             ExceptionsHelper.Throw(new SyntaxError());
@@ -363,7 +363,7 @@ namespace NiL.JS.Expressions
                 {
                     string ctorCode;
                     int ctorIndex = 0;
-                    if (baseType != null && !(baseType is ConstantDefinition))
+                    if (baseType != null && !(baseType is Constant))
                         ctorCode = "constructor(...args) { super(...args); }";
                     else
                         ctorCode = "constructor(...args) { }";
@@ -376,7 +376,7 @@ namespace NiL.JS.Expressions
                         ref ctorIndex,
                         FunctionKind.Method);
                 }
-                
+
                 result = new ClassDefinition(name, baseType, new List<MemberDescriptor>(flds.Values).ToArray(), ctor as FunctionDefinition, computedProperties.ToArray());
 
                 if ((oldCodeContext & CodeContext.InExpression) == 0)
@@ -617,8 +617,7 @@ namespace NiL.JS.Expressions
             {
                 _members[i]._value.Decompose(ref _members[i]._value, result); // results will be empty at each iterations
 #if DEBUG
-                if (result.Count != 0)
-                    System.Diagnostics.Debug.Fail("Decompose: results not empty");
+                System.Diagnostics.Debug.Assert(result.Count == 0, "Decompose: results not empty");
 #endif
             }
 
@@ -629,8 +628,7 @@ namespace NiL.JS.Expressions
                 computedProperties[i]._value.Decompose(ref computedProperties[i]._value, result);
 
 #if DEBUG
-                if (result.Count != 0)
-                    System.Diagnostics.Debug.Fail("Decompose: results not empty");
+                System.Diagnostics.Debug.Assert(result.Count == 0, "Decompose: results not empty");
 #endif
             }
         }
