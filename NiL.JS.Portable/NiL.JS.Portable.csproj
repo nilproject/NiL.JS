@@ -8,7 +8,7 @@
     <ProjectGuid>{DEB5F360-2822-4852-95A3-964E37C802AF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NiL.JS.Portable</RootNamespace>
+    <RootNamespace>NiL.JS</RootNamespace>
     <AssemblyName>NiL.JS.Portable</AssemblyName>
     <DefaultLanguage>ru-RU</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
@@ -37,8 +37,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>NiL.JS.Keys.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\NiL.JS\BaseLibrary\Array.cs">
@@ -70,6 +69,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\Function.cs">
       <Link>BaseLibrary\Function.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\GeneratorFunction.cs">
+      <Link>BaseLibrary\GeneratorFunction.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\Int16Array.cs">
       <Link>BaseLibrary\Int16Array.cs</Link>
@@ -146,6 +148,9 @@
     <Compile Include="..\NiL.JS\Core\Context.cs">
       <Link>Core\Context.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\CustomCodeFragment.cs">
+      <Link>Core\CustomCodeFragment.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Delegates.cs">
       <Link>Core\Delegates.cs</Link>
     </Compile>
@@ -175,6 +180,15 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\GlobalObject.cs">
       <Link>Core\GlobalObject.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\IIterable.cs">
+      <Link>Core\IIterable.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\IIterator.cs">
+      <Link>Core\IIterator.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\IIteratorResult.cs">
+      <Link>Core\IIteratorResult.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\AllowNullArgumentsAttribute.cs">
       <Link>Core\Interop\AllowNullArgumentsAttribute.cs</Link>
@@ -242,17 +256,14 @@
     <Compile Include="..\NiL.JS\Core\JSValue.cs">
       <Link>Core\JSValue.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\ObjectContainer.cs">
-      <Link>Core\ObjectContainer.cs</Link>
+    <Compile Include="..\NiL.JS\Core\ObjectWrapper.cs">
+      <Link>Core\ObjectWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\ParseInfo.cs">
+      <Link>Core\ParseInfo.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Parser.cs">
       <Link>Core\Parser.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\ParseResult.cs">
-      <Link>Core\ParseResult.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\ParsingState.cs">
-      <Link>Core\ParsingState.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\PropertyPair.cs">
       <Link>Core\PropertyPair.cs</Link>
@@ -263,8 +274,8 @@
     <Compile Include="..\NiL.JS\Core\SparseArray.cs">
       <Link>Core\SparseArray.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\StringMap2.cs">
-      <Link>Core\StringMap2.cs</Link>
+    <Compile Include="..\NiL.JS\Core\StringMap.cs">
+      <Link>Core\StringMap.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Tools.cs">
       <Link>Core\Tools.cs</Link>
@@ -284,65 +295,83 @@
     <Compile Include="..\NiL.JS\ExceptionsHelper.cs">
       <Link>ExceptionsHelper.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\AdditionOperator.cs">
-      <Link>Expressions\AdditionOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Addition.cs">
+      <Link>Expressions\Addition.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ArrayNotation.cs">
-      <Link>Expressions\ArrayNotation.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ArrayDefinition.cs">
+      <Link>Expressions\ArrayDefinition.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\AssignmentOperator.cs">
-      <Link>Expressions\AssignmentOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Assignment.cs">
+      <Link>Expressions\Assignment.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\AssignOverReplace.cs">
-      <Link>Expressions\AssignOverReplace.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\AssignmentOperatorCache.cs">
+      <Link>Expressions\AssignmentOperatorCache.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\BitwiseConjunctionOperator.cs">
-      <Link>Expressions\BitwiseConjunctionOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\AssignmentOverReplace.cs">
+      <Link>Expressions\AssignmentOverReplace.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\BitwiseDisjunctionOperator.cs">
-      <Link>Expressions\BitwiseDisjunctionOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\BitwiseConjunction.cs">
+      <Link>Expressions\BitwiseConjunction.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\BitwiseExclusiveDisjunctionOperator.cs">
-      <Link>Expressions\BitwiseExclusiveDisjunctionOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\BitwiseDisjunction.cs">
+      <Link>Expressions\BitwiseDisjunction.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\BitwiseNegationOperator.cs">
-      <Link>Expressions\BitwiseNegationOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\BitwiseExclusiveDisjunction.cs">
+      <Link>Expressions\BitwiseExclusiveDisjunction.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\CallOperator.cs">
-      <Link>Expressions\CallOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\BitwiseNegation.cs">
+      <Link>Expressions\BitwiseNegation.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ClassNotation.cs">
-      <Link>Expressions\ClassNotation.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Call.cs">
+      <Link>Expressions\Call.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\CommaOperator.cs">
-      <Link>Expressions\CommaOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ClassDefinition.cs">
+      <Link>Expressions\ClassDefinition.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ConditionalOperator.cs">
-      <Link>Expressions\ConditionalOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Comma.cs">
+      <Link>Expressions\Comma.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ConstantNotation.cs">
-      <Link>Expressions\ConstantNotation.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Conditional.cs">
+      <Link>Expressions\Conditional.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\DecrementOperator.cs">
-      <Link>Expressions\DecrementOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Constant.cs">
+      <Link>Expressions\Constant.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\DeleteMemberExpression.cs">
-      <Link>Expressions\DeleteMemberExpression.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ConvertToBoolean.cs">
+      <Link>Expressions\ConvertToBoolean.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\DeleteOperator.cs">
-      <Link>Expressions\DeleteOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ConvertToInteger.cs">
+      <Link>Expressions\ConvertToInteger.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\DivisionOperator.cs">
-      <Link>Expressions\DivisionOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ConvertToNumber.cs">
+      <Link>Expressions\ConvertToNumber.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\EmptyExpression.cs">
-      <Link>Expressions\EmptyExpression.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ConvertToString.cs">
+      <Link>Expressions\ConvertToString.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\EntityNotation.cs">
-      <Link>Expressions\EntityNotation.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ConvertToUnsignedInteger.cs">
+      <Link>Expressions\ConvertToUnsignedInteger.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\EqualOperator.cs">
-      <Link>Expressions\EqualOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Decrement.cs">
+      <Link>Expressions\Decrement.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\Delete.cs">
+      <Link>Expressions\Delete.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\DeleteProperty.cs">
+      <Link>Expressions\DeleteProperty.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\Division.cs">
+      <Link>Expressions\Division.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\Empty.cs">
+      <Link>Expressions\Empty.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\EntityDefinition.cs">
+      <Link>Expressions\EntityDefinition.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\Equal.cs">
+      <Link>Expressions\Equal.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\Expression.cs">
       <Link>Expressions\Expression.cs</Link>
@@ -353,197 +382,206 @@
     <Compile Include="..\NiL.JS\Expressions\ExpressionWrapper.cs">
       <Link>Expressions\ExpressionWrapper.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\FunctionNotation.cs">
-      <Link>Expressions\FunctionNotation.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ExtractStoredValue.cs">
+      <Link>Expressions\ExtractStoredValue.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\GetMemberOperator.cs">
-      <Link>Expressions\GetMemberOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\FunctionDefinition.cs">
+      <Link>Expressions\FunctionDefinition.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\GetValueForAssignmentOperator.cs">
-      <Link>Expressions\GetValueForAssignmentOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\GetSetPropertyPair.cs">
+      <Link>Expressions\GetSetPropertyPair.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\GetVariableExpression.cs">
-      <Link>Expressions\GetVariableExpression.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\GetVariable.cs">
+      <Link>Expressions\GetVariable.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\IncrementOperator.cs">
-      <Link>Expressions\IncrementOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\In.cs">
+      <Link>Expressions\In.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\InOperator.cs">
-      <Link>Expressions\InOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Increment.cs">
+      <Link>Expressions\Increment.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\InstanceOfOperator.cs">
-      <Link>Expressions\InstanceOfOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\InstanceOf.cs">
+      <Link>Expressions\InstanceOf.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\LessOperator.cs">
-      <Link>Expressions\LessOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Less.cs">
+      <Link>Expressions\Less.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\LessOrEqualOperator.cs">
-      <Link>Expressions\LessOrEqualOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\LessOrEqual.cs">
+      <Link>Expressions\LessOrEqual.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\LogicalConjunctionOperator.cs">
-      <Link>Expressions\LogicalConjunctionOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\LogicalConjunction.cs">
+      <Link>Expressions\LogicalConjunction.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\LogicalDisjunctionOperator.cs">
-      <Link>Expressions\LogicalDisjunctionOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\LogicalDisjunction.cs">
+      <Link>Expressions\LogicalDisjunction.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\LogicalNegationOperator.cs">
-      <Link>Expressions\LogicalNegationOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\LogicalNegation.cs">
+      <Link>Expressions\LogicalNegation.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ModuloOperator.cs">
-      <Link>Expressions\ModuloOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Modulo.cs">
+      <Link>Expressions\Modulo.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\MoreOperator.cs">
-      <Link>Expressions\MoreOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\More.cs">
+      <Link>Expressions\More.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\MoreOrEqualOperator.cs">
-      <Link>Expressions\MoreOrEqualOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\MoreOrEqual.cs">
+      <Link>Expressions\MoreOrEqual.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\MultiplicationOperator.cs">
-      <Link>Expressions\MultiplicationOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Multiplication.cs">
+      <Link>Expressions\Multiplication.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\NegationOperator.cs">
-      <Link>Expressions\NegationOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Negation.cs">
+      <Link>Expressions\Negation.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\NewOperator.cs">
-      <Link>Expressions\NewOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\New.cs">
+      <Link>Expressions\New.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\NotEqualOperator.cs">
-      <Link>Expressions\NotEqualOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\NewTarget.cs">
+      <Link>Expressions\NewTarget.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\NumberAdditionOperator.cs">
-      <Link>Expressions\NumberAdditionOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\NotEqual.cs">
+      <Link>Expressions\NotEqual.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\NumberLessOperator.cs">
-      <Link>Expressions\NumberLessOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\NumberAddition.cs">
+      <Link>Expressions\NumberAddition.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\NumberLessOrEqualOperator.cs">
-      <Link>Expressions\NumberLessOrEqualOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\NumberLess.cs">
+      <Link>Expressions\NumberLess.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\NumberMoreOpeartor.cs">
-      <Link>Expressions\NumberMoreOpeartor.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\NumberLessOrEqual.cs">
+      <Link>Expressions\NumberLessOrEqual.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\NumberMoreOrEqualOperator.cs">
-      <Link>Expressions\NumberMoreOrEqualOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\NumberMore.cs">
+      <Link>Expressions\NumberMore.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ObjectNotation.cs">
-      <Link>Expressions\ObjectNotation.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\NumberMoreOrEqual.cs">
+      <Link>Expressions\NumberMoreOrEqual.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\RegExpCreateExpression.cs">
-      <Link>Expressions\RegExpCreateExpression.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\ObjectDefinition.cs">
+      <Link>Expressions\ObjectDefinition.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\SetMemberExpression.cs">
-      <Link>Expressions\SetMemberExpression.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Property.cs">
+      <Link>Expressions\Property.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\SignedShiftLeftOperator.cs">
-      <Link>Expressions\SignedShiftLeftOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\RegExpCreate.cs">
+      <Link>Expressions\RegExpCreate.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\SignedShiftRightOperator.cs">
-      <Link>Expressions\SignedShiftRightOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\SetProperty.cs">
+      <Link>Expressions\SetProperty.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\StrictEqualOperator.cs">
-      <Link>Expressions\StrictEqualOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\SignedShiftLeft.cs">
+      <Link>Expressions\SignedShiftLeft.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\StrictNotEqualOperator.cs">
-      <Link>Expressions\StrictNotEqualOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\SignedShiftRight.cs">
+      <Link>Expressions\SignedShiftRight.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\StringConcatenationExpression.cs">
-      <Link>Expressions\StringConcatenationExpression.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Spread.cs">
+      <Link>Expressions\Spread.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\SubstractOperator.cs">
-      <Link>Expressions\SubstractOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\StrictEqual.cs">
+      <Link>Expressions\StrictEqual.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ToBooleanOperator.cs">
-      <Link>Expressions\ToBooleanOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\StrictNotEqual.cs">
+      <Link>Expressions\StrictNotEqual.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ToIntegerOperator.cs">
-      <Link>Expressions\ToIntegerOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\StringConcatenation.cs">
+      <Link>Expressions\StringConcatenation.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ToNumberOperator.cs">
-      <Link>Expressions\ToNumberOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Substract.cs">
+      <Link>Expressions\Substract.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ToStringExpression.cs">
-      <Link>Expressions\ToStringExpression.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\Super.cs">
+      <Link>Expressions\Super.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ToUnsignedIntegerExpression.cs">
-      <Link>Expressions\ToUnsignedIntegerExpression.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\SuspendableExpression.cs">
+      <Link>Expressions\SuspendableExpression.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\TypeOfOperator.cs">
-      <Link>Expressions\TypeOfOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\This.cs">
+      <Link>Expressions\This.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\UnsignedShiftRightOperator.cs">
-      <Link>Expressions\UnsignedShiftRightOperator.cs</Link>
+    <Compile Include="..\NiL.JS\Expressions\TypeOf.cs">
+      <Link>Expressions\TypeOf.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\UnsignedShiftRight.cs">
+      <Link>Expressions\UnsignedShiftRight.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\Yield.cs">
+      <Link>Expressions\Yield.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Extensions\IterationProtocolExtensions.cs">
+      <Link>Extensions\IterationProtocolExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Extensions\JSValueExtensions.cs">
+      <Link>Extensions\JSValueExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Extensions\ObjectExtensions.cs">
+      <Link>Extensions\ObjectExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Module.cs">
+      <Link>Module.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Script.cs">
-      <Link>Script.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Statements\BreakStatement.cs">
-      <Link>Statements\BreakStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\Break.cs">
+      <Link>Statements\Break.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Statements\CodeBlock.cs">
       <Link>Statements\CodeBlock.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\ContinueStatement.cs">
-      <Link>Statements\ContinueStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\Continue.cs">
+      <Link>Statements\Continue.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\DebuggerStatement.cs">
-      <Link>Statements\DebuggerStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\Debugger.cs">
+      <Link>Statements\Debugger.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\DoWhileStatement.cs">
-      <Link>Statements\DoWhileStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\DoWhile.cs">
+      <Link>Statements\DoWhile.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\ForInStatement.cs">
-      <Link>Statements\ForInStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\For.cs">
+      <Link>Statements\For.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\ForOfStatement.cs">
-      <Link>Statements\ForOfStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\ForIn.cs">
+      <Link>Statements\ForIn.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\ForStatement.cs">
-      <Link>Statements\ForStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\ForOf.cs">
+      <Link>Statements\ForOf.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\IfElseStatement.cs">
-      <Link>Statements\IfElseStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\IfElse.cs">
+      <Link>Statements\IfElse.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\InfinityLoopStatement.cs">
-      <Link>Statements\InfinityLoopStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\InfinityLoop.cs">
+      <Link>Statements\InfinityLoop.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Statements\LabeledStatement.cs">
       <Link>Statements\LabeledStatement.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\MultilineComment.cs">
-      <Link>Statements\MultilineComment.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\Return.cs">
+      <Link>Statements\Return.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\ReturnStatement.cs">
-      <Link>Statements\ReturnStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\StoreValue.cs">
+      <Link>Statements\StoreValue.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\SinglelineComment.cs">
-      <Link>Statements\SinglelineComment.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\Switch.cs">
+      <Link>Statements\Switch.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\SwitchStatement.cs">
-      <Link>Statements\SwitchStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\Throw.cs">
+      <Link>Statements\Throw.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\ThrowStatement.cs">
-      <Link>Statements\ThrowStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\TryCatch.cs">
+      <Link>Statements\TryCatch.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\TryCatchStatement.cs">
-      <Link>Statements\TryCatchStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\VariableDefinition.cs">
+      <Link>Statements\VariableDefinition.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\VariableDefineStatement.cs">
-      <Link>Statements\VariableDefineStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\While.cs">
+      <Link>Statements\While.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Statements\WhileStatement.cs">
-      <Link>Statements\WhileStatement.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Statements\WithStatement.cs">
-      <Link>Statements\WithStatement.cs</Link>
+    <Compile Include="..\NiL.JS\Statements\With.cs">
+      <Link>Statements\With.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Strings.Designer.cs">
       <Link>Strings.Designer.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Strings1.Designer.cs">
-      <Link>Strings1.Designer.cs</Link>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
@@ -551,10 +589,13 @@
     <Compile Include="Core\Backward.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="NiL.JS.Keys.pfx" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="..\NiL.JS\Strings.resx">
       <Link>Strings.resx</Link>
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings1.Designer.cs</LastGenOutput>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

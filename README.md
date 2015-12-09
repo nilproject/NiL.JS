@@ -5,9 +5,8 @@ NiL.JS
 Open source ECMAScript 6.0 (ES2015) (JavaScript) engine.
 Licensed under BSD 3-Clause License.
     
-* High performance.
+* Fast.
 * Works on Windows Runtime (Portable version)
-* Support .NET 3.5.
 * Support Mono.
 * Compatible with ASP.NET.
 * Automatic wrapping .NET objects. No changes are required.
@@ -16,7 +15,6 @@ Licensed under BSD 3-Clause License.
 * Integrated static analyser.
 * Integrated debugger ("For developers" version).
 * You can extend syntax with your own statements ([see examples](https://github.com/nilproject/NiL.JS/wiki/Examples#add-you-own-syntax-extension-dev-brunch-only)).
-* 99% of Sputnik tests passed.
 
 ## Example
     

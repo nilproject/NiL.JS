@@ -84,6 +84,9 @@ namespace NiL.JS.Core.Functions
 #endif
             for (int i = 0; i < ctors.Length; i++)
             {
+                if (ctors[i].IsStatic)
+                    continue;
+
                 if (!ctors[i].IsDefined(typeof(HiddenAttribute), false) || ctors[i].IsDefined(typeof(ForceUseAttribute), true))
                 {
                     ctorsL.Add(new MethodProxy(ctors[i]));

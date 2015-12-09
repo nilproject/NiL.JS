@@ -118,12 +118,12 @@ namespace NiL.JS.Expressions
                     {
                         case 'g':
                             {
-                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new GsPropertyPairExpression((Expression)initializer, null)));
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new GetSetPropertyPair((Expression)initializer, null)));
                                 break;
                             }
                         case 's':
                             {
-                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new GsPropertyPairExpression(null, (Expression)initializer)));
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new GetSetPropertyPair(null, (Expression)initializer)));
                                 break;
                             }
                         default:
@@ -141,7 +141,7 @@ namespace NiL.JS.Expressions
                     var accessorName = propertyAccessor._name;
                     if (!flds.ContainsKey(accessorName))
                     {
-                        var propertyPair = new GsPropertyPairExpression
+                        var propertyPair = new GetSetPropertyPair
                         (
                             mode == FunctionKind.Getter ? propertyAccessor : null,
                             mode == FunctionKind.Setter ? propertyAccessor : null
@@ -150,7 +150,7 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
-                        var vle = flds[accessorName] as GsPropertyPairExpression;
+                        var vle = flds[accessorName] as GetSetPropertyPair;
 
                         if (vle == null)
                             ExceptionsHelper.ThrowSyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field", state.Code, s);
@@ -233,8 +233,8 @@ namespace NiL.JS.Expressions
                         Expression aei = null;
                         if (flds.TryGetValue(fieldName, out aei))
                         {
-                            if (state.strict ? (!(aei is ConstantDefinition) || (aei as ConstantDefinition).value != JSValue.undefined)
-                                             : aei is GsPropertyPairExpression)
+                            if (state.strict ? (!(aei is Constant) || (aei as Constant).value != JSValue.undefined)
+                                             : aei is GetSetPropertyPair)
                                 ExceptionsHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
                             if (state.message != null)
                                 state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 0), "Duplicate key \"" + fieldName + "\"");
@@ -252,7 +252,7 @@ namespace NiL.JS.Expressions
                                 while (Tools.IsWhiteSpace(state.Code[i]));
                             }
 
-                            initializer = new GetVariableExpression(fieldName, state.lexicalScopeLevel);
+                            initializer = new GetVariable(fieldName, state.lexicalScopeLevel);
                         }
                         else
                         {
@@ -452,7 +452,7 @@ namespace NiL.JS.Expressions
             {
                 if (!(values[i] is ExtractStoredValue))
                 {
-                    result.Add(new StoreValueStatement(values[i], false));
+                    result.Add(new StoreValue(values[i], false));
                     values[i] = new ExtractStoredValue(values[i]);
                 }
             }
@@ -464,12 +464,12 @@ namespace NiL.JS.Expressions
 
                 if (!(computedProperties[i].Key is ExtractStoredValue))
                 {
-                    result.Add(new StoreValueStatement(computedProperties[i].Key, false));
+                    result.Add(new StoreValue(computedProperties[i].Key, false));
                     key = new ExtractStoredValue(computedProperties[i].Key);
                 }
                 if (!(computedProperties[i].Value is ExtractStoredValue))
                 {
-                    result.Add(new StoreValueStatement(computedProperties[i].Value, false));
+                    result.Add(new StoreValue(computedProperties[i].Value, false));
                     value = new ExtractStoredValue(computedProperties[i].Value);
                 }
                 if ((key != null)
@@ -485,9 +485,9 @@ namespace NiL.JS.Expressions
             string res = "{ ";
             for (int i = 0; i < fieldNames.Length; i++)
             {
-                if ((values[i] is ConstantDefinition) && ((values[i] as ConstantDefinition).value.valueType == JSValueType.Property))
+                if ((values[i] is Constant) && ((values[i] as Constant).value.valueType == JSValueType.Property))
                 {
-                    var gs = (values[i] as ConstantDefinition).value.oValue as CodeNode[];
+                    var gs = (values[i] as Constant).value.oValue as CodeNode[];
                     res += gs[0];
                     if (gs[0] != null && gs[1] != null)
                         res += ", ";

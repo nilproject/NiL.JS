@@ -29,7 +29,11 @@ namespace NiL.JS.Core.Interop
                         base.Assign(value as JSValue);
                     else
                     {
+#if PORTABLE
+                        switch (value.GetType().GetTypeCode())
+#else
                         switch (Type.GetTypeCode(value.GetType()))
+#endif
                         {
                             case TypeCode.Boolean:
                                 {

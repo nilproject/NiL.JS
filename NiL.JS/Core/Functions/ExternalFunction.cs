@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
@@ -20,7 +22,7 @@ namespace NiL.JS.Core.Functions
             get
             {
 #if PORTABLE
-                return del.GetMethodInfo().Name;
+                return System.Reflection.RuntimeReflectionExtensions.GetMethodInfo(del).Name;
 #else
                 return del.Method.Name;
 #endif

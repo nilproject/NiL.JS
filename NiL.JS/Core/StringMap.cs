@@ -26,7 +26,9 @@ namespace NiL.JS.Core
         }
     }
 
+#if !PORTABLE
     [Serializable]
+#endif
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(StringMapDebugView<>))]
     public sealed class StringMap2<TValue> : IDictionary<string, TValue>

@@ -561,56 +561,73 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Cannot execute script in global context");
             if (string.IsNullOrEmpty(code))
                 return JSValue.undefined;
+
+            // чистить кэш тут не достаточно. 
+            // Мы не знаем, где объявлена одноимённая переменная 
+            // и в тех случаях, когда она пришла из функции выше
+            // или даже глобального контекста, её кэш может быть 
+            // не сброшен вовремя и значение будет браться из контекста
+            // eval'а, а не того контекста, в котором её позовут.
+            /*
+             * function a(){
+             *  var c = 1;
+             *  function b(){
+             *      eval("var c = 2");
+             *      // переменная объявлена в контексте b, значит и значение должно быть из
+             *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
+             *      // то в a её значение будет 2
+             *  }
+             * }
+             */
+
+            var mainContext = this;
+            while (mainContext.oldContext != null && mainContext.oldContext == mainContext.parent && mainContext.owner == mainContext.oldContext.owner)
+            {
+                mainContext = mainContext.oldContext;
+            }
+
+            int index = 0;
+            string c = Tools.RemoveComments(code, 0);
+            var ps = new ParseInfo(c, code, null)
+            {
+                strict = strict,
+                AllowDirectives = true,
+                CodeContext = CodeContext.InEval
+            };
+
+            var body = CodeBlock.Parse(ps, ref index) as CodeBlock;
+            if (index < c.Length)
+                throw new System.ArgumentException("Invalid char");
+            var variables = new Dictionary<string, VariableDescriptor>();
+            var stats = new FunctionInfo();
+
+            CodeNode cb = body;
+            Parser.Build(ref cb, 0, variables, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, stats, Options.None);
+
+            var tv = stats.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
+            body.RebuildScope(stats, tv, body._variables.Length == 0 || !stats.WithLexicalEnvironment ? 1 : 0);
+            if (tv != null)
+                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
+
+            body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
+            body = cb as CodeBlock ?? body;
+
+            if (stats.ContainsYield)
+                body.Decompose(ref cb);
+
+            body.suppressScopeIsolation = true;
+
 #if DEV
             var debugging = this.debugging;
             this.debugging = false;
 #endif
+            var runned = this.Activate();
             try
             {
-                // чистить кэш тут не достаточно. 
-                // Мы не знаем, где объявлена одноимённая переменная 
-                // и в тех случаях, когда она пришла из функции выше
-                // или даже глобального контекста, её кэш может быть 
-                // не сброшен вовремя и значение будет браться из контекста
-                // eval'а, а не того контекста, в котором её позовут.
-                /*
-                 * function a(){
-                 *  var c = 1;
-                 *  function b(){
-                 *      eval("var c = 2");
-                 *      // переменная объявлена в контексте b, значит и значение должно быть из
-                 *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
-                 *      // то в a её значение будет 2
-                 *  }
-                 * }
-                 */
-
-                var mainContext = this;
-                while (mainContext.oldContext != null && mainContext.oldContext == mainContext.parent && mainContext.owner == mainContext.oldContext.owner)
-                {
-                    mainContext = mainContext.oldContext;
-                }
-
-                int index = 0;
-                string c = Tools.RemoveComments(code, 0);
-                var ps = new ParseInfo(c, code, null)
-                {
-                    strict = strict,
-                    AllowDirectives = true
-                };
-                var body = CodeBlock.Parse(ps, ref index) as CodeBlock;
-                if (index < c.Length)
-                    throw new System.ArgumentException("Invalid char");
-                var variables = new Dictionary<string, VariableDescriptor>();
-                var stats = new FunctionInfo();
-                var context = new Context(this, false, owner)
+                var context = inplace && !body.strict && !strict ? this : new Context(this, false, owner)
                 {
                     strict = strict || body.strict
                 };
-                CodeNode cb = body;
-                Parser.Build(ref cb, 0, variables, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, stats, Options.None);
-
-                body.suppressScopeIsolation = true;
 
                 if (!strict && !body.strict)
                 {
@@ -649,33 +666,24 @@ namespace NiL.JS.Core
                     }
                 }
 
-                var tv = stats.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
-                body.RebuildScope(stats, tv, body._variables.Length == 0 || !stats.WithLexicalEnvironment ? 1 : 0);
-                if (tv != null)
-                    body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
-
-                body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
-                body = cb as CodeBlock ?? body;
-
-                if (stats.ContainsYield)
-                    body.Decompose(ref cb);
-
                 if (body.lines.Length == 0)
                     return JSValue.undefined;
 
-                var run = context.Activate();
+                var runContextOfEval = context.Activate();
                 try
                 {
                     return body.Evaluate(context) ?? context.lastResult ?? JSValue.notExists;
                 }
                 finally
                 {
-                    if (run)
+                    if (runContextOfEval)
                         context.Deactivate();
                 }
             }
             finally
             {
+                if (runned)
+                    this.Deactivate();
 #if DEV
                 this.debugging = debugging;
 #endif

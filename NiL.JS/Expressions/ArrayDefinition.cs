@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
                 else
                     elms.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
                 if (spread)
-                    elms[elms.Count - 1] = new SpreadOperator(elms[elms.Count - 1]) { Position = start, Length = i - start };
+                    elms[elms.Count - 1] = new Spread(elms[elms.Count - 1]) { Position = start, Length = i - start };
                 while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] == ',')
@@ -186,7 +186,7 @@ namespace NiL.JS.Expressions
             {
                 if (!(elements[i] is ExtractStoredValue))
                 {
-                    result.Add(new StoreValueStatement(elements[i], false));
+                    result.Add(new StoreValue(elements[i], false));
                     elements[i] = new ExtractStoredValue(elements[i]);
                 }
             }

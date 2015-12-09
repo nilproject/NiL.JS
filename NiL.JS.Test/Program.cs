@@ -41,7 +41,7 @@ namespace NiL.JS.Test
             }));
 
 #if PORTABLE
-            Context.GlobalContext.DefineVariable("console").Assign(TypeProxy.Proxy(new
+            Context.GlobalContext.DefineVariable("console").Assign(new
             {
                 log = new Action<Arguments>(arguments =>
                 {
@@ -54,10 +54,10 @@ namespace NiL.JS.Test
                     }
                     System.Console.WriteLine();
                 })
-            }));
+            }.WrapToJSValue());
 #endif
 
-            int mode = 101
+            int mode = 103
                     ;
             switch (mode)
             {
@@ -169,9 +169,10 @@ namespace NiL.JS.Test
 
                             var context = new Context();
                             context.Eval(new StreamReader(file).ReadToEnd());
-                            context.DefineVariable("code").Assign(new NiL.JS.BaseLibrary.String(myString));
+                            context.DefineVariable("code").Assign(new BaseLibrary.String(myString));
 
-                            var result = context.Eval(@"var ast = UglifyJS.parse(code);
+                            var result = context.Eval(
+@"var ast = UglifyJS.parse(code);
 ast.figure_out_scope();
 compressor = UglifyJS.Compressor();
 ast = ast.transform(compressor);

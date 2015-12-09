@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
-using NiL.JS.Core.JIT;
 using NiL.JS.Extensions;
 
 namespace NiL.JS.Core
@@ -1517,19 +1517,21 @@ namespace NiL.JS.Core
                 expressions.Add(Expression.Assign(argumentsParameter, Expression.New(typeof(Arguments))));
                 for (var i = 0; i < handlerArgumentsParameters.Length; i++)
                 {
-                    expressions.Add(Expression.Call(argumentsParameter, typeof(Arguments).GetMethod("Add"),
-                        Expression.Call(JITHelpers.methodof(TypeProxy.Marshal), handlerArgumentsParameters[i])));
+                    expressions.Add(Expression.Call(
+                        argumentsParameter,
+                        typeof(Arguments).GetRuntimeMethod("Add", new[] { typeof(JSValue) }),
+                        Expression.Call(Tools.methodof<object, JSValue>(TypeProxy.Marshal), handlerArgumentsParameters[i])));
                 }
             }
 
-            var callTree = Expression.Call(functionGetter, typeof(Function).GetMethod(nameof(Function.Call), new[] { typeof(Arguments) }), argumentsParameter);
+            var callTree = Expression.Call(functionGetter, typeof(Function).GetRuntimeMethod(nameof(Function.Call), new[] { typeof(Arguments) }), argumentsParameter);
 
             expressions.Add(callTree);
             if (method.ReturnParameter.ParameterType != typeof(void)
                 && method.ReturnParameter.ParameterType != typeof(object)
                 && !typeof(JSValue).IsAssignableFrom(method.ReturnParameter.ParameterType))
             {
-                var asMethod = typeof(JSValueExtensions).GetMethod("As").MakeGenericMethod(method.ReturnParameter.ParameterType);
+                var asMethod = typeof(JSValueExtensions).GetRuntimeMethods().First(x => x.Name == "As").MakeGenericMethod(method.ReturnParameter.ParameterType);
                 expressions[expressions.Count - 1] = Expression.Call(asMethod, callTree);
             }
 
@@ -1539,6 +1541,16 @@ namespace NiL.JS.Core
                 return Expression.Lambda(delegateType, result, name, handlerArgumentsParameters);
             else
                 return Expression.Lambda(result, name, handlerArgumentsParameters);
+        }
+
+        internal static MethodInfo methodof<T0, T1, T2, T3>(Action<T0, T1, T2, T3> method)
+        {
+            return method.GetMethodInfo();
+        }
+
+        internal static MethodInfo methodof<T0, T1>(Func<T0, T1> method)
+        {
+            return method.GetMethodInfo();
         }
     }
 }

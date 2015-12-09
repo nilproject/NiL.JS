@@ -101,18 +101,18 @@ namespace NiL.JS.Expressions
                         res.iValue = (int)res.dValue;
                         res.valueType = JSValueType.Int;
                     }
-                    _this = new ConstantDefinition(res) as CodeNode;
+                    _this = new Constant(res) as CodeNode;
                     return true;
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantDefinition(e.Avatar)));
+                    _this = new ExpressionWrapper(new Throw(new Constant(e.Avatar)));
                     expressionWillThrow(message);
                     return true;
                 }
                 catch (Exception e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(e));
+                    _this = new ExpressionWrapper(new Throw(e));
                     expressionWillThrow(message);
                     return true;
                 }
@@ -146,20 +146,20 @@ namespace NiL.JS.Expressions
                 s.Optimize(ref s, owner, message, opts, stats);
                 second = s as Expression;
             }
-            if (ContextIndependent && !(this is ConstantDefinition))
+            if (ContextIndependent && !(this is Constant))
             {
                 try
                 {
-                    _this = new ConstantDefinition(Evaluate(null));
+                    _this = new Constant(Evaluate(null));
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(new ConstantDefinition(e.Avatar)));
+                    _this = new ExpressionWrapper(new Throw(new Constant(e.Avatar)));
                     expressionWillThrow(message);
                 }
                 catch (Exception e)
                 {
-                    _this = new ExpressionWrapper(new ThrowStatement(e));
+                    _this = new ExpressionWrapper(new Throw(e));
                     expressionWillThrow(message);
                 }
             }
@@ -226,7 +226,7 @@ namespace NiL.JS.Expressions
             {
                 if (second.NeedDecompose && !(first is ExtractStoredValue))
                 {
-                    result.Add(new StoreValueStatement(first, LValueModifier));
+                    result.Add(new StoreValue(first, LValueModifier));
                     first = new ExtractStoredValue(first);
                 }
 

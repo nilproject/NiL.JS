@@ -6,9 +6,33 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace System
 {
+    [ComVisible(true)]
+    public enum TypeCode
+    {
+        Empty = 0,          // Null reference
+        Object = 1,         // Instance that isn't a value
+        DBNull = 2,         // Database null value
+        Boolean = 3,        // Boolean
+        Char = 4,           // Unicode character
+        SByte = 5,          // Signed 8-bit integer
+        Byte = 6,           // Unsigned 8-bit integer
+        Int16 = 7,          // Signed 16-bit integer
+        UInt16 = 8,         // Unsigned 16-bit integer
+        Int32 = 9,          // Signed 32-bit integer
+        UInt32 = 10,        // Unsigned 32-bit integer
+        Int64 = 11,         // Signed 64-bit integer
+        UInt64 = 12,        // Unsigned 64-bit integer
+        Single = 13,        // IEEE 32-bit float
+        Double = 14,        // IEEE 64-bit double
+        Decimal = 15,       // Decimal
+        DateTime = 16,      // DateTime
+        String = 18,        // Unicode character string
+    }
+
     namespace Reflection
     {
         public enum MemberTypes
@@ -95,6 +119,54 @@ namespace System
         public static MethodInfo GetAddMethod(this EventInfo self)
         {
             return self.AddMethod;
+        }
+
+        private static readonly Type[] _Types = 
+            {
+                null,
+                typeof(object),
+                Type.GetType("System.DBNull"),
+                typeof(bool),
+                typeof(char),
+                typeof(sbyte),
+                typeof(byte),
+                typeof(short),
+                typeof(ushort),
+                typeof(int),
+                typeof(uint),
+                typeof(long),
+                typeof(ulong),
+                typeof(float),
+                typeof(double),
+                typeof(decimal),
+                typeof(DateTime),
+                null,
+                typeof(string)
+            };
+
+        public static TypeCode GetTypeCode(this Type type)
+        {
+            if (type == null)
+                return TypeCode.Empty;
+
+            if (type.GetTypeInfo().IsClass)
+            {
+                if (type == _Types[2])
+                    return TypeCode.DBNull;
+
+                if (type == typeof(string))
+                    return TypeCode.String;
+
+                return TypeCode.Object;
+            }
+
+            for (var i = 3; i < _Types.Length; i++)
+            {
+                if (_Types[i] == type)
+                    return (TypeCode)i;
+            }
+
+            return TypeCode.Object;
         }
     }
 }

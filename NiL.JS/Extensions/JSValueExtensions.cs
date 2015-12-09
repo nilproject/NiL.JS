@@ -9,8 +9,6 @@ namespace NiL.JS.Extensions
 {
     public static class JSValueExtensions
     {
-        private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
-
         public static bool Is(this JSValue self, JSValueType type)
         {
             return self != null && self.valueType == type;
@@ -20,7 +18,11 @@ namespace NiL.JS.Extensions
         {
             if (self == null)
                 return false;
+#if PORTABLE
+            switch (typeof(T).GetTypeCode())
+#else
             switch (Type.GetTypeCode(typeof(T)))
+#endif
             {
                 case TypeCode.Boolean:
                     {
@@ -93,7 +95,11 @@ namespace NiL.JS.Extensions
 
         public static T As<T>(this JSValue self)
         {
+#if PORTABLE
+            switch (typeof(T).GetTypeCode())
+#else
             switch (Type.GetTypeCode(typeof(T)))
+#endif
             {
                 case TypeCode.Boolean:
                     return (T)(object)(bool)self; // оптимизатор разруливает такой каскад преобразований
@@ -160,7 +166,9 @@ namespace NiL.JS.Extensions
             throw new InvalidCastException();
         }
 
-#if DEBUG // TODO
+#if DEBUG && !PORTABLE // TODO
+        private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
+
         public static T AsImplementationOf<T>(this JSValue self)
         {
             if (!typeof(T).IsInterface)

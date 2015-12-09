@@ -50,7 +50,7 @@ namespace NiL.JS.Test
                 return this;
             }
 
-            protected override Visitor Visit(JS.Statements.VariableDefinitionStatement node)
+            protected override Visitor Visit(JS.Statements.VariableDefinition node)
             {
                 for (var i = 0; i < node.Initializers.Length; i++)
                     node.Initializers[i].Visit(this);
@@ -77,13 +77,13 @@ namespace NiL.JS.Test
                 return this;
             }
 
-            protected override Visitor Visit(JS.Statements.ReturnStatement node)
+            protected override Visitor Visit(JS.Statements.Return node)
             {
                 result.Append("return");
-                if (node.Body != null)
+                if (node.Value != null)
                 {
                     result.Append(" ");
-                    node.Body.Visit(this);
+                    node.Value.Visit(this);
                 }
                 return this;
             }

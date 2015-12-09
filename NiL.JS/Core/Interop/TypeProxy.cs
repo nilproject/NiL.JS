@@ -82,7 +82,6 @@ namespace NiL.JS.Core.Interop
         internal bool InstanceMode = false;
 
         private TypeProxy()
-            : base()
         {
             valueType = JSValueType.Object;
             oValue = this;
@@ -164,7 +163,11 @@ namespace NiL.JS.Core.Interop
                 if (res != null)
                     return res;
             }
+#if PORTABLE
+            switch (value.GetType().GetTypeCode())
+#else
             switch (Type.GetTypeCode(value.GetType()))
+#endif
             {
                 case TypeCode.Boolean:
                     {
@@ -177,18 +180,18 @@ namespace NiL.JS.Core.Interop
                 case TypeCode.Byte:
                     {
                         return new JSValue
-                           {
-                               iValue = (byte)value,
-                               valueType = JSValueType.Int
-                           };
+                        {
+                            iValue = (byte)value,
+                            valueType = JSValueType.Int
+                        };
                     }
                 case TypeCode.Char:
                     {
                         return new JSValue
-                           {
-                               oValue = ((char)value).ToString(),
-                               valueType = JSValueType.String
-                           };
+                        {
+                            oValue = ((char)value).ToString(),
+                            valueType = JSValueType.String
+                        };
                     }
                 case TypeCode.DateTime:
                     {
@@ -198,74 +201,74 @@ namespace NiL.JS.Core.Interop
                 case TypeCode.Decimal:
                     {
                         return new JSValue
-                           {
-                               dValue = (double)(decimal)value,
-                               valueType = JSValueType.Double
-                           };
+                        {
+                            dValue = (double)(decimal)value,
+                            valueType = JSValueType.Double
+                        };
                     }
                 case TypeCode.Double:
                     {
                         return new JSValue
-                           {
-                               dValue = (double)value,
-                               valueType = JSValueType.Double
-                           };
+                        {
+                            dValue = (double)value,
+                            valueType = JSValueType.Double
+                        };
                     }
                 case TypeCode.Int16:
                     {
                         return new JSValue
-                           {
-                               iValue = (short)value,
-                               valueType = JSValueType.Int
-                           };
+                        {
+                            iValue = (short)value,
+                            valueType = JSValueType.Int
+                        };
                     }
                 case TypeCode.Int32:
                     {
                         return new JSValue
-                           {
-                               iValue = (int)value,
-                               valueType = JSValueType.Int
-                           };
+                        {
+                            iValue = (int)value,
+                            valueType = JSValueType.Int
+                        };
                     }
                 case TypeCode.Int64:
                     {
                         return new JSValue
-                           {
-                               dValue = (long)value,
-                               valueType = JSValueType.Double
-                           };
+                        {
+                            dValue = (long)value,
+                            valueType = JSValueType.Double
+                        };
                     }
                 case TypeCode.SByte:
                     {
                         return new JSValue
-                           {
-                               iValue = (sbyte)value,
-                               valueType = JSValueType.Int
-                           };
+                        {
+                            iValue = (sbyte)value,
+                            valueType = JSValueType.Int
+                        };
                     }
                 case TypeCode.Single:
                     {
                         return new JSValue
-                           {
-                               dValue = (float)value,
-                               valueType = JSValueType.Double
-                           };
+                        {
+                            dValue = (float)value,
+                            valueType = JSValueType.Double
+                        };
                     }
                 case TypeCode.String:
                     {
                         return new JSValue
-                           {
-                               oValue = value,
-                               valueType = JSValueType.String
-                           };
+                        {
+                            oValue = value,
+                            valueType = JSValueType.String
+                        };
                     }
                 case TypeCode.UInt16:
                     {
                         return new JSValue
-                           {
-                               iValue = (ushort)value,
-                               valueType = JSValueType.Int
-                           };
+                        {
+                            iValue = (ushort)value,
+                            valueType = JSValueType.Int
+                        };
                     }
                 case TypeCode.UInt32:
                     {
@@ -273,18 +276,18 @@ namespace NiL.JS.Core.Interop
                         if (v > int.MaxValue)
                         {
                             return new JSValue
-                                {
-                                    dValue = v,
-                                    valueType = JSValueType.Double
-                                };
+                            {
+                                dValue = v,
+                                valueType = JSValueType.Double
+                            };
                         }
                         else
                         {
                             return new JSValue
-                                {
-                                    iValue = (int)v,
-                                    valueType = JSValueType.Int
-                                };
+                            {
+                                iValue = (int)v,
+                                valueType = JSValueType.Int
+                            };
                         }
                     }
                 case TypeCode.UInt64:
@@ -293,18 +296,18 @@ namespace NiL.JS.Core.Interop
                         if (v > int.MaxValue)
                         {
                             return new JSValue
-                                {
-                                    dValue = v,
-                                    valueType = JSValueType.Double
-                                };
+                            {
+                                dValue = v,
+                                valueType = JSValueType.Double
+                            };
                         }
                         else
                         {
                             return new JSValue
-                                {
-                                    iValue = (int)v,
-                                    valueType = JSValueType.Int
-                                };
+                            {
+                                iValue = (int)v,
+                                valueType = JSValueType.Int
+                            };
                         }
                     }
                 default:
@@ -312,22 +315,22 @@ namespace NiL.JS.Core.Interop
                         if (value is Delegate)
                         {
                             return new JSValue
-                                {
+                            {
 #if PORTABLE
                                     oValue = new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target),
 #else
-                                    oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target),
+                                oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target),
 #endif
-                                    valueType = JSValueType.Function
-                                };
+                                valueType = JSValueType.Function
+                            };
                         }
                         else if (value is IList)
                         {
                             return new JSValue
-                                {
-                                    oValue = new NativeList(value as IList),
-                                    valueType = JSValueType.Object
-                                };
+                            {
+                                oValue = new NativeList(value as IList),
+                                valueType = JSValueType.Object
+                            };
                         }
                         else
                         {
@@ -673,7 +676,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             if (forWrite && (r.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject)
                 r = r.CloneImpl(false);
 
-            for (var i = m.Count; i-- > 0; )
+            for (var i = m.Count; i-- > 0;)
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 {
@@ -709,7 +712,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                 IList<MemberInfo> m = null;
                 if (members.TryGetValue(tname.ToString(), out m))
                 {
-                    for (var i = m.Count; i-- > 0; )
+                    for (var i = m.Count; i-- > 0;)
                     {
                         if (m[i].IsDefined(typeof(DoNotDeleteAttribute), false))
                             return false;
@@ -732,7 +735,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {
-                for (var i = m.Count; i-- > 0; )
+                for (var i = m.Count; i-- > 0;)
                     if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                         return true;
                 return false;
@@ -762,7 +765,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             {
                 if (fields.ContainsKey(item.Key))
                     continue;
-                for (var i = item.Value.Count; i-- > 0; )
+                for (var i = item.Value.Count; i-- > 0;)
                 {
                     if (!hideNonEnumerable || !item.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                     {
