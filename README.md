@@ -44,9 +44,9 @@ Execution of function in two or more threads gives incorrect result. To fix it, 
 
 ## If you found bug
 
-... then you can choose one of three paths:  
+... then you can choose one of three ways:  
   **1.** Ignore it. Maybe, sometime, somebody finds it too and tell me about it.  
   **2.** Create [bug report](https://github.com/nilproject/NiL.JS/issues). It's will take some time, but reduce time for fixing it.  
   **3.** Fork project and fix bug by yourself, after that create pull request.  
 
-I hope that you will not choose the first path.
+I hope that you will not choose the first way.

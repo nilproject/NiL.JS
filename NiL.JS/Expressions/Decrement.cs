@@ -105,9 +105,9 @@ namespace NiL.JS.Expressions
             }
             switch (val.valueType)
             {
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     {
-                        val.valueType = JSValueType.Int;
+                        val.valueType = JSValueType.Integer;
                         break;
                     }
                 case JSValueType.String:
@@ -122,9 +122,9 @@ namespace NiL.JS.Expressions
                         val.Assign(val.ToPrimitiveValue_Value_String());
                         switch (val.valueType)
                         {
-                            case JSValueType.Bool:
+                            case JSValueType.Boolean:
                                 {
-                                    val.valueType = JSValueType.Int;
+                                    val.valueType = JSValueType.Integer;
                                     break;
                                 }
                             case JSValueType.String:
@@ -136,7 +136,7 @@ namespace NiL.JS.Expressions
                             case JSValueType.Function:
                             case JSValueType.Object: // null
                                 {
-                                    val.valueType = JSValueType.Int;
+                                    val.valueType = JSValueType.Integer;
                                     val.iValue = 0;
                                     break;
                                 }
@@ -158,7 +158,7 @@ namespace NiL.JS.Expressions
                 res = val;
             switch (val.valueType)
             {
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     {
                         if (val.iValue == int.MinValue)
                         {

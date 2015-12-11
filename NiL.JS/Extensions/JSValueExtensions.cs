@@ -22,11 +22,11 @@ namespace NiL.JS.Extensions
             {
                 case TypeCode.Boolean:
                     {
-                        return self.Is(JSValueType.Bool);
+                        return self.Is(JSValueType.Boolean);
                     }
                 case TypeCode.Byte:
                     {
-                        return self.Is(JSValueType.Int) && (self.iValue & ~byte.MaxValue) == 0;
+                        return self.Is(JSValueType.Integer) && (self.iValue & ~byte.MaxValue) == 0;
                     }
                 case TypeCode.Char:
                     {
@@ -44,11 +44,11 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Int16:
                     {
-                        return self.Is(JSValueType.Int) && (self.iValue & ~ushort.MaxValue) == 0;
+                        return self.Is(JSValueType.Integer) && (self.iValue & ~ushort.MaxValue) == 0;
                     }
                 case TypeCode.Int32:
                     {
-                        return self.Is(JSValueType.Int);
+                        return self.Is(JSValueType.Integer);
                     }
                 case TypeCode.Int64:
                     {
@@ -60,7 +60,7 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.SByte:
                     {
-                        return self.Is(JSValueType.Int) && (self.iValue & ~byte.MaxValue) == 0;
+                        return self.Is(JSValueType.Integer) && (self.iValue & ~byte.MaxValue) == 0;
                     }
                 case TypeCode.Single:
                     {
@@ -72,11 +72,11 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.UInt16:
                     {
-                        return self.Is(JSValueType.Int) && (self.iValue & ~ushort.MaxValue) == 0;
+                        return self.Is(JSValueType.Integer) && (self.iValue & ~ushort.MaxValue) == 0;
                     }
                 case TypeCode.UInt32:
                     {
-                        return self.Is(JSValueType.Int);
+                        return self.Is(JSValueType.Integer);
                     }
                 case TypeCode.UInt64:
                     {

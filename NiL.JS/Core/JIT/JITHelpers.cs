@@ -44,13 +44,13 @@ namespace NiL.JS.Core.JIT
                 case TypeCode.Boolean:
                     {
                         dest.iValue = (bool)(object)source ? 1 : 0;
-                        dest.valueType = JSValueType.Bool;
+                        dest.valueType = JSValueType.Boolean;
                         break;
                     }
                 case TypeCode.Byte:
                     {
                         dest.iValue = (byte)(object)source;
-                        dest.valueType = JSValueType.Int;
+                        dest.valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.Char:
@@ -74,13 +74,13 @@ namespace NiL.JS.Core.JIT
                 case TypeCode.Int16:
                     {
                         dest.iValue = (short)(object)source;
-                        dest.valueType = JSValueType.Int;
+                        dest.valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.Int32:
                     {
                         dest.iValue = (int)(object)source;
-                        dest.valueType = JSValueType.Int;
+                        dest.valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.Int64:
@@ -94,14 +94,14 @@ namespace NiL.JS.Core.JIT
                         else
                         {
                             dest.iValue = (int)t;
-                            dest.valueType = JSValueType.Int;
+                            dest.valueType = JSValueType.Integer;
                         }
                         break;
                     }
                 case TypeCode.SByte:
                     {
                         dest.iValue = (sbyte)(object)source;
-                        dest.valueType = JSValueType.Int;
+                        dest.valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.Single:
@@ -119,7 +119,7 @@ namespace NiL.JS.Core.JIT
                 case TypeCode.UInt16:
                     {
                         dest.iValue = (ushort)(object)source;
-                        dest.valueType = JSValueType.Int;
+                        dest.valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.UInt32:
@@ -133,7 +133,7 @@ namespace NiL.JS.Core.JIT
                         else
                         {
                             dest.iValue = (int)t;
-                            dest.valueType = JSValueType.Int;
+                            dest.valueType = JSValueType.Integer;
                         }
                         break;
                     }
@@ -148,7 +148,7 @@ namespace NiL.JS.Core.JIT
                         else
                         {
                             dest.iValue = (int)t;
-                            dest.valueType = JSValueType.Int;
+                            dest.valueType = JSValueType.Integer;
                         }
                         break;
                     }

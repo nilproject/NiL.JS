@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
             var val = first.Evaluate(context);
             switch (val.valueType)
             {
-                case JSValueType.Int:
+                case JSValueType.Integer:
                 case JSValueType.Double:
                     {
                         return numberString;
@@ -61,7 +61,7 @@ namespace NiL.JS.Expressions
                     {
                         return symbolString;
                     }
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     {
                         return booleanString;
                     }

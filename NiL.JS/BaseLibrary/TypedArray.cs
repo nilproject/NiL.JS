@@ -191,9 +191,9 @@ namespace NiL.JS.BaseLibrary
                 switch (tname.valueType)
                 {
                     case JSValueType.Object:
-                    case JSValueType.Bool:
+                    case JSValueType.Boolean:
                         break;
-                    case JSValueType.Int:
+                    case JSValueType.Integer:
                         {
                             isIndex = tname.iValue >= 0;
                             index = tname.iValue;
@@ -250,9 +250,9 @@ namespace NiL.JS.BaseLibrary
             switch (tname.valueType)
             {
                 case JSValueType.Object:
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     break;
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     {
                         isIndex = tname.iValue >= 0;
                         index = tname.iValue;

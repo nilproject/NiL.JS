@@ -21,7 +21,7 @@ namespace NiL.JS.Core
                 r = r.ToPrimitiveValue_Value_String();
             if (r.valueType == JSValueType.Double)
                 return double.IsNaN(r.dValue);
-            if (r.valueType == JSValueType.Bool || r.valueType == JSValueType.Int)
+            if (r.valueType == JSValueType.Boolean || r.valueType == JSValueType.Integer)
                 return false;
             if (r.valueType == JSValueType.String)
             {
@@ -54,7 +54,7 @@ namespace NiL.JS.Core
             if (radix != 0 && (radix < 2 || radix > 36))
                 return Number.NaN;
             var source = args[0];
-            if (source.valueType == JSValueType.Int)
+            if (source.valueType == JSValueType.Integer)
                 return source;
             if (source.valueType == JSValueType.Double)
                 return double.IsInfinity(source.dValue) || double.IsNaN(source.dValue) ?
@@ -72,7 +72,7 @@ namespace NiL.JS.Core
         {
             double result = double.NaN;
             var source = x[0];
-            if (source.valueType == JSValueType.Int)
+            if (source.valueType == JSValueType.Integer)
                 return source;
             if (source.valueType == JSValueType.Double)
                 return source.dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными

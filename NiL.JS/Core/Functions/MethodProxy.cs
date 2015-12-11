@@ -81,7 +81,7 @@ namespace NiL.JS.Core.Functions
 
             for (int i = 0; i < parameters.Length; i++)
             {
-                var t = parameters[i].GetCustomAttribute(typeof(Interop.ConvertValueAttribute)) as Interop.ConvertValueAttribute;
+                var t = parameters[i].GetCustomAttribute(typeof(ConvertValueAttribute)) as ConvertValueAttribute;
                 if (t != null)
                 {
                     if (paramsConverters == null)

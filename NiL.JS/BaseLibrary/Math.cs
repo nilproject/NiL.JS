@@ -50,7 +50,7 @@ namespace NiL.JS.BaseLibrary
             var arg = args[0];
             switch (arg.valueType)
             {
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     {
                         if ((arg.iValue & int.MinValue) == 0)
                             return arg;
@@ -58,7 +58,7 @@ namespace NiL.JS.BaseLibrary
                             goto default;
                         if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                         {
-                            arg.valueType = JSValueType.Int;
+                            arg.valueType = JSValueType.Integer;
                             arg.iValue = -arg.iValue;
                             return arg;
                         }
@@ -170,14 +170,14 @@ namespace NiL.JS.BaseLibrary
         public static JSValue floor(Arguments args)
         {
             var arg = args.a0 ?? JSValue.notExists;
-            if (arg.valueType == JSValueType.Int)
+            if (arg.valueType == JSValueType.Integer)
                 return arg;
             var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
                 if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
-                    arg.valueType = JSValueType.Int;
+                    arg.valueType = JSValueType.Integer;
                     arg.iValue = 0;
                     return arg;
                 }
@@ -203,7 +203,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (r <= int.MaxValue)
                     {
-                        arg.valueType = JSValueType.Int;
+                        arg.valueType = JSValueType.Integer;
                         arg.iValue = (int)r;
                     }
                     else
@@ -302,14 +302,14 @@ namespace NiL.JS.BaseLibrary
         public static JSValue round(Arguments args)
         {
             var arg = args[0];
-            if (arg.valueType == JSValueType.Int)
+            if (arg.valueType == JSValueType.Integer)
                 return arg;
             var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
                 if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
-                    arg.valueType = JSValueType.Int;
+                    arg.valueType = JSValueType.Integer;
                     arg.iValue = 0;
                     return arg;
                 }
@@ -338,7 +338,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (r <= int.MaxValue)
                     {
-                        arg.valueType = JSValueType.Int;
+                        arg.valueType = JSValueType.Integer;
                         arg.iValue = (int)r;
                     }
                     else

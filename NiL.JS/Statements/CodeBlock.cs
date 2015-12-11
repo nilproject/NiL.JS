@@ -363,14 +363,14 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("notExists has been rewitten");
-                if (BaseLibrary.Boolean.False.valueType != JSValueType.Bool
+                if (BaseLibrary.Boolean.False.valueType != JSValueType.Boolean
                     || BaseLibrary.Boolean.False.iValue != 0
                     || BaseLibrary.Boolean.False.attributes != JSValueAttributesInternal.SystemObject)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("Boolean.False has been rewitten");
-                if (BaseLibrary.Boolean.True.valueType != JSValueType.Bool
+                if (BaseLibrary.Boolean.True.valueType != JSValueType.Boolean
                     || BaseLibrary.Boolean.True.iValue != 1
                     || BaseLibrary.Boolean.True.attributes != JSValueAttributesInternal.SystemObject)
                     if (System.Diagnostics.Debugger.IsAttached)

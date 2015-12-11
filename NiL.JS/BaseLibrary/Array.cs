@@ -128,7 +128,7 @@ namespace NiL.JS.BaseLibrary
                 if (data.Length <= int.MaxValue)
                 {
                     _lengthObj.iValue = (int)data.Length;
-                    _lengthObj.valueType = JSValueType.Int;
+                    _lengthObj.valueType = JSValueType.Integer;
                 }
                 else
                 {
@@ -1036,7 +1036,7 @@ namespace NiL.JS.BaseLibrary
                     }
                     if (key >= 0)
                     {
-                        args.a2.valueType = JSValueType.Int;
+                        args.a2.valueType = JSValueType.Integer;
                         args.a2.iValue = key;
                     }
                     else
@@ -1201,7 +1201,7 @@ namespace NiL.JS.BaseLibrary
                         to.valueType = JSValueType.NotExists;
                     }
                 }
-                tjo.valueType = JSValueType.Int;
+                tjo.valueType = JSValueType.Integer;
                 foreach (var item in protoSource.data.DirectOrder)
                 {
                     if ((uint)item.Key > int.MaxValue)
@@ -1503,7 +1503,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (i <= int.MaxValue)
                         {
-                            tjo.valueType = JSValueType.Int;
+                            tjo.valueType = JSValueType.Integer;
                             tjo.iValue = (int)(i + delta);
                         }
                         else
@@ -1514,7 +1514,7 @@ namespace NiL.JS.BaseLibrary
                         var dst = self.GetProperty(tjo, true, PropertyScope.Сommon);
                         if (i + delta <= int.MaxValue)
                         {
-                            tjo.valueType = JSValueType.Int;
+                            tjo.valueType = JSValueType.Integer;
                             tjo.iValue = (int)(i);
                         }
                         else
@@ -1538,7 +1538,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (i + delta <= int.MaxValue)
                         {
-                            tjo.valueType = JSValueType.Int;
+                            tjo.valueType = JSValueType.Integer;
                             tjo.iValue = (int)(i);
                         }
                         else
@@ -1561,7 +1561,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (i <= int.MaxValue)
                         {
-                            tjo.valueType = JSValueType.Int;
+                            tjo.valueType = JSValueType.Integer;
                             tjo.iValue = (int)(i + delta);
                         }
                         else
@@ -1572,7 +1572,7 @@ namespace NiL.JS.BaseLibrary
                         var dst = self.GetProperty(tjo, true, PropertyScope.Сommon);
                         if (i + delta <= int.MaxValue)
                         {
-                            tjo.valueType = JSValueType.Int;
+                            tjo.valueType = JSValueType.Integer;
                             tjo.iValue = (int)(i);
                         }
                         else
@@ -1603,7 +1603,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if ((i - 2 + pos0) <= int.MaxValue)
                     {
-                        tjo.valueType = JSValueType.Int;
+                        tjo.valueType = JSValueType.Integer;
                         tjo.iValue = (int)(i - 2 + pos0);
                     }
                     else
@@ -1906,7 +1906,7 @@ namespace NiL.JS.BaseLibrary
                     name = name.ToPrimitiveValue_String_Value();
                 switch (name.valueType)
                 {
-                    case JSValueType.Int:
+                    case JSValueType.Integer:
                         {
                             isIndex = (name.iValue & int.MinValue) == 0;
                             index = name.iValue;
@@ -2080,7 +2080,7 @@ namespace NiL.JS.BaseLibrary
                 if ((int)array.data.Length == array.data.Length)
                 {
                     this.iValue = (int)array.data.Length;
-                    this.valueType = JSValueType.Int;
+                    this.valueType = JSValueType.Integer;
                 }
                 else
                 {
@@ -2101,7 +2101,7 @@ namespace NiL.JS.BaseLibrary
                 if ((long)(int)array.data.Length == array.data.Length)
                 {
                     this.iValue = (int)array.data.Length;
-                    this.valueType = JSValueType.Int;
+                    this.valueType = JSValueType.Integer;
                 }
                 else
                 {

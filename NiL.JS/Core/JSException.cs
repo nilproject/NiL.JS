@@ -12,47 +12,47 @@ namespace NiL.JS.Core
 #endif
     public sealed class JSException : Exception
     {
-        public JSValue Avatar { get; private set; }
+        public JSValue Error { get; private set; }
 
         public JSException(Error avatar)
         {
-            Avatar = TypeProxy.Proxy(avatar);
+            Error = TypeProxy.Proxy(avatar);
         }
 
         public JSException(JSValue avatar)
         {
-            Avatar = avatar;
+            Error = avatar;
         }
 
         public JSException(JSValue avatar, Exception innerException)
             : base("", innerException)
         {
-            Avatar = avatar;
+            Error = avatar;
         }
 
         public JSException(Error avatar, Exception innerException)
             : base("", innerException)
         {
-            Avatar = TypeProxy.Proxy(avatar);
+            Error = TypeProxy.Proxy(avatar);
         }
 
         public override string Message
         {
             get
             {
-                if (Avatar.oValue is Error)
+                if (Error.oValue is Error)
                 {
-                    var n = Avatar.GetProperty("name");
+                    var n = Error.GetProperty("name");
                     if (n.valueType == JSValueType.Property)
-                        n = (n.oValue as GsPropertyPair).get.Call(Avatar, null).ToString();
+                        n = (n.oValue as GsPropertyPair).get.Call(Error, null).ToString();
 
-                    var m = Avatar.GetProperty("message");
+                    var m = Error.GetProperty("message");
                     if (m.valueType == JSValueType.Property)
-                        return n + ": " + (m.oValue as GsPropertyPair).get.Call(Avatar, null);
+                        return n + ": " + (m.oValue as GsPropertyPair).get.Call(Error, null);
                     else
                         return n + ": " + m;
                 }
-                else return Avatar.ToString();
+                else return Error.ToString();
             }
         }
     }

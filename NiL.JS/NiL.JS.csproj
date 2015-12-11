@@ -253,7 +253,6 @@
     <Compile Include="Core\Interop\ConvertValueAttribute.cs" />
     <Compile Include="BaseLibrary\Debug.cs" />
     <Compile Include="Core\Interop\ForceUseAttribute.cs" />
-    <Compile Include="Core\Interop\ImmutablePrototypeAttribute.cs" />
     <Compile Include="Core\PropertyPair.cs" />
     <Compile Include="Core\RopeString.cs" />
     <Compile Include="Core\SparseArray.cs" />

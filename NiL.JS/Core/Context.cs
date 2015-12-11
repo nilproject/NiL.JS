@@ -714,7 +714,7 @@ namespace NiL.JS.Core
         {
             if (value <= int.MaxValue)
             {
-                tempContainer.valueType = JSValueType.Int;
+                tempContainer.valueType = JSValueType.Integer;
                 tempContainer.iValue = (int)value;
                 return tempContainer;
             }

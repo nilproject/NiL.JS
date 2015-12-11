@@ -223,9 +223,6 @@
     <Compile Include="..\NiL.JS\Core\Interop\ImmutableAttribute.cs">
       <Link>Core\Interop\ImmutableAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Interop\ImmutablePrototypeAttribute.cs">
-      <Link>Core\Interop\ImmutablePrototypeAttribute.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\InstanceMemberAttribute.cs">
       <Link>Core\Interop\InstanceMemberAttribute.cs</Link>
     </Compile>

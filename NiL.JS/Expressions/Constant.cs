@@ -25,9 +25,9 @@ namespace NiL.JS.Expressions
                     case JSValueType.NotExists:
                     case JSValueType.NotExistsInObject:
                         return PredictedType.Undefined;
-                    case JSValueType.Bool:
+                    case JSValueType.Boolean:
                         return PredictedType.Bool;
-                    case JSValueType.Int:
+                    case JSValueType.Integer:
                         return PredictedType.Int;
                     case JSValueType.Double:
                         return PredictedType.Double;

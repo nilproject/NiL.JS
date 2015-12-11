@@ -110,7 +110,7 @@ namespace NiL.JS.Core.Interop
                     ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
 
-                    if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
+                    if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
                         attributes |= JSValueAttributesInternal.Immutable;
                     var staticProxy = new TypeProxy()
                     {
@@ -174,7 +174,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (bool)value ? 1 : 0,
-                            valueType = JSValueType.Bool
+                            valueType = JSValueType.Boolean
                         };
                     }
                 case TypeCode.Byte:
@@ -182,7 +182,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (byte)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Char:
@@ -219,7 +219,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (short)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Int32:
@@ -227,7 +227,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (int)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Int64:
@@ -243,7 +243,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (sbyte)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Single:
@@ -267,7 +267,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (ushort)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.UInt32:
@@ -286,7 +286,7 @@ namespace NiL.JS.Core.Interop
                             return new JSValue
                             {
                                 iValue = (int)v,
-                                valueType = JSValueType.Int
+                                valueType = JSValueType.Integer
                             };
                         }
                     }
@@ -306,7 +306,7 @@ namespace NiL.JS.Core.Interop
                             return new JSValue
                             {
                                 iValue = (int)v,
-                                valueType = JSValueType.Int
+                                valueType = JSValueType.Integer
                             };
                         }
                     }
@@ -767,6 +767,9 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                     continue;
                 for (var i = item.Value.Count; i-- > 0;)
                 {
+                    if (item.Value[i].IsDefined(typeof(HiddenAttribute), false))
+                        continue;
+
                     if (!hideNonEnumerable || !item.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                     {
                         switch (enumerationMode)

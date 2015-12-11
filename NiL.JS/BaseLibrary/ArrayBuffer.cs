@@ -20,7 +20,7 @@ namespace NiL.JS.BaseLibrary
 
             public Element(int index, ArrayBuffer parent)
             {
-                this.valueType = JSValueType.Int;
+                this.valueType = JSValueType.Integer;
                 this.index = index;
                 this.iValue = parent.data[index];
                 this.data = parent.data;

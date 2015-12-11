@@ -97,7 +97,7 @@ namespace NiL.JS
         /// <summary>
         /// Запускает выполнение скрипта.
         /// </summary>
-        public void Invoke()
+        public void Run()
         {
             var lm = System.Runtime.GCSettings.LatencyMode;
             System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.Interactive;

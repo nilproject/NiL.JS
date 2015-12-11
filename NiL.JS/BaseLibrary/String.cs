@@ -83,7 +83,7 @@ namespace NiL.JS.BaseLibrary
                 return Number.NaN;
             var res = new JSValue()
             {
-                valueType = JSValueType.Int,
+                valueType = JSValueType.Integer,
                 iValue = selfStr[p],
             };
             return res;
@@ -124,8 +124,8 @@ namespace NiL.JS.BaseLibrary
                 JSValue value = null;
                 switch (args[1].valueType)
                 {
-                    case JSValueType.Int:
-                    case JSValueType.Bool:
+                    case JSValueType.Integer:
+                    case JSValueType.Boolean:
                         {
                             pos = args[1].iValue;
                             break;
@@ -175,8 +175,8 @@ namespace NiL.JS.BaseLibrary
                 JSValue value = null;
                 switch (args[1].valueType)
                 {
-                    case JSValueType.Int:
-                    case JSValueType.Bool:
+                    case JSValueType.Integer:
+                    case JSValueType.Boolean:
                         {
                             pos = args[1].iValue;
                             break;
@@ -238,7 +238,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (!regex._global)
                 {
-                    regex.lastIndex.valueType = JSValueType.Int;
+                    regex.lastIndex.valueType = JSValueType.Integer;
                     regex.lastIndex.iValue = 0;
                     return regex.exec(self);
                 }
@@ -391,8 +391,8 @@ namespace NiL.JS.BaseLibrary
             int pos0 = 0;
             switch (args[0].valueType)
             {
-                case JSValueType.Int:
-                case JSValueType.Bool:
+                case JSValueType.Integer:
+                case JSValueType.Boolean:
                     {
                         pos0 = args[0].iValue;
                         break;
@@ -421,8 +421,8 @@ namespace NiL.JS.BaseLibrary
             {
                 switch (args[1].valueType)
                 {
-                    case JSValueType.Int:
-                    case JSValueType.Bool:
+                    case JSValueType.Integer:
+                    case JSValueType.Boolean:
                         {
                             pos1 = args[1].iValue;
                             break;
@@ -482,8 +482,8 @@ namespace NiL.JS.BaseLibrary
                     limO = limO.ToPrimitiveValue_Value_String();
                 switch (limO.valueType)
                 {
-                    case JSValueType.Int:
-                    case JSValueType.Bool:
+                    case JSValueType.Integer:
+                    case JSValueType.Boolean:
                         {
                             limit = (uint)limO.iValue;
                             break;
@@ -584,8 +584,8 @@ namespace NiL.JS.BaseLibrary
             int pos0 = 0;
             switch (args[0].valueType)
             {
-                case JSValueType.Int:
-                case JSValueType.Bool:
+                case JSValueType.Integer:
+                case JSValueType.Boolean:
                     {
                         pos0 = args[0].iValue;
                         break;
@@ -614,8 +614,8 @@ namespace NiL.JS.BaseLibrary
             {
                 switch (args[1].valueType)
                 {
-                    case JSValueType.Int:
-                    case JSValueType.Bool:
+                    case JSValueType.Integer:
+                    case JSValueType.Boolean:
                         {
                             pos1 = args[1].iValue;
                             break;
@@ -672,8 +672,8 @@ namespace NiL.JS.BaseLibrary
             {
                 switch (args[0].valueType)
                 {
-                    case JSValueType.Int:
-                    case JSValueType.Bool:
+                    case JSValueType.Integer:
+                    case JSValueType.Boolean:
                         {
                             pos0 = args[0].iValue;
                             break;
@@ -701,8 +701,8 @@ namespace NiL.JS.BaseLibrary
             {
                 switch (args[1].valueType)
                 {
-                    case JSValueType.Int:
-                    case JSValueType.Bool:
+                    case JSValueType.Integer:
+                    case JSValueType.Boolean:
                         {
                             len = args[1].iValue;
                             break;

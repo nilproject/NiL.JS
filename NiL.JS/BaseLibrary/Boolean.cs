@@ -17,7 +17,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean()
         {
-            valueType = JSValueType.Bool;
+            valueType = JSValueType.Boolean;
             iValue = 0;
             attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -27,7 +27,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");
-            valueType = JSValueType.Bool;
+            valueType = JSValueType.Boolean;
             iValue = (bool)obj[0] ? 1 : 0;
             attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -35,7 +35,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean(bool value)
         {
-            valueType = JSValueType.Bool;
+            valueType = JSValueType.Boolean;
             iValue = value ? 1 : 0;
             attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -43,7 +43,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean(double value)
         {
-            valueType = JSValueType.Bool;
+            valueType = JSValueType.Boolean;
             iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
             attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -51,7 +51,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean(int value)
         {
-            valueType = JSValueType.Bool;
+            valueType = JSValueType.Boolean;
             iValue = value != 0 ? 1 : 0;
             attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -59,7 +59,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Boolean(string value)
         {
-            valueType = JSValueType.Bool;
+            valueType = JSValueType.Boolean;
             iValue = !string.IsNullOrEmpty(value) ? 1 : 0;
             attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -93,7 +93,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(0)]
         public static JSValue toLocaleString(JSValue self)
         {
-            if (self.GetType() != typeof(Boolean) && self.valueType != JSValueType.Bool)
+            if (self.GetType() != typeof(Boolean) && self.valueType != JSValueType.Boolean)
                 ExceptionsHelper.Throw(new TypeError("Boolean.prototype.toLocaleString called for not boolean."));
             return self.iValue != 0 ? "true" : "false";
         }
@@ -105,7 +105,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (self.GetType() == typeof(Boolean))
                 return self.iValue != 0;
-            if (self.valueType != JSValueType.Bool)
+            if (self.valueType != JSValueType.Boolean)
                 ExceptionsHelper.Throw(new TypeError("Boolean.prototype.valueOf called for not boolean."));
             return self;
         }
@@ -116,7 +116,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public static JSValue toString(JSValue self, Arguments args)
         {
-            if (self.GetType() != typeof(Boolean) && self.valueType != JSValueType.Bool)
+            if (self.GetType() != typeof(Boolean) && self.valueType != JSValueType.Boolean)
                 ExceptionsHelper.Throw(new TypeError("Boolean.prototype.toString called for not boolean."));
             return self.iValue != 0 ? "true" : "false";
         }

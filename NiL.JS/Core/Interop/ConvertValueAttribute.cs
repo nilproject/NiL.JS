@@ -7,7 +7,6 @@ namespace NiL.JS.Core.Interop
 #endif
     [AttributeUsage(
           AttributeTargets.Field
-        | AttributeTargets.Property
         | AttributeTargets.ReturnValue
         | AttributeTargets.Parameter)]
     /// <summary>
