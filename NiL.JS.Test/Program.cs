@@ -41,7 +41,7 @@ namespace NiL.JS.Test
             }));
 
 #if PORTABLE
-            Context.GlobalContext.DefineVariable("console").Assign(JSValue.Marshal(new
+            Context.GlobalContext.DefineVariable("console").Assign(JSValue.Wrap(new
             {
                 log = new Action<Arguments>(arguments =>
                 {

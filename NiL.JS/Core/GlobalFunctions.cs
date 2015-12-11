@@ -116,7 +116,7 @@ namespace NiL.JS.Core
                 }
                 __pinvokeCalled++;
             }
-            return TypeProxy.Marshal(new
+            return TypeProxy.Proxy(new
             {
                 isAlive = new Func<Arguments, bool>((arg) =>
                 {

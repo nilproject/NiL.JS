@@ -1171,7 +1171,7 @@ namespace NiL.JS.Core
         public static JSValue Wrap(object value)
         {
             if (value == null)
-                return JSValue.Null;
+                return Null;
             return new ObjectWrapper(value);
         }
     }
