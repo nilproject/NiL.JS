@@ -81,20 +81,20 @@ namespace NiL.JS.Expressions
         {
             switch (first.valueType)
             {
-                case JSValueType.Bool:
-                case JSValueType.Int:
+                case JSValueType.Boolean:
+                case JSValueType.Integer:
                     {
                         if (second.valueType >= JSValueType.Object)
                             second = second.ToPrimitiveValue_Value_String();
                         switch (second.valueType)
                         {
-                            case JSValueType.Int:
-                            case JSValueType.Bool:
+                            case JSValueType.Integer:
+                            case JSValueType.Boolean:
                                 {
                                     long tl = (long)first.iValue + second.iValue;
                                     if ((int)tl == tl)
                                     {
-                                        resultContainer.valueType = JSValueType.Int;
+                                        resultContainer.valueType = JSValueType.Integer;
                                         resultContainer.iValue = (int)tl;
                                     }
                                     else
@@ -112,7 +112,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSValueType.String:
                                 {
-                                    resultContainer.oValue = new RopeString((first.valueType == JSValueType.Bool ? (first.iValue != 0 ? "true" : "false") : first.iValue.ToString(CultureInfo.InvariantCulture)), second.oValue);
+                                    resultContainer.oValue = new RopeString((first.valueType == JSValueType.Boolean ? (first.iValue != 0 ? "true" : "false") : first.iValue.ToString(CultureInfo.InvariantCulture)), second.oValue);
                                     resultContainer.valueType = JSValueType.String;
                                     return;
                                 }
@@ -127,7 +127,7 @@ namespace NiL.JS.Expressions
                             case JSValueType.Object: // x+null
                                 {
                                     resultContainer.iValue = first.iValue;
-                                    resultContainer.valueType = JSValueType.Int;
+                                    resultContainer.valueType = JSValueType.Integer;
                                     return;
                                 }
                         }
@@ -139,8 +139,8 @@ namespace NiL.JS.Expressions
                             second = second.ToPrimitiveValue_Value_String();
                         switch (second.valueType)
                         {
-                            case JSValueType.Int:
-                            case JSValueType.Bool:
+                            case JSValueType.Integer:
+                            case JSValueType.Boolean:
                                 {
                                     resultContainer.valueType = JSValueType.Double;
                                     resultContainer.dValue = first.dValue + second.iValue;
@@ -185,12 +185,12 @@ namespace NiL.JS.Expressions
                                     tstr = new RopeString(tstr, second.oValue);
                                     break;
                                 }
-                            case JSValueType.Bool:
+                            case JSValueType.Boolean:
                                 {
                                     tstr = new RopeString(tstr, second.iValue != 0 ? "true" : "false");
                                     break;
                                 }
-                            case JSValueType.Int:
+                            case JSValueType.Integer:
                                 {
                                     tstr = new RopeString(tstr, second.iValue.ToString(CultureInfo.InvariantCulture));
                                     break;
@@ -238,8 +238,8 @@ namespace NiL.JS.Expressions
                                     return;
                                 }
                             case JSValueType.Double:
-                            case JSValueType.Bool:
-                            case JSValueType.Int:
+                            case JSValueType.Boolean:
+                            case JSValueType.Integer:
                                 {
                                     resultContainer.valueType = JSValueType.Double;
                                     resultContainer.dValue = double.NaN;
@@ -260,8 +260,8 @@ namespace NiL.JS.Expressions
                 case JSValueType.Object:
                     {
                         first = first.ToPrimitiveValue_Value_String();
-                        if (first.valueType == JSValueType.Int || first.valueType == JSValueType.Bool)
-                            goto case JSValueType.Int;
+                        if (first.valueType == JSValueType.Integer || first.valueType == JSValueType.Boolean)
+                            goto case JSValueType.Integer;
                         else if (first.valueType == JSValueType.Object) // null
                         {
                             if (second.valueType >= JSValueType.String)
@@ -273,7 +273,7 @@ namespace NiL.JS.Expressions
                                 return;
                             }
                             first.iValue = 0;
-                            goto case JSValueType.Int;
+                            goto case JSValueType.Integer;
                         }
                         else if (first.valueType == JSValueType.Double)
                             goto case JSValueType.Double;

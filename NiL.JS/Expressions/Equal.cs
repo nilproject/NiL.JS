@@ -37,15 +37,15 @@ namespace NiL.JS.Expressions
             var index = 0;
             switch (temp.valueType)
             {
-                case JSValueType.Bool:
-                case JSValueType.Int:
+                case JSValueType.Boolean:
+                case JSValueType.Integer:
                     {
                         tint = temp.iValue;
                         tjso = second.Evaluate(context);
                         switch (tjso.valueType)
                         {
-                            case JSValueType.Bool:
-                            case JSValueType.Int:
+                            case JSValueType.Boolean:
+                            case JSValueType.Integer:
                                 {
                                     return tint == tjso.iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
@@ -65,10 +65,10 @@ namespace NiL.JS.Expressions
                             case JSValueType.Object:
                                 {
                                     tjso = tjso.ToPrimitiveValue_Value_String();
-                                    if (tjso.valueType == JSValueType.Int)
-                                        goto case JSValueType.Int;
-                                    if (tjso.valueType == JSValueType.Bool)
-                                        goto case JSValueType.Int;
+                                    if (tjso.valueType == JSValueType.Integer)
+                                        goto case JSValueType.Integer;
+                                    if (tjso.valueType == JSValueType.Boolean)
+                                        goto case JSValueType.Integer;
                                     if (tjso.valueType == JSValueType.Double)
                                         goto case JSValueType.Double;
                                     if (tjso.valueType == JSValueType.String)
@@ -86,8 +86,8 @@ namespace NiL.JS.Expressions
                         tjso = second.Evaluate(context);
                         switch (tjso.valueType)
                         {
-                            case JSValueType.Bool:
-                            case JSValueType.Int:
+                            case JSValueType.Boolean:
+                            case JSValueType.Integer:
                                 {
                                     return tdouble == tjso.iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                 }
@@ -107,10 +107,10 @@ namespace NiL.JS.Expressions
                             case JSValueType.Object:
                                 {
                                     tjso = tjso.ToPrimitiveValue_Value_String();
-                                    if (tjso.valueType == JSValueType.Int)
-                                        goto case JSValueType.Int;
-                                    if (tjso.valueType == JSValueType.Bool)
-                                        goto case JSValueType.Int;
+                                    if (tjso.valueType == JSValueType.Integer)
+                                        goto case JSValueType.Integer;
+                                    if (tjso.valueType == JSValueType.Boolean)
+                                        goto case JSValueType.Integer;
                                     if (tjso.valueType == JSValueType.Double)
                                         goto case JSValueType.Double;
                                     if (tjso.valueType == JSValueType.String)
@@ -130,8 +130,8 @@ namespace NiL.JS.Expressions
                         temp = second.Evaluate(context);
                         switch (temp.valueType)
                         {
-                            case JSValueType.Bool:
-                            case JSValueType.Int:
+                            case JSValueType.Boolean:
+                            case JSValueType.Integer:
                                 {
                                     if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                         return tdouble == temp.iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
@@ -155,8 +155,8 @@ namespace NiL.JS.Expressions
                                     temp = temp.ToPrimitiveValue_Value_String();
                                     switch (temp.valueType)
                                     {
-                                        case JSValueType.Int:
-                                        case JSValueType.Bool:
+                                        case JSValueType.Integer:
+                                        case JSValueType.Boolean:
                                             {
                                                 if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                                     return tdouble == temp.iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
@@ -195,15 +195,15 @@ namespace NiL.JS.Expressions
                         switch (tjso.valueType)
                         {
                             case JSValueType.Double:
-                            case JSValueType.Bool:
-                            case JSValueType.Int:
+                            case JSValueType.Boolean:
+                            case JSValueType.Integer:
                                 {
                                     tdouble = tjso.valueType == JSValueType.Double ? tjso.dValue : tjso.iValue;
                                     temp = temp.ToPrimitiveValue_Value_String();
                                     switch (temp.valueType)
                                     {
-                                        case JSValueType.Bool:
-                                        case JSValueType.Int:
+                                        case JSValueType.Boolean:
+                                        case JSValueType.Integer:
                                             {
                                                 return temp.iValue == tdouble ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                             }
@@ -229,8 +229,8 @@ namespace NiL.JS.Expressions
                                     switch (temp.valueType)
                                     {
                                         case JSValueType.Double:
-                                        case JSValueType.Bool:
-                                        case JSValueType.Int:
+                                        case JSValueType.Boolean:
+                                        case JSValueType.Integer:
                                             {
                                                 temp.dValue = temp.valueType == JSValueType.Double ? temp.dValue : temp.iValue;
                                                 if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))

@@ -34,13 +34,13 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var f = first.Evaluate(context);
-            if (f.valueType == JSValueType.Int)
+            if (f.valueType == JSValueType.Integer)
             {
                 var ileft = f.iValue;
                 f = second.Evaluate(context);
-                if (ileft >= 0 && f.valueType == JSValueType.Int && f.iValue != 0)
+                if (ileft >= 0 && f.valueType == JSValueType.Integer && f.iValue != 0)
                 {
-                    tempContainer.valueType = JSValueType.Int;
+                    tempContainer.valueType = JSValueType.Integer;
                     tempContainer.iValue = ileft % f.iValue;
                 }
                 else

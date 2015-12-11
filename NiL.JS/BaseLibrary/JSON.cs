@@ -262,11 +262,11 @@ namespace NiL.JS.BaseLibrary
                     sa = sa.oValue as JSValue ?? sa;
                 if (sa is ObjectWrapper)
                     sa = sa.Value as JSValue ?? sa;
-                if (sa.valueType == JSValueType.Int
+                if (sa.valueType == JSValueType.Integer
                     || sa.valueType == JSValueType.Double
                     || sa.valueType == JSValueType.String)
                 {
-                    if (sa.valueType == JSValueType.Int)
+                    if (sa.valueType == JSValueType.Integer)
                     {
                         if (sa.iValue > 0)
                             space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, sa.iValue)));

@@ -35,7 +35,7 @@ namespace NiL.JS.Expressions
             if (t <= int.MaxValue)
             {
                 tempContainer.iValue = (int)t;
-                tempContainer.valueType = JSValueType.Int;
+                tempContainer.valueType = JSValueType.Integer;
             }
             else
             {

@@ -31,18 +31,18 @@ namespace NiL.JS.Expressions
         {
             int itemp;
             var jstemp = first.Evaluate(context);
-            if (jstemp.valueType == JSValueType.Int
-                || jstemp.valueType == JSValueType.Bool)
+            if (jstemp.valueType == JSValueType.Integer
+                || jstemp.valueType == JSValueType.Boolean)
             {
                 itemp = jstemp.iValue;
                 jstemp = second.Evaluate(context);
-                if ((jstemp.valueType == JSValueType.Bool
-                    || jstemp.valueType == JSValueType.Int)
+                if ((jstemp.valueType == JSValueType.Boolean
+                    || jstemp.valueType == JSValueType.Integer)
                     && jstemp.iValue > 0
                     && itemp > 0
                     && (itemp % jstemp.iValue) == 0)
                 {
-                    tempContainer.valueType = JSValueType.Int;
+                    tempContainer.valueType = JSValueType.Integer;
                     tempContainer.iValue = itemp / jstemp.iValue;
                 }
                 else

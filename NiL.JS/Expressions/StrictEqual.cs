@@ -36,24 +36,24 @@ namespace NiL.JS.Expressions
                     {
                         return second.valueType <= JSValueType.Undefined;
                     }
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     {
                         if (first.valueType != second.valueType)
                             return false;
                         return first.iValue == second.iValue;
                     }
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     {
                         if (second.valueType == JSValueType.Double)
                             return first.iValue == second.dValue;
-                        else if (second.valueType != JSValueType.Int)
+                        else if (second.valueType != JSValueType.Integer)
                             return false;
                         else
                             return first.iValue == second.iValue;
                     }
                 case JSValueType.Double:
                     {
-                        if (second.valueType == JSValueType.Int)
+                        if (second.valueType == JSValueType.Integer)
                             return first.dValue == second.iValue;
                         else if (second.valueType != JSValueType.Double)
                             return false;

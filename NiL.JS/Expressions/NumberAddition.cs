@@ -48,16 +48,16 @@ namespace NiL.JS.Expressions
             long ltemp;
             double dtemp;
             var op = first.Evaluate(context);
-            if (op.valueType == Core.JSValueType.Int)
+            if (op.valueType == Core.JSValueType.Integer)
             {
                 itemp = op.iValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSValueType.Int)
+                if (op.valueType == Core.JSValueType.Integer)
                 {
                     ltemp = (long)itemp + op.iValue;
                     if ((int)ltemp == ltemp)
                     {
-                        tempContainer.valueType = JSValueType.Int;
+                        tempContainer.valueType = JSValueType.Integer;
                         tempContainer.iValue = (int)ltemp;
                     }
                     else
@@ -73,7 +73,7 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    tempContainer.valueType = JSValueType.Int;
+                    tempContainer.valueType = JSValueType.Integer;
                     tempContainer.iValue = itemp;
                     Addition.Impl(tempContainer, tempContainer, op);
                 }
@@ -82,7 +82,7 @@ namespace NiL.JS.Expressions
             {
                 dtemp = op.dValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSValueType.Int)
+                if (op.valueType == Core.JSValueType.Integer)
                 {
                     tempContainer.valueType = JSValueType.Double;
                     tempContainer.dValue = dtemp + op.iValue;

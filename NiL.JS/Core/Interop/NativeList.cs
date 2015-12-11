@@ -38,13 +38,13 @@ namespace NiL.JS.Core.Interop
                             case TypeCode.Boolean:
                                 {
                                     iValue = (bool)value ? 1 : 0;
-                                    valueType = JSValueType.Bool;
+                                    valueType = JSValueType.Boolean;
                                     break;
                                 }
                             case TypeCode.Byte:
                                 {
                                     iValue = (byte)value;
-                                    valueType = JSValueType.Int;
+                                    valueType = JSValueType.Integer;
                                     break;
                                 }
                             case TypeCode.Char:
@@ -74,13 +74,13 @@ namespace NiL.JS.Core.Interop
                             case TypeCode.Int16:
                                 {
                                     iValue = (short)value;
-                                    valueType = JSValueType.Int;
+                                    valueType = JSValueType.Integer;
                                     break;
                                 }
                             case TypeCode.Int32:
                                 {
                                     iValue = (int)value;
-                                    valueType = JSValueType.Int;
+                                    valueType = JSValueType.Integer;
                                     break;
                                 }
                             case TypeCode.Int64:
@@ -92,7 +92,7 @@ namespace NiL.JS.Core.Interop
                             case TypeCode.SByte:
                                 {
                                     iValue = (sbyte)value;
-                                    valueType = JSValueType.Int;
+                                    valueType = JSValueType.Integer;
                                     break;
                                 }
                             case TypeCode.Single:
@@ -110,7 +110,7 @@ namespace NiL.JS.Core.Interop
                             case TypeCode.UInt16:
                                 {
                                     iValue = (ushort)value;
-                                    valueType = JSValueType.Int;
+                                    valueType = JSValueType.Integer;
                                     break;
                                 }
                             case TypeCode.UInt32:
@@ -124,7 +124,7 @@ namespace NiL.JS.Core.Interop
                                     else
                                     {
                                         iValue = (int)v;
-                                        valueType = JSValueType.Int;
+                                        valueType = JSValueType.Integer;
                                     }
                                     break;
                                 }
@@ -139,7 +139,7 @@ namespace NiL.JS.Core.Interop
                                     else
                                     {
                                         iValue = (int)v;
-                                        valueType = JSValueType.Int;
+                                        valueType = JSValueType.Integer;
                                     }
                                     break;
                                 }
@@ -213,7 +213,7 @@ namespace NiL.JS.Core.Interop
             if (result is IList)
                 return new NativeList(result as IList);
             else
-                return TypeProxy.Marshal(result);
+                return TypeProxy.Proxy(result);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
@@ -233,7 +233,7 @@ namespace NiL.JS.Core.Interop
                     tname = tname.ToPrimitiveValue_String_Value();
                 switch (tname.valueType)
                 {
-                    case JSValueType.Int:
+                    case JSValueType.Integer:
                         {
                             isIndex = tname.iValue >= 0;
                             index = tname.iValue;
@@ -290,7 +290,7 @@ namespace NiL.JS.Core.Interop
                     tname = tname.ToPrimitiveValue_String_Value();
                 switch (tname.valueType)
                 {
-                    case JSValueType.Int:
+                    case JSValueType.Integer:
                         {
                             isIndex = tname.iValue >= 0;
                             index = tname.iValue;

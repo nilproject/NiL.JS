@@ -532,7 +532,7 @@ namespace NiL.JS.Core
                                 ExceptionsHelper.Throw(new RangeError("Invalid array length"));
                             if ((obj.attributes & JSValueAttributesInternal.ReadOnly) != 0
                                 && ((obj.valueType == JSValueType.Double && nlenD != obj.dValue)
-                                    || (obj.valueType == JSValueType.Int && nlen != obj.iValue)))
+                                    || (obj.valueType == JSValueType.Integer && nlen != obj.iValue)))
                                 ExceptionsHelper.Throw(new TypeError("Cannot change length of fixed size array"));
                             if (!(target as NiL.JS.BaseLibrary.Array).setLength(nlen))
                                 ExceptionsHelper.Throw(new TypeError("Unable to reduce length because Exists not configurable elements"));

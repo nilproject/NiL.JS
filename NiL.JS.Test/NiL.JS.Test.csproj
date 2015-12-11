@@ -144,8 +144,6 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SyntaxExtensions\KeysOfOperator.cs" />
-    <Compile Include="SyntaxExtensions\UsingStatement.cs" />
     <Compile Include="Translator.cs" />
   </ItemGroup>
   <ItemGroup>

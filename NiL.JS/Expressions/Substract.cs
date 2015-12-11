@@ -41,13 +41,13 @@ namespace NiL.JS.Expressions
                 JSValue s = null;
                 long l = 0;
                 int a;
-                if (f.valueType == JSValueType.Int
-                    || f.valueType == JSValueType.Bool)
+                if (f.valueType == JSValueType.Integer
+                    || f.valueType == JSValueType.Boolean)
                 {
                     a = f.iValue;
                     s = second.Evaluate(context);
-                    if (s.valueType == JSValueType.Int
-                    || s.valueType == JSValueType.Bool)
+                    if (s.valueType == JSValueType.Integer
+                    || s.valueType == JSValueType.Boolean)
                     {
                         l = (long)a - s.iValue;
                         //if (l > 2147483647L
@@ -60,7 +60,7 @@ namespace NiL.JS.Expressions
                         else
                         {
                             tempContainer.iValue = (int)l;
-                            tempContainer.valueType = JSValueType.Int;
+                            tempContainer.valueType = JSValueType.Integer;
                         }
                         return tempContainer;
                     }

@@ -110,7 +110,7 @@ namespace NiL.JS.Core.Interop
                     ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
 
-                    if (hostedType.IsDefined(typeof(ImmutablePrototypeAttribute), false))
+                    if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
                         attributes |= JSValueAttributesInternal.Immutable;
                     var staticProxy = new TypeProxy()
                     {
@@ -152,7 +152,7 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        public static JSValue Marshal(object value)
+        public static JSValue Proxy(object value)
         {
             JSValue res;
             if (value == null)
@@ -174,7 +174,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (bool)value ? 1 : 0,
-                            valueType = JSValueType.Bool
+                            valueType = JSValueType.Boolean
                         };
                     }
                 case TypeCode.Byte:
@@ -182,7 +182,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (byte)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Char:
@@ -219,7 +219,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (short)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Int32:
@@ -227,7 +227,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (int)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Int64:
@@ -243,7 +243,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (sbyte)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Single:
@@ -267,7 +267,7 @@ namespace NiL.JS.Core.Interop
                         return new JSValue
                         {
                             iValue = (ushort)value,
-                            valueType = JSValueType.Int
+                            valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.UInt32:
@@ -286,7 +286,7 @@ namespace NiL.JS.Core.Interop
                             return new JSValue
                             {
                                 iValue = (int)v,
-                                valueType = JSValueType.Int
+                                valueType = JSValueType.Integer
                             };
                         }
                     }
@@ -306,7 +306,7 @@ namespace NiL.JS.Core.Interop
                             return new JSValue
                             {
                                 iValue = (int)v,
-                                valueType = JSValueType.Int
+                                valueType = JSValueType.Integer
                             };
                         }
                     }
@@ -559,7 +559,7 @@ namespace NiL.JS.Core.Interop
             {
                 for (int i = 0; i < m.Count; i++)
                     if (!(m[i] is MethodBase))
-                        ExceptionsHelper.Throw(Marshal(new TypeError("Incompatible fields types.")));
+                        ExceptionsHelper.Throw(Proxy(new TypeError("Incompatible fields types.")));
                 var cache = new MethodProxy[m.Count];
                 for (int i = 0; i < m.Count; i++)
                     cache[i] = new MethodProxy(m[i] as MethodBase);
@@ -586,7 +586,7 @@ namespace NiL.JS.Core.Interop
                             if ((field.Attributes & (FieldAttributes.Literal | FieldAttributes.InitOnly)) != 0
                                 && (field.Attributes & FieldAttributes.Static) != 0)
                             {
-                                r = Marshal(field.GetValue(null));
+                                r = Proxy(field.GetValue(null));
                                 r.attributes |= JSValueAttributesInternal.ReadOnly;
                             }
                             else
@@ -596,7 +596,7 @@ namespace NiL.JS.Core.Interop
                                     valueType = JSValueType.Property,
                                     oValue = new GsPropertyPair
                                     (
-                                        new ExternalFunction((thisBind, a) => Marshal(field.GetValue(field.IsStatic ? null : thisBind.Value))),
+                                        new ExternalFunction((thisBind, a) => Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value))),
                                         !m[0].IsDefined(typeof(Interop.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
                                         {
                                             field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);
@@ -767,6 +767,9 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                     continue;
                 for (var i = item.Value.Count; i-- > 0;)
                 {
+                    if (item.Value[i].IsDefined(typeof(HiddenAttribute), false))
+                        continue;
+
                     if (!hideNonEnumerable || !item.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
                     {
                         switch (enumerationMode)

@@ -27,8 +27,8 @@ namespace NiL.JS.Core
         NotExists = 0,
         NotExistsInObject = 1,
         Undefined = 3,                  // 000000000011 // значение undefined говорит о том, что этот объект, вообще-то, определён, но вот его значение нет
-        Bool = 7,                       // 000000000111
-        Int = 11,                       // 000000001011
+        Boolean = 7,                       // 000000000111
+        Integer = 11,                       // 000000001011
         Double = 19,                    // 000000010011
         String = 35,                    // 000000100011
         Symbol = 67,                    // 000001000011
@@ -172,9 +172,9 @@ namespace NiL.JS.Core
             {
                 switch (valueType)
                 {
-                    case JSValueType.Bool:
+                    case JSValueType.Boolean:
                         return iValue != 0;
-                    case JSValueType.Int:
+                    case JSValueType.Integer:
                         return iValue;
                     case JSValueType.Double:
                         return dValue;
@@ -202,12 +202,12 @@ namespace NiL.JS.Core
             {
                 switch (valueType)
                 {
-                    case JSValueType.Bool:
+                    case JSValueType.Boolean:
                         {
                             iValue = (bool)value ? 1 : 0;
                             break;
                         }
-                    case JSValueType.Int:
+                    case JSValueType.Integer:
                         {
                             iValue = (int)value;
                             break;
@@ -335,7 +335,7 @@ namespace NiL.JS.Core
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get
-            { return valueType == JSValueType.Int || valueType == JSValueType.Double; }
+            { return valueType == JSValueType.Integer || valueType == JSValueType.Double; }
         }
 
         internal bool NeedClone
@@ -358,10 +358,10 @@ namespace NiL.JS.Core
         {
             switch (valueType)
             {
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean));
                 case JSValueType.Double:
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     return TypeProxy.GetPrototype(typeof(Number));
                 case JSValueType.String:
                     return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.String));
@@ -497,14 +497,14 @@ namespace NiL.JS.Core
         {
             switch (valueType)
             {
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     {
                         if (propertyScope == PropertyScope.Own)
                             return notExists;
                         forWrite = false;
                         return TypeProxy.GetPrototype(typeof(NiL.JS.BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Сommon);
                     }
-                case JSValueType.Int:
+                case JSValueType.Integer:
                 case JSValueType.Double:
                     {
                         if (propertyScope == PropertyScope.Own)
@@ -689,8 +689,8 @@ namespace NiL.JS.Core
         {
             switch (obj.valueType)
             {
-                case JSValueType.Int:
-                case JSValueType.Bool:
+                case JSValueType.Integer:
+                case JSValueType.Boolean:
                     return obj.iValue != 0;
                 case JSValueType.Double:
                     return !(obj.dValue == 0.0 || double.IsNaN(obj.dValue));
@@ -763,9 +763,9 @@ namespace NiL.JS.Core
             var res = this.valueType >= JSValueType.Object ? ToPrimitiveValue_String_Value() : this;
             switch (res.valueType)
             {
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     return res.iValue != 0 ? "true" : "false";
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     return Tools.Int32ToString(res.iValue);
                 case JSValueType.Double:
                     return Tools.DoubleToString(res.dValue);
@@ -849,9 +849,9 @@ namespace NiL.JS.Core
                 return oValue as JSObject;
             switch (valueType)
             {
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     return new ObjectWrapper(this is BaseLibrary.Boolean ? this : new BaseLibrary.Boolean(iValue != 0));
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     return new ObjectWrapper(this is BaseLibrary.Number ? this : new BaseLibrary.Number(iValue));
                 case JSValueType.Double:
                     return new ObjectWrapper(this is BaseLibrary.Number ? this : new BaseLibrary.Number(dValue));
@@ -912,7 +912,7 @@ namespace NiL.JS.Core
             var self = this.oValue as JSValue ?? this;
             switch (self.valueType)
             {
-                case JSValueType.Int:
+                case JSValueType.Integer:
                 case JSValueType.Double:
                     {
                         return "[object Number]";
@@ -925,7 +925,7 @@ namespace NiL.JS.Core
                     {
                         return "[object String]";
                     }
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     {
                         return "[object Boolean]";
                     }
@@ -1085,7 +1085,7 @@ namespace NiL.JS.Core
 
         int IConvertible.ToInt32(IFormatProvider provider)
         {
-            if (valueType == JSValueType.Int)
+            if (valueType == JSValueType.Integer)
                 return iValue;
             return Tools.JSObjectToInt32(this);
         }
@@ -1145,8 +1145,8 @@ namespace NiL.JS.Core
                     case JSValueType.NotExists:
                     case JSValueType.NotExistsInObject:
                         return 0;
-                    case JSValueType.Bool:
-                    case JSValueType.Int:
+                    case JSValueType.Boolean:
+                    case JSValueType.Integer:
                         return iValue - other.iValue;
                     case JSValueType.Double:
                         return System.Math.Sign(dValue - other.dValue);
@@ -1161,5 +1161,17 @@ namespace NiL.JS.Core
         }
 
         #endregion
+
+        public static JSValue Marshal(object value)
+        {
+            return TypeProxy.Proxy(value);
+        }
+
+        public static JSValue Wrap(object value)
+        {
+            if (value == null)
+                return Null;
+            return new ObjectWrapper(value);
+        }
     }
 }

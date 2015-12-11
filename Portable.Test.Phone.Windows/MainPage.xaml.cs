@@ -87,8 +87,8 @@ namespace Portable.Test.Phone
 
                     Context.RefreshGlobalContext();
                     var s = new Module(staCode); // инициализация
-                    s.Context.DefineVariable("console").Assign(logger.WrapToJSValue());
-                    s.Invoke();
+                    s.Context.DefineVariable("console").Assign(JSValue.Wrap(logger));
+                    s.Run();
                     try
                     {
                         s.Context.Eval(code, true);

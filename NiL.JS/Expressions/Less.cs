@@ -38,13 +38,13 @@ namespace NiL.JS.Expressions
         {
             switch (first.valueType)
             {
-                case JSValueType.Bool:
-                case JSValueType.Int:
+                case JSValueType.Boolean:
+                case JSValueType.Integer:
                     {
                         switch (second.valueType)
                         {
-                            case JSValueType.Bool:
-                            case JSValueType.Int:
+                            case JSValueType.Boolean:
+                            case JSValueType.Integer:
                                 {
                                     return first.iValue < second.iValue;
                                 }
@@ -68,10 +68,10 @@ namespace NiL.JS.Expressions
                             case JSValueType.Object:
                                 {
                                     second = second.ToPrimitiveValue_Value_String();
-                                    if (second.valueType == JSValueType.Int)
-                                        goto case JSValueType.Int;
-                                    if (second.valueType == JSValueType.Bool)
-                                        goto case JSValueType.Int;
+                                    if (second.valueType == JSValueType.Integer)
+                                        goto case JSValueType.Integer;
+                                    if (second.valueType == JSValueType.Boolean)
+                                        goto case JSValueType.Integer;
                                     if (second.valueType == JSValueType.Double)
                                         goto case JSValueType.Double;
                                     if (second.valueType == JSValueType.String)
@@ -91,8 +91,8 @@ namespace NiL.JS.Expressions
                         else
                             switch (second.valueType)
                             {
-                                case JSValueType.Bool:
-                                case JSValueType.Int:
+                                case JSValueType.Boolean:
+                                case JSValueType.Integer:
                                     {
                                         return first.dValue < second.iValue;
                                     }
@@ -116,10 +116,10 @@ namespace NiL.JS.Expressions
                                 case JSValueType.Object:
                                     {
                                         second = second.ToPrimitiveValue_Value_String();
-                                        if (second.valueType == JSValueType.Int)
-                                            goto case JSValueType.Int;
-                                        if (second.valueType == JSValueType.Bool)
-                                            goto case JSValueType.Int;
+                                        if (second.valueType == JSValueType.Integer)
+                                            goto case JSValueType.Integer;
+                                        if (second.valueType == JSValueType.Boolean)
+                                            goto case JSValueType.Integer;
                                         if (second.valueType == JSValueType.Double)
                                             goto case JSValueType.Double;
                                         if (second.valueType == JSValueType.String)
@@ -137,8 +137,8 @@ namespace NiL.JS.Expressions
                         string left = first.oValue.ToString();
                         switch (second.valueType)
                         {
-                            case JSValueType.Bool:
-                            case JSValueType.Int:
+                            case JSValueType.Boolean:
+                            case JSValueType.Integer:
                                 {
                                     double d = 0;
                                     int i = 0;
@@ -166,8 +166,8 @@ namespace NiL.JS.Expressions
                                     second = second.ToPrimitiveValue_Value_String();
                                     switch (second.valueType)
                                     {
-                                        case JSValueType.Int:
-                                        case JSValueType.Bool:
+                                        case JSValueType.Integer:
+                                        case JSValueType.Boolean:
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
@@ -210,10 +210,10 @@ namespace NiL.JS.Expressions
                 case JSValueType.Object:
                     {
                         first = first.ToPrimitiveValue_Value_String();
-                        if (first.valueType == JSValueType.Int)
-                            goto case JSValueType.Int;
-                        if (first.valueType == JSValueType.Bool)
-                            goto case JSValueType.Int;
+                        if (first.valueType == JSValueType.Integer)
+                            goto case JSValueType.Integer;
+                        if (first.valueType == JSValueType.Boolean)
+                            goto case JSValueType.Integer;
                         if (first.valueType == JSValueType.Double)
                             goto case JSValueType.Double;
                         if (first.valueType == JSValueType.String)
@@ -221,7 +221,7 @@ namespace NiL.JS.Expressions
                         if (first.valueType >= JSValueType.Object) // null
                         {
                             first.iValue = 0; // такое делать можно, поскольку тип не меняется
-                            goto case JSValueType.Int;
+                            goto case JSValueType.Integer;
                         }
                         throw new NotImplementedException();
                     }
@@ -243,15 +243,15 @@ namespace NiL.JS.Expressions
             temp.oValue = f.oValue;
             var s = second.Evaluate(context);
             tempContainer = temp;
-            if (temp.valueType == JSValueType.Int && s.valueType == JSValueType.Int)
+            if (temp.valueType == JSValueType.Integer && s.valueType == JSValueType.Integer)
             {
-                temp.valueType = JSValueType.Bool;
+                temp.valueType = JSValueType.Boolean;
                 temp.iValue = temp.iValue < s.iValue ? 1 : 0;
                 return tempContainer;
             }
             if (tempContainer.valueType == JSValueType.Double && s.valueType == JSValueType.Double)
             {
-                temp.valueType = JSValueType.Bool;
+                temp.valueType = JSValueType.Boolean;
                 if (double.IsNaN(temp.dValue) || double.IsNaN(s.dValue))
                     temp.iValue = trueLess ? 0 : 1;
                 else

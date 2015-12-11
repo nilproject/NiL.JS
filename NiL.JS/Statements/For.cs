@@ -298,11 +298,11 @@ namespace NiL.JS.Statements
                             {
                                 var vvalue = value.Evaluate(null);
                                 var lvalue = limit.Evaluate(null);
-                                if ((vvalue.valueType == JSValueType.Int
-                                    || vvalue.valueType == JSValueType.Bool
+                                if ((vvalue.valueType == JSValueType.Integer
+                                    || vvalue.valueType == JSValueType.Boolean
                                     || vvalue.valueType == JSValueType.Double)
-                                    && (lvalue.valueType == JSValueType.Int
-                                    || lvalue.valueType == JSValueType.Bool
+                                    && (lvalue.valueType == JSValueType.Integer
+                                    || lvalue.valueType == JSValueType.Boolean
                                     || lvalue.valueType == JSValueType.Double))
                                 {
                                     post.Eliminated = true;

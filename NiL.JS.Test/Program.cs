@@ -41,7 +41,7 @@ namespace NiL.JS.Test
             }));
 
 #if PORTABLE
-            Context.GlobalContext.DefineVariable("console").Assign(new
+            Context.GlobalContext.DefineVariable("console").Assign(JSValue.Wrap(new
             {
                 log = new Action<Arguments>(arguments =>
                 {
@@ -54,7 +54,7 @@ namespace NiL.JS.Test
                     }
                     System.Console.WriteLine();
                 })
-            }.WrapToJSValue());
+            }));
 #endif
 
             int mode = 103
@@ -375,7 +375,7 @@ ast.print_to_string();");
                     {
                         Context.RefreshGlobalContext();
                         s = new Module(staCode);// инициализация
-                        s.Invoke();
+                        s.Run();
                         econtext = s.Context;
                     }
                     else
@@ -480,7 +480,7 @@ ast.print_to_string();");
                     {
                         Context.RefreshGlobalContext();
                         s = new Module(preCode);
-                        s.Invoke();
+                        s.Run();
                         econtext = s.Context;
                         s.Context.DefineVariable("print").Assign(new ExternalFunction((t, e) =>
                         {
@@ -575,13 +575,13 @@ for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
                         break;
                     }
             }
-            s.Invoke();
+            s.Run();
             GC.Collect(0);
             GC.Collect(1);
             GC.Collect(2);
             GC.GetTotalMemory(true);
             sw.Start();
-            s.Invoke();
+            s.Run();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
         }
@@ -630,7 +630,7 @@ for (var i = 0; i < 10000000; )
             Console.WriteLine(sw.Elapsed);
 
             sw.Restart();
-            s.Invoke();
+            s.Run();
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
         }
@@ -827,7 +827,7 @@ for (var i = 0; i < 10000000; )
             Console.WriteLine("-------------------------------------");
             sw.Restart();
             while (times-- > 0)
-                s.Invoke();
+                s.Run();
             sw.Stop();
             Console.WriteLine("-------------------------------------");
             Console.WriteLine("Complite.");
@@ -848,7 +848,7 @@ for (var i = 0; i < 10000000; )
             sw.Stop();
             Console.WriteLine("Compile time: " + sw.Elapsed);
             sw.Restart();
-            s.Invoke();
+            s.Run();
             sw.Stop();
             Console.WriteLine("Init time: " + sw.Elapsed);
             Console.WriteLine("-------------------------------------");
@@ -889,7 +889,7 @@ for (var i = 0; i < 10000000; )
                     var m = new Module(script);
 
                     sw.Restart();
-                    m.Invoke();
+                    m.Run();
                     sw.Stop();
 
                     total += sw.Elapsed;
@@ -942,7 +942,7 @@ for (var i = 0; i < 10000000; )
                             System.Console.WriteLine(a[j]);
                         return JSValue.Undefined;
                     }));
-                    script.Invoke();
+                    script.Run();
                     script.Context.Eval(body, true);
                     sw.Stop();
                     total += sw.Elapsed;

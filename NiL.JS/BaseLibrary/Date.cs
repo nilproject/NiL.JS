@@ -517,8 +517,8 @@ namespace NiL.JS.BaseLibrary
                     arg = arg.ToPrimitiveValue_Value_String();
                 switch (arg.valueType)
                 {
-                    case JSValueType.Int:
-                    case JSValueType.Bool:
+                    case JSValueType.Integer:
+                    case JSValueType.Boolean:
                     case JSValueType.Double:
                         {
                             var timeValue = Tools.JSObjectToDouble(arg);
