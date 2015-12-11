@@ -99,14 +99,14 @@ namespace NiL.JS.Expressions
                         && res.dValue == (double)(int)res.dValue)
                     {
                         res.iValue = (int)res.dValue;
-                        res.valueType = JSValueType.Int;
+                        res.valueType = JSValueType.Integer;
                     }
                     _this = new Constant(res) as CodeNode;
                     return true;
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new Throw(new Constant(e.Avatar)));
+                    _this = new ExpressionWrapper(new Throw(new Constant(e.Error)));
                     expressionWillThrow(message);
                     return true;
                 }
@@ -154,7 +154,7 @@ namespace NiL.JS.Expressions
                 }
                 catch (JSException e)
                 {
-                    _this = new ExpressionWrapper(new Throw(new Constant(e.Avatar)));
+                    _this = new ExpressionWrapper(new Throw(new Constant(e.Error)));
                     expressionWillThrow(message);
                 }
                 catch (Exception e)

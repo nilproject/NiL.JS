@@ -198,7 +198,7 @@ namespace NiL.JS.BaseLibrary
                 lIndex = lIndex.CloneImpl(false);
             if (lIndex.valueType == JSValueType.Double)
             {
-                lIndex.valueType = JSValueType.Int;
+                lIndex.valueType = JSValueType.Integer;
                 lIndex.iValue = (int)lIndex.dValue;
             }
             if (lIndex.iValue < 0)
@@ -231,7 +231,7 @@ namespace NiL.JS.BaseLibrary
             lIndex = Tools.JSObjectToNumber(lIndex);
             if (lIndex.valueType == JSValueType.Double)
             {
-                lIndex.valueType = JSValueType.Int;
+                lIndex.valueType = JSValueType.Integer;
                 lIndex.iValue = (int)lIndex.dValue;
             }
             if (lIndex.iValue >= input.Length || lIndex.iValue < 0)

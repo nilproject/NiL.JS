@@ -153,7 +153,7 @@ namespace NiL.JS.Core
             if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
             {
                 createMember &= (attributes & JSValueAttributesInternal.Immutable) == 0;
-                if (key.valueType == JSValueType.Int)
+                if (key.valueType == JSValueType.Integer)
                 {
                     switch (key.iValue)
                     {
@@ -198,7 +198,7 @@ namespace NiL.JS.Core
                             if (_length == null)
                                 _length = new _LengthContainer(this)
                                 {
-                                    valueType = JSValueType.Int,
+                                    valueType = JSValueType.Integer,
                                     iValue = length,
                                     attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.Reassign
                                 };
@@ -256,7 +256,7 @@ namespace NiL.JS.Core
 
         protected internal override bool DeleteProperty(JSValue name)
         {
-            if (name.valueType == JSValueType.Int)
+            if (name.valueType == JSValueType.Integer)
             {
                 switch (name.iValue)
                 {

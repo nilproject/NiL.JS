@@ -158,8 +158,8 @@ namespace NiL.JS.Core
                     return double.NaN;
                 switch (arg.valueType)
                 {
-                    case JSValueType.Bool:
-                    case JSValueType.Int:
+                    case JSValueType.Boolean:
+                    case JSValueType.Integer:
                         {
                             return arg.iValue;
                         }
@@ -208,7 +208,7 @@ namespace NiL.JS.Core
 #endif
         public static int JSObjectToInt32(JSValue arg)
         {
-            if (arg.valueType == JSValueType.Int)
+            if (arg.valueType == JSValueType.Integer)
                 return arg.iValue;
             return JSObjectToInt32(arg, 0, false);
         }
@@ -261,8 +261,8 @@ namespace NiL.JS.Core
             var r = arg;
             switch (r.valueType)
             {
-                case JSValueType.Bool:
-                case JSValueType.Int:
+                case JSValueType.Boolean:
+                case JSValueType.Integer:
                     {
                         return r.iValue;
                     }
@@ -348,8 +348,8 @@ namespace NiL.JS.Core
             var r = arg;
             switch (r.valueType)
             {
-                case JSValueType.Bool:
-                case JSValueType.Int:
+                case JSValueType.Boolean:
+                case JSValueType.Integer:
                     {
                         return r.iValue;
                     }
@@ -404,19 +404,19 @@ namespace NiL.JS.Core
         {
             if (arg == null)
             {
-                result.valueType = JSValueType.Int;
+                result.valueType = JSValueType.Integer;
                 result.iValue = 0;
                 return result;
             }
             switch (arg.valueType)
             {
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     {
-                        result.valueType = JSValueType.Int;
+                        result.valueType = JSValueType.Integer;
                         result.iValue = arg.iValue;
                         return result;
                     }
-                case JSValueType.Int:
+                case JSValueType.Integer:
                 case JSValueType.Double:
                     return arg;
                 case JSValueType.String:
@@ -436,7 +436,7 @@ namespace NiL.JS.Core
                     {
                         if (arg.oValue == null)
                         {
-                            result.valueType = JSValueType.Int;
+                            result.valueType = JSValueType.Integer;
                             result.iValue = 0;
                             return result;
                         }
@@ -465,7 +465,7 @@ namespace NiL.JS.Core
             object value = null;
             switch (jsobj.valueType)
             {
-                case JSValueType.Bool:
+                case JSValueType.Boolean:
                     {
                         if (targetType == typeof(bool))
                             return jsobj.iValue != 0;
@@ -479,7 +479,7 @@ namespace NiL.JS.Core
                             return (float)jsobj.dValue;
                         break;
                     }
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     {
                         if (targetType == typeof(int))
                             return (int)jsobj.iValue;
@@ -1520,7 +1520,7 @@ namespace NiL.JS.Core
                     expressions.Add(Expression.Call(
                         argumentsParameter,
                         typeof(Arguments).GetRuntimeMethod("Add", new[] { typeof(JSValue) }),
-                        Expression.Call(Tools.methodof<object, JSValue>(TypeProxy.Marshal), handlerArgumentsParameters[i])));
+                        Expression.Call(Tools.methodof<object, JSValue>(TypeProxy.Proxy), handlerArgumentsParameters[i])));
                 }
             }
 

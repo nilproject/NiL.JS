@@ -58,7 +58,7 @@ namespace NiL.JS.Expressions
                     if (((a | s.iValue) & 0xFFFF0000) == 0)
                     {
                         tempContainer.iValue = a * s.iValue;
-                        tempContainer.valueType = JSValueType.Int;
+                        tempContainer.valueType = JSValueType.Integer;
                     }
                     else
                     {
@@ -71,7 +71,7 @@ namespace NiL.JS.Expressions
                         else
                         {
                             tempContainer.iValue = (int)l;
-                            tempContainer.valueType = JSValueType.Int;
+                            tempContainer.valueType = JSValueType.Integer;
                         }
                     }
                     return tempContainer;
@@ -125,7 +125,7 @@ namespace NiL.JS.Expressions
         public override string ToString()
         {
             if (first is Constant
-                && ((first as Constant).value.valueType == JSValueType.Int)
+                && ((first as Constant).value.valueType == JSValueType.Integer)
                 && ((first as Constant).value.iValue == -1))
                 return "-" + second;
             return "(" + first + " * " + second + ")";

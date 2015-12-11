@@ -15,7 +15,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var res = new Element(this, index);
                 res.iValue = getValue(index);
-                res.valueType = JSValueType.Int;
+                res.valueType = JSValueType.Integer;
                 return res;
             }
             set

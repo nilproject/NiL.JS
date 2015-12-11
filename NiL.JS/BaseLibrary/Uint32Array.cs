@@ -16,7 +16,7 @@ namespace NiL.JS.BaseLibrary
                 var res = new Element(this, index);
                 res.iValue = (int)getValue(index);
                 if (res.iValue >= 0)
-                    res.valueType = JSValueType.Int;
+                    res.valueType = JSValueType.Integer;
                 else
                 {
                     res.dValue = (uint)res.iValue;

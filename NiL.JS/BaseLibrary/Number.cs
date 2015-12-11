@@ -50,7 +50,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Number()
         {
-            valueType = JSValueType.Int;
+            valueType = JSValueType.Integer;
             iValue = 0;
             attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
@@ -58,7 +58,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Number(int value)
         {
-            valueType = JSValueType.Int;
+            valueType = JSValueType.Integer;
             iValue = value;
             attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
@@ -68,7 +68,7 @@ namespace NiL.JS.BaseLibrary
         {
             if ((long)(int)(value) == value)
             {
-                valueType = JSValueType.Int;
+                valueType = JSValueType.Integer;
                 iValue = (int)value;
             }
             else
@@ -91,7 +91,7 @@ namespace NiL.JS.BaseLibrary
         public Number(string value)
         {
             value = value.Trim(Tools.TrimChars);
-            valueType = JSValueType.Int;
+            valueType = JSValueType.Integer;
             dValue = value.Length != 0 ? double.NaN : 0;
             valueType = JSValueType.Double;
             double d = 0;
@@ -124,7 +124,7 @@ namespace NiL.JS.BaseLibrary
             double res = 0;
             switch (self.valueType)
             {
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     {
                         res = self.iValue;
                         break;
@@ -147,7 +147,7 @@ namespace NiL.JS.BaseLibrary
             int dgts = 0;
             switch ((digits ?? JSValue.undefined).valueType)
             {
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     {
                         dgts = digits.iValue;
                         break;
@@ -170,8 +170,8 @@ namespace NiL.JS.BaseLibrary
                         var d = digits[0].ToPrimitiveValue_Value_String();
                         if (d.valueType == JSValueType.String)
                             goto case JSValueType.String;
-                        if (d.valueType == JSValueType.Int)
-                            goto case JSValueType.Int;
+                        if (d.valueType == JSValueType.Integer)
+                            goto case JSValueType.Integer;
                         if (d.valueType == JSValueType.Double)
                             goto case JSValueType.Double;
                         break;
@@ -190,7 +190,7 @@ namespace NiL.JS.BaseLibrary
             double res = 0;
             switch (self.valueType)
             {
-                case JSValueType.Int:
+                case JSValueType.Integer:
                     {
                         res = self.iValue;
                         break;
@@ -225,7 +225,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(0)]
         public static JSValue toLocaleString(JSValue self)
         {
-            return self.valueType == JSValueType.Int ? self.iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : self.dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
+            return self.valueType == JSValueType.Integer ? self.iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : self.dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
         }
 
         [InstanceMember]
@@ -235,10 +235,10 @@ namespace NiL.JS.BaseLibrary
         {
             var ovt = self.valueType;
             if (self.valueType > JSValueType.Double && self is Number)
-                self.valueType = self.dValue == 0.0 ? JSValueType.Int : JSValueType.Double;
+                self.valueType = self.dValue == 0.0 ? JSValueType.Integer : JSValueType.Double;
             try
             {
-                if (self.valueType != JSValueType.Int && self.valueType != JSValueType.Double)
+                if (self.valueType != JSValueType.Integer && self.valueType != JSValueType.Double)
                     ExceptionsHelper.Throw((new TypeError("Try to call Number.toString on not Number object")));
                 int r = 10;
                 if (radix != null && radix.GetProperty("length").iValue > 0)
@@ -248,8 +248,8 @@ namespace NiL.JS.BaseLibrary
                         ExceptionsHelper.Throw((new Error("Radix can't be null.")));
                     switch (ar.valueType)
                     {
-                        case JSValueType.Int:
-                        case JSValueType.Bool:
+                        case JSValueType.Integer:
+                        case JSValueType.Boolean:
                             {
                                 r = ar.iValue;
                                 break;
@@ -353,7 +353,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (self is Number)
                 return self.iValue == 0 ? self.dValue : self.iValue;
-            if (self.valueType != JSValueType.Int && self.valueType != JSValueType.Double)
+            if (self.valueType != JSValueType.Integer && self.valueType != JSValueType.Double)
                 ExceptionsHelper.Throw((new TypeError("Try to call Number.valueOf on not number object.")));
             return self;
         }
@@ -361,7 +361,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public override string ToString()
         {
-            if (valueType == JSValueType.Int)
+            if (valueType == JSValueType.Integer)
                 return Tools.Int32ToString(iValue);
             if (valueType == JSValueType.Double)
                 return Tools.DoubleToString(dValue);
@@ -373,7 +373,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public override int GetHashCode()
         {
-            return valueType == JSValueType.Int ? iValue.GetHashCode() : dValue.GetHashCode();
+            return valueType == JSValueType.Integer ? iValue.GetHashCode() : dValue.GetHashCode();
         }
 #if !WRC
         [Hidden]
@@ -391,13 +391,13 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public static implicit operator double(Number value)
         {
-            return value == null ? 0 : value.valueType == JSValueType.Int ? value.iValue : value.dValue;
+            return value == null ? 0 : value.valueType == JSValueType.Integer ? value.iValue : value.dValue;
         }
 
         [Hidden]
         public static explicit operator int(Number value)
         {
-            return value == null ? 0 : value.valueType == JSValueType.Int ? value.iValue : (int)value.dValue;
+            return value == null ? 0 : value.valueType == JSValueType.Integer ? value.iValue : (int)value.dValue;
         }
 #endif
         [DoNotEnumerate]

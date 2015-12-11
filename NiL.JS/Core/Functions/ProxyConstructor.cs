@@ -156,7 +156,7 @@ namespace NiL.JS.Core.Functions
                                 {
                                     switch (arguments.a0.valueType)
                                     {
-                                        case JSValueType.Int:
+                                        case JSValueType.Integer:
                                             obj = new NiL.JS.BaseLibrary.Array(arguments.a0.iValue);
                                             break;
                                         case JSValueType.Double:

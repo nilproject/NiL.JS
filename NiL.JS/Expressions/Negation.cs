@@ -30,8 +30,8 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var val = first.Evaluate(context);
-            if (val.valueType == JSValueType.Int
-                || val.ValueType == JSValueType.Bool)
+            if (val.valueType == JSValueType.Integer
+                || val.ValueType == JSValueType.Boolean)
             {
                 if (val.iValue == 0)
                 {
@@ -47,7 +47,7 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
-                        tempContainer.valueType = JSValueType.Int;
+                        tempContainer.valueType = JSValueType.Integer;
                         tempContainer.iValue = -val.iValue;
                     }
                 }
