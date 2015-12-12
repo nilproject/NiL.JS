@@ -6,6 +6,10 @@ using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
+#if NET40
+using NiL.JS.Backward;
+#endif
+
 namespace NiL.JS.Core.Functions
 {
     internal sealed class MethodProxy : Function
@@ -23,7 +27,10 @@ namespace NiL.JS.Core.Functions
         public ParameterInfo[] Parameters
         {
             [Hidden]
-            get { return parameters; }
+            get
+            {
+                return parameters;
+        }
         }
 
         [Field]
@@ -73,9 +80,9 @@ namespace NiL.JS.Core.Functions
 
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
-            var pc = methodBase.GetCustomAttributes(typeof(Interop.ArgumentsLengthAttribute), false).ToArray();
+            var pc = methodBase.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
             if (pc.Length != 0)
-                _length.iValue = (pc[0] as Interop.ArgumentsLengthAttribute).Count;
+                _length.iValue = (pc[0] as ArgumentsLengthAttribute).Count;
             else
                 _length.iValue = parameters.Length;
 
@@ -85,7 +92,7 @@ namespace NiL.JS.Core.Functions
                 if (t != null)
                 {
                     if (paramsConverters == null)
-                        paramsConverters = new Interop.ConvertValueAttribute[parameters.Length];
+                        paramsConverters = new ConvertValueAttribute[parameters.Length];
                     paramsConverters[i] = t;
                 }
             }
@@ -93,7 +100,7 @@ namespace NiL.JS.Core.Functions
             var methodInfo = methodBase as MethodInfo;
             if (methodInfo != null)
             {
-                returnConverter = methodInfo.ReturnParameter.GetCustomAttribute(typeof(Interop.ConvertValueAttribute), false) as Interop.ConvertValueAttribute;
+                returnConverter = methodInfo.ReturnParameter.GetCustomAttribute(typeof(ConvertValueAttribute), false) as ConvertValueAttribute;
 
                 forceInstance = methodBase.IsDefined(typeof(InstanceMemberAttribute), false);
 
@@ -130,7 +137,9 @@ namespace NiL.JS.Core.Functions
                     typeof(object), // target
                     typeof(object[]), // argsArray
                     typeof(Arguments) // argsSource
-                }, typeof(MethodProxy), true);
+                }, 
+                typeof(MethodProxy), 
+                true);
             var generator = impl.GetILGenerator();
 
             if (!methodInfo.IsStatic)
@@ -145,7 +154,7 @@ namespace NiL.JS.Core.Functions
 
             if (forceInstance)
             {
-                for (; ; )
+                for (;;)
                 {
                     if (methodInfo.IsStatic && parameters[0].ParameterType == typeof(JSValue))
                     {
@@ -393,7 +402,7 @@ namespace NiL.JS.Core.Functions
                 object[] args = null;
                 int targetCount = parameters.Length;
                 args = new object[targetCount];
-                for (int i = targetCount; i-- > 0; )
+                for (int i = targetCount; i-- > 0;)
                 {
                     var obj = arguments.Length > i ? Tools.PrepareArg(initiator, arguments[i]) : notExists;
                     if (obj.Exists)
@@ -513,7 +522,8 @@ namespace NiL.JS.Core.Functions
             int targetCount = parameters.Length;
             object[] res = new object[targetCount];
             if (source != null) // it is possible
-                for (int i = targetCount; i-- > 0; )
+            {
+                for (int i = targetCount; i-- > 0;)
                 {
                     var obj = source[i];
                     if (obj.Exists)
@@ -533,18 +543,19 @@ namespace NiL.JS.Core.Functions
 #endif
                     }
                 }
+            }
             return res;
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
-            return Interop.TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
+            return TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
         }
 
         private static object[] convertArray(NiL.JS.BaseLibrary.Array array)
         {
             var arg = new object[array.data.Length];
-            for (var j = arg.Length; j-- > 0; )
+            for (var j = arg.Length; j-- > 0;)
             {
                 var temp = (array.data[j] ?? undefined).Value;
                 arg[j] = temp is NiL.JS.BaseLibrary.Array ? convertArray(temp as NiL.JS.BaseLibrary.Array) : temp;

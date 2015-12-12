@@ -1,9 +1,13 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
+
+#if NET40
+using NiL.JS.Backward;
+#endif
 
 namespace NiL.JS.Core
 {

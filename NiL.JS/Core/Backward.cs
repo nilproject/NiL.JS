@@ -1,6 +1,7 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
-namespace System
+namespace NiL.JS.Backward
 {
 #if NET35
     internal delegate TResult Func<T1, T2, T3, T4, T5, TResult>(T1 prm1, T2 prm2, T3 prm3, T4 prm4, T5 prm5);
@@ -57,7 +58,7 @@ namespace System
 
     public static class FieldInfoExtension
     {
-        public static Object GetCustomAttribute(this FieldInfo _this, Type attributeType)
+        public static object GetCustomAttribute(this FieldInfo _this, Type attributeType)
         {
             var t = _this.GetCustomAttributes(attributeType, true);
             if (t == null || t.Length == 0)
@@ -65,12 +66,46 @@ namespace System
             return t[0];
         }
 
-        public static Object GetCustomAttribute(this FieldInfo _this, Type attributeType, bool inherit)
+        public static object GetCustomAttribute(this FieldInfo _this, Type attributeType, bool inherit)
         {
             var t = _this.GetCustomAttributes(attributeType, inherit);
             if (t == null || t.Length == 0)
                 return null;
             return t[0];
+        }
+    }
+
+    public static class TypeExtensions
+    {
+        public static MethodInfo GetRuntimeMethod(this Type type, string name, Type[] types)
+        {
+            return type.GetMethod(name, types);
+        }
+
+        public static MethodInfo[] GetRuntimeMethods(this Type type)
+        {
+            return type.GetMethods();
+        }
+
+        public static Type GetTypeInfo(this Type type)
+        {
+            return type;
+        }
+    }
+
+    public static class DelegateExtensions
+    {
+        public static MethodInfo GetMethodInfo(this Delegate @delegate)
+        {
+            return @delegate.Method;
+        }
+    }
+
+    public static class MethodInfoExtensions
+    {
+        public static Delegate CreateDelegate(this MethodInfo methodInfo, Type delegateType)
+        {
+            return Delegate.CreateDelegate(delegateType, methodInfo, true);
         }
     }
 #endif
