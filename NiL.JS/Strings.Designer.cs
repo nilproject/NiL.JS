@@ -12,6 +12,10 @@ namespace NiL.JS {
     using System;
     using System.Reflection;
 
+#if NET40
+using NiL.JS.Backward;
+#endif
+
 
     /// <summary>
     ///   Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
