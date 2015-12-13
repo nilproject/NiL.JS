@@ -14,7 +14,7 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void Throw(BaseLibrary.Error error)
+        internal static void Throw(Error error)
         {
             throw new JSException(error);
         }

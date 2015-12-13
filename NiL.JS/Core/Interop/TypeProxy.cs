@@ -679,10 +679,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             for (var i = m.Count; i-- > 0;)
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
-                {
                     r.attributes &= ~JSValueAttributesInternal.DoNotEnumerate;
-                    break;
-                }
                 if (m[i].IsDefined(typeof(ReadOnlyAttribute), false))
                     r.attributes |= JSValueAttributesInternal.ReadOnly;
                 if (m[i].IsDefined(typeof(NotConfigurable), false))

@@ -255,7 +255,7 @@ namespace NiL.JS.Core
                     field.valueType = JSValueType.NotExistsInObject;
                 return fields.Remove(tname);
             }
-            field = GetProperty(name, false, PropertyScope.Own);
+            field = GetProperty(name, true, PropertyScope.Own);
             if (!field.Exists)
                 return true;
             if ((field.attributes & JSValueAttributesInternal.SystemObject) != 0)

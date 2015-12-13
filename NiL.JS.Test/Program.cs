@@ -16,14 +16,17 @@ namespace NiL.JS.Test
 {
     class Program
     {
-        internal interface TestInterface
+        internal class TestClass
         {
-            object testFunction();
+            [DoNotDelete]
+            public int Property { get; set; }
         }
 
         private static void testEx()
         {
-            //var obj = new Context().Eval("({ testFunction(){ return 'hello, world!'; } })").AsImplementationOf<TestInterface>();
+            var context = new Context();
+            context.DefineVariable("test").Assign(JSValue.Wrap(new TestClass()));
+            context.Eval("console.log(delete test.__prot__.Property)");
         }
 
         static void Main(string[] args)

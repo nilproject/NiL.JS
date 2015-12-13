@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Expressions
 {
@@ -40,9 +39,10 @@ namespace NiL.JS.Expressions
             JSValue source = null;
             source = first.Evaluate(context);
             if (source.valueType < JSValueType.Object)
-                source = source.Clone() as JSValue;
+                source = source.CloneImpl(false);
             else
                 source = source.oValue as JSValue ?? source;
+
             var res = source.DeleteProperty(cachedMemberName ?? second.Evaluate(context));
             context.objectSource = null;
             if (!res && context.strict)
