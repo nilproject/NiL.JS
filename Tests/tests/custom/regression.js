@@ -192,6 +192,13 @@ try {
 catch (e) {
 }
 
+try {
+	delete undefined.test;
+	console.log("'delete undefined.test' did not thrown exception")
+}
+catch (e) {
+}
+
 console.log("test completed");
     
     

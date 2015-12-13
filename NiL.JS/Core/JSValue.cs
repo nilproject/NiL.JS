@@ -599,13 +599,15 @@ namespace NiL.JS.Core
             if (valueType >= JSValueType.Object)
             {
                 if (oValue == null)
-                    ExceptionsHelper.Throw(new TypeError("Can't get property \"" + name + "\" of \"null\""));
+                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, name, "null"));
                 if (oValue == this)
                     throw new InvalidOperationException();
                 var obj = oValue as JSObject;
                 if (obj != null)
                     return obj.DeleteProperty(name);
             }
+            else if (valueType <= JSValueType.Undefined)
+                ExceptionsHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, name, "undefined"));
             return true;
         }
 
@@ -725,6 +727,7 @@ namespace NiL.JS.Core
             }
             var res = new JSValue();
             res.Assign(this);
+            res.valueType = valueType;
             res.attributes = this.attributes &
                 ~(JSValueAttributesInternal.ReadOnly
                 | JSValueAttributesInternal.SystemObject

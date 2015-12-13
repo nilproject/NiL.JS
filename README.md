@@ -16,23 +16,9 @@ Licensed under BSD 3-Clause License.
 * Integrated debugger ("For developers" version).
 * You can extend syntax with your own statements ([see examples](https://github.com/nilproject/NiL.JS/wiki/Examples#add-you-own-syntax-extension-dev-brunch-only)).
 
-## Example
-    
-**C\#**
-
-    Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((self, arguments) =>
-    {
-        MessageBox.Show(arguments[0].ToString());
-        return JSObject.Undefined; // or null
-    }));
-
-**JavaScript**
-    
-    alert("Hello!");
-
 ## Links
 
-[Examples](https://github.com/nilproject/NiL.JS/wiki/Examples)  
+[Examples](https://github.com/nilproject/NiL.JS/tree/version-2.0/Examples)  
 [NuGet](https://www.nuget.org/packages/NiL.JS)  
 [Code analyzer on this engine](http://nilproject.net/linter.html)  
 
