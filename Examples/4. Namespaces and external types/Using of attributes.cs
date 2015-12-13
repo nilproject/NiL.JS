@@ -94,7 +94,11 @@ namespace Examples._4_Namespaces_and_external_types
 
             Console.WriteLine();
 
-            example7(context);
+            example7(context, instance);
+
+            Console.WriteLine();
+
+            example8(context);
         }
 
         private static void example1(Context context)
@@ -158,7 +162,21 @@ console.log(result); // Console: true
             Console.WriteLine(instance.HiddenProperty); // Console: Hidden property
         }
 
-        private static void example6(Context context, TestClass instance)
+        private void example6(Context context, TestClass instance)
+        {
+            context.Eval(@"
+let result = delete instance.__proto__.NonDeletableProperty;
+
+console.log(result); // Console: false
+
+result = Object.getOwnPropertyDescriptor(instance.__proto__, 'NonDeletableProperty').configurable;
+
+console.log(result); // true;
+");
+            Console.WriteLine(instance.RegularField); // Console: my value
+        }
+
+        private static void example7(Context context, TestClass instance)
         {
             context.Eval(@"
 let result = instance.PropertyWithCompositeType === 15;
@@ -168,7 +186,7 @@ console.log(result); // Console: true
             Console.WriteLine(instance.PropertyWithCompositeType); // Console: System.Int32[]
         }
 
-        private static void example7(Context context)
+        private static void example8(Context context)
         {
             context.Eval(@"
 instance.MethodWithConverter('54321'); // Console: 12345
