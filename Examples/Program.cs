@@ -45,6 +45,9 @@ namespace Examples
             Console.Clear();
 
             examples[categoryIndex].Value[exampleIndex].Value.Run();
+
+            if (System.Diagnostics.Debugger.IsAttached)
+                Console.ReadLine();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using NiL.JS.Core;
@@ -72,37 +73,33 @@ namespace Examples._4_Namespaces_and_external_types
 
             example1(context);
 
-            Console.WriteLine();
-
             example2(context);
-
-            Console.WriteLine();
 
             example3(context);
 
-            Console.WriteLine();
-
             example4(context, instance);
-
-            Console.WriteLine();
 
             example5(context, instance);
 
-            Console.WriteLine();
-
             example6(context, instance);
 
-            Console.WriteLine();
-
             example7(context, instance);
-
-            Console.WriteLine();
 
             example8(context);
         }
 
+        private static void header([CallerMemberName] string exampleName = "")
+        {
+            if (Console.CursorTop > 1)
+                Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(exampleName + ":");
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
         private static void example1(Context context)
         {
+            header();
             context.Eval(@"
 let result = false;
 for (let property in instance)
@@ -117,6 +114,7 @@ console.log(result); // Console: false
 
         private static void example2(Context context)
         {
+            header();
             context.Eval(@"
 Object.defineProperty(instance, 'NonConfigurableProperty', { configerable: true });
 let result = Object.getOwnPropertyDescriptor(instance, 'NonConfigurableProperty').configurable;
@@ -127,6 +125,7 @@ console.log(result); // Console: false
 
         private static void example3(Context context)
         {
+            header();
             context.Eval(@"
 instance.ReadOnlyField = 'my value';
 let result = instance.ReadOnlyField === 'my value';
@@ -137,6 +136,7 @@ console.log(result); // Console: false
 
         private static void example4(Context context, TestClass instance)
         {
+            header();
             context.Eval(@"
 instance.RegularField = 'my value';
 let result = instance.RegularField === 'my value';
@@ -148,6 +148,7 @@ console.log(result); // Console: true
 
         private static void example5(Context context, TestClass instance)
         {
+            header();
             context.Eval(@"
 let result = instance.HiddenProperty === undefined;
 
@@ -164,6 +165,7 @@ console.log(result); // Console: true
 
         private void example6(Context context, TestClass instance)
         {
+            header();
             context.Eval(@"
 let result = delete instance.__proto__.NonDeletableProperty;
 
@@ -173,11 +175,11 @@ result = Object.getOwnPropertyDescriptor(instance.__proto__, 'NonDeletableProper
 
 console.log(result); // true;
 ");
-            Console.WriteLine(instance.RegularField); // Console: my value
         }
 
         private static void example7(Context context, TestClass instance)
         {
+            header();
             context.Eval(@"
 let result = instance.PropertyWithCompositeType === 15;
 
@@ -188,6 +190,7 @@ console.log(result); // Console: true
 
         private static void example8(Context context)
         {
+            header();
             context.Eval(@"
 instance.MethodWithConverter('54321'); // Console: 12345
 ");
