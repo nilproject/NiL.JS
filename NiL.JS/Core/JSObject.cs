@@ -559,7 +559,7 @@ namespace NiL.JS.Core
                     ExceptionsHelper.Throw(new TypeError("Cannot change writable attribute for non configurable property."));
 
                 if (configurable.Exists && (bool)configurable)
-                    ExceptionsHelper.Throw(new TypeError("Cannot set configurate attribute to true."));
+                    ExceptionsHelper.Throw(new TypeError("Cannot set configurable attribute to true."));
 
                 if ((obj.valueType != JSValueType.Property || ((obj.attributes & JSValueAttributesInternal.Field) != 0)) && (set.Exists || get.Exists))
                     ExceptionsHelper.Throw(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
