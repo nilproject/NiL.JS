@@ -21,6 +21,10 @@ namespace Examples._4_Namespaces_and_external_types
             [NotConfigurable]
             public string NonConfigurableProperty { get; } = "Non-configerable property";
 
+            [DoNotDelete]
+            [NotConfigurable]
+            public string NonConfigurableAndNonDeletableProperty { get; } = "Non-configerable and non-deletable property";
+
             [ReadOnly]
             public string ReadOnlyField = "Read only field";
 
@@ -77,7 +81,7 @@ namespace Examples._4_Namespaces_and_external_types
 
             example3(context);
 
-            example4(context, instance);
+            example4(context);
 
             example5(context, instance);
 
@@ -85,7 +89,9 @@ namespace Examples._4_Namespaces_and_external_types
 
             example7(context, instance);
 
-            example8(context);
+            example8(context, instance);
+
+            example9(context);
         }
 
         private static void header([CallerMemberName] string exampleName = "")
@@ -116,14 +122,41 @@ console.log(result); // Console: false
         {
             header();
             context.Eval(@"
-Object.defineProperty(instance, 'NonConfigurableProperty', { configerable: true });
-let result = Object.getOwnPropertyDescriptor(instance, 'NonConfigurableProperty').configurable;
+try
+{
+    Object.defineProperty(instance.__proto__, 'NonConfigurableProperty', { configurable: true });
+}
+catch (e)
+{
+    // TypeError: Cannot set configurable attribute to true.
+}
+
+let result = Object.getOwnPropertyDescriptor(instance.__proto__, 'NonConfigurableProperty').configurable;
+
+console.log(result); // Console: true
+");
+        }
+
+        private static void example3(Context context)
+        {
+            header();
+            context.Eval(@"
+try
+{
+    Object.defineProperty(instance.__proto__, 'NonConfigurableAndNonDeletableProperty', { configurable: true });
+}
+catch (e)
+{
+    // TypeError: Cannot set configurable attribute to true.
+}
+
+let result = Object.getOwnPropertyDescriptor(instance.__proto__, 'NonConfigurableAndNonDeletableProperty').configurable;
 
 console.log(result); // Console: false
 ");
         }
 
-        private static void example3(Context context)
+        private static void example4(Context context)
         {
             header();
             context.Eval(@"
@@ -134,7 +167,7 @@ console.log(result); // Console: false
 ");
         }
 
-        private static void example4(Context context, TestClass instance)
+        private static void example5(Context context, TestClass instance)
         {
             header();
             context.Eval(@"
@@ -146,7 +179,7 @@ console.log(result); // Console: true
             Console.WriteLine(instance.RegularField); // Console: my value
         }
 
-        private static void example5(Context context, TestClass instance)
+        private static void example6(Context context, TestClass instance)
         {
             header();
             context.Eval(@"
@@ -163,7 +196,7 @@ console.log(result); // Console: true
             Console.WriteLine(instance.HiddenProperty); // Console: Hidden property
         }
 
-        private void example6(Context context, TestClass instance)
+        private void example7(Context context, TestClass instance)
         {
             header();
             context.Eval(@"
@@ -177,7 +210,7 @@ console.log(result); // true;
 ");
         }
 
-        private static void example7(Context context, TestClass instance)
+        private static void example8(Context context, TestClass instance)
         {
             header();
             context.Eval(@"
@@ -188,7 +221,7 @@ console.log(result); // Console: true
             Console.WriteLine(instance.PropertyWithCompositeType); // Console: System.Int32[]
         }
 
-        private static void example8(Context context)
+        private static void example9(Context context)
         {
             header();
             context.Eval(@"
