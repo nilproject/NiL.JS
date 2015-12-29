@@ -31,7 +31,7 @@ namespace NiL.JS.Core
 #endif
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(StringMapDebugView<>))]
-    public sealed class StringMap2<TValue> : IDictionary<string, TValue>
+    public class StringMap2<TValue> : IDictionary<string, TValue>
     {
         [StructLayout(LayoutKind.Sequential)]
         private struct Record
@@ -60,6 +60,8 @@ namespace NiL.JS.Core
         private int _count;
         private int _eicount;
         private int _previousIndex;
+
+        private LinkedList<KeyValuePair<uint, int>> _numberKeysIndexes = null;
 
         public StringMap2()
         {
@@ -97,6 +99,7 @@ namespace NiL.JS.Core
                 index = _records[index].next - 1;
             }
             while (index >= 0);
+
             // не нашли
 
             if ((_count > 50 && _count * 9 / 5 >= elen) || _count == elen + 1)
@@ -120,6 +123,7 @@ namespace NiL.JS.Core
             _records[index].value = value;
             if (prewIndex >= 0)
                 _records[prewIndex].next = index + 1;
+
             if (_eicount == _existsedIndexes.Length)
             {
                 // Увеличиваем размер массива с занятыми номерами
@@ -129,6 +133,11 @@ namespace NiL.JS.Core
             }
             _existsedIndexes[_eicount++] = index;
             _count++;
+
+            if (_numberKeysIndexes != null)
+            {
+                tryAddNumberKeyItem(_eicount - 1);
+            }
 
             if (colisionCount > 17)
                 increaseSize();
@@ -277,8 +286,7 @@ namespace NiL.JS.Core
             }
             else
             {
-                //if (count > 100 && records.Length / count > 50)
-                //    throw new InvalidOperationException();
+                _numberKeysIndexes = null;
                 var oldRecords = _records;
                 _records = new Record[_records.Length << 1];
                 int i = 0, c = _eicount;
@@ -331,7 +339,7 @@ namespace NiL.JS.Core
             }
         }
 
-        public void Add(KeyValuePair<string, TValue> item)
+        public virtual void Add(KeyValuePair<string, TValue> item)
         {
             throw new NotImplementedException();
         }
@@ -348,7 +356,7 @@ namespace NiL.JS.Core
             _previousIndex = -1;
         }
 
-        public bool Contains(KeyValuePair<string, TValue> item)
+        public virtual bool Contains(KeyValuePair<string, TValue> item)
         {
             throw new NotImplementedException();
         }
@@ -369,7 +377,7 @@ namespace NiL.JS.Core
             get { return false; }
         }
 
-        public bool Remove(KeyValuePair<string, TValue> item)
+        public virtual bool Remove(KeyValuePair<string, TValue> item)
         {
             throw new NotImplementedException();
         }
@@ -378,11 +386,77 @@ namespace NiL.JS.Core
         {
             if (_emptyKeyValueExists)
                 yield return new KeyValuePair<string, TValue>("", _emptyKeyValue);
+
+            if (_numberKeysIndexes == null)
+                buildNumberKeysList();
+
+            if (_numberKeysIndexes != null)
+            {
+                for (var node = _numberKeysIndexes.First; node != null; node = node.Next)
+                {
+                    if (_records[_existsedIndexes[node.Value.Value]].key != null)
+                    {
+                        yield return new KeyValuePair<string, TValue>(
+                            _records[_existsedIndexes[node.Value.Value]].key,
+                            _records[_existsedIndexes[node.Value.Value]].value);
+                    }
+                }
+            }
+
+            uint fake;
+
             for (int i = 0; i < _eicount; i++)
             {
-                if (_records[_existsedIndexes[i]].key != null)
-                    yield return new KeyValuePair<string, TValue>(_records[_existsedIndexes[i]].key, _records[_existsedIndexes[i]].value);
+                if (_records[_existsedIndexes[i]].key != null && (_numberKeysIndexes == null || !uint.TryParse(_records[_existsedIndexes[i]].key, out fake)))
+                {
+                    yield return new KeyValuePair<string, TValue>(
+                        _records[_existsedIndexes[i]].key,
+                        _records[_existsedIndexes[i]].value);
+                }
             }
+        }
+
+        private void buildNumberKeysList()
+        {
+            for (var i = 0; i < _eicount; i++)
+            {
+                tryAddNumberKeyItem(i);
+            }
+        }
+
+        private void tryAddNumberKeyItem(int existsedIndex)
+        {
+            uint key;
+            if (_records[_existsedIndexes[existsedIndex]].key != null && uint.TryParse(_records[_existsedIndexes[existsedIndex]].key, out key))
+            {
+                if (_numberKeysIndexes == null)
+                    _numberKeysIndexes = new LinkedList<KeyValuePair<uint, int>>();
+
+                var node = findNumberListNode_LessOrEqual(key);
+
+                if (node == null)
+                    _numberKeysIndexes.AddFirst(new KeyValuePair<uint, int>(key, existsedIndex));
+                else
+                    _numberKeysIndexes.AddAfter(node, new KeyValuePair<uint, int>(key, existsedIndex));
+            }
+        }
+
+        private LinkedListNode<KeyValuePair<uint, int>> findNumberListNode_LessOrEqual(uint key)
+        {
+            var node = _numberKeysIndexes.First;
+
+            if (node == null || node.Value.Key > key)
+                return null;
+
+            while (node != null)
+            {
+                if (node.Next != null && node.Next.Value.Key <= key)
+                    node = node.Next;
+                else
+                    break;
+            }
+
+            return node;
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

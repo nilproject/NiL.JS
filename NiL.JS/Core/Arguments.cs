@@ -131,7 +131,6 @@ namespace NiL.JS.Core
         }
 
         public Arguments()
-            : base()
         {
             valueType = JSValueType.Object;
             oValue = this;

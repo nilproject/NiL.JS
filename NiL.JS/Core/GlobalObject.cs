@@ -48,10 +48,10 @@ namespace NiL.JS.Core
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
-            foreach (var i in Context.globalContext.fields)
+            foreach (var i in context.fields)
                 if (i.Value.Exists && (!hideNonEnumerable || (i.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return i;
-            foreach (var i in context.fields)
+            foreach (var i in Context.globalContext.fields)
                 if (i.Value.Exists && (!hideNonEnumerable || (i.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return i;
         }
