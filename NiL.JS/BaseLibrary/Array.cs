@@ -346,8 +346,12 @@ namespace NiL.JS.BaseLibrary
             bool nativeMode = arraySrc != null;
             if (!self.Defined || (self.valueType >= JSValueType.Object && self.oValue == null))
             {
+#if PORTABLE
+                ExceptionsHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
+#else
                 var stackTrace = new System.Diagnostics.StackTrace();
                 ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
+#endif
             }
 
             var length = nativeMode ? arraySrc.data.Length : Tools.getLengthOfArraylike(self, false);
@@ -514,8 +518,12 @@ namespace NiL.JS.BaseLibrary
             bool nativeMode = arraySrc != null;
             if (!self.Defined || (self.valueType >= JSValueType.Object && self.oValue == null))
             {
+#if PORTABLE
+                ExceptionsHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
+#else
                 var stackTrace = new System.Diagnostics.StackTrace();
                 ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
+#endif
             }
 
             var length = nativeMode ? arraySrc.data.Length : Tools.getLengthOfArraylike(self, false);
