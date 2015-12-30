@@ -385,7 +385,7 @@ namespace NiL.JS.Core
                         if (r.oValue == null)
                             return nullOrUndef;
                         r = r.ToPrimitiveValue_Value_String();
-                        return JSObjectToInt32(r);
+                        return JSObjectToInt64(r);
                     }
                 case JSValueType.NotExists:
                 case JSValueType.Undefined:
@@ -1327,30 +1327,18 @@ namespace NiL.JS.Core
 
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
         {
-            var len = src.GetProperty("length", true, PropertyScope.Сommon); // тут же проверка на null/undefined с падением если надо
-            if (len.valueType == JSValueType.Property)
-            {
-                if (reassignLen && (len.attributes & JSValueAttributesInternal.ReadOnly) == 0)
-                {
-                    len.valueType = JSValueType.Undefined;
-                    len.Assign(((len.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(src, null));
-                }
-                else
-                    len = ((len.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(src, null);
-            }
-            uint res;
-            if (len.valueType >= JSValueType.Object)
-                res = (uint)Tools.JSObjectToInt64(len.ToPrimitiveValue_Value_String(), 0, false);
-            else
-                res = (uint)Tools.JSObjectToInt64(len, 0, false);
+            var length = src.GetProperty("length", true, PropertyScope.Сommon); // тут же проверка на null/undefined с падением если надо
+            
+            var result = (uint)JSObjectToInt64(InvokeGetter(length, src).ToPrimitiveValue_Value_String(), 0, false);
             if (reassignLen)
             {
-                if (len.valueType == JSValueType.Property)
-                    ((len.oValue as GsPropertyPair).set ?? Function.emptyFunction).Call(src, new Arguments() { a0 = res, length = 1 });
+                if (length.valueType == JSValueType.Property)
+                    ((length.oValue as GsPropertyPair).set ?? Function.emptyFunction).Call(src, new Arguments() { result });
                 else
-                    len.Assign(res);
+                    length.Assign(result);
             }
-            return res;
+
+            return result;
         }
 
         internal static BaseLibrary.Array arraylikeToArray(JSValue src, bool evalProps, bool clone, bool reassignLen, long _length)
