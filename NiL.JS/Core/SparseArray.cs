@@ -153,7 +153,7 @@ namespace NiL.JS.Core
                             // Кто-то верит, что это должно работать быстрее. 
                             // Вот именно из-за таких кусков кода так и может показаться.
                             // Не время для попыток исправить мир
-                            ensureCapacity(8);
+                            ensureCapacity((int)_index + 1);
                             pseudoLength = _index + 1;
                             this[index] = value;
                             return;

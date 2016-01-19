@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NiL.JS.Core;
+﻿using NiL.JS.Core;
 using NiL.JS.Expressions;
 
 namespace Examples._5_Syntax_extensions

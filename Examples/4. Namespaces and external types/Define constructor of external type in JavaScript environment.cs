@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NiL.JS;
-using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
 namespace Examples._4_Namespaces_and_external_types

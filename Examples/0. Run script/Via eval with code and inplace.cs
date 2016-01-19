@@ -6,10 +6,6 @@ namespace Examples._0_Run_script
 {
     public sealed class Via_eval_with_code_and_inplace : ExamplesFramework.Example
     {
-        private static readonly string _code0 = "var message = 'Hello, World!';";
-        private static readonly string _code1 = "let message = 'Hello, World!';";
-        private static readonly string _code2 = "console.log(message);";
-
         public override void Run()
         {
             /*
@@ -24,8 +20,8 @@ namespace Examples._0_Run_script
             try
             {
                 Context context = new Context();
-                context.Eval(_code0, true);
-                context.Eval(_code2, true); // Console: Hello, World!
+                context.Eval("var message = 'Hello, World!';", true);
+                context.Eval("console.log(message);", true); // Console: Hello, World!
             }
             catch (JSException e)
             {
@@ -44,8 +40,8 @@ namespace Examples._0_Run_script
             try
             {
                 Context context = new Context();
-                context.Eval(_code1, true);
-                context.Eval(_code2, true); // Console: Hello, World!
+                context.Eval("let message = 'Hello, World!';", true);
+                context.Eval("console.log(message);", true); // Console: Hello, World!
             }
             catch (JSException e)
             {
@@ -65,8 +61,8 @@ namespace Examples._0_Run_script
             try
             {
                 Context context = new Context();
-                context.Eval(_code1, false);
-                context.Eval(_code2, false); // Error: ReferenceError
+                context.Eval("let message = 'Hello, World!';", false);
+                context.Eval("console.log(message);", false); // Error: ReferenceError
             }
             catch (JSException e)
             {

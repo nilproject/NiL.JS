@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NiL.JS.Core;
-using NiL.JS.Extensions;
 
 namespace Examples._2_Get_values_from_JavaScript_environment
 {
@@ -17,7 +12,7 @@ namespace Examples._2_Get_values_from_JavaScript_environment
             context.DefineVariable("x").Assign(123);
             context.Eval("var result = x * 2");
 
-            object result = context.GetVariable("result").Value; // using NiL.JS.Extensions;
+            object result = context.GetVariable("result").Value;
 
             Console.WriteLine("result: " + result); // Console: result: 246
 

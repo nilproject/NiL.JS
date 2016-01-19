@@ -16,8 +16,9 @@ namespace Examples._0_Run_script
             try
             {
                 module = new Module(_code);
+                module.Run(); // Console: Hello, World!
             }
-            catch(JSException e)
+            catch (JSException e)
             {
                 var syntaxError = e.Error.Value as SyntaxError;
                 if (syntaxError != null)
@@ -28,11 +29,7 @@ namespace Examples._0_Run_script
                 {
                     Console.WriteLine("Unknown error: " + e);
                 }
-
-                return;
             }
-
-            module.Run(); // Console: Hello, World!
         }
     }
 }
