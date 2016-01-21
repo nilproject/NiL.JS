@@ -323,7 +323,13 @@ namespace NiL.JS.Expressions
                 try
                 {
                     if (mode == FunctionKind.Arrow)
-                        body = new CodeBlock(new CodeNode[] { new Return(ExpressionTree.Parse(state, ref i) as Expression) });
+                        body = new CodeBlock(new CodeNode[]
+                        {
+                            new Return(ExpressionTree.Parse(state, ref i, processComma: false) as Expression)
+                        })
+                        {
+                            _variables = new VariableDescriptor[0]
+                        };
                     else
                         ExceptionsHelper.ThrowUnknownToken(code, i);
                 }
