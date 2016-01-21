@@ -1509,10 +1509,16 @@ namespace NiL.JS.Core
                 expressions.Add(Expression.Assign(argumentsParameter, Expression.New(typeof(Arguments))));
                 for (var i = 0; i < handlerArgumentsParameters.Length; i++)
                 {
+                    Expression argument = handlerArgumentsParameters[i];
+                    if (argument.Type.IsValueType)
+                    {
+                        argument = Expression.Convert(argument, typeof(object));
+                    }
+
                     expressions.Add(Expression.Call(
                         argumentsParameter,
                         typeof(Arguments).GetRuntimeMethod("Add", new[] { typeof(JSValue) }),
-                        Expression.Call(Tools.methodof<object, JSValue>(TypeProxy.Proxy), handlerArgumentsParameters[i])));
+                        Expression.Call(Tools.methodof<object, JSValue>(TypeProxy.Proxy), argument)));
                 }
             }
 

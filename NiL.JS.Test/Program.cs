@@ -25,8 +25,9 @@ namespace NiL.JS.Test
         private static void testEx()
         {
             var context = new Context();
-            context.DefineVariable("test").Assign(JSValue.Wrap(new TestClass()));
-            context.Eval("console.log(delete test.__prot__.Property)");
+            context.Eval(@"var sum = (a, b) => a + b;                sum(1,2)");
+            //var sum = (Func<int, int, int>)context.GetVariable("sum").As<Function>().MakeDelegate(typeof(Func<int, int, int>));
+            //sum(1, 2);
         }
 
         static void Main(string[] args)
