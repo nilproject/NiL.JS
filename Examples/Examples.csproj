@@ -48,6 +48,7 @@
     <Compile Include="2. Get values from JavaScript environment\Determine type of value.cs" />
     <Compile Include="2. Get values from JavaScript environment\Via As%28T%29.cs" />
     <Compile Include="2. Get values from JavaScript environment\Via Value.cs" />
+    <Compile Include="3. Methods and Events\Create delegate for JavaScript function.cs" />
     <Compile Include="3. Methods and Events\Pass delegate into JavaScript environment.cs" />
     <Compile Include="3. Methods and Events\Subscribe on and unsubscribe from event.cs" />
     <Compile Include="4. Namespaces and external types\Define constructor of external type in JavaScript environment.cs" />
