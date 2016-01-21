@@ -18,7 +18,7 @@ namespace Examples._3_Methods_and_Events
             context.Eval("var concat = (a, b) => a + ', ' + b");
             
             var concatFunction = context.GetVariable("concat").As<Function>();
-            var concat = (Func<string, string, string>)sumFunction.MakeDelegate(typeof(Func<string, string, string>));
+            var concat = (Func<string, string, string>)concatFunction.MakeDelegate(typeof(Func<string, string, string>));
             
             Console.WriteLine(concat("Hello", "World!")); // Console: 'Hello, World!'
         }
