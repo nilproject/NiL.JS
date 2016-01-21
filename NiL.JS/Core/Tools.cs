@@ -1510,7 +1510,11 @@ namespace NiL.JS.Core
                 for (var i = 0; i < handlerArgumentsParameters.Length; i++)
                 {
                     Expression argument = handlerArgumentsParameters[i];
+#if PORTABLE
+                    if (argument.Type.GetTypeInfo().IsValueType)
+#else
                     if (argument.Type.IsValueType)
+#endif
                     {
                         argument = Expression.Convert(argument, typeof(object));
                     }
