@@ -15,12 +15,12 @@ namespace Examples._3_Methods_and_Events
         {
             var context = new Context();
 
-            context.Eval("var sum = (a, b) => a + ', ' + b");
+            context.Eval("var concat = (a, b) => a + ', ' + b");
             
-            var sumFunction = context.GetVariable("sum").As<Function>();
-            var sum = (Func<string, string, string>)sumFunction.MakeDelegate(typeof(Func<string, string, string>));
+            var concatFunction = context.GetVariable("concat").As<Function>();
+            var concat = (Func<string, string, string>)sumFunction.MakeDelegate(typeof(Func<string, string, string>));
             
-            Console.WriteLine(sum("Hello", "World!")); // Console: 'Hello, World!'
+            Console.WriteLine(concat("Hello", "World!")); // Console: 'Hello, World!'
         }
     }
 }
