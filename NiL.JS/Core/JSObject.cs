@@ -242,10 +242,12 @@ namespace NiL.JS.Core
             {
                 if (oValue == null)
                     ExceptionsHelper.Throw(new TypeError("Can't get property \"" + name + "\" of \"null\""));
+
                 field = oValue as JSObject;
                 if (field != null)
                     return field.DeleteProperty(name);
             }
+
             string tname = null;
             if (fields != null
                 && fields.TryGetValue(tname = name.ToString(), out field)
@@ -253,13 +255,17 @@ namespace NiL.JS.Core
             {
                 if ((field.attributes & JSValueAttributesInternal.SystemObject) == 0)
                     field.valueType = JSValueType.NotExistsInObject;
+
                 return fields.Remove(tname);
             }
+
             field = GetProperty(name, true, PropertyScope.Own);
             if (!field.Exists)
                 return true;
+
             if ((field.attributes & JSValueAttributesInternal.SystemObject) != 0)
                 field = GetProperty(name, true, PropertyScope.Own);
+
             if ((field.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
             {
                 field.valueType = JSValueType.NotExistsInObject;
@@ -282,7 +288,7 @@ namespace NiL.JS.Core
             }
             if (__prototype != null)
             {
-                for (var e = __prototype.GetEnumerator(hideNonEnum, EnumerationMode.RequireValues); e.MoveNext(); )
+                for (var e = __prototype.GetEnumerator(hideNonEnum, EnumerationMode.RequireValues); e.MoveNext();)
                 {
                     if (e.Current.Value.valueType >= JSValueType.Undefined
                         && (e.Current.Value.attributes & JSValueAttributesInternal.Field) != 0)
@@ -729,7 +735,7 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Object.freeze called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
-            for (var e = obj.GetEnumerator(false, EnumerationMode.RequireValuesForWrite); e.MoveNext(); )
+            for (var e = obj.GetEnumerator(false, EnumerationMode.RequireValuesForWrite); e.MoveNext();)
             {
                 var value = e.Current.Value;
                 if ((value.attributes & JSValueAttributesInternal.SystemObject) == 0)
@@ -805,7 +811,7 @@ namespace NiL.JS.Core
                 ExceptionsHelper.Throw(new TypeError("Object.seal called on null."));
             var obj = args[0].Value as JSObject ?? args[0].oValue as JSObject;
             obj.attributes |= JSValueAttributesInternal.Immutable;
-            for (var e = obj.GetEnumerator(false, EnumerationMode.RequireValuesForWrite); e.MoveNext(); )
+            for (var e = obj.GetEnumerator(false, EnumerationMode.RequireValuesForWrite); e.MoveNext();)
             {
                 var value = e.Current.Value;
                 if ((value.attributes & JSValueAttributesInternal.SystemObject) == 0)
@@ -913,7 +919,7 @@ namespace NiL.JS.Core
             var obj = args[0].oValue as JSObject;
 
             var result = new BaseLibrary.Array();
-            for (var e = obj.GetEnumerator(false, EnumerationMode.KeysOnly); e.MoveNext(); )
+            for (var e = obj.GetEnumerator(false, EnumerationMode.KeysOnly); e.MoveNext();)
                 result.Add(e.Current.Key);
 
             return result;
@@ -929,7 +935,7 @@ namespace NiL.JS.Core
             var obj = args[0].oValue as JSObject;
 
             var result = new BaseLibrary.Array();
-            for (var e = obj.GetEnumerator(true, EnumerationMode.KeysOnly); e.MoveNext(); )
+            for (var e = obj.GetEnumerator(true, EnumerationMode.KeysOnly); e.MoveNext();)
                 result.Add(e.Current.Key);
 
             return result;

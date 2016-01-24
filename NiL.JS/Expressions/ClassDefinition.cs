@@ -44,19 +44,19 @@ namespace NiL.JS.Expressions
     {
         private sealed class ClassConstructor : Function
         {
-            private readonly string className;
+            private readonly ClassDefinition classDefinition;
             public override string name
             {
                 get
                 {
-                    return className;
+                    return classDefinition.Name;
                 }
             }
 
-            public ClassConstructor(Context context, FunctionDefinition creator, string className)
+            public ClassConstructor(Context context, FunctionDefinition creator, ClassDefinition classDefinition)
                 : base(context, creator)
             {
-                this.className = className;
+                this.classDefinition = classDefinition;
             }
 
             protected internal override JSValue ConstructObject()
@@ -66,6 +66,11 @@ namespace NiL.JS.Expressions
                     __proto__ = prototype.oValue as JSObject,
                     ownedFieldsOnly = true
                 };
+            }
+
+            public override string ToString(bool headerOnly)
+            {
+                return classDefinition.ToString();
             }
         }
 
@@ -464,10 +469,10 @@ namespace NiL.JS.Expressions
                 variable = context.DefineVariable(_name, false);
             }
 
-            var ctor = new ClassConstructor(context, this._constructor, _name);
+            var ctor = new ClassConstructor(context, this._constructor, this);
             ctor.RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
 
-            JSValue baseProto = TypeProxy.GlobalPrototype;
+            JSValue baseProto = JSObject.GlobalPrototype;
             if (this._baseClass != null)
             {
                 baseProto = _baseClass.Evaluate(context).oValue as JSObject;
@@ -599,7 +604,7 @@ namespace NiL.JS.Expressions
 
             var temp = _constructor.ToString().Replace(Environment.NewLine, Environment.NewLine + "  ");
             result.Append("constructor");
-            result.Append(temp.Substring(_name.Length));
+            result.Append(temp.Substring("constructor".Length));
 
             for (var i = 0; i < _members.Length; i++)
             {

@@ -929,7 +929,7 @@ namespace NiL.JS.BaseLibrary
         [CLSCompliant(false)]
         [DoNotEnumerate]
         [ArgumentsLength(0)]
-        public new virtual JSValue toString(Arguments args)
+        public new JSValue toString(Arguments args)
         {
             return ToString();
         }

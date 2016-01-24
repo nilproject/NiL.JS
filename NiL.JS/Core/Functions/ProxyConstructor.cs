@@ -317,11 +317,5 @@ namespace NiL.JS.Core.Functions
         {
             return "function " + proxy.hostedType.Name + "() { [native code] }";
         }
-
-        [Hidden]
-        public override JSValue toString(Arguments args)
-        {
-            return base.toString(args);
-        }
     }
 }

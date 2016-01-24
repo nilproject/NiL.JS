@@ -106,18 +106,23 @@ namespace NiL.JS.Core
                 {
                     if (index < 0 || pseudoLength <= index || values.Length <= index)
                         return default(TValue);
+
                     return values[index];
                 }
+
                 if (navyData.Length == 0)
                     return default(TValue);
+
                 uint _index = (uint)index;
                 int bi = 31;
                 uint i = 0;
+
                 if (_index < allocatedCount)
                 {
                     if (navyData[index].index == _index)
                         return values[index];
                 }
+
                 for (; ; bi--)
                 {
                     i = (_index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
@@ -274,7 +279,7 @@ namespace NiL.JS.Core
                 throw new ArgumentOutOfRangeException();
             if (Math.Min(pseudoLength, int.MaxValue) - arrayIndex > array.Length)
                 throw new ArgumentOutOfRangeException();
-            for (var i = Math.Min(pseudoLength, int.MaxValue) + arrayIndex; i-- > arrayIndex; )
+            for (var i = Math.Min(pseudoLength, int.MaxValue) + arrayIndex; i-- > arrayIndex;)
                 array[i] = default(TValue);
             foreach (var v in DirectOrder)
                 if (v.Key >= 0)
@@ -348,7 +353,7 @@ namespace NiL.JS.Core
                     if (pm == -1)
                         return 0;
                     i = navyData[pm].oneContinue;
-                    for (; ; )
+                    for (;;)
                     {
                         if (navyData[i].zeroContinue != 0)
                         {
@@ -446,7 +451,7 @@ namespace NiL.JS.Core
                                     yield break;
                                 }
                                 i = navyData[pm].oneContinue;
-                                for (; ; )
+                                for (;;)
                                 {
                                     if (navyData[i].zeroContinue != 0)
                                     {
@@ -483,7 +488,7 @@ namespace NiL.JS.Core
                 {
                     if (pseudoLength > values.Length)
                         yield return new KeyValuePair<int, TValue>((int)(pseudoLength - 1), default(TValue));
-                    for (var i = Math.Min(values.Length, pseudoLength); i-- > 0; )
+                    for (var i = Math.Min(values.Length, pseudoLength); i-- > 0;)
                     {
                         if (mode != ArrayMode.Flat)
                         {
@@ -531,7 +536,7 @@ namespace NiL.JS.Core
             long len = -1;
             if (mode == ArrayMode.Flat)
             {
-                for (var i = values.Length; i-- > 0; )
+                for (var i = values.Length; i-- > 0;)
                 {
                     if (!object.Equals(values[i], default(TValue)))
                     {
@@ -542,7 +547,7 @@ namespace NiL.JS.Core
             }
             else
             {
-                for (var i = allocatedCount; i-- > 0; )
+                for (var i = allocatedCount; i-- > 0;)
                 {
                     if (navyData[i].index > len && !object.Equals(values[i], default(TValue)))
                         len = navyData[i].index;
