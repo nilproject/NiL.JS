@@ -1048,7 +1048,7 @@ namespace NiL.JS.BaseLibrary
             while (y < 0)
                 y += 2800;
             var dt = new DateTime(0);
-            dt = dt.AddDays(getDateImpl());
+            dt = dt.AddDays(getDateImpl() - 1);
             dt = dt.AddMonths(getMonthImpl());
             dt = dt.AddYears(y - 1);
             dt = dt.AddHours(getHoursImpl());
