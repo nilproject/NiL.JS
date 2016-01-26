@@ -196,7 +196,8 @@ namespace NiL.JS.Core.Interop
                 case TypeCode.DateTime:
                     {
                         var dateTime = (DateTime)value;
-                        return new ObjectWrapper(new Date(dateTime.ToUniversalTime().Ticks, dateTime.ToLocalTime().Ticks - dateTime.ToUniversalTime().Ticks));
+                        var timeZoneOffset = dateTime.ToLocalTime().Ticks - dateTime.ToUniversalTime().Ticks;
+                        return new ObjectWrapper(new Date(dateTime.ToUniversalTime().Ticks, timeZoneOffset));
                     }
                 case TypeCode.Decimal:
                     {

@@ -163,6 +163,7 @@ namespace NiL.JS.Core
         {
             if (key == null)
                 ExceptionsHelper.ThrowArgumentNull("key");
+
             if (key.Length == 0)
             {
                 if (!_emptyKeyValueExists)
@@ -173,29 +174,37 @@ namespace NiL.JS.Core
                 value = _emptyKeyValue;
                 return true;
             }
-            if (_records.Length == 0)
+
+            var rcount = _records.Length;
+
+            if (rcount == 0)
             {
                 value = default(TValue);
                 return false;
             }
-            if (_previousIndex != -1 && string.CompareOrdinal(key, _records[_previousIndex].key) == 0)
+
+            if (_previousIndex != -1 && string.CompareOrdinal(_records[_previousIndex].key, key) == 0)
             {
                 value = _records[_previousIndex].value;
                 return true;
             }
+
             int hash = computeHash(key);
-            int index = hash & (_records.Length - 1);
+            int index = hash & (rcount - 1);
+
             do
             {
-                if (_records[index].hash == hash && string.CompareOrdinal(key, _records[index].key) == 0)
+                if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
                 {
                     value = _records[index].value;
                     _previousIndex = index;
                     return true;
                 }
+
                 index = _records[index].next - 1;
             }
             while (index >= 0);
+
             value = default(TValue);
             return false;
         }
@@ -209,6 +218,7 @@ namespace NiL.JS.Core
              */
             if (key == null)
                 throw new ArgumentNullException();
+
             if (key.Length == 0)
             {
                 if (!_emptyKeyValueExists)
@@ -219,17 +229,16 @@ namespace NiL.JS.Core
                 _emptyKeyValueExists = false;
                 return true;
             }
+
             if (_records.Length == 0)
                 return false;
+
             var elen = _records.Length - 1;
-            int hash;
+            int hash = computeHash(key);
             int index;
             int targetIndex = -1;
             int prewIndex;
-            hash = key[0];
-            index = hash & elen;
-            hash = computeHash(key);
-            //hash = key.GetHashCode();
+
             for (index = hash & elen; index >= 0; index = _records[index].next - 1)
             {
                 if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
@@ -271,9 +280,11 @@ namespace NiL.JS.Core
                     }
                     return true;
                 }
+
                 prewIndex = targetIndex;
                 targetIndex = index;
             }
+
             return false;
         }
 

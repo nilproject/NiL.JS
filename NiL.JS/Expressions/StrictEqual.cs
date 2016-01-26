@@ -32,6 +32,7 @@ namespace NiL.JS.Expressions
             switch (first.valueType)
             {
                 case JSValueType.NotExistsInObject:
+                case JSValueType.NotExists:
                 case JSValueType.Undefined:
                     {
                         return second.valueType <= JSValueType.Undefined;
