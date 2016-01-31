@@ -35,7 +35,7 @@ namespace NiL.JS.BaseLibrary
         //                                       { 30 * _dayMilliseconds, 30 * _dayMilliseconds},
         //                                       { 31 * _dayMilliseconds, 31 * _dayMilliseconds} };
 
-        private static readonly long[][] timeToMonthLengths = { 
+        private static readonly long[][] timeToMonthLengths = {
                                                 new[]{ 0 * _dayMilliseconds, 0 * _dayMilliseconds },
                                                 new[]{ 31 * _dayMilliseconds, 31 * _dayMilliseconds },
                                                 new[]{ 59 * _dayMilliseconds, 60 * _dayMilliseconds },
@@ -1047,7 +1047,7 @@ namespace NiL.JS.BaseLibrary
                 y -= 2800;
             while (y < 0)
                 y += 2800;
-            var dt = new DateTime(0);
+            var dt = new DateTime(0, DateTimeKind.Local);
             dt = dt.AddDays(getDateImpl() - 1);
             dt = dt.AddMonths(getMonthImpl());
             dt = dt.AddYears(y - 1);
