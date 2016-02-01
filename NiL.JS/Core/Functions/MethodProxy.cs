@@ -390,7 +390,7 @@ namespace NiL.JS.Core.Functions
                 }
             }
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
-                return Invoke(withNew, correctTargetObject(targetObject, creator.body.strict), null, newTarget);
+                return Invoke(withNew, correctTargetObject(targetObject, creator.body._strict), null, newTarget);
 
             if (raw || withSpread)
             {

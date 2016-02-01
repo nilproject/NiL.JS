@@ -12,16 +12,51 @@ namespace NiL.JS.Statements
 #endif
     public sealed class For : CodeNode
     {
-        private CodeNode initializer;
-        private CodeNode condition;
-        private CodeNode post;
-        private CodeNode body;
+        private sealed class PerIterationScopeInitializer : CodeNode
+        {
+            private VariableDescriptor[] _variables;
+
+            public PerIterationScopeInitializer(VariableDescriptor[] variables)
+            {
+                _variables = variables;
+            }
+
+            public override void Decompose(ref CodeNode self)
+            {
+
+            }
+
+            public override JSValue Evaluate(Context context)
+            {
+                if (_variables != null)
+                {
+                    for (var i = 0; i < _variables.Length; i++)
+                    {
+                        if (_variables[i].captured)
+                            context.DefineVariable(_variables[i].name).Assign(_variables[i].cacheRes.CloneImpl());
+                        //context.ReplaceVariableInstance(_variables[i].name, _variables[i].cacheRes.CloneImpl());
+                    }
+                }
+
+                return null;
+            }
+
+            public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+            {
+
+            }
+        }
+
+        private CodeNode _initializer;
+        private CodeNode _condition;
+        private CodeNode _post;
+        private CodeNode _body;
         private string[] labels;
 
-        public CodeNode Initializator { get { return initializer; } }
-        public CodeNode Condition { get { return condition; } }
-        public CodeNode Post { get { return post; } }
-        public CodeNode Body { get { return body; } }
+        public CodeNode Initializer { get { return _initializer; } }
+        public CodeNode Condition { get { return _condition; } }
+        public CodeNode Post { get { return _post; } }
+        public CodeNode Body { get { return _body; } }
         public ICollection<string> Labels { get { return new ReadOnlyCollection<string>(labels); } }
 
         private For()
@@ -104,10 +139,10 @@ namespace NiL.JS.Statements
 
                 result = new For()
                 {
-                    body = body,
-                    condition = condition,
-                    initializer = init,
-                    post = post,
+                    _body = body,
+                    _condition = condition,
+                    _initializer = init,
+                    _post = post,
                     labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
                     Position = startPos,
                     Length = index - startPos
@@ -126,50 +161,53 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            if (initializer != null && (context.abortReason != AbortReason.Resume || context.SuspendData[this] == initializer))
+            if (_initializer != null && (context.abortReason != AbortReason.Resume || context.SuspendData[this] == _initializer))
             {
 #if DEV
                 if (context.abortReason != AbortReason.Resume && context.debugging)
-                    context.raiseDebugger(initializer);
+                    context.raiseDebugger(_initializer);
 #endif
-                initializer.Evaluate(context);
+                _initializer.Evaluate(context);
                 if (context.abortReason == AbortReason.Suspend)
                 {
-                    context.SuspendData[this] = initializer;
+                    context.SuspendData[this] = _initializer;
                     return null;
                 }
             }
-            bool be = body != null;
-            bool pe = post != null;
-            JSValue checkResult;
 
-            if (context.abortReason != AbortReason.Resume || context.SuspendData[this] == condition)
+            var be = _body != null;
+            var pe = _post != null;
+            var @continue = false;
+
+            if (context.abortReason != AbortReason.Resume || context.SuspendData[this] == _condition)
             {
 #if DEV
                 if (context.abortReason != AbortReason.Resume && context.debugging)
-                    context.raiseDebugger(condition);
+                    context.raiseDebugger(_condition);
 #endif
-                checkResult = condition.Evaluate(context);
+                @continue = (bool)_condition.Evaluate(context);
                 if (context.abortReason == AbortReason.Suspend)
                 {
-                    context.SuspendData[this] = condition;
+                    context.SuspendData[this] = _condition;
                     return null;
                 }
-                if (!(bool)checkResult)
+
+                if (!@continue)
                     return null;
             }
 
             do
             {
-                if (be && (context.abortReason != AbortReason.Resume || context.SuspendData[this] == body))
+                if (be && (context.abortReason != AbortReason.Resume || context.SuspendData[this] == _body))
                 {
 #if DEV
-                    if (context.abortReason != AbortReason.Resume && context.debugging && !(body is CodeBlock))
-                        context.raiseDebugger(body);
+                    if (context.abortReason != AbortReason.Resume && context.debugging && !(_body is CodeBlock))
+                        context.raiseDebugger(_body);
 #endif
-                    var temp = body.Evaluate(context);
+                    var temp = _body.Evaluate(context);
                     if (temp != null)
                         context.lastResult = temp;
+
                     if (context.abortReason != AbortReason.None)
                     {
                         if (context.abortReason < AbortReason.Return)
@@ -181,12 +219,13 @@ namespace NiL.JS.Statements
                                 context.abortReason = AbortReason.None;
                                 context.abortInfo = null;
                             }
+
                             if (_break)
                                 return null;
                         }
                         else if (context.abortReason == AbortReason.Suspend)
                         {
-                            context.SuspendData[this] = body;
+                            context.SuspendData[this] = _body;
                             return null;
                         }
                         else
@@ -194,28 +233,27 @@ namespace NiL.JS.Statements
                     }
                 }
 
-                if (pe
-                 && (context.abortReason != AbortReason.Resume
-                    || context.SuspendData[this] == post))
+                if (pe && (context.abortReason != AbortReason.Resume || context.SuspendData[this] == _post))
                 {
 #if DEV
                     if (context.abortReason != AbortReason.Resume && context.debugging)
-                        context.raiseDebugger(post);
+                        context.raiseDebugger(_post);
 #endif
-                    post.Evaluate(context);
+                    _post.Evaluate(context);
                 }
 #if DEV
                 if (context.abortReason != AbortReason.Resume && context.debugging)
-                    context.raiseDebugger(condition);
+                    context.raiseDebugger(_condition);
 #endif
-                checkResult = condition.Evaluate(context);
+                @continue = (bool)_condition.Evaluate(context);
                 if (context.abortReason == AbortReason.Suspend)
                 {
-                    context.SuspendData[this] = condition;
+                    context.SuspendData[this] = _condition;
                     return null;
                 }
             }
-            while ((bool)checkResult);
+            while (@continue);
+
             return null;
         }
 
@@ -223,77 +261,109 @@ namespace NiL.JS.Statements
         {
             var res = new List<CodeNode>()
             {
-                initializer,
-                condition,
-                post,
-                body
+                _initializer,
+                _condition,
+                _post,
+                _body
             };
+
             res.RemoveAll(x => x == null);
             return res.ToArray();
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref initializer, 1, variables, codeContext, message, stats, opts);
+            Parser.Build(ref _initializer, 1, variables, codeContext, message, stats, opts);
+            var initAsVds = _initializer as VariableDefinition;
+
             if ((opts & Options.SuppressUselessStatementsElimination) == 0)
             {
-                var initAsVds = initializer as VariableDefinition;
                 if (initAsVds != null && initAsVds.initializers.Length == 1 && initAsVds.Kind == VariableKind.FunctionScope)
-                    initializer = (initializer as VariableDefinition).initializers[0];
+                    _initializer = initAsVds.initializers[0];
             }
-            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
-            if (post != null)
+
+            Parser.Build(ref _condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+
+            if (_post != null)
             {
-                Parser.Build(ref post, 1, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
-                if (post == null && message != null)
+                Parser.Build(ref _post, 1, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+                if (_post == null && message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
-            Parser.Build(ref body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
-            if (condition == null)
-                condition = new Constant(NiL.JS.BaseLibrary.Boolean.True);
-            else if ((condition is Expressions.Expression)
-                && (condition as Expressions.Expression).ContextIndependent
-                && !(bool)condition.Evaluate(null))
+
+            Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
+
+            if (initAsVds != null && initAsVds.Kind != VariableKind.FunctionScope)
             {
-                _this = initializer;
+                var bodyAsCodeBlock = _body as CodeBlock;
+                if (bodyAsCodeBlock != null)
+                {
+                    var newLines = new CodeNode[bodyAsCodeBlock._lines.Length + 1];
+                    System.Array.Copy(bodyAsCodeBlock._lines, newLines, bodyAsCodeBlock._lines.Length);
+                    newLines[newLines.Length - 1] = new PerIterationScopeInitializer(initAsVds.variables);
+                    bodyAsCodeBlock._lines = newLines;
+                }
+                else
+                {
+                    _body = bodyAsCodeBlock = new CodeBlock(new[] { _body, new PerIterationScopeInitializer(initAsVds.variables) });
+                }
+
+                bodyAsCodeBlock.suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
+
+                for (var i = 0; i < initAsVds.variables.Length; i++)
+                {
+                    if (initAsVds.variables[i].captured)
+                        initAsVds.variables[i].definitionScopeLevel = -1;
+                }
+            }
+
+            if (_condition == null)
+            {
+                _condition = new Constant(BaseLibrary.Boolean.True);
+            }
+            else if ((_condition is Expression)
+                  && (_condition as Expression).ContextIndependent
+                  && !(bool)_condition.Evaluate(null))
+            {
+                _this = _initializer;
                 return false;
             }
-            else if (body == null || body is Empty) // initial solution. Will extended
+            else if (_body == null || _body is Empty)
             {
                 VariableReference variable = null;
                 Constant limit = null;
-                if (condition is NiL.JS.Expressions.Less)
+                if (_condition is Less)
                 {
-                    variable = (condition as NiL.JS.Expressions.Less).FirstOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.Less).SecondOperand as Constant;
+                    variable = (_condition as Less).FirstOperand as VariableReference;
+                    limit = (_condition as Less).SecondOperand as Constant;
                 }
-                else if (condition is NiL.JS.Expressions.More)
+                else if (_condition is More)
                 {
-                    variable = (condition as NiL.JS.Expressions.More).SecondOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.More).FirstOperand as Constant;
+                    variable = (_condition as More).SecondOperand as VariableReference;
+                    limit = (_condition as More).FirstOperand as Constant;
                 }
-                else if (condition is NiL.JS.Expressions.NotEqual)
+                else if (_condition is NotEqual)
                 {
-                    variable = (condition as NiL.JS.Expressions.Less).SecondOperand as VariableReference;
-                    limit = (condition as NiL.JS.Expressions.Less).FirstOperand as Constant;
+                    variable = (_condition as Less).SecondOperand as VariableReference;
+                    limit = (_condition as Less).FirstOperand as Constant;
                     if (variable == null && limit == null)
                     {
-                        variable = (condition as NiL.JS.Expressions.Less).FirstOperand as VariableReference;
-                        limit = (condition as NiL.JS.Expressions.Less).SecondOperand as Constant;
+                        variable = (_condition as Less).FirstOperand as VariableReference;
+                        limit = (_condition as Less).SecondOperand as Constant;
                     }
                 }
                 if (variable != null
                     && limit != null
-                    && post is NiL.JS.Expressions.Increment
-                    && ((post as NiL.JS.Expressions.Increment).FirstOperand as VariableReference)._descriptor == variable._descriptor)
+                    && _post is Increment
+                    && ((_post as Increment).FirstOperand as VariableReference)._descriptor == variable._descriptor)
                 {
                     if (variable.ScopeLevel >= 0 && variable._descriptor.definitionScopeLevel >= 0)
                     {
-                        if (initializer is NiL.JS.Expressions.Assignment
-                            && (initializer as NiL.JS.Expressions.Assignment).FirstOperand is GetVariable
-                            && ((initializer as NiL.JS.Expressions.Assignment).FirstOperand as GetVariable)._descriptor == variable._descriptor)
+                        if (_initializer is Assignment
+                            && (_initializer as Assignment).FirstOperand is GetVariable
+                            && ((_initializer as Assignment).FirstOperand as GetVariable)._descriptor == variable._descriptor)
                         {
-                            var value = (initializer as NiL.JS.Expressions.Assignment).SecondOperand;
+                            var value = (_initializer as Assignment).SecondOperand;
                             if (value is Constant)
                             {
                                 var vvalue = value.Evaluate(null);
@@ -305,17 +375,17 @@ namespace NiL.JS.Statements
                                     || lvalue.valueType == JSValueType.Boolean
                                     || lvalue.valueType == JSValueType.Double))
                                 {
-                                    post.Eliminated = true;
-                                    condition.Eliminated = true;
+                                    _post.Eliminated = true;
+                                    _condition.Eliminated = true;
 
-                                    if (!(bool)NiL.JS.Expressions.Less.Check(vvalue, lvalue))
+                                    if (!Less.Check(vvalue, lvalue))
                                     {
 
-                                        _this = initializer;
+                                        _this = _initializer;
                                         return false;
                                     }
 
-                                    _this = new CodeBlock(new[] { initializer, new NiL.JS.Expressions.Assignment(variable, limit) });
+                                    _this = new CodeBlock(new[] { _initializer, new Assignment(variable, limit) });
                                     return true;
                                 }
                             }
@@ -328,14 +398,14 @@ namespace NiL.JS.Statements
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            if (initializer != null)
-                initializer.Optimize(ref initializer, owner, message, opts, stats);
-            if (condition != null)
-                condition.Optimize(ref condition, owner, message, opts, stats);
-            if (post != null)
-                post.Optimize(ref post, owner, message, opts, stats);
-            if (body != null)
-                body.Optimize(ref body, owner, message, opts, stats);
+            if (_initializer != null)
+                _initializer.Optimize(ref _initializer, owner, message, opts, stats);
+            if (_condition != null)
+                _condition.Optimize(ref _condition, owner, message, opts, stats);
+            if (_post != null)
+                _post.Optimize(ref _post, owner, message, opts, stats);
+            if (_body != null)
+                _body.Optimize(ref _body, owner, message, opts, stats);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -345,24 +415,24 @@ namespace NiL.JS.Statements
 
         public override void Decompose(ref CodeNode self)
         {
-            initializer?.Decompose(ref initializer);
-            condition?.Decompose(ref condition);
-            body?.Decompose(ref body);
-            post?.Decompose(ref post);
+            _initializer?.Decompose(ref _initializer);
+            _condition?.Decompose(ref _condition);
+            _body?.Decompose(ref _body);
+            _post?.Decompose(ref _post);
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            post?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _post?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override string ToString()
         {
-            var istring = (initializer as object ?? "").ToString();
-            return "for (" + istring + "; " + condition + "; " + post + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            var istring = (_initializer as object ?? "").ToString();
+            return "for (" + istring + "; " + _condition + "; " + _post + ")" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
         }
     }
 }

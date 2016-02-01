@@ -724,6 +724,7 @@ namespace NiL.JS.Core
                 attributes &= ~JSValueAttributesInternal.Cloned;
                 return this;
             }
+
             var res = new JSValue();
             res.Assign(this);
             res.valueType = valueType;
