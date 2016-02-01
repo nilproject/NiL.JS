@@ -127,7 +127,7 @@ namespace NiL.JS.Core
             : this()
         {
             if (context != null)
-                caller = context.strict && context.owner != null && context.owner.creator.body.strict ? Function.propertiesDummySM : context.owner;
+                caller = context.strict && context.owner != null && context.owner.creator.body._strict ? Function.propertiesDummySM : context.owner;
         }
 
         public Arguments()

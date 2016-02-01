@@ -201,7 +201,7 @@ namespace NiL.JS.Expressions
                     && !stats.ContainsEval
                     && !stats.ContainsWith) // можем упустить присваивание
                 {
-                    if ((owner.body.strict || gve._descriptor.owner != owner || !owner._functionInfo.ContainsArguments) // аргументы это одна сущность с двумя именами
+                    if ((owner.body._strict || gve._descriptor.owner != owner || !owner._functionInfo.ContainsArguments) // аргументы это одна сущность с двумя именами
                         && (_codeContext & CodeContext.InLoop) == 0)
                     {
                         bool last = true;

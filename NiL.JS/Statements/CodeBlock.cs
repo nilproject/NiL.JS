@@ -13,6 +13,16 @@ namespace NiL.JS.Statements
 #if !PORTABLE
     [Serializable]
 #endif
+    public enum SuppressScopeIsolationMode
+    {
+        Auto,
+        Suppress,
+        DoNotSuppress
+    }
+
+#if !PORTABLE
+    [Serializable]
+#endif
     public sealed class CodeBlock : CodeNode
     {
         private sealed class SuspendData
@@ -21,7 +31,7 @@ namespace NiL.JS.Statements
             public Context Context;
         }
 
-        private static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];
+        internal static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];
 
         private string code;
 #if (NET40 || INLINE) && JIT
@@ -31,32 +41,20 @@ namespace NiL.JS.Statements
         internal HashSet<string> directives;
 #endif
         internal VariableDescriptor[] _variables;
-        internal CodeNode[] lines;
-        internal bool strict;
+        internal CodeNode[] _lines;
+        internal bool _strict;
         internal bool built;
-        internal bool suppressScopeIsolation;
+        internal SuppressScopeIsolationMode suppressScopeIsolation;
 
         public VariableDescriptor[] Variables { get { return _variables; } }
-        public CodeNode[] Body { get { return lines; } }
-        public bool Strict { get { return strict; } }
+        public CodeNode[] Body { get { return _lines; } }
+        public bool Strict { get { return _strict; } }
         public string Code
         {
             get
             {
-                if (base.Length >= 0)
-                {
-                    lock (this)
-                    {
-                        if (base.Length >= 0)
-                        {
-                            if (Position != 0)
-                                code = code.Substring(Position + 1, Length - 2);
-                            Length = -base.Length;
-                            return code;
-                        }
-                    }
-                }
-                return code;
+                var res = ToString();
+                return res.Substring(1, res.Length - 2);
             }
         }
 
@@ -76,10 +74,11 @@ namespace NiL.JS.Statements
         {
             if (body == null)
                 throw new ArgumentNullException("body");
+
             code = "";
-            this.lines = body;
+            _lines = body;
             _variables = null;
-            this.strict = false;
+            _strict = false;
         }
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
@@ -219,7 +218,7 @@ namespace NiL.JS.Statements
             index = position;
             return new CodeBlock(body.ToArray())
             {
-                strict = (state.strict ^= strictSwitch) || strictSwitch,
+                _strict = (state.strict ^= strictSwitch) || strictSwitch,
                 _variables = variables ?? emptyVariables,
                 Position = startPos,
                 code = state.SourceCode,
@@ -284,7 +283,7 @@ namespace NiL.JS.Statements
             }
             else
             {
-                if (!suppressScopeIsolation)
+                if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 {
                     context = new Context(context, false, context.owner)
                     {
@@ -301,7 +300,7 @@ namespace NiL.JS.Statements
                     initVariables(context);
             }
 
-            if (!suppressScopeIsolation)
+            if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 evaluateWithScope(context, i, clearSuspendData);
             else
                 evaluateLines(context, i, clearSuspendData);
@@ -311,14 +310,14 @@ namespace NiL.JS.Statements
 
         private void evaluateWithScope(Context context, int i, bool clearSuspendData)
         {
-            var activated = !suppressScopeIsolation && context.Activate();
+            var activated = suppressScopeIsolation != SuppressScopeIsolationMode.Suppress && context.Activate();
             try
             {
                 evaluateLines(context, i, clearSuspendData);
             }
             finally
             {
-                if (!suppressScopeIsolation)
+                if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 {
                     if (activated)
                         context.Deactivate();
@@ -333,11 +332,11 @@ namespace NiL.JS.Statements
 
         private void evaluateLines(Context context, int i, bool clearSuspendData)
         {
-            for (var ls = lines; i < ls.Length; i++)
+            for (var ls = _lines; i < ls.Length; i++)
             {
 #if DEV
                 if (context.debugging)
-                    context.raiseDebugger(lines[i]);
+                    context.raiseDebugger(_lines[i]);
 #endif
                 var t = ls[i].Evaluate(context);
                 if (t != null)
@@ -348,17 +347,17 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("Context was stopped");
-                if (NiL.JS.BaseLibrary.Number.NaN.valueType != JSValueType.Double || !double.IsNaN(Number.NaN.dValue))
+                if (Number.NaN.valueType != JSValueType.Double || !double.IsNaN(Number.NaN.dValue))
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("NaN has been rewitten");
-                if (JSObject.undefined.valueType != JSValueType.Undefined)
+                if (JSValue.undefined.valueType != JSValueType.Undefined)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("undefined has been rewitten");
-                if (JSObject.notExists.Exists)
+                if (JSValue.notExists.Exists)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
@@ -403,9 +402,9 @@ namespace NiL.JS.Statements
         protected internal override CodeNode[] getChildsImpl()
         {
             var res = new List<CodeNode>();
-            for (int i = 0; i < lines.Length; i++)
+            for (int i = 0; i < _lines.Length; i++)
             {
-                var node = lines[i];
+                var node = _lines[i];
                 if (node == null)
                     break;
                 res.Add(node);
@@ -441,54 +440,54 @@ namespace NiL.JS.Statements
 
                 for (var i = 0; i < _variables.Length; i++)
                 {
-                    Parser.Build(ref _variables[i].initializer, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
+                    Parser.Build(ref _variables[i].initializer, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this._strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
                 }
             }
 
-            for (var i = 0; i < lines.Length; i++)
+            for (var i = 0; i < _lines.Length; i++)
             {
-                var ed = lines[i] as EntityDefinition;
+                var ed = _lines[i] as EntityDefinition;
                 if (ed != null && ed.Hoist)
-                    lines[i] = null;
+                    _lines[i] = null;
             }
 
             bool unreachable = false;
-            for (int i = 0; i < lines.Length; i++)
+            for (int i = 0; i < _lines.Length; i++)
             {
-                if (lines[i] != null)
+                if (_lines[i] != null)
                 {
-                    if (lines[i] is Empty)
-                        lines[i] = null;
+                    if (_lines[i] is Empty)
+                        _lines[i] = null;
                     else
                     {
                         if (unreachable && message != null)
-                            message(MessageLevel.CriticalWarning, new CodeCoordinates(0, lines[i].Position, lines[i].Length), "Unreachable code detected.");
-                        var cn = lines[i];
-                        Parser.Build(ref cn, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this.strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
+                            message(MessageLevel.CriticalWarning, new CodeCoordinates(0, _lines[i].Position, _lines[i].Length), "Unreachable code detected.");
+                        var cn = _lines[i];
+                        Parser.Build(ref cn, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this._strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
                         if (cn is Empty)
-                            lines[i] = null;
+                            _lines[i] = null;
                         else
-                            lines[i] = cn;
+                            _lines[i] = cn;
                         unreachable |= cn is Return || cn is Break || cn is Continue || cn is Throw;
                     }
                 }
             }
 
-            int f = lines.Length, t = lines.Length - 1;
+            int f = _lines.Length, t = _lines.Length - 1;
             for (; f-- > 0;)
             {
-                if (lines[f] != null && lines[t] == null)
+                if (_lines[f] != null && _lines[t] == null)
                 {
-                    lines[t] = lines[f];
-                    lines[f] = null;
+                    _lines[t] = _lines[f];
+                    _lines[f] = null;
                 }
-                if (lines[t] != null)
+                if (_lines[t] != null)
                     t--;
             }
 
             if (expressionDepth > 0 && (_variables == null || _variables.Length == 0))
             {
-                if (lines.Length == 0)
+                if (_lines.Length == 0)
                     _this = Empty.Instance;
             }
             else
@@ -512,11 +511,11 @@ namespace NiL.JS.Statements
             }
             if (t >= 0 && this == _this)
             {
-                var newBody = new CodeNode[lines.Length - t - 1];
+                var newBody = new CodeNode[_lines.Length - t - 1];
                 f = 0;
-                while (++t < lines.Length)
-                    newBody[f++] = lines[t];
-                lines = newBody;
+                while (++t < _lines.Length)
+                    newBody[f++] = _lines[t];
+                _lines = newBody;
             }
             if (_variables != null && _variables.Length != 0)
             {
@@ -559,11 +558,11 @@ namespace NiL.JS.Statements
                     }
                 }
             }
-            for (int i = 0; i < lines.Length; i++)
+            for (int i = 0; i < _lines.Length; i++)
             {
-                var cn = lines[i] as CodeNode;
+                var cn = _lines[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, stats);
-                lines[i] = cn;
+                _lines[i] = cn;
             }
             if (_variables != null)
             {
@@ -577,9 +576,9 @@ namespace NiL.JS.Statements
                 }
             }
 
-            if (lines.Length == 1 && suppressScopeIsolation)
+            if (_lines.Length == 1 && suppressScopeIsolation == SuppressScopeIsolationMode.Suppress)
             {
-                _this = lines[0];
+                _this = _lines[0];
             }
         }
 
@@ -596,9 +595,9 @@ namespace NiL.JS.Statements
                 }
             }
 
-            for (int i = 0; i < lines.Length; i++)
+            for (int i = 0; i < _lines.Length; i++)
             {
-                lines[i].Decompose(ref lines[i]);
+                _lines[i].Decompose(ref _lines[i]);
             }
         }
 
@@ -621,7 +620,9 @@ namespace NiL.JS.Statements
 
                 if (_variables.Length == 0)
                 {
-                    suppressScopeIsolation = true;
+                    if (suppressScopeIsolation == SuppressScopeIsolationMode.Auto)
+                        suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+
                     scopeBias--;
                 }
 
@@ -638,13 +639,13 @@ namespace NiL.JS.Statements
                 }
             }
             else
-                suppressScopeIsolation = true;
+                suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
             if (transferedVariables == null)
             {
-                for (var i = 0; i < lines.Length; i++)
+                for (var i = 0; i < _lines.Length; i++)
                 {
-                    lines[i].RebuildScope(functionInfo, null, scopeBias);
+                    _lines[i].RebuildScope(functionInfo, null, scopeBias);
                 }
             }
             else
@@ -653,10 +654,10 @@ namespace NiL.JS.Statements
                 do
                 {
                     needRerun = false;
-                    for (var i = 0; i < lines.Length; i++)
+                    for (var i = 0; i < _lines.Length; i++)
                     {
                         var oldVariablesCount = transferedVariables.Count;
-                        lines[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
+                        _lines[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
                         if (transferedVariables.Count > oldVariablesCount && i > 0)
                             needRerun = true;
                     }
@@ -709,8 +710,8 @@ namespace NiL.JS.Statements
 #if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
-            for (int i = 0; i < lines.Length; i++)
-                lines[i].TryCompile(true, false, null, dynamicValues);
+            for (int i = 0; i < _lines.Length; i++)
+                _lines[i].TryCompile(true, false, null, dynamicValues);
             for (int i = _variables.Length; i-- > 0;)
                 if (_variables[i].initializer != null)
                     _variables[i].initializer.TryCompile(true, false, null, dynamicValues);
@@ -729,16 +730,17 @@ namespace NiL.JS.Statements
 
         public string ToString(bool linewiseStringify)
         {
-            if (linewiseStringify || code == null)
+            if (linewiseStringify || string.IsNullOrEmpty(code))
             {
-                if (lines == null || lines.Length == 0)
+                if (_lines == null || _lines.Length == 0)
                     return "{ }";
+
                 StringBuilder res = new StringBuilder().Append(" {").Append(Environment.NewLine);
                 var replp = Environment.NewLine;
                 var replt = Environment.NewLine + "  ";
-                for (int i = lines.Length; i-- > 0;)
+                for (int i = 0; i < _lines.Length; i++)
                 {
-                    string lc = lines[i].ToString();
+                    string lc = _lines[i].ToString();
                     if (lc[0] == '(')
                         lc = lc.Substring(1, lc.Length - 2);
                     lc = lc.Replace(replp, replt);
@@ -747,7 +749,15 @@ namespace NiL.JS.Statements
                 return res.Append("}").ToString();
             }
             else
-                return '{' + Code + '}';
+            {
+                if (base.Length > 0)
+                {
+                    Length = -base.Length;
+                    code = code.Substring(Position + 1, Length - 2);
+                }
+
+                return '{' + code + '}';
+            }
         }
     }
 }

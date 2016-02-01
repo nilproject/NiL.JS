@@ -337,8 +337,6 @@ namespace NiL.JS.Expressions
                 {
                     state.functionScopeLevel = oldFunctionScopeLevel;
                     state.lexicalScopeLevel--;
-
-                    System.Diagnostics.Debug.Assert(state.lexicalScopeLevel == oldFunctionScopeLevel, "state.lexicalScopeLevel == oldFunctionScopeLevel");
                 }
             }
             else
@@ -370,7 +368,7 @@ namespace NiL.JS.Expressions
                 if (mode == FunctionKind.Function && string.IsNullOrEmpty(name))
                     mode = FunctionKind.AnonymousFunction;
             }
-            if (body.strict || (parameters.Count > 0 && parameters[parameters.Count - 1].IsRest) || mode == FunctionKind.Arrow)
+            if (body._strict || (parameters.Count > 0 && parameters[parameters.Count - 1].IsRest) || mode == FunctionKind.Arrow)
             {
                 for (var j = parameters.Count; j-- > 1;)
                     for (var k = j; k-- > 0;)
@@ -587,7 +585,7 @@ namespace NiL.JS.Expressions
                 }
             }
             body = bodyCode as CodeBlock;
-            body.suppressScopeIsolation = true;
+            body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             checkUsings();
             if (stats != null)
             {
@@ -655,8 +653,8 @@ namespace NiL.JS.Expressions
         private void checkUsings()
         {
             if (body == null
-                || body.lines == null
-                || body.lines.Length == 0)
+                || body._lines == null
+                || body._lines.Length == 0)
                 return;
             if (body._variables != null)
             {
