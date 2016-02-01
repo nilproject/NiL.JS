@@ -411,6 +411,14 @@ namespace NiL.JS.Core
             return context;
         }
 
+        internal virtual void ReplaceVariableInstance(string name, JSValue instance)
+        {
+            if (fields != null && fields.ContainsKey(name))
+                fields[name] = instance;
+            else
+                parent?.ReplaceVariableInstance(name, instance);
+        }
+
         /// <summary>
         /// Действие аналогично функции GeField с тем отличием, что возвращённое поле всегда определено в указанном контектсе.
         /// </summary>
@@ -615,7 +623,7 @@ namespace NiL.JS.Core
             if (stats.ContainsYield)
                 body.Decompose(ref cb);
 
-            body.suppressScopeIsolation = true;
+            body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
 #if DEV
             var debugging = this.debugging;
@@ -624,12 +632,12 @@ namespace NiL.JS.Core
             var runned = this.Activate();
             try
             {
-                var context = inplace && !body.strict && !strict ? this : new Context(this, false, owner)
+                var context = inplace && !body._strict && !strict ? this : new Context(this, false, owner)
                 {
-                    strict = strict || body.strict
+                    strict = strict || body._strict
                 };
 
-                if (!strict && !body.strict)
+                if (!strict && !body._strict)
                 {
                     for (var i = 0; i < body._variables.Length; i++)
                     {
@@ -666,7 +674,7 @@ namespace NiL.JS.Core
                     }
                 }
 
-                if (body.lines.Length == 0)
+                if (body._lines.Length == 0)
                     return JSValue.undefined;
 
                 var runContextOfEval = context.Activate();

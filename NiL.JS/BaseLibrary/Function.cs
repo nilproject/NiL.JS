@@ -121,7 +121,7 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get
             {
-                return creator?.body.strict ?? true;
+                return creator?.body._strict ?? true;
             }
         }
         [Hidden]
@@ -192,7 +192,7 @@ namespace NiL.JS.BaseLibrary
                 var context = Context.GetRunnedContextFor(this);
                 if (context == null)
                     return null;
-                if (creator.body.strict)
+                if (creator.body._strict)
                     ExceptionsHelper.Throw(new TypeError("Property \"arguments\" may not be accessed in strict mode."));
                 if (context.arguments == null && creator.recursionDepth > 0)
                     BuildArgumentsObject();
@@ -204,7 +204,7 @@ namespace NiL.JS.BaseLibrary
                 var context = Context.GetRunnedContextFor(this);
                 if (context == null)
                     return;
-                if (creator.body.strict)
+                if (creator.body._strict)
                     ExceptionsHelper.Throw(new TypeError("Property \"arguments\" may not be accessed in strict mode."));
                 context.arguments = value;
             }
@@ -335,9 +335,9 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (body != null)
                     {
-                        if (body.lines.Length == 1)
+                        if (body._lines.Length == 1)
                         {
-                            var ret = body.lines[0] as Return;
+                            var ret = body._lines[0] as Return;
                             if (ret != null)
                             {
                                 if (ret.Value != null)
@@ -351,7 +351,7 @@ namespace NiL.JS.BaseLibrary
                             else
                                 break;
                         }
-                        else if (body.lines.Length != 0)
+                        else if (body._lines.Length != 0)
                             break;
                     }
                     for (int i = 0; i < arguments.Length; i++)
@@ -442,7 +442,7 @@ namespace NiL.JS.BaseLibrary
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
 #endif
             var body = creator.body;
-            targetObject = correctTargetObject(targetObject, body.strict);
+            targetObject = correctTargetObject(targetObject, body._strict);
             if (creator.recursionDepth > creator.parametersStored) // рекурсивный вызов.
             {
                 storeParameters();
@@ -473,7 +473,7 @@ namespace NiL.JS.BaseLibrary
                     creator.reference._descriptor.cacheContext = internalContext.parent;
                     creator.reference._descriptor.cacheRes = this;
                 }
-                internalContext.strict |= body.strict;
+                internalContext.strict |= body._strict;
                 internalContext.Activate();
                 try
                 {
@@ -499,7 +499,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 if (!tailCall)
                     break;
-                targetObject = correctTargetObject(internalContext.objectSource, body.strict);
+                targetObject = correctTargetObject(internalContext.objectSource, body._strict);
             }
             return res;
         }
@@ -518,7 +518,7 @@ namespace NiL.JS.BaseLibrary
                 ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
             }
 
-            targetObject = correctTargetObject(targetObject, creator.body.strict);
+            targetObject = correctTargetObject(targetObject, creator.body._strict);
             return Invoke(false, targetObject, arguments, null);
         }
 
@@ -530,7 +530,7 @@ namespace NiL.JS.BaseLibrary
 #endif
             JSValue res = null;
             var body = creator.body;
-            if (body.lines.Length == 0)
+            if (body._lines.Length == 0)
             {
                 notExists.valueType = JSValueType.NotExists;
                 return notExists;
@@ -573,7 +573,7 @@ namespace NiL.JS.BaseLibrary
                 if (res != null) // tail recursion
                     break;
                 arguments = internalContext.abortInfo as Arguments;
-                targetObject = correctTargetObject(internalContext.objectSource, body.strict);
+                targetObject = correctTargetObject(internalContext.objectSource, body._strict);
             }
             return res;
         }
@@ -731,7 +731,7 @@ namespace NiL.JS.BaseLibrary
                 };
                 for (var i = 0; i < creator.parameters.Length; i++)
                 {
-                    if (creator.body.strict)
+                    if (creator.body._strict)
                         args[i] = creator.parameters[i].cacheRes.CloneImpl(false);
                     else
                         args[i] = creator.parameters[i].cacheRes;
@@ -748,7 +748,7 @@ namespace NiL.JS.BaseLibrary
                 creator.reference._descriptor.cacheRes = this;
             }
             internalContext.thisBind = targetObject;
-            internalContext.strict |= creator.body.strict;
+            internalContext.strict |= creator.body._strict;
             if (creator.kind == FunctionKind.Arrow)
             {
                 internalContext.arguments = internalContext.parent.arguments;
@@ -759,7 +759,7 @@ namespace NiL.JS.BaseLibrary
                 internalContext.arguments = arguments;
                 if (storeArguments)
                     internalContext.fields["arguments"] = arguments;
-                if (creator.body.strict)
+                if (creator.body._strict)
                 {
                     arguments.attributes |= JSValueAttributesInternal.ReadOnly;
                     arguments.callee = propertiesDummySM;
@@ -789,7 +789,7 @@ namespace NiL.JS.BaseLibrary
                 var prm = creator.parameters[i];
                 if (!t.Defined && prm.initializer != null)
                     t = prm.initializer.Evaluate(internalContext);
-                if (creator.body.strict)
+                if (creator.body._strict)
                 {
                     if (ceaw)
                     {
@@ -918,7 +918,7 @@ namespace NiL.JS.BaseLibrary
             if (memberScope < PropertyScope.Super && nameObj.valueType != JSValueType.Symbol)
             {
                 string name = nameObj.ToString();
-                if (creator.body.strict && (name == "caller" || name == "arguments"))
+                if (creator.body._strict && (name == "caller" || name == "arguments"))
                     return propertiesDummySM;
                 if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
                     return prototype;
@@ -1030,7 +1030,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue bind(Arguments args)
         {
             var newThis = args.Length > 0 ? args[0] : null;
-            var strict = (creator.body != null && creator.body.strict) || Context.CurrentContext.strict;
+            var strict = (creator.body != null && creator.body._strict) || Context.CurrentContext.strict;
             if ((newThis != null && newThis.valueType > JSValueType.Undefined) || strict)
                 return new BindedFunction(this, args);
             return this;

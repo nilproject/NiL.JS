@@ -77,10 +77,10 @@ namespace NiL.JS
             var stat = new FunctionInfo();
             Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
             var body = root as CodeBlock;
-            body.suppressScopeIsolation = true;
+            body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             Context = new Context(Context.globalContext, true, null);
             Context.thisBind = new GlobalObject(Context);
-            Context.strict = body.strict;
+            Context.strict = body._strict;
 
             var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);

@@ -5,6 +5,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 using NiL.JS.Statements;
+using System.Runtime.CompilerServices;
 
 namespace NiL.JS.Expressions
 {
@@ -137,14 +138,20 @@ namespace NiL.JS.Expressions
         {
             try
             {
-#if !PORTABLE && !NET35
-                System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
-#endif
+                checkStackInternal();
             }
             catch
             {
-                ExceptionsHelper.Throw(new RangeError("Stack overflow."));
+                throw new JSException(new RangeError("Stack overflow."));
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static void checkStackInternal(decimal a = 0, decimal b = 0, decimal c = 0, decimal d = 0, decimal e = 0, decimal f = 0, decimal g = 0, decimal h = 0, decimal i = 0, decimal j = 0, decimal k = 0, decimal l = 0)
+        {
+#if !PORTABLE && !NET35
+            RuntimeHelpers.EnsureSufficientExecutionStack();
+#endif
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
