@@ -161,9 +161,8 @@ namespace NiL.JS.Core.Interop
                                     }
                                     else
                                     {
-                                        var type = value.GetType();
-                                        __proto__ = TypeProxy.GetPrototype(type);
-                                        attributes |= __proto__.attributes & JSValueAttributesInternal.Immutable;
+                                        oValue = Marshal(value);
+                                        valueType = JSValueType.Object;
                                     }
                                     break;
                                 }
