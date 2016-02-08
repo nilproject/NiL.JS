@@ -20,14 +20,15 @@ namespace NiL.JS.Test
         {
             [DoNotDelete]
             public int Property { get; set; }
+
+
         }
 
         private static void testEx()
         {
             var context = new Context();
-            context.Eval(@"var sum = (a, b) => a + b;                sum(1,2)");
-            //var sum = (Func<int, int, int>)context.GetVariable("sum").As<Function>().MakeDelegate(typeof(Func<int, int, int>));
-            //sum(1, 2);
+            context.DefineVariable("a").Assign(JSObject.Marshal(new[] { new TestClass { Property = 123 }, new TestClass { Property = 456 } }));
+            context.Eval("a.forEach(x=>console.log(x.Property))");
         }
 
         static void Main(string[] args)
@@ -61,7 +62,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 1
+            int mode = 5
                     ;
             switch (mode)
             {

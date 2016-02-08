@@ -34,7 +34,6 @@ namespace NiL.JS.Statements
                     {
                         if (_variables[i].captured)
                             context.DefineVariable(_variables[i].name).Assign(_variables[i].cacheRes.CloneImpl());
-                        //context.ReplaceVariableInstance(_variables[i].name, _variables[i].cacheRes.CloneImpl());
                     }
                 }
 
