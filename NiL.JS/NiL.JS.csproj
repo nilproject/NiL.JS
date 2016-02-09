@@ -203,6 +203,7 @@
     <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v4.6' ">$(DefineConstants);INLINE</DefineConstants>
     <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v4.0' ">$(DefineConstants);NET40</DefineConstants>
     <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v3.5' ">$(DefineConstants);NET35</DefineConstants>
+    <DefineConstants>$(DefineConstants);DEVELOPBRANCH</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
