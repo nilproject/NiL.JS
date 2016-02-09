@@ -1036,6 +1036,14 @@ namespace NiL.JS.BaseLibrary
             return this;
         }
 
+#if DEVELOPBRANCH || VERSION21
+        [Hidden]
+        public T MakeDelegate<T>()
+        {
+            return (T)(object)MakeDelegate(typeof(T));
+        }
+#endif
+
         [Hidden]
         public virtual Delegate MakeDelegate(Type delegateType)
         {
