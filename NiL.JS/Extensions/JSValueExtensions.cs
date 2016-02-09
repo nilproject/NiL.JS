@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
 namespace NiL.JS.Extensions
@@ -136,6 +137,10 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Object:
                     {
+#if DEVELOPBRANCH || VERSION21
+                        if (self.Value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
+                            return ((Function)self.Value).MakeDelegate<T>();
+#endif
                         return (T)self.Value;
                     }
                 case TypeCode.SByte:

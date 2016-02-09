@@ -21,14 +21,19 @@ namespace NiL.JS.Test
             [DoNotDelete]
             public int Property { get; set; }
 
-
+            public void PrintProperty()
+            {
+                Console.WriteLine(Property);
+            }
         }
 
         private static void testEx()
         {
             var context = new Context();
             context.DefineVariable("a").Assign(JSObject.Marshal(new[] { new TestClass { Property = 123 }, new TestClass { Property = 456 } }));
-            context.Eval("a.forEach(x=>console.log(x.Property))");
+            context.Eval("var b = a[0].PrintProperty.bind(a[0]);");
+            var d = context.GetVariable("b").As<Action>();
+            d();
         }
 
         static void Main(string[] args)
@@ -62,7 +67,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 5
+            int mode = 101
                     ;
             switch (mode)
             {

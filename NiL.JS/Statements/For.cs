@@ -60,7 +60,6 @@ namespace NiL.JS.Statements
 
         private For()
         {
-
         }
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
