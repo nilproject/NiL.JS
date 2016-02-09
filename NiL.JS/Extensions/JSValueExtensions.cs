@@ -132,6 +132,10 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Object:
                     {
+#if DEVELOPBRANCH || VERSION21
+                        if (self.Value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
+                            return ((Function)self.Value).MakeDelegate<T>();
+#endif
                         return (T)self.Value;
                     }
                 case TypeCode.SByte:

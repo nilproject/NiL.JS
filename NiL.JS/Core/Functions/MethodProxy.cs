@@ -20,7 +20,7 @@ namespace NiL.JS.Core.Functions
 
         private object hardTarget;
         internal ParameterInfo[] parameters;
-        private MethodBase methodBase;
+        private MethodBase method;
         private ConvertValueAttribute returnConverter;
         private ConvertValueAttribute[] paramsConverters;
         [Hidden]
@@ -42,7 +42,7 @@ namespace NiL.JS.Core.Functions
             [Hidden]
             get
             {
-                return methodBase.Name;
+                return method.Name;
             }
         }
 
@@ -64,7 +64,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        public MethodProxy()
+        private MethodProxy()
         {
             parameters = new ParameterInfo[0];
             implementation = delegate { return null; };
@@ -73,10 +73,9 @@ namespace NiL.JS.Core.Functions
 
         public MethodProxy(MethodBase methodBase, object hardTarget)
         {
-            this.methodBase = methodBase;
+            this.method = methodBase;
             this.hardTarget = hardTarget;
-
-            parameters = methodBase.GetParameters();
+            this.parameters = methodBase.GetParameters();
 
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
@@ -137,15 +136,15 @@ namespace NiL.JS.Core.Functions
                     typeof(object), // target
                     typeof(object[]), // argsArray
                     typeof(Arguments) // argsSource
-                }, 
-                typeof(MethodProxy), 
+                },
+                typeof(MethodProxy),
                 true);
             var generator = impl.GetILGenerator();
 
             if (!methodInfo.IsStatic)
             {
                 generator.Emit(OpCodes.Ldarg_0);
-                if (methodBase.DeclaringType.IsValueType)
+                if (method.DeclaringType.IsValueType)
                 {
                     generator.Emit(OpCodes.Ldc_I4, IntPtr.Size);
                     generator.Emit(OpCodes.Add);
@@ -248,7 +247,7 @@ namespace NiL.JS.Core.Functions
                     }
                 }
             }
-            if (methodInfo.IsStatic || methodBase.DeclaringType.IsValueType)
+            if (methodInfo.IsStatic || method.DeclaringType.IsValueType)
                 generator.Emit(OpCodes.Call, methodInfo);
             else
                 generator.Emit(OpCodes.Callvirt, methodInfo);
@@ -453,18 +452,19 @@ namespace NiL.JS.Core.Functions
                 else
                     target = thisBind ?? undefined;
             }
-            else if (!methodBase.IsStatic && !methodBase.IsConstructor)
+            else if (!method.IsStatic && !method.IsConstructor)
             {
-                target = hardTarget ?? getTargetObject(thisBind ?? undefined, methodBase.DeclaringType);
+                target = hardTarget ?? getTargetObject(thisBind ?? undefined, method.DeclaringType);
                 if (target == null)
                 {
-                    // Исключительная ситуация. Я не знаю, почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
-                    if (methodBase.Name == "get_length" && typeof(Function).IsAssignableFrom(methodBase.DeclaringType))
+                    // Исключительная ситуация. Я не знаю почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
+                    if (method.Name == "get_length" && typeof(Function).IsAssignableFrom(method.DeclaringType))
                         return 0;
 
                     ExceptionsHelper.Throw(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
                 }
             }
+
             try
             {
                 object res = implementation(
@@ -489,14 +489,14 @@ namespace NiL.JS.Core.Functions
 
         private object getDummy()
         {
-            if (typeof(JSValue).IsAssignableFrom(methodBase.DeclaringType))
-                if (typeof(Function).IsAssignableFrom(methodBase.DeclaringType))
+            if (typeof(JSValue).IsAssignableFrom(method.DeclaringType))
+                if (typeof(Function).IsAssignableFrom(method.DeclaringType))
                     return this;
-                else if (typeof(TypedArray).IsAssignableFrom(methodBase.DeclaringType))
+                else if (typeof(TypedArray).IsAssignableFrom(method.DeclaringType))
                     return new Int8Array();
                 else
                     return new JSValue();
-            if (typeof(Error).IsAssignableFrom(methodBase.DeclaringType))
+            if (typeof(Error).IsAssignableFrom(method.DeclaringType))
                 return new Error();
             return null;
         }
@@ -552,7 +552,7 @@ namespace NiL.JS.Core.Functions
             return TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
         }
 
-        private static object[] convertArray(NiL.JS.BaseLibrary.Array array)
+        private static object[] convertArray(BaseLibrary.Array array)
         {
             var arg = new object[array.data.Length];
             for (var j = arg.Length; j-- > 0;)
@@ -605,5 +605,35 @@ namespace NiL.JS.Core.Functions
             }
             return v;
         }
+
+#if DEVELOPBRANCH || VERSION21
+        public sealed override JSValue bind(Arguments args)
+        {
+            if (hardTarget != null || args.Length == 0)
+                return this;
+
+            return new MethodProxy()
+            {
+                hardTarget = getTargetObject(args[0], method.DeclaringType),
+                method = method,
+                parameters = parameters,
+                implementation = implementation
+            };
+        }
+
+        public override Delegate MakeDelegate(Type delegateType)
+        {
+            try
+            {
+                var methodInfo = method as MethodInfo;
+                return methodInfo.CreateDelegate(delegateType, hardTarget);
+            }
+            catch
+            {
+            }
+
+            return base.MakeDelegate(delegateType);
+        }
+#endif
     }
 }

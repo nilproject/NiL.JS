@@ -1027,12 +1027,20 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+#if DEVELOPBRANCH || VERSION21
+        public virtual JSValue bind(Arguments args)
+#else
         public JSValue bind(Arguments args)
+#endif
         {
-            var newThis = args.Length > 0 ? args[0] : null;
+            if (args.Length == 0)
+                return this;
+
+            var newThis = args[0];
             var strict = (creator.body != null && creator.body._strict) || Context.CurrentContext.strict;
             if ((newThis != null && newThis.valueType > JSValueType.Undefined) || strict)
                 return new BindedFunction(this, args);
+
             return this;
         }
 
