@@ -436,32 +436,35 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         internal object InvokeImpl(JSValue thisBind, object[] args, Arguments argsSource)
         {
-            object target = null;
-            if (forceInstance)
+            object target = hardTarget;
+            if (target == null)
             {
-                if (thisBind != null && thisBind.valueType >= JSValueType.Object)
+                if (forceInstance)
                 {
-                    // Объект нужно развернуть до основного значения. Даже если это обёртка над примитивным значением
-                    target = thisBind.Value;
-                    if (target is TypeProxy)
-                        target = (target as TypeProxy).prototypeInstance ?? thisBind.Value;
-                    // ForceInstance работает только если первый аргумент типа JSValue
-                    if (!(target is JSValue))
-                        target = thisBind;
+                    if (thisBind != null && thisBind.valueType >= JSValueType.Object)
+                    {
+                        // Объект нужно развернуть до основного значения. Даже если это обёртка над примитивным значением
+                        target = thisBind.Value;
+                        if (target is TypeProxy)
+                            target = (target as TypeProxy).prototypeInstance ?? thisBind.Value;
+                        // ForceInstance работает только если первый аргумент типа JSValue
+                        if (!(target is JSValue))
+                            target = thisBind;
+                    }
+                    else
+                        target = thisBind ?? undefined;
                 }
-                else
-                    target = thisBind ?? undefined;
-            }
-            else if (!method.IsStatic && !method.IsConstructor)
-            {
-                target = hardTarget ?? getTargetObject(thisBind ?? undefined, method.DeclaringType);
-                if (target == null)
+                else if (!method.IsStatic && !method.IsConstructor)
                 {
-                    // Исключительная ситуация. Я не знаю почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
-                    if (method.Name == "get_length" && typeof(Function).IsAssignableFrom(method.DeclaringType))
-                        return 0;
+                    target = getTargetObject(thisBind ?? undefined, method.DeclaringType);
+                    if (target == null)
+                    {
+                        // Исключительная ситуация. Я не знаю почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
+                        if (method.Name == "get_length" && typeof(Function).IsAssignableFrom(method.DeclaringType))
+                            return 0;
 
-                    ExceptionsHelper.Throw(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+                        ExceptionsHelper.Throw(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+                    }
                 }
             }
 
@@ -614,10 +617,12 @@ namespace NiL.JS.Core.Functions
 
             return new MethodProxy()
             {
-                hardTarget = getTargetObject(args[0], method.DeclaringType),
+                hardTarget = getTargetObject(args[0], method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
                 method = method,
                 parameters = parameters,
-                implementation = implementation
+                implementation = implementation,
+                forceInstance = forceInstance,
+                raw = raw
             };
         }
 

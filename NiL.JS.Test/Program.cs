@@ -67,7 +67,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 101
+            int mode = 2
                     ;
             switch (mode)
             {

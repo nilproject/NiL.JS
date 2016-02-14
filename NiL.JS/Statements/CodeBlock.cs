@@ -753,7 +753,8 @@ namespace NiL.JS.Statements
                 if (base.Length > 0)
                 {
                     Length = -base.Length;
-                    code = code.Substring(Position + 1, Length - 2);
+                    if (Position > 0)
+                        code = code.Substring(Position + 1, Length - 2);
                 }
 
                 return '{' + code + '}';
