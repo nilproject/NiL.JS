@@ -48,7 +48,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var value = body == null ? JSValue.undefined : body.Evaluate(context);
-            if (context.abortReason == AbortReason.Suspend)
+            if (context.executionMode == AbortReason.Suspend)
                 return null;
 
             ExceptionsHelper.Throw(value);

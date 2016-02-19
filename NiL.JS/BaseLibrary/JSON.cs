@@ -155,7 +155,6 @@ namespace NiL.JS.BaseLibrary
                         ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
                     stack.Peek().value = JSObject.CreateObject();
                     stack.Peek().state = ParseState.Object;
-                    //stack.Push(new StackFrame() { state = ParseState.Name, container = stack.Peek().value });
                     pos++;
                 }
                 else if (code[pos] == '[')
@@ -164,7 +163,6 @@ namespace NiL.JS.BaseLibrary
                         ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
                     stack.Peek().value = new Array();
                     stack.Peek().state = ParseState.Array;
-                    //stack.Push(new StackFrame() { state = ParseState.Value, fieldName = (stack.Peek().valuesCount++).ToString(CultureInfo.InvariantCulture), container = stack.Peek().value });
                     pos++;
                 }
                 else if (stack.Peek().state != ParseState.End)
@@ -298,7 +296,7 @@ namespace NiL.JS.BaseLibrary
             return stringifyImpl("", obj, replacer, space, new List<JSValue>(), new Arguments());
         }
 
-        private static void escapeIfNeed(StringBuilder sb, char c)
+        internal static void escapeIfNeed(StringBuilder sb, char c)
         {
             if ((c >= 0 && c <= 0x1f)
                 || (c == '\\')

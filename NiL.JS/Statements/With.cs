@@ -76,7 +76,7 @@ namespace NiL.JS.Statements
             WithContext intcontext = null;
             Action<Context> action = null;
 
-            if (context.abortReason >= AbortReason.Resume)
+            if (context.executionMode >= AbortReason.Resume)
             {
                 action = context.SuspendData[this] as Action<Context>;
                 if (action != null)
@@ -87,11 +87,11 @@ namespace NiL.JS.Statements
             }
 
 #if DEV
-            if (context.abortReason != AbortReason.Resume && context.debugging)
+            if (context.executionMode != AbortReason.Resume && context.debugging)
                 context.raiseDebugger(scope);
 #endif
             scopeObject = scope.Evaluate(context);
-            if (context.abortReason == AbortReason.Suspend)
+            if (context.executionMode == AbortReason.Suspend)
             {
                 context.SuspendData[this] = null;
                 return null;
@@ -106,13 +106,13 @@ namespace NiL.JS.Statements
             {
                 try
                 {
-                    intcontext.abortReason = c.abortReason;
-                    intcontext.abortInfo = c.abortInfo;
+                    intcontext.executionMode = c.executionMode;
+                    intcontext.executionInfo = c.executionInfo;
                     intcontext.Activate();
                     c.lastResult = body.Evaluate(intcontext) ?? intcontext.lastResult;
-                    c.abortReason = intcontext.abortReason;
-                    c.abortInfo = intcontext.abortInfo;
-                    if (c.abortReason == AbortReason.Suspend)
+                    c.executionMode = intcontext.executionMode;
+                    c.executionInfo = intcontext.executionInfo;
+                    if (c.executionMode == AbortReason.Suspend)
                     {
                         c.SuspendData[this] = action;
                     }

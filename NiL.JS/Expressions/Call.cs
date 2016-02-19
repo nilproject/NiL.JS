@@ -120,7 +120,7 @@ namespace NiL.JS.Expressions
 
         private void tailCall(Context context, Function func)
         {
-            context.abortReason = AbortReason.TailRecursion;
+            context.executionMode = AbortReason.TailRecursion;
 
             var arguments = new Arguments(context)
             {
@@ -131,7 +131,7 @@ namespace NiL.JS.Expressions
             context.objectSource = null;
 
             arguments.callee = func;
-            context.abortInfo = arguments;
+            context.executionInfo = arguments;
         }
 
         private static void checkStack()

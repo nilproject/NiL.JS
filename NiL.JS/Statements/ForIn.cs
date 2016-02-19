@@ -170,7 +170,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             SuspendData suspendData = null;
-            if (context.abortReason >= AbortReason.Resume)
+            if (context.executionMode >= AbortReason.Resume)
             {
                 suspendData = context.SuspendData[this] as SuspendData;
             }
@@ -183,7 +183,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(_source);
 #endif
                 source = _source.Evaluate(context);
-                if (context.abortReason == AbortReason.Suspend)
+                if (context.executionMode == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;
@@ -212,7 +212,7 @@ namespace NiL.JS.Statements
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
-                if (context.abortReason == AbortReason.Suspend)
+                if (context.executionMode == AbortReason.Suspend)
                 {
                     if (suspendData == null)
                         suspendData = new SuspendData();
@@ -234,9 +234,9 @@ namespace NiL.JS.Statements
             while (source != null)
             {
                 var keys = (suspendData != null ? suspendData.keys : null) ?? source.GetEnumerator(false, EnumerationMode.RequireValues);
-                while (context.abortReason >= AbortReason.Resume || keys.MoveNext())
+                while (context.executionMode >= AbortReason.Resume || keys.MoveNext())
                 {
-                    if (context.abortReason != AbortReason.Resume)
+                    if (context.executionMode != AbortReason.Resume)
                     {
                         var key = keys.Current.Key;
                         variable.valueType = JSValueType.String;
@@ -252,21 +252,21 @@ namespace NiL.JS.Statements
 #endif
                     }
                     context.lastResult = _body.Evaluate(context) ?? context.lastResult;
-                    if (context.abortReason != AbortReason.None)
+                    if (context.executionMode != AbortReason.None)
                     {
-                        if (context.abortReason < AbortReason.Return)
+                        if (context.executionMode < AbortReason.Return)
                         {
-                            var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                            var _break = (context.abortReason > AbortReason.Continue) || !me;
+                            var me = context.executionInfo == null || System.Array.IndexOf(labels, context.executionInfo.oValue as string) != -1;
+                            var _break = (context.executionMode > AbortReason.Continue) || !me;
                             if (me)
                             {
-                                context.abortReason = AbortReason.None;
-                                context.abortInfo = JSValue.notExists;
+                                context.executionMode = AbortReason.None;
+                                context.executionInfo = JSValue.notExists;
                             }
                             if (_break)
                                 return null;
                         }
-                        else if (context.abortReason == AbortReason.Suspend)
+                        else if (context.executionMode == AbortReason.Suspend)
                         {
                             if (suspendData == null)
                                 suspendData = new SuspendData();

@@ -274,7 +274,7 @@ namespace NiL.JS.Statements
             int i = 0;
             bool clearSuspendData = false;
 
-            if (context.abortReason >= AbortReason.Resume)
+            if (context.executionMode >= AbortReason.Resume)
             {
                 var suspendData = context.SuspendData[this] as SuspendData;
                 context = suspendData.Context;
@@ -291,8 +291,8 @@ namespace NiL.JS.Statements
                         variables = _variables,
                         thisBind = context.thisBind,
                         strict = context.strict,
-                        abortInfo = context.abortInfo,
-                        abortReason = context.abortReason
+                        executionInfo = context.executionInfo,
+                        executionMode = context.executionMode
                     };
                 }
 
@@ -322,8 +322,8 @@ namespace NiL.JS.Statements
                     if (activated)
                         context.Deactivate();
                     context.parent.lastResult = context.lastResult;
-                    context.parent.abortInfo = context.abortInfo;
-                    context.parent.abortReason = context.abortReason;
+                    context.parent.executionInfo = context.executionInfo;
+                    context.parent.executionMode = context.executionMode;
                     if (_variables.Length != 0)
                         clearVariablesCache();
                 }
@@ -377,9 +377,9 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
-                if (context.abortReason != AbortReason.None)
+                if (context.executionMode != AbortReason.None)
                 {
-                    if (context.abortReason == AbortReason.Suspend)
+                    if (context.executionMode == AbortReason.Suspend)
                     {
                         context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
                     }

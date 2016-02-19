@@ -119,7 +119,7 @@ namespace NiL.JS.Core
 
                 globalContext.DefineConstructor(typeof(Debug));
 
-                #region Base Function
+#region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());
                 globalContext.fields["eval"].attributes |= JSValueAttributesInternal.Eval;
                 globalContext.DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
@@ -135,13 +135,13 @@ namespace NiL.JS.Core
 #if !PORTABLE
                 globalContext.DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
 #endif
-                #endregion
-                #region Consts
+#endregion
+#region Consts
                 globalContext.fields["undefined"] = JSValue.undefined;
                 globalContext.fields["Infinity"] = Number.POSITIVE_INFINITY;
                 globalContext.fields["NaN"] = Number.NaN;
                 globalContext.fields["null"] = JSValue.@null;
-                #endregion
+#endregion
 
                 foreach (var v in globalContext.fields.Values)
                     v.attributes |= JSValueAttributesInternal.DoNotEnumerate;
@@ -168,10 +168,10 @@ namespace NiL.JS.Core
         /// отсутствует вероятность конфликта при использовании данного поля.
         /// </remarks>
         /// </summary>
-        internal AbortReason abortReason;
+        internal AbortReason executionMode;
         internal JSValue objectSource;
         internal JSValue tempContainer;
-        internal JSValue abortInfo;
+        internal JSValue executionInfo;
         internal JSValue lastResult;
         internal JSValue arguments;
         internal JSValue thisBind;
@@ -261,7 +261,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return abortReason;
+                return executionMode;
             }
         }
 
@@ -269,7 +269,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return abortInfo;
+                return executionInfo;
             }
         }
 
@@ -310,7 +310,7 @@ namespace NiL.JS.Core
             }
             if (createFields)
                 this.fields = JSObject.getFieldsContainer();
-            this.abortInfo = JSValue.notExists;
+            this.executionInfo = JSValue.notExists;
         }
 
         /// <summary>
@@ -544,8 +544,8 @@ namespace NiL.JS.Core
 
         public void SetAbortState(AbortReason abortReason, JSValue abortInfo)
         {
-            this.abortReason = abortReason;
-            this.abortInfo = abortInfo;
+            this.executionMode = abortReason;
+            this.executionInfo = abortInfo;
         }
 
         /// <summary>
@@ -726,7 +726,7 @@ namespace NiL.JS.Core
             return this == globalContext ? "Global context" : "Context";
         }
 
-        #region Temporal Wrapping
+#region Temporal Wrapping
 
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -757,6 +757,6 @@ namespace NiL.JS.Core
             return tempContainer;
         }
 
-        #endregion
+#endregion
     }
 }

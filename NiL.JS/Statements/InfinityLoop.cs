@@ -32,16 +32,16 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(body);
 #endif
                 context.lastResult = body.Evaluate(context) ?? context.lastResult;
-                if (context.abortReason != AbortReason.None)
+                if (context.executionMode != AbortReason.None)
                 {
-                    if (context.abortReason < AbortReason.Return)
+                    if (context.executionMode < AbortReason.Return)
                     {
-                        var me = context.abortInfo == null || System.Array.IndexOf(labels, context.abortInfo.oValue as string) != -1;
-                        var _break = (context.abortReason > AbortReason.Continue) || !me;
+                        var me = context.executionInfo == null || System.Array.IndexOf(labels, context.executionInfo.oValue as string) != -1;
+                        var _break = (context.executionMode > AbortReason.Continue) || !me;
                         if (me)
                         {
-                            context.abortReason = AbortReason.None;
-                            context.abortInfo = JSValue.notExists;
+                            context.executionMode = AbortReason.None;
+                            context.executionInfo = JSValue.notExists;
                         }
                         if (_break)
                             return null;

@@ -954,6 +954,24 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
+        public static JSValue raw(Arguments args)
+        {
+            var result = new StringBuilder();
+            var strings = args[0].Value as Array ?? Tools.arraylikeToArray(args[0], true, false, false, -1);
+
+            for (var i = 0; i < strings.data.Length; i++)
+            {
+                if (i > 0)
+                {
+                    result.Append(args[i]);
+                }
+
+                result.Append(strings.data[i]);
+            }
+
+            return result.ToString();
+        }
+
         #region HTML Wraping
         [DoNotEnumerate]
         [InstanceMember]

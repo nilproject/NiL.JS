@@ -174,14 +174,14 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             int i = 0;
-            if (context.abortReason >= AbortReason.Resume)
+            if (context.executionMode >= AbortReason.Resume)
             {
                 i = (int)context.SuspendData[this];
             }
 
             for (; i < initializers.Length; i++)
             {
-                if (context.abortReason == AbortReason.None && mode > VariableKind.FunctionScope && variables[i].lexicalScope)
+                if (context.executionMode == AbortReason.None && mode > VariableKind.FunctionScope && variables[i].lexicalScope)
                 {
                     JSValue f = context.DefineVariable(variables[i].name, false);
 
@@ -194,7 +194,7 @@ namespace NiL.JS.Statements
 
                 initializers[i].Evaluate(context);
 
-                if (context.abortReason == AbortReason.Suspend)
+                if (context.executionMode == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = i;
                     return null;

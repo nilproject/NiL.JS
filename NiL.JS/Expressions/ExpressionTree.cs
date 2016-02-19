@@ -819,7 +819,7 @@ namespace NiL.JS.Expressions
                                     ExceptionsHelper.ThrowSyntaxError("Unexpected end of source", state.Code, i);
 
                                 var spread = Parser.Validate(state.Code, "...", ref i);
-                                args.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
+                                args.Add(Parse(state, ref i, false, false));
                                 if (spread)
                                 {
                                     args[args.Count - 1] = new Spread(args[args.Count - 1]);
@@ -828,13 +828,30 @@ namespace NiL.JS.Expressions
                                 if (args[args.Count - 1] == null)
                                     ExceptionsHelper.ThrowSyntaxError("Expected \")\"", state.Code, startPos);
                             }
+
                             first = new Call(first, args.ToArray())
                             {
                                 Position = first.Position,
                                 Length = i - first.Position + 1,
                                 withSpread = withSpread
                             };
+
                             i++;
+                            repeat = !forNew;
+                            canAsign = false;
+                            binary = false;
+                            break;
+                        }
+                    case '`':
+                        {
+                            var template = TemplateString.Parse(state, ref i, TemplateStringMode.Tag);
+                            first = new Call(first, new Expression[] { template })
+                            {
+                                Position = first.Position,
+                                Length = i - first.Position + 1,
+                                withSpread = true
+                            };
+                            
                             repeat = !forNew;
                             canAsign = false;
                             binary = false;

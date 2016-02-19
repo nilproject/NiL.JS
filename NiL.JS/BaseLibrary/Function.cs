@@ -478,10 +478,10 @@ namespace NiL.JS.BaseLibrary
                 try
                 {
                     res = evaluate(internalContext);
-                    if (internalContext.abortReason == AbortReason.TailRecursion)
+                    if (internalContext.executionMode == AbortReason.TailRecursion)
                     {
                         tailCall = true;
-                        args = internalContext.abortInfo as Arguments;
+                        args = internalContext.executionInfo as Arguments;
                     }
                     else
                         tailCall = false;
@@ -572,7 +572,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 if (res != null) // tail recursion
                     break;
-                arguments = internalContext.abortInfo as Arguments;
+                arguments = internalContext.executionInfo as Arguments;
                 targetObject = correctTargetObject(internalContext.objectSource, body._strict);
             }
             return res;
@@ -581,9 +581,9 @@ namespace NiL.JS.BaseLibrary
         internal JSValue evaluate(Context internalContext)
         {
             creator.body.Evaluate(internalContext);
-            if (internalContext.abortReason == AbortReason.TailRecursion)
+            if (internalContext.executionMode == AbortReason.TailRecursion)
                 return null;
-            var ai = internalContext.abortInfo;
+            var ai = internalContext.executionInfo;
             if (ai == null || ai.valueType < JSValueType.Undefined)
             {
                 notExists.valueType = JSValueType.NotExists;
@@ -603,7 +603,7 @@ namespace NiL.JS.BaseLibrary
         private void exit(Context internalContext)
         {
             creator?.body?.clearVariablesCache();
-            internalContext.abortReason = AbortReason.Return;
+            internalContext.executionMode = AbortReason.Return;
             internalContext.Deactivate();
         }
 
