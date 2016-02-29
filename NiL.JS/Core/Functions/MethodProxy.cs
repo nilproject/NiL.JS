@@ -87,12 +87,12 @@ namespace NiL.JS.Core.Functions
 
             for (int i = 0; i < parameters.Length; i++)
             {
-                var t = parameters[i].GetCustomAttribute(typeof(ConvertValueAttribute)) as ConvertValueAttribute;
-                if (t != null)
+                var t = parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false);
+                if (t != null && t.Length != 0)
                 {
                     if (paramsConverters == null)
                         paramsConverters = new ConvertValueAttribute[parameters.Length];
-                    paramsConverters[i] = t;
+                    paramsConverters[i] = t[0] as ConvertValueAttribute;
                 }
             }
 
@@ -554,18 +554,7 @@ namespace NiL.JS.Core.Functions
         {
             return TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
         }
-
-        private static object[] convertArray(BaseLibrary.Array array)
-        {
-            var arg = new object[array.data.Length];
-            for (var j = arg.Length; j-- > 0;)
-            {
-                var temp = (array.data[j] ?? undefined).Value;
-                arg[j] = temp is NiL.JS.BaseLibrary.Array ? convertArray(temp as NiL.JS.BaseLibrary.Array) : temp;
-            }
-            return arg;
-        }
-
+        
         internal static object[] argumentsToArray(Arguments source)
         {
             var len = source.length;
@@ -582,30 +571,7 @@ namespace NiL.JS.Core.Functions
             var v = Tools.convertJStoObj(obj, targetType);
             if (v != null)
                 return v;
-            v = obj.Value;
-            if (v is BaseLibrary.Array)
-                return convertArray(v as BaseLibrary.Array);
-            else if (v is ProxyConstructor)
-                return (v as ProxyConstructor).proxy.hostedType;
-            else if (v is Function && targetType.IsSubclassOf(typeof(Delegate)))
-                return (v as Function).MakeDelegate(targetType);
-            else if (targetType.IsArray)
-            {
-                var eltype = targetType.GetElementType();
-#if PORTABLE
-                if (eltype.GetTypeInfo().IsPrimitive)
-                {
-#else
-                if (eltype.IsPrimitive)
-                {
-#endif
-                    if (eltype == typeof(byte) && v is ArrayBuffer)
-                        return (v as ArrayBuffer).GetData();
-                    var ta = v as TypedArray;
-                    if (ta != null && ta.ElementType == eltype)
-                        return ta.ToNativeArray();
-                }
-            }
+            
             return v;
         }
 

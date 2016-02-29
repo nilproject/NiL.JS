@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
+using NiL.JS.Extensions;
 
 namespace NiL.JS
 {
     /// <summary>
-    /// Предоставляет доступ к указанному при создании пространству имён.
+    /// Provides access to a CLR-namespace
     /// </summary>
 #if !PORTABLE
     [Serializable]
@@ -46,34 +48,20 @@ namespace NiL.JS
             addTypes(args.LoadedAssembly);
         }
 
-        private Dictionary<string, GenericType> unions;
         private BinaryTree<JSValue> childs;
 
         /// <summary>
-        /// Пространство имён, доступ к которому предоставляет указанный экземпляр.
+        /// Contract NamespacesProvider
         /// </summary>
         public string Namespace { get; private set; }
 
         /// <summary>
-        /// Создаёт экземпляр объекта, предоставляющего доступ к указанному пространству имён.
+        /// Contract NamespacesProvider
         /// </summary>
-        /// <param name="namespace">Пространство имён, доступ к которому требуется предоставить.</param>
+        /// <param name="namespace">Namespace</param>
         public NamespaceProvider(string @namespace)
         {
             Namespace = @namespace;
-        }
-
-        /// <summary>
-        /// Создаёт экземпляр объекта, предоставляющего доступ к указанному пространству имён.
-        /// </summary>
-        /// <param name="namespace">Пространство имён, доступ к которому требуется предоставить.</param>
-        /// <param name="union">Если установлено, одноимённые обобщённые типы будут объеденены в псевдотип под общим названием без указания количества обобщённых аргументов,
-        /// конструктор которого будет возвращать соответствующую реализацию обобщённого типа.</param>
-        public NamespaceProvider(string @namespace, bool union)
-            : this(@namespace)
-        {
-            if (union)
-                unions = new Dictionary<string, GenericType>();
         }
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
@@ -86,46 +74,75 @@ namespace NiL.JS
                     return res;
                 string reqname = Namespace + "." + name;
                 var selection = types.StartedWith(reqname).GetEnumerator();
-                if (selection.MoveNext())
+
+                Type resultType = null;
+                List<Type> ut = null;
+
+                while (selection.MoveNext())
                 {
-                    if (unions != null && selection.Current.Key != reqname && selection.Current.Value.FullName[reqname.Length] == '`')
+                    if (selection.Current.Value.FullName[reqname.Length] == '`')
                     {
-                        var ut = new GenericType(reqname);
-                        ut.Add(selection.Current.Value);
-                        while (selection.MoveNext())
-                            if (selection.Current.Value.FullName[reqname.Length] == '`')
+                        string fn = selection.Current.Value.FullName;
+                        for (var i = fn.Length - 1; i > reqname.Length; i--)
+                        {
+                            if (!Tools.IsDigit(fn[i]))
                             {
-                                string fn = selection.Current.Value.FullName;
-                                for (var i = fn.Length - 1; i > reqname.Length; i--)
-                                    if (!Tools.IsDigit(fn[i]))
-                                    {
-                                        fn = null;
-                                        break;
-                                    }
-                                if (fn != null)
-                                    ut.Add(selection.Current.Value);
+                                fn = null;
+                                break;
                             }
-                        res = TypeProxy.GetConstructor(ut);
-                        if (childs == null)
-                            childs = new BinaryTree<JS.Core.JSValue>();
-                        childs[name] = res;
-                        return res;
+                        }
+
+                        if (fn != null)
+                        {
+                            if (resultType == null)
+                            {
+                                resultType = selection.Current.Value;
+                            }
+                            else
+                            {
+                                if (ut == null)
+                                    ut = new List<Type> { resultType };
+
+                                ut.Add(selection.Current.Value);
+                            }
+                        }
                     }
-                    if (selection.Current.Key == reqname)
-                        return TypeProxy.GetConstructor(selection.Current.Value);
-                    res = new NamespaceProvider(reqname, unions != null);
+                    else if (selection.Current.Value.Name != name)
+                        break;
+                    else
+                        resultType = selection.Current.Value;
+                }
+
+                if (ut != null)
+                {
+                    res = TypeProxy.GetGenericTypeSelector(ut);
+
+                    if (childs == null)
+                        childs = new BinaryTree<JSValue>();
+
+                    childs[name] = res;
+                    return res;
+                }
+
+                if (resultType != null)
+                    return TypeProxy.GetConstructor(resultType);
+
+                selection.Reset();
+                if (selection.MoveNext() && selection.Current.Key[reqname.Length] == '.')
+                {
+                    res = new NamespaceProvider(reqname);
+
+                    if (childs == null)
+                        childs = new BinaryTree<JSValue>();
+
                     childs.Add(name, res);
                     return res;
                 }
             }
+
             return base.GetProperty(key, forWrite, memberScope);
         }
 
-        /// <summary>
-        /// Возвращает тип, доступный в текущем домене по его имени.
-        /// </summary>
-        /// <param name="name">Имя типа, который необходимо вернуть.</param>
-        /// <returns>Запрошенный тип или null, если такой тип не загружен в домен.</returns>
         public static Type GetType(string name)
         {
             var selection = types.StartedWith(name).GetEnumerator();
@@ -134,10 +151,6 @@ namespace NiL.JS
             return null;
         }
 
-        /// <summary>
-        /// Перечисляет типы, полные имена которых начинаются с указанного префикса.
-        /// </summary>
-        /// <param name="name">Префикс имен типов.</param>
         public static IEnumerable<Type> GetTypesByPrefix(string prefix)
         {
             foreach (KeyValuePair<string, Type> type in types.StartedWith(prefix))

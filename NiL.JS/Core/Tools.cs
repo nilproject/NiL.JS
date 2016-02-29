@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 
@@ -464,8 +465,10 @@ namespace NiL.JS.Core
         {
             if (jsobj == null)
                 return null;
+
             if (targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
+
             object value = null;
             switch (jsobj.valueType)
             {
@@ -473,7 +476,11 @@ namespace NiL.JS.Core
                     {
                         if (targetType == typeof(bool))
                             return jsobj.iValue != 0;
-                        break;
+
+                        if (targetType == typeof(BaseLibrary.Boolean))
+                            return new BaseLibrary.Boolean(jsobj.iValue != 0);
+
+                        return null;
                     }
                 case JSValueType.Double:
                     {
@@ -481,17 +488,17 @@ namespace NiL.JS.Core
                             return (double)jsobj.dValue;
                         if (targetType == typeof(float))
                             return (float)jsobj.dValue;
-                        break;
+
+                        if (targetType == typeof(Number))
+                            return new Number(jsobj.dValue);
+
+                        return null;
                     }
                 case JSValueType.Integer:
                     {
                         if (targetType == typeof(int))
                             return (int)jsobj.iValue;
 
-                        //if (targetType == typeof(byte)) return (byte)jsobj.iValue;
-                        //if (targetType == typeof(sbyte)) return (sbyte)jsobj.iValue;
-                        //if (targetType == typeof(short)) return (short)jsobj.iValue;
-                        //if (targetType == typeof(ushort)) return (ushort)jsobj.iValue;
                         if (targetType == typeof(uint))
                             return (uint)jsobj.iValue;
                         if (targetType == typeof(long))
@@ -504,14 +511,34 @@ namespace NiL.JS.Core
                             return (float)jsobj.iValue;
                         if (targetType == typeof(decimal))
                             return (float)jsobj.iValue;
-                        break;
+
+                        if (targetType == typeof(Number))
+                            return new Number(jsobj.iValue);
+
+                        return null;
+                    }
+                case JSValueType.String:
+                    {
+                        if (targetType == typeof(BaseLibrary.String))
+                            return new BaseLibrary.String(jsobj.Value.ToString());
+
+                        return null;
+                    }
+                case JSValueType.Symbol:
+                    {
+                        if (targetType == typeof(Symbol))
+                            return jsobj.Value as Symbol;
+
+                        return null;
                     }
                 default:
                     value = jsobj.Value;
                     break;
             }
+
             if (value == null)
                 return null;
+
             if (targetType.IsAssignableFrom(value.GetType()))
                 return value;
 #if PORTABLE
@@ -529,7 +556,43 @@ namespace NiL.JS.Core
                     return jsobj.Value;
                 return jsobj;
             }
+
+            if (value is BaseLibrary.Array)
+                return convertArray(value as BaseLibrary.Array);
+            else if (value is ProxyConstructor)
+                return (value as ProxyConstructor).proxy.hostedType;
+            else if (value is Function && targetType.IsSubclassOf(typeof(Delegate)))
+                return (value as Function).MakeDelegate(targetType);
+            else if (targetType.IsArray)
+            {
+                var eltype = targetType.GetElementType();
+#if PORTABLE
+                if (eltype.GetTypeInfo().IsPrimitive)
+                {
+#else
+                if (eltype.IsPrimitive)
+                {
+#endif
+                    if (eltype == typeof(byte) && value is ArrayBuffer)
+                        return (value as ArrayBuffer).GetData();
+                    var ta = value as TypedArray;
+                    if (ta != null && ta.ElementType == eltype)
+                        return ta.ToNativeArray();
+                }
+            }
+
             return null;
+        }
+
+        private static object[] convertArray(BaseLibrary.Array array)
+        {
+            var arg = new object[array.data.Length];
+            for (var j = arg.Length; j-- > 0;)
+            {
+                var temp = (array.data[j] ?? JSValue.undefined).Value;
+                arg[j] = temp is BaseLibrary.Array ? convertArray(temp as NiL.JS.BaseLibrary.Array) : temp;
+            }
+            return arg;
         }
 
         private struct DoubleStringCacheItem
@@ -1328,7 +1391,7 @@ namespace NiL.JS.Core
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
         {
             var length = src.GetProperty("length", true, PropertyScope.Сommon); // тут же проверка на null/undefined с падением если надо
-            
+
             var result = (uint)JSObjectToInt64(InvokeGetter(length, src).ToPrimitiveValue_Value_String(), 0, false);
             if (reassignLen)
             {

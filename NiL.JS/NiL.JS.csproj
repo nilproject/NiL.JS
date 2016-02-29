@@ -292,7 +292,6 @@
     <Compile Include="Core\Interop\NativeList.cs" />
     <Compile Include="Core\ObjectWrapper.cs" />
     <Compile Include="Core\VariableDescriptor.cs" />
-    <Compile Include="Core\Interop\GenericType.cs" />
     <Compile Include="Core\VariableReference.cs" />
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\Interop\DoNotEnumerateAttribute.cs" />

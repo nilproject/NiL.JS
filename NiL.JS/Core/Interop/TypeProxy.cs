@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Core.Functions;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Core.Interop
 {
@@ -361,7 +362,7 @@ namespace NiL.JS.Core.Interop
             }
             return prot;
         }
-
+        
         public static JSValue GetConstructor(Type type)
         {
             JSValue constructor = null;
@@ -369,10 +370,14 @@ namespace NiL.JS.Core.Interop
             {
                 lock (staticProxies)
                 {
+                    if (type.ContainsGenericParameters)
+                        return staticProxies[type] = GetGenericTypeSelector(new[] { type });
+
                     new TypeProxy(type); // It's ok. This instance will be registered and saved
                     constructor = staticProxies[type];
                 }
             }
+
             return constructor;
         }
 
@@ -440,10 +445,10 @@ namespace NiL.JS.Core.Interop
                     if ((mmbrs[i] is FieldInfo) && (!(mmbrs[i] as FieldInfo).IsPublic || (mmbrs[i] as FieldInfo).IsStatic != !InstanceMode))
                         continue;
 #if PORTABLE
-                        if ((mmbrs[i] is TypeInfo) && !(mmbrs[i] as TypeInfo).IsPublic)
-                            continue;
+                    if ((mmbrs[i] is TypeInfo) && !(mmbrs[i] as TypeInfo).IsPublic)
+                        continue;
 #else
-                    if ((mmbrs[i] is Type) && !(mmbrs[i] as Type).IsPublic)
+                    if ((mmbrs[i] is Type) && !(mmbrs[i] as Type).IsPublic && !(mmbrs[i] as Type).IsNestedPublic)
                         continue;
 #endif
                     if (mmbrs[i] is MethodBase)
@@ -457,8 +462,12 @@ namespace NiL.JS.Core.Interop
                         if (mmbrs[i] is ConstructorInfo)
                             continue;
                     }
+
                     var membername = mmbrs[i].Name;
                     membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
+
+                    if (mmbrs[i] is Type && membername.Contains('`'))
+                        membername = membername.Substring(0, membername.IndexOf('`'));
 
                     if (prewName != membername)
                     {

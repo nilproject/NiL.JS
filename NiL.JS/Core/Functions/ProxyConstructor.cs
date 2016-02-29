@@ -56,6 +56,7 @@ namespace NiL.JS.Core.Functions
         {
             fields = typeProxy.fields;
             proxy = typeProxy;
+
 #if PORTABLE
             if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
                 ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
@@ -65,8 +66,10 @@ namespace NiL.JS.Core.Functions
 #endif
             var ownew = typeProxy.hostedType.IsDefined(typeof(RequireNewKeywordAttribute), true);
             var owonew = typeProxy.hostedType.IsDefined(typeof(DisallowNewKeywordAttribute), true);
+
             if (ownew && owonew)
                 throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
+
             if (ownew)
                 RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
             if (owonew)
@@ -240,6 +243,7 @@ namespace NiL.JS.Core.Functions
                         if ((res.oValue is JSValue) && (res.oValue as JSValue).valueType >= JSValueType.Object)
                             return res.oValue as JSValue;
                     }
+
                     res = res ?? new ObjectWrapper(obj)
                     {
                         attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)

@@ -11,29 +11,51 @@ using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Extensions;
+using System.Collections.Generic;
+using System.Collections;
 
 namespace NiL.JS.Test
 {
-    class Program
+    public class TestClass
     {
-        internal class TestClass
+        [DoNotDelete]
+        public int Property { get; set; }
+
+        public void PrintProperty()
         {
-            [DoNotDelete]
-            public int Property { get; set; }
-
-            public void PrintProperty()
-            {
-                Console.WriteLine(Property);
-            }
+            Console.WriteLine(Property);
         }
+    }
 
+    public class TestClass<T>
+    {
+        [DoNotDelete]
+        public int Property { get; set; }
+
+        public void PrintProperty()
+        {
+            Console.WriteLine(Property);
+        }
+    }
+
+    public class Program
+    {
         private static void testEx()
         {
             var context = new Context();
-            context.DefineVariable("a").Assign(JSObject.Marshal(new[] { new TestClass { Property = 123 }, new TestClass { Property = 456 } }));
-            context.Eval("var b = a[0].PrintProperty.bind(a[0]);");
-            var d = context.GetVariable("b").As<Action>();
-            d();
+            context.DefineVariable("test").Assign(JSValue.Marshal(new { List = JSValue.GetGenericTypeSelector(new[] { typeof(List<>), typeof(ArrayList) }) }));
+            context.Eval(@"
+var list = test.List()(); 
+list.Add(1); 
+list.Add('2');
+console.log(list.get_Item(0));
+console.log(list.get_Item(1));
+
+var list = test.List(Number)(); 
+list.Add(1); 
+list.Add('2');
+console.log(list.get_Item(0));
+console.log(list.get_Item(1));");
         }
 
         static void Main(string[] args)
@@ -67,7 +89,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 2
+            int mode = 3
                     ;
             switch (mode)
             {
@@ -344,7 +366,6 @@ ast.print_to_string();");
             bool showAll = false;
             bool refresh = true;
             int lastUpdate = Environment.TickCount;
-
             Action<string> _ = Console.WriteLine;
             var sw = new Stopwatch();
             int passed = 0;
@@ -353,15 +374,18 @@ ast.print_to_string();");
             bool negative = false;
             string staCode = "";
             Module s = null;
+
             _("Sputnik testing begun...");
+
             _("Load sta.js...");
             using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
                 staCode = new StreamReader(staFile).ReadToEnd();
-            _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
 
+            _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
             _("Scaning directory...");
             var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
             _("Found " + fls.Length + " js-files");
+
             bool skipedShowed = false;
             sw.Start();
             for (int i = 0; i < fls.Length; i++)
