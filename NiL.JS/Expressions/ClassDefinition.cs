@@ -45,7 +45,7 @@ namespace NiL.JS.Expressions
         private sealed class ClassConstructor : Function
         {
             private readonly ClassDefinition classDefinition;
-            public override string name
+            public override string _name
             {
                 get
                 {

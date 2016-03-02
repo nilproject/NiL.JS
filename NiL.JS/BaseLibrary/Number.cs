@@ -96,7 +96,7 @@ namespace NiL.JS.BaseLibrary
             valueType = JSValueType.Double;
             double d = 0;
             int i = 0;
-            if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, Tools.ParseNumberOptions.Default | (Context.CurrentContext.strict ? Tools.ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
+            if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, ParseNumberOptions.Default | (Context.CurrentContext.strict ? ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
                 dValue = d;
             attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
@@ -161,7 +161,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         double d = 0;
                         int i = 0;
-                        if (Tools.ParseNumber(digits.oValue.ToString(), i, out d, Tools.ParseNumberOptions.Default))
+                        if (Tools.ParseNumber(digits.oValue.ToString(), i, out d, ParseNumberOptions.Default))
                             dgts = (int)d;
                         break;
                     }

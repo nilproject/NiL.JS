@@ -23,7 +23,7 @@ namespace NiL.JS.Core.Functions
         private MethodProxy[] constructors;
 
         [Hidden]
-        public override string name
+        public override string _name
         {
             [Hidden]
             get

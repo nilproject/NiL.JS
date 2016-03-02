@@ -150,7 +150,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d = 0;
-                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, ParseNumberOptions.Default);
                             pos = (int)d;
                             break;
                         }
@@ -202,7 +202,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d = 0;
-                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, ParseNumberOptions.Default);
                             pos = (int)d;
                             break;
                         }
@@ -499,7 +499,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d;
-                            Tools.ParseNumber(limO.ToString(), 0, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber(limO.ToString(), 0, out d, ParseNumberOptions.Default);
                             limit = (uint)d;
                             break;
                         }
@@ -689,7 +689,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[0].ToString(), pos0, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber(args[0].ToString(), pos0, out d, ParseNumberOptions.Default);
                             pos0 = (int)d;
                             break;
                         }
@@ -718,7 +718,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), len, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber(args[1].ToString(), len, out d, ParseNumberOptions.Default);
                             len = (int)d;
                             break;
                         }

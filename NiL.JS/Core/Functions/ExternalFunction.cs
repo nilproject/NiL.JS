@@ -16,7 +16,7 @@ namespace NiL.JS.Core.Functions
     public sealed class ExternalFunction : Function
     {
         [Hidden]
-        public override string name
+        public override string _name
         {
             [Hidden]
             get

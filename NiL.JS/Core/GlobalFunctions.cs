@@ -27,7 +27,7 @@ namespace NiL.JS.Core
             {
                 double d = 0;
                 int i = 0;
-                if (Tools.ParseNumber(r.oValue.ToString(), i, out d, Tools.ParseNumberOptions.Default))
+                if (Tools.ParseNumber(r.oValue.ToString(), i, out d, ParseNumberOptions.Default))
                     return double.IsNaN(d);
                 return true;
             }
@@ -62,7 +62,7 @@ namespace NiL.JS.Core
                     (Number)System.Math.Truncate(source.dValue);
             var arg = source.ToString().Trim(Tools.TrimChars);
             if (!string.IsNullOrEmpty(arg))
-                Tools.ParseNumber(arg, out result, radix, Tools.ParseNumberOptions.AllowAutoRadix);
+                Tools.ParseNumber(arg, out result, radix, ParseNumberOptions.AllowAutoRadix);
             if (double.IsInfinity(result))
                 return Number.NaN;
             return System.Math.Truncate(result);
@@ -79,7 +79,7 @@ namespace NiL.JS.Core
                     source;
             var arg = source.ToString().Trim(Tools.TrimChars);
             if (!string.IsNullOrEmpty(arg))
-                Tools.ParseNumber(arg, out result, Tools.ParseNumberOptions.AllowFloat);
+                Tools.ParseNumber(arg, out result, ParseNumberOptions.AllowFloat);
             return result;
         }
 

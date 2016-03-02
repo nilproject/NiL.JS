@@ -27,11 +27,11 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        public override string name
+        public override string _name
         {
             get
             {
-                return methods[0].name;
+                return methods[0]._name;
             }
         }
 
@@ -92,7 +92,7 @@ namespace NiL.JS.Core.Functions
                     }
                 }
             }
-            ExceptionsHelper.Throw(new TypeError("Invalid arguments for function " + methods[0].name));
+            ExceptionsHelper.Throw(new TypeError("Invalid arguments for function " + methods[0]._name));
             return null;
         }
     }

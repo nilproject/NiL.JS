@@ -8,7 +8,7 @@ namespace NiL.JS.Core.Functions
     public sealed class EvalFunction : Function
     {
         [Hidden]
-        public override string name
+        public override string _name
         {
             [Hidden]
             get

@@ -37,7 +37,7 @@ namespace NiL.JS.Core.Functions
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public override string name
+        public override string _name
         {
             [Hidden]
             get
@@ -139,6 +139,7 @@ namespace NiL.JS.Core.Functions
                 },
                 typeof(MethodProxy),
                 true);
+
             var generator = impl.GetILGenerator();
 
             if (!methodInfo.IsStatic)
@@ -248,13 +249,23 @@ namespace NiL.JS.Core.Functions
                 }
             }
             if (methodInfo.IsStatic || method.DeclaringType.IsValueType)
+            {
                 generator.Emit(OpCodes.Call, methodInfo);
+            }
             else
+            {
                 generator.Emit(OpCodes.Callvirt, methodInfo);
+            }
+
             if (methodInfo.ReturnType == typeof(void))
+            {
                 generator.Emit(OpCodes.Ldnull);
+            }
             else if (methodInfo.ReturnType.IsValueType)
+            {
                 generator.Emit(OpCodes.Box, methodInfo.ReturnType);
+            }
+
             generator.Emit(OpCodes.Ret);
             implementation = (Func<object, object[], Arguments, object>)impl.CreateDelegate(typeof(Func<object, object[], Arguments, object>));
         }
@@ -378,14 +389,14 @@ namespace NiL.JS.Core.Functions
             {
                 if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
                 {
-                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
+                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, _name));
                 }
             }
             else
             {
                 if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithNewOnly)
                 {
-                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
+                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, _name));
                 }
             }
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
@@ -457,13 +468,17 @@ namespace NiL.JS.Core.Functions
                 else if (!method.IsStatic && !method.IsConstructor)
                 {
                     target = getTargetObject(thisBind ?? undefined, method.DeclaringType);
-                    if (target == null)
+                    if (target == null
+#if !PORTABLE
+                        || !method.DeclaringType.IsAssignableFrom(target.GetType())
+#endif
+                        )
                     {
                         // Исключительная ситуация. Я не знаю почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
                         if (method.Name == "get_length" && typeof(Function).IsAssignableFrom(method.DeclaringType))
                             return 0;
 
-                        ExceptionsHelper.Throw(new TypeError("Can not call function \"" + this.name + "\" for object of another type."));
+                        ExceptionsHelper.Throw(new TypeError("Can not call function \"" + _name + "\" for object of another type."));
                     }
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -16,6 +17,17 @@ using NiL.JS.Backward;
 
 namespace NiL.JS.Core
 {
+    [Flags]
+    public enum ParseNumberOptions
+    {
+        None = 0,
+        RaiseIfOctal = 1,
+        ProcessOctal = 2,
+        AllowFloat = 4,
+        AllowAutoRadix = 8,
+        Default = 2 + 4 + 8
+    }
+
     public sealed class CodeCoordinates
     {
         public int Line { get; private set; }
@@ -63,21 +75,10 @@ namespace NiL.JS.Core
             return new CodeCoordinates(line, column, length);
         }
     }
-    /// <summary>
-    /// Содержит функции, используемые на разных этапах выполнения скрипта.
-    /// </summary>
+
     public static class Tools
     {
-        [Flags]
-        public enum ParseNumberOptions
-        {
-            None = 0,
-            RaiseIfOctal = 1,
-            ProcessOctal = 2,
-            AllowFloat = 4,
-            AllowAutoRadix = 8,
-            Default = 2 + 4 + 8
-        }
+        private static readonly Type[] intTypeWithinArray = new[] { typeof(int) };
 
         internal static readonly char[] TrimChars = new[] { '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u0020', '\u00A0', '\u1680', '\u180E', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF' };
 
@@ -527,13 +528,26 @@ namespace NiL.JS.Core
                 case JSValueType.Symbol:
                     {
                         if (targetType == typeof(Symbol))
-                            return jsobj.Value as Symbol;
+                            return jsobj.Value;
 
                         return null;
                     }
+                case JSValueType.Function:
+                    {
+                        if (!targetType.IsAbstract && targetType.IsSubclassOf(typeof(Delegate)))
+                            return (jsobj.Value as Function).MakeDelegate(targetType);
+
+                        goto default;
+                    }
                 default:
-                    value = jsobj.Value;
-                    break;
+                    {
+                        value = jsobj.Value;
+
+                        if (value == null)
+                            return null;
+
+                        break;
+                    }
             }
 
             if (value == null)
@@ -554,45 +568,62 @@ namespace NiL.JS.Core
                 jsobj = tpres.prototypeInstance;
                 if (jsobj is ObjectWrapper)
                     return jsobj.Value;
+
                 return jsobj;
             }
 
-            if (value is BaseLibrary.Array)
-                return convertArray(value as BaseLibrary.Array);
-            else if (value is ProxyConstructor)
-                return (value as ProxyConstructor).proxy.hostedType;
-            else if (value is Function && targetType.IsSubclassOf(typeof(Delegate)))
-                return (value as Function).MakeDelegate(targetType);
-            else if (targetType.IsArray)
+            if (value is ProxyConstructor && typeof(Type).IsAssignableFrom(targetType))
             {
-                var eltype = targetType.GetElementType();
+                return (value as ProxyConstructor).proxy.hostedType;
+            }
+
+            if (typeof(IEnumerable).IsAssignableFrom(targetType))
+            {
+                Type @interface = null;
+                Type elementType = null;
+
+                if ((targetType.IsArray && (elementType = targetType.GetElementType()) != null)
+                || ((@interface = targetType.GetInterface(typeof(IEnumerable<>).Name)) != null
+                     && targetType.IsAssignableFrom((elementType = @interface.GetGenericArguments()[0]).MakeArrayType())))
+                {
 #if PORTABLE
-                if (eltype.GetTypeInfo().IsPrimitive)
-                {
+                    if (elementType.GetTypeInfo().IsPrimitive)
+                    {
 #else
-                if (eltype.IsPrimitive)
-                {
+                    if (elementType.IsPrimitive)
+                    {
 #endif
-                    if (eltype == typeof(byte) && value is ArrayBuffer)
-                        return (value as ArrayBuffer).GetData();
-                    var ta = value as TypedArray;
-                    if (ta != null && ta.ElementType == eltype)
-                        return ta.ToNativeArray();
+                        if (elementType == typeof(byte) && value is ArrayBuffer)
+                            return (value as ArrayBuffer).GetData();
+
+                        var ta = value as TypedArray;
+                        if (ta != null && ta.ElementType == elementType)
+                            return ta.ToNativeArray();
+                    }
+
+                    return convertArray(jsobj.Value as BaseLibrary.Array, elementType);
+                }
+                else if (targetType.IsAssignableFrom(typeof(object[])))
+                {
+                    return convertArray(jsobj.Value as BaseLibrary.Array, typeof(object));
                 }
             }
 
             return null;
         }
 
-        private static object[] convertArray(BaseLibrary.Array array)
+        private static object convertArray(BaseLibrary.Array array, Type elementType)
         {
-            var arg = new object[array.data.Length];
-            for (var j = arg.Length; j-- > 0;)
+            var result = (IList)elementType.MakeArrayType()
+                .GetConstructor(intTypeWithinArray)
+                .Invoke(new object[] { (int)array.data.Length });
+            for (var j = result.Count; j-- > 0;)
             {
-                var temp = (array.data[j] ?? JSValue.undefined).Value;
-                arg[j] = temp is BaseLibrary.Array ? convertArray(temp as NiL.JS.BaseLibrary.Array) : temp;
+                var temp = (array.data[j] ?? JSValue.undefined);
+                result[j] = convertJStoObj(temp, elementType);
             }
-            return arg;
+
+            return result;
         }
 
         private struct DoubleStringCacheItem
@@ -631,34 +662,40 @@ namespace NiL.JS.Core
                 return "-Infinity";
             if (double.IsNaN(d))
                 return "NaN";
+
             for (var i = 8; i-- > 0;)
             {
                 if (cachedDoubleString[i].key == d)
                     return cachedDoubleString[i].value;
             }
-            //return dtoString(d);
+
             var abs = System.Math.Abs(d);
             string res = null;
             if (abs < 1.0)
             {
                 if (d == (d % 0.000001))
-                    return res = d.ToString("0.####e-0", System.Globalization.CultureInfo.InvariantCulture);
+                    return res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
             }
             else if (abs >= 1e+21)
-                return res = d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
+                return res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
+
             int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
+
             if (d == 100000000000000000000d)
                 res = "100000000000000000000";
             else if (d == -100000000000000000000d)
                 res = "-100000000000000000000";
             else
-                res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(System.Globalization.CultureInfo.InvariantCulture));
+                res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(CultureInfo.InvariantCulture));
+
             abs %= 1.0;
             if (abs != 0 && res.Length < (15 + neg))
                 res += abs.ToString(divFormats[15 - res.Length + neg], System.Globalization.CultureInfo.InvariantCulture);
+
             cachedDoubleString[cachedDoubleStringsIndex].key = d;
-            cachedDoubleString[cachedDoubleStringsIndex++].value = res;
-            cachedDoubleStringsIndex &= 7;
+            cachedDoubleString[cachedDoubleStringsIndex].value = res;
+            cachedDoubleStringsIndex = (cachedDoubleStringsIndex + 1) % 7;
+
             return res;
         }
 
