@@ -18,23 +18,10 @@ namespace NiL.JS.Test
 {
     public class TestClass
     {
-        [DoNotDelete]
-        public int Property { get; set; }
-
-        public void PrintProperty()
+        [SuppressPopulate]
+        public void test(int x)
         {
-            Console.WriteLine(Property);
-        }
-    }
-
-    public class TestClass<T>
-    {
-        [DoNotDelete]
-        public int Property { get; set; }
-
-        public void PrintProperty()
-        {
-            Console.WriteLine(Property);
+            Console.WriteLine(x);
         }
     }
 
@@ -46,6 +33,8 @@ namespace NiL.JS.Test
             context.DefineVariable("testi").Assign(JSObject.CreateObject());
             context.DefineVariable("test").Assign(JSValue.Marshal(new
             {
+                TestPopulate = new TestClass(),
+
                 TestNullable = new Action<long>(x => Console.WriteLine(x)),
                 TestNullable1 = new Func<string>(() => "123"),
 
@@ -59,6 +48,8 @@ namespace NiL.JS.Test
                 })
             }));
             context.Eval(@"
+test.TestPopulate.test('1234567890');
+
 var a = test.Test2();
 test.TestNullable(test.TestNullable1());
 test.Test(a);

@@ -17,6 +17,7 @@ namespace NiL.JS.Core.Functions
         private Func<object, object[], Arguments, object> implementation;
         private bool raw;
         private bool forceInstance;
+        private bool suppressPopulate;
 
         private object hardTarget;
         internal ParameterInfo[] parameters;
@@ -76,9 +77,11 @@ namespace NiL.JS.Core.Functions
             this.method = methodBase;
             this.hardTarget = hardTarget;
             this.parameters = methodBase.GetParameters();
+            this.suppressPopulate = methodBase.IsDefined(typeof(SuppressPopulateAttribute));
 
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
+
             var pc = methodBase.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
             if (pc.Length != 0)
                 _length.iValue = (pc[0] as ArgumentsLengthAttribute).Count;
@@ -415,12 +418,14 @@ namespace NiL.JS.Core.Functions
                 for (int i = targetCount; i-- > 0;)
                 {
                     var obj = arguments.Length > i ? Tools.PrepareArg(initiator, arguments[i]) : notExists;
+
                     if (obj.Exists)
                     {
                         args[i] = marshal(obj, parameters[i].ParameterType);
                         if (paramsConverters != null && paramsConverters[i] != null)
                             args[i] = paramsConverters[i].To(args[i]);
                     }
+
                     if (args[i] == null)
                     {
                         args[i] = parameters[i].DefaultValue;
@@ -432,6 +437,9 @@ namespace NiL.JS.Core.Functions
 #else
                         if (args[i] is DBNull)
                         {
+                            if (suppressPopulate)
+                                ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + parameters[i].ParameterType);
+
                             if (parameters[i].ParameterType.IsValueType)
 #endif
                                 args[i] = Activator.CreateInstance(parameters[i].ParameterType);
@@ -440,7 +448,8 @@ namespace NiL.JS.Core.Functions
                         }
                     }
                 }
-                return Interop.TypeProxy.Proxy(InvokeImpl(targetObject, args, null));
+
+                return TypeProxy.Proxy(InvokeImpl(targetObject, args, null));
             }
         }
 
