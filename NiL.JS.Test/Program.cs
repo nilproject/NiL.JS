@@ -43,18 +43,25 @@ namespace NiL.JS.Test
         private static void testEx()
         {
             var context = new Context();
+            context.DefineVariable("testi").Assign(JSObject.CreateObject());
             context.DefineVariable("test").Assign(JSValue.Marshal(new
             {
-                Test = new Action<IList<JSValue>>(x => { Console.WriteLine(x); }),
+                TestNullable = new Action<long>(x => Console.WriteLine(x)),
+                TestNullable1 = new Func<string>(() => "123"),
 
-                List = JSValue.GetGenericTypeSelector(new[] 
+                Test = new Action<long[]>(x => { Console.WriteLine(x.Select(l => l.ToString()).Aggregate((l, r) => l + " " + r)); }),
+                Test2 = new Func<long[]>(() => new[] { 1, 2, 3L }),
+
+                List = JSValue.GetGenericTypeSelector(new[]
                 {
                     typeof(List<>),
                     typeof(ArrayList)
                 })
             }));
             context.Eval(@"
-test.Test([1,2,[3]]);
+var a = test.Test2();
+test.TestNullable(test.TestNullable1());
+test.Test(a);
 
 var list = test.List()(); 
 list.Add(1); 
@@ -100,7 +107,7 @@ console.log(list.get_Item(1));");
             }));
 #endif
 
-            int mode = 100
+            int mode = 3
                     ;
             switch (mode)
             {

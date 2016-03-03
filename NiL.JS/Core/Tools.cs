@@ -466,10 +466,13 @@ namespace NiL.JS.Core
         {
             if (jsobj == null)
                 return null;
-
+            
             if (targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
 
+            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                targetType = targetType.GetGenericArguments()[0];
+            
             object value = null;
             switch (jsobj.valueType)
             {
@@ -485,6 +488,15 @@ namespace NiL.JS.Core
                     }
                 case JSValueType.Double:
                     {
+                        if (targetType == typeof(int))
+                            return (int)jsobj.dValue;
+                        if (targetType == typeof(uint))
+                            return (uint)jsobj.dValue;
+                        if (targetType == typeof(long))
+                            return (long)jsobj.dValue;
+                        if (targetType == typeof(ulong))
+                            return (ulong)jsobj.iValue;
+
                         if (targetType == typeof(double))
                             return (double)jsobj.dValue;
                         if (targetType == typeof(float))
@@ -577,7 +589,8 @@ namespace NiL.JS.Core
                 return (value as ProxyConstructor).proxy.hostedType;
             }
 
-            if (typeof(IEnumerable).IsAssignableFrom(targetType))
+            if ((value is BaseLibrary.Array || value is TypedArray || value is ArrayBuffer)
+                && typeof(IEnumerable).IsAssignableFrom(targetType))
             {
                 Type @interface = null;
                 Type elementType = null;
@@ -601,11 +614,11 @@ namespace NiL.JS.Core
                             return ta.ToNativeArray();
                     }
 
-                    return convertArray(jsobj.Value as BaseLibrary.Array, elementType);
+                    return convertArray(value as BaseLibrary.Array, elementType);
                 }
                 else if (targetType.IsAssignableFrom(typeof(object[])))
                 {
-                    return convertArray(jsobj.Value as BaseLibrary.Array, typeof(object));
+                    return convertArray(value as BaseLibrary.Array, typeof(object));
                 }
             }
 
@@ -614,9 +627,13 @@ namespace NiL.JS.Core
 
         private static object convertArray(BaseLibrary.Array array, Type elementType)
         {
+            if (array == null)
+                return null;
+
             var result = (IList)elementType.MakeArrayType()
                 .GetConstructor(intTypeWithinArray)
                 .Invoke(new object[] { (int)array.data.Length });
+
             for (var j = result.Count; j-- > 0;)
             {
                 var temp = (array.data[j] ?? JSValue.undefined);

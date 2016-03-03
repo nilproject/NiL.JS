@@ -180,6 +180,19 @@ namespace NiL.JS.Core.Interop
         private readonly Number lenObj;
         private readonly IList data;
 
+        public override object Value
+        {
+            get
+            {
+                return data;
+            }
+
+            protected set
+            {
+                
+            }
+        }
+
         [Hidden]
         public NativeList()
         {
@@ -331,6 +344,7 @@ namespace NiL.JS.Core.Interop
                     return;
                 }
             }
+
             base.SetProperty(key, value, strict);
         }
 
