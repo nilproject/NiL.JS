@@ -80,7 +80,8 @@ namespace NiL.JS
 
                 while (selection.MoveNext())
                 {
-                    if (selection.Current.Value.FullName[reqname.Length] == '`')
+                    if (selection.Current.Value.FullName.Length > reqname.Length 
+                        && selection.Current.Value.FullName[reqname.Length] == '`')
                     {
                         string fn = selection.Current.Value.FullName;
                         for (var i = fn.Length - 1; i > reqname.Length; i--)
