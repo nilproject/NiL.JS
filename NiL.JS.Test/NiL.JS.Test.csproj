@@ -178,6 +178,9 @@
     <Content Include="..\Tests\ftest.js">
       <Link>ftest.js</Link>
     </Content>
+    <Content Include="..\Tests\tests\custom\regression.js">
+      <Link>regression.js</Link>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

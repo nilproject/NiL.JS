@@ -179,6 +179,7 @@ namespace NiL.JS.Core.Interop
 
         private readonly Number lenObj;
         private readonly IList data;
+        private readonly Type elementType;
 
         public override object Value
         {
@@ -189,7 +190,7 @@ namespace NiL.JS.Core.Interop
 
             protected set
             {
-                
+
             }
         }
 
@@ -197,6 +198,7 @@ namespace NiL.JS.Core.Interop
         public NativeList()
         {
             this.data = new List<object>();
+            elementType = typeof(object);
             lenObj = new Number(0);
         }
 
@@ -204,13 +206,23 @@ namespace NiL.JS.Core.Interop
         public NativeList(IList data)
         {
             this.data = data;
+            this.elementType = data.GetType().GetElementType();
+            if (elementType == null)
+            {
+                var @interface = data.GetType().GetInterface(typeof(IList<>).Name);
+                if (@interface != null)
+                    elementType = @interface.GetGenericArguments()[0];
+                else
+                    elementType = typeof(object);
+            }
+
             lenObj = new Number(data.Count);
         }
 
         public void push(Arguments args)
         {
             for (var i = 0; i < args.length; i++)
-                data.Add(args[i].Value);
+                data.Add(Tools.convertJStoObj(args[i], elementType, true));
         }
 
         public JSValue pop()
@@ -353,7 +365,7 @@ namespace NiL.JS.Core.Interop
             for (var i = 0; i < data.Count; i++)
                 yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumerationMode > 0 ? new Element(this, i) : null);
 
-            for (var e = base.GetEnumerator(hideNonEnumerable, enumerationMode); e.MoveNext(); )
+            for (var e = base.GetEnumerator(hideNonEnumerable, enumerationMode); e.MoveNext();)
                 yield return e.Current;
         }
     }

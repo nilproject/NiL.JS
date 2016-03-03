@@ -38,7 +38,7 @@ namespace NiL.JS.Core.Functions
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
-        public override string _name
+        public override string name
         {
             [Hidden]
             get
@@ -392,14 +392,14 @@ namespace NiL.JS.Core.Functions
             {
                 if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
                 {
-                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, _name));
+                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
                 }
             }
             else
             {
                 if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithNewOnly)
                 {
-                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, _name));
+                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
                 }
             }
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
@@ -411,7 +411,6 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                // copied from ConvertArgs
                 object[] args = null;
                 int targetCount = parameters.Length;
                 args = new object[targetCount];
@@ -419,34 +418,7 @@ namespace NiL.JS.Core.Functions
                 {
                     var obj = arguments.Length > i ? Tools.PrepareArg(initiator, arguments[i]) : notExists;
 
-                    if (obj.Exists)
-                    {
-                        args[i] = marshal(obj, parameters[i].ParameterType);
-                        if (paramsConverters != null && paramsConverters[i] != null)
-                            args[i] = paramsConverters[i].To(args[i]);
-                    }
-
-                    if (args[i] == null)
-                    {
-                        args[i] = parameters[i].DefaultValue;
-
-#if PORTABLE
-                        if (args[i] != null && args[i].GetType().FullName == "System.DBNull")
-                        {
-                            if (parameters[i].ParameterType.GetTypeInfo().IsValueType)
-#else
-                        if (args[i] is DBNull)
-                        {
-                            if (suppressPopulate)
-                                ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + parameters[i].ParameterType);
-
-                            if (parameters[i].ParameterType.IsValueType)
-#endif
-                                args[i] = Activator.CreateInstance(parameters[i].ParameterType);
-                            else
-                                args[i] = null;
-                        }
-                    }
+                    args[i] = convertArg(i, obj, false, true);
                 }
 
                 return TypeProxy.Proxy(InvokeImpl(targetObject, args, null));
@@ -487,7 +459,7 @@ namespace NiL.JS.Core.Functions
                         if (method.Name == "get_length" && typeof(Function).IsAssignableFrom(method.DeclaringType))
                             return 0;
 
-                        ExceptionsHelper.Throw(new TypeError("Can not call function \"" + _name + "\" for object of another type."));
+                        ExceptionsHelper.Throw(new TypeError("Can not call function \"" + name + "\" for object of another type."));
                     }
                 }
             }
@@ -538,7 +510,7 @@ namespace NiL.JS.Core.Functions
             if (_this == null)
                 return null;
             _this = _this.oValue as JSValue ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
-            var res = Tools.convertJStoObj(_this, targetType);
+            var res = Tools.convertJStoObj(_this, targetType, false);
             return res;
         }
 
@@ -546,39 +518,84 @@ namespace NiL.JS.Core.Functions
         {
             if (parameters.Length == 0)
                 return null;
+
+            object[] res = null;
             int targetCount = parameters.Length;
-            object[] res = new object[targetCount];
-            if (source != null) // it is possible
+            res = new object[targetCount];
+            for (int i = targetCount; i-- > 0;)
             {
-                for (int i = targetCount; i-- > 0;)
+                var obj = source[i];
+
+                var trueNull = obj.valueType >= JSValueType.Object && obj.oValue == null;
+
+                res[i] = convertArg(i, obj, true, dummyValueTypes);
+
+                if (res[i] == null && !trueNull)
+                    return null;
+            }
+
+            return res;
+        }
+
+        private object convertArg(int i, JSValue obj, bool forValidationStep, bool dummyValueTypes)
+        {
+            object result = null;
+
+            if (paramsConverters != null && paramsConverters[i] != null)
+            {
+                return paramsConverters[i].To(obj);
+            }
+            else
+            {
+                var trueNull = obj.valueType >= JSValueType.Object && obj.oValue == null;
+
+                if (!trueNull)
+                    result = Tools.convertJStoObj(obj, parameters[i].ParameterType, !suppressPopulate);
+
+                if (suppressPopulate && (trueNull ? parameters[i].ParameterType.IsValueType : result == null))
                 {
-                    var obj = source[i];
-                    if (obj.Exists)
-                    {
-                        res[i] = marshal(obj, parameters[i].ParameterType);
-                        if (paramsConverters != null && paramsConverters[i] != null)
-                            res[i] = paramsConverters[i].To(res[i]);
-                    }
-                    if (dummyValueTypes)
-                    {
+                    if (!forValidationStep)
+                        ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + parameters[i].ParameterType);
+                    return null;
+                }
+
+                if (trueNull && parameters[i].ParameterType.IsClass)
+                    return null;
+            }
+
+            if (result == null)
+            {
+                result = parameters[i].DefaultValue;
 #if PORTABLE
-                        if (res[i] == null && parameters[i].ParameterType.GetTypeInfo().IsValueType)
-                            res[i] = Activator.CreateInstance(parameters[i].ParameterType);
+                if (result != null && result.GetType().FullName == "System.DBNull")
+                {
+                    if (parameters[i].ParameterType.GetTypeInfo().IsValueType)
 #else
-                        if (res[i] == null && parameters[i].ParameterType.IsValueType)
-                            res[i] = Activator.CreateInstance(parameters[i].ParameterType);
+                if (result is DBNull)
+                {
 #endif
+                    if (suppressPopulate)
+                    {
+                        if (!forValidationStep)
+                            ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + parameters[i].ParameterType);
+                        return null;
                     }
+
+                    if (dummyValueTypes && parameters[i].ParameterType.IsValueType)
+                        result = Activator.CreateInstance(parameters[i].ParameterType);
+                    else
+                        result = null;
                 }
             }
-            return res;
+
+            return result;
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
             return TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
         }
-        
+
         internal static object[] argumentsToArray(Arguments source)
         {
             var len = source.length;
@@ -586,17 +603,6 @@ namespace NiL.JS.Core.Functions
             for (int i = 0; i < len; i++)
                 res[i] = source[i] as object;
             return res;
-        }
-
-        private static object marshal(JSValue obj, Type targetType)
-        {
-            if (obj == null)
-                return null;
-            var v = Tools.convertJStoObj(obj, targetType);
-            if (v != null)
-                return v;
-            
-            return v;
         }
 
 #if DEVELOPBRANCH || VERSION21

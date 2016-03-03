@@ -23,7 +23,7 @@ namespace NiL.JS.Core.Functions
         private MethodProxy[] constructors;
 
         [Hidden]
-        public override string _name
+        public override string name
         {
             [Hidden]
             get
@@ -31,7 +31,7 @@ namespace NiL.JS.Core.Functions
                 return proxy.hostedType.Name;
             }
         }
-        
+
         [Field]
         [ReadOnly]
         [DoNotDelete]
@@ -201,7 +201,7 @@ namespace NiL.JS.Core.Functions
                 }
 
                 JSValue res = obj as JSValue;
-                
+
                 if (construct)
                 {
                     if (res != null)
@@ -272,10 +272,12 @@ namespace NiL.JS.Core.Functions
             args = null;
             var len = argObj == null ? 0 : argObj.length;
             for (var pass = 0; pass < passesCount; pass++)
+            {
                 for (int i = 0; i < constructors.Length; i++)
                 {
                     if (constructors[i].parameters.Length == 1 && (constructors[i].parameters[0].ParameterType == typeof(Arguments)))
                         return constructors[i];
+
                     if (pass == 1 || constructors[i].parameters.Length == len)
                     {
                         if (len == 0)
@@ -283,20 +285,29 @@ namespace NiL.JS.Core.Functions
                         else
                         {
                             args = constructors[i].ConvertArgs(argObj, pass == 1);
-                            for (var j = args.Length; j-- > 0; )
+                            if (args == null)
+                                continue;
+
+                            for (var j = args.Length; j-- > 0;)
                             {
-                                if (!constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j] != null ? args[j].GetType() : typeof(object)))
+                                if (args[j] != null ?
+                                    !constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
+                                    :
+                                    constructors[i].parameters[j].ParameterType.IsValueType)
                                 {
                                     j = 0;
                                     args = null;
                                 }
                             }
+
                             if (args == null)
                                 continue;
                         }
+
                         return constructors[i];
                     }
                 }
+            }
             return null;
         }
 

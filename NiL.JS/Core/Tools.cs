@@ -462,7 +462,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static object convertJStoObj(JSValue jsobj, Type targetType)
+        internal static object convertJStoObj(JSValue jsobj, Type targetType, bool hightLoyalty)
         {
             if (jsobj == null)
                 return null;
@@ -488,14 +488,17 @@ namespace NiL.JS.Core
                     }
                 case JSValueType.Double:
                     {
-                        if (targetType == typeof(int))
-                            return (int)jsobj.dValue;
-                        if (targetType == typeof(uint))
-                            return (uint)jsobj.dValue;
-                        if (targetType == typeof(long))
-                            return (long)jsobj.dValue;
-                        if (targetType == typeof(ulong))
-                            return (ulong)jsobj.iValue;
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(int))
+                                return (int)jsobj.dValue;
+                            if (targetType == typeof(uint))
+                                return (uint)jsobj.dValue;
+                            if (targetType == typeof(long))
+                                return (long)jsobj.dValue;
+                            if (targetType == typeof(ulong))
+                                return (ulong)jsobj.iValue;
+                        }
 
                         if (targetType == typeof(double))
                             return (double)jsobj.dValue;
@@ -532,6 +535,9 @@ namespace NiL.JS.Core
                     }
                 case JSValueType.String:
                     {
+                        if (targetType == typeof(string))
+                            return jsobj.Value.ToString();
+
                         if (targetType == typeof(BaseLibrary.String))
                             return new BaseLibrary.String(jsobj.Value.ToString());
 
@@ -614,18 +620,18 @@ namespace NiL.JS.Core
                             return ta.ToNativeArray();
                     }
 
-                    return convertArray(value as BaseLibrary.Array, elementType);
+                    return convertArray(value as BaseLibrary.Array, elementType, hightLoyalty);
                 }
                 else if (targetType.IsAssignableFrom(typeof(object[])))
                 {
-                    return convertArray(value as BaseLibrary.Array, typeof(object));
+                    return convertArray(value as BaseLibrary.Array, typeof(object), hightLoyalty);
                 }
             }
 
             return null;
         }
 
-        private static object convertArray(BaseLibrary.Array array, Type elementType)
+        private static object convertArray(BaseLibrary.Array array, Type elementType, bool hightLoyalty)
         {
             if (array == null)
                 return null;
@@ -637,7 +643,7 @@ namespace NiL.JS.Core
             for (var j = result.Count; j-- > 0;)
             {
                 var temp = (array.data[j] ?? JSValue.undefined);
-                result[j] = convertJStoObj(temp, elementType);
+                result[j] = convertJStoObj(temp, elementType, hightLoyalty);
             }
 
             return result;

@@ -87,7 +87,7 @@ namespace NiL.JS.BaseLibrary
         [Field]
         [DoNotDelete]
         [DoNotEnumerate]
-        public virtual string _name
+        public virtual string name
         {
             [Hidden]
             get
@@ -291,7 +291,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
             {
-                ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, _name));
+                ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
             }
 
             JSValue targetObject = ConstructObject();
@@ -306,7 +306,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
             {
-                ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, _name));
+                ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
             }
 
             var res = Invoke(true, targetObject, arguments, newTarget);
@@ -515,7 +515,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithNewOnly)
             {
-                ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, _name));
+                ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
             }
 
             targetObject = correctTargetObject(targetObject, creator.body._strict);
@@ -923,6 +923,7 @@ namespace NiL.JS.BaseLibrary
                 if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
                     return prototype;
             }
+
             return base.GetProperty(nameObj, forWrite, memberScope);
         }
 
@@ -966,7 +967,7 @@ namespace NiL.JS.BaseLibrary
             }
             if (res.Length != 0)
                 res.Append(" ");
-            res.Append(_name).Append("(");
+            res.Append(name).Append("(");
             if (creator != null && creator.parameters != null)
                 for (int i = 0; i < creator.parameters.Length;)
                     res.Append(creator.parameters[i].Name).Append(++i < creator.parameters.Length ? "," : "");
@@ -1068,7 +1069,7 @@ namespace NiL.JS.BaseLibrary
 #else
             invokeMethod = delegateType.GetMethod("Invoke");
 #endif
-            var @delegate = Tools.BuildJsCallTree("<delegate>" + _name, linqEx.Expression.Constant(this), null, invokeMethod, delegateType).Compile();
+            var @delegate = Tools.BuildJsCallTree("<delegate>" + name, linqEx.Expression.Constant(this), null, invokeMethod, delegateType).Compile();
 
             if (delegateCache == null)
                 delegateCache = new Dictionary<Type, Delegate>();

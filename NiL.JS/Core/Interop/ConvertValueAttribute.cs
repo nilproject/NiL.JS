@@ -26,6 +26,6 @@ namespace NiL.JS.Core.Interop
         /// </summary>
         /// <param name="source">Значение, доступное из сценария.</param>
         /// <returns>Преобразованное значение.</returns>
-        public abstract object To(object source);
+        public abstract object To(JSValue source);
     }
 }

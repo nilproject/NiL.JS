@@ -42,6 +42,8 @@ namespace NiL.JS.BaseLibrary
 
         private void makeRegex(string pattern, string flags)
         {
+            pattern = pattern ?? "null";
+            flags = flags ?? "~";
             _global = false;
             try
             {
@@ -190,9 +192,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue exec(JSValue arg)
         {
-            if (this.GetType() != typeof(RegExp))
-                ExceptionsHelper.Throw(new TypeError("Try to call RegExp.exec for not RegExp object."));
-            string input = (arg ?? "undefined").ToString();
+            string input = (arg ?? "null").ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
             if ((lIndex.attributes & JSValueAttributesInternal.SystemObject) != 0)
                 lIndex = lIndex.CloneImpl(false);
@@ -227,7 +227,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue test(JSValue arg)
         {
-            string input = (arg ?? "undefined").ToString();
+            string input = (arg ?? "null").ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
             if (lIndex.valueType == JSValueType.Double)
             {

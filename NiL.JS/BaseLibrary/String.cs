@@ -41,9 +41,10 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        [SuppressPopulate]
         public String(string s)
         {
-            oValue = s;
+            oValue = s ?? "null";
             valueType = JSValueType.String;
             attributes |= JSValueAttributesInternal.SystemObject;
         }

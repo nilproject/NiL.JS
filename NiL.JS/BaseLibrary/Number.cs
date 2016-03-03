@@ -56,6 +56,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        [SuppressPopulate]
         public Number(int value)
         {
             valueType = JSValueType.Integer;
@@ -80,6 +81,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        [SuppressPopulate]
         public Number(double value)
         {
             valueType = JSValueType.Double;
@@ -88,9 +90,10 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        [SuppressPopulate]
         public Number(string value)
         {
-            value = value.Trim(Tools.TrimChars);
+            value = (value ?? "0").Trim(Tools.TrimChars);
             valueType = JSValueType.Integer;
             dValue = value.Length != 0 ? double.NaN : 0;
             valueType = JSValueType.Double;

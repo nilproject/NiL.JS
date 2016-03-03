@@ -1132,7 +1132,7 @@ namespace NiL.JS.Core
 
         object IConvertible.ToType(Type conversionType, IFormatProvider provider)
         {
-            return Tools.convertJStoObj(this, conversionType);
+            return Tools.convertJStoObj(this, conversionType, true);
         }
 
         ushort IConvertible.ToUInt16(IFormatProvider provider)

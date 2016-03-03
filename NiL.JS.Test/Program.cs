@@ -31,8 +31,10 @@ namespace NiL.JS.Test
         {
             var context = new Context();
             context.DefineVariable("testi").Assign(JSObject.CreateObject());
-            context.DefineVariable("test").Assign(JSValue.Marshal(new
+            var temp = new
             {
+                ListOfAction = new List<Action<int>>(),
+
                 TestPopulate = new TestClass(),
 
                 TestNullable = new Action<long>(x => Console.WriteLine(x)),
@@ -46,9 +48,10 @@ namespace NiL.JS.Test
                     typeof(List<>),
                     typeof(ArrayList)
                 })
-            }));
+            };
+            context.DefineVariable("test").Assign(JSValue.Marshal(temp));
             context.Eval(@"
-test.TestPopulate.test('1234567890');
+test.ListOfAction.push(x=> console.log(x));
 
 var a = test.Test2();
 test.TestNullable(test.TestNullable1());
@@ -65,6 +68,7 @@ list.Add(1);
 list.Add('2');
 console.log(list.get_Item(0));
 console.log(list.get_Item(1));");
+            
         }
 
         static void Main(string[] args)
