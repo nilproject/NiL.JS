@@ -119,7 +119,7 @@ namespace NiL.JS.Core
 
                 globalContext.DefineConstructor(typeof(Debug));
 
-                #region Base Function
+#region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());
                 globalContext.fields["eval"].attributes |= JSValueAttributesInternal.Eval;
                 globalContext.DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
@@ -135,13 +135,13 @@ namespace NiL.JS.Core
 #if !PORTABLE
                 globalContext.DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
 #endif
-                #endregion
-                #region Consts
+#endregion
+#region Consts
                 globalContext.fields["undefined"] = JSValue.undefined;
                 globalContext.fields["Infinity"] = Number.POSITIVE_INFINITY;
                 globalContext.fields["NaN"] = Number.NaN;
                 globalContext.fields["null"] = JSValue.@null;
-                #endregion
+#endregion
 
                 foreach (var v in globalContext.fields.Values)
                     v.attributes |= JSValueAttributesInternal.DoNotEnumerate;
@@ -168,10 +168,10 @@ namespace NiL.JS.Core
         /// отсутствует вероятность конфликта при использовании данного поля.
         /// </remarks>
         /// </summary>
-        internal AbortReason abortReason;
+        internal AbortReason executionMode;
         internal JSValue objectSource;
         internal JSValue tempContainer;
-        internal JSValue abortInfo;
+        internal JSValue executionInfo;
         internal JSValue lastResult;
         internal JSValue arguments;
         internal JSValue thisBind;
@@ -261,7 +261,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return abortReason;
+                return executionMode;
             }
         }
 
@@ -269,7 +269,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return abortInfo;
+                return executionInfo;
             }
         }
 
@@ -310,7 +310,7 @@ namespace NiL.JS.Core
             }
             if (createFields)
                 this.fields = JSObject.getFieldsContainer();
-            this.abortInfo = JSValue.notExists;
+            this.executionInfo = JSValue.notExists;
         }
 
         /// <summary>
@@ -455,9 +455,11 @@ namespace NiL.JS.Core
         internal protected virtual JSValue GetVariable(string name, bool create)
         {
             JSValue res = null;
+
             bool fromProto = fields == null || (!fields.TryGetValue(name, out res) && (parent != null));
             if (fromProto)
                 res = parent.GetVariable(name, create);
+
             if (res == null) // значит вышли из глобального контекста
             {
                 if (this == globalContext)
@@ -484,6 +486,7 @@ namespace NiL.JS.Core
                 if (create && (res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                     fields[name] = res = res.CloneImpl(false);
             }
+
             return res;
         }
 
@@ -541,8 +544,8 @@ namespace NiL.JS.Core
 
         public void SetAbortState(AbortReason abortReason, JSValue abortInfo)
         {
-            this.abortReason = abortReason;
-            this.abortInfo = abortInfo;
+            this.executionMode = abortReason;
+            this.executionInfo = abortInfo;
         }
 
         /// <summary>
@@ -589,7 +592,9 @@ namespace NiL.JS.Core
              */
 
             var mainContext = this;
-            while (mainContext.oldContext != null && mainContext.oldContext == mainContext.parent && mainContext.owner == mainContext.oldContext.owner)
+            while (mainContext.oldContext != null 
+                && mainContext.oldContext == mainContext.parent 
+                && mainContext.owner == mainContext.oldContext.owner)
             {
                 mainContext = mainContext.oldContext;
             }
@@ -605,7 +610,7 @@ namespace NiL.JS.Core
 
             var body = CodeBlock.Parse(ps, ref index) as CodeBlock;
             if (index < c.Length)
-                throw new System.ArgumentException("Invalid char");
+                throw new ArgumentException("Invalid char");
             var variables = new Dictionary<string, VariableDescriptor>();
             var stats = new FunctionInfo();
 
@@ -615,7 +620,11 @@ namespace NiL.JS.Core
             var tv = stats.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stats, tv, body._variables.Length == 0 || !stats.WithLexicalEnvironment ? 1 : 0);
             if (tv != null)
-                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
+            {
+                var newVarDescs = new VariableDescriptor[tv.Values.Count];
+                tv.Values.CopyTo(newVarDescs, 0);
+                body._variables = newVarDescs;
+            }
 
             body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
             body = cb as CodeBlock ?? body;
@@ -632,7 +641,7 @@ namespace NiL.JS.Core
             var runned = this.Activate();
             try
             {
-                var context = inplace && !body._strict && !strict ? this : new Context(this, false, owner)
+                var context = (inplace || !stats.WithLexicalEnvironment) && !body._strict && !strict ? this : new Context(this, false, owner)
                 {
                     strict = strict || body._strict
                 };
@@ -643,14 +652,14 @@ namespace NiL.JS.Core
                     {
                         if (!body._variables[i].lexicalScope)
                         {
-                            JSValue variable = null;
+                            JSValue variable;
                             var cc = mainContext;
                             while (cc.parent != globalContext
                                && (cc.fields == null || !cc.fields.TryGetValue(body._variables[i].name, out variable)))
                             {
-                                variable = null;
                                 cc = cc.parent;
                             }
+
                             if (cc.variables != null)
                             {
                                 for (var j = 0; j < cc.variables.Length; j++)
@@ -661,6 +670,7 @@ namespace NiL.JS.Core
                                     }
                                 }
                             }
+
                             variable = mainContext.DefineVariable(body._variables[i].name, !inplace);
 
                             if (body._variables[i].initializer != null)
@@ -668,7 +678,10 @@ namespace NiL.JS.Core
                                 variable.Assign(body._variables[i].initializer.Evaluate(context));
                             }
 
+                            // блокирует создание переменной в конктексте eval
                             body._variables[i].lexicalScope = true;
+
+                            // блокирует кеширование
                             body._variables[i].definitionScopeLevel = -1;
                         }
                     }
@@ -713,7 +726,7 @@ namespace NiL.JS.Core
             return this == globalContext ? "Global context" : "Context";
         }
 
-        #region Temporal Wrapping
+#region Temporal Wrapping
 
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -744,6 +757,6 @@ namespace NiL.JS.Core
             return tempContainer;
         }
 
-        #endregion
+#endregion
     }
 }

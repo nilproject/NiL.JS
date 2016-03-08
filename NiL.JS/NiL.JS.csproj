@@ -243,10 +243,12 @@
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
+    <Compile Include="Core\Interop\StrictConversionAttribute.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />
     <Compile Include="Expressions\GetSetPropertyPair.cs" />
     <Compile Include="Expressions\NewTarget.cs" />
     <Compile Include="Expressions\SuspendableExpression.cs" />
+    <Compile Include="Expressions\TemplateString.cs" />
     <Compile Include="Expressions\This.cs" />
     <Compile Include="Extensions\IterationProtocolExtensions.cs" />
     <Compile Include="Core\JSValue.cs" />
@@ -290,7 +292,6 @@
     <Compile Include="Core\Interop\NativeList.cs" />
     <Compile Include="Core\ObjectWrapper.cs" />
     <Compile Include="Core\VariableDescriptor.cs" />
-    <Compile Include="Core\Interop\GenericType.cs" />
     <Compile Include="Core\VariableReference.cs" />
     <Compile Include="Core\JSException.cs" />
     <Compile Include="Core\Interop\DoNotEnumerateAttribute.cs" />

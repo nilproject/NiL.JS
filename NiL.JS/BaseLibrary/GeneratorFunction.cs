@@ -66,11 +66,11 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                switch (generatorContext.abortReason)
+                switch (generatorContext.executionMode)
                 {
                     case AbortReason.Suspend:
                         {
-                            generatorContext.abortReason = AbortReason.Resume;
+                            generatorContext.executionMode = AbortReason.Resume;
                             break;
                         }
                     case AbortReason.ResumeThrow:
@@ -80,7 +80,7 @@ namespace NiL.JS.BaseLibrary
                     default:
                         return new GeneratorResult(JSValue.undefined, true);
                 };
-                generatorContext.abortInfo = args != null ? args[0] : JSValue.undefined;
+                generatorContext.executionInfo = args != null ? args[0] : JSValue.undefined;
             }
             generatorContext.Activate();
             JSValue result = null;
@@ -92,7 +92,7 @@ namespace NiL.JS.BaseLibrary
             {
                 generatorContext.Deactivate();
             }
-            return new GeneratorResult(result, generatorContext.abortReason != AbortReason.Suspend);
+            return new GeneratorResult(result, generatorContext.executionMode != AbortReason.Suspend);
         }
 
         private void initContext()
@@ -107,7 +107,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (generatorContext == null)
                 initContext();
-            generatorContext.abortReason = AbortReason.Return;
+            generatorContext.executionMode = AbortReason.Return;
             return next(null);
         }
 
@@ -115,7 +115,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (generatorContext == null)
                 return new GeneratorResult(JSValue.undefined, true);
-            generatorContext.abortReason = AbortReason.ResumeThrow;
+            generatorContext.executionMode = AbortReason.ResumeThrow;
             return next(arguments);
         }
 

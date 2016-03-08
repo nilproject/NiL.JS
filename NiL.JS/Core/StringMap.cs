@@ -438,7 +438,8 @@ namespace NiL.JS.Core
         private void tryAddNumberKeyItem(int existsedIndex)
         {
             uint key;
-            if (_records[_existsedIndexes[existsedIndex]].key != null && uint.TryParse(_records[_existsedIndexes[existsedIndex]].key, out key))
+            var skey = _records[_existsedIndexes[existsedIndex]].key;
+            if (skey != null && Tools.IsDigit(skey[0]) && uint.TryParse(skey, out key))
             {
                 if (_numberKeysIndexes == null)
                     _numberKeysIndexes = new LinkedList<KeyValuePair<uint, int>>();

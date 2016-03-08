@@ -84,17 +84,17 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (context.abortReason == AbortReason.ResumeThrow)
+            if (context.executionMode == AbortReason.ResumeThrow)
             {
                 context.SuspendData.Clear();
-                context.abortReason = AbortReason.None;
-                var exceptionData = context.abortInfo;
+                context.executionMode = AbortReason.None;
+                var exceptionData = context.executionInfo;
                 ExceptionsHelper.Throw(exceptionData);
             }
 
             if (_reiterate)
             {
-                if (context.abortReason == AbortReason.None)
+                if (context.executionMode == AbortReason.None)
                 {
                     var iterator = first.Evaluate(context).AsIterable().iterator();
                     var iteratorResult = iterator.next();
@@ -103,43 +103,43 @@ namespace NiL.JS.Expressions
                         return JSValue.undefined;
 
                     context.SuspendData[this] = iterator;
-                    context.abortInfo = iteratorResult.value;
-                    context.abortReason = AbortReason.Suspend;
+                    context.executionInfo = iteratorResult.value;
+                    context.executionMode = AbortReason.Suspend;
                     return JSValue.notExists;
                 }
-                else if (context.abortReason == AbortReason.Resume)
+                else if (context.executionMode == AbortReason.Resume)
                 {
                     IIterator iterator = context.SuspendData[this] as IIterator;
-                    var iteratorResult = iterator.next(context.abortInfo.Defined ? new Arguments { context.abortInfo } : null);
+                    var iteratorResult = iterator.next(context.executionInfo.Defined ? new Arguments { context.executionInfo } : null);
 
-                    context.abortInfo = iteratorResult.value;
+                    context.executionInfo = iteratorResult.value;
 
                     if (iteratorResult.done)
                     {
-                        context.abortReason = AbortReason.None;
+                        context.executionMode = AbortReason.None;
                         return iteratorResult.value;
                     }
                     else
                     {
                         context.SuspendData[this] = iterator;
-                        context.abortReason = AbortReason.Suspend;
+                        context.executionMode = AbortReason.Suspend;
                         return JSValue.notExists;
                     }
                 }
             }
             else
             {
-                if (context.abortReason == AbortReason.None)
+                if (context.executionMode == AbortReason.None)
                 {
-                    context.abortInfo = first.Evaluate(context);
-                    context.abortReason = AbortReason.Suspend;
+                    context.executionInfo = first.Evaluate(context);
+                    context.executionMode = AbortReason.Suspend;
                     return JSValue.notExists;
                 }
-                else if (context.abortReason == AbortReason.Resume)
+                else if (context.executionMode == AbortReason.Resume)
                 {
-                    context.abortReason = AbortReason.None;
-                    var result = context.abortInfo;
-                    context.abortInfo = null;
+                    context.executionMode = AbortReason.None;
+                    var result = context.executionInfo;
+                    context.executionInfo = null;
                     return result;
                 }
             }

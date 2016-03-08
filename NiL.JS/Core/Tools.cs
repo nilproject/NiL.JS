@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 
@@ -13,8 +15,21 @@ using NiL.JS.Extensions;
 using NiL.JS.Backward;
 #endif
 
+using jsbool = NiL.JS.BaseLibrary.Boolean;
+
 namespace NiL.JS.Core
 {
+    [Flags]
+    public enum ParseNumberOptions
+    {
+        None = 0,
+        RaiseIfOctal = 1,
+        ProcessOctal = 2,
+        AllowFloat = 4,
+        AllowAutoRadix = 8,
+        Default = 2 + 4 + 8
+    }
+
     public sealed class CodeCoordinates
     {
         public int Line { get; private set; }
@@ -62,21 +77,10 @@ namespace NiL.JS.Core
             return new CodeCoordinates(line, column, length);
         }
     }
-    /// <summary>
-    /// Содержит функции, используемые на разных этапах выполнения скрипта.
-    /// </summary>
+
     public static class Tools
     {
-        [Flags]
-        public enum ParseNumberOptions
-        {
-            None = 0,
-            RaiseIfOctal = 1,
-            ProcessOctal = 2,
-            AllowFloat = 4,
-            AllowAutoRadix = 8,
-            Default = 2 + 4 + 8
-        }
+        private static readonly Type[] intTypeWithinArray = new[] { typeof(int) };
 
         internal static readonly char[] TrimChars = new[] { '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u0020', '\u00A0', '\u1680', '\u180E', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF' };
 
@@ -460,38 +464,74 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static object convertJStoObj(JSValue jsobj, Type targetType)
+        internal static object convertJStoObj(JSValue jsobj, Type targetType, bool hightLoyalty)
         {
             if (jsobj == null)
                 return null;
+
             if (targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
+
+            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                targetType = targetType.GetGenericArguments()[0];
+
             object value = null;
             switch (jsobj.valueType)
             {
                 case JSValueType.Boolean:
                     {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return jsobj.iValue != 0 ? jsbool.TrueString : jsbool.FalseString;
+
+                        }
+
                         if (targetType == typeof(bool))
                             return jsobj.iValue != 0;
-                        break;
+
+                        if (targetType == typeof(jsbool))
+                            return new jsbool(jsobj.iValue != 0);
+
+                        return null;
                     }
                 case JSValueType.Double:
                     {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(int))
+                                return (int)jsobj.dValue;
+                            if (targetType == typeof(uint))
+                                return (uint)jsobj.dValue;
+                            if (targetType == typeof(long))
+                                return (long)jsobj.dValue;
+                            if (targetType == typeof(ulong))
+                                return (ulong)jsobj.iValue;
+                            if (targetType == typeof(string))
+                                return DoubleToString(jsobj.dValue);
+                        }
+
                         if (targetType == typeof(double))
                             return (double)jsobj.dValue;
                         if (targetType == typeof(float))
                             return (float)jsobj.dValue;
-                        break;
+
+                        if (targetType == typeof(Number))
+                            return new Number(jsobj.dValue);
+
+                        return null;
                     }
                 case JSValueType.Integer:
                     {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return Int32ToString(jsobj.iValue);
+                        }
+
                         if (targetType == typeof(int))
                             return (int)jsobj.iValue;
 
-                        //if (targetType == typeof(byte)) return (byte)jsobj.iValue;
-                        //if (targetType == typeof(sbyte)) return (sbyte)jsobj.iValue;
-                        //if (targetType == typeof(short)) return (short)jsobj.iValue;
-                        //if (targetType == typeof(ushort)) return (ushort)jsobj.iValue;
                         if (targetType == typeof(uint))
                             return (uint)jsobj.iValue;
                         if (targetType == typeof(long))
@@ -503,15 +543,104 @@ namespace NiL.JS.Core
                         if (targetType == typeof(float))
                             return (float)jsobj.iValue;
                         if (targetType == typeof(decimal))
-                            return (float)jsobj.iValue;
-                        break;
+                            return (decimal)jsobj.iValue;
+
+                        if (targetType == typeof(Number))
+                            return new Number(jsobj.iValue);
+
+                        return null;
+                    }
+                case JSValueType.String:
+                    {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(byte))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(sbyte))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(short))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(ushort))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(int))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(uint))
+                                return (uint)JSObjectToInt64(jsobj);
+                            if (targetType == typeof(long))
+                                return JSObjectToInt64(jsobj);
+                            if (targetType == typeof(ulong))
+                                return (ulong)JSObjectToInt64(jsobj);
+                            if (targetType == typeof(double))
+                            {
+                                var r = JSObjectToDouble(jsobj);
+                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                    return r;
+                                return null;
+                            }
+                            if (targetType == typeof(float))
+                            {
+                                var r = JSObjectToDouble(jsobj);
+                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                    return (float)r;
+                                return null;
+                            }
+                            if (targetType == typeof(decimal))
+                            {
+                                var r = JSObjectToDouble(jsobj);
+                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                    return (decimal)r;
+                                return null;
+                            }
+                        }
+
+                        if (targetType == typeof(string))
+                            return jsobj.Value.ToString();
+
+                        if (targetType == typeof(BaseLibrary.String))
+                            return new BaseLibrary.String(jsobj.Value.ToString());
+
+                        return null;
+                    }
+                case JSValueType.Symbol:
+                    {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return jsobj.Value.ToString();
+                        }
+
+                        if (targetType == typeof(Symbol))
+                            return jsobj.Value;
+
+                        return null;
+                    }
+                case JSValueType.Function:
+                    {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return jsobj.Value.ToString();
+                        }
+
+                        if (!targetType.IsAbstract && targetType.IsSubclassOf(typeof(Delegate)))
+                            return (jsobj.Value as Function).MakeDelegate(targetType);
+
+                        goto default;
                     }
                 default:
-                    value = jsobj.Value;
-                    break;
+                    {
+                        value = jsobj.Value;
+
+                        if (value == null)
+                            return null;
+
+                        break;
+                    }
             }
+
             if (value == null)
                 return null;
+
             if (targetType.IsAssignableFrom(value.GetType()))
                 return value;
 #if PORTABLE
@@ -527,9 +656,67 @@ namespace NiL.JS.Core
                 jsobj = tpres.prototypeInstance;
                 if (jsobj is ObjectWrapper)
                     return jsobj.Value;
+
                 return jsobj;
             }
+
+            if (value is ProxyConstructor && typeof(Type).IsAssignableFrom(targetType))
+            {
+                return (value as ProxyConstructor).proxy.hostedType;
+            }
+
+            if ((value is BaseLibrary.Array || value is TypedArray || value is ArrayBuffer)
+                && typeof(IEnumerable).IsAssignableFrom(targetType))
+            {
+                Type @interface = null;
+                Type elementType = null;
+
+                if ((targetType.IsArray && (elementType = targetType.GetElementType()) != null)
+                || ((@interface = targetType.GetInterface(typeof(IEnumerable<>).Name)) != null
+                     && targetType.IsAssignableFrom((elementType = @interface.GetGenericArguments()[0]).MakeArrayType())))
+                {
+#if PORTABLE
+                    if (elementType.GetTypeInfo().IsPrimitive)
+                    {
+#else
+                    if (elementType.IsPrimitive)
+                    {
+#endif
+                        if (elementType == typeof(byte) && value is ArrayBuffer)
+                            return (value as ArrayBuffer).GetData();
+
+                        var ta = value as TypedArray;
+                        if (ta != null && ta.ElementType == elementType)
+                            return ta.ToNativeArray();
+                    }
+
+                    return convertArray(value as BaseLibrary.Array, elementType, hightLoyalty);
+                }
+                else if (targetType.IsAssignableFrom(typeof(object[])))
+                {
+                    return convertArray(value as BaseLibrary.Array, typeof(object), hightLoyalty);
+                }
+            }
+
             return null;
+        }
+
+        private static object convertArray(BaseLibrary.Array array, Type elementType, bool hightLoyalty)
+        {
+            if (array == null)
+                return null;
+
+            var result = (IList)elementType.MakeArrayType()
+                .GetConstructor(intTypeWithinArray)
+                .Invoke(new object[] { (int)array.data.Length });
+
+            for (var j = result.Count; j-- > 0;)
+            {
+                var temp = (array.data[j] ?? JSValue.undefined);
+                result[j] = convertJStoObj(temp, elementType, hightLoyalty);
+            }
+
+            return result;
         }
 
         private struct DoubleStringCacheItem
@@ -568,34 +755,40 @@ namespace NiL.JS.Core
                 return "-Infinity";
             if (double.IsNaN(d))
                 return "NaN";
+
             for (var i = 8; i-- > 0;)
             {
                 if (cachedDoubleString[i].key == d)
                     return cachedDoubleString[i].value;
             }
-            //return dtoString(d);
+
             var abs = System.Math.Abs(d);
             string res = null;
             if (abs < 1.0)
             {
                 if (d == (d % 0.000001))
-                    return res = d.ToString("0.####e-0", System.Globalization.CultureInfo.InvariantCulture);
+                    return res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
             }
             else if (abs >= 1e+21)
-                return res = d.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
+                return res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
+
             int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
+
             if (d == 100000000000000000000d)
                 res = "100000000000000000000";
             else if (d == -100000000000000000000d)
                 res = "-100000000000000000000";
             else
-                res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(System.Globalization.CultureInfo.InvariantCulture));
+                res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(CultureInfo.InvariantCulture));
+
             abs %= 1.0;
             if (abs != 0 && res.Length < (15 + neg))
                 res += abs.ToString(divFormats[15 - res.Length + neg], System.Globalization.CultureInfo.InvariantCulture);
+
             cachedDoubleString[cachedDoubleStringsIndex].key = d;
-            cachedDoubleString[cachedDoubleStringsIndex++].value = res;
-            cachedDoubleStringsIndex &= 7;
+            cachedDoubleString[cachedDoubleStringsIndex].value = res;
+            cachedDoubleStringsIndex = (cachedDoubleStringsIndex + 1) % 7;
+
             return res;
         }
 
@@ -978,6 +1171,7 @@ namespace NiL.JS.Core
                             deg = 0;
                         }
                     }
+
                     if (deg != 0)
                     {
                         if (deg == -324)
@@ -1018,10 +1212,12 @@ namespace NiL.JS.Core
                     else
                     {
                         if (extended)
+                        {
                             doubleTemp = doubleTemp * radix + sign;
+                        }
                         else
                         {
-                            temp = temp * (uint)radix + (uint)sign;
+                            temp = temp * (ulong)radix + (ulong)sign;
                             if ((temp & 0xFE00000000000000) != 0)
                             {
                                 extended = true;
@@ -1328,7 +1524,7 @@ namespace NiL.JS.Core
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
         {
             var length = src.GetProperty("length", true, PropertyScope.Сommon); // тут же проверка на null/undefined с падением если надо
-            
+
             var result = (uint)JSObjectToInt64(InvokeGetter(length, src).ToPrimitiveValue_Value_String(), 0, false);
             if (reassignLen)
             {

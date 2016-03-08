@@ -12,8 +12,21 @@ namespace NiL.JS.Core.Functions
 #endif
     internal sealed class MethodGroup : BaseLibrary.Function
     {
+        /// <summary>
+        /// На первом проходе будут выбираться методы со строгим соответствием типов
+        /// 
+        /// На втором проходе будут выбираться методы, для которых
+        /// получится преобразовать входные аргументы.
+        /// 
+        /// На третьем проходе будет выбираться первый метод, 
+        /// для которого получится сгенерировать параметры по-умолчанию.
+        /// 
+        /// Если нужен более строгий подбор, то количество проходов нужно
+        /// уменьшить до одного
+        /// </summary>
+        private const int passCount = 3;
+
         private readonly MethodProxy[] methods;
-        private readonly int passCount;
 
         public override JSValue prototype
         {
@@ -46,13 +59,6 @@ namespace NiL.JS.Core.Functions
             for (var i = 0; i < methods.Length; i++)
                 len = System.Math.Max(len, methods[i].parameters.Length);
             _length = new BaseLibrary.Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
-
-
-            passCount = 2;
-            // На втором проходе будет выбираться первый метод, 
-            // для которого получится сгенерировать параметры по-умолчанию.
-            // Если нужен более строгий подбор, то количество проходов нужно
-            // уменьшить до одного
         }
 
         internal override JSObject GetDefaultPrototype()
@@ -63,7 +69,7 @@ namespace NiL.JS.Core.Functions
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
             int l = arguments == null ? 0 : arguments.length;
-            object[] cargs = null;
+            object[] args = null;
 
             for (int pass = 0; pass < passCount; pass++)
             {
@@ -71,27 +77,38 @@ namespace NiL.JS.Core.Functions
                 {
                     if (methods[i].Parameters.Length == 1 && methods[i].Parameters[0].ParameterType == typeof(Arguments))
                         return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, null, arguments));
+
                     if (pass == 1 || methods[i].Parameters.Length == l)
                     {
                         if (l != 0)
                         {
-                            cargs = methods[i].ConvertArgs(arguments, pass == 1);
-                            for (var j = cargs.Length; j-- > 0; )
+                            args = methods[i].ConvertArgs(
+                                arguments, 
+                                (pass >= 1 ? ConvertArgsOptions.None : ConvertArgsOptions.StrictConversion) | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.None));
+
+                            if (args == null)
+                                continue;
+
+                            for (var j = args.Length; j-- > 0;)
                             {
-                                var prmType = methods[i].Parameters[j].ParameterType;
-                                if (!prmType.IsAssignableFrom(cargs[j].GetType()))
+                                if (args[j] != null ?
+                                    !methods[i].parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
+                                    :
+                                    methods[i].parameters[j].ParameterType.IsValueType)
                                 {
-                                    cargs = null;
-                                    break;
+                                    j = 0;
+                                    args = null;
                                 }
                             }
-                            if (cargs == null)
+
+                            if (args == null)
                                 continue;
                         }
-                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, cargs, arguments));
+                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, args, arguments));
                     }
                 }
             }
+
             ExceptionsHelper.Throw(new TypeError("Invalid arguments for function " + methods[0].name));
             return null;
         }

@@ -136,7 +136,7 @@ namespace NiL.JS.Extensions
                         if (self.Value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
                             return ((Function)self.Value).MakeDelegate<T>();
 #endif
-                        return (T)self.Value;
+                        return (T)(Tools.convertJStoObj(self, typeof(T), true) ?? self.Value);
                     }
                 case TypeCode.SByte:
                     {

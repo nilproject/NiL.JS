@@ -961,25 +961,25 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSValue setMonth(JSValue monthO, JSValue day)
+        public JSValue setMonth(JSValue month, JSValue day)
         {
-            if (monthO != null)
+            if (month != null && month.Exists)
             {
-                if (!monthO.Defined
-                || (monthO.valueType == JSValueType.Double && (double.IsNaN(monthO.dValue) || double.IsInfinity(monthO.dValue))))
+                if (!month.Defined
+                || (month.valueType == JSValueType.Double && (double.IsNaN(month.dValue) || double.IsInfinity(month.dValue))))
                 {
                     _error = true;
                     _time = 0;
                     return Number.NaN;
                 }
-                var month = Tools.JSObjectToInt64(monthO);
-                if (month < 0 || month > 12)
+                var intMonth = Tools.JSObjectToInt64(month);
+                if (intMonth < 0 || intMonth > 12)
                 {
                     this._time = this._time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0];
-                    _time = dateToMilliseconds(getYearImpl(), month, getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
+                    _time = dateToMilliseconds(getYearImpl(), intMonth, getDateImpl(), getHoursImpl(), getMinutesImpl(), getSecondsImpl(), getMillisecondsImpl());
                 }
                 else
-                    this._time = this._time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[month][isLeap(getYearImpl()) ? 1 : 0];
+                    this._time = this._time - timeToMonthLengths[getMonthImpl()][isLeap(getYearImpl()) ? 1 : 0] + timeToMonthLengths[intMonth][isLeap(getYearImpl()) ? 1 : 0];
             }
             if (day != null)
                 setDate(day);

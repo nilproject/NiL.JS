@@ -41,9 +41,10 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        [StrictConversion]
         public String(string s)
         {
-            oValue = s;
+            oValue = s ?? "null";
             valueType = JSValueType.String;
             attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -150,7 +151,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d = 0;
-                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, ParseNumberOptions.Default);
                             pos = (int)d;
                             break;
                         }
@@ -202,7 +203,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d = 0;
-                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, ParseNumberOptions.Default);
                             pos = (int)d;
                             break;
                         }
@@ -499,7 +500,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d;
-                            Tools.ParseNumber(limO.ToString(), 0, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber(limO.ToString(), 0, out d, ParseNumberOptions.Default);
                             limit = (uint)d;
                             break;
                         }
@@ -689,7 +690,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[0].ToString(), pos0, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber(args[0].ToString(), pos0, out d, ParseNumberOptions.Default);
                             pos0 = (int)d;
                             break;
                         }
@@ -718,7 +719,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             double d;
-                            Tools.ParseNumber(args[1].ToString(), len, out d, Tools.ParseNumberOptions.Default);
+                            Tools.ParseNumber(args[1].ToString(), len, out d, ParseNumberOptions.Default);
                             len = (int)d;
                             break;
                         }
@@ -952,6 +953,24 @@ namespace NiL.JS.BaseLibrary
                         yield return f;
                 }
             }
+        }
+
+        public static JSValue raw(Arguments args)
+        {
+            var result = new StringBuilder();
+            var strings = args[0].Value as Array ?? Tools.arraylikeToArray(args[0], true, false, false, -1);
+
+            for (var i = 0; i < strings.data.Length; i++)
+            {
+                if (i > 0)
+                {
+                    result.Append(args[i]);
+                }
+
+                result.Append(strings.data[i]);
+            }
+
+            return result.ToString();
         }
 
         #region HTML Wraping

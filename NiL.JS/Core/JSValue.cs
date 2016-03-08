@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Core
 {
@@ -119,7 +121,7 @@ namespace NiL.JS.Core
         internal static readonly JSValue nullString = new JSValue() { valueType = JSValueType.String, oValue = "null", attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
         [Hidden]
-        public static JSValue Undefined {[Hidden] get { return undefined; } }
+        public static JSValue Undefined { [Hidden] get { return undefined; } }
         [Hidden]
         public static JSValue NotExists
         {
@@ -141,7 +143,7 @@ namespace NiL.JS.Core
             }
         }
         [Hidden]
-        public static JSValue Null {[Hidden] get { return @null; } }
+        public static JSValue Null { [Hidden] get { return @null; } }
 
         [Hidden]
         public virtual JSValue this[string name]
@@ -670,25 +672,25 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public static explicit operator int (JSValue obj)
+        public static explicit operator int(JSValue obj)
         {
             return Tools.JSObjectToInt32(obj);
         }
 
         [Hidden]
-        public static explicit operator long (JSValue obj)
+        public static explicit operator long(JSValue obj)
         {
             return Tools.JSObjectToInt64(obj);
         }
 
         [Hidden]
-        public static explicit operator double (JSValue obj)
+        public static explicit operator double(JSValue obj)
         {
             return Tools.JSObjectToDouble(obj);
         }
 
         [Hidden]
-        public static explicit operator bool (JSValue obj)
+        public static explicit operator bool(JSValue obj)
         {
             switch (obj.valueType)
             {
@@ -852,20 +854,34 @@ namespace NiL.JS.Core
         {
             if (valueType >= JSValueType.Object)
                 return oValue as JSObject;
+
+            if (valueType >= JSValueType.Undefined)
+                return new ObjectWrapper(ToPrimitiveTypeContainer());
+
+            return new JSObject() { valueType = JSValueType.Object };
+        }
+
+        [Hidden]
+        public JSValue ToPrimitiveTypeContainer()
+        {
+            if (valueType >= JSValueType.Object)
+                return null;
+
             switch (valueType)
             {
                 case JSValueType.Boolean:
-                    return new ObjectWrapper(this is BaseLibrary.Boolean ? this : new BaseLibrary.Boolean(iValue != 0));
+                    return this is BaseLibrary.Boolean ? this : new BaseLibrary.Boolean(iValue != 0);
                 case JSValueType.Integer:
-                    return new ObjectWrapper(this is BaseLibrary.Number ? this : new BaseLibrary.Number(iValue));
+                    return this is BaseLibrary.Number ? this : new BaseLibrary.Number(iValue);
                 case JSValueType.Double:
-                    return new ObjectWrapper(this is BaseLibrary.Number ? this : new BaseLibrary.Number(dValue));
+                    return this is BaseLibrary.Number ? this : new BaseLibrary.Number(dValue);
                 case JSValueType.String:
-                    return new ObjectWrapper(this is BaseLibrary.String ? this : new BaseLibrary.String(oValue.ToString()));
+                    return this is BaseLibrary.String ? this : new BaseLibrary.String(oValue.ToString());
                 case JSValueType.Symbol:
-                    return new ObjectWrapper(oValue);
+                    return oValue as Symbol;
             }
-            return new JSObject() { valueType = JSValueType.Object };
+
+            return new JSValue() { valueType = JSValueType.Undefined };
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -1117,7 +1133,7 @@ namespace NiL.JS.Core
 
         object IConvertible.ToType(Type conversionType, IFormatProvider provider)
         {
-            return Tools.convertJStoObj(this, conversionType);
+            return Tools.convertJStoObj(this, conversionType, true);
         }
 
         ushort IConvertible.ToUInt16(IFormatProvider provider)
@@ -1177,6 +1193,48 @@ namespace NiL.JS.Core
             if (value == null)
                 return Null;
             return new ObjectWrapper(value);
+        }
+
+        public static Function GetGenericTypeSelector(IList<Type> types)
+        {
+            for (var i = 0; i < types.Count; i++)
+            {
+                for (var j = i + 1; j < types.Count; j++)
+                {
+                    if (types[i].GetGenericArguments().Length == types[j].GetGenericArguments().Length)
+                        ExceptionsHelper.Throw(new InvalidOperationException("Types have the same arguments"));
+                }
+            }
+
+            return new ExternalFunction((_this, args) =>
+            {
+                Type type = null;
+
+                for (var i = 0; i < types.Count; i++)
+                {
+                    if (types[i].GetGenericArguments().Length == args.length)
+                    {
+                        type = types[i];
+                        break;
+                    }
+                }
+
+                if (type == null)
+                    ExceptionsHelper.ThrowTypeError("Invalid arguments count for generic constructor");
+
+                if (args.length == 0)
+                    return TypeProxy.GetConstructor(type);
+
+                var parameters = new Type[args.length];
+                for (var i = 0; i < args.length; i++)
+                {
+                    parameters[i] = args[i].As<Type>();
+                    if (types[i] == null)
+                        ExceptionsHelper.ThrowTypeError("Invalid argument #" + i + " for generic constructor");
+                }
+
+                return TypeProxy.GetConstructor(type.MakeGenericType(parameters));
+            });
         }
     }
 }

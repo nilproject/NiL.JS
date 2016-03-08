@@ -65,6 +65,7 @@ namespace NiL.JS.Core
                 new Rule("-", ExpressionTree.Parse),
                 new Rule("!", ExpressionTree.Parse),
                 new Rule("~", ExpressionTree.Parse),
+                new Rule("`", ExpressionTree.Parse),
                 new Rule("true", ExpressionTree.Parse),
                 new Rule("false", ExpressionTree.Parse),
                 new Rule("null", ExpressionTree.Parse),
@@ -97,6 +98,7 @@ namespace NiL.JS.Core
                 new Rule("-", ExpressionTree.Parse),
                 new Rule("!", ExpressionTree.Parse),
                 new Rule("~", ExpressionTree.Parse),
+                new Rule("`", ExpressionTree.Parse),
                 new Rule("true", ExpressionTree.Parse),
                 new Rule("false", ExpressionTree.Parse),
                 new Rule("null", ExpressionTree.Parse),
@@ -112,8 +114,9 @@ namespace NiL.JS.Core
             // 2
             new List<Rule> // Сущности внутри выражения
             {
+                new Rule("`", TemplateString.Parse),
                 new Rule("[", ArrayDefinition.Parse),
-                new Rule("{", Expressions.ObjectDefinition.Parse),
+                new Rule("{", ObjectDefinition.Parse),
                 new Rule("function", FunctionDefinition.ParseFunction),
                 new Rule("class", ClassDefinition.Parse),
                 new Rule("new", New.Parse),
@@ -357,7 +360,7 @@ namespace NiL.JS.Core
         public static bool ValidateNumber(string code, ref int index)
         {
             double fictive = 0.0;
-            return Tools.ParseNumber(code, ref index, out fictive, 0, Tools.ParseNumberOptions.AllowFloat | Tools.ParseNumberOptions.AllowAutoRadix);
+            return Tools.ParseNumber(code, ref index, out fictive, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix);
         }
 
         public static bool ValidateRegex(string code, int index)
@@ -558,7 +561,8 @@ namespace NiL.JS.Core
                 || (c == ']')
                 || (c == '\'')
                 || (c == '"')
-                || (c == '~');
+                || (c == '~')
+                || (c == '`');
         }
 
         internal static CodeNode Parse(ParseInfo state, ref int index, CodeFragmentType ruleSet)

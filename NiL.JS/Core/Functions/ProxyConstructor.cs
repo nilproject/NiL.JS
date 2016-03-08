@@ -12,11 +12,19 @@ namespace NiL.JS.Core.Functions
     [Prototype(typeof(Function))]
     internal class ProxyConstructor : Function
     {
-        // На втором проходе будет выбираться первый метод, 
-        // для которого получится сгенерировать параметры по-умолчанию.
-        // Если нужен более строгий подбор, то количество проходов нужно
-        // уменьшить до одного
-        private const int passesCount = 2;
+        /// <summary>
+        /// На первом проходе будут выбираться методы со строгим соответствием типов
+        /// 
+        /// На втором проходе будут выбираться методы, для которых
+        /// получится преобразовать входные аргументы.
+        /// 
+        /// На третьем проходе будет выбираться первый метод, 
+        /// для которого получится сгенерировать параметры по-умолчанию.
+        /// 
+        /// Если нужен более строгий подбор, то количество проходов нужно
+        /// уменьшить до одного
+        /// </summary>
+        private const int passesCount = 3;
 
         private static readonly object[] _objectA = new object[0];
         internal readonly TypeProxy proxy;
@@ -31,7 +39,7 @@ namespace NiL.JS.Core.Functions
                 return proxy.hostedType.Name;
             }
         }
-        
+
         [Field]
         [ReadOnly]
         [DoNotDelete]
@@ -56,6 +64,7 @@ namespace NiL.JS.Core.Functions
         {
             fields = typeProxy.fields;
             proxy = typeProxy;
+
 #if PORTABLE
             if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
                 ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
@@ -65,8 +74,10 @@ namespace NiL.JS.Core.Functions
 #endif
             var ownew = typeProxy.hostedType.IsDefined(typeof(RequireNewKeywordAttribute), true);
             var owonew = typeProxy.hostedType.IsDefined(typeof(DisallowNewKeywordAttribute), true);
+
             if (ownew && owonew)
                 throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
+
             if (ownew)
                 RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
             if (owonew)
@@ -198,7 +209,7 @@ namespace NiL.JS.Core.Functions
                 }
 
                 JSValue res = obj as JSValue;
-                
+
                 if (construct)
                 {
                     if (res != null)
@@ -240,6 +251,7 @@ namespace NiL.JS.Core.Functions
                         if ((res.oValue is JSValue) && (res.oValue as JSValue).valueType >= JSValueType.Object)
                             return res.oValue as JSValue;
                     }
+
                     res = res ?? new ObjectWrapper(obj)
                     {
                         attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
@@ -263,36 +275,51 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        private MethodProxy findConstructor(Arguments argObj, ref object[] args)
+        private MethodProxy findConstructor(Arguments arguments, ref object[] args)
         {
             args = null;
-            var len = argObj == null ? 0 : argObj.length;
+            var len = arguments == null ? 0 : arguments.length;
             for (var pass = 0; pass < passesCount; pass++)
+            {
                 for (int i = 0; i < constructors.Length; i++)
                 {
                     if (constructors[i].parameters.Length == 1 && (constructors[i].parameters[0].ParameterType == typeof(Arguments)))
                         return constructors[i];
+
                     if (pass == 1 || constructors[i].parameters.Length == len)
                     {
                         if (len == 0)
                             args = _objectA;
                         else
                         {
-                            args = constructors[i].ConvertArgs(argObj, pass == 1);
-                            for (var j = args.Length; j-- > 0; )
+                            args = constructors[i].ConvertArgs(
+                                arguments,
+                                (pass >= 1 ? ConvertArgsOptions.None : ConvertArgsOptions.StrictConversion) | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.None));
+
+                            if (args == null)
+                                continue;
+
+                            for (var j = args.Length; j-- > 0;)
                             {
-                                if (!constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j] != null ? args[j].GetType() : typeof(object)))
+                                if (args[j] != null ?
+                                    !constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
+                                    :
+                                    constructors[i].parameters[j].ParameterType.IsValueType)
                                 {
                                     j = 0;
                                     args = null;
                                 }
                             }
+
                             if (args == null)
                                 continue;
                         }
+
                         return constructors[i];
                     }
                 }
+            }
+
             return null;
         }
 

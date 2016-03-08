@@ -40,11 +40,6 @@ namespace NiL.JS.Expressions
             };
         }
 
-        internal protected override JSValue EvaluateForWrite(NiL.JS.Core.Context context)
-        {
-            throw new NotImplementedException();
-        }
-
         protected internal override CodeNode[] getChildsImpl()
         {
             return new CodeNode[] { first };
