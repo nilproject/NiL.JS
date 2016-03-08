@@ -113,7 +113,7 @@ console.log(list.get_Item(1));");
             }));
 #endif
 
-            int mode = 7
+            int mode = 0
                     ;
             switch (mode)
             {

@@ -86,7 +86,7 @@ namespace NiL.JS.Core.Functions
             this.method = methodBase;
             this.hardTarget = hardTarget;
             this.parameters = methodBase.GetParameters();
-            this.strictConversion = methodBase.IsDefined(typeof(StrictConversionAttribute));
+            this.strictConversion = methodBase.IsDefined(typeof(StrictConversionAttribute), true);
 
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
@@ -99,7 +99,7 @@ namespace NiL.JS.Core.Functions
 
             for (int i = 0; i < parameters.Length; i++)
             {
-                var t = parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false);
+                var t = parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false).ToArray();
                 if (t != null && t.Length != 0)
                 {
                     if (paramsConverters == null)
@@ -566,14 +566,14 @@ namespace NiL.JS.Core.Functions
                 if (!trueNull)
                     result = Tools.convertJStoObj(obj, parameters[i].ParameterType, !strictConv);
 
-                if (strictConv && (trueNull ? parameters[i].ParameterType.IsValueType : result == null))
+                if (strictConv && (trueNull ? parameters[i].ParameterType.GetTypeInfo().IsValueType : result == null))
                 {
                     if ((options & ConvertArgsOptions.ThrowOnError) != 0)
                         ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + parameters[i].ParameterType);
                     return null;
                 }
 
-                if (trueNull && parameters[i].ParameterType.IsClass)
+                if (trueNull && parameters[i].ParameterType.GetTypeInfo().IsClass)
                     return null;
             }
 
@@ -595,7 +595,7 @@ namespace NiL.JS.Core.Functions
                         return null;
                     }
 
-                    if ((options & ConvertArgsOptions.DummyValues) != 0 && parameters[i].ParameterType.IsValueType)
+                    if ((options & ConvertArgsOptions.DummyValues) != 0 && parameters[i].ParameterType.GetTypeInfo().IsValueType)
                         result = Activator.CreateInstance(parameters[i].ParameterType);
                     else
                         result = null;
@@ -635,7 +635,7 @@ namespace NiL.JS.Core.Functions
                 raw = raw
             };
         }
-
+#if !NET40
         public override Delegate MakeDelegate(Type delegateType)
         {
             try
@@ -649,6 +649,7 @@ namespace NiL.JS.Core.Functions
 
             return base.MakeDelegate(delegateType);
         }
+#endif
 #endif
     }
 }

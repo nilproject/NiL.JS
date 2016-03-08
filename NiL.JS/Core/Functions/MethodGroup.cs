@@ -2,6 +2,10 @@
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
+#if PORTABLE
+using System.Reflection;
+#endif
+
 namespace NiL.JS.Core.Functions
 {
     /// <remarks>
@@ -94,7 +98,11 @@ namespace NiL.JS.Core.Functions
                                 if (args[j] != null ?
                                     !methods[i].parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
+#if PORTABLE
+                                    methods[i].parameters[j].ParameterType.GetTypeInfo().IsValueType)
+#else
                                     methods[i].parameters[j].ParameterType.IsValueType)
+#endif
                                 {
                                     j = 0;
                                     args = null;
