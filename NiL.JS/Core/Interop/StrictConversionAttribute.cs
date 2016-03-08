@@ -10,7 +10,7 @@ namespace NiL.JS.Core.Interop
         AttributeTargets.Constructor | AttributeTargets.Method | AttributeTargets.Delegate, 
         AllowMultiple = false, 
         Inherited = false)]
-    public sealed class SuppressPopulateAttribute : Attribute
+    public sealed class StrictConversionAttribute : Attribute
     {
     }
 }

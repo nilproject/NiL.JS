@@ -18,10 +18,19 @@ namespace NiL.JS.Test
 {
     public class TestClass
     {
-        [SuppressPopulate]
+        public void test(string x)
+        {
+            Console.WriteLine("string:" + x);
+        }
+
         public void test(int x)
         {
-            Console.WriteLine(x);
+            Console.WriteLine("int:" + x);
+        }
+
+        public void test(double x)
+        {
+            Console.WriteLine("double:" + x);
         }
     }
 
@@ -37,7 +46,7 @@ namespace NiL.JS.Test
 
                 TestPopulate = new TestClass(),
 
-                TestNullable = new Action<long>(x => Console.WriteLine(x)),
+                TestNullable = new Action<int?>(x => Console.WriteLine(x)),
                 TestNullable1 = new Func<string>(() => "123"),
 
                 Test = new Action<long[]>(x => { Console.WriteLine(x.Select(l => l.ToString()).Aggregate((l, r) => l + " " + r)); }),
@@ -51,6 +60,8 @@ namespace NiL.JS.Test
             };
             context.DefineVariable("test").Assign(JSValue.Marshal(temp));
             context.Eval(@"
+test.TestPopulate.test(10.1);
+
 test.ListOfAction.push(x=> console.log(x));
 
 var a = test.Test2();
@@ -68,7 +79,7 @@ list.Add(1);
 list.Add('2');
 console.log(list.get_Item(0));
 console.log(list.get_Item(1));");
-            
+
         }
 
         static void Main(string[] args)
@@ -102,7 +113,7 @@ console.log(list.get_Item(1));");
             }));
 #endif
 
-            int mode = 3
+            int mode = 7
                     ;
             switch (mode)
             {

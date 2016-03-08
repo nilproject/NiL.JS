@@ -12,11 +12,19 @@ namespace NiL.JS.Core.Functions
     [Prototype(typeof(Function))]
     internal class ProxyConstructor : Function
     {
-        // На втором проходе будет выбираться первый метод, 
-        // для которого получится сгенерировать параметры по-умолчанию.
-        // Если нужен более строгий подбор, то количество проходов нужно
-        // уменьшить до одного
-        private const int passesCount = 2;
+        /// <summary>
+        /// На первом проходе будут выбираться методы со строгим соответствием типов
+        /// 
+        /// На втором проходе будут выбираться методы, для которых
+        /// получится преобразовать входные аргументы.
+        /// 
+        /// На третьем проходе будет выбираться первый метод, 
+        /// для которого получится сгенерировать параметры по-умолчанию.
+        /// 
+        /// Если нужен более строгий подбор, то количество проходов нужно
+        /// уменьшить до одного
+        /// </summary>
+        private const int passesCount = 3;
 
         private static readonly object[] _objectA = new object[0];
         internal readonly TypeProxy proxy;
@@ -267,10 +275,10 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        private MethodProxy findConstructor(Arguments argObj, ref object[] args)
+        private MethodProxy findConstructor(Arguments arguments, ref object[] args)
         {
             args = null;
-            var len = argObj == null ? 0 : argObj.length;
+            var len = arguments == null ? 0 : arguments.length;
             for (var pass = 0; pass < passesCount; pass++)
             {
                 for (int i = 0; i < constructors.Length; i++)
@@ -284,7 +292,10 @@ namespace NiL.JS.Core.Functions
                             args = _objectA;
                         else
                         {
-                            args = constructors[i].ConvertArgs(argObj, pass == 1);
+                            args = constructors[i].ConvertArgs(
+                                arguments,
+                                (pass >= 1 ? ConvertArgsOptions.None : ConvertArgsOptions.StrictConversion) | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.None));
+
                             if (args == null)
                                 continue;
 
@@ -308,6 +319,7 @@ namespace NiL.JS.Core.Functions
                     }
                 }
             }
+
             return null;
         }
 

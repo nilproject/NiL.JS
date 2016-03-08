@@ -15,6 +15,8 @@ using NiL.JS.Extensions;
 using NiL.JS.Backward;
 #endif
 
+using jsbool = NiL.JS.BaseLibrary.Boolean;
+
 namespace NiL.JS.Core
 {
     [Flags]
@@ -466,23 +468,30 @@ namespace NiL.JS.Core
         {
             if (jsobj == null)
                 return null;
-            
+
             if (targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
 
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 targetType = targetType.GetGenericArguments()[0];
-            
+
             object value = null;
             switch (jsobj.valueType)
             {
                 case JSValueType.Boolean:
                     {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return jsobj.iValue != 0 ? jsbool.TrueString : jsbool.FalseString;
+
+                        }
+
                         if (targetType == typeof(bool))
                             return jsobj.iValue != 0;
 
-                        if (targetType == typeof(BaseLibrary.Boolean))
-                            return new BaseLibrary.Boolean(jsobj.iValue != 0);
+                        if (targetType == typeof(jsbool))
+                            return new jsbool(jsobj.iValue != 0);
 
                         return null;
                     }
@@ -498,6 +507,8 @@ namespace NiL.JS.Core
                                 return (long)jsobj.dValue;
                             if (targetType == typeof(ulong))
                                 return (ulong)jsobj.iValue;
+                            if (targetType == typeof(string))
+                                return DoubleToString(jsobj.dValue);
                         }
 
                         if (targetType == typeof(double))
@@ -512,6 +523,12 @@ namespace NiL.JS.Core
                     }
                 case JSValueType.Integer:
                     {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return Int32ToString(jsobj.iValue);
+                        }
+
                         if (targetType == typeof(int))
                             return (int)jsobj.iValue;
 
@@ -526,7 +543,7 @@ namespace NiL.JS.Core
                         if (targetType == typeof(float))
                             return (float)jsobj.iValue;
                         if (targetType == typeof(decimal))
-                            return (float)jsobj.iValue;
+                            return (decimal)jsobj.iValue;
 
                         if (targetType == typeof(Number))
                             return new Number(jsobj.iValue);
@@ -535,6 +552,47 @@ namespace NiL.JS.Core
                     }
                 case JSValueType.String:
                     {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(byte))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(sbyte))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(short))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(ushort))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(int))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(uint))
+                                return (uint)JSObjectToInt64(jsobj);
+                            if (targetType == typeof(long))
+                                return JSObjectToInt64(jsobj);
+                            if (targetType == typeof(ulong))
+                                return (ulong)JSObjectToInt64(jsobj);
+                            if (targetType == typeof(double))
+                            {
+                                var r = JSObjectToDouble(jsobj);
+                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                    return r;
+                                return null;
+                            }
+                            if (targetType == typeof(float))
+                            {
+                                var r = JSObjectToDouble(jsobj);
+                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                    return (float)r;
+                                return null;
+                            }
+                            if (targetType == typeof(decimal))
+                            {
+                                var r = JSObjectToDouble(jsobj);
+                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                    return (decimal)r;
+                                return null;
+                            }
+                        }
+
                         if (targetType == typeof(string))
                             return jsobj.Value.ToString();
 
@@ -545,6 +603,12 @@ namespace NiL.JS.Core
                     }
                 case JSValueType.Symbol:
                     {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return jsobj.Value.ToString();
+                        }
+
                         if (targetType == typeof(Symbol))
                             return jsobj.Value;
 
@@ -552,6 +616,12 @@ namespace NiL.JS.Core
                     }
                 case JSValueType.Function:
                     {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return jsobj.Value.ToString();
+                        }
+
                         if (!targetType.IsAbstract && targetType.IsSubclassOf(typeof(Delegate)))
                             return (jsobj.Value as Function).MakeDelegate(targetType);
 
@@ -1101,6 +1171,7 @@ namespace NiL.JS.Core
                             deg = 0;
                         }
                     }
+
                     if (deg != 0)
                     {
                         if (deg == -324)
@@ -1141,10 +1212,12 @@ namespace NiL.JS.Core
                     else
                     {
                         if (extended)
+                        {
                             doubleTemp = doubleTemp * radix + sign;
+                        }
                         else
                         {
-                            temp = temp * (uint)radix + (uint)sign;
+                            temp = temp * (ulong)radix + (ulong)sign;
                             if ((temp & 0xFE00000000000000) != 0)
                             {
                                 extended = true;

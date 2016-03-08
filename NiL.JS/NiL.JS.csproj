@@ -244,7 +244,7 @@
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
-    <Compile Include="Core\Interop\SuppressPopulateAttribute.cs" />
+    <Compile Include="Core\Interop\StrictConversionAttribute.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />
     <Compile Include="Expressions\GetSetPropertyPair.cs" />
     <Compile Include="Expressions\NewTarget.cs" />

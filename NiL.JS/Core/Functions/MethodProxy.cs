@@ -12,12 +12,21 @@ using NiL.JS.Backward;
 
 namespace NiL.JS.Core.Functions
 {
+    [Flags]
+    internal enum ConvertArgsOptions
+    {
+        None = 0,
+        ThrowOnError = 1,
+        StrictConversion = 2,
+        DummyValues = 4
+    }
+
     internal sealed class MethodProxy : Function
     {
         private Func<object, object[], Arguments, object> implementation;
         private bool raw;
         private bool forceInstance;
-        private bool suppressPopulate;
+        private bool strictConversion;
 
         private object hardTarget;
         internal ParameterInfo[] parameters;
@@ -77,7 +86,7 @@ namespace NiL.JS.Core.Functions
             this.method = methodBase;
             this.hardTarget = hardTarget;
             this.parameters = methodBase.GetParameters();
-            this.suppressPopulate = methodBase.IsDefined(typeof(SuppressPopulateAttribute));
+            this.strictConversion = methodBase.IsDefined(typeof(StrictConversionAttribute));
 
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
@@ -414,11 +423,11 @@ namespace NiL.JS.Core.Functions
                 object[] args = null;
                 int targetCount = parameters.Length;
                 args = new object[targetCount];
-                for (int i = targetCount; i-- > 0;)
+                for (int i = 0; i < targetCount; i++)
                 {
                     var obj = arguments.Length > i ? Tools.PrepareArg(initiator, arguments[i]) : notExists;
 
-                    args[i] = convertArg(i, obj, false, true);
+                    args[i] = convertArg(i, obj, ConvertArgsOptions.ThrowOnError | ConvertArgsOptions.DummyValues);
                 }
 
                 return TypeProxy.Proxy(InvokeImpl(targetObject, args, null));
@@ -468,7 +477,7 @@ namespace NiL.JS.Core.Functions
             {
                 object res = implementation(
                     target,
-                    raw ? null : (args ?? ConvertArgs(argsSource, true)),
+                    raw ? null : (args ?? ConvertArgs(argsSource, ConvertArgsOptions.ThrowOnError | ConvertArgsOptions.DummyValues)),
                     argsSource);
 
                 if (returnConverter != null)
@@ -514,32 +523,37 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-        internal object[] ConvertArgs(Arguments source, bool dummyValueTypes)
+        internal object[] ConvertArgs(Arguments source, ConvertArgsOptions options)
         {
             if (parameters.Length == 0)
                 return null;
 
             object[] res = null;
             int targetCount = parameters.Length;
-            res = new object[targetCount];
             for (int i = targetCount; i-- > 0;)
             {
                 var obj = source[i];
 
                 var trueNull = obj.valueType >= JSValueType.Object && obj.oValue == null;
 
-                res[i] = convertArg(i, obj, true, dummyValueTypes);
+                var t = convertArg(i, obj, options);
 
-                if (res[i] == null && !trueNull)
+                if (t == null && !trueNull)
                     return null;
+
+                if (res == null)
+                    res = new object[targetCount];
+
+                res[i] = t;
             }
 
             return res;
         }
 
-        private object convertArg(int i, JSValue obj, bool forValidationStep, bool dummyValueTypes)
+        private object convertArg(int i, JSValue obj, ConvertArgsOptions options)
         {
             object result = null;
+            var strictConv = strictConversion || (options & ConvertArgsOptions.StrictConversion) != 0;
 
             if (paramsConverters != null && paramsConverters[i] != null)
             {
@@ -550,11 +564,11 @@ namespace NiL.JS.Core.Functions
                 var trueNull = obj.valueType >= JSValueType.Object && obj.oValue == null;
 
                 if (!trueNull)
-                    result = Tools.convertJStoObj(obj, parameters[i].ParameterType, !suppressPopulate);
+                    result = Tools.convertJStoObj(obj, parameters[i].ParameterType, !strictConv);
 
-                if (suppressPopulate && (trueNull ? parameters[i].ParameterType.IsValueType : result == null))
+                if (strictConv && (trueNull ? parameters[i].ParameterType.IsValueType : result == null))
                 {
-                    if (!forValidationStep)
+                    if ((options & ConvertArgsOptions.ThrowOnError) != 0)
                         ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + parameters[i].ParameterType);
                     return null;
                 }
@@ -574,14 +588,14 @@ namespace NiL.JS.Core.Functions
                 if (result is DBNull)
                 {
 #endif
-                    if (suppressPopulate)
+                    if (strictConv)
                     {
-                        if (!forValidationStep)
+                        if ((options & ConvertArgsOptions.ThrowOnError) != 0)
                             ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + parameters[i].ParameterType);
                         return null;
                     }
 
-                    if (dummyValueTypes && parameters[i].ParameterType.IsValueType)
+                    if ((options & ConvertArgsOptions.DummyValues) != 0 && parameters[i].ParameterType.IsValueType)
                         result = Activator.CreateInstance(parameters[i].ParameterType);
                     else
                         result = null;

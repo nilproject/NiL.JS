@@ -9,6 +9,9 @@ namespace NiL.JS.BaseLibrary
 #endif
     public class Boolean : JSObject
     {
+        internal const string TrueString = "true";
+        internal const string FalseString = "false";
+
         [Hidden]
         internal static readonly Boolean True = new Boolean(true) { attributes = JSValueAttributesInternal.SystemObject };
         [Hidden]
@@ -22,6 +25,7 @@ namespace NiL.JS.BaseLibrary
             attributes |= JSValueAttributesInternal.SystemObject;
         }
 
+        [StrictConversion]
         [DoNotEnumerate]
         public Boolean(Arguments obj)
         {
@@ -32,6 +36,7 @@ namespace NiL.JS.BaseLibrary
             attributes |= JSValueAttributesInternal.SystemObject;
         }
 
+        [StrictConversion]
         [DoNotEnumerate]
         public Boolean(bool value)
         {
@@ -40,6 +45,7 @@ namespace NiL.JS.BaseLibrary
             attributes |= JSValueAttributesInternal.SystemObject;
         }
 
+        [StrictConversion]
         [DoNotEnumerate]
         public Boolean(double value)
         {
@@ -48,6 +54,7 @@ namespace NiL.JS.BaseLibrary
             attributes |= JSValueAttributesInternal.SystemObject;
         }
 
+        [StrictConversion]
         [DoNotEnumerate]
         public Boolean(int value)
         {
@@ -56,6 +63,7 @@ namespace NiL.JS.BaseLibrary
             attributes |= JSValueAttributesInternal.SystemObject;
         }
 
+        [StrictConversion]
         [DoNotEnumerate]
         public Boolean(string value)
         {

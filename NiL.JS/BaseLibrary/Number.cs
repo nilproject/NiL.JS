@@ -56,7 +56,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [SuppressPopulate]
+        [StrictConversion]
         public Number(int value)
         {
             valueType = JSValueType.Integer;
@@ -81,7 +81,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [SuppressPopulate]
+        [StrictConversion]
         public Number(double value)
         {
             valueType = JSValueType.Double;
@@ -90,7 +90,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [SuppressPopulate]
+        [StrictConversion]
         public Number(string value)
         {
             value = (value ?? "0").Trim(Tools.TrimChars);

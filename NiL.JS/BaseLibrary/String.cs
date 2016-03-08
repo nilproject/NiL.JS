@@ -41,7 +41,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [SuppressPopulate]
+        [StrictConversion]
         public String(string s)
         {
             oValue = s ?? "null";
