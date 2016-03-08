@@ -168,5 +168,15 @@ namespace System
 
             return TypeCode.Object;
         }
+
+        public static Type GetInterface(this Type type, string name)
+        {
+            return type.GetTypeInfo().ImplementedInterfaces.First(x => x.Name == name);
+        }
+
+        public static Type[] GetGenericArguments(this Type type)
+        {
+            return type.GenericTypeArguments;
+        }
     }
 }

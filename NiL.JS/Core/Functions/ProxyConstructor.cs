@@ -304,7 +304,11 @@ namespace NiL.JS.Core.Functions
                                 if (args[j] != null ?
                                     !constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
+#if PORTABLE
+                                    constructors[i].parameters[j].ParameterType.GetTypeInfo().IsValueType)
+#else
                                     constructors[i].parameters[j].ParameterType.IsValueType)
+#endif
                                 {
                                     j = 0;
                                     args = null;

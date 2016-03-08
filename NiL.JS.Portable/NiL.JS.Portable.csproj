@@ -241,6 +241,9 @@
     <Compile Include="..\NiL.JS\Core\Interop\RequireNewKeywordAttribute.cs">
       <Link>Core\Interop\RequireNewKeywordAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\StrictConversionAttribute.cs">
+      <Link>Core\Interop\StrictConversionAttribute.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\TypeProxy.cs">
       <Link>Core\Interop\TypeProxy.cs</Link>
     </Compile>
@@ -492,6 +495,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\SuspendableExpression.cs">
       <Link>Expressions\SuspendableExpression.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\TemplateString.cs">
+      <Link>Expressions\TemplateString.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\This.cs">
       <Link>Expressions\This.cs</Link>

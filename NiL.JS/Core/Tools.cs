@@ -472,7 +472,7 @@ namespace NiL.JS.Core
             if (targetType.IsAssignableFrom(jsobj.GetType()))
                 return jsobj;
 
-            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (targetType.GetTypeInfo().IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 targetType = targetType.GetGenericArguments()[0];
 
             object value = null;
@@ -622,7 +622,7 @@ namespace NiL.JS.Core
                                 return jsobj.Value.ToString();
                         }
 
-                        if (!targetType.IsAbstract && targetType.IsSubclassOf(typeof(Delegate)))
+                        if (!targetType.GetTypeInfo().IsAbstract && targetType.IsSubclassOf(typeof(Delegate)))
                             return (jsobj.Value as Function).MakeDelegate(targetType);
 
                         goto default;
@@ -644,7 +644,7 @@ namespace NiL.JS.Core
             if (targetType.IsAssignableFrom(value.GetType()))
                 return value;
 #if PORTABLE
-            if (System.Reflection.IntrospectionExtensions.GetTypeInfo(targetType).IsEnum && Enum.IsDefined(targetType, value))
+            if (IntrospectionExtensions.GetTypeInfo(targetType).IsEnum && Enum.IsDefined(targetType, value))
                 return value;
 #else
             if (targetType.IsEnum && Enum.IsDefined(targetType, value))
@@ -706,9 +706,7 @@ namespace NiL.JS.Core
             if (array == null)
                 return null;
 
-            var result = (IList)elementType.MakeArrayType()
-                .GetConstructor(intTypeWithinArray)
-                .Invoke(new object[] { (int)array.data.Length });
+            var result = (IList)Activator.CreateInstance(elementType.MakeArrayType(), new object[] { (int)array.data.Length });
 
             for (var j = result.Count; j-- > 0;)
             {

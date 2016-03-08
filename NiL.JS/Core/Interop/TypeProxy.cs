@@ -370,7 +370,11 @@ namespace NiL.JS.Core.Interop
             {
                 lock (staticProxies)
                 {
+#if PORTABLE
+                    if (type.GetTypeInfo().ContainsGenericParameters)
+#else
                     if (type.ContainsGenericParameters)
+#endif
                         return staticProxies[type] = GetGenericTypeSelector(new[] { type });
 
                     new TypeProxy(type); // It's ok. This instance will be registered and saved
@@ -465,8 +469,11 @@ namespace NiL.JS.Core.Interop
 
                     var membername = mmbrs[i].Name;
                     membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
-
+#if PORTABLE
+                    if (mmbrs[i] is TypeInfo && membername.Contains("`"))
+#else
                     if (mmbrs[i] is Type && membername.Contains('`'))
+#endif
                         membername = membername.Substring(0, membername.IndexOf('`'));
 
                     if (prewName != membername)
