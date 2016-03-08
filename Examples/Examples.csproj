@@ -54,8 +54,9 @@
     <Compile Include="3. Methods and Events\Subscribe on and unsubscribe from event.cs" />
     <Compile Include="4. Namespaces and external types\Define constructor of external type in JavaScript environment.cs" />
     <Compile Include="4. Namespaces and external types\Extend JSValue.cs" />
-    <Compile Include="4. Namespaces and external types\Using of attributes.cs" />
-    <Compile Include="4. Namespaces and external types\Using of NamespaceProvider.cs" />
+    <Compile Include="4. Namespaces and external types\Using Generic Types.cs" />
+    <Compile Include="4. Namespaces and external types\Using attributes.cs" />
+    <Compile Include="4. Namespaces and external types\Using NamespaceProvider.cs" />
     <Compile Include="5. Syntax extensions\Custom operator.cs" />
     <Compile Include="5. Syntax extensions\Custom statement.cs" />
     <Compile Include="Program.cs" />

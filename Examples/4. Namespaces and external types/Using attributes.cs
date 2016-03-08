@@ -4,10 +4,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
+using NiL.JS.Extensions;
 
 namespace Examples._4_Namespaces_and_external_types
 {
-    public sealed class Using_of_attributes : ExamplesFramework.Example
+    public sealed class Using_attributes : ExamplesFramework.Example
     {
         private sealed class TestClass
         {
@@ -55,9 +56,9 @@ namespace Examples._4_Namespaces_and_external_types
                 return null;
             }
 
-            public override object To(object source)
+            public override object To(JSValue source)
             {
-                var @string = source as string;
+                var @string = source.As<string>();
                 if (@string != null)
                 {
                     return @string.Select(x => x.ToString()).ToArray();
@@ -96,7 +97,7 @@ namespace Examples._4_Namespaces_and_external_types
         {
             if (Console.CursorTop > 1)
                 Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(exampleName + ":");
             Console.ForegroundColor = ConsoleColor.Gray;
         }

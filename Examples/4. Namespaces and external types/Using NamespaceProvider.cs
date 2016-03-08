@@ -3,7 +3,7 @@ using NiL.JS.Core;
 
 namespace Examples._4_Namespaces_and_external_types
 {
-    public sealed class Using_of_NamespaceProvider : ExamplesFramework.Example
+    public sealed class Using_NamespaceProvider : ExamplesFramework.Example
     {
         public override void Run()
         {
