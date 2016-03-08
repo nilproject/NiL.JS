@@ -1,4 +1,5 @@
 ﻿using System;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
 namespace NiL.JS.Extensions
