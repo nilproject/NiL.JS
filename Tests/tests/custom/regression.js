@@ -201,6 +201,10 @@ catch (e) {
 
 JSON.stringify(new Date());
 
+if (JSON.stringify([,1])!=='[null,1]')
+    console.log(`JSON.stringify works incorrectly (${JSON.stringify([,1])})`);
+
+if (JSON.stringify([,,1])!=='[null,null,1]')
+    console.log(`JSON.stringify works incorrectly (${JSON.stringify([,,1])})`);
+
 console.log("test completed");
-    
-    

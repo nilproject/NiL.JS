@@ -60,7 +60,7 @@ namespace NiL.JS.Test
             };
             context.DefineVariable("test").Assign(JSValue.Marshal(temp));
             context.Eval(@"
-JSON.stringify(new Date())");
+var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
 
         }
 
@@ -95,7 +95,7 @@ JSON.stringify(new Date())");
             }));
 #endif
 
-            int mode = 159
+            int mode = 0
                     ;
             switch (mode)
             {
