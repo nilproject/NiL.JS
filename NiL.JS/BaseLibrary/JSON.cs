@@ -397,16 +397,20 @@ namespace NiL.JS.BaseLibrary
                 if (toJSONmemb.valueType == JSValueType.Function)
                     return stringifyImpl("", (toJSONmemb.oValue as Function).Call(obj, null), null, space, processed, null);
                 res = new StringBuilder(obj is Array ? "[" : "{");
-                bool first = true;
+
+                string prevKey = null;
+
                 foreach (var member in obj)
                 {
                     var value = member.Value;
                     value = value.Value as JSValue ?? value;
                     if (value.valueType < JSValueType.Undefined)
                         continue;
+
                     if (value.valueType == JSValueType.Property)
                         value = ((value.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(obj, null);
                     strval = stringifyImpl(member.Key, value, replacer, space, processed, args);
+
                     if (strval == null)
                     {
                         if (obj is Array)
@@ -414,17 +418,37 @@ namespace NiL.JS.BaseLibrary
                         else
                             continue;
                     }
-                    if (!first)
+
+                    if (prevKey != null)
                         res.Append(",");
+
                     if (space != null)
                         res.Append(Environment.NewLine);
                     if (space != null)
                         res.Append(space);
+
                     if (res[0] == '[')
                     {
-                        if (space != null)
-                            res.Append(space);
-                        res.Append(strval);
+                        int curentIndex;
+                        if (int.TryParse(member.Key, out curentIndex))
+                        {
+                            var prevIndex = int.Parse(prevKey ?? "-1");
+
+                            var capacity = res.Length + ((space?.Length ?? 0) + "null,".Length) * (curentIndex - prevIndex);
+                            if (capacity > res.Length) // Может произойти переполнение
+                                res.EnsureCapacity(capacity);
+
+                            for (var i = curentIndex - 1; i-- > prevIndex;)
+                            {
+                                res.Append(space)
+                                   .Append("null,");
+                            }
+
+                            res.Append(space)
+                               .Append(strval);
+
+                            prevKey = member.Key;
+                        }
                     }
                     else
                     {
@@ -441,11 +465,14 @@ namespace NiL.JS.BaseLibrary
                             if (i >= Environment.NewLine.Length && strval.IndexOf(Environment.NewLine, i - 1, Environment.NewLine.Length) != -1)
                                 res.Append(space);
                         }
+
+                        prevKey = member.Key;
                     }
-                    first = false;
                 }
-                if (!first && space != null)
+
+                if (prevKey != null && space != null)
                     res.Append(Environment.NewLine);
+
                 return res.Append(obj is Array ? "]" : "}").ToString();
             }
             finally
