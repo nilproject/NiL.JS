@@ -60,25 +60,7 @@ namespace NiL.JS.Test
             };
             context.DefineVariable("test").Assign(JSValue.Marshal(temp));
             context.Eval(@"
-test.TestPopulate.test(10.1);
-
-test.ListOfAction.push(x=> console.log(x));
-
-var a = test.Test2();
-test.TestNullable(test.TestNullable1());
-test.Test(a);
-
-var list = test.List()(); 
-list.Add(1); 
-list.Add('2');
-console.log(list.get_Item(0));
-console.log(list.get_Item(1));
-
-var list = test.List(Number)(); 
-list.Add(1); 
-list.Add('2');
-console.log(list.get_Item(0));
-console.log(list.get_Item(1));");
+JSON.stringify(new Date())");
 
         }
 
@@ -113,7 +95,7 @@ console.log(list.get_Item(1));");
             }));
 #endif
 
-            int mode = 0
+            int mode = 159
                     ;
             switch (mode)
             {

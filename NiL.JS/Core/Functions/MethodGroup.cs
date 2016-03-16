@@ -62,6 +62,7 @@ namespace NiL.JS.Core.Functions
             var len = 0;
             for (var i = 0; i < methods.Length; i++)
                 len = System.Math.Max(len, methods[i].parameters.Length);
+
             _length = new BaseLibrary.Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
         }
 
@@ -79,7 +80,7 @@ namespace NiL.JS.Core.Functions
             {
                 for (var i = 0; i < methods.Length; i++)
                 {
-                    if (methods[i].Parameters.Length == 1 && methods[i].Parameters[0].ParameterType == typeof(Arguments))
+                    if (methods[i].Parameters.Length == 1 && methods[i].raw)
                         return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, null, arguments));
 
                     if (pass == 1 || methods[i].Parameters.Length == l)

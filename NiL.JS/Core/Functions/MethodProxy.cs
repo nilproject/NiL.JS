@@ -24,15 +24,17 @@ namespace NiL.JS.Core.Functions
     internal sealed class MethodProxy : Function
     {
         private Func<object, object[], Arguments, object> implementation;
-        private bool raw;
         private bool forceInstance;
         private bool strictConversion;
 
-        private object hardTarget;
-        internal ParameterInfo[] parameters;
+        private object hardTarget;        
         private MethodBase method;
         private ConvertValueAttribute returnConverter;
         private ConvertValueAttribute[] paramsConverters;
+
+        internal ParameterInfo[] parameters;
+        internal bool raw;
+
         [Hidden]
         public ParameterInfo[] Parameters
         {
@@ -528,11 +530,14 @@ namespace NiL.JS.Core.Functions
             if (parameters.Length == 0)
                 return null;
 
+            if (forceInstance)
+                ExceptionsHelper.Throw(new InvalidOperationException());
+
             object[] res = null;
             int targetCount = parameters.Length;
             for (int i = targetCount; i-- > 0;)
             {
-                var obj = source[i];
+                var obj = source?[i] ?? undefined;
 
                 var trueNull = obj.valueType >= JSValueType.Object && obj.oValue == null;
 
