@@ -283,7 +283,7 @@ namespace NiL.JS.Core.Functions
             {
                 for (int i = 0; i < constructors.Length; i++)
                 {
-                    if (constructors[i].parameters.Length == 1 && (constructors[i].parameters[0].ParameterType == typeof(Arguments)))
+                    if (constructors[i].parameters.Length == 1 && constructors[i].raw)
                         return constructors[i];
 
                     if (pass == 1 || constructors[i].parameters.Length == len)
