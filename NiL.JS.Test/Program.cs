@@ -95,7 +95,7 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
             }));
 #endif
 
-            int mode = 0
+            int mode = 100
                     ;
             switch (mode)
             {

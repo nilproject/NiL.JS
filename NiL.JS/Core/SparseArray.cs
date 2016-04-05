@@ -340,37 +340,52 @@ namespace NiL.JS.Core
                     return 0;
                 return index;
             }
+
+            uint _index = (uint)index;
             int bi = 31;
-            long i = 0;
-            long pm = -1;
+            uint i = 0;
+
+            if (_index < allocatedCount)
+            {
+                if (navyData[index].index == _index)
+                    return index;
+            }
+
+            long pi = -1;
+            var pbi = -1;
             for (; ; bi--)
             {
-                if (navyData[i].oneContinue != 0)
-                    pm = i;
-                i = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                if ((_index & (1 << bi)) == 0)
+                {
+                    if (navyData[i].oneContinue != 0)
+                    {
+                        pi = i;
+                        pbi = bi;
+                    }
+
+                    i = navyData[i].zeroContinue;
+                }
+                else
+                {
+                    i = navyData[i].oneContinue;
+                }
+
                 if (i == 0)
                 {
-                    if (pm == -1)
-                        return 0;
-                    i = navyData[pm].oneContinue;
-                    for (;;)
+                    if (pi != -1)
                     {
-                        if (navyData[i].zeroContinue != 0)
-                        {
-                            i = navyData[i].zeroContinue;
-                            continue;
-                        }
-                        if (navyData[i].oneContinue != 0)
-                        {
-                            i = navyData[i].oneContinue;
-                            continue;
-                        }
-                        break;
+                        i = navyData[pi].oneContinue;
+                        pi = -1;
+                        _index = 0;
+                        bi = pbi;
                     }
+                    else
+                        return 0;
                 }
-                if (navyData[i].index >= (uint)index)
+
+                if (navyData[i].index >= index)
                 {
-                    return navyData[i].index;
+                    return (int)navyData[i].index;
                 }
             }
         }
@@ -433,39 +448,46 @@ namespace NiL.JS.Core
                         yield return new KeyValuePair<int, TValue>((int)(pseudoLength - 1), default(TValue));
                         yield break;
                     }
+
                     while (index < pseudoLength)
                     {
                         int bi = 31;
-                        long i = 0;
-                        long pm = -1;
+                        uint i = 0;
+                        long pi = -1;
+                        var pbi = -1;
                         for (; ; bi--)
                         {
-                            if (navyData[i].oneContinue != 0)
-                                pm = i;
-                            i = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                            if ((index & (1 << bi)) == 0)
+                            {
+                                if (navyData[i].oneContinue != 0)
+                                {
+                                    pi = i;
+                                    pbi = bi;
+                                }
+
+                                i = navyData[i].zeroContinue;
+                            }
+                            else
+                            {
+                                i = navyData[i].oneContinue;
+                            }
+
                             if (i == 0)
                             {
-                                if (pm == -1)
+                                if (pi != -1)
+                                {
+                                    i = navyData[pi].oneContinue;
+                                    pi = -1;
+                                    index = 0;
+                                    bi = pbi;
+                                }
+                                else
                                 {
                                     yield return new KeyValuePair<int, TValue>((int)(pseudoLength - 1), default(TValue));
                                     yield break;
                                 }
-                                i = navyData[pm].oneContinue;
-                                for (;;)
-                                {
-                                    if (navyData[i].zeroContinue != 0)
-                                    {
-                                        i = navyData[i].zeroContinue;
-                                        continue;
-                                    }
-                                    if (navyData[i].oneContinue != 0)
-                                    {
-                                        i = navyData[i].oneContinue;
-                                        continue;
-                                    }
-                                    break;
-                                }
                             }
+
                             if (navyData[i].index >= index)
                             {
                                 index = navyData[i].index;

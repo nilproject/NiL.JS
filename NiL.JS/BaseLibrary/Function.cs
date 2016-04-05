@@ -175,7 +175,7 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             set
             {
-                _prototype = value.oValue as JSObject ?? value;
+                _prototype = value?.oValue as JSObject ?? value;
             }
         }
         /// <summary>
