@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
-using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
+using NiL.JS.Core;
 
-namespace NiL.JS.Core
+namespace NiL.JS.BaseLibrary
 {
-    internal static class GlobalFunctions
+    public static class GlobalFunctions
     {
         internal static JSValue isFinite(JSValue thisBind, Arguments x)
         {

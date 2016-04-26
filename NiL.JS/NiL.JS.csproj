@@ -218,6 +218,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseLibrary\GeneratorFunction.cs" />
+    <Compile Include="BaseLibrary\GlobalFunctions.cs" />
+    <Compile Include="BaseLibrary\Promise.cs" />
     <Compile Include="BaseLibrary\Symbol.cs" />
     <Compile Include="CompilerNotification.cs" />
     <Compile Include="Core\Arguments.cs" />
@@ -277,7 +279,6 @@
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\Functions\EvalFunction.cs" />
     <Compile Include="Core\Functions\ExternalFunction.cs" />
-    <Compile Include="Core\GlobalFunctions.cs" />
     <Compile Include="Core\JIT\JITHelpers.cs" />
     <Compile Include="Core\JIT\TreeBuildingState.cs" />
     <Compile Include="Core\Interop\FieldAttribute.cs" />

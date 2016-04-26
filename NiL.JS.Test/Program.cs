@@ -70,6 +70,11 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
 
             Context.GlobalContext.DebuggerCallback += (sender, e) => Debugger.Break();
+            Context.GlobalContext.DefineVariable("$").Assign(JSValue.Wrap(
+                new
+                {
+                    sleep = new Action<int>(time => Thread.Sleep(time))
+                }));
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
             Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
             {
@@ -95,7 +100,7 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
             }));
 #endif
 
-            int mode = 0
+            int mode = 2
                     ;
             switch (mode)
             {

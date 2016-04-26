@@ -24,7 +24,7 @@ namespace NiL.JS.Core.Functions
 #if PORTABLE
                 return System.Reflection.RuntimeReflectionExtensions.GetMethodInfo(del).Name;
 #else
-                return del.Method.Name;
+                return _delegate.Method.Name;
 #endif
             }
         }
@@ -46,12 +46,12 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        private readonly ExternalFunctionDelegate del;
+        private readonly ExternalFunctionDelegate _delegate;
 
         [Hidden]
-        public ExternalFunctionDelegate Delegate { get { return del; } }
+        public ExternalFunctionDelegate Delegate { get { return _delegate; } }
 
-        public ExternalFunction(ExternalFunctionDelegate del)
+        public ExternalFunction(ExternalFunctionDelegate @delegate)
         {
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
@@ -59,19 +59,19 @@ namespace NiL.JS.Core.Functions
 #if PORTABLE
             var paramCountAttrbt = del.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
 #else
-            var paramCountAttrbt = del.Method.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false);
+            var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false);
 #endif
             _length.iValue = paramCountAttrbt.Length > 0 ? ((ArgumentsLengthAttribute)paramCountAttrbt[0]).Count : 1;
             _prototype = undefined;
-            if (del == null)
+            if (@delegate == null)
                 throw new ArgumentNullException();
-            this.del = del;
+            _delegate = @delegate;
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
         {
-            var res = del(targetObject, arguments);
+            var res = _delegate(targetObject, arguments);
             if (res == null)
                 return JSValue.NotExists;
             return res;

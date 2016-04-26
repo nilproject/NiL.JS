@@ -116,10 +116,11 @@ namespace NiL.JS.Core
                 globalContext.DefineConstructor(typeof(Uint32Array));
                 globalContext.DefineConstructor(typeof(Float32Array));
                 globalContext.DefineConstructor(typeof(Float64Array));
+                GlobalContext.DefineConstructor(typeof(Promise));
 
                 globalContext.DefineConstructor(typeof(Debug));
 
-#region Base Function
+                #region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());
                 globalContext.fields["eval"].attributes |= JSValueAttributesInternal.Eval;
                 globalContext.DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
@@ -135,13 +136,13 @@ namespace NiL.JS.Core
 #if !PORTABLE
                 globalContext.DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
 #endif
-#endregion
-#region Consts
+                #endregion
+                #region Consts
                 globalContext.fields["undefined"] = JSValue.undefined;
                 globalContext.fields["Infinity"] = Number.POSITIVE_INFINITY;
                 globalContext.fields["NaN"] = Number.NaN;
                 globalContext.fields["null"] = JSValue.@null;
-#endregion
+                #endregion
 
                 foreach (var v in globalContext.fields.Values)
                     v.attributes |= JSValueAttributesInternal.DoNotEnumerate;
@@ -281,12 +282,12 @@ namespace NiL.JS.Core
         }
 
         public Context()
-            : this(globalContext, true, Function.emptyFunction)
+            : this(globalContext, true, Function.Empty)
         {
         }
 
         public Context(Context prototype)
-            : this(prototype, true, Function.emptyFunction)
+            : this(prototype, true, Function.Empty)
         {
         }
 
@@ -346,7 +347,7 @@ namespace NiL.JS.Core
             do
             {
                 var c = runnedContexts[i];
-                if (c == null || c._threadId == threadId)
+                if (c == null || c._threadId == threadId || c == globalContext)
                 {
                     if (c == this)
                         return false;
@@ -389,11 +390,11 @@ namespace NiL.JS.Core
                 {
                     if (c != this)
                         throw new InvalidOperationException("Context is not running");
-                    runnedContexts[i] = c = oldContext;
+                    runnedContexts[i] = oldContext ?? globalContext;
                     break;
                 }
             }
-            if (i == -1)
+            if (i == runnedContexts.Length)
                 throw new InvalidOperationException("Context is not running");
             oldContext = null;
             _threadId = 0;
@@ -592,8 +593,8 @@ namespace NiL.JS.Core
              */
 
             var mainContext = this;
-            while (mainContext.oldContext != null 
-                && mainContext.oldContext == mainContext.parent 
+            while (mainContext.oldContext != null
+                && mainContext.oldContext == mainContext.parent
                 && mainContext.owner == mainContext.oldContext.owner)
             {
                 mainContext = mainContext.oldContext;
@@ -726,7 +727,7 @@ namespace NiL.JS.Core
             return this == globalContext ? "Global context" : "Context";
         }
 
-#region Temporal Wrapping
+        #region Temporal Wrapping
 
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -757,6 +758,6 @@ namespace NiL.JS.Core
             return tempContainer;
         }
 
-#endregion
+        #endregion
     }
 }

@@ -277,82 +277,87 @@ namespace NiL.JS.Core
             }
             if (index == j)
                 return false;
-            string name = allowEscape || checkReservedWords ? code.Substring(index, j - index) : null;
-            if (allowEscape)
+            if (allowEscape || checkReservedWords)
             {
-                int i = 0;
-                var nname = Tools.Unescape(name, strict, false, false);
-                if (nname != name)
+                string name = code.Substring(index, j - index);
+                if (allowEscape)
                 {
-                    var res = ValidateName(nname, ref i, checkReservedWords, false, strict) && i == nname.Length;
-                    if (res)
-                        index = j;
-                    return res;
-                }
-                else if (nname.IndexOf('\\') != -1)
-                    return false;
-            }
-            if (checkReservedWords)
-                switch (name)
-                {
-                    case "break":
-                    case "case":
-                    case "catch":
-                    case "continue":
-                    case "delete":
-                    case "default":
-                    case "do":
-                    case "else":
-                    case "finally":
-                    case "for":
-                    case "function":
-                    case "if":
-                    case "in":
-                    case "instanceof":
-                    case "new":
-                    case "return":
-                    case "switch":
-                    case "this":
-                    case "throw":
-                    case "try":
-                    case "typeof":
-                    case "var":
-                    case "void":
-                    case "while":
-                    case "with":
-                    case "true":
-                    case "false":
-                    case "null":
-                    case "export":
-                    case "extends":
-                    case "import":
-                    case "super":
-                    case "class":
-                    case "const":
-                    case "debugger":
-                    case "enum":
-                    case "yield":
+                    int i = 0;
+                    var nname = Tools.Unescape(name, strict, false, false);
+                    if (nname != name)
+                    {
+                        var res = ValidateName(nname, ref i, checkReservedWords, false, strict) && i == nname.Length;
+                        if (res)
+                            index = j;
+                        return res;
+                    }
+                    else if (nname.IndexOf('\\') != -1)
                         return false;
-                    case "implements":
-                    case "interface":
-                    case "package":
-                    case "private":
-                    case "protected":
-                    case "public":
-                    case "static":
-                    case "let":
-                        {
-                            if (strict)
-                                return false;
-                            break;
-                        }
-                    default:
-                        {
-                            if (customReservedWords != null && customReservedWords.Contains(name))
-                                return false;
-                            break;
-                        }
                 }
+                if (checkReservedWords)
+                {
+                    switch (name)
+                    {
+                        case "break":
+                        case "case":
+                        case "catch":
+                        case "continue":
+                        case "delete":
+                        case "default":
+                        case "do":
+                        case "else":
+                        case "finally":
+                        case "for":
+                        case "function":
+                        case "if":
+                        case "in":
+                        case "instanceof":
+                        case "new":
+                        case "return":
+                        case "switch":
+                        case "this":
+                        case "throw":
+                        case "try":
+                        case "typeof":
+                        case "var":
+                        case "void":
+                        case "while":
+                        case "with":
+                        case "true":
+                        case "false":
+                        case "null":
+                        case "export":
+                        case "extends":
+                        case "import":
+                        case "super":
+                        case "class":
+                        case "const":
+                        case "debugger":
+                        case "enum":
+                        case "yield":
+                            return false;
+                        case "implements":
+                        case "interface":
+                        case "package":
+                        case "private":
+                        case "protected":
+                        case "public":
+                        case "static":
+                        case "let":
+                            {
+                                if (strict)
+                                    return false;
+                                break;
+                            }
+                        default:
+                            {
+                                if (customReservedWords != null && customReservedWords.Contains(name))
+                                    return false;
+                                break;
+                            }
+                    }
+                }
+            }
             index = j;
             return true;
         }

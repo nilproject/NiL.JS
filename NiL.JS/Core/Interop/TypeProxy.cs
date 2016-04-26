@@ -319,7 +319,7 @@ namespace NiL.JS.Core.Interop
                             return new JSValue
                             {
 #if PORTABLE
-                                    oValue = new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target),
+                                oValue = new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target),
 #else
                                 oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target),
 #endif
