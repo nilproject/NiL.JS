@@ -79,7 +79,7 @@ namespace NiL.JS.Core
                 if (globalContext.fields != null)
                     globalContext.fields.Clear();
                 else
-                    globalContext.fields = new StringMap2<JSValue>();
+                    globalContext.fields = new StringMap<JSValue>();
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
                 globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl(false));
@@ -517,7 +517,7 @@ namespace NiL.JS.Core
         public void DefineConstructor(Type moduleType)
         {
             if (fields == null)
-                fields = new StringMap2<JSValue>();
+                fields = new StringMap<JSValue>();
             string name;
 #if PORTABLE
             if (System.Reflection.IntrospectionExtensions.GetTypeInfo(moduleType).IsGenericType)

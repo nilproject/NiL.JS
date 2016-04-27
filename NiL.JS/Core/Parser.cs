@@ -83,7 +83,8 @@ namespace NiL.JS.Core
                 new Rule(ValidateName, LabeledStatement.Parse),
                 new Rule(ValidateName, ExpressionTree.Parse),
                 new Rule(ValidateValue, ExpressionTree.Parse),
-                new Rule("debugger", Debugger.Parse)
+                new Rule("debugger", Debugger.Parse),
+                new Rule("import", ImportStatement.Parse)
             },
             // 1
             new List<Rule> // Начало выражения

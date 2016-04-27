@@ -69,6 +69,8 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
             //Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
 
+            Module.ResolveModule += Module_ResolveModule;
+
             Context.GlobalContext.DebuggerCallback += (sender, e) => Debugger.Break();
             Context.GlobalContext.DefineVariable("$").Assign(JSValue.Wrap(
                 new
@@ -370,6 +372,12 @@ ast.print_to_string();");
             }
             else if (Debugger.IsAttached)
                 Console.ReadKey();
+        }
+
+        private static void Module_ResolveModule(ResolveModuleEventArgs e)
+        {
+            if (e.ModuleName.StartsWith("clr:"))
+                e.Module = Module.ClrNamespace(e.ModuleName.Substring(4));
         }
 
         private static void sputnikTests(string folderPath = "tests\\sputnik\\")

@@ -338,6 +338,8 @@
     <Compile Include="Expressions\Yield.cs" />
     <Compile Include="Extensions\JSValueExtensions.cs" />
     <Compile Include="NamespaceProvider.cs" />
+    <Compile Include="ResolveModuleEventArgs.cs" />
+    <Compile Include="Statements\ImportStatement.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Expressions\AssignmentOperatorCache.cs" />
     <Compile Include="Expressions\NotEqual.cs" />

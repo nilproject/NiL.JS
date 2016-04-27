@@ -958,6 +958,7 @@ namespace NiL.JS.Core
         {
             var c = Root;
             if (c != null)
+            {
                 do
                 {
                     var cmp = c.key.StartsWith(prefix) ? 0 : prefix.CompareTo(c.key);
@@ -991,6 +992,7 @@ namespace NiL.JS.Core
                         break;
                 }
                 while (true);
+            }
         }
     }
 }

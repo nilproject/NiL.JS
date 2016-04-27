@@ -16,28 +16,56 @@ namespace NiL.JS
     }
 
     /// <summary>
-    /// Управляет выполнением скрипта на языке JavaScript.
+    /// Represents and manage JavaScript module
     /// </summary>
 #if !PORTABLE
     [Serializable]
 #endif
     public sealed class Module
     {
-        private CodeNode root;
-        public CodeBlock Root { get { return root as CodeBlock; } }
+        private static readonly StringMap<Module> _modulesCache = new StringMap<Module>();
+        private static List<ResolveModuleHandler> _resolveModuleHandlers = new List<ResolveModuleHandler>();
+
         /// <summary>
-        /// Исходный код скрипта, переданный при создании объекта.
+        /// Occurs when module not found in modules cache
+        /// </summary>
+        public static event ResolveModuleHandler ResolveModule
+        {
+            add
+            {
+                if (value != null)
+                    lock (_resolveModuleHandlers)
+                        _resolveModuleHandlers.Add(value);
+            }
+            remove
+            {
+                lock (_resolveModuleHandlers)
+                    _resolveModuleHandlers.Remove(value);
+            }
+        }
+
+        public JSObject Exports { get; private set; } = JSObject.CreateObject();
+
+        private CodeNode root;
+        /// <summary>
+        /// Root node of AST
+        /// </summary>
+        public CodeBlock Root { get { return root as CodeBlock; } }
+
+        /// <summary>
+        /// JavaScript code, used for initialization
         /// </summary>
         public string Code { get; private set; }
+
         /// <summary>
-        /// Корневой контекст выполнения скрипта.
+        /// Root context of module
         /// </summary>
         public Context Context { get; private set; }
 
         /// <summary>
-        /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
+        /// Initializes a new Module with specified code.
         /// </summary>
-        /// <param name="code">Код скрипта на языке JavaScript.</param>
+        /// <param name="code">JavaScript code.</param>
         public Module(string code)
             : this(code, null, Options.None)
         {
@@ -45,10 +73,10 @@ namespace NiL.JS
         }
 
         /// <summary>
-        /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
+        /// Initializes a new Module with specified code and callback for output compiler messages.
         /// </summary>
-        /// <param name="code">Код скрипта на языке JavaScript.</param>
-        /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
+        /// <param name="code">JavaScript code.</param>
+        /// <param name="messageCallback">Callback used to output compiler messages</param>
         public Module(string code, CompilerMessageCallback messageCallback)
             : this(code, messageCallback, Options.None)
         {
@@ -56,15 +84,37 @@ namespace NiL.JS
         }
 
         /// <summary>
-        /// Инициализирует объект типа Script и преобрзует код сценария во внутреннее представление.
+        /// Initializes a new Module with specified code, callback for output compiler messages and compiler options.
         /// </summary>
-        /// <param name="code">Код скрипта на языке JavaScript.</param>
-        /// <param name="messageCallback">Делегат обратного вызова, используемый для вывода сообщений компилятора</param>
+        /// <param name="code">JavaScript code.</param>
+        /// <param name="messageCallback">Callback used to output compiler messages or null</param>
+        /// <param name="options">Compiler options</param>
         public Module(string code, CompilerMessageCallback messageCallback, Options options)
+            : this(null, code, messageCallback, options)
+        { }
+
+        /// <summary>
+        /// Initializes a new Module with specified code, callback for output compiler messages and compiler options.
+        /// </summary>
+        /// <param name="name">Name of module that used for import by ImportStatement</param>
+        /// <param name="code">JavaScript code.</param>
+        /// <param name="messageCallback">Callback used to output compiler messages or null</param>
+        /// <param name="options">Compiler options</param>
+        public Module(string name, string code, CompilerMessageCallback messageCallback, Options options)
         {
             if (code == null)
                 throw new ArgumentNullException();
+
             Code = code;
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                if (!_modulesCache.ContainsKey(name))
+                    _modulesCache[name] = this;
+            }
+
+            if (code == "")
+                return;
+
             int i = 0;
             root = CodeBlock.Parse(new ParseInfo(Tools.RemoveComments(code, 0), Code, messageCallback), ref i);
 
@@ -89,16 +139,19 @@ namespace NiL.JS
 
             var bd = body as CodeNode;
             body.Optimize(ref bd, null, icallback, options, stat);
-            
+
             if (stat.ContainsYield)
                 body.Decompose(ref bd);
         }
 
         /// <summary>
-        /// Запускает выполнение скрипта.
+        /// Run the script
         /// </summary>
         public void Run()
         {
+            if (Code == "")
+                return;
+
             var lm = System.Runtime.GCSettings.LatencyMode;
             System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.Interactive;
             try
@@ -111,6 +164,29 @@ namespace NiL.JS
                 System.Runtime.GCSettings.LatencyMode = lm;
                 Context.Deactivate();
             }
+        }
+
+        internal static Module Resolve(string name)
+        {
+            var e = new ResolveModuleEventArgs(name);
+
+            for (var i = 0; i < _resolveModuleHandlers.Count && e.Module == null; i++)
+                _resolveModuleHandlers[i](e);
+
+            if (e.Module != null && e.AddToCache && !_modulesCache.ContainsKey(name))
+                _modulesCache[name] = e.Module;
+
+            return e.Module;
+        }
+
+        /// <summary>
+        /// Returns module, which provides access to clr-namespace
+        /// </summary>
+        /// <param name="namespace">Namespace</param>
+        /// <returns></returns>
+        public static Module ClrNamespace(string @namespace)
+        {
+            return new Module("") { Exports = new NamespaceProvider(@namespace) };
         }
     }
 }

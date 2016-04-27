@@ -9,9 +9,9 @@ namespace NiL.JS.Core
 {
     internal sealed class StringMapDebugView<TValue>
     {
-        private StringMap2<TValue> stringMap;
+        private StringMap<TValue> stringMap;
 
-        public StringMapDebugView(StringMap2<TValue> stringMap)
+        public StringMapDebugView(StringMap<TValue> stringMap)
         {
             this.stringMap = stringMap;
         }
@@ -31,7 +31,7 @@ namespace NiL.JS.Core
 #endif
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(StringMapDebugView<>))]
-    public class StringMap2<TValue> : IDictionary<string, TValue>
+    public class StringMap<TValue> : IDictionary<string, TValue>
     {
         [StructLayout(LayoutKind.Sequential)]
         private struct Record
@@ -63,7 +63,7 @@ namespace NiL.JS.Core
 
         private LinkedList<KeyValuePair<uint, int>> _numberKeysIndexes = null;
 
-        public StringMap2()
+        public StringMap()
         {
             Clear();
         }

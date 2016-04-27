@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
+using System.ComponentModel;
 
 namespace NiL.JS.Core
 {
@@ -316,11 +317,12 @@ namespace NiL.JS.Core
         internal static IDictionary<string, JSValue> getFieldsContainer()
         {
             //return new Dictionary<string, JSObject>(System.StringComparer.Ordinal);
-            return new StringMap2<JSValue>();
+            return new StringMap<JSValue>();
         }
 
         [DoNotEnumerate]
         [ArgumentsLength(2)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static JSValue create(Arguments args)
         {
             if (args[0].valueType < JSValueType.Object)
