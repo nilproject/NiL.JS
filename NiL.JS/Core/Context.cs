@@ -390,7 +390,7 @@ namespace NiL.JS.Core
                 {
                     if (c != this)
                         throw new InvalidOperationException("Context is not running");
-                    runnedContexts[i] = oldContext ?? globalContext;
+                    runnedContexts[i] = (c = oldContext) ?? globalContext;
                     break;
                 }
             }
