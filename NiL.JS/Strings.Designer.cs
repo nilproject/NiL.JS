@@ -10,13 +10,8 @@
 
 namespace NiL.JS {
     using System;
-    using System.Reflection;
-
-#if NET40
-using NiL.JS.Backward;
-#endif
-
-
+    
+    
     /// <summary>
     ///   Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
     /// </summary>
@@ -44,7 +39,7 @@ using NiL.JS.Backward;
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NiL.JS.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NiL.JS.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -80,6 +75,15 @@ using NiL.JS.Backward;
         internal static string FunctionInLoop {
             get {
                 return ResourceManager.GetString("FunctionInLoop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Identifier &quot;{0}&quot; has already been declared.
+        /// </summary>
+        internal static string IdentifierAlreadyDeclared {
+            get {
+                return ResourceManager.GetString("IdentifierAlreadyDeclared", resourceCulture);
             }
         }
         

@@ -139,9 +139,11 @@ namespace NiL.JS.Statements
                 bool skip = false;
                 for (var j = 0; j < state.Variables.Count - i + skiped; j++)
                 {
-                    if (state.Variables[j].name == names[i]
-                        && state.Variables[j].definitionScopeLevel >= level)
+                    if (state.Variables[j].name == names[i] && state.Variables[j].definitionScopeLevel >= level)
                     {
+                        if (state.Variables[j].lexicalScope && mode > VariableKind.FunctionScope)
+                            ExceptionsHelper.ThrowSyntaxError(string.Format(Strings.IdentifierAlreadyDeclared, names[i]), state.Code, index);
+
                         skip = true;
                         variables[i] = state.Variables[j];
                         skiped++;
