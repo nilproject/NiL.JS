@@ -362,10 +362,5 @@ namespace NiL.JS.Expressions
         {
             return "(" + first + " + " + second + ")";
         }
-
-        public override void Decompose(ref Expression self, IList<CodeNode> result)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
