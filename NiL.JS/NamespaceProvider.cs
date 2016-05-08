@@ -128,7 +128,7 @@ namespace NiL.JS
                 if (resultType != null)
                     return TypeProxy.GetConstructor(resultType);
 
-                selection.Reset();
+                selection = types.StartedWith(reqname).GetEnumerator();
                 if (selection.MoveNext() && selection.Current.Key[reqname.Length] == '.')
                 {
                     res = new NamespaceProvider(reqname);
@@ -141,7 +141,7 @@ namespace NiL.JS
                 }
             }
 
-            return base.GetProperty(key, forWrite, memberScope);
+            return undefined;
         }
 
         public static Type GetType(string name)

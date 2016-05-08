@@ -408,7 +408,7 @@ namespace NiL.JS.BaseLibrary
                         continue;
 
                     if (value.valueType == JSValueType.Property)
-                        value = ((value.oValue as GsPropertyPair).get ?? Function.emptyFunction).Call(obj, null);
+                        value = ((value.oValue as GsPropertyPair).get ?? Function.Empty).Call(obj, null);
                     strval = stringifyImpl(member.Key, value, replacer, space, processed, args);
 
                     if (strval == null)

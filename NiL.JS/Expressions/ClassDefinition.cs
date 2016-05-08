@@ -196,15 +196,16 @@ namespace NiL.JS.Expressions
                     bool @static = Parser.Validate(state.Code, "static", ref i);
                     if (@static)
                     {
-                        while (Tools.IsWhiteSpace(state.Code[i]))
-                            i++;
+                        Tools.SkipSpaces(state.Code, ref i);
+                        s = i;
                     }
+
                     bool getOrSet = Parser.Validate(state.Code, "get", ref i) || Parser.Validate(state.Code, "set", ref i);
                     if (getOrSet)
                     {
-                        while (Tools.IsWhiteSpace(state.Code[i]))
-                            i++;
+                        Tools.SkipSpaces(state.Code, ref i);
                     }
+
                     var asterisk = state.Code[i] == '*';
                     if (asterisk)
                     {

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
+using System.Diagnostics;
 
 namespace NiL.JS
 {
@@ -81,6 +82,8 @@ namespace NiL.JS
 
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void ThrowSyntaxError(string message, string code, int position)
         {
             ThrowSyntaxError(message, code, position, 0);
@@ -120,6 +123,8 @@ namespace NiL.JS
             Throw(new TypeError(message));
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void Throw(Exception exception)
         {
             throw exception;

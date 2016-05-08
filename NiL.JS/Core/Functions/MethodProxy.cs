@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
+using System.Collections.Generic;
 
 #if NET40
 using NiL.JS.Backward;
@@ -23,7 +24,8 @@ namespace NiL.JS.Core.Functions
 
     internal sealed class MethodProxy : Function
     {
-        private Func<object, object[], Arguments, object> implementation;
+        private static readonly Dictionary<MethodBase, Func<object, object[], Arguments, object>> _wrapperCache = new Dictionary<MethodBase, Func<object, object[], Arguments, object>>();
+        private Func<object, object[], Arguments, object> wrapper;
         private bool forceInstance;
         private bool strictConversion;
 
@@ -79,7 +81,7 @@ namespace NiL.JS.Core.Functions
         private MethodProxy()
         {
             parameters = new ParameterInfo[0];
-            implementation = delegate { return null; };
+            wrapper = delegate { return null; };
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
@@ -127,20 +129,40 @@ namespace NiL.JS.Core.Functions
                         throw new ArgumentException("Force-instance method \"" + methodBase + "\" have invalid signature");
                     raw = true;
                 }
+
+                if (!_wrapperCache.TryGetValue(method, out wrapper))
+                {
 #if PORTABLE
-                makeMethodOverExpression(methodInfo);
+                    wrapper = makeMethodOverExpression(methodInfo);
 #else
-                makeMethodOverEmit(methodInfo);
+                    wrapper = makeMethodOverEmit(methodInfo, parameters, forceInstance);
 #endif
+                    _wrapperCache[method] = wrapper;
+                }
+                else
+                {
+                    raw |= parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments));
+                }
+
                 RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
             }
             else if (methodBase is ConstructorInfo)
-                makeConstructorOverExpression(methodBase as ConstructorInfo);
+            {
+                if (!_wrapperCache.TryGetValue(method, out wrapper))
+                {
+                    wrapper = makeConstructorOverExpression(methodBase as ConstructorInfo, parameters);
+                    _wrapperCache[method] = wrapper;
+                }
+                else
+                {
+                    raw |= parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments));
+                }
+            }
             else
                 throw new NotImplementedException();
         }
 #if !PORTABLE
-        private void makeMethodOverEmit(MethodInfo methodInfo)
+        private Func<object, object[], Arguments, object> makeMethodOverEmit(MethodInfo methodInfo, ParameterInfo[] parameters, bool forceInstance)
         {
             var impl = new DynamicMethod(
                 "<nil.js@wrapper>" + methodInfo.Name,
@@ -159,7 +181,7 @@ namespace NiL.JS.Core.Functions
             if (!methodInfo.IsStatic)
             {
                 generator.Emit(OpCodes.Ldarg_0);
-                if (method.DeclaringType.IsValueType)
+                if (methodInfo.DeclaringType.IsValueType)
                 {
                     generator.Emit(OpCodes.Ldc_I4, IntPtr.Size);
                     generator.Emit(OpCodes.Add);
@@ -262,7 +284,7 @@ namespace NiL.JS.Core.Functions
                     }
                 }
             }
-            if (methodInfo.IsStatic || method.DeclaringType.IsValueType)
+            if (methodInfo.IsStatic || methodInfo.DeclaringType.IsValueType)
             {
                 generator.Emit(OpCodes.Call, methodInfo);
             }
@@ -281,10 +303,10 @@ namespace NiL.JS.Core.Functions
             }
 
             generator.Emit(OpCodes.Ret);
-            implementation = (Func<object, object[], Arguments, object>)impl.CreateDelegate(typeof(Func<object, object[], Arguments, object>));
+            return (Func<object, object[], Arguments, object>)impl.CreateDelegate(typeof(Func<object, object[], Arguments, object>));
         }
 #else
-        private void makeMethodOverExpression(MethodInfo methodInfo)
+        private Func<object, object[], Arguments, object> makeMethodOverExpression(MethodInfo methodInfo)
         {
             Expression[] prms = null;
             ParameterExpression target = Expression.Parameter(typeof(object), "target");
@@ -346,7 +368,7 @@ namespace NiL.JS.Core.Functions
                 tree = Expression.Block(tree, Expression.Constant(null));
             try
             {
-                implementation = Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
+                return Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
             }
             catch
             {
@@ -354,7 +376,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 #endif
-        private void makeConstructorOverExpression(ConstructorInfo constructorInfo)
+        private Func<object, object[], Arguments, object> makeConstructorOverExpression(ConstructorInfo constructorInfo, ParameterInfo[] parameters)
         {
             Expression[] prms = null;
             ParameterExpression target = Expression.Parameter(typeof(object), "target");
@@ -389,7 +411,7 @@ namespace NiL.JS.Core.Functions
             }
             try
             {
-                implementation = Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
+                return Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
             }
             catch
             {
@@ -477,7 +499,7 @@ namespace NiL.JS.Core.Functions
 
             try
             {
-                object res = implementation(
+                object res = wrapper(
                     target,
                     raw ? null : (args ?? ConvertArgs(argsSource, ConvertArgsOptions.ThrowOnError | ConvertArgsOptions.DummyValues)),
                     argsSource);
@@ -635,7 +657,7 @@ namespace NiL.JS.Core.Functions
                 hardTarget = getTargetObject(args[0], method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
                 method = method,
                 parameters = parameters,
-                implementation = implementation,
+                wrapper = wrapper,
                 forceInstance = forceInstance,
                 raw = raw
             };

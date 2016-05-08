@@ -123,6 +123,9 @@
   <data name="FunctionInLoop" xml:space="preserve">
     <value>Do not define a function inside a loop</value>
   </data>
+  <data name="IdentifierAlreadyDeclared" xml:space="preserve">
+    <value>Identifier "{0}" has already been declared</value>
+  </data>
   <data name="IncrementPropertyWOSetter" xml:space="preserve">
     <value>Can not increment property "{0}" without setter.</value>
   </data>

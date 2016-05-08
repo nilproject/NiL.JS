@@ -8,6 +8,12 @@ using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
 using linqEx = System.Linq.Expressions;
+using System.ComponentModel;
+using System.Diagnostics;
+
+#if !PORTABLE
+using NiL.JS.Backward;
+#endif
 
 namespace NiL.JS.BaseLibrary
 {
@@ -43,10 +49,10 @@ namespace NiL.JS.BaseLibrary
 #if !PORTABLE
     [Serializable]
 #endif
-    public class Function : JSObject
+    public partial class Function : JSObject
     {
+        internal static readonly Function Empty = new Function();
         private static readonly FunctionDefinition creatorDummy = new FunctionDefinition("anonymous");
-        internal static readonly Function emptyFunction = new Function();
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function)
 #if PORTABLE
             .GetTypeInfo().GetDeclaredMethod("ThrowTypeError"))
@@ -98,7 +104,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal Number _length = null;
         [Field]
-        [ReadOnly]
+        [Core.Interop.ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
@@ -175,7 +181,10 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             set
             {
-                _prototype = value?.oValue as JSObject ?? value;
+                if (value == null)
+                    _prototype = Null;
+                else
+                    _prototype = value.oValue as JSObject ?? value;
             }
         }
         /// <summary>
@@ -394,7 +403,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (spreadIndex < spreadSource.Count)
                     {
-                        argumentsObject[targetIndex] = spreadSource[spreadIndex];
+                        argumentsObject[targetIndex++] = spreadSource[spreadIndex];
                         spreadIndex++;
                     }
                     if (spreadIndex == spreadSource.Count)
@@ -417,8 +426,8 @@ namespace NiL.JS.BaseLibrary
                         sourceIndex++;
                         argumentsObject[targetIndex] = value;
                     }
+                    targetIndex++;
                 }
-                targetIndex++;
             }
 
             argumentsObject.length = targetIndex;
@@ -505,10 +514,8 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public JSValue Call(Arguments args)
-        {
-            return Call(undefined, args);
-        }
+        [DebuggerStepThrough]
+        public JSValue Call(Arguments args) => Call(undefined, args);
 
         [Hidden]
         public JSValue Call(JSValue targetObject, Arguments arguments)
@@ -787,8 +794,14 @@ namespace NiL.JS.BaseLibrary
             {
                 JSValue t = args[i];
                 var prm = creator.parameters[i];
-                if (!t.Defined && prm.initializer != null)
-                    t = prm.initializer.Evaluate(internalContext);
+                if (!t.Defined)
+                {
+                    if (prm.initializer != null)
+                        t = prm.initializer.Evaluate(internalContext);
+                    else
+                        t = undefined;
+                }
+
                 if (creator.body._strict)
                 {
                     if (ceaw)
@@ -985,6 +998,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [CLSCompliant(false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public JSValue call(Arguments args)
         {
             var newThis = args[0];
@@ -1077,5 +1091,7 @@ namespace NiL.JS.BaseLibrary
 
             return @delegate;
         }
+
+        public static implicit operator Function(Delegate action) => new MethodProxy(action.GetMethodInfo(), action.Target);
     }
 }

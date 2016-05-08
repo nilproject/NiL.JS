@@ -43,17 +43,21 @@ namespace NiL.JS.Statements
             string exptn = null;
             if (Parser.Validate(state.Code, "catch (", ref i) || Parser.Validate(state.Code, "catch(", ref i))
             {
+                Tools.SkipSpaces(state.Code, ref i);
+
                 int s = i;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict))
                     ExceptionsHelper.Throw((new SyntaxError("Catch block must contain variable name " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+
                 exptn = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
                 if (state.strict)
                 {
                     if (exptn == "arguments" || exptn == "eval")
                         ExceptionsHelper.Throw((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
-                while (Tools.IsWhiteSpace(state.Code[i]))
-                    i++;
+
+                Tools.SkipSpaces(state.Code, ref i);
+
                 if (!Parser.Validate(state.Code, ")", ref i))
                     ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 while (Tools.IsWhiteSpace(state.Code[i]))

@@ -139,9 +139,11 @@ namespace NiL.JS.Statements
                 bool skip = false;
                 for (var j = 0; j < state.Variables.Count - i + skiped; j++)
                 {
-                    if (state.Variables[j].name == names[i]
-                        && state.Variables[j].definitionScopeLevel >= level)
+                    if (state.Variables[j].name == names[i] && state.Variables[j].definitionScopeLevel >= level)
                     {
+                        if (state.Variables[j].lexicalScope && mode > VariableKind.FunctionScope)
+                            ExceptionsHelper.ThrowSyntaxError(string.Format(Strings.IdentifierAlreadyDeclared, names[i]), state.Code, index);
+
                         skip = true;
                         variables[i] = state.Variables[j];
                         skiped++;
@@ -234,7 +236,8 @@ namespace NiL.JS.Statements
                     }
                 }
             }
-            if (this == _this && actualChilds < initializers.Length)
+
+            if (actualChilds < initializers.Length)
             {
                 if ((opts & Options.SuppressUselessStatementsElimination) == 0 && actualChilds == 0)
                 {
@@ -242,12 +245,14 @@ namespace NiL.JS.Statements
                     Eliminated = true;
                     return false;
                 }
+
                 var newinits = new Expression[actualChilds];
                 for (int i = 0, j = 0; i < initializers.Length; i++)
                     if (initializers[i] != null)
                         newinits[j++] = initializers[i];
                 initializers = newinits;
             }
+
             return false;
         }
 

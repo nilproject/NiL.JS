@@ -73,6 +73,9 @@
     <Compile Include="..\NiL.JS\BaseLibrary\GeneratorFunction.cs">
       <Link>BaseLibrary\GeneratorFunction.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\GlobalFunctions.cs">
+      <Link>BaseLibrary\GlobalFunctions.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\Int16Array.cs">
       <Link>BaseLibrary\Int16Array.cs</Link>
     </Compile>
@@ -90,6 +93,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\Number.cs">
       <Link>BaseLibrary\Number.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Promise.cs">
+      <Link>BaseLibrary\Promise.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\RangeError.cs">
       <Link>BaseLibrary\RangeError.cs</Link>
@@ -174,9 +180,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Functions\ProxyConstructor.cs">
       <Link>Core\Functions\ProxyConstructor.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\GlobalFunctions.cs">
-      <Link>Core\GlobalFunctions.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\GlobalObject.cs">
       <Link>Core\GlobalObject.cs</Link>
@@ -294,6 +297,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\ExceptionsHelper.cs">
       <Link>ExceptionsHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\ExportTable.cs">
+      <Link>ExportTable.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\Addition.cs">
       <Link>Expressions\Addition.cs</Link>
@@ -523,6 +529,9 @@
     <Compile Include="..\NiL.JS\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\ResolveModuleEventArgs.cs">
+      <Link>ResolveModuleEventArgs.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Statements\Break.cs">
       <Link>Statements\Break.cs</Link>
     </Compile>
@@ -538,6 +547,9 @@
     <Compile Include="..\NiL.JS\Statements\DoWhile.cs">
       <Link>Statements\DoWhile.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Statements\ExportStatement.cs">
+      <Link>Statements\ExportStatement.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Statements\For.cs">
       <Link>Statements\For.cs</Link>
     </Compile>
@@ -549,6 +561,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Statements\IfElse.cs">
       <Link>Statements\IfElse.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Statements\ImportStatement.cs">
+      <Link>Statements\ImportStatement.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Statements\InfinityLoop.cs">
       <Link>Statements\InfinityLoop.cs</Link>

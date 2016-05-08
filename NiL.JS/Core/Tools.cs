@@ -1527,7 +1527,7 @@ namespace NiL.JS.Core
             if (reassignLen)
             {
                 if (length.valueType == JSValueType.Property)
-                    ((length.oValue as GsPropertyPair).set ?? Function.emptyFunction).Call(src, new Arguments() { result });
+                    ((length.oValue as GsPropertyPair).set ?? Function.Empty).Call(src, new Arguments() { result });
                 else
                     length.Assign(result);
             }

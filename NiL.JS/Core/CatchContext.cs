@@ -21,7 +21,6 @@ namespace NiL.JS.Core
             prototype = proto;
             errorVariableName = name;
             strict = proto.strict;
-            tempContainer = proto.tempContainer;
             fields = proto.fields;
         }
 

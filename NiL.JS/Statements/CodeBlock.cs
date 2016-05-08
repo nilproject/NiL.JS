@@ -668,7 +668,7 @@ namespace NiL.JS.Statements
 
         internal void initVariables(Context context)
         {
-            var stats = context.owner?.creator._functionInfo;
+            var stats = context.owner?.creator?._functionInfo;
             var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.ContainsYield;
             for (var i = 0; i < _variables.Length; i++)
             {

@@ -218,6 +218,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseLibrary\GeneratorFunction.cs" />
+    <Compile Include="BaseLibrary\GlobalFunctions.cs" />
+    <Compile Include="BaseLibrary\Promise.cs" />
     <Compile Include="BaseLibrary\Symbol.cs" />
     <Compile Include="CompilerNotification.cs" />
     <Compile Include="Core\Arguments.cs" />
@@ -245,6 +247,7 @@
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
     <Compile Include="Core\Interop\StrictConversionAttribute.cs" />
+    <Compile Include="ExportTable.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />
     <Compile Include="Expressions\GetSetPropertyPair.cs" />
     <Compile Include="Expressions\NewTarget.cs" />
@@ -277,7 +280,6 @@
     <Compile Include="Core\Delegates.cs" />
     <Compile Include="Core\Functions\EvalFunction.cs" />
     <Compile Include="Core\Functions\ExternalFunction.cs" />
-    <Compile Include="Core\GlobalFunctions.cs" />
     <Compile Include="Core\JIT\JITHelpers.cs" />
     <Compile Include="Core\JIT\TreeBuildingState.cs" />
     <Compile Include="Core\Interop\FieldAttribute.cs" />
@@ -337,6 +339,9 @@
     <Compile Include="Expressions\Yield.cs" />
     <Compile Include="Extensions\JSValueExtensions.cs" />
     <Compile Include="NamespaceProvider.cs" />
+    <Compile Include="ResolveModuleEventArgs.cs" />
+    <Compile Include="Statements\ExportStatement.cs" />
+    <Compile Include="Statements\ImportStatement.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
     <Compile Include="Expressions\AssignmentOperatorCache.cs" />
     <Compile Include="Expressions\NotEqual.cs" />

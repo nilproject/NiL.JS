@@ -69,7 +69,19 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
             //Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
 
+            Module.ResolveModule += Module_ResolveModule;
+
             Context.GlobalContext.DebuggerCallback += (sender, e) => Debugger.Break();
+            Context.GlobalContext.DefineVariable("$").Assign(JSValue.Wrap(
+                new
+                {
+                    sleep = new Action<int>(time => Thread.Sleep(time))
+                }));
+            Context.GlobalContext.DefineVariable("$nil").Assign(JSValue.Wrap(
+                new
+                {
+                    GetCtor = new Func<string, JSValue>(name => JSValue.GetConstructor(NamespaceProvider.GetType(name)))
+                }));
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
             Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
             {
@@ -101,7 +113,7 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
             {
                 case -5:
                     {
-                        staticAnalyzer("ftest.js");
+                        staticAnalyzer("modules/ftest.js");
                         break;
                     }
 #if !PORTABLE
@@ -163,7 +175,7 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
                         //var currentTimeZone = TimeZone.CurrentTimeZone;
                         //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                         //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
-                        runFile(@"ftest.js");
+                        runFile(@"modules/ftest.js");
                         break;
                     }
                 case 3:
@@ -365,6 +377,27 @@ ast.print_to_string();");
             }
             else if (Debugger.IsAttached)
                 Console.ReadKey();
+        }
+
+        private static void Module_ResolveModule(Module sender, ResolveModuleEventArgs e)
+        {
+            /*
+            if (e.ModulePath.StartsWith("/clr/"))
+            {
+                e.Module = Module.ClrNamespace(e.ModulePath.Substring(5, e.ModulePath.Length - 5 - 3).Replace('/', '.'));
+            }
+            else
+            */
+            {
+                var currentDir = Directory.GetCurrentDirectory();
+                if (File.Exists(currentDir + e.ModulePath))
+                {
+                    e.Module = new Module(e.ModulePath, File.ReadAllText(currentDir + e.ModulePath));
+                }
+            }
+
+            if (e.Module != null)
+                e.Module.Run();
         }
 
         private static void sputnikTests(string folderPath = "tests\\sputnik\\")
@@ -677,7 +710,7 @@ for (var i = 0; i < 10000000; )
 
         private static void staticAnalyzer(string fileName)
         {
-            var f = new FileStream("ftest.js", FileMode.Open, FileAccess.Read);
+            var f = new FileStream(fileName, FileMode.Open, FileAccess.Read);
             var sr = new StreamReader(f);
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
@@ -859,7 +892,7 @@ for (var i = 0; i < 10000000; )
             var sr = new StreamReader(f);
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
-            var s = new Module(sr.ReadToEnd());
+            var s = new Module(filename, sr.ReadToEnd());
             sr.Dispose();
             f.Dispose();
             sw.Stop();
