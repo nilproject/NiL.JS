@@ -37,9 +37,14 @@ namespace NiL.JS.Expressions
             tempContainer = a;
             if (c.valueType != JSValueType.Function)
                 ExceptionsHelper.Throw(new TypeError("Right-hand value of instanceof is not a function."));
+
+            if (a.valueType < JSValueType.Object)
+                return false;
+
             var p = (c.oValue as Function).prototype;
-            if (p.valueType < JSValueType.Object)
+            if (p.valueType < JSValueType.Object || p.IsNull)
                 ExceptionsHelper.Throw(new TypeError("Property \"prototype\" of function not represent object."));
+
             if (p.oValue != null)
             {
                 while (a != null && a.valueType >= JSValueType.Object && a.oValue != null)
@@ -49,6 +54,7 @@ namespace NiL.JS.Expressions
                     a = a.__proto__;
                 }
             }
+
             return false;
         }
 
@@ -62,6 +68,7 @@ namespace NiL.JS.Expressions
                     // TODO
                 }
             }
+
             return res;
         }
 

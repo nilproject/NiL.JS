@@ -177,7 +177,10 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             set
             {
-                _prototype = value?.oValue as JSObject ?? value;
+                if (value == null)
+                    _prototype = Null;
+                else
+                    _prototype = value.oValue as JSObject ?? value;
             }
         }
         /// <summary>

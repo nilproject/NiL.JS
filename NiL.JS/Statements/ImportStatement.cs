@@ -144,6 +144,9 @@ namespace NiL.JS.Statements
                 ExceptionsHelper.Throw(new BaseLibrary.Error("Module must has name"));
 
             Module module = context._module.Import(_moduleName);
+            if (module == null)
+                return null;
+
             for (var i = 0; i < _map.Count; i++)
             {
                 JSValue value = null;
