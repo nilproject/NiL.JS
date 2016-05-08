@@ -41,7 +41,7 @@ namespace NiL.JS.Statements
 
                 if (!onlyDefault)
                 {
-                    if (state.Code[index] == '*')
+                    if (result._map.Count == 0 && state.Code[index] == '*')
                     {
                         index++;
                         Tools.SkipSpaces(state.Code, ref index);
@@ -150,8 +150,8 @@ namespace NiL.JS.Statements
             for (var i = 0; i < _map.Count; i++)
             {
                 JSValue value = null;
-                
-                switch(_map[i].Key)
+
+                switch (_map[i].Key)
                 {
                     case "":
                         {
@@ -182,30 +182,51 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            var result = new StringBuilder("import { ");
+            var result = new StringBuilder("import ");
+            var i = 0;
 
-            for (var i = 0; i < _map.Count; i++)
+            if (_map[i].Key == "")
             {
-                if (i > 0)
+                result.Append(_map[i++].Value);
+                if (_map.Count > 1)
                     result.Append(", ");
+            }
+            else if (_map[i].Key == "*")
+            {
+                result.Append("* as ")
+                    .Append(_map[i++].Value);
+            }
 
-                var item = _map[i];
+            if (i < _map.Count)
+            {
+                result.Append("{ ");
 
-                if (string.IsNullOrEmpty(item.Key))
-                    result.Append("*");
-                else
+                for (;;)
+                {
+                    var item = _map[i];
+
                     result.Append(item.Key);
 
-                if (item.Key != item.Value)
-                {
-                    result
-                        .Append(" as ")
-                        .Append(item.Value);
+                    if (item.Key != item.Value)
+                    {
+                        result
+                            .Append(" as ")
+                            .Append(item.Value);
+                    }
+
+                    i++;
+
+                    if (i < _map.Count)
+                        result.Append(", ");
+                    else
+                        break;
                 }
+
+                result.Append(" }");
             }
 
             result
-                .Append(" } from \"")
+                .Append(" from \"")
                 .Append(_moduleName)
                 .Append("\"");
 

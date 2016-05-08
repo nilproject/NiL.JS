@@ -96,7 +96,7 @@ namespace NiL.JS.Statements
 
                 export._map.Add(
                     new KeyValuePair<string, Expression>(
-                        alias, 
+                        alias,
                         new GetVariable(name, state.lexicalScopeLevel)
                         {
                             Position = start,
@@ -247,6 +247,63 @@ namespace NiL.JS.Statements
                         _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, v);
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            var result = new StringBuilder("export ");
+
+            if (_map.Count == 1 && _map[0].Key == "")
+            {
+                result.Append(" default ");
+                result.Append(_map[0].Value);
+            }
+
+            var i = 0;
+            if (i < _map.Count)
+            {
+                result.Append("{ ");
+
+                for (;;)
+                {
+                    var item = _map[i];
+
+                    result.Append(item.Key);
+
+                    if (item.Key != item.Value.ToString())
+                    {
+                        result
+                            .Append(" as ")
+                            .Append(string.IsNullOrEmpty(item.Value.ToString()) ? "default" : item.Value.ToString());
+                    }
+
+                    i++;
+
+                    if (i < _map.Count)
+                        result.Append(", ");
+                    else
+                        break;
+                }
+
+                result.Append(" }");
+            }
+            else
+            {
+                if (reexportSourceModuleName != null)
+                    result.Append(" * ");
+                else
+                    result.Append(_internalDefinition);
+            }
+
+            if (reexportSourceModuleName != null)
+            {
+                result
+                    .Append(" from \"")
+                    .Append(reexportSourceModuleName)
+                    .Append("\"");
+            }
+
+            return result.ToString();
         }
     }
 }
