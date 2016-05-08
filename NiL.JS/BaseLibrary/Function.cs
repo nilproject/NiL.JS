@@ -11,6 +11,10 @@ using linqEx = System.Linq.Expressions;
 using System.ComponentModel;
 using System.Diagnostics;
 
+#if !PORTABLE
+using NiL.JS.Backward;
+#endif
+
 namespace NiL.JS.BaseLibrary
 {
     /// <summary>
@@ -1088,6 +1092,6 @@ namespace NiL.JS.BaseLibrary
             return @delegate;
         }
 
-        public static implicit operator Function(Delegate action) => new MethodProxy(action.Method, action.Target);
+        public static implicit operator Function(Delegate action) => new MethodProxy(action.GetMethodInfo(), action.Target);
     }
 }

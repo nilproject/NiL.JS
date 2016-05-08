@@ -70,7 +70,10 @@ namespace NiL.JS.BaseLibrary
         internal virtual void run()
         {
             if (_task == null)
-                _task = Task.Run(new Action(taskAction));
+            {
+                _task = new Task(new Action(taskAction));
+                _task.Start();
+            }
         }
 
         internal void taskAction()

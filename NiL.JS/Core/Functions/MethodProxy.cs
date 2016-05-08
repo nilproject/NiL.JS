@@ -133,7 +133,7 @@ namespace NiL.JS.Core.Functions
                 if (!_wrapperCache.TryGetValue(method, out wrapper))
                 {
 #if PORTABLE
-                    makeMethodOverExpression(methodInfo);
+                    wrapper = makeMethodOverExpression(methodInfo);
 #else
                     wrapper = makeMethodOverEmit(methodInfo, parameters, forceInstance);
 #endif
@@ -306,7 +306,7 @@ namespace NiL.JS.Core.Functions
             return (Func<object, object[], Arguments, object>)impl.CreateDelegate(typeof(Func<object, object[], Arguments, object>));
         }
 #else
-        private void makeMethodOverExpression(MethodInfo methodInfo)
+        private Func<object, object[], Arguments, object> makeMethodOverExpression(MethodInfo methodInfo)
         {
             Expression[] prms = null;
             ParameterExpression target = Expression.Parameter(typeof(object), "target");
@@ -368,7 +368,7 @@ namespace NiL.JS.Core.Functions
                 tree = Expression.Block(tree, Expression.Constant(null));
             try
             {
-                implementation = Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
+                return Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
             }
             catch
             {

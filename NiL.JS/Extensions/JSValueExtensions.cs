@@ -172,7 +172,7 @@ namespace NiL.JS.Extensions
         }
 
 #if DEBUG && !PORTABLE // TODO
-        private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
+        //private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
 
         public static T AsImplementationOf<T>(this JSValue self)
         {
@@ -186,12 +186,12 @@ namespace NiL.JS.Extensions
             if (typeof(T) == typeof(IIterator))
                 return (T)(object)new IteratorAdapter(self);
 
-            AssemblyBuilder assemblyBuilder;
-            if (!dynamicAssembly.TryGetTarget(out assemblyBuilder))
-            {
-                assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("<nil.js>DynamicAssembly"), AssemblyBuilderAccess.RunAndCollect);
-                dynamicAssembly.SetTarget(assemblyBuilder);
-            }
+            AssemblyBuilder assemblyBuilder = null;
+            //if (!dynamicAssembly.TryGetTarget(out assemblyBuilder))
+            //{
+            //    assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("<nil.js>DynamicAssembly"), AssemblyBuilderAccess.RunAndCollect);
+            //    dynamicAssembly.SetTarget(assemblyBuilder);
+            //}
 
             var module = assemblyBuilder.GetDynamicModule("InterfaceImplementations") ?? assemblyBuilder.DefineDynamicModule("InterfaceImplementations");
             var typename = "<jswrapper>" + typeof(T).FullName;

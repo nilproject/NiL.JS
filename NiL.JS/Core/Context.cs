@@ -331,6 +331,7 @@ namespace NiL.JS.Core
             }
             oldContext = currentContext;
             currentContext = this;
+            _module = module ?? parent?._module;
             Monitor.Enter(this);
             return true;
 #else

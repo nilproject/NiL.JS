@@ -252,6 +252,7 @@ namespace NiL.JS
             e.Module = result;
         }
 
+#if !PORTABLE
         /// <summary>
         /// Returns module, which provides access to clr-namespace
         /// </summary>
@@ -281,5 +282,6 @@ namespace NiL.JS
 
             return result;
         }
+#endif
     }
 }

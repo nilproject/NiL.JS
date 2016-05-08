@@ -22,7 +22,7 @@ namespace NiL.JS.Core.Functions
             get
             {
 #if PORTABLE
-                return System.Reflection.RuntimeReflectionExtensions.GetMethodInfo(del).Name;
+                return System.Reflection.RuntimeReflectionExtensions.GetMethodInfo(_delegate).Name;
 #else
                 return _delegate.Method.Name;
 #endif
@@ -57,7 +57,7 @@ namespace NiL.JS.Core.Functions
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 #if PORTABLE
-            var paramCountAttrbt = del.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
+            var paramCountAttrbt = @delegate.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
 #else
             var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false);
 #endif
