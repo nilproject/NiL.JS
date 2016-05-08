@@ -82,7 +82,7 @@ namespace NiL.JS.Core
         [Hidden]
         public JSObject()
         {
-            //valueType = JSObjectType.Undefined;
+            // Keep Empty!
         }
 
         [Hidden]
@@ -91,7 +91,7 @@ namespace NiL.JS.Core
             return CreateObject(false);
         }
 
-        internal static JSObject CreateObject(bool createFields)
+        internal static JSObject CreateObject(bool createFields = false, JSAttributes attributes = JSAttributes.None)
         {
             var t = new JSObject()
             {
@@ -101,6 +101,7 @@ namespace NiL.JS.Core
             t.oValue = t;
             if (createFields)
                 t.fields = getFieldsContainer();
+            t.attributes = (JSValueAttributesInternal)attributes;
             return t;
         }
 

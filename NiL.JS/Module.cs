@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-using NiL.JS.BaseLibrary;
 using NiL.JS.Statements;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS
 {
@@ -16,35 +16,36 @@ namespace NiL.JS
     }
 
     /// <summary>
-    /// Represents and manage JavaScript module
+    /// Represents and manages JavaScript module
     /// </summary>
 #if !PORTABLE
     [Serializable]
 #endif
     public sealed class Module
     {
-        private static readonly StringMap<Module> _modulesCache = new StringMap<Module>();
-        private static List<ResolveModuleHandler> _resolveModuleHandlers = new List<ResolveModuleHandler>();
+        private static readonly char[] __pathSplitChars = new[] { '\\', '/' };
+        private static readonly StringMap<Module> __modulesCache = new StringMap<Module>();
+        private static List<ResolveModuleHandler> __resolveModuleHandlers = new List<ResolveModuleHandler> { defaultModuleResolver };
 
         /// <summary>
-        /// Occurs when module not found in modules cache
+        /// Occurs when module not found in cache
         /// </summary>
         public static event ResolveModuleHandler ResolveModule
         {
             add
             {
                 if (value != null)
-                    lock (_resolveModuleHandlers)
-                        _resolveModuleHandlers.Add(value);
+                    lock (__resolveModuleHandlers)
+                        __resolveModuleHandlers.Add(value);
             }
             remove
             {
-                lock (_resolveModuleHandlers)
-                    _resolveModuleHandlers.Remove(value);
+                lock (__resolveModuleHandlers)
+                    __resolveModuleHandlers.Remove(value);
             }
         }
 
-        public JSObject Exports { get; private set; } = JSObject.CreateObject();
+        public ExportTable Exports { get; } = new ExportTable();
 
         private CodeNode root;
         /// <summary>
@@ -63,14 +64,26 @@ namespace NiL.JS
         public Context Context { get; private set; }
 
         /// <summary>
+        /// Path to file with script
+        /// </summary>
+        public string FilePath { get; private set; }
+
+        /// <summary>
         /// Initializes a new Module with specified code.
         /// </summary>
         /// <param name="code">JavaScript code.</param>
         public Module(string code)
             : this(code, null, Options.None)
-        {
+        { }
 
-        }
+        /// <summary>
+        /// Initializes a new Module with specified code.
+        /// </summary>
+        /// <param name="path">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
+        /// <param name="code">JavaScript code.</param>
+        public Module(string path, string code)
+            : this(path, code, null, Options.None)
+        { }
 
         /// <summary>
         /// Initializes a new Module with specified code and callback for output compiler messages.
@@ -79,9 +92,17 @@ namespace NiL.JS
         /// <param name="messageCallback">Callback used to output compiler messages</param>
         public Module(string code, CompilerMessageCallback messageCallback)
             : this(code, messageCallback, Options.None)
-        {
+        { }
 
-        }
+        /// <summary>
+        /// Initializes a new Module with specified code and callback for output compiler messages.
+        /// </summary>
+        /// <param name="path">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
+        /// <param name="code">JavaScript code.</param>
+        /// <param name="messageCallback">Callback used to output compiler messages</param>
+        public Module(string path, string code, CompilerMessageCallback messageCallback)
+            : this(path, code, messageCallback, Options.None)
+        { }
 
         /// <summary>
         /// Initializes a new Module with specified code, callback for output compiler messages and compiler options.
@@ -96,20 +117,22 @@ namespace NiL.JS
         /// <summary>
         /// Initializes a new Module with specified code, callback for output compiler messages and compiler options.
         /// </summary>
-        /// <param name="name">Name of module that used for import by ImportStatement</param>
+        /// <param name="path">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
         /// <param name="code">JavaScript code.</param>
         /// <param name="messageCallback">Callback used to output compiler messages or null</param>
         /// <param name="options">Compiler options</param>
-        public Module(string name, string code, CompilerMessageCallback messageCallback, Options options)
+        public Module(string path, string code, CompilerMessageCallback messageCallback, Options options)
         {
             if (code == null)
                 throw new ArgumentNullException();
 
             Code = code;
-            if (!string.IsNullOrWhiteSpace(name))
+            if (!string.IsNullOrWhiteSpace(path))
             {
-                if (!_modulesCache.ContainsKey(name))
-                    _modulesCache[name] = this;
+                if (!__modulesCache.ContainsKey(path))
+                    __modulesCache[path] = this;
+
+                this.FilePath = path;
             }
 
             if (code == "")
@@ -144,6 +167,11 @@ namespace NiL.JS
                 body.Decompose(ref bd);
         }
 
+        public Module()
+            : this("")
+        {
+        }
+
         /// <summary>
         /// Run the script
         /// </summary>
@@ -151,32 +179,77 @@ namespace NiL.JS
         {
             if (Code == "")
                 return;
-
-            var lm = System.Runtime.GCSettings.LatencyMode;
-            System.Runtime.GCSettings.LatencyMode = System.Runtime.GCLatencyMode.Interactive;
+            
             try
             {
-                Context.Activate();
+                Context.Activate(this);
                 root.Evaluate(Context);
             }
             finally
             {
-                System.Runtime.GCSettings.LatencyMode = lm;
                 Context.Deactivate();
             }
         }
 
-        internal static Module Resolve(string name)
+        internal Module Import(string path)
         {
-            var e = new ResolveModuleEventArgs(name);
+            path = processPath(path);
 
-            for (var i = 0; i < _resolveModuleHandlers.Count && e.Module == null; i++)
-                _resolveModuleHandlers[i](e);
+            var e = new ResolveModuleEventArgs(path);
 
-            if (e.Module != null && e.AddToCache && !_modulesCache.ContainsKey(name))
-                _modulesCache[name] = e.Module;
+            for (var i = 0; i < __resolveModuleHandlers.Count && e.Module == null; i++)
+                __resolveModuleHandlers[i](this, e);
+
+            if (e.Module != null && e.AddToCache && !__modulesCache.ContainsKey(e.ModulePath))
+                __modulesCache[e.ModulePath] = e.Module;
 
             return e.Module;
+        }
+
+        private string processPath(string path)
+        {
+            var thisName = this.FilePath.Split(__pathSplitChars);
+            var requestedName = path.Split(__pathSplitChars);
+            var pathTokens = new LinkedList<string>(thisName);
+
+            if (requestedName.Length > 0 && requestedName[0] == "")
+                pathTokens.Clear();
+            else
+                pathTokens.RemoveLast();
+
+            for (var i = 0; i < requestedName.Length; i++)
+                pathTokens.AddLast(requestedName[i]);
+
+            for (var node = pathTokens.First; node != null;)
+            {
+                if (node.Value == "." || node.Value == "")
+                {
+                    node = node.Next;
+                    pathTokens.Remove(node.Previous);
+                }
+                else if (node.Value == ".." && node.Previous != null)
+                {
+                    node = node.Next;
+                    pathTokens.Remove(node.Previous);
+                    pathTokens.Remove(node.Previous);
+                }
+                else
+                    node = node.Next;
+            }
+
+            if (pathTokens.Last.Value.IndexOf('.') == -1)
+                pathTokens.Last.Value = pathTokens.Last.Value + ".js";
+
+            pathTokens.AddFirst("");
+            path = string.Join("/", pathTokens);
+            return path;
+        }
+
+        private static void defaultModuleResolver(Module sender, ResolveModuleEventArgs e)
+        {
+            Module result;
+            __modulesCache.TryGetValue(e.ModulePath, out result);
+            e.Module = result;
         }
 
         /// <summary>
@@ -186,7 +259,27 @@ namespace NiL.JS
         /// <returns></returns>
         public static Module ClrNamespace(string @namespace)
         {
-            return new Module("") { Exports = new NamespaceProvider(@namespace) };
+            var result = new Module();
+
+            foreach (var type in NamespaceProvider.GetTypesByPrefix(@namespace))
+            {
+                try
+                {
+                    if (type.Namespace == @namespace)
+                    {
+                        result.Exports[type.Name] = TypeProxy.GetConstructor(type);
+                    }
+                    else if (type.Namespace.StartsWith(@namespace) && type.Namespace[@namespace.Length] == '.')
+                    {
+                        var nextSegment = type.Namespace.Substring(@namespace.Length).Split('.')[1];
+                        result.Exports[nextSegment] = new NamespaceProvider($"{@namespace}.{nextSegment}");
+                    }
+                }
+                catch
+                { }
+            }
+
+            return result;
         }
     }
 }

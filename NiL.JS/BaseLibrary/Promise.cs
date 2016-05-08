@@ -18,16 +18,44 @@ namespace NiL.JS.BaseLibrary
 
     public class Promise
     {
-        protected Function _callback;
-        protected Task _task;
-        protected PromiseState _state;
-        protected bool _complited;
-        protected JSValue _result;
+        private Function _callback;
+        private Task _task;
+        private PromiseState _state;
+        private bool _complited;
+        private JSValue _result;
         private List<CompletionPromise> _thenCallbacks;
         private List<CompletionPromise> _catchCallbacks;
 
         [Hidden]
-        public PromiseState State => _state;
+        public PromiseState State
+        {
+            get { return _state; }
+            protected set { _state = value; }
+        }
+        [Hidden]
+        public Task Task
+        {
+            get { return _task; }
+            protected set { _task = value; }
+        }
+        [Hidden]
+        public bool Complited
+        {
+            get { return _complited; }
+            protected set { _complited = value; }
+        }
+        [Hidden]
+        public JSValue Result
+        {
+            get { return _result; }
+            protected set { _result = value; }
+        }
+        [Hidden]
+        public Function Callback
+        {
+            get { return _callback; }
+            protected set { _callback = value; }
+        }
 
         public Promise(Function callback)
         {
@@ -232,7 +260,7 @@ namespace NiL.JS.BaseLibrary
 
         internal CompletionPromise(Function callback)
         {
-            _callback = callback;
+            Callback = callback;
         }
 
         internal sealed override void run()
@@ -251,7 +279,7 @@ namespace NiL.JS.BaseLibrary
 
         protected override void InvokeCallback()
         {
-            _callback.Call(new Arguments { _arg });
+            Callback.Call(new Arguments { _arg });
         }
     }
 
@@ -260,9 +288,9 @@ namespace NiL.JS.BaseLibrary
     {
         internal ConstantPromise(JSValue value, PromiseState state)
         {
-            _result = value;
-            _state = state;
-            _complited = true;
+            Result = value;
+            State = state;
+            Complited = true;
         }
 
         internal override void run()
@@ -272,10 +300,10 @@ namespace NiL.JS.BaseLibrary
 
         internal override Promise then(CompletionPromise thenPromise, CompletionPromise catchPromise)
         {
-            var promise = _state == PromiseState.fulfilled ? thenPromise : catchPromise;
+            var promise = State == PromiseState.fulfilled ? thenPromise : catchPromise;
 
             if (promise != null)
-                promise.run(this, _result);
+                promise.run(this, Result);
 
             return promise ?? resolve(JSValue.undefined);
         }
@@ -293,7 +321,7 @@ namespace NiL.JS.BaseLibrary
         {
             _promises = promises;
             _expectedNumberOfCompletions = _promises.Length;
-            _result = new Array(_expectedNumberOfCompletions);
+            Result = new Array(_expectedNumberOfCompletions);
 
             for (var i = 0; i < promises.Length; i++)
                 promises[i].run();
@@ -301,24 +329,24 @@ namespace NiL.JS.BaseLibrary
 
         internal override void run(Promise sender, JSValue result)
         {
-            lock (_result)
+            lock (Result)
             {
-                if (_state == PromiseState.pending)
+                if (State == PromiseState.pending)
                 {
                     if (sender.State == PromiseState.rejected)
                     {
-                        _result = result;
-                        _state = PromiseState.rejected;
-                        _complited = true;
+                        Result = result;
+                        State = PromiseState.rejected;
+                        Complited = true;
                         InvokeComplition();
                     }
                     else
                     {
-                        (_result as Array)[System.Array.IndexOf(_promises, sender)] = result;
+                        (Result as Array)[System.Array.IndexOf(_promises, sender)] = result;
                         if (--_expectedNumberOfCompletions == 0)
                         {
-                            _state = PromiseState.fulfilled;
-                            _complited = true;
+                            State = PromiseState.fulfilled;
+                            Complited = true;
                             InvokeComplition();
                         }
                     }
@@ -364,11 +392,11 @@ namespace NiL.JS.BaseLibrary
 
         internal override void run(Promise sender, JSValue result)
         {
-            if (!_complited)
+            if (!Complited)
             {
-                _complited = true;
-                _result = result;
-                _state = sender.State;
+                Complited = true;
+                Result = result;
+                State = sender.State;
                 InvokeComplition();
             }
         }

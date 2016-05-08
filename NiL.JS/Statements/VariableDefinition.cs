@@ -236,7 +236,8 @@ namespace NiL.JS.Statements
                     }
                 }
             }
-            if (this == _this && actualChilds < initializers.Length)
+
+            if (actualChilds < initializers.Length)
             {
                 if ((opts & Options.SuppressUselessStatementsElimination) == 0 && actualChilds == 0)
                 {
@@ -244,12 +245,14 @@ namespace NiL.JS.Statements
                     Eliminated = true;
                     return false;
                 }
+
                 var newinits = new Expression[actualChilds];
                 for (int i = 0, j = 0; i < initializers.Length; i++)
                     if (initializers[i] != null)
                         newinits[j++] = initializers[i];
                 initializers = newinits;
             }
+
             return false;
         }
 

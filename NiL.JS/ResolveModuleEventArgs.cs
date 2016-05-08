@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace NiL.JS
 {
-    public delegate void ResolveModuleHandler(ResolveModuleEventArgs e);
+    public delegate void ResolveModuleHandler(Module sender, ResolveModuleEventArgs e);
 
     public class ResolveModuleEventArgs : EventArgs
     {
-        public string ModuleName { get; protected set; }
+        public string ModulePath { get; private set; }
         public Module Module { get; set; }
         public bool AddToCache { get; set; }
 
         public ResolveModuleEventArgs(string moduleName)
         {
-            ModuleName = moduleName;
+            ModulePath = moduleName;
             AddToCache = true;
         }
     }

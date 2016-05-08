@@ -80,11 +80,12 @@ namespace NiL.JS.Core
                 new Rule("break", Break.Parse),
                 new Rule("continue", Continue.Parse),
                 new Rule("throw", Throw.Parse),
+                new Rule("import", ImportStatement.Parse),
+                new Rule("export", ExportStatement.Parse),
                 new Rule(ValidateName, LabeledStatement.Parse),
                 new Rule(ValidateName, ExpressionTree.Parse),
                 new Rule(ValidateValue, ExpressionTree.Parse),
-                new Rule("debugger", Debugger.Parse),
-                new Rule("import", ImportStatement.Parse)
+                new Rule("debugger", Debugger.Parse)
             },
             // 1
             new List<Rule> // Начало выражения
@@ -242,27 +243,17 @@ namespace NiL.JS.Core
             return IsIdentificatorTerminator(pattern[pattern.Length - 1]) || code.Length <= index || IsIdentificatorTerminator(code[index]);
         }
 
-        public static bool ValidateName(string code, int index)
-        {
-            return ValidateName(code, ref index, true, true, false);
-        }
+        public static bool ValidateName(string code) => ValidateName(code, 0);
+
+        public static bool ValidateName(string code, int index) => ValidateName(code, ref index, true, true, false);
 
         [CLSCompliant(false)]
-        public static bool ValidateName(string code, ref int index)
-        {
-            return ValidateName(code, ref index, true, true, false);
-        }
+        public static bool ValidateName(string code, ref int index) => ValidateName(code, ref index, true, true, false);
 
-        public static bool ValidateName(string code, ref int index, bool strict)
-        {
-            return ValidateName(code, ref index, true, true, strict);
-        }
+        public static bool ValidateName(string code, ref int index, bool strict) => ValidateName(code, ref index, true, true, strict);
 
         [CLSCompliant(false)]
-        public static bool ValidateName(string name, int index, bool reserveControl, bool allowEscape, bool strict)
-        {
-            return ValidateName(name, ref index, reserveControl, allowEscape, strict);
-        }
+        public static bool ValidateName(string name, int index, bool reserveControl, bool allowEscape, bool strict) => ValidateName(name, ref index, reserveControl, allowEscape, strict);
 
         public static bool ValidateName(string code, ref int index, bool checkReservedWords, bool allowEscape, bool strict)
         {

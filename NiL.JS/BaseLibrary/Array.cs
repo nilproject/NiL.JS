@@ -753,7 +753,7 @@ namespace NiL.JS.BaseLibrary
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
                 length--;
-                var tres = self.GetProperty(Context.CurrentContext.wrap(length.ToString()), true, PropertyScope.Сommon);
+                var tres = self.GetProperty(length.ToString(), true, PropertyScope.Сommon);
                 JSValue res;
                 if (tres.valueType == JSValueType.Property)
                     res = ((tres.oValue as GsPropertyPair).get ?? Function.Empty).Call(self, null);

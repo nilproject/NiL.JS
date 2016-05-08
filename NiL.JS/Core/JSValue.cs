@@ -79,7 +79,7 @@ namespace NiL.JS.Core
     [Serializable]
 #endif
     [Flags]
-    public enum JSValuesAttributes
+    public enum JSAttributes
     {
         None = 0,
         DoNotEnumerate = 1 << 0,
@@ -255,12 +255,12 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public JSValuesAttributes Attributes
+        public JSAttributes Attributes
         {
             [Hidden]
             get
             {
-                return (JSValuesAttributes)((int)attributes & 0xffff);
+                return (JSAttributes)((int)attributes & 0xffff);
             }
         }
 
@@ -382,70 +382,19 @@ namespace NiL.JS.Core
         [Hidden]
         public JSValue GetProperty(string name)
         {
-            var cc = Context.CurrentContext;
-            if (cc == null)
-                return GetProperty((JSValue)name, false, PropertyScope.Сommon);
-            var oi = cc.tempContainer.iValue;
-            var od = cc.tempContainer.dValue;
-            object oo = cc.tempContainer.oValue;
-            var ovt = cc.tempContainer.valueType;
-            try
-            {
-                return GetProperty(cc.wrap(name), false, PropertyScope.Сommon);
-            }
-            finally
-            {
-                cc.tempContainer.iValue = oi;
-                cc.tempContainer.oValue = oo;
-                cc.tempContainer.dValue = od;
-                cc.tempContainer.valueType = ovt;
-            }
+            return GetProperty((JSValue)name, false, PropertyScope.Сommon);
         }
 
         [Hidden]
         public JSValue GetProperty(string name, PropertyScope propertyScope)
         {
-            var cc = Context.CurrentContext;
-            if (cc == null)
-                return GetProperty((JSValue)name, false, propertyScope);
-            var oi = cc.tempContainer.iValue;
-            var od = cc.tempContainer.dValue;
-            object oo = cc.tempContainer.oValue;
-            var ovt = cc.tempContainer.valueType;
-            try
-            {
-                return GetProperty(cc.wrap(name), false, propertyScope);
-            }
-            finally
-            {
-                cc.tempContainer.iValue = oi;
-                cc.tempContainer.oValue = oo;
-                cc.tempContainer.dValue = od;
-                cc.tempContainer.valueType = ovt;
-            }
+            return GetProperty((JSValue)name, false, propertyScope);
         }
 
         [Hidden]
         public JSValue DefineProperty(string name)
         {
-            var cc = Context.CurrentContext;
-            if (cc == null)
-                return GetProperty((JSValue)name, true, PropertyScope.Own);
-            var oi = cc.tempContainer.iValue;
-            var od = cc.tempContainer.dValue;
-            object oo = cc.tempContainer.oValue;
-            var ovt = cc.tempContainer.valueType;
-            try
-            {
-                return GetProperty(cc.wrap(name), true, PropertyScope.Own);
-            }
-            finally
-            {
-                cc.tempContainer.iValue = oi;
-                cc.tempContainer.oValue = oo;
-                cc.tempContainer.dValue = od;
-                cc.tempContainer.valueType = ovt;
-            }
+            return GetProperty((JSValue)name, true, PropertyScope.Own);
         }
 
         [Hidden]
@@ -453,46 +402,12 @@ namespace NiL.JS.Core
         {
             if (name == null)
                 throw new ArgumentNullException("memberName");
-            var cc = Context.CurrentContext;
-            if (cc == null)
-                return DeleteProperty((JSObject)name);
-            var oi = cc.tempContainer.iValue;
-            var od = cc.tempContainer.dValue;
-            object oo = cc.tempContainer.oValue;
-            var ovt = cc.tempContainer.valueType;
-            try
-            {
-                return DeleteProperty(cc.wrap(name));
-            }
-            finally
-            {
-                cc.tempContainer.iValue = oi;
-                cc.tempContainer.oValue = oo;
-                cc.tempContainer.dValue = od;
-                cc.tempContainer.valueType = ovt;
-            }
+            return DeleteProperty((JSObject)name);
         }
 
         internal protected JSValue GetProperty(string name, bool forWrite, PropertyScope propertyScope)
         {
-            var cc = Context.CurrentContext;
-            if (cc == null)
-                return GetProperty((JSValue)name, forWrite, propertyScope);
-            var oi = cc.tempContainer.iValue;
-            var od = cc.tempContainer.dValue;
-            object oo = cc.tempContainer.oValue;
-            var ovt = cc.tempContainer.valueType;
-            try
-            {
-                return GetProperty(cc.wrap(name), forWrite, propertyScope);
-            }
-            finally
-            {
-                cc.tempContainer.iValue = oi;
-                cc.tempContainer.oValue = oo;
-                cc.tempContainer.dValue = od;
-                cc.tempContainer.valueType = ovt;
-            }
+            return GetProperty((JSValue)name, forWrite, propertyScope);
         }
 
         internal protected virtual JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)

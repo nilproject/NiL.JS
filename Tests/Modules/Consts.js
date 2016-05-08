@@ -1,0 +1,1 @@
+export const Pi = Math.PI, E = Math.E;

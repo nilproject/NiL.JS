@@ -141,7 +141,7 @@ namespace NiL.JS
                 }
             }
 
-            return base.GetProperty(key, forWrite, memberScope);
+            return undefined;
         }
 
         public static Type GetType(string name)

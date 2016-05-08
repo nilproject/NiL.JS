@@ -171,7 +171,6 @@ namespace NiL.JS.Core
         /// </summary>
         internal AbortReason executionMode;
         internal JSValue objectSource;
-        internal JSValue tempContainer;
         internal JSValue executionInfo;
         internal JSValue lastResult;
         internal JSValue arguments;
@@ -182,6 +181,7 @@ namespace NiL.JS.Core
         internal bool strict;
         internal Dictionary<CodeNode, object> suspendData;
         internal VariableDescriptor[] variables;
+        internal Module _module;
 
         public Context Root
         {
@@ -298,17 +298,13 @@ namespace NiL.JS.Core
             {
                 if (owner == prototype.owner)
                     arguments = prototype.arguments;
-                tempContainer = prototype.tempContainer;
                 this.parent = prototype;
                 this.thisBind = prototype.thisBind;
 #if DEV
                 this.debugging = prototype.debugging;
 #endif
             }
-            else
-            {
-                tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
-            }
+
             if (createFields)
                 this.fields = JSObject.getFieldsContainer();
             this.executionInfo = JSValue.notExists;
@@ -321,7 +317,7 @@ namespace NiL.JS.Core
         /// но хранит ссылку на предыдущий активный контекст. Обычно это возникает в том случае, 
         /// когда указанный контекст находится в цепочке вложенности активированных контекстов.</exception>
         /// <returns>Истина если текущий контекст был активирован данным вызовом. Ложь если контекст уже активен.</returns>
-        internal bool Activate()
+        internal bool Activate(Module module = null)
         {
 #if PORTABLE
             if (currentContext == this)
@@ -342,26 +338,30 @@ namespace NiL.JS.Core
             if (this._threadId == threadId)
                 return false;
             if (_threadId != 0)
-                throw new InvalidOperationException("Context already running in another thread");
+                ExceptionsHelper.Throw(new InvalidOperationException("Context already running in another thread"));
             var i = 0;
             do
             {
                 var c = runnedContexts[i];
                 if (c == null || c._threadId == threadId || c == globalContext)
                 {
+                    if (c == globalContext)
+                        c = null;
                     if (c == this)
                         return false;
                     if (oldContext != null)
-                        throw new ApplicationException("Try to reactivate context");
+                        ExceptionsHelper.Throw(new ApplicationException("Try to reactivate context"));
                     this.oldContext = c;
                     runnedContexts[i] = this;
                     this._threadId = threadId;
+                    this._module = module ?? parent?._module;
                     return true;
                 }
                 i++;
             }
             while (i < MaxConcurentContexts);
-            throw new InvalidOperationException("Too many concurrent contexts.");
+            ExceptionsHelper.Throw(new InvalidOperationException("Too many concurrent contexts."));
+            return false;
 #endif
         }
 
@@ -398,6 +398,7 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Context is not running");
             oldContext = null;
             _threadId = 0;
+            _module = null;
             return c;
 #endif
         }
@@ -474,7 +475,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        res = JSObject.GlobalPrototype.GetProperty(wrap(name), false, PropertyScope.Сommon);
+                        res = JSObject.GlobalPrototype.GetProperty(name, false, PropertyScope.Сommon);
                         if (res.valueType == JSValueType.NotExistsInObject)
                             res.valueType = JSValueType.NotExists;
                     }
@@ -726,38 +727,5 @@ namespace NiL.JS.Core
         {
             return this == globalContext ? "Global context" : "Context";
         }
-
-        #region Temporal Wrapping
-
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        internal JSValue wrap(long value)
-        {
-            if (value <= int.MaxValue)
-            {
-                tempContainer.valueType = JSValueType.Integer;
-                tempContainer.iValue = (int)value;
-                return tempContainer;
-            }
-            else
-            {
-                tempContainer.valueType = JSValueType.Double;
-                tempContainer.dValue = value;
-                return tempContainer;
-            }
-        }
-
-#if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        internal JSValue wrap(string value)
-        {
-            tempContainer.valueType = JSValueType.String;
-            tempContainer.oValue = value;
-            return tempContainer;
-        }
-
-        #endregion
     }
 }
