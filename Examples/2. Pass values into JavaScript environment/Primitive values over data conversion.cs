@@ -1,8 +1,10 @@
-﻿using NiL.JS.Core;
+﻿using ExamplesFramework;
+using NiL.JS.Core;
 
-namespace Examples._1_Pass_values_into_JavaScript_environment
+namespace Examples.Pass_values_into_JavaScript_environment
 {
-    public sealed class Primitive_values_over_data_conversion : ExamplesFramework.Example
+    [Level(2)]
+    public sealed class Primitive_values_over_data_conversion : Example
     {
         public override void Run()
         {

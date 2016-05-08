@@ -1,10 +1,12 @@
 ﻿using System;
+using ExamplesFramework;
 using NiL.JS.Core;
 using NiL.JS.Extensions;
 
-namespace Examples._2_Get_values_from_JavaScript_environment
+namespace Examples.Get_values_from_JavaScript_environment
 {
-    public sealed class Determine_type_of_value : ExamplesFramework.Example
+    [Level(3)]
+    public sealed class Determine_type_of_value : Example
     {
         public override void Run()
         {

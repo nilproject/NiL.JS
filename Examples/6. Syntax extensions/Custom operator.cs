@@ -1,9 +1,11 @@
-﻿using NiL.JS.Core;
+﻿using ExamplesFramework;
+using NiL.JS.Core;
 using NiL.JS.Expressions;
 
-namespace Examples._5_Syntax_extensions
+namespace Examples.Syntax_extensions
 {
-    public sealed class Custom_operator : ExamplesFramework.Example
+    [Level(6)]
+    public sealed class Custom_operator : Example
     {
         [CustomCodeFragment(CodeFragmentType.Expression, "keysof")]
         public sealed class KeysOfOperator : Expression

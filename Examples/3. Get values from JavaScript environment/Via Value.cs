@@ -1,7 +1,7 @@
 ﻿using System;
 using NiL.JS.Core;
 
-namespace Examples._2_Get_values_from_JavaScript_environment
+namespace Examples.Get_values_from_JavaScript_environment
 {
     public sealed class Via_Value : ExamplesFramework.Example
     {

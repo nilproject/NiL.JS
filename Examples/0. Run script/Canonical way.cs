@@ -1,11 +1,13 @@
 ﻿using System;
+using ExamplesFramework;
 using NiL.JS;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
-namespace Examples._0_Run_script
+namespace Examples.Run_script
 {
-    public sealed class Canonical_way : ExamplesFramework.Example
+    [Level(0)]
+    public sealed class Canonical_way : Example
     {
         private static readonly string _code = "console.log('Hello, World!');";
 

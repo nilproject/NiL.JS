@@ -6,7 +6,7 @@ using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 
-namespace Examples._4_Namespaces_and_external_types
+namespace Examples.Namespaces_and_external_types
 {
     public sealed class Using_attributes : ExamplesFramework.Example
     {

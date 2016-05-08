@@ -1,7 +1,7 @@
 ﻿using NiL.JS;
 using NiL.JS.Core;
 
-namespace Examples._4_Namespaces_and_external_types
+namespace Examples.Namespaces_and_external_types
 {
     public sealed class Using_NamespaceProvider : ExamplesFramework.Example
     {

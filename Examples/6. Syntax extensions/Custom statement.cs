@@ -3,7 +3,7 @@ using NiL.JS;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
-namespace Examples._5_Syntax_extensions
+namespace Examples.Syntax_extensions
 {
     public sealed class Custom_statement : ExamplesFramework.Example
     {

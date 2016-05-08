@@ -1,11 +1,13 @@
 ﻿using System;
+using ExamplesFramework;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Extensions;
 
-namespace Examples._3_Methods_and_Events
+namespace Examples.Methods_and_Events
 {
-    public sealed class Call_JavaScript_function_directly : ExamplesFramework.Example
+    [Level(4)]
+    public sealed class Call_JavaScript_function_directly : Example
     {
         public override void Run()
         {

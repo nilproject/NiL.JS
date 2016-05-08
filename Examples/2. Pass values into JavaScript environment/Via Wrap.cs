@@ -1,9 +1,9 @@
 ﻿using System;
 using NiL.JS.Core;
 
-namespace Examples._1_Pass_values_into_JavaScript_environment
+namespace Examples.Pass_values_into_JavaScript_environment
 {
-    public sealed class Via_Marshal : ExamplesFramework.Example
+    public sealed class Via_Wrap : ExamplesFramework.Example
     {
         private sealed class ClassWithStringValue
         {
@@ -11,8 +11,8 @@ namespace Examples._1_Pass_values_into_JavaScript_environment
         }
 
         private const string _nestedValue = "Hi, I'm nested value!";
-        private const string _value = "Hi, I'm value!";
-        private const string _variableName = "valueFromDotNet";
+        private readonly string _value = "Hi, I'm value!";
+        private readonly string _variableName = "valueFromDotNet";
 
         public override void Run()
         {
@@ -27,18 +27,20 @@ namespace Examples._1_Pass_values_into_JavaScript_environment
         {
             var context = new Context();
 
-            context.DefineVariable(_variableName).Assign(JSValue.Marshal(_value));
+            context.DefineVariable(_variableName).Assign(JSValue.Wrap(_value));
 
-            context.Eval(string.Format("console.log({0});", _variableName)); // Console: Hi, I'm value!
+            context.Eval(string.Format("console.log({0});", _variableName)); // Console: [object String]
 
-            context.Eval(string.Format("console.log(typeof {0});", _variableName)); // Console: string
+            context.Eval(string.Format("console.log(typeof {0});", _variableName)); // Console: object
+
+            context.Eval(string.Format("console.log({0}.ToString());", _variableName)); // Console: Hi, I'm value!
         }
 
         private void example2()
         {
             var context = new Context();
 
-            context.DefineVariable(_variableName).Assign(JSValue.Marshal(new ClassWithStringValue { NestedValue = _nestedValue }));
+            context.DefineVariable(_variableName).Assign(JSValue.Wrap(new ClassWithStringValue { NestedValue = _nestedValue }));
 
             context.Eval(string.Format("console.log({0});", _variableName)); // Console: [object ClassWithStringValue]
 

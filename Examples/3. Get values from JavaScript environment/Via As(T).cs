@@ -2,7 +2,7 @@
 using NiL.JS.Core;
 using NiL.JS.Extensions;
 
-namespace Examples._2_Get_values_from_JavaScript_environment
+namespace Examples.Get_values_from_JavaScript_environment
 {
     public sealed class Via_As_T_ : ExamplesFramework.Example
     {

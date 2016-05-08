@@ -1,7 +1,7 @@
 ﻿using System;
 using NiL.JS.Core;
 
-namespace Examples._3_Methods_and_Events
+namespace Examples.Methods_and_Events
 {
     public sealed class Subscribe_on_and_unsubscribe_from_event : ExamplesFramework.Example
     {

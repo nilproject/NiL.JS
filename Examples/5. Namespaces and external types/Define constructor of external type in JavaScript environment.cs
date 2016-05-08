@@ -1,10 +1,12 @@
 ﻿using System;
+using ExamplesFramework;
 using NiL.JS;
 using NiL.JS.Core.Interop;
 
-namespace Examples._4_Namespaces_and_external_types
+namespace Examples.Namespaces_and_external_types
 {
-    public sealed class Define_constructor_of_external_type_in_JavaScript_environment : ExamplesFramework.Example
+    [Level(5)]
+    public sealed class Define_constructor_of_external_type_in_JavaScript_environment : Example
     {
         public sealed class ClassWithoutLimitation
         {

@@ -7,7 +7,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Extensions;
 
-namespace Examples._3_Methods_and_Events
+namespace Examples.Methods_and_Events
 {
     class Create_delegate_for_JavaScript_function : ExamplesFramework.Example
     {
