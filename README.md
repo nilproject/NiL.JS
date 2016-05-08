@@ -14,11 +14,11 @@ Licensed under BSD 3-Clause License.
 * Compiler as a Service (CaaS).
 * Integrated static analyser.
 * Integrated debugger ("For developers" version).
-* You may extend syntax ([see examples](https://github.com/nilproject/NiL.JS/tree/version-2.1/Examples/5.%20Syntax%20extensions)).
+* You may extend syntax ([see examples](https://github.com/nilproject/NiL.JS/tree/version-2.2/Examples/6.%20Syntax%20extensions)).
 
 ## Links
 
-[Examples](https://github.com/nilproject/NiL.JS/tree/version-2.1/Examples)  
+[Examples](https://github.com/nilproject/NiL.JS/tree/version-2.2/Examples)  
 [NuGet](https://www.nuget.org/packages/NiL.JS)  
 [Code analyzer on this engine](http://nilproject.net/linter.html)  
 

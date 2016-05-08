@@ -203,6 +203,9 @@ namespace NiL.JS
             if (e.Module != null && e.AddToCache && !__modulesCache.ContainsKey(e.ModulePath))
                 __modulesCache[e.ModulePath] = e.Module;
 
+            if (e.Module.FilePath == null)
+                e.Module.FilePath = path;
+
             return e.Module;
         }
 

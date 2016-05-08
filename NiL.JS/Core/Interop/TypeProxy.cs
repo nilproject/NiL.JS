@@ -363,7 +363,7 @@ namespace NiL.JS.Core.Interop
             return prot;
         }
         
-        public static JSValue GetConstructor(Type type)
+        public new static JSValue GetConstructor(Type type)
         {
             JSValue constructor = null;
             if (!staticProxies.TryGetValue(type, out constructor))
