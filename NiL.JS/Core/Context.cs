@@ -552,24 +552,22 @@ namespace NiL.JS.Core
         }
 
         /// <summary>
-        /// Ожидается один аргумент.
-        /// Выполняет переданный код скрипта в указанном контексте.
+        /// Evaluate script
         /// </summary>
-        /// <param name="code">Код скрипта на языке JavaScript</param>
-        /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
+        /// <param name="code">Code in JavaScript</param>
+        /// <returns>Result of last evaluated operation</returns>
         public JSValue Eval(string code)
         {
             return Eval(code, false);
         }
 
         /// <summary>
-        /// Ожидается один аргумент.
-        /// Выполняет переданный код скрипта в указанном контексте.
+        /// Evaluate script
         /// </summary>
-        /// <param name="code">Код скрипта на языке JavaScript</param>
-        /// <param name="inplace">Если установлен, переменные объявленные в ходе выполнения, не будут доступны для удаления</param>
-        /// <returns>Результат выполнения кода (аргумент оператора "return" либо результат выполнения последней выполненной строки кода).</returns>
-        public JSValue Eval(string code, bool inplace)
+        /// <param name="code">Code in JavaScript</param>
+        /// <param name="suppressScopeCreation">If true, scope will not be created. All variables, which will be defined via let, const or class will not be destructed after evalution</param>
+        /// <returns>Result of last evaluated operation</returns>
+        public JSValue Eval(string code, bool suppressScopeCreation)
         {
             if (parent == null)
                 throw new InvalidOperationException("Cannot execute script in global context");
@@ -644,7 +642,7 @@ namespace NiL.JS.Core
             var runned = this.Activate();
             try
             {
-                var context = (inplace || !stats.WithLexicalEnvironment) && !body._strict && !strict ? this : new Context(this, false, owner)
+                var context = (suppressScopeCreation || !stats.WithLexicalEnvironment) && !body._strict && !strict ? this : new Context(this, false, owner)
                 {
                     strict = strict || body._strict
                 };
@@ -674,7 +672,7 @@ namespace NiL.JS.Core
                                 }
                             }
 
-                            variable = mainContext.DefineVariable(body._variables[i].name, !inplace);
+                            variable = mainContext.DefineVariable(body._variables[i].name, !suppressScopeCreation);
 
                             if (body._variables[i].initializer != null)
                             {

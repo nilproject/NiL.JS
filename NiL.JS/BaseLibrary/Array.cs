@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Linq;
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;

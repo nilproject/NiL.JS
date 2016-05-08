@@ -12,6 +12,10 @@ namespace NiL.JS
     {
         public string ModulePath { get; private set; }
         public Module Module { get; set; }
+
+        /// <summary>
+        /// Indicates that module will be added to cache. True by default
+        /// </summary>
         public bool AddToCache { get; set; }
 
         public ResolveModuleEventArgs(string moduleName)

@@ -781,7 +781,7 @@ namespace NiL.JS.Core
 
             abs %= 1.0;
             if (abs != 0 && res.Length < (15 + neg))
-                res += abs.ToString(divFormats[15 - res.Length + neg], System.Globalization.CultureInfo.InvariantCulture);
+                res += abs.ToString(divFormats[15 - res.Length + neg], CultureInfo.InvariantCulture);
 
             cachedDoubleString[cachedDoubleStringsIndex].key = d;
             cachedDoubleString[cachedDoubleStringsIndex].value = res;
