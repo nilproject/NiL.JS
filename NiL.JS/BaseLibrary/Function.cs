@@ -403,7 +403,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (spreadIndex < spreadSource.Count)
                     {
-                        argumentsObject[targetIndex] = spreadSource[spreadIndex];
+                        argumentsObject[targetIndex++] = spreadSource[spreadIndex];
                         spreadIndex++;
                     }
                     if (spreadIndex == spreadSource.Count)
@@ -426,8 +426,8 @@ namespace NiL.JS.BaseLibrary
                         sourceIndex++;
                         argumentsObject[targetIndex] = value;
                     }
+                    targetIndex++;
                 }
-                targetIndex++;
             }
 
             argumentsObject.length = targetIndex;

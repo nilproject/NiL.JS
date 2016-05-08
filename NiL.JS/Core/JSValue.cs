@@ -1109,6 +1109,11 @@ namespace NiL.JS.Core
             return new ObjectWrapper(value);
         }
 
+        public static JSValue GetConstructor(Type type)
+        {
+            return TypeProxy.GetConstructor(type);
+        }
+
         public static Function GetGenericTypeSelector(IList<Type> types)
         {
             for (var i = 0; i < types.Count; i++)

@@ -788,7 +788,7 @@ namespace NiL.JS.Core
                 }
             }
         }
-
+        
         internal IEnumerator<Node> enumerate(Node node)
         {
             if (node != null)
@@ -838,6 +838,9 @@ namespace NiL.JS.Core
                         step[sindex] = 0;
                         continue;
                     }
+
+                    step[sindex] = 0;
+                    stack[sindex] = null;
                     sindex--;
                 }
             }
@@ -956,6 +959,8 @@ namespace NiL.JS.Core
 
         public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix, bool reversed, long offset, long count)
         {
+            var _debug_ = new HashSet<string>();
+
             var c = Root;
             if (c != null)
             {
@@ -972,6 +977,7 @@ namespace NiL.JS.Core
                                 count++;
                                 continue;
                             }
+
                             var crnt = enmrtr.Current;
                             if (crnt.key.StartsWith(prefix))
                             {

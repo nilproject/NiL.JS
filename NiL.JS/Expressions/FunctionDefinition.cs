@@ -148,11 +148,11 @@ namespace NiL.JS.Expressions
             return Parse(state, ref index, FunctionKind.Arrow);
         }
 
-        internal static Expression Parse(ParseInfo state, ref int index, FunctionKind mode)
+        internal static Expression Parse(ParseInfo state, ref int index, FunctionKind kind)
         {
             string code = state.Code;
             int i = index;
-            switch (mode)
+            switch (kind)
             {
                 case FunctionKind.AnonymousFunction:
                 case FunctionKind.AnonymousGenerator:
@@ -165,7 +165,7 @@ namespace NiL.JS.Expressions
                             return null;
                         if (code[i] == '*')
                         {
-                            mode = FunctionKind.Generator;
+                            kind = FunctionKind.Generator;
                             i++;
                         }
                         else if ((code[i] != '(') && (!Tools.IsWhiteSpace(code[i])))
@@ -193,10 +193,10 @@ namespace NiL.JS.Expressions
                     {
                         if (code[i] == '*')
                         {
-                            mode = FunctionKind.MethodGenerator;
+                            kind = FunctionKind.MethodGenerator;
                             i++;
                         }
-                        else if (mode == FunctionKind.MethodGenerator)
+                        else if (kind == FunctionKind.MethodGenerator)
                             throw new ArgumentException("mode");
                         break;
                     }
@@ -205,7 +205,7 @@ namespace NiL.JS.Expressions
                         break;
                     }
                 default:
-                    throw new NotImplementedException(mode.ToString());
+                    throw new NotImplementedException(kind.ToString());
             }
 
             Tools.SkipSpaces(state.Code, ref i);
@@ -216,16 +216,16 @@ namespace NiL.JS.Expressions
             bool arrowWithSunglePrm = false;
             int nameStartPos = 0;
 
-            if (mode != FunctionKind.Arrow)
+            if (kind != FunctionKind.Arrow)
             {
                 if (code[i] != '(')
                 {
                     nameStartPos = i;
                     if (Parser.ValidateName(code, ref i, false, true, state.strict))
                         name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
-                    else if ((mode == FunctionKind.Getter || mode == FunctionKind.Setter) && Parser.ValidateString(code, ref i, false))
+                    else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateString(code, ref i, false))
                         name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict);
-                    else if ((mode == FunctionKind.Getter || mode == FunctionKind.Setter) && Parser.ValidateNumber(code, ref i))
+                    else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateNumber(code, ref i))
                         name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
                     else
                         ExceptionsHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, i - nameStartPos);
@@ -235,9 +235,9 @@ namespace NiL.JS.Expressions
                     if (code[i] != '(')
                         ExceptionsHelper.ThrowUnknownToken(code, i);
                 }
-                else if (mode == FunctionKind.Getter || mode == FunctionKind.Setter)
+                else if (kind == FunctionKind.Getter || kind == FunctionKind.Setter)
                     ExceptionsHelper.ThrowSyntaxError("Getter and Setter must have name", code, index);
-                else if (mode == FunctionKind.Method || mode == FunctionKind.MethodGenerator)
+                else if (kind == FunctionKind.Method || kind == FunctionKind.MethodGenerator)
                     ExceptionsHelper.ThrowSyntaxError("Method must have name", code, index);
             }
             else if (code[i] != '(')
@@ -252,7 +252,7 @@ namespace NiL.JS.Expressions
                 ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
             while (code[i] != ')')
             {
-                if (parameters.Count == 255 || (mode == FunctionKind.Setter && parameters.Count == 1) || mode == FunctionKind.Getter)
+                if (parameters.Count == 255 || (kind == FunctionKind.Setter && parameters.Count == 1) || kind == FunctionKind.Getter)
                     ExceptionsHelper.ThrowSyntaxError(string.Format(Strings.TooManyArgumentsForFunction, name), code, index);
 
                 bool rest = Parser.Validate(code, "...", ref i);
@@ -277,7 +277,7 @@ namespace NiL.JS.Expressions
                 }
                 if (code[i] == '=')
                 {
-                    if (mode == FunctionKind.Arrow)
+                    if (kind == FunctionKind.Arrow)
                         ExceptionsHelper.ThrowSyntaxError("Parameters of arrow-function cannot have an initializer", code, i);
 
                     if (rest)
@@ -297,7 +297,7 @@ namespace NiL.JS.Expressions
                 }
             }
 
-            switch (mode)
+            switch (kind)
             {
                 case FunctionKind.Setter:
                     {
@@ -310,7 +310,7 @@ namespace NiL.JS.Expressions
             i++;
             Tools.SkipSpaces(code, ref i);
 
-            if (mode == FunctionKind.Arrow)
+            if (kind == FunctionKind.Arrow)
             {
                 if (!Parser.Validate(code, "=>", ref i))
                     ExceptionsHelper.ThrowSyntaxError("Expected \"=>\"", code, i);
@@ -322,7 +322,7 @@ namespace NiL.JS.Expressions
                 state.functionScopeLevel = ++state.lexicalScopeLevel;
                 try
                 {
-                    if (mode == FunctionKind.Arrow)
+                    if (kind == FunctionKind.Arrow)
                         body = new CodeBlock(new CodeNode[]
                         {
                             new Return(ExpressionTree.Parse(state, ref i, processComma: false) as Expression)
@@ -342,7 +342,7 @@ namespace NiL.JS.Expressions
             else
             {
                 var oldCodeContext = state.CodeContext;
-                if (mode == FunctionKind.Generator || mode == FunctionKind.MethodGenerator || mode == FunctionKind.AnonymousGenerator)
+                if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
                     state.CodeContext |= CodeContext.InGenerator;
                 state.CodeContext |= CodeContext.InFunction;
                 state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional | CodeContext.InEval | CodeContext.InWith);
@@ -365,10 +365,10 @@ namespace NiL.JS.Expressions
                     state.Labels = labels;
                     state.AllowReturn--;
                 }
-                if (mode == FunctionKind.Function && string.IsNullOrEmpty(name))
-                    mode = FunctionKind.AnonymousFunction;
+                if (kind == FunctionKind.Function && string.IsNullOrEmpty(name))
+                    kind = FunctionKind.AnonymousFunction;
             }
-            if (body._strict || (parameters.Count > 0 && parameters[parameters.Count - 1].IsRest) || mode == FunctionKind.Arrow)
+            if (body._strict || (parameters.Count > 0 && parameters[parameters.Count - 1].IsRest) || kind == FunctionKind.Arrow)
             {
                 for (var j = parameters.Count; j-- > 1;)
                     for (var k = j; k-- > 0;)
@@ -386,7 +386,7 @@ namespace NiL.JS.Expressions
             {
                 parameters = parameters.ToArray(),
                 body = body,
-                kind = mode,
+                kind = kind,
                 Position = index,
                 Length = i - index,
 #if DEBUG
@@ -442,7 +442,7 @@ namespace NiL.JS.Expressions
 
                 body._variables = newVariables;
             }
-            if ((state.CodeContext & CodeContext.InExpression) == 0 && mode == FunctionKind.Function)
+            if ((state.CodeContext & CodeContext.InExpression) == 0 && kind == FunctionKind.Function)
             // Позволяет делать вызов сразу при объявлении функции 
             // (в таком случае функция не добавляется в контекст).
             // Если убрать проверку, то в тех сулчаях,

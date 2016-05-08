@@ -1,5 +1,5 @@
-export const Forms = {
-    Form : () => ({
-            ShowDialog : () => undefined
-        })
-    };
+import * as Forms from "./windows/Forms"
+
+export {
+    Forms
+}

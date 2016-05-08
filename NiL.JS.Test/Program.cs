@@ -77,6 +77,11 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
                 {
                     sleep = new Action<int>(time => Thread.Sleep(time))
                 }));
+            Context.GlobalContext.DefineVariable("$nil").Assign(JSValue.Wrap(
+                new
+                {
+                    GetCtor = new Func<string, JSValue>(name => JSValue.GetConstructor(NamespaceProvider.GetType(name)))
+                }));
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
             Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
             {
@@ -102,7 +107,7 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
             }));
 #endif
 
-            int mode = 2
+            int mode = 0
                     ;
             switch (mode)
             {
@@ -376,11 +381,13 @@ ast.print_to_string();");
 
         private static void Module_ResolveModule(Module sender, ResolveModuleEventArgs e)
         {
+            /*
             if (e.ModulePath.StartsWith("/clr/"))
             {
                 e.Module = Module.ClrNamespace(e.ModulePath.Substring(5, e.ModulePath.Length - 5 - 3).Replace('/', '.'));
             }
             else
+            */
             {
                 var currentDir = Directory.GetCurrentDirectory();
                 if (File.Exists(currentDir + e.ModulePath))

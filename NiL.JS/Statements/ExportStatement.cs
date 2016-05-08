@@ -11,7 +11,7 @@ namespace NiL.JS.Statements
     public sealed class ExportStatement : CodeNode
     {
         private string reexportSourceModuleName;
-        private VariableDefinition _internalDefinition;
+        private CodeNode _internalDefinition;
         private readonly List<KeyValuePair<string, Expression>> _map = new List<KeyValuePair<string, Expression>>();
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
@@ -40,11 +40,15 @@ namespace NiL.JS.Statements
             else
             {
                 reexport = -1;
-                var variables = (VariableDefinition)VariableDefinition.Parse(state, ref index);
-                if (variables == null)
+                var definition =
+                    VariableDefinition.Parse(state, ref index)
+                    ?? ClassDefinition.Parse(state, ref index)
+                    ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function);
+
+                if (definition == null)
                     ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
 
-                result._internalDefinition = variables;
+                result._internalDefinition = definition;
             }
 
             Tools.SkipSpaces(state.Code, ref index);
@@ -168,9 +172,19 @@ namespace NiL.JS.Statements
             {
                 _internalDefinition.Evaluate(context);
 
-                for (var i = 0; i < _internalDefinition.variables.Length; i++)
+                var variableDef = _internalDefinition as VariableDefinition;
+                if (variableDef != null)
                 {
-                    context._module.Exports[_internalDefinition.variables[i].name] = _internalDefinition.variables[i].references[0].Evaluate(context);
+                    for (var i = 0; i < variableDef.variables.Length; i++)
+                    {
+                        context._module.Exports[variableDef.variables[i].name] = variableDef.variables[i].references[0].Evaluate(context);
+                    }
+                }
+                else
+                {
+                    var entityDef = _internalDefinition as EntityDefinition;
+
+                    context._module.Exports[entityDef.Name] = entityDef.reference.Descriptor.Get(context, false, 1);
                 }
             }
             else
