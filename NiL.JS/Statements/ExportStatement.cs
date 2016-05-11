@@ -10,9 +10,13 @@ namespace NiL.JS.Statements
 {
     public sealed class ExportStatement : CodeNode
     {
-        private string reexportSourceModuleName;
+        private string _reexportSourceModuleName;
         private CodeNode _internalDefinition;
         private readonly List<KeyValuePair<string, Expression>> _map = new List<KeyValuePair<string, Expression>>();
+
+        public string ReExportSourceModuleName => _reexportSourceModuleName;
+        public CodeNode InternalDefinition => _internalDefinition;
+        public IList<KeyValuePair<string, Expression>> ExportMap => _map.AsReadOnly();
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
@@ -64,7 +68,7 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateString(state.Code, ref index, false))
                     ExceptionsHelper.ThrowSyntaxError("Expected module name", state.Code, index);
 
-                result.reexportSourceModuleName = Tools.Unescape(state.Code.Substring(start + 1, index - start - 2), false);
+                result._reexportSourceModuleName = Tools.Unescape(state.Code.Substring(start + 1, index - start - 2), false);
             }
             else if (reexport == 1)
                 ExceptionsHelper.ThrowSyntaxError("Expected 'from'", state.Code, index);
@@ -146,12 +150,12 @@ namespace NiL.JS.Statements
             if (context._module == null)
                 ExceptionsHelper.Throw(new BaseLibrary.Error("Module undefined"));
 
-            if (reexportSourceModuleName != null)
+            if (_reexportSourceModuleName != null)
             {
                 if (string.IsNullOrEmpty(context._module.FilePath))
                     ExceptionsHelper.Throw(new BaseLibrary.Error("Module must has name"));
 
-                var module = context._module.Import(reexportSourceModuleName);
+                var module = context._module.Import(_reexportSourceModuleName);
 
                 if (_map.Count == 0)
                 {
@@ -200,7 +204,7 @@ namespace NiL.JS.Statements
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (reexportSourceModuleName != null)
+            if (_reexportSourceModuleName != null)
                 return false;
 
             if (_internalDefinition != null)
@@ -223,7 +227,7 @@ namespace NiL.JS.Statements
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            if (reexportSourceModuleName != null)
+            if (_reexportSourceModuleName != null)
                 return;
 
             if (_internalDefinition != null)
@@ -241,7 +245,7 @@ namespace NiL.JS.Statements
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            if (reexportSourceModuleName != null)
+            if (_reexportSourceModuleName != null)
                 return;
 
             if (_internalDefinition != null)
@@ -303,17 +307,17 @@ namespace NiL.JS.Statements
             }
             else
             {
-                if (reexportSourceModuleName != null)
+                if (_reexportSourceModuleName != null)
                     result.Append(" * ");
                 else
                     result.Append(_internalDefinition);
             }
 
-            if (reexportSourceModuleName != null)
+            if (_reexportSourceModuleName != null)
             {
                 result
                     .Append(" from \"")
-                    .Append(reexportSourceModuleName)
+                    .Append(_reexportSourceModuleName)
                     .Append("\"");
             }
 
