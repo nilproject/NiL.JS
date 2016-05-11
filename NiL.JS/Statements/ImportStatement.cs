@@ -10,6 +10,9 @@ namespace NiL.JS.Statements
         private readonly List<KeyValuePair<string, string>> _map = new List<KeyValuePair<string, string>>();
         private string _moduleName;
 
+        public IList<KeyValuePair<string, string>> ImportMap => _map.AsReadOnly();
+        public string SourceModuleName => _moduleName;
+
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             if (!Parser.Validate(state.Code, "import", ref index))
