@@ -104,6 +104,14 @@ namespace NiL.JS.Expressions
                         i++;
                     while (Tools.IsWhiteSpace(state.Code[i]));
 
+                    Tools.SkipSpaces(state.Code, ref i);
+                    if (state.Code[s] != 'g' && state.Code[s] != 's')
+                    {
+                        if (!Parser.Validate(state.Code, ":", ref i))
+                            ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
+                        Tools.SkipSpaces(state.Code, ref i);
+                    }
+
                     CodeNode initializer;
                     if (state.Code[i] == '(')
                     {

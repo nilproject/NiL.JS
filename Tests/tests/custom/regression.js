@@ -207,4 +207,6 @@ if (JSON.stringify([,1])!=='[null,1]')
 if (JSON.stringify([,,1])!=='[null,null,1]')
     console.log(`JSON.stringify works incorrectly (${JSON.stringify([,,1])})`);
 
+({get [1](){return 1;},[2]:2})
+
 console.log("test completed");
