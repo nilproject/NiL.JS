@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>NiL.JS Engine</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/nilproject/NiL.JS/blob/develop/License</licenseUrl>
+    <projectUrl>https://github.com/nilproject/NiL.JS</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>ES2015 (JavaScript) engine for .NET</description>
+    <summary>ES2015 (JavaScript) engine for .NET written on C#</summary>
+    <tags>ecmascript js javascript engine nil</tags>
+  </metadata>
+  <files>
+    <file src="net40\nil.js.dll" target="lib\net40" />
+    <file src="net40\nil.js.pdb" target="lib\net40" />
+    <file src="bin\release\nil.js.pdb" target="lib\net45" />
+    <file src="..\NiL.JS.Portable\bin\release\nil.js.dll" target="lib\portable-net45+win+wpa81+wp80" />
+    <file src="..\NiL.JS.Portable\bin\release\nil.js.pdb" target="lib\portable-net45+win+wpa81+wp80" />
+  </files>
+</package>

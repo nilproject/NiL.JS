@@ -90,7 +90,7 @@ namespace NiL.JS.Expressions
                 }
                 context.objectSource = null;
                 // Аргументы должны быть вычислены даже если функция не существует.
-                ExceptionsHelper.ThrowTypeError(first.ToString() + " is not callable");
+                ExceptionsHelper.ThrowTypeError(first.ToString() + " is not a function");
             }
             else
             {

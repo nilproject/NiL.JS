@@ -39,29 +39,9 @@ namespace NiL.JS.Test
         private static void testEx()
         {
             var context = new Context();
-            context.DefineVariable("testi").Assign(JSObject.CreateObject());
-            var temp = new
-            {
-                ListOfAction = new List<Action<int>>(),
 
-                TestPopulate = new TestClass(),
-
-                TestNullable = new Action<int?>(x => Console.WriteLine(x)),
-                TestNullable1 = new Func<string>(() => "123"),
-
-                Test = new Action<long[]>(x => { Console.WriteLine(x.Select(l => l.ToString()).Aggregate((l, r) => l + " " + r)); }),
-                Test2 = new Func<long[]>(() => new[] { 1, 2, 3L }),
-
-                List = JSValue.GetGenericTypeSelector(new[]
-                {
-                    typeof(List<>),
-                    typeof(ArrayList)
-                })
-            };
-            context.DefineVariable("test").Assign(JSValue.Marshal(temp));
-            context.Eval(@"
-var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
-
+            context.Eval("var f = ()=>console.log('hello')");
+            (context.GetVariable("f").Value as Function).Call(null);
         }
 
         static void Main(string[] args)
@@ -107,7 +87,7 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
             }));
 #endif
 
-            int mode = 0
+            int mode = 2
                     ;
             switch (mode)
             {

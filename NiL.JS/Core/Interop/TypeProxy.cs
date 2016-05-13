@@ -90,7 +90,7 @@ namespace NiL.JS.Core.Interop
             fields = getFieldsContainer();
         }
 
-        private TypeProxy(Type type)
+        private TypeProxy(Type type, JSObject prototype)
             : this()
         {
             if (dynamicProxies.ContainsKey(type))
@@ -99,12 +99,9 @@ namespace NiL.JS.Core.Interop
             {
                 hostedType = type;
                 dynamicProxies[type] = this;
+                __prototype = prototype;
                 try
                 {
-                    var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
-                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != hostedType)
-                        __prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
-
 #if PORTABLE
                     ictor = hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
 #else
@@ -356,8 +353,17 @@ namespace NiL.JS.Core.Interop
                     return null;
                 lock (dynamicProxies)
                 {
-                    new TypeProxy(type);
-                    prot = dynamicProxies[type];
+                    JSObject prototype = null;
+                    var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
+                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
+                    {
+                        if ((pa[0] as PrototypeAttribute).Replace && (pa[0] as PrototypeAttribute).PrototypeType.IsAssignableFrom(type))
+                            return GetPrototype((pa[0] as PrototypeAttribute).PrototypeType, create);
+
+                        prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
+                    }
+
+                    prot = new TypeProxy(type, prototype);
                 }
             }
             return prot;
@@ -377,7 +383,17 @@ namespace NiL.JS.Core.Interop
 #endif
                         return staticProxies[type] = GetGenericTypeSelector(new[] { type });
 
-                    new TypeProxy(type); // It's ok. This instance will be registered and saved
+                    JSObject prototype = null;
+                    var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
+                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
+                    {
+                        if ((pa[0] as PrototypeAttribute).Replace && (pa[0] as PrototypeAttribute).PrototypeType.IsAssignableFrom(type))
+                            return GetConstructor((pa[0] as PrototypeAttribute).PrototypeType);
+
+                        prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
+                    }
+
+                    new TypeProxy(type, prototype); // It's ok. This instance will be registered and saved
                     constructor = staticProxies[type];
                 }
             }
@@ -550,10 +566,13 @@ namespace NiL.JS.Core.Interop
                     fields[name] = r = r.CloneImpl(false);
                 return r;
             }
+
             if (members == null)
                 fillMembers();
+
             IList<MemberInfo> m = null;
             members.TryGetValue(name, out m);
+
             if (m == null || m.Count == 0)
             {
                 var pi = prototypeInstance as JSValue;
@@ -569,7 +588,7 @@ namespace NiL.JS.Core.Interop
             return result;
         }
 
-        private JSValue proxyMember(bool forWrite, IList<MemberInfo> m)
+        internal JSValue proxyMember(bool forWrite, IList<MemberInfo> m)
         {
             JSValue r = null;
             if (m.Count > 1)

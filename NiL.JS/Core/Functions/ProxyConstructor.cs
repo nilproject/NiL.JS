@@ -117,6 +117,7 @@ namespace NiL.JS.Core.Functions
             {
                 if (key.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
+                
                 var res = proxy.GetProperty(key, forWrite && memberScope == PropertyScope.Own, memberScope);
                 if (res.Exists || (memberScope == PropertyScope.Own && forWrite))
                 {

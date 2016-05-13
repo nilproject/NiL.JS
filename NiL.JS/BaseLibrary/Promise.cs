@@ -11,29 +11,32 @@ namespace NiL.JS.BaseLibrary
 {
     public enum PromiseState
     {
-        pending,
-        fulfilled,
-        rejected
+        Pending,
+        Fulfilled,
+        Rejected
     }
 
     public class Promise
     {
+        private JSValue _innerResult;
+        private Task _innerTask;
         private Function _callback;
-        private Task _task;
-        private PromiseState _state;
-        private bool _complited;
-        private JSValue _result;
-        private List<CompletionPromise> _thenCallbacks;
-        private List<CompletionPromise> _catchCallbacks;
+        private Task<JSValue> _task;
 
         [Hidden]
         public PromiseState State
         {
-            get { return _state; }
-            protected set { _state = value; }
+            get
+            {
+                if (!Task.IsCompleted)
+                    return PromiseState.Pending;
+
+                return statusToState(_task.Status);
+            }
         }
+
         [Hidden]
-        public Task Task
+        public Task<JSValue> Task
         {
             get { return _task; }
             protected set { _task = value; }
@@ -41,14 +44,18 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public bool Complited
         {
-            get { return _complited; }
-            protected set { _complited = value; }
+            get { return _task.IsCompleted; }
         }
         [Hidden]
         public JSValue Result
         {
-            get { return _result; }
-            protected set { _result = value; }
+            get
+            {
+                return Task.Status == TaskStatus.RanToCompletion ?
+                    Task.Result
+                    :
+                    (Task.Exception.GetBaseException() as JSException).Error;
+            }
         }
         [Hidden]
         public Function Callback
@@ -58,126 +65,126 @@ namespace NiL.JS.BaseLibrary
         }
 
         public Promise(Function callback)
+            : this()
         {
             _callback = callback ?? Function.Empty;
             run();
         }
 
-        internal Promise()
+        protected Promise()
         {
+            _task = new Task<JSValue>(() =>
+            {
+                if (_innerTask == null)
+                {
+                    return JSValue.undefined;
+                }
+
+                _innerTask.Wait();
+
+                switch (statusToState(_innerTask.Status))
+                {
+                    case PromiseState.Fulfilled:
+                        return _innerResult;
+                    case PromiseState.Rejected:
+                        throw _innerTask.Exception;
+                    default:
+                        return JSValue.undefined;
+                }
+            });
+        }
+
+        protected Promise(Task<JSValue> task)
+        {
+            _task = task;
         }
 
         internal virtual void run()
         {
-            if (_task == null)
+            if (_innerTask == null)
             {
-                _task = new Task(new Action(taskAction));
-                _task.Start();
+                _innerTask = new Task(callbackInvoke);
+                _innerTask.Start();
             }
         }
 
-        internal void taskAction()
+        protected void callbackInvoke()
         {
+            var statusSetted = false;
+            var reject = false;
+
             try
             {
-                InvokeCallback();
+                _callback.Call(new Arguments
+                {
+                    new ExternalFunction((self, args)=>
+                    {
+                        if (!statusSetted)
+                        {
+                            statusSetted = true;
+                            _innerResult = args[0];
+                            _task.Start();
+                        }
+
+                        return null;
+                    }),
+                    new ExternalFunction((self, args)=>
+                    {
+                        if (!statusSetted)
+                        {
+                            statusSetted = true;
+                            _innerResult = args[0];
+                            _task.Start();
+                            reject = true;
+                        }
+
+                        return null;
+                    })
+                });
             }
             catch (JSException e)
             {
-                _state = PromiseState.rejected;
-
-                _result = e.Error;
+                _innerResult = e.Error;
+                throw;
             }
-            catch (Exception)
+            catch
             {
-                _state = PromiseState.rejected;
-
-                _result = TypeProxy.Proxy(new Error("Unknown error"));
+                _innerResult = JSValue.Wrap(new Error("Unknown error"));
+                throw;
             }
 
-            if (_state == PromiseState.pending)
-                _state = PromiseState.fulfilled;
-
-            _complited = true;
-
-            InvokeComplition();
-        }
-
-        protected virtual void InvokeCallback()
-        {
-            _callback.Call(new Arguments
-            {
-                new ExternalFunction((self, args)=>
-                {
-                    if (_state == PromiseState.pending)
-                    {
-                        _state = PromiseState.fulfilled;
-                        _result = args[0];
-                    }
-
-                    return null;
-                }),
-                new ExternalFunction((self, args)=>
-                {
-                    if (_state == PromiseState.pending)
-                    {
-                        _state = PromiseState.rejected;
-                        _result = args[0];
-                    }
-
-                    return null;
-                })
-            });
-        }
-
-        protected virtual void InvokeComplition()
-        {
-            if (_state == PromiseState.fulfilled)
-            {
-                if (_thenCallbacks != null)
-                {
-                    lock (_thenCallbacks)
-                    {
-                        for (var i = 0; i < _thenCallbacks.Count; i++)
-                        {
-                            _thenCallbacks[i].run(this, _result);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (_catchCallbacks != null)
-                {
-                    lock (_catchCallbacks)
-                    {
-                        for (var i = 0; i < _catchCallbacks.Count; i++)
-                        {
-                            _catchCallbacks[i].run(this, _result);
-                        }
-                    }
-                }
-            }
+            if (reject)
+                throw new JSException(_innerResult);
         }
 
         public static Promise resolve(JSValue data)
         {
-            return new ConstantPromise(data, PromiseState.fulfilled);
+            return new Promise(Task<JSValue>.FromResult(data));
         }
 
         public static Promise race(IIterable promises)
         {
-            return new RacePromise(promises.AsEnumerable().Select(convertToPromise).ToArray());
+            if (promises == null)
+            {
+                return new Promise(Task<JSValue>.FromException<JSValue>(new JSException(new TypeError("Invalid Promise.race params"))));
+            }
+
+            return new AnyPromise(Task<JSValue>.WhenAny(promises.AsEnumerable().Select(convertToTask)));
         }
 
         public static Promise all(IIterable promises)
         {
-            return new AllPromise(promises.AsEnumerable().Select(convertToPromise).ToArray());
+            if (promises == null)
+            {
+                return new Promise(Task<JSValue>.FromException<JSValue>(new JSException(new TypeError("Invalid Promise.all params"))));
+            }
+
+            return new AllPromise(Task<JSValue>.WhenAll(promises.AsEnumerable().Select(convertToTask)));
         }
 
-        private static Promise convertToPromise(JSValue arg)
+        private static Task<JSValue> convertToTask(JSValue arg)
         {
-            return arg.Value as Promise ?? resolve(arg);
+            return (arg.Value as Promise)?.Task ?? Task<JSValue>.FromResult(arg);
         }
 
         public Promise @catch(Function onRejection)
@@ -203,67 +210,68 @@ namespace NiL.JS.BaseLibrary
             if (thenPromise != null)
             {
                 if (catchPromise != null)
-                    result = new RacePromise(new[] { thenPromise, catchPromise }, true);
+                    result = new AnyPromise(Task<JSValue>.WhenAny(thenPromise.Task, catchPromise.Task));
                 else
                     result = thenPromise;
             }
             else
                 result = catchPromise;
 
-            if (_complited)
+            if (thenPromise != null)
             {
-                if (_state == PromiseState.fulfilled)
-                {
-                    if (thenPromise != null)
-                        thenPromise.run(this, _result);
-                }
+                if (_task.Status == TaskStatus.RanToCompletion)
+                    thenPromise.run(Result);
                 else
-                {
-                    if (catchPromise != null)
-                        catchPromise.run(this, _result);
-                }
+                    _task.ContinueWith(task => thenPromise.run(Result), TaskContinuationOptions.OnlyOnRanToCompletion);
             }
-            else
-            {
-                if (thenPromise != null)
-                {
-                    if (_thenCallbacks == null)
-                        _thenCallbacks = new List<CompletionPromise>();
-                    lock (_thenCallbacks)
-                    {
-                        if (_complited)
-                            thenPromise.run(this, _result);
-                        else
-                            _thenCallbacks.Add(thenPromise);
-                    }
-                }
 
-                if (catchPromise != null)
-                {
-                    if (_catchCallbacks == null)
-                        _catchCallbacks = new List<CompletionPromise>();
-                    lock (_catchCallbacks)
-                    {
-                        if (_complited)
-                            catchPromise.run(this, _result);
-                        else
-                            _catchCallbacks.Add(catchPromise);
-                    }
-                }
+            if (catchPromise != null)
+            {
+                if (_task.IsCanceled || _task.IsFaulted)
+                    catchPromise.run(Result);
+                else
+                    _task.ContinueWith(task => catchPromise.run(Result), TaskContinuationOptions.NotOnRanToCompletion);
             }
 
             return result;
         }
+
+        private static PromiseState statusToState(TaskStatus status)
+        {
+            switch (status)
+            {
+                case TaskStatus.Canceled:
+                case TaskStatus.Faulted:
+                    return PromiseState.Rejected;
+                case TaskStatus.RanToCompletion:
+                    return PromiseState.Fulfilled;
+                case TaskStatus.Created:
+                case TaskStatus.Running:
+                case TaskStatus.WaitingForActivation:
+                case TaskStatus.WaitingForChildrenToComplete:
+                case TaskStatus.WaitingToRun:
+                    return PromiseState.Pending;
+                default:
+                    return PromiseState.Rejected;
+            }
+        }
     }
 
-    [Prototype(typeof(Promise))]
+    [Prototype(typeof(Promise), true)]
     internal class CompletionPromise : Promise
     {
         private JSValue _arg;
 
         internal CompletionPromise(Function callback)
+            : base(null as Task<JSValue>)
         {
             Callback = callback;
+            Task = new Task<JSValue>(() => Callback.Call(new Arguments { _arg }));
+        }
+
+        internal CompletionPromise(Task<JSValue> task)
+            : base(task)
+        {
         }
 
         internal sealed override void run()
@@ -271,149 +279,33 @@ namespace NiL.JS.BaseLibrary
             throw new InvalidOperationException();
         }
 
-        internal virtual void run(Promise sender, JSValue arg)
+        internal void run(JSValue arg)
         {
             if (_arg == null)
             {
-                _arg = arg;
-                base.run();
+                _arg = arg ?? JSValue.undefined;
+                Task.Start();
             }
         }
-
-        protected override void InvokeCallback()
-        {
-            Callback.Call(new Arguments { _arg });
-        }
     }
 
-    [Prototype(typeof(Promise))]
-    internal sealed class ConstantPromise : Promise
+    [Prototype(typeof(Promise), true)]
+    internal sealed class AnyPromise : CompletionPromise
     {
-        internal ConstantPromise(JSValue value, PromiseState state)
+        internal AnyPromise(Task<Task<JSValue>> task)
+            : base(new Task<JSValue>(() => task.Result.Result))
         {
-            Result = value;
-            State = state;
-            Complited = true;
-        }
-
-        internal override void run()
-        {
-
-        }
-
-        internal override Promise then(CompletionPromise thenPromise, CompletionPromise catchPromise)
-        {
-            var promise = State == PromiseState.fulfilled ? thenPromise : catchPromise;
-
-            if (promise != null)
-                promise.run(this, Result);
-
-            return promise ?? resolve(JSValue.undefined);
+            task.ContinueWith(x => run(null));
         }
     }
 
-    [Prototype(typeof(Promise))]
+    [Prototype(typeof(Promise), true)]
     internal sealed class AllPromise : CompletionPromise
     {
-        private int _expectedNumberOfCompletions;
-        private Promise[] _promises;
-        private bool _subscribed;
-
-        internal AllPromise(Promise[] promises)
-            : base(null)
+        internal AllPromise(Task<JSValue[]> task)
+            : base(new Task<JSValue>(() => new Array(task.Result)))
         {
-            _promises = promises;
-            _expectedNumberOfCompletions = _promises.Length;
-            Result = new Array(_expectedNumberOfCompletions);
-
-            for (var i = 0; i < promises.Length; i++)
-                promises[i].run();
-        }
-
-        internal override void run(Promise sender, JSValue result)
-        {
-            lock (Result)
-            {
-                if (State == PromiseState.pending)
-                {
-                    if (sender.State == PromiseState.rejected)
-                    {
-                        Result = result;
-                        State = PromiseState.rejected;
-                        Complited = true;
-                        InvokeComplition();
-                    }
-                    else
-                    {
-                        (Result as Array)[System.Array.IndexOf(_promises, sender)] = result;
-                        if (--_expectedNumberOfCompletions == 0)
-                        {
-                            State = PromiseState.fulfilled;
-                            Complited = true;
-                            InvokeComplition();
-                        }
-                    }
-                }
-            }
-        }
-
-        internal override Promise then(CompletionPromise thenPromise, CompletionPromise catchPromise)
-        {
-            if (!_subscribed)
-            {
-                _subscribed = true;
-                for (var i = 0; i < _promises.Length; i++)
-                    _promises[i].then(this, this);
-            }
-
-            return base.then(thenPromise, catchPromise);
-        }
-    }
-
-    [Prototype(typeof(Promise))]
-    internal sealed class RacePromise : CompletionPromise
-    {
-        private bool _subscribed;
-        private Promise[] _promises;
-
-        public RacePromise(Promise[] promises, bool suppressRun)
-            : base(null)
-        {
-            _promises = promises;
-
-            if (!suppressRun)
-            {
-                for (var i = 0; i < promises.Length; i++)
-                    promises[i].run();
-            }
-        }
-
-        internal RacePromise(Promise[] promises)
-            : this(promises, false)
-        {
-        }
-
-        internal override void run(Promise sender, JSValue result)
-        {
-            if (!Complited)
-            {
-                Complited = true;
-                Result = result;
-                State = sender.State;
-                InvokeComplition();
-            }
-        }
-
-        internal override Promise then(CompletionPromise thenPromise, CompletionPromise catchPromise)
-        {
-            if (!_subscribed)
-            {
-                _subscribed = true;
-                for (var i = 0; i < _promises.Length; i++)
-                    _promises[i].then(this, this);
-            }
-
-            return base.then(thenPromise, catchPromise);
+            task.ContinueWith(x => run(null));
         }
     }
 }
