@@ -943,5 +943,29 @@ namespace NiL.JS.Core
 
             return result;
         }
+
+        public static bool @is(JSValue value1, JSValue value2)
+        {
+            if (value1 == value2)
+                return true;
+
+            if ((value1 != null && value2 == null) || (value1 == null && value2 != null))
+                return false;
+
+            if ((value1.valueType | JSValueType.Undefined) != (value2.valueType | JSValueType.Undefined))
+                return false;
+
+            if (value1.valueType == JSValueType.Double
+                && double.IsNaN(value1.dValue)
+                && double.IsNaN(value2.dValue))
+                return true;
+
+            return StrictEqual.Check(value1, value2);
+        }
+
+        public static BaseLibrary.Array getOwnPropertySymbols(JSObject obj)
+        {
+            return new BaseLibrary.Array(obj?.symbols.Keys ?? new Symbol[0]);
+        }
     }
 }

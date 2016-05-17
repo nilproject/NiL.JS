@@ -28,17 +28,17 @@ namespace NiL.JS.Core
     {
         NotExists = 0,
         NotExistsInObject = 1,
-        Undefined = 3,                  // 000000000011 // значение undefined говорит о том, что этот объект, вообще-то, определён, но вот его значение нет
-        Boolean = 7,                       // 000000000111
-        Integer = 11,                       // 000000001011
-        Double = 19,                    // 000000010011
-        String = 35,                    // 000000100011
-        Symbol = 67,                    // 000001000011
-        Object = 131,                   // 000010000011
-        Function = 259,                 // 000100000011
-        Date = 515,                     // 001000000011
-        Property = 1027,                // 010000000011
-        SpreadOperatorResult = 2051     // 100000000011
+        Undefined = 3,                          // 000000000011 // значение undefined говорит о том, что этот объект, вообще-то, определён, но вот его значение нет
+        Boolean = 4 | Undefined,                // 000000000111
+        Integer = 8 | Undefined,                // 000000001011
+        Double = 16 | Undefined,                // 000000010011
+        String = 32 | Undefined,                // 000000100011
+        Symbol = 64 | Undefined,                // 000001000011
+        Object = 128 | Undefined,               // 000010000011
+        Function = 256 | Undefined,             // 000100000011
+        Date = 512 | Undefined,                 // 001000000011
+        Property = 1024 | Undefined,            // 010000000011
+        SpreadOperatorResult = 2048 | Undefined // 100000000011
     }
 
 #if !PORTABLE
