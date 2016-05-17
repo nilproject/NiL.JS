@@ -957,37 +957,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public virtual string ToString(bool headerOnly)
         {
-            StringBuilder res = new StringBuilder();
-            switch (creator.kind)
-            {
-                case FunctionKind.Generator:
-                    res.Append("function*");
-                    break;
-                case FunctionKind.Getter:
-                    res.Append("get");
-                    break;
-                case FunctionKind.Setter:
-                    res.Append("set");
-                    break;
-                case FunctionKind.Method:
-                    break;
-                case FunctionKind.MethodGenerator:
-                    res.Append("*");
-                    break;
-                default:
-                    res.Append("function");
-                    break;
-            }
-            if (res.Length != 0)
-                res.Append(" ");
-            res.Append(name).Append("(");
-            if (creator != null && creator.parameters != null)
-                for (int i = 0; i < creator.parameters.Length;)
-                    res.Append(creator.parameters[i].Name).Append(++i < creator.parameters.Length ? "," : "");
-            res.Append(")");
-            if (!headerOnly)
-                res.Append(' ').Append(creator != creatorDummy ? creator.body as object : "{ [native code] }");
-            return res.ToString();
+            return creator.ToString();
         }
 
         [Hidden]

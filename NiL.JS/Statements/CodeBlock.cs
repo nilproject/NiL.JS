@@ -735,7 +735,10 @@ namespace NiL.JS.Statements
                 if (_lines == null || _lines.Length == 0)
                     return "{ }";
 
-                StringBuilder res = new StringBuilder().Append(" {").Append(Environment.NewLine);
+                StringBuilder res = new StringBuilder()
+                    .Append("{")
+                    .Append(Environment.NewLine);
+
                 var replp = Environment.NewLine;
                 var replt = Environment.NewLine + "  ";
                 for (int i = 0; i < _lines.Length; i++)

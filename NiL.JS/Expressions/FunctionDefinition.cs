@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text;
 using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
@@ -316,13 +317,16 @@ namespace NiL.JS.Expressions
                     ExceptionsHelper.ThrowSyntaxError("Expected \"=>\"", code, i);
                 Tools.SkipSpaces(code, ref i);
             }
+
             if (code[i] != '{')
             {
                 var oldFunctionScopeLevel = state.functionScopeLevel;
                 state.functionScopeLevel = ++state.lexicalScopeLevel;
+
                 try
                 {
                     if (kind == FunctionKind.Arrow)
+                    {
                         body = new CodeBlock(new CodeNode[]
                         {
                             new Return(ExpressionTree.Parse(state, ref i, processComma: false) as Expression)
@@ -330,6 +334,10 @@ namespace NiL.JS.Expressions
                         {
                             _variables = new VariableDescriptor[0]
                         };
+
+                        body.Position = body._lines[0].Position;
+                        body.Length = body._lines[0].Length;
+                    }
                     else
                         ExceptionsHelper.ThrowUnknownToken(code, i);
                 }
@@ -706,41 +714,59 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            string res;
+            StringBuilder code = new StringBuilder();
             switch (kind)
             {
                 case FunctionKind.Generator:
                     {
-                        res = "functions* ";
+                        code.Append("functions* ");
                         break;
                     }
                 case FunctionKind.Method:
                     {
-                        res = "";
                         break;
                     }
                 case FunctionKind.Getter:
                     {
-                        res = "get ";
+                        code.Append("get ");
                         break;
                     }
                 case FunctionKind.Setter:
                     {
-                        res = "set ";
+                        code.Append("set ");
+                        break;
+                    }
+                case FunctionKind.Arrow:
+                    {
                         break;
                     }
                 default:
                     {
-                        res = "function ";
+                        code.Append("function ");
                         break;
                     }
             }
-            res += _name + "(";
+
+            code.Append(_name)
+                .Append("(");
+
             if (parameters != null)
                 for (int i = 0; i < parameters.Length;)
-                    res += parameters[i] + (++i < parameters.Length ? "," : "");
-            res += ")" + ((object)body ?? "{ [native code] }").ToString();
-            return res;
+                    code.Append(parameters[i])
+                        .Append(++i < parameters.Length ? "," : "");
+
+            code.Append(")");
+            if (kind == FunctionKind.Arrow)
+                code.Append(" => ");
+
+            if (kind == FunctionKind.Arrow 
+                && body._lines.Length == 1
+                && body.Position == body._lines[0].Position)
+                code.Append(body._lines[0].Childs[0].ToString());
+            else
+                code.Append((object)body ?? "{ [native code] }");
+
+            return code.ToString();
         }
     }
 }

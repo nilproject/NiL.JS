@@ -78,7 +78,7 @@ namespace NiL.JS.Expressions
         {
             if (stats != null)
                 stats.UseGetMember = true;
-            base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
+            base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
             if (second is Constant)
             {
                 cachedMemberName = second.Evaluate(null);
@@ -101,7 +101,7 @@ namespace NiL.JS.Expressions
             int i = 0;
             if (second is Constant
                 && (second as Constant).value.ToString().Length > 0
-                && (Parser.ValidateName((second as Constant).value.ToString(), ref i, true)))
+                && (Parser.ValidateName((second as Constant).value.ToString(), ref i, false, true, true)))
                 res += "." + (second as Constant).value;
             else
                 res += "[" + second + "]";
