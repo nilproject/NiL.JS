@@ -61,11 +61,9 @@ namespace NiL.JS.Expressions
 
             protected internal override JSValue ConstructObject()
             {
-                return new ObjectWrapper(null)
-                {
-                    __proto__ = prototype.oValue as JSObject,
-                    ownedFieldsOnly = true
-                };
+                var result = CreateObject();
+                result.__proto__ = prototype.oValue as JSObject;
+                return result;
             }
 
             public override string ToString(bool headerOnly)
