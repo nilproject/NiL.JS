@@ -76,9 +76,25 @@ namespace NiL.JS.Expressions
             var temp = first.Evaluate(context);
             JSValue targetObject = context.objectSource;
 
-            ICallable callable = temp.oValue as ICallable
+            /*
+            ICallable callable = temp == null ? null :
+                                    temp.oValue as ICallable
                                  ?? temp.Value as ICallable
                                  ?? (temp.oValue as TypeProxy).prototypeInstance as ICallable;
+            */
+            ICallable callable = null;
+            if (temp.valueType >= JSValueType.Object)
+            {
+                callable = temp.oValue as ICallable;
+                if (callable == null)
+                    callable = temp.Value as ICallable;
+                if (callable == null)
+                {
+                    var typeProxy = temp.Value as TypeProxy;
+                    if (typeProxy != null)
+                        callable = typeProxy.prototypeInstance as ICallable;
+                }
+            }
 
             if (callable == null)
             {
