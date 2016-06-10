@@ -57,7 +57,7 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Int64:
                     {
-                        return false;
+                        return self.Is(JSValueType.Integer) || (self.Is(JSValueType.Double) && self.dValue == (long)self.dValue);
                     }
                 case TypeCode.Object:
                     {
