@@ -739,6 +739,7 @@ namespace NiL.JS.Expressions
                             JSValue jsname = null;
                             if (!state.stringConstants.TryGetValue(name, out jsname))
                                 state.stringConstants[name] = jsname = name;
+
                             first = new Property(first, new Constant(name)
                             {
                                 Position = s,
@@ -1031,6 +1032,12 @@ namespace NiL.JS.Expressions
                         }
                     default:
                         {
+                            JSValue tempStr;
+                            if (state.stringConstants.TryGetValue(name, out tempStr))
+                                name = tempStr.oValue.ToString();
+                            else
+                                state.stringConstants[name] = name;
+
                             operand = new GetVariable(name, state.lexicalScopeLevel);
                             break;
                         }

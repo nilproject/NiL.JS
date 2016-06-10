@@ -1678,6 +1678,52 @@ namespace NiL.JS.Core
             return false;
         }
 
+        internal static Arguments EvaluateArgs(Expressions.Expression[] arguments, Context initiator)
+        {
+            Arguments argumentsObject = new Arguments(initiator);
+            IList<JSValue> spreadSource = null;
+
+            int targetIndex = 0;
+            int sourceIndex = 0;
+            int spreadIndex = 0;
+
+            while (sourceIndex < arguments.Length)
+            {
+                if (spreadSource != null)
+                {
+                    if (spreadIndex < spreadSource.Count)
+                    {
+                        argumentsObject[targetIndex++] = spreadSource[spreadIndex];
+                        spreadIndex++;
+                    }
+                    if (spreadIndex == spreadSource.Count)
+                    {
+                        spreadSource = null;
+                        sourceIndex++;
+                    }
+                }
+                else
+                {
+                    var value = Tools.PrepareArg(initiator, arguments[sourceIndex]);
+                    if (value.valueType == JSValueType.SpreadOperatorResult)
+                    {
+                        spreadIndex = 0;
+                        spreadSource = value.oValue as IList<JSValue>;
+                        continue;
+                    }
+                    else
+                    {
+                        sourceIndex++;
+                        argumentsObject[targetIndex] = value;
+                    }
+                    targetIndex++;
+                }
+            }
+
+            argumentsObject.length = targetIndex;
+            return argumentsObject;
+        }
+
         internal static LambdaExpression BuildJsCallTree(string name, Expression functionGetter, ParameterExpression thisParameter, MethodInfo method, Type delegateType)
         {
             var prms = method.GetParameters();

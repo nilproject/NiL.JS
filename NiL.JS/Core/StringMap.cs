@@ -72,21 +72,24 @@ namespace NiL.JS.Core
         {
             if (key == null)
                 ExceptionsHelper.ThrowArgumentNull("key");
+
             if (key.Length == 0)
             {
                 if (@throw && _emptyKeyValueExists)
-                    ExceptionsHelper.Throw(new InvalidOperationException("Item already Exists"));
+                    ExceptionsHelper.Throw(new InvalidOperationException("Item already exists"));
                 _emptyKeyValueExists = true;
                 _emptyKeyValue = value;
-                //count++;
                 return;
             }
-            var elen = _records.Length - 1;
+
+            var mask = _records.Length - 1;
             if (_records.Length == 0)
-                elen = increaseSize() - 1;
+                mask = increaseSize() - 1;
+
             int index;
             int colisionCount = 0;
-            index = hash & elen;
+            index = hash & mask;
+
             do
             {
                 if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
@@ -96,16 +99,18 @@ namespace NiL.JS.Core
                     _records[index].value = value;
                     return;
                 }
+
                 index = _records[index].next - 1;
             }
             while (index >= 0);
 
             // не нашли
 
-            if ((_count > 50 && _count * 9 / 5 >= elen) || _count == elen + 1)
-                elen = increaseSize() - 1;
+            if ((_count > 50 && _count * 9 / 5 >= mask) || _count == mask + 1)
+                mask = increaseSize() - 1;
+
             int prewIndex = -1;
-            index = hash & elen;
+            index = hash & mask;
 
             if (_records[index].key != null)
             {
@@ -116,8 +121,9 @@ namespace NiL.JS.Core
                 }
                 prewIndex = index;
                 while (_records[index].key != null)
-                    index = (index + 61) & elen;
+                    index = (index + 61) & mask;
             }
+
             _records[index].hash = hash;
             _records[index].key = key;
             _records[index].value = value;
@@ -131,6 +137,7 @@ namespace NiL.JS.Core
                 Array.Copy(_existsedIndexes, newEI, _existsedIndexes.Length);
                 _existsedIndexes = newEI;
             }
+
             _existsedIndexes[_eicount++] = index;
             _count++;
 
@@ -380,7 +387,7 @@ namespace NiL.JS.Core
 
         public int Count
         {
-            get { return _count; }
+            get { return _count + (_emptyKeyValueExists ? 1 : 0); }
         }
 
         public bool IsReadOnly

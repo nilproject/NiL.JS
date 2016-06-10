@@ -25,7 +25,7 @@ namespace NiL.JS.BaseLibrary
             RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             if (construct)
                 ExceptionsHelper.ThrowTypeError("Generators cannot be invoked as a constructor");

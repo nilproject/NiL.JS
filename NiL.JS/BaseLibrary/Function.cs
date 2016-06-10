@@ -49,7 +49,7 @@ namespace NiL.JS.BaseLibrary
 #if !PORTABLE
     [Serializable]
 #endif
-    public partial class Function : JSObject
+    public partial class Function : JSObject, ICallable
     {
         internal static readonly Function Empty = new Function();
         private static readonly FunctionDefinition creatorDummy = new FunctionDefinition("anonymous");
@@ -137,6 +137,16 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 return creator != null ? creator.body : null;
+            }
+        }
+
+        [Hidden]
+        public virtual FunctionKind Kind
+        {
+            [Hidden]
+            get
+            {
+                return creator.kind;
             }
         }
 
@@ -296,7 +306,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public JSValue Construct(Arguments arguments)
+        public virtual JSValue Construct(Arguments arguments)
         {
             if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
             {
@@ -305,20 +315,20 @@ namespace NiL.JS.BaseLibrary
 
             JSValue targetObject = ConstructObject();
             targetObject.attributes |= JSValueAttributesInternal.ConstructingObject;
-            var result = Construct(targetObject, arguments, this);
+            var result = Construct(targetObject, arguments);
             targetObject.attributes &= ~JSValueAttributesInternal.ConstructingObject;
             return result;
         }
 
         [Hidden]
-        internal JSValue Construct(JSValue targetObject, Arguments arguments, Function newTarget)
+        public virtual JSValue Construct(JSValue targetObject, Arguments arguments)
         {
             if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
             {
                 ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
             }
 
-            var res = Invoke(true, targetObject, arguments, newTarget);
+            var res = Invoke(true, targetObject, arguments);
             if (res.valueType < JSValueType.Object || res.oValue == null)
                 return targetObject;
             return res;
@@ -333,7 +343,7 @@ namespace NiL.JS.BaseLibrary
             return targetObject;
         }
 
-        internal virtual JSValue InternalInvoke(JSValue targetObject, Expression[] arguments, Context initiator, Function newTarget, bool withSpread, bool construct)
+        internal virtual JSValue InternalInvoke(JSValue targetObject, Expression[] arguments, Context initiator, bool withSpread, bool construct)
         {
             if (!construct && !withSpread && this.GetType() == typeof(Function))
             {
@@ -385,52 +395,12 @@ namespace NiL.JS.BaseLibrary
                     && creator.parameters.Length == arguments.Length // из-за необходимости иметь возможность построить аргументы, если они потребуются
                     && arguments.Length < 9)
                 {
-                    return fastInvoke(targetObject, arguments, initiator, newTarget);
+                    return fastInvoke(targetObject, arguments, initiator);
                 }
             }
 
             // Совсем медленно. Плохая функция попалась
-            Arguments argumentsObject = new Core.Arguments(initiator);
-            IList<JSValue> spreadSource = null;
-
-            int targetIndex = 0;
-            int sourceIndex = 0;
-            int spreadIndex = 0;
-
-            while (sourceIndex < arguments.Length)
-            {
-                if (spreadSource != null)
-                {
-                    if (spreadIndex < spreadSource.Count)
-                    {
-                        argumentsObject[targetIndex++] = spreadSource[spreadIndex];
-                        spreadIndex++;
-                    }
-                    if (spreadIndex == spreadSource.Count)
-                    {
-                        spreadSource = null;
-                        sourceIndex++;
-                    }
-                }
-                else
-                {
-                    var value = Tools.PrepareArg(initiator, arguments[sourceIndex]);
-                    if (value.valueType == JSValueType.SpreadOperatorResult)
-                    {
-                        spreadIndex = 0;
-                        spreadSource = value.oValue as IList<JSValue>;
-                        continue;
-                    }
-                    else
-                    {
-                        sourceIndex++;
-                        argumentsObject[targetIndex] = value;
-                    }
-                    targetIndex++;
-                }
-            }
-
-            argumentsObject.length = targetIndex;
+            Arguments argumentsObject = Tools.EvaluateArgs(arguments, initiator);
 
             initiator.objectSource = null;
 
@@ -438,13 +408,13 @@ namespace NiL.JS.BaseLibrary
             {
                 if (targetObject == null || targetObject.valueType < JSValueType.Object)
                     return Construct(argumentsObject);
-                return Construct(targetObject, argumentsObject, newTarget);
+                return Construct(targetObject, argumentsObject);
             }
             else
                 return Call(targetObject, argumentsObject);
         }
-
-        private JSValue fastInvoke(JSValue targetObject, Expression[] arguments, Context initiator, Function newTarget)
+        
+        private JSValue fastInvoke(JSValue targetObject, Expression[] arguments, Context initiator)
         {
 #if DEBUG && !PORTABLE
             if (creator.trace)
@@ -526,10 +496,10 @@ namespace NiL.JS.BaseLibrary
             }
 
             targetObject = correctTargetObject(targetObject, creator.body._strict);
-            return Invoke(false, targetObject, arguments, null);
+            return Invoke(false, targetObject, arguments);
         }
 
-        protected internal virtual JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
+        protected internal virtual JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
 #if DEBUG && !PORTABLE
             if (creator.trace)
@@ -957,7 +927,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public virtual string ToString(bool headerOnly)
         {
-            return creator.ToString();
+            return creator.ToString(headerOnly);
         }
 
         [Hidden]

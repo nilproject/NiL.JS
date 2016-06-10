@@ -69,12 +69,25 @@ namespace NiL.JS.Core.Functions
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             var res = _delegate(targetObject, arguments);
             if (res == null)
                 return JSValue.NotExists;
             return res;
+        }
+        
+        [Hidden]
+        public override string ToString(bool headerOnly)
+        {
+            var result = "function " + name + "()";
+
+            if (!headerOnly)
+            {
+                result += " { [native code] }";
+            }
+
+            return result;
         }
     }
 }

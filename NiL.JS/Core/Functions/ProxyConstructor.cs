@@ -138,7 +138,7 @@ namespace NiL.JS.Core.Functions
             return proxy.DeleteProperty(name) && __proto__.DeleteProperty(name);
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             var objc = targetObject as ObjectWrapper;
             if (construct) // new
@@ -347,7 +347,14 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         public override string ToString(bool headerOnly)
         {
-            return "function " + proxy.hostedType.Name + "() { [native code] }";
+            var result = "function " + name + "()";
+
+            if (!headerOnly)
+            {
+                result += " { [native code] }";
+            }
+
+            return result;
         }
     }
 }

@@ -82,7 +82,12 @@ namespace NiL.JS.Core
         [Hidden]
         public JSObject()
         {
-            // Keep Empty!
+            /// На будущее. Наверное, нужно будет сделать переходную версию, 
+            /// но я хз как это завернуть получше.
+            /*
+            valueType = JSValueType.Object;
+            oValue = this;
+            */
         }
 
         [Hidden]

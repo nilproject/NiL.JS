@@ -16,21 +16,35 @@ using System.Collections;
 
 namespace NiL.JS.Test
 {
-    public class TestClass
+    public class TestClass : ICallable
     {
-        public void test(string x)
+        public FunctionKind Kind
         {
-            Console.WriteLine("string:" + x);
+            get
+            {
+                return FunctionKind.Function;
+            }
         }
 
-        public void test(int x)
+        public JSValue Call(JSValue targetObject, Arguments arguments)
         {
-            Console.WriteLine("int:" + x);
+            Console.WriteLine("Called");
+
+            return JSValue.Undefined;
         }
 
-        public void test(double x)
+        public JSValue Construct(Arguments arguments)
         {
-            Console.WriteLine("double:" + x);
+            Console.WriteLine("Constructed");
+
+            return JSValue.Undefined;
+        }
+
+        public JSValue Construct(JSValue targetObject, Arguments arguments)
+        {
+            Console.WriteLine("Constructed with target");
+
+            return JSValue.Undefined;
         }
     }
 
@@ -38,10 +52,11 @@ namespace NiL.JS.Test
     {
         private static void testEx()
         {
-            var context = new Context();
-
-            context.Eval("var f = ()=>console.log('hello')");
-            (context.GetVariable("f").Value as Function).Call(null);
+            var c = new Context();
+            c.DefineVariable("test").Assign(JSValue.Wrap(new TestClass()));
+            c.Eval("test()");
+            c.Eval("new test");
+            c.Eval("new class extends test {}");
         }
 
         static void Main(string[] args)
@@ -87,7 +102,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 2
+            int mode = 3
                     ;
             switch (mode)
             {
@@ -96,20 +111,9 @@ namespace NiL.JS.Test
                         staticAnalyzer("modules/ftest.js");
                         break;
                     }
-#if !PORTABLE
                 case -3:
                     {
-                        runFile(@"sunspider-0.9.1\access-nsieve.js", 100);
-                        break;
-                    }
-#endif
-                case -2:
-                    {
-                        var bf = new BinaryFormatter();
-                        var ms = new MemoryStream();
-                        bf.Serialize(ms, new BinaryTree<int>() { { "one", 1 }, { "two", 2 }, { "three", 3 } });
-                        ms.Position = 0;
-                        var bt = bf.Deserialize(ms);
+                        runFiles("tests/custom/");
                         break;
                     }
                 case -1:

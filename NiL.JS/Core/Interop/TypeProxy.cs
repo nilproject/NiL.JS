@@ -45,9 +45,9 @@ namespace NiL.JS.Core.Interop
                             if (hostedType == typeof(JSObject))
                             {
                                 _prototypeInstance = CreateObject();
-                                (_prototypeInstance as JSObject).__prototype = @null;
-                                (_prototypeInstance as JSObject).fields = fields;
-                                (_prototypeInstance as JSObject).attributes |= JSValueAttributesInternal.ProxyPrototype;
+                                _prototypeInstance.__prototype = @null;
+                                _prototypeInstance.fields = fields;
+                                _prototypeInstance.attributes |= JSValueAttributesInternal.ProxyPrototype;
                             }
                             else if (typeof(JSObject).IsAssignableFrom(hostedType))
                             {
@@ -76,6 +76,7 @@ namespace NiL.JS.Core.Interop
                     }
 #endif
                 }
+
                 return _prototypeInstance;
             }
         }

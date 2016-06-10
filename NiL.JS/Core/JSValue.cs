@@ -315,7 +315,9 @@ namespace NiL.JS.Core
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get
-            { return valueType > JSValueType.Undefined; }
+            {
+                return valueType > JSValueType.Undefined;
+            }
         }
 
         [Hidden]
@@ -326,7 +328,9 @@ namespace NiL.JS.Core
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get
-            { return valueType >= JSValueType.Object && oValue == null; }
+            {
+                return valueType >= JSValueType.Object && oValue == null;
+            }
         }
 
         [Hidden]
@@ -1106,6 +1110,7 @@ namespace NiL.JS.Core
         {
             if (value == null)
                 return Null;
+
             return new ObjectWrapper(value);
         }
 

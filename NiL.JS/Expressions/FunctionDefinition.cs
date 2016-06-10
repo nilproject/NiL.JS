@@ -714,6 +714,11 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
+            return ToString(false);
+        }
+
+        internal string ToString(bool headerOnly)
+        {
             StringBuilder code = new StringBuilder();
             switch (kind)
             {
@@ -756,15 +761,19 @@ namespace NiL.JS.Expressions
                         .Append(++i < parameters.Length ? "," : "");
 
             code.Append(")");
-            if (kind == FunctionKind.Arrow)
-                code.Append(" => ");
 
-            if (kind == FunctionKind.Arrow 
-                && body._lines.Length == 1
-                && body.Position == body._lines[0].Position)
-                code.Append(body._lines[0].Childs[0].ToString());
-            else
-                code.Append((object)body ?? "{ [native code] }");
+            if (!headerOnly)
+            {
+                if (kind == FunctionKind.Arrow)
+                    code.Append(" => ");
+
+                if (kind == FunctionKind.Arrow
+                    && body._lines.Length == 1
+                    && body.Position == body._lines[0].Position)
+                    code.Append(body._lines[0].Childs[0].ToString());
+                else
+                    code.Append((object)body ?? "{ [native code] }");
+            }
 
             return code.ToString();
         }

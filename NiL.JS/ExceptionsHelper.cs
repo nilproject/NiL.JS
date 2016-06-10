@@ -15,6 +15,7 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void Throw(Error error)
         {
             throw new JSException(error);
@@ -23,6 +24,7 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void Throw(JSValue error)
         {
             throw new JSException(error ?? JSValue.undefined);
@@ -31,6 +33,7 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void Throw(Error error, Exception innerException)
         {
             throw new JSException(error, innerException);
@@ -39,6 +42,7 @@ namespace NiL.JS
         /// <exception cref="System.ArgumentNullException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void ThrowArgumentNull(string message)
         {
             throw new ArgumentNullException(message);
@@ -47,6 +51,7 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void ThrowVariableNotDefined(object variableName)
         {
             Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)));
@@ -55,6 +60,7 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void ThrowIncrementPropertyWOSetter(object proprtyName)
         {
             Throw(new TypeError(string.Format(Strings.IncrementPropertyWOSetter, proprtyName)));
@@ -63,6 +69,7 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void ThrowIncrementReadonly(object entityName)
         {
             Throw(new TypeError(string.Format(Strings.IncrementReadonly, entityName)));
@@ -71,6 +78,7 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void ThrowUnknownToken(string code, int index)
         {
             var cord = CodeCoordinates.FromTextPosition(code, index, 0);
@@ -91,6 +99,7 @@ namespace NiL.JS
 
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
+        [DebuggerStepThrough]
         internal static void ThrowSyntaxError(string message, string code, int position, int length)
         {
             var cord = CodeCoordinates.FromTextPosition(code, position, 0);
@@ -100,8 +109,9 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
 #if INLINE
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [DebuggerStepThrough]
         internal static T ThrowIfNotExists<T>(T obj, object name) where T : JSValue
         {
             if (obj.valueType == JSValueType.NotExists)
@@ -111,6 +121,7 @@ namespace NiL.JS
 
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
+        [DebuggerStepThrough]
         internal static void ThrowReferenceError(string message)
         {
             Throw(new ReferenceError(message));
@@ -118,6 +129,7 @@ namespace NiL.JS
 
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
+        [DebuggerStepThrough]
         internal static void ThrowTypeError(string message)
         {
             Throw(new TypeError(message));
