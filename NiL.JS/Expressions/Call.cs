@@ -75,24 +75,28 @@ namespace NiL.JS.Expressions
         {
             var temp = first.Evaluate(context);
             JSValue targetObject = context.objectSource;
-
-            /*
-            ICallable callable = temp == null ? null :
-                                    temp.oValue as ICallable
-                                 ?? temp.Value as ICallable
-                                 ?? (temp.oValue as TypeProxy).prototypeInstance as ICallable;
-            */
             ICallable callable = null;
+            Function func = null;
+
             if (temp.valueType >= JSValueType.Object)
             {
-                callable = temp.oValue as ICallable;
-                if (callable == null)
-                    callable = temp.Value as ICallable;
-                if (callable == null)
+                if (temp.valueType == JSValueType.Function)
                 {
-                    var typeProxy = temp.Value as TypeProxy;
-                    if (typeProxy != null)
-                        callable = typeProxy.prototypeInstance as ICallable;
+                    func = temp.oValue as Function;
+                    callable = func;
+                }
+
+                if (func == null)
+                {
+                    callable = temp.oValue as ICallable;
+                    if (callable == null)
+                        callable = temp.Value as ICallable;
+                    if (callable == null)
+                    {
+                        var typeProxy = temp.Value as TypeProxy;
+                        if (typeProxy != null)
+                            callable = typeProxy.prototypeInstance as ICallable;
+                    }
                 }
             }
 
@@ -105,34 +109,30 @@ namespace NiL.JS.Expressions
                 }
 
                 context.objectSource = null;
-                
+
                 // Аргументы должны быть вычислены даже если функция не существует.
                 ExceptionsHelper.ThrowTypeError(first.ToString() + " is not a function");
 
                 return null;
             }
+            else if (func == null)
+            {
+                switch (callMode)
+                {
+                    case CallMode.Construct:
+                        {
+                            return callable.Construct(Tools.EvaluateArgs(_arguments, context));
+                        }
+                    case CallMode.Super:
+                        {
+                            return callable.Construct(targetObject, Tools.EvaluateArgs(_arguments, context));
+                        }
+                    default:
+                        return callable.Call(targetObject, Tools.EvaluateArgs(_arguments, context));
+                }
+            }
             else
             {
-                var func = callable as Function;
-
-                if (func == null)
-                {
-                    switch(callMode)
-                    {
-                        case CallMode.Regular:
-                            {
-                                return callable.Call(targetObject, Tools.EvaluateArgs(_arguments, context));
-                            }
-                        case CallMode.Construct:
-                            {
-                                return callable.Construct(Tools.EvaluateArgs(_arguments, context));
-                            }
-                        case CallMode.Super:
-                            {
-                                return callable.Construct(targetObject, Tools.EvaluateArgs(_arguments, context));
-                            }
-                    }
-                }
 
                 if (allowTCO
                     && callMode == 0

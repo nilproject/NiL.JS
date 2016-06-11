@@ -760,12 +760,12 @@ namespace NiL.JS.Expressions
                     code.Append(parameters[i])
                         .Append(++i < parameters.Length ? "," : "");
 
-            code.Append(")");
+            code.Append(") ");
 
             if (!headerOnly)
             {
                 if (kind == FunctionKind.Arrow)
-                    code.Append(" => ");
+                    code.Append("=> ");
 
                 if (kind == FunctionKind.Arrow
                     && body._lines.Length == 1
