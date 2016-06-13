@@ -83,7 +83,7 @@ namespace NiL.JS.Core
         public JSObject()
         {
             /// На будущее. Наверное, нужно будет сделать переходную версию, 
-            /// но я хз как это завернуть получше.
+            /// но я пока не знаю как это сделать получше.
             /*
             valueType = JSValueType.Object;
             oValue = this;

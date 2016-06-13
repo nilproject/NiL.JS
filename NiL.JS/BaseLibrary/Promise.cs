@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NiL.JS.Core;
 using NiL.JS.Core.Functions;
@@ -159,32 +160,28 @@ namespace NiL.JS.BaseLibrary
 
         public static Promise resolve(JSValue data)
         {
-            return new Promise(Task<JSValue>.FromResult(data));
+            return new Promise(fromResult(data));
         }
 
         public static Promise race(IIterable promises)
         {
             if (promises == null)
-            {
-                return new Promise(Task<JSValue>.FromException<JSValue>(new JSException(new TypeError("Invalid Promise.race params"))));
-            }
+                return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.race(...)"))));
 
-            return new AnyPromise(Task<JSValue>.WhenAny(promises.AsEnumerable().Select(convertToTask)));
+            return new AnyPromise(whenAny(promises.AsEnumerable().Select(convertToTask).ToArray()));
         }
 
         public static Promise all(IIterable promises)
         {
             if (promises == null)
-            {
-                return new Promise(Task<JSValue>.FromException<JSValue>(new JSException(new TypeError("Invalid Promise.all params"))));
-            }
+                return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.all(...)"))));
 
-            return new AllPromise(Task<JSValue>.WhenAll(promises.AsEnumerable().Select(convertToTask)));
+            return new AllPromise(whenAll(promises.AsEnumerable().Select(convertToTask).ToArray()));
         }
 
         private static Task<JSValue> convertToTask(JSValue arg)
         {
-            return (arg.Value as Promise)?.Task ?? Task<JSValue>.FromResult(arg);
+            return (arg.Value as Promise)?.Task ?? fromResult(arg);
         }
 
         public Promise @catch(Function onRejection)
@@ -210,7 +207,7 @@ namespace NiL.JS.BaseLibrary
             if (thenPromise != null)
             {
                 if (catchPromise != null)
-                    result = new AnyPromise(Task<JSValue>.WhenAny(thenPromise.Task, catchPromise.Task));
+                    result = new AnyPromise(whenAny(thenPromise.Task, catchPromise.Task));
                 else
                     result = thenPromise;
             }
@@ -236,6 +233,36 @@ namespace NiL.JS.BaseLibrary
             return result;
         }
 
+        private static Task<Task<JSValue>> whenAny(params Task<JSValue>[] tasks)
+        {
+#if NET40
+            Task<JSValue> result = null;
+            var task = new Task<Task<JSValue>>(() => result);
+            Action<Task<JSValue>> contination = t =>
+            {
+                lock (task)
+                {
+                    if (result == null)
+                    {
+                        result = t;
+                        task.Start();
+                    }
+                }
+            };
+
+            for (var i = 0; i < tasks.Length; i++)
+            {
+                tasks[i].ContinueWith(contination);
+                if (tasks[i].Status == TaskStatus.Created)
+                    tasks[i].Start();
+            }
+
+            return task;
+#else
+            return Task<JSValue>.WhenAny(tasks);
+#endif
+        }
+
         private static PromiseState statusToState(TaskStatus status)
         {
             switch (status)
@@ -254,6 +281,61 @@ namespace NiL.JS.BaseLibrary
                 default:
                     return PromiseState.Rejected;
             }
+        }
+
+        private static Task<JSValue[]> whenAll(Task<JSValue>[] tasks)
+        {
+#if NET40
+            JSValue[] result = new JSValue[tasks.Length];
+            var task = new Task<JSValue[]>(() => result);
+            var count = tasks.Length - 1;
+            Action<Task<JSValue>> contination = t =>
+            {
+                var index = System.Array.IndexOf(tasks, t);
+                if (t.IsCanceled)
+                    throw new OperationCanceledException();
+
+                result[index] = t.Result;
+
+                if (Interlocked.Decrement(ref count) == 0)
+                    task.Start();
+            };
+
+            for (var i = 0; i < tasks.Length; i++)
+            {
+                tasks[i].ContinueWith(contination);
+                if (tasks[i].Status == TaskStatus.Created)
+                    tasks[i].Start();
+            }
+
+            return task;
+#else
+            return Task<JSValue>.WhenAll(tasks);
+#endif
+        }
+
+        private static Task<JSValue> fromException(Exception exception)
+        {
+#if PORTABLE
+            return Task<JSValue>.Run<JSValue>(new Func<JSValue>(() => { throw exception; }));
+#elif NET40
+            var task = new Task<JSValue>(new Func<JSValue>(() => { throw exception; }));
+            task.Start();
+            return task;
+#else
+            return Task<JSValue>.FromException<JSValue>(exception);
+#endif
+        }
+
+        private static Task<JSValue> fromResult(JSValue arg)
+        {
+#if NET40
+            var task = new Task<JSValue>(new Func<JSValue>(() => arg));
+            task.Start();
+            return task;
+#else
+            return Task<JSValue>.FromResult(arg);
+#endif
         }
     }
 

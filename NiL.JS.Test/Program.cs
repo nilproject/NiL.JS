@@ -54,9 +54,11 @@ namespace NiL.JS.Test
         {
             var c = new Context();
             c.DefineVariable("test").Assign(JSValue.Wrap(new TestClass()));
-            c.Eval("test()");
-            c.Eval("new test");
-            c.Eval("new class extends test {}");
+            //c.Eval("test()");
+            //c.Eval("new test");
+            //c.Eval("new class extends test {}");
+
+            c.Eval("Promise.all([new Promise(x=>x(1)), new Promise(x=>x(2))]).then(x=>console.log(x));");
         }
 
         static void Main(string[] args)
@@ -72,11 +74,13 @@ namespace NiL.JS.Test
                 {
                     sleep = new Action<int>(time => Thread.Sleep(time))
                 }));
+#if !PORTABLE
             Context.GlobalContext.DefineVariable("$nil").Assign(JSValue.Wrap(
                 new
                 {
                     GetCtor = new Func<string, JSValue>(name => JSValue.GetConstructor(NamespaceProvider.GetType(name)))
                 }));
+#endif
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
             Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
             {
@@ -102,7 +106,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 100
+            int mode = 3
                     ;
             switch (mode)
             {
