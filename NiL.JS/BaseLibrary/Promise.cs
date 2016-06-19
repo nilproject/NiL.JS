@@ -316,14 +316,12 @@ namespace NiL.JS.BaseLibrary
 
         private static Task<JSValue> fromException(Exception exception)
         {
-#if PORTABLE
-            return Task<JSValue>.Run<JSValue>(new Func<JSValue>(() => { throw exception; }));
-#elif NET40
+#if NET40
             var task = new Task<JSValue>(new Func<JSValue>(() => { throw exception; }));
             task.Start();
             return task;
 #else
-            return Task<JSValue>.FromException<JSValue>(exception);
+            return Task<JSValue>.Run<JSValue>(new Func<JSValue>(() => { throw exception; }));
 #endif
         }
 
