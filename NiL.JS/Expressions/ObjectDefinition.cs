@@ -104,6 +104,14 @@ namespace NiL.JS.Expressions
                         i++;
                     while (Tools.IsWhiteSpace(state.Code[i]));
 
+                    Tools.SkipSpaces(state.Code, ref i);
+                    if (state.Code[s] != 'g' && state.Code[s] != 's')
+                    {
+                        if (!Parser.Validate(state.Code, ":", ref i))
+                            ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
+                        Tools.SkipSpaces(state.Code, ref i);
+                    }
+
                     CodeNode initializer;
                     if (state.Code[i] == '(')
                     {
@@ -483,21 +491,21 @@ namespace NiL.JS.Expressions
         public override string ToString()
         {
             string res = "{ ";
+
             for (int i = 0; i < fieldNames.Length; i++)
             {
-                if ((values[i] is Constant) && ((values[i] as Constant).value.valueType == JSValueType.Property))
-                {
-                    var gs = (values[i] as Constant).value.oValue as CodeNode[];
-                    res += gs[0];
-                    if (gs[0] != null && gs[1] != null)
-                        res += ", ";
-                    res += gs[1];
-                }
-                else
-                    res += "\"" + fieldNames[i] + "\"" + " : " + values[i];
+                res += "\"" + fieldNames[i] + "\"" + " : " + values[i];
                 if (i + 1 < fieldNames.Length)
                     res += ", ";
             }
+
+            for (int i = 0; i < computedProperties.Length; i++)
+            {
+                res += "[" + computedProperties[i].Key + "]" + " : " + computedProperties[i].Value;
+                if (i + 1 < fieldNames.Length)
+                    res += ", ";
+            }
+
             return res + " }";
         }
     }

@@ -161,14 +161,6 @@ namespace NiL.JS.Core
         internal int _threadId;
 #endif
         internal Context oldContext;
-        /// <summary>
-        /// Временное хранилище для передачи значений.
-        /// <remarks>
-        /// Поскольку в каждом потоке может быть только один головной контекст, 
-        /// и наоборот каждый контекст может быть запущен только в одном потоке,
-        /// отсутствует вероятность конфликта при использовании данного поля.
-        /// </remarks>
-        /// </summary>
         internal AbortReason executionMode;
         internal JSValue objectSource;
         internal JSValue executionInfo;
@@ -224,16 +216,9 @@ namespace NiL.JS.Core
 #if DEV
         internal bool debugging;
         public bool Debugging { get { return debugging; } set { debugging = value; } }
-#endif
-        /// <summary>
-        /// Событие, возникающее при попытке выполнения оператора "debugger".
-        /// </summary>
+#endif        
         public event DebuggerCallback DebuggerCallback;
-
-        /// <summary>
-        /// Указывает, присутствует ли контекст в каскаде выполняющихся контекстов непосредственно
-        /// или в качестве одного из прототипов
-        /// </summary>
+                
         public bool Running
         {
             get
@@ -421,12 +406,7 @@ namespace NiL.JS.Core
             else
                 parent?.ReplaceVariableInstance(name, instance);
         }
-
-        /// <summary>
-        /// Действие аналогично функции GeField с тем отличием, что возвращённое поле всегда определено в указанном контектсе.
-        /// </summary>
-        /// <param name="name">Имя поля, которое необходимо вернуть.</param>
-        /// <returns>Поле, соответствующее указанному имени.</returns>
+                
         public virtual JSValue DefineVariable(string name, bool deletable = false)
         {
             JSValue res = null;
@@ -444,12 +424,7 @@ namespace NiL.JS.Core
             res.valueType |= JSValueType.Undefined;
             return res;
         }
-
-        /// <summary>
-        /// Получает переменную, определённую в этом или одном из родительских контекстов. 
-        /// </summary>
-        /// <param name="name">Имя переменной</param>
-        /// <returns></returns>
+                
         public JSValue GetVariable(string name)
         {
             return GetVariable(name, false);
@@ -509,13 +484,6 @@ namespace NiL.JS.Core
                 System.Diagnostics.Debugger.Break();
         }
 
-        /// <summary>
-        /// Добавляет в указанный контекст объект, представляющий переданный тип.
-        /// Имя созданного объекта будет совпадать с именем переданного типа. 
-        /// Статические члены типа будут доступны как поля созданного объекта. 
-        /// Если тип не являлся статическим, то созданный объект будет функцией (с поздним связыванием), представляющей конструкторы указанного типа.
-        /// </summary>
-        /// <param name="moduleType">Тип, для которого будет создан внутренний объект.</param>
         public void DefineConstructor(Type moduleType)
         {
             if (fields == null)
@@ -531,14 +499,7 @@ namespace NiL.JS.Core
                 name = moduleType.Name;
             DefineConstructor(moduleType, name);
         }
-
-        /// <summary>
-        /// Добавляет в указанный контекст объект, представляющий переданный тип.
-        /// Имя созданного объекта будет совпадать с именем переданного типа. 
-        /// Статические члены типа будут доступны как поля созданного объекта. 
-        /// Если тип не являлся статическим, то созданный объект будет функцией (с поздним связыванием), представляющей конструкторы указанного типа.
-        /// </summary>
-        /// <param name="type">Тип, для которого будет создан внутренний объект.</param>
+                
         public void DefineConstructor(Type type, string name)
         {
             fields.Add(name, TypeProxy.GetConstructor(type).CloneImpl(false));

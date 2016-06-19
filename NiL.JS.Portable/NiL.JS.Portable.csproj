@@ -184,6 +184,9 @@
     <Compile Include="..\NiL.JS\Core\GlobalObject.cs">
       <Link>Core\GlobalObject.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\ICallable.cs">
+      <Link>Core\ICallable.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\IIterable.cs">
       <Link>Core\IIterable.cs</Link>
     </Compile>

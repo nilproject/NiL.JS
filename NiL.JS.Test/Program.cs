@@ -16,21 +16,35 @@ using System.Collections;
 
 namespace NiL.JS.Test
 {
-    public class TestClass
+    public class TestClass : ICallable
     {
-        public void test(string x)
+        public FunctionKind Kind
         {
-            Console.WriteLine("string:" + x);
+            get
+            {
+                return FunctionKind.Function;
+            }
         }
 
-        public void test(int x)
+        public JSValue Call(JSValue targetObject, Arguments arguments)
         {
-            Console.WriteLine("int:" + x);
+            Console.WriteLine("Called");
+
+            return JSValue.Undefined;
         }
 
-        public void test(double x)
+        public JSValue Construct(Arguments arguments)
         {
-            Console.WriteLine("double:" + x);
+            Console.WriteLine("Constructed");
+
+            return JSValue.Undefined;
+        }
+
+        public JSValue Construct(JSValue targetObject, Arguments arguments)
+        {
+            Console.WriteLine("Constructed with target");
+
+            return JSValue.Undefined;
         }
     }
 
@@ -38,30 +52,13 @@ namespace NiL.JS.Test
     {
         private static void testEx()
         {
-            var context = new Context();
-            context.DefineVariable("testi").Assign(JSObject.CreateObject());
-            var temp = new
-            {
-                ListOfAction = new List<Action<int>>(),
+            var c = new Context();
+            c.DefineVariable("test").Assign(JSValue.Wrap(new TestClass()));
+            //c.Eval("test()");
+            //c.Eval("new test");
+            //c.Eval("new class extends test {}");
 
-                TestPopulate = new TestClass(),
-
-                TestNullable = new Action<int?>(x => Console.WriteLine(x)),
-                TestNullable1 = new Func<string>(() => "123"),
-
-                Test = new Action<long[]>(x => { Console.WriteLine(x.Select(l => l.ToString()).Aggregate((l, r) => l + " " + r)); }),
-                Test2 = new Func<long[]>(() => new[] { 1, 2, 3L }),
-
-                List = JSValue.GetGenericTypeSelector(new[]
-                {
-                    typeof(List<>),
-                    typeof(ArrayList)
-                })
-            };
-            context.DefineVariable("test").Assign(JSValue.Marshal(temp));
-            context.Eval(@"
-var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
-
+            c.Eval("Promise.all([new Promise(x=>x(1)), new Promise(x=>x(2))]).then(x=>console.log(x));");
         }
 
         static void Main(string[] args)
@@ -77,11 +74,13 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
                 {
                     sleep = new Action<int>(time => Thread.Sleep(time))
                 }));
+#if !PORTABLE
             Context.GlobalContext.DefineVariable("$nil").Assign(JSValue.Wrap(
                 new
                 {
                     GetCtor = new Func<string, JSValue>(name => JSValue.GetConstructor(NamespaceProvider.GetType(name)))
                 }));
+#endif
             Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
             Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
             {
@@ -107,7 +106,7 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
             }));
 #endif
 
-            int mode = 100
+            int mode = 3
                     ;
             switch (mode)
             {
@@ -116,20 +115,9 @@ var x = []; x[0x7fffffff]=1; JSON.stringify(x);");
                         staticAnalyzer("modules/ftest.js");
                         break;
                     }
-#if !PORTABLE
                 case -3:
                     {
-                        runFile(@"sunspider-0.9.1\access-nsieve.js", 100);
-                        break;
-                    }
-#endif
-                case -2:
-                    {
-                        var bf = new BinaryFormatter();
-                        var ms = new MemoryStream();
-                        bf.Serialize(ms, new BinaryTree<int>() { { "one", 1 }, { "two", 2 }, { "three", 3 } });
-                        ms.Position = 0;
-                        var bt = bf.Deserialize(ms);
+                        runFiles("tests/custom/");
                         break;
                     }
                 case -1:

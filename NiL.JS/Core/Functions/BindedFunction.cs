@@ -13,7 +13,7 @@ namespace NiL.JS.Core.Functions
 #endif
     internal sealed class BindedFunction : Function
     {
-        private Function proto;
+        private Function original;
         private JSValue _thisBind;
         private Arguments bindedArguments;
 
@@ -61,7 +61,7 @@ namespace NiL.JS.Core.Functions
             if (_length == null)
                 _length = new Number(0);
             _length.iValue = proto.length.iValue;
-            this.proto = proto;
+            this.original = proto;
             this._thisBind = args[0];
             this.bindedArguments = args;
             if (args.length > 0)
@@ -82,7 +82,7 @@ namespace NiL.JS.Core.Functions
             RequireNewKeywordLevel = proto.RequireNewKeywordLevel;
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             if (bindedArguments != null)
             {
@@ -95,30 +95,36 @@ namespace NiL.JS.Core.Functions
                     arguments[i] = bindedArguments[i];
             }
             if ((construct || _thisBind == null || _thisBind.IsNull || !_thisBind.Defined) && (targetObject != null && targetObject.Defined))
-                return proto.Invoke(construct, targetObject, arguments, newTarget);
-            return proto.Call(_thisBind, arguments);
+                return original.Invoke(construct, targetObject, arguments);
+            return original.Call(_thisBind, arguments);
         }
 
         protected internal override JSValue ConstructObject()
         {
-            return proto.ConstructObject();
+            return original.ConstructObject();
         }
 
         [Hidden]
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode)
         {
-            return proto.GetEnumerator(hideNonEnumerable, enumeratorMode);
+            return original.GetEnumerator(hideNonEnumerable, enumeratorMode);
         }
 
         [Hidden]
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            return proto.GetProperty(key, forWrite, memberScope);
+            return original.GetProperty(key, forWrite, memberScope);
         }
 
         internal override JSObject GetDefaultPrototype()
         {
             return TypeProxy.GetPrototype(typeof(Function));
+        }
+
+        [Hidden]
+        public override string ToString(bool headerOnly)
+        {
+            return original.ToString(headerOnly);
         }
     }
 }

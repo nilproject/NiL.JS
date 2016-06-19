@@ -16,7 +16,7 @@ namespace NiL.JS.Core.Functions
             _length = new Number(1);
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             JSValue oVal = null;
             if (arguments != null && arguments.length > 0)
@@ -45,10 +45,17 @@ namespace NiL.JS.Core.Functions
             while (pe.MoveNext())
                 yield return pe.Current;
         }
-
+        
         public override string ToString(bool headerOnly)
         {
-            return "function Object() { [native code] }";
+            var result = "function " + name + "()";
+
+            if (!headerOnly)
+            {
+                result += " { [native code] }";
+            }
+
+            return result;
         }
     }
 }

@@ -82,7 +82,12 @@ namespace NiL.JS.Core
         [Hidden]
         public JSObject()
         {
-            // Keep Empty!
+            /// На будущее. Наверное, нужно будет сделать переходную версию, 
+            /// но я пока не знаю как это сделать получше.
+            /*
+            valueType = JSValueType.Object;
+            oValue = this;
+            */
         }
 
         [Hidden]
@@ -942,6 +947,30 @@ namespace NiL.JS.Core
                 result.Add(e.Current.Key);
 
             return result;
+        }
+
+        public static bool @is(JSValue value1, JSValue value2)
+        {
+            if (value1 == value2)
+                return true;
+
+            if ((value1 != null && value2 == null) || (value1 == null && value2 != null))
+                return false;
+
+            if ((value1.valueType | JSValueType.Undefined) != (value2.valueType | JSValueType.Undefined))
+                return false;
+
+            if (value1.valueType == JSValueType.Double
+                && double.IsNaN(value1.dValue)
+                && double.IsNaN(value2.dValue))
+                return true;
+
+            return StrictEqual.Check(value1, value2);
+        }
+
+        public static BaseLibrary.Array getOwnPropertySymbols(JSObject obj)
+        {
+            return new BaseLibrary.Array(obj?.symbols.Keys ?? new Symbol[0]);
         }
     }
 }

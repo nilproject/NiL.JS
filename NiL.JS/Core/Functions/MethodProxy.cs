@@ -29,7 +29,7 @@ namespace NiL.JS.Core.Functions
         private bool forceInstance;
         private bool strictConversion;
 
-        private object hardTarget;        
+        private object hardTarget;
         private MethodBase method;
         private ConvertValueAttribute returnConverter;
         private ConvertValueAttribute[] paramsConverters;
@@ -44,7 +44,7 @@ namespace NiL.JS.Core.Functions
             get
             {
                 return parameters;
-        }
+            }
         }
 
         [Field]
@@ -167,8 +167,8 @@ namespace NiL.JS.Core.Functions
             var impl = new DynamicMethod(
                 "<nil.js@wrapper>" + methodInfo.Name,
                 typeof(object),
-                new[] 
-                { 
+                new[]
+                {
                     typeof(object), // target
                     typeof(object[]), // argsArray
                     typeof(Arguments) // argsSource
@@ -419,7 +419,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        internal override JSValue InternalInvoke(JSValue targetObject, Expressions.Expression[] arguments, Context initiator, Function newTarget, bool withSpread, bool withNew)
+        internal override JSValue InternalInvoke(JSValue targetObject, Expressions.Expression[] arguments, Context initiator, bool withSpread, bool withNew)
         {
             if (withNew)
             {
@@ -436,11 +436,11 @@ namespace NiL.JS.Core.Functions
                 }
             }
             if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
-                return Invoke(withNew, correctTargetObject(targetObject, creator.body._strict), null, newTarget);
+                return Invoke(withNew, correctTargetObject(targetObject, creator.body._strict), null);
 
             if (raw || withSpread)
             {
-                return base.InternalInvoke(targetObject, arguments, initiator, newTarget, true, withNew);
+                return base.InternalInvoke(targetObject, arguments, initiator, true, withNew);
             }
             else
             {
@@ -632,7 +632,7 @@ namespace NiL.JS.Core.Functions
             return result;
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments, Function newTarget)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             return TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
         }
@@ -678,5 +678,18 @@ namespace NiL.JS.Core.Functions
         }
 #endif
 #endif
+
+        [Hidden]
+        public override string ToString(bool headerOnly)
+        {
+            var result = "function " + name + "()";
+
+            if (!headerOnly)
+            {
+                result += " { [native code] }";
+            }
+
+            return result;
+        }
     }
 }

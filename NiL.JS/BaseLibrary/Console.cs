@@ -1,4 +1,5 @@
 ﻿using NiL.JS.Core;
+using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.BaseLibrary
@@ -29,9 +30,23 @@ namespace NiL.JS.BaseLibrary
                     var r = args[i].ToString();
                     System.Console.Error.Write(r);
                 }
+
                 System.Console.Error.WriteLine();
             }
             return null;
+        }
+        
+        public static void asserta(Function f, JSValue sample)
+        {
+            if (!sample.Exists)
+                sample = Boolean.True;
+
+            if (!JSObject.@is(f.Call(null), sample))
+            {
+                var message = f.ToString();
+                message = message.Substring(message.IndexOf("=>") + 2).Trim();
+                System.Console.Error.WriteLine(message + " not equals " + sample);
+            }
         }
 
         public static JSValue error(Arguments args)

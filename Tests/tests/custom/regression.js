@@ -113,10 +113,6 @@ i = 1;
 
 (function (x) { var a = [x]; a[0] = 2; if (x != 1) console.log("Incorrect clone flag in regular function"); })(1, 2);
 
-(function (x) { var a = [x]; a[0] = 2; if (x != 1) console.log("Incorrect clone flag in fast function"); })(1);
-
-(function (x) { var a = [x]; a[0] = 2; if (x != 1) console.log("Incorrect clone flag in regular function"); })(1, 2);
-
 if ((new class extends null { get test() { return "hello" } }).test != "hello")
     console.log("Something wrong with classes");
 
@@ -206,5 +202,9 @@ if (JSON.stringify([,1])!=='[null,1]')
 
 if (JSON.stringify([,,1])!=='[null,null,1]')
     console.log(`JSON.stringify works incorrectly (${JSON.stringify([,,1])})`);
+
+({get [1](){return 1;},[2]:2})
+
+console.asserta(()=> (new class {}).toString(), {}.toString());
 
 console.log("test completed");

@@ -12,10 +12,17 @@ namespace NiL.JS.Core.Interop
     public sealed class PrototypeAttribute : Attribute
     {
         public Type PrototypeType { get; private set; }
+        public bool Replace { get; private set; }
 
         public PrototypeAttribute(Type prototypeType)
         {
             PrototypeType = prototypeType;
+        }
+
+        internal PrototypeAttribute(Type type, bool replace)
+            : this(type)
+        {
+            Replace = replace;
         }
     }
 }

@@ -75,25 +75,65 @@ namespace NiL.JS.Expressions
         {
             var temp = first.Evaluate(context);
             JSValue targetObject = context.objectSource;
+            ICallable callable = null;
+            Function func = null;
 
-            Function func = temp.valueType != JSValueType.Function ? null :
-                temp.oValue as Function
-                ?? temp.Value as Function
-                ?? (temp.oValue as TypeProxy).prototypeInstance as Function;
+            if (temp.valueType >= JSValueType.Object)
+            {
+                if (temp.valueType == JSValueType.Function)
+                {
+                    func = temp.oValue as Function;
+                    callable = func;
+                }
 
-            if (func == null)
+                if (func == null)
+                {
+                    callable = temp.oValue as ICallable;
+                    if (callable == null)
+                        callable = temp.Value as ICallable;
+                    if (callable == null)
+                    {
+                        var typeProxy = temp.Value as TypeProxy;
+                        if (typeProxy != null)
+                            callable = typeProxy.prototypeInstance as ICallable;
+                    }
+                }
+            }
+
+            if (callable == null)
             {
                 for (int i = 0; i < this._arguments.Length; i++)
                 {
                     context.objectSource = null;
                     this._arguments[i].Evaluate(context);
                 }
+
                 context.objectSource = null;
+
                 // Аргументы должны быть вычислены даже если функция не существует.
-                ExceptionsHelper.ThrowTypeError(first.ToString() + " is not callable");
+                ExceptionsHelper.ThrowTypeError(first.ToString() + " is not a function");
+
+                return null;
+            }
+            else if (func == null)
+            {
+                switch (callMode)
+                {
+                    case CallMode.Construct:
+                        {
+                            return callable.Construct(Tools.EvaluateArgs(_arguments, context));
+                        }
+                    case CallMode.Super:
+                        {
+                            return callable.Construct(targetObject, Tools.EvaluateArgs(_arguments, context));
+                        }
+                    default:
+                        return callable.Call(targetObject, Tools.EvaluateArgs(_arguments, context));
+                }
             }
             else
             {
+
                 if (allowTCO
                     && callMode == 0
                     && (func.creator.kind != FunctionKind.Generator)
@@ -108,14 +148,14 @@ namespace NiL.JS.Expressions
                 }
                 else
                     context.objectSource = null;
+
+                checkStack();
+                if (callMode == CallMode.Construct)
+                    targetObject = null;
+
+                func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
+                return func.InternalInvoke(targetObject, this._arguments, context, withSpread, callMode != 0);
             }
-
-            checkStack();
-            if (callMode == CallMode.Construct)
-                targetObject = null;
-
-            func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
-            return func.InternalInvoke(targetObject, this._arguments, context, callMode != 0 ? func : null, withSpread, callMode != 0);
         }
 
         private void tailCall(Context context, Function func)

@@ -53,7 +53,7 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Int64:
                     {
-                        return false;
+                        return self.Is(JSValueType.Integer) || (self.Is(JSValueType.Double) && self.dValue == (long)self.dValue);
                     }
                 case TypeCode.Object:
                     {
@@ -65,7 +65,7 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Single:
                     {
-                        return false;
+                        return self.Is(JSValueType.Double) && (float)self.dValue == self.dValue;
                     }
                 case TypeCode.String:
                     {
@@ -81,7 +81,7 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.UInt64:
                     {
-                        return false;
+                        return (self.Is(JSValueType.Integer) && self.iValue >= 0) || (self.Is(JSValueType.Double) && self.dValue == (ulong)self.dValue);
                     }
                 default:
                     {
