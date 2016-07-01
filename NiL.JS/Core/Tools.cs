@@ -519,6 +519,9 @@ namespace NiL.JS.Core
                         if (targetType == typeof(Number))
                             return new Number(jsobj.dValue);
 
+                        if (targetType.IsEnum)
+                            return Enum.ToObject(targetType, jsobj.dValue);
+
                         return null;
                     }
                 case JSValueType.Integer:
@@ -547,6 +550,9 @@ namespace NiL.JS.Core
 
                         if (targetType == typeof(Number))
                             return new Number(jsobj.iValue);
+
+                        if (targetType.IsEnum)
+                            return Enum.ToObject(targetType, jsobj.iValue);
 
                         return null;
                     }
@@ -591,6 +597,8 @@ namespace NiL.JS.Core
                                     return (decimal)r;
                                 return null;
                             }
+                            if (targetType.IsEnum)
+                                return Enum.Parse(targetType, jsobj.Value.ToString());
                         }
 
                         if (targetType == typeof(string))
