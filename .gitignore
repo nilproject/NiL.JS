@@ -156,3 +156,8 @@ $RECYCLE.BIN/
 .DS_Store
 /Tests/Modules/clr
 /NiL.JS/nuget
+/NiL.JS/pack.bat
+/NiL.JS/NuGet.exe
+/NiL.JS/NiL.JS.nuspec
+/FunctionalTests/Generated/SputnikTests.cs
+/FunctionalTests/Generated/Custom.cs

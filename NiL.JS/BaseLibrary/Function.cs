@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 using NiL.JS.Core;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
 using linqEx = System.Linq.Expressions;
-using System.ComponentModel;
-using System.Diagnostics;
 
 #if !PORTABLE
-using NiL.JS.Backward;
 #endif
 
 namespace NiL.JS.BaseLibrary
@@ -1030,8 +1028,6 @@ namespace NiL.JS.BaseLibrary
             delegateCache.Add(delegateType, @delegate);
 
             return @delegate;
-        }
-
-        public static implicit operator Function(Delegate action) => new MethodProxy(action.GetMethodInfo(), action.Target);
+        }        
     }
 }

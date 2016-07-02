@@ -957,8 +957,6 @@ function cat(toks)
     return totallyRandom(2);
   
   var torture = (rnd(170) == 57);
-  if (torture)
-    dumpln("Torture!!!");
     
   var s = maybeLineBreak();
   for (var i = 0; i < toks.length; ++i) {
@@ -2202,4 +2200,5 @@ init();
 
 
 // 3. Run it.
-makeStatement(8);
+for (var i = 0; i < 10000; i++)
+  makeStatement(8);

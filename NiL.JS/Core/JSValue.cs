@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
@@ -626,6 +627,9 @@ namespace NiL.JS.Core
             }
             return false;
         }
+
+        [Hidden]
+        public static implicit operator JSValue(Delegate action) => new MethodProxy(action.GetMethodInfo(), action.Target);
 
         [Hidden]
         public object Clone()

@@ -13,10 +13,11 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Extensions;
 using System.Collections.Generic;
 using System.Collections;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NiL.JS.Test
 {
-    public class TestClass : ICallable
+    public class TestCallable : ICallable
     {
         public FunctionKind Kind
         {
@@ -53,12 +54,15 @@ namespace NiL.JS.Test
         private static void testEx()
         {
             var c = new Context();
-            c.DefineVariable("test").Assign(JSValue.Wrap(new TestClass()));
+            c.DefineVariable("test").Assign(JSValue.Wrap(new TestCallable()));
             //c.Eval("test()");
             //c.Eval("new test");
             //c.Eval("new class extends test {}");
 
-            c.Eval("Promise.all([new Promise(x=>x(1)), new Promise(x=>x(2))]).then(x=>console.log(x));");
+            //c.Eval("Promise.all([new Promise(x=>x(1)), new Promise(x=>x(2))]).then(x=>console.log(x));");
+
+            //Directory.GetParent("").Parent
+            runFile("jsfunfuzz.js");
         }
 
         static void Main(string[] args)
@@ -106,7 +110,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 0
+            int mode = 3
                     ;
             switch (mode)
             {
@@ -182,9 +186,6 @@ namespace NiL.JS.Test
                         runFile("coffee-script.js");
                         runFile("linq.js");
                         runFile("arraytests.js");
-                        Context.GlobalContext.DefineVariable("stderr").Assign(true);
-                        runFile("jsfunfuzz.js");
-                        runFile("md5.js");
                         runFile("d3.min.js");
                         runFile("knockout-3.3.0.js");
                         runFile("aes.js");
@@ -194,29 +195,6 @@ namespace NiL.JS.Test
                 case 6:
                     {
                         runFile("pbkdf.js");
-                        break;
-                    }
-                case 7:
-                    {
-                        using (var file = new FileStream("uglifyjs.js", FileMode.Open, FileAccess.Read))
-                        {
-                            var myString =
-@"(function (fallback) {
-    fallback = fallback || function () { };
-})(null);";
-
-                            var context = new Context();
-                            context.Eval(new StreamReader(file).ReadToEnd());
-                            context.DefineVariable("code").Assign(new BaseLibrary.String(myString));
-
-                            var result = context.Eval(
-@"var ast = UglifyJS.parse(code);
-ast.figure_out_scope();
-compressor = UglifyJS.Compressor();
-ast = ast.transform(compressor);
-ast.print_to_string();");
-                            Console.WriteLine(result.ToString());
-                        }
                         break;
                     }
                 case 8:
@@ -407,7 +385,7 @@ ast.print_to_string();");
             _("Load sta.js...");
             using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
                 staCode = new StreamReader(staFile).ReadToEnd();
-
+            
             _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
             _("Scaning directory...");
             var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
@@ -742,12 +720,15 @@ for (var i = 0; i < 10000000; )
             {
                 path = folderPath + "\\" + path;
                 _("Processing \"" + path + "\"");
-                var sw = Stopwatch.StartNew();
+
                 using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read))
                 using (var sr = new StreamReader(fs))
+                {
+                    var sw = Stopwatch.StartNew();
                     context.Eval(sr.ReadToEnd(), true);
-                sw.Stop();
-                _("Complite. Time: " + sw.Elapsed);
+                    sw.Stop();
+                    _("Complite. Time: " + sw.Elapsed);
+                }
             };
             load("src/core.js");
             load("src/lib-typedarrays.js");

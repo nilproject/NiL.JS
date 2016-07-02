@@ -127,6 +127,7 @@ namespace NiL.JS
                 throw new ArgumentNullException();
 
             Code = code;
+            Context = new Context(Context.globalContext, true, null);
             if (!string.IsNullOrWhiteSpace(path))
             {
                 if (!__modulesCache.ContainsKey(path))
@@ -151,7 +152,6 @@ namespace NiL.JS
             Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
             var body = root as CodeBlock;
             body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
-            Context = new Context(Context.globalContext, true, null);
             Context.thisBind = new GlobalObject(Context);
             Context.strict = body._strict;
 
