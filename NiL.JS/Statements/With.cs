@@ -86,10 +86,9 @@ namespace NiL.JS.Statements
                 }
             }
 
-#if DEV
             if (context.executionMode != AbortReason.Resume && context.debugging)
                 context.raiseDebugger(scope);
-#endif
+
             scopeObject = scope.Evaluate(context);
             if (context.executionMode == AbortReason.Suspend)
             {
@@ -98,10 +97,6 @@ namespace NiL.JS.Statements
             }
 
             intcontext = new WithContext(scopeObject, context);
-#if DEV
-            if (context.debugging && !(body is CodeBlock))
-                context.raiseDebugger(body);
-#endif
             action = (c) =>
             {
                 try
@@ -122,6 +117,10 @@ namespace NiL.JS.Statements
                     intcontext.Deactivate();
                 }
             };
+
+            if (context.debugging && !(body is CodeBlock))
+                context.raiseDebugger(body);
+
             action(context);
             return null;
         }

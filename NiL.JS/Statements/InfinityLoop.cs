@@ -27,10 +27,9 @@ namespace NiL.JS.Statements
         {
             for (;;)
             {
-#if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
-#endif
+
                 context.lastResult = body.Evaluate(context) ?? context.lastResult;
                 if (context.executionMode != AbortReason.None)
                 {

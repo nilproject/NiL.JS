@@ -94,10 +94,9 @@ namespace NiL.JS.Statements
             {
                 if (context.executionMode != AbortReason.Resume || !context.SuspendData.ContainsKey(this))
                 {
-#if DEV
                     if (context.debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
-#endif
+
                     context.lastResult = body.Evaluate(context) ?? context.lastResult;
                     if (context.executionMode != AbortReason.None)
                     {
@@ -117,10 +116,10 @@ namespace NiL.JS.Statements
                             return null;
                     }
                 }
-#if DEV
+
                 if (context.debugging)
                     context.raiseDebugger(condition);
-#endif
+
                 checkResult = condition.Evaluate(context);
                 if (context.executionMode == AbortReason.Suspend)
                 {

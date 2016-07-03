@@ -162,10 +162,9 @@ namespace NiL.JS.Statements
             }
             else
             {
-#if DEV
                 if (context.debugging)
                     context.raiseDebugger(image);
-#endif
+
                 imageValue = image.Evaluate(context);
             }
             if (context.executionMode == AbortReason.Suspend)
@@ -176,10 +175,9 @@ namespace NiL.JS.Statements
 
             for (; caseIndex < cases.Length; caseIndex++)
             {
-#if DEV
                 if (context.debugging)
                     context.raiseDebugger(cases[caseIndex].statement);
-#endif
+
                 var cseResult = cases[caseIndex].statement.Evaluate(context);
                 if (context.executionMode == AbortReason.Suspend)
                 {

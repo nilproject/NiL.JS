@@ -4,13 +4,8 @@ using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-#if DEV
-[assembly: AssemblyTitle("NiL.JS for Developers")]
-[assembly: AssemblyProduct("NiL.JS Dev")]
-#else
 [assembly: AssemblyTitle("NiL.JS")]
 [assembly: AssemblyProduct("NiL.JS")]
-#endif
 [assembly: AssemblyDescription("JavaScript engine for .NET")]
 [assembly: AssemblyCompany("NiLProject")]
 [assembly: AssemblyCopyright("Copyright © NiLProject 2015")]

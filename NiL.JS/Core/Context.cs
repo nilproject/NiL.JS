@@ -212,11 +212,9 @@ namespace NiL.JS.Core
                 return thisBind;
             }
         }
-
-#if DEV
+        
         internal bool debugging;
-        public bool Debugging { get { return debugging; } set { debugging = value; } }
-#endif        
+        public bool Debugging { get { return debugging; } set { debugging = value; } }      
         public event DebuggerCallback DebuggerCallback;
                 
         public bool Running
@@ -285,9 +283,7 @@ namespace NiL.JS.Core
                     arguments = prototype.arguments;
                 this.parent = prototype;
                 this.thisBind = prototype.thisBind;
-#if DEV
                 this.debugging = prototype.debugging;
-#endif
             }
 
             if (createFields)
@@ -596,11 +592,10 @@ namespace NiL.JS.Core
 
             body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
-#if DEV
             var debugging = this.debugging;
             this.debugging = false;
-#endif
             var runned = this.Activate();
+
             try
             {
                 var context = (suppressScopeCreation || !stats.WithLexicalEnvironment) && !body._strict && !strict ? this : new Context(this, false, owner)
@@ -667,9 +662,7 @@ namespace NiL.JS.Core
             {
                 if (runned)
                     this.Deactivate();
-#if DEV
                 this.debugging = debugging;
-#endif
             }
         }
 

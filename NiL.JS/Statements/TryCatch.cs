@@ -115,18 +115,16 @@ namespace NiL.JS.Statements
             }
             else
             {
-#if DEV
                 if (context.debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
-#endif
             }
+
             try
             {
                 body.Evaluate(context);
+
                 if (context.executionMode == AbortReason.Suspend)
-                {
                     context.SuspendData[this] = null;
-                }
             }
             catch (Exception e)
             {
@@ -157,10 +155,9 @@ namespace NiL.JS.Statements
 
         private void finallyHandler(Context context, Exception exception)
         {
-#if DEV
             if (context.debugging)
                 context.raiseDebugger(finallyBody);
-#endif
+
             var abort = context.executionMode;
             var ainfo = context.executionInfo;
             if (abort == AbortReason.Return && ainfo != null)
@@ -194,10 +191,9 @@ namespace NiL.JS.Statements
 
         private void catchHandler(Context context, Exception e)
         {
-#if DEV
             if (context.debugging)
                 context.raiseDebugger(catchBody);
-#endif
+
             if (catchBody is Empty)
                 return;
             JSValue cvar = null;

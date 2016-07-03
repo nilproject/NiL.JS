@@ -100,10 +100,9 @@ namespace NiL.JS.Statements
             bool conditionResult;
             if (context.executionMode != AbortReason.Resume || !context.SuspendData.ContainsKey(this))
             {
-#if DEV
                 if (context.debugging)
                     context.raiseDebugger(condition);
-#endif
+
                 conditionResult = (bool)condition.Evaluate(context);
                 if (context.executionMode == AbortReason.Suspend)
                     return null;
@@ -114,20 +113,18 @@ namespace NiL.JS.Statements
             }
             if (conditionResult)
             {
-#if DEV
                 if (context.debugging && !(then is CodeBlock))
                     context.raiseDebugger(then);
-#endif
+
                 var temp = then.Evaluate(context);
                 if (temp != null)
                     context.lastResult = temp;
             }
             else if (@else != null)
             {
-#if DEV
                 if (context.debugging && !(@else is CodeBlock))
                     context.raiseDebugger(@else);
-#endif
+
                 var temp = @else.Evaluate(context);
                 if (temp != null)
                     context.lastResult = temp;
