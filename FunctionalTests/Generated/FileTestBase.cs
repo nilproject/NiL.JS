@@ -60,7 +60,7 @@ namespace NiL.JS.Test.Generated
                 if (!pass)
                     Console.WriteLine(e.Message);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 System.Diagnostics.Debugger.Break();
                 pass = false;

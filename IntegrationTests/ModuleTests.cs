@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Diagnostics;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS;
 using NiL.JS.Core;
 
@@ -42,6 +44,27 @@ namespace IntegrationTests
             module2.Run();
 
             Assert.AreEqual(0x777, module2.Context.GetVariable("a").Value);
+        }
+
+        [TestMethod]
+        [Timeout(2000)]
+        public void ExecutionWithTimeout()
+        {
+            var module = new Module("for (var i = 0; ;i++);");
+
+            var stopWatch = Stopwatch.StartNew();
+            try
+            {
+                module.Run(1000);
+            }
+            catch(Exception e)
+            {
+                Assert.IsInstanceOfType(e, typeof(TimeoutException));
+            }
+
+            stopWatch.Stop();
+
+            Assert.AreEqual(1, Math.Round(stopWatch.Elapsed.TotalSeconds));
         }
     }
 }

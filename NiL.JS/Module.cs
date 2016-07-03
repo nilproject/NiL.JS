@@ -191,6 +191,33 @@ namespace NiL.JS
             }
         }
 
+        /// <summary>
+        /// Run the script with time limit
+        /// </summary>
+        /// <param name="timeLimitInMilliseconds">Time limit</param>
+        public void Run(int timeLimitInMilliseconds)
+        {
+            var start = Environment.TickCount;
+            var oldDebugValue = Context.Debugging;
+            Context.Debugging = true;
+            DebuggerCallback callback = (context, e) =>
+            {
+                if (Environment.TickCount - start >= timeLimitInMilliseconds)
+                    throw new TimeoutException();
+            };
+            Context.DebuggerCallback += callback;
+
+            try
+            {
+                Run();
+            }
+            finally
+            {
+                Context.Debugging = oldDebugValue;
+                Context.DebuggerCallback -= callback;
+            }
+        }
+
         internal Module Import(string path)
         {
             path = processPath(path);

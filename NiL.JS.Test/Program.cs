@@ -61,8 +61,14 @@ namespace NiL.JS.Test
 
             //c.Eval("Promise.all([new Promise(x=>x(1)), new Promise(x=>x(2))]).then(x=>console.log(x));");
 
-            //Directory.GetParent("").Parent
-            runFile("jsfunfuzz.js");
+            var type = typeof(FunctionKind);
+            var sw = Stopwatch.StartNew();
+            for(var i = 0; i < 10000; i++)
+            {
+
+            }
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
         }
 
         static void Main(string[] args)
