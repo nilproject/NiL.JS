@@ -42,6 +42,15 @@
     <AssemblyOriginatorKeyFile>
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Developer Release|AnyCPU'">
+    <OutputPath>bin\Developer Release\</OutputPath>
+    <DefineConstants>TRACE;DEV</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
@@ -59,6 +68,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Core\JSValueTests.cs" />
+    <Compile Include="Core\ParserTests.cs" />
     <Compile Include="ModuleTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

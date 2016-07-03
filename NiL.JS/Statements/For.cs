@@ -106,9 +106,10 @@ namespace NiL.JS.Statements
                     i++;
                 if (state.Code[i] != ')')
                     ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                do
-                    i++;
-                while (Tools.IsWhiteSpace(state.Code[i]));
+
+                i++;
+                Tools.SkipSpaces(state.Code, ref i);
+
                 state.AllowBreak.Push(true);
                 state.AllowContinue.Push(true);
                 try

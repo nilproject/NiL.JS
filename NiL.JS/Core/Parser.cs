@@ -239,8 +239,12 @@ namespace NiL.JS.Core
                 i++;
                 j++;
             }
-            index = j;
-            return IsIdentificatorTerminator(pattern[pattern.Length - 1]) || code.Length <= index || IsIdentificatorTerminator(code[index]);
+
+            var result = IsIdentificatorTerminator(pattern[pattern.Length - 1]) || j >= code.Length || IsIdentificatorTerminator(code[j]);
+            if (result)
+                index = j;
+
+            return result;
         }
 
         public static bool ValidateName(string code) => ValidateName(code, 0);

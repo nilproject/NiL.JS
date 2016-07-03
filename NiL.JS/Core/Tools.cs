@@ -1035,9 +1035,11 @@ namespace NiL.JS.Core
                 value = 0.0;
                 return true;
             }
-            
-            if (Parser.Validate(code, "NaN", ref index))
+
+            const string NaN = "NaN";
+            if (code.Length - i >= NaN.Length && code.IndexOf(NaN, i, NaN.Length) == i)
             {
+                index = i + NaN.Length;
                 value = double.NaN;
                 return true;
             }
@@ -1045,9 +1047,11 @@ namespace NiL.JS.Core
             int sig = 1;
             if (code[i] == '-' || code[i] == '+')
                 sig = 44 - code[i++];
-            
-            if (Parser.Validate(code, "Infinity", ref index))
+
+            const string Infinity = "Infinity";
+            if (code.Length - i >= Infinity.Length && code.IndexOf(Infinity, i, Infinity.Length) == i)
             {
+                index = i + Infinity.Length;
                 value = sig * double.PositiveInfinity;
                 return true;
             }

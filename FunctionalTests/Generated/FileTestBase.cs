@@ -22,6 +22,10 @@ namespace NiL.JS.Test.Generated
 
         protected void RunFile(string fileName)
         {
+            var output = new StringBuilder();
+            var oldOutput = Console.Out;
+            Console.SetOut(new StringWriter(output));
+
             var pass = true;
             string code;
             var negative = false;
@@ -66,7 +70,8 @@ namespace NiL.JS.Test.Generated
                 pass = false;
             }
 
-            Assert.IsTrue(pass);
+            Console.SetOut(oldOutput);
+            Assert.IsTrue(pass, output.ToString());
         }
     }
 }

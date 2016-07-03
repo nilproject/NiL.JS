@@ -191,6 +191,7 @@ namespace NiL.JS
             }
         }
 
+#if DEV
         /// <summary>
         /// Run the script with time limit
         /// </summary>
@@ -217,6 +218,7 @@ namespace NiL.JS
                 Context.DebuggerCallback -= callback;
             }
         }
+#endif
 
         internal Module Import(string path)
         {
