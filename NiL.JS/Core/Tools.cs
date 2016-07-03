@@ -598,7 +598,17 @@ namespace NiL.JS.Core
                                 return null;
                             }
                             if (targetType.IsEnum)
-                                return Enum.Parse(targetType, jsobj.Value.ToString());
+                            {
+                                try
+                                {
+                                    return Enum.Parse(targetType, jsobj.Value.ToString());
+                                }
+                                catch (Exception)
+                                {
+                                    // If anything went wrong while trying to parse string value, return 0 as the default Enum type value.
+                                    return 0;
+                                }
+                            }
                         }
 
                         if (targetType == typeof(string))
