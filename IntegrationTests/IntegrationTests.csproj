@@ -58,7 +58,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="JSValueTests.cs" />
+    <Compile Include="Core\JSValueTests.cs" />
     <Compile Include="ModuleTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

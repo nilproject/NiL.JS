@@ -603,10 +603,9 @@ namespace NiL.JS.Core
                                 {
                                     return Enum.Parse(targetType, jsobj.Value.ToString());
                                 }
-                                catch (Exception)
+                                catch
                                 {
-                                    // If anything went wrong while trying to parse string value, return 0 as the default Enum type value.
-                                    return 0;
+                                    return null;
                                 }
                             }
                         }
@@ -655,9 +654,6 @@ namespace NiL.JS.Core
                         break;
                     }
             }
-
-            if (value == null)
-                return null;
 
             if (targetType.IsAssignableFrom(value.GetType()))
                 return value;
@@ -1012,64 +1008,60 @@ namespace NiL.JS.Core
 
         public static bool ParseNumber(string code, ref int index, out double value, int radix, ParseNumberOptions options)
         {
-            bool raiseOctal = (options & ParseNumberOptions.RaiseIfOctal) != 0;
-            bool processOctal = (options & ParseNumberOptions.ProcessOctal) != 0;
-            bool allowAutoRadix = (options & ParseNumberOptions.AllowAutoRadix) != 0;
-            bool allowFloat = (options & ParseNumberOptions.AllowFloat) != 0;
             if (code == null)
                 throw new ArgumentNullException("code");
-            value = double.NaN;
-            if (radix != 0 && (radix < 2 || radix > 36))
-                return false;
             if (code.Length == 0)
             {
                 value = 0;
                 return true;
             }
+            if (radix != 0 && (radix < 2 || radix > 36))
+            {
+                value = double.NaN;
+                return false;
+            }
+
+            bool raiseOctal = (options & ParseNumberOptions.RaiseIfOctal) != 0;
+            bool processOctal = (options & ParseNumberOptions.ProcessOctal) != 0;
+            bool allowAutoRadix = (options & ParseNumberOptions.AllowAutoRadix) != 0;
+            bool allowFloat = (options & ParseNumberOptions.AllowFloat) != 0;
+            
             int i = index;
-            while (i < code.Length && Tools.IsWhiteSpace(code[i]) && !Tools.IsLineTerminator(code[i]))
+            while (i < code.Length && IsWhiteSpace(code[i]) && !IsLineTerminator(code[i]))
                 i++;
+
             if (i >= code.Length)
             {
                 value = 0.0;
                 return true;
             }
-            const string nan = "NaN";
-            for (int j = i; ((j - i) < nan.Length) && (j < code.Length); j++)
+            
+            if (Parser.Validate(code, "NaN", ref index))
             {
-                if (code[j] != nan[j - i])
-                    break;
-                else if (j > i && code[j] == 'N')
-                {
-                    index = j + 1;
-                    value = double.NaN;
-                    return true;
-                }
+                value = double.NaN;
+                return true;
             }
+
             int sig = 1;
             if (code[i] == '-' || code[i] == '+')
                 sig = 44 - code[i++];
-            const string infinity = "Infinity";
-            for (int j = i; ((j - i) < infinity.Length) && (j < code.Length); j++)
+            
+            if (Parser.Validate(code, "Infinity", ref index))
             {
-                if (code[j] != infinity[j - i])
-                    break;
-                else if (code[j] == 'y')
-                {
-                    index = j + 1;
-                    value = sig * double.PositiveInfinity;
-                    return true;
-                }
+                value = sig * double.PositiveInfinity;
+                return true;
             }
+            
             bool res = false;
             bool skiped = false;
             if (allowAutoRadix && i + 1 < code.Length)
             {
-                while (code[i] == '0' && i + 1 < code.Length && code[i + 1] == '0')
+                while ((code[i] == '0') && (i + 1 < code.Length) && (code[i + 1] == '0'))
                 {
                     skiped = true;
                     i++;
                 }
+
                 if ((i + 1 < code.Length) && (code[i] == '0'))
                 {
                     if ((radix == 0 || radix == 16)
@@ -1083,13 +1075,16 @@ namespace NiL.JS.Core
                     {
                         if (raiseOctal)
                             ExceptionsHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
+
                         i += 1;
                         if (processOctal)
                             radix = 8;
+
                         res = true;
                     }
                 }
             }
+
             if (allowFloat && radix == 0)
             {
                 ulong temp = 0;
@@ -1114,8 +1109,13 @@ namespace NiL.JS.Core
                         res = true;
                     }
                 }
+
                 if (!res && (i >= code.Length || code[i] != '.'))
+                {
+                    value = double.NaN;
                     return false;
+                }
+
                 if (i < code.Length && code[i] == '.')
                 {
                     i++;
@@ -1137,8 +1137,13 @@ namespace NiL.JS.Core
                         }
                     }
                 }
+
                 if (!res)
+                {
+                    value = double.NaN;
                     return false;
+                }
+
                 if (i < code.Length && (code[i] == 'e' || code[i] == 'E'))
                 {
                     i++;
@@ -1690,7 +1695,7 @@ namespace NiL.JS.Core
             var fb = p >> 8;
             if (fb != 0x0 && fb != 0x16 && fb != 0x18 && fb != 0x20 && fb != 0x30 && fb != 0xFE)
                 return false;
-            for (var i = TrimChars.Length; i-- > 0;)
+            for (var i = 0; i < TrimChars.Length; i++)
                 if (p == TrimChars[i])
                     return true;
             return false;
