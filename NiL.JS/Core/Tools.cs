@@ -90,7 +90,41 @@ namespace NiL.JS.Core
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
         };
 
-        //internal static readonly string[] charStrings = (from x in Enumerable.Range(char.MinValue, char.MaxValue) select ((char)x).ToString()).ToArray();
+        private struct DoubleStringCacheItem
+        {
+            public double key;
+            public string value;
+        }
+
+        private static readonly DoubleStringCacheItem[] cachedDoubleString = new DoubleStringCacheItem[8];
+        private static int cachedDoubleStringsIndex = 0;
+        private static readonly string[] divFormats = 
+            {
+                ".#",
+                ".##",
+                ".###",
+                ".####",
+                ".#####",
+                ".######",
+                ".#######",
+                ".########",
+                ".#########",
+                ".##########",
+                ".###########",
+                ".############",
+                ".#############",
+                ".##############",
+                ".###############"
+            };
+
+        private static readonly decimal[] powersOf10 = new[] 
+            {
+                1e-18M, 1e-17M, 1e-16M, 1e-15M, 1e-14M, 1e-13M, 1e-12M, 1e-11M,
+                1e-10M, 1e-9M, 1e-8M, 1e-7M, 1e-6M, 1e-5M, 1e-4M, 1e-3M, 1e-2M,
+                1e-1M, 1e+0M, 1e+1M, 1e+2M, 1e+3M, 1e+4M, 1e+5M, 1e+6M, 1e+7M,
+                1e+8M, 1e+9M, 1e+10M, 1e+11M, 1e+12M, 1e+13M, 1e+14M, 1e+15M,
+                1e+16M, 1e+17M
+            };
 
         internal sealed class _ForcedEnumerator<T> : IEnumerator<T>
         {
@@ -730,33 +764,7 @@ namespace NiL.JS.Core
 
             return result;
         }
-
-        private struct DoubleStringCacheItem
-        {
-            public double key;
-            public string value;
-        }
-
-        private static readonly DoubleStringCacheItem[] cachedDoubleString = new DoubleStringCacheItem[8];
-        private static int cachedDoubleStringsIndex = 0;
-        private static string[] divFormats = {
-                                                 ".#",
-                                                 ".##",
-                                                 ".###",
-                                                 ".####",
-                                                 ".#####",
-                                                 ".######",
-                                                 ".#######",
-                                                 ".########",
-                                                 ".#########",
-                                                 ".##########",
-                                                 ".###########",
-                                                 ".############",
-                                                 ".#############",
-                                                 ".##############",
-                                                 ".###############"
-                                             };
-
+        
         internal static string DoubleToString(double d)
         {
             if (d == 0.0)
@@ -768,38 +776,41 @@ namespace NiL.JS.Core
             if (double.IsNaN(d))
                 return "NaN";
 
-            for (var i = 8; i-- > 0;)
-            {
-                if (cachedDoubleString[i].key == d)
-                    return cachedDoubleString[i].value;
-            }
-
-            var abs = System.Math.Abs(d);
             string res = null;
-            if (abs < 1.0)
+            lock (cachedDoubleString)
             {
-                if (d == (d % 0.000001))
-                    return res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
+                for (var i = 8; i-- > 0;)
+                {
+                    if (cachedDoubleString[i].key == d)
+                        return cachedDoubleString[i].value;
+                }
+
+                var abs = System.Math.Abs(d);
+                if (abs < 1.0)
+                {
+                    if (d == (d % 0.000001))
+                        return res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
+                }
+                else if (abs >= 1e+21)
+                    return res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
+
+                int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
+
+                if (d == 100000000000000000000d)
+                    res = "100000000000000000000";
+                else if (d == -100000000000000000000d)
+                    res = "-100000000000000000000";
+                else
+                    res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(CultureInfo.InvariantCulture));
+
+                abs %= 1.0;
+                if (abs != 0 && res.Length < (15 + neg))
+                    res += abs.ToString(divFormats[15 - res.Length + neg], CultureInfo.InvariantCulture);
+
+                cachedDoubleString[cachedDoubleStringsIndex].key = d;
+                cachedDoubleString[cachedDoubleStringsIndex].value = res;
+                cachedDoubleStringsIndex = (cachedDoubleStringsIndex + 1) % 7;
             }
-            else if (abs >= 1e+21)
-                return res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
-
-            int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
-
-            if (d == 100000000000000000000d)
-                res = "100000000000000000000";
-            else if (d == -100000000000000000000d)
-                res = "-100000000000000000000";
-            else
-                res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(CultureInfo.InvariantCulture));
-
-            abs %= 1.0;
-            if (abs != 0 && res.Length < (15 + neg))
-                res += abs.ToString(divFormats[15 - res.Length + neg], CultureInfo.InvariantCulture);
-
-            cachedDoubleString[cachedDoubleStringsIndex].key = d;
-            cachedDoubleString[cachedDoubleStringsIndex].value = res;
-            cachedDoubleStringsIndex = (cachedDoubleStringsIndex + 1) % 7;
 
             return res;
         }
@@ -1103,13 +1114,14 @@ namespace NiL.JS.Core
                         if (scount <= 18)
                         {
                             temp = temp * 10 + (ulong)(code[i++] - '0');
-                            scount++;
                         }
                         else
                         {
                             deg++;
                             i++;
                         }
+
+                        scount++;
                         res = true;
                     }
                 }
@@ -1123,20 +1135,31 @@ namespace NiL.JS.Core
                 if (i < code.Length && code[i] == '.')
                 {
                     i++;
+                    bool rounded = false;
                     while (i < code.Length)
                     {
                         if (!IsDigit(code[i]))
                             break;
                         else
                         {
-                            if (scount <= 18)
+                            if (scount <= 18 || ((temp * 10) / 10 == temp))
                             {
                                 temp = temp * 10 + (ulong)(code[i++] - '0');
-                                scount++;
                                 deg--;
                             }
                             else
+                            {
+                                if (!rounded)
+                                {
+                                    rounded = true;
+                                    if (code[i] - '0' >= 5)
+                                        temp++;
+                                }
+
                                 i++;
+                            }
+
+                            scount++;
                             res = true;
                         }
                     }
@@ -1152,34 +1175,63 @@ namespace NiL.JS.Core
                 {
                     i++;
                     int td = 0;
-                    int esign = code[i] >= 43 && code[i] <= 45 ? 44 - code[i++] : 1;
-                    scount = 0;
-                    while (i < code.Length)
+                    int esign = code[i] == 43 || code[i] == 45 ? 44 - code[i++] : 1;
+                    if (!IsDigit(code[i]))
                     {
-                        if (!IsDigit(code[i]))
-                            break;
-                        else
-                        {
-                            if (scount <= 6)
-                                td = td * 10 + (code[i++] - '0');
-                            else
-                                i++;
-                        }
+                        i--;
+                        if (code[i] == 'e' || code[i] == 'E')
+                            i--;
                     }
-                    deg += td * esign;
+                    else
+                    {
+                        scount = 0;
+                        while (i < code.Length)
+                        {
+                            if (!IsDigit(code[i]))
+                                break;
+                            else
+                            {
+                                if (scount <= 6)
+                                    td = td * 10 + (code[i++] - '0');
+                                else
+                                    i++;
+                            }
+                        }
+
+                        deg += td * esign;
+                    }
                 }
+
                 if (deg != 0)
                 {
                     if (deg < 0)
                     {
+                        while (deg <= 0 && temp != 0 && temp % 10 == 0)
+                        {
+                            deg++;
+                            temp /= 10;
+                        }
+
                         if (deg < -18)
                         {
-                            value = temp * 1e-18;
+                            var tail = temp % 1000000;
+                            temp /= 1000000;
+
+                            value = (double)(temp * 1e-12M) + (double)(tail * 1e-18M);
                             deg += 18;
+                        }
+                        else if (temp <= uint.MaxValue)
+                        {
+                            value = temp * (double)powersOf10[deg + 18];
+                            deg = 0;
                         }
                         else
                         {
-                            value = (double)((decimal)temp * (decimal)System.Math.Pow(10.0, deg));
+                            var tail = temp % 10000;
+                            deg += 4;
+                            temp /= 10000;
+
+                            value = (double)(temp * powersOf10[deg + 18]) + (double)(tail * powersOf10[deg + 18 - 4]);
                             deg = 0;
                         }
                     }
@@ -1187,12 +1239,16 @@ namespace NiL.JS.Core
                     {
                         if (deg > 10)
                         {
-                            value = (double)((decimal)temp * 10000000000M);
+                            value = temp * 1e+10;
                             deg -= 10;
                         }
                         else
                         {
-                            value = (double)((decimal)temp * (decimal)System.Math.Pow(10.0, deg));
+                            var tail = temp % 10000;
+                            deg += 4;
+                            temp /= 10000;
+
+                            value = (double)(temp * powersOf10[deg + 18]) + (double)(tail * powersOf10[deg + 18 - 4]);
                             deg = 0;
                         }
                     }
@@ -1213,8 +1269,10 @@ namespace NiL.JS.Core
                 }
                 else
                     value = temp;
+
                 if (value == 0 && skiped && raiseOctal)
                     ExceptionsHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
+
                 value *= sig;
                 index = i;
                 return true;

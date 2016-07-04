@@ -189,6 +189,7 @@ namespace NiL.JS.BaseLibrary
             b &= long.MaxValue;
             e |= (int)(b >> 52);
             e = 52 - e + 1023;
+
             if (e > 0)
             {
                 if (s < 0)
@@ -197,6 +198,7 @@ namespace NiL.JS.BaseLibrary
                         return -(long)shl(m, e) - 1;
                     return -(long)shl(m, e);
                 }
+
                 var r = (long)shl(m, e) * s;
                 if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
@@ -210,12 +212,14 @@ namespace NiL.JS.BaseLibrary
                         arg.valueType = JSValueType.Double;
                         arg.dValue = r;
                     }
+
                     return arg;
                 }
+
                 return r;
             }
-            else
-                return double.IsNaN(a) ? Number.NaN : a;
+
+            return double.IsNaN(a) ? Number.NaN : a;
         }
 
         [DoNotDelete]
@@ -303,6 +307,7 @@ namespace NiL.JS.BaseLibrary
             var arg = args[0];
             if (arg.valueType == JSValueType.Integer)
                 return arg;
+
             var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
@@ -312,8 +317,10 @@ namespace NiL.JS.BaseLibrary
                     arg.iValue = 0;
                     return arg;
                 }
+
                 return a;
             }
+
             var b = BitConverter.DoubleToInt64Bits(a);
             ulong m = ((ulong)b & ((1UL << 52) - 1)) | (1UL << 52);
             int e = 0;
@@ -321,6 +328,7 @@ namespace NiL.JS.BaseLibrary
             b &= long.MaxValue;
             e |= (int)(b >> 52);
             e = 52 - e + 1023;
+
             if (e > 0) // есть что округлить
             {
                 if (s < 0)
@@ -332,6 +340,7 @@ namespace NiL.JS.BaseLibrary
                         return -(long)shl(m, e);
                     }
                 }
+
                 var r = ((long)shl(m, e) + ((long)shl(m, (e - 1)) & 1) * s) * s;
                 if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
@@ -345,12 +354,14 @@ namespace NiL.JS.BaseLibrary
                         arg.valueType = JSValueType.Double;
                         arg.dValue = r;
                     }
+
                     return arg;
                 }
+
                 return r;
             }
-            else
-                return double.IsNaN(a) ? Number.NaN : a;
+
+            return double.IsNaN(a) ? Number.NaN : a;
         }
 
         [DoNotEnumerate]
