@@ -98,7 +98,7 @@ namespace NiL.JS.Core
 
         private static readonly DoubleStringCacheItem[] cachedDoubleString = new DoubleStringCacheItem[8];
         private static int cachedDoubleStringsIndex = 0;
-        private static readonly string[] divFormats = 
+        private static readonly string[] divFormats =
             {
                 ".#",
                 ".##",
@@ -117,13 +117,13 @@ namespace NiL.JS.Core
                 ".###############"
             };
 
-        private static readonly decimal[] powersOf10 = new[] 
+        private static readonly decimal[] powersOf10 = new[]
             {
                 1e-18M, 1e-17M, 1e-16M, 1e-15M, 1e-14M, 1e-13M, 1e-12M, 1e-11M,
                 1e-10M, 1e-9M, 1e-8M, 1e-7M, 1e-6M, 1e-5M, 1e-4M, 1e-3M, 1e-2M,
                 1e-1M, 1e+0M, 1e+1M, 1e+2M, 1e+3M, 1e+4M, 1e+5M, 1e+6M, 1e+7M,
                 1e+8M, 1e+9M, 1e+10M, 1e+11M, 1e+12M, 1e+13M, 1e+14M, 1e+15M,
-                1e+16M, 1e+17M
+                1e+16M, 1e+17M, 1e+18M
             };
 
         internal sealed class _ForcedEnumerator<T> : IEnumerator<T>
@@ -764,7 +764,7 @@ namespace NiL.JS.Core
 
             return result;
         }
-        
+
         internal static string DoubleToString(double d)
         {
             if (d == 0.0)
@@ -1036,7 +1036,7 @@ namespace NiL.JS.Core
             bool processOctal = (options & ParseNumberOptions.ProcessOctal) != 0;
             bool allowAutoRadix = (options & ParseNumberOptions.AllowAutoRadix) != 0;
             bool allowFloat = (options & ParseNumberOptions.AllowFloat) != 0;
-            
+
             int i = index;
             while (i < code.Length && IsWhiteSpace(code[i]) && !IsLineTerminator(code[i]))
                 i++;
@@ -1055,18 +1055,18 @@ namespace NiL.JS.Core
                 return true;
             }
 
-            int sig = 1;
+            int sign = 1;
             if (code[i] == '-' || code[i] == '+')
-                sig = 44 - code[i++];
+                sign = 44 - code[i++];
 
             const string Infinity = "Infinity";
             if (code.Length - i >= Infinity.Length && code.IndexOf(Infinity, i, Infinity.Length) == i)
             {
                 index = i + Infinity.Length;
-                value = sig * double.PositiveInfinity;
+                value = sign * double.PositiveInfinity;
                 return true;
             }
-            
+
             bool res = false;
             bool skiped = false;
             if (allowAutoRadix && i + 1 < code.Length)
@@ -1135,7 +1135,6 @@ namespace NiL.JS.Core
                 if (i < code.Length && code[i] == '.')
                 {
                     i++;
-                    bool rounded = false;
                     while (i < code.Length)
                     {
                         if (!IsDigit(code[i]))
@@ -1149,13 +1148,6 @@ namespace NiL.JS.Core
                             }
                             else
                             {
-                                if (!rounded)
-                                {
-                                    rounded = true;
-                                    if (code[i] - '0' >= 5)
-                                        temp++;
-                                }
-
                                 i++;
                             }
 
@@ -1206,10 +1198,13 @@ namespace NiL.JS.Core
                 {
                     if (deg < 0)
                     {
-                        while (deg <= 0 && temp != 0 && temp % 10 == 0)
+                        if (temp != 0)
                         {
-                            deg++;
-                            temp /= 10;
+                            while ((temp % 10) == 0)
+                            {
+                                deg++;
+                                temp /= 10;
+                            }
                         }
 
                         if (deg < -18)
@@ -1217,7 +1212,7 @@ namespace NiL.JS.Core
                             var tail = temp % 1000000;
                             temp /= 1000000;
 
-                            value = (double)(temp * 1e-12M) + (double)(tail * 1e-18M);
+                            value = (double)(temp * 1e-12M + tail * 1e-18M);
                             deg += 18;
                         }
                         else if (temp <= uint.MaxValue)
@@ -1227,11 +1222,52 @@ namespace NiL.JS.Core
                         }
                         else
                         {
-                            var tail = temp % 10000;
-                            deg += 4;
-                            temp /= 10000;
+                            var frac = temp;
+                            temp = temp / (ulong)powersOf10[-deg + 18];
+                            frac -= (temp * (ulong)powersOf10[-deg + 18]);
+                            var mask = 1 * (ulong)powersOf10[-deg + 18];
 
-                            value = (double)(temp * powersOf10[deg + 18]) + (double)(tail * powersOf10[deg + 18 - 4]);
+                            int e = 0;
+
+                            if (frac != 0)
+                            {
+                                while (frac != 0 && (temp >> 52) == 0)
+                                {
+                                    e++;
+                                    temp <<= 1;
+                                    frac <<= 1;
+                                    if (frac >= mask)
+                                    {
+                                        temp |= 1;
+                                        frac -= mask;
+                                    }
+                                }
+
+                                if (frac >= mask >> 1)
+                                {
+                                    temp++;
+                                }
+                            }
+                            else
+                            {
+                                while ((temp >> 52) == 0)
+                                {
+                                    temp <<= 1;
+                                    e++;
+                                }
+
+                                while (temp > ((1UL << 53) - 1))
+                                {
+                                    temp >>= 1;
+                                    e--;
+                                }
+                            }
+
+                            temp = (temp & ((1UL << 52) - 1));
+                            e = 1023 - e + 52;
+                            temp |= ((ulong)e << 52);
+                            value = BitConverter.Int64BitsToDouble((long)temp);
+                            
                             deg = 0;
                         }
                     }
@@ -1273,7 +1309,7 @@ namespace NiL.JS.Core
                 if (value == 0 && skiped && raiseOctal)
                     ExceptionsHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
 
-                value *= sig;
+                value *= sign;
                 index = i;
                 return true;
             }
@@ -1287,8 +1323,8 @@ namespace NiL.JS.Core
                 ulong temp = 0;
                 while (i < code.Length)
                 {
-                    var sign = anum(code[i]);
-                    if (sign >= radix || (NumChars[sign] != code[i] && (NumChars[sign] + ('a' - 'A')) != code[i]))
+                    var degSign = anum(code[i]);
+                    if (degSign >= radix || (NumChars[degSign] != code[i] && (NumChars[degSign] + ('a' - 'A')) != code[i]))
                     {
                         break;
                     }
@@ -1296,11 +1332,11 @@ namespace NiL.JS.Core
                     {
                         if (extended)
                         {
-                            doubleTemp = doubleTemp * radix + sign;
+                            doubleTemp = doubleTemp * radix + degSign;
                         }
                         else
                         {
-                            temp = temp * (ulong)radix + (ulong)sign;
+                            temp = temp * (ulong)radix + (ulong)degSign;
                             if ((temp & 0xFE00000000000000) != 0)
                             {
                                 extended = true;
@@ -1317,7 +1353,7 @@ namespace NiL.JS.Core
                     return false;
                 }
                 value = extended ? doubleTemp : temp;
-                value *= sig;
+                value *= sign;
                 index = i;
                 return true;
             }

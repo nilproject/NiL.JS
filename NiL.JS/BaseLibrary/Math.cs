@@ -326,7 +326,7 @@ namespace NiL.JS.BaseLibrary
             int e = 0;
             long s = (b >> 63) | 1L;
             b &= long.MaxValue;
-            e |= (int)(b >> 52);
+            e = (int)(b >> 52);
             e = 52 - e + 1023;
 
             if (e > 0) // есть что округлить
