@@ -553,7 +553,7 @@ namespace NiL.JS.Core
                         if (targetType == typeof(Number))
                             return new Number(jsobj.dValue);
 
-                        if (targetType.IsEnum)
+                        if (targetType.GetTypeInfo().IsEnum)
                             return Enum.ToObject(targetType, jsobj.dValue);
 
                         return null;
@@ -585,7 +585,7 @@ namespace NiL.JS.Core
                         if (targetType == typeof(Number))
                             return new Number(jsobj.iValue);
 
-                        if (targetType.IsEnum)
+                        if (targetType.GetTypeInfo().IsEnum)
                             return Enum.ToObject(targetType, jsobj.iValue);
 
                         return null;
@@ -631,7 +631,7 @@ namespace NiL.JS.Core
                                     return (decimal)r;
                                 return null;
                             }
-                            if (targetType.IsEnum)
+                            if (targetType.GetTypeInfo().IsEnum)
                             {
                                 try
                                 {
@@ -1200,7 +1200,7 @@ namespace NiL.JS.Core
                     {
                         if (temp != 0)
                         {
-                            while ((temp % 10) == 0)
+                            while ((temp % 10) == 0 && deg < 0)
                             {
                                 deg++;
                                 temp /= 10;
@@ -1225,7 +1225,7 @@ namespace NiL.JS.Core
                             var frac = temp;
                             temp = temp / (ulong)powersOf10[-deg + 18];
                             frac -= (temp * (ulong)powersOf10[-deg + 18]);
-                            var mask = 1 * (ulong)powersOf10[-deg + 18];
+                            var mask = (ulong)powersOf10[-deg + 18];
 
                             int e = 0;
 

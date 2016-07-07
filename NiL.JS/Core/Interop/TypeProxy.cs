@@ -348,12 +348,12 @@ namespace NiL.JS.Core.Interop
         internal static TypeProxy GetPrototype(Type type, bool create)
         {
             TypeProxy prot = null;
-            if (!dynamicProxies.TryGetValue(type, out prot))
+            lock (dynamicProxies)
             {
-                if (!create)
-                    return null;
-                lock (dynamicProxies)
+                if (!dynamicProxies.TryGetValue(type, out prot))
                 {
+                    if (!create)
+                        return null;
                     JSObject prototype = null;
                     var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
                     if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
@@ -367,6 +367,7 @@ namespace NiL.JS.Core.Interop
                     prot = new TypeProxy(type, prototype);
                 }
             }
+
             return prot;
         }
         
@@ -413,10 +414,10 @@ namespace NiL.JS.Core.Interop
         internal override JSObject GetDefaultPrototype()
         {
 #if PORTABLE
-            if (Context.currentContext == null)
+            if (Context.currentContextStack == null)
                 throw new Exception();
 #else
-            if (Context.runnedContexts.Length == 0) // always false, but it protects from uninitialized global context
+            if (Context.RunningContexts.Length == 0) // always false, but it protects from uninitialized global context
                 throw new Exception();
 #endif
             return GlobalPrototype;

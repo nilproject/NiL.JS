@@ -13,7 +13,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Extensions;
 using System.Collections.Generic;
 using System.Collections;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace NiL.JS.Test
 {
@@ -51,24 +51,43 @@ namespace NiL.JS.Test
 
     public class Program
     {
+        public class A
+        {
+            public void F(int i)
+            {
+                Console.WriteLine(i);
+            }
+        }
+
         private static void testEx()
         {
-            var c = new Context();
-            c.DefineVariable("test").Assign(JSValue.Wrap(new TestCallable()));
-            //c.Eval("test()");
-            //c.Eval("new test");
-            //c.Eval("new class extends test {}");
-
-            //c.Eval("Promise.all([new Promise(x=>x(1)), new Promise(x=>x(2))]).then(x=>console.log(x));");
-
-            var type = typeof(FunctionKind);
-            var sw = Stopwatch.StartNew();
-            for(var i = 0; i < 10000; i++)
+            Action task = () =>
             {
+                var context = new Context();
+                context.Eval("function test(a, i) { a.F(i); }");
 
-            }
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
+                var a = new A();
+
+                Console.WriteLine(".start");
+
+                for (var i = 0; i < 1000; ++i)
+                {
+                    context.GetVariable("test").As<Function>().Call(new Arguments() { JSValue.Wrap(a), Thread.CurrentThread.ManagedThreadId });
+                }
+
+                Console.WriteLine(".end");
+            };
+
+            Task.WaitAll(Task.Run(task), Task.Run(task),
+                         Task.Run(task), Task.Run(task),
+                         Task.Run(task), Task.Run(task),
+                         Task.Run(task), Task.Run(task),
+                         Task.Run(task), Task.Run(task),
+                         Task.Run(task), Task.Run(task),
+                         Task.Run(task), Task.Run(task),
+                         Task.Run(task), Task.Run(task),
+                         Task.Run(task), Task.Run(task),
+                         Task.Run(task), Task.Run(task));
         }
 
         static void Main(string[] args)
@@ -116,7 +135,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 101
+            int mode = 3
                     ;
             switch (mode)
             {

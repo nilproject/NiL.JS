@@ -42,9 +42,13 @@ namespace NiL.JS.Expressions
         {
             if (context.thisBind != null && (context.thisBind.attributes & JSValueAttributesInternal.ConstructingObject) != 0)
             {
-                while (context.oldContext != null && context.oldContext.thisBind == context.thisBind)
+                var stack = Context.GetCurrectContextStack();
+
+                var i = 2;
+                while (stack.Count >= i && stack[stack.Count - i].thisBind == context.thisBind)
                 {
-                    context = context.oldContext;
+                    context = stack[stack.Count - i];
+                    i++;
                 }
 
                 return context.owner;

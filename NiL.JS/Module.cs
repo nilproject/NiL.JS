@@ -128,6 +128,7 @@ namespace NiL.JS
 
             Code = code;
             Context = new Context(Context.globalContext, true, null);
+            Context._module = this;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 if (!__modulesCache.ContainsKey(path))
@@ -182,7 +183,7 @@ namespace NiL.JS
             
             try
             {
-                Context.Activate(this);
+                Context.Activate();
                 root.Evaluate(Context);
             }
             finally
