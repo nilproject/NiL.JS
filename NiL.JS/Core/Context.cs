@@ -308,6 +308,7 @@ namespace NiL.JS.Core
 #else
             int threadId = Thread.CurrentThread.ManagedThreadId;
             var i = 0;
+            bool entered = false;
             do
             {
                 if (ThreadIds[i] == threadId)
@@ -323,8 +324,11 @@ namespace NiL.JS.Core
                     return true;
                 }
 
-                if (!Monitor.IsEntered(RunningContexts))
+                if (!entered)
+                {
                     Monitor.Enter(RunningContexts);
+                    entered = true;
+                }
 
                 if (ThreadIds[i] <= 0)
                 {
