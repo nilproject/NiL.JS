@@ -132,10 +132,10 @@ namespace NiL.JS.Core.Functions
 
                 if (!_wrapperCache.TryGetValue(method, out wrapper))
                 {
-#if PORTABLE
-                    wrapper = makeMethodOverExpression(methodInfo);
-#else
+#if !PORTABLE
                     wrapper = makeMethodOverEmit(methodInfo, parameters, forceInstance);
+#else
+                    wrapper = makeMethodOverExpression(methodInfo);
 #endif
                     _wrapperCache[method] = wrapper;
                 }
@@ -561,7 +561,8 @@ namespace NiL.JS.Core.Functions
             {
                 var obj = source?[i] ?? undefined;
 
-                var trueNull = obj.valueType >= JSValueType.Object && obj.oValue == null;
+                var trueNull = (options & ConvertArgsOptions.DummyValues) != 0 
+                    || (obj.valueType >= JSValueType.Object && obj.oValue == null);
 
                 var t = convertArg(i, obj, options);
 
