@@ -35,28 +35,44 @@ namespace NiL.JS.Core
     {
 #if PORTABLE
         [ThreadStatic]
-        internal static Context currentContext;
+        internal static List<Context> currentContextStack;
+
+        internal static List<Context> GetCurrectContextStack()
+        {
+            return currentContextStack;
+        }
 #else
         internal const int MaxConcurentContexts = 65535;
-        internal static readonly Context[] runnedContexts = new Context[MaxConcurentContexts];
+        internal static readonly List<Context>[] RunningContexts = new List<Context>[MaxConcurentContexts];
+        internal static readonly int[] ThreadIds = new int[MaxConcurentContexts];
+
+        internal static List<Context> GetCurrectContextStack()
+        {
+            int threadId = Thread.CurrentThread.ManagedThreadId;
+
+            for (var i = 0; i < MaxConcurentContexts; i++)
+            {
+                if (ThreadIds[i] == 0)
+                    break;
+
+                if (ThreadIds[i] == threadId)
+                    return RunningContexts[i];
+            }
+
+            return null;
+        }
 #endif
         public static Context CurrentContext
         {
             get
             {
 #if PORTABLE
-                return currentContext;
+                return currentContextStack.Count > 0 ? currentContextStack[currentContextStack.Count - 1] : null;
 #else
-                int threadId = Thread.CurrentThread.ManagedThreadId;
-                for (var i = 0; i < MaxConcurentContexts; i++)
-                {
-                    var c = runnedContexts[i];
-                    if (c == null)
-                        break;
-                    if (c._threadId == threadId)
-                        return c;
-                }
-                return null;
+                var stack = GetCurrectContextStack();
+                if (stack == null || stack.Count == 0)
+                    return null;
+                return stack[stack.Count - 1];
 #endif
             }
         }
@@ -156,11 +172,7 @@ namespace NiL.JS.Core
                 globalContext.Deactivate();
             }
         }
-
-#if !PORTABLE
-        internal int _threadId;
-#endif
-        internal Context oldContext;
+        
         internal AbortReason executionMode;
         internal JSValue objectSource;
         internal JSValue executionInfo;
@@ -213,33 +225,15 @@ namespace NiL.JS.Core
             }
         }
 
-#if DEV
         internal bool debugging;
         public bool Debugging { get { return debugging; } set { debugging = value; } }
-#endif        
         public event DebuggerCallback DebuggerCallback;
-                
+
         public bool Running
         {
             get
             {
-                var ccontext = CurrentContext;
-                if (ccontext == null)
-                    return false;
-                do
-                {
-                    if (ccontext == this)
-                        return true;
-                    var pc = ccontext.parent;
-                    while (pc != null)
-                    {
-                        if (pc == this)
-                            return true;
-                        pc = pc.parent;
-                    }
-                    ccontext = ccontext.oldContext;
-                } while (ccontext != null);
-                return false;
+                return GetCurrectContextStack().Contains(this);
             }
         }
 
@@ -285,9 +279,7 @@ namespace NiL.JS.Core
                     arguments = prototype.arguments;
                 this.parent = prototype;
                 this.thisBind = prototype.thisBind;
-#if DEV
                 this.debugging = prototype.debugging;
-#endif
             }
 
             if (createFields)
@@ -302,51 +294,58 @@ namespace NiL.JS.Core
         /// но хранит ссылку на предыдущий активный контекст. Обычно это возникает в том случае, 
         /// когда указанный контекст находится в цепочке вложенности активированных контекстов.</exception>
         /// <returns>Истина если текущий контекст был активирован данным вызовом. Ложь если контекст уже активен.</returns>
-        internal bool Activate(Module module = null)
+        internal bool Activate()
         {
 #if PORTABLE
-            if (currentContext == this)
+            if (currentContextStack == null)
+                currentContextStack = new List<Context>();
+
+            if (currentContextStack.Count > 0 && currentContextStack[currentContextStack.Count - 1] == this)
                 return false;
-            if (oldContext != null)
-                throw new InvalidOperationException("Try to reactivate context");
-            if (currentContext != null) // что-то выполняется
-            {
-                if (!Monitor.IsEntered(currentContext)) // не в этом потоке?
-                    throw new InvalidOperationException("Too many concurrent contexts.");
-            }
-            oldContext = currentContext;
-            currentContext = this;
-            _module = module ?? parent?._module;
-            Monitor.Enter(this);
+
+            currentContextStack.Add(this);
             return true;
 #else
             int threadId = Thread.CurrentThread.ManagedThreadId;
-            if (this._threadId == threadId)
-                return false;
-            if (_threadId != 0)
-                ExceptionsHelper.Throw(new InvalidOperationException("Context already running in another thread"));
             var i = 0;
             do
             {
-                var c = runnedContexts[i];
-                if (c == null || c._threadId == threadId || c == globalContext)
+                if (ThreadIds[i] == threadId)
                 {
-                    if (c == globalContext)
-                        c = null;
-                    if (c == this)
+                    if (RunningContexts[i].Count > 0 && RunningContexts[i][RunningContexts[i].Count - 1] == this)
                         return false;
-                    if (oldContext != null)
-                        ExceptionsHelper.Throw(new ApplicationException("Try to reactivate context"));
-                    this.oldContext = c;
-                    runnedContexts[i] = this;
-                    this._threadId = threadId;
-                    this._module = module ?? parent?._module;
+
+                    // Бьёт по производительности
+                    //if (RunnedContexts[i].Contains(this))
+                    //    ExceptionsHelper.Throw(new ApplicationException("Try to reactivate context"));
+
+                    RunningContexts[i].Add(this);
                     return true;
                 }
+
+                if (!Monitor.IsEntered(RunningContexts))
+                    Monitor.Enter(RunningContexts);
+
+                if (ThreadIds[i] <= 0)
+                {
+                    if (RunningContexts[i] == null)
+                        RunningContexts[i] = new List<Context>();
+
+                    ThreadIds[i] = threadId;
+                    RunningContexts[i].Add(this);
+
+                    Monitor.Exit(RunningContexts);
+                    return true;
+                }
+
                 i++;
             }
             while (i < MaxConcurentContexts);
+
+            Monitor.Exit(RunningContexts);
+
             ExceptionsHelper.Throw(new InvalidOperationException("Too many concurrent contexts."));
+
             return false;
 #endif
         }
@@ -359,44 +358,64 @@ namespace NiL.JS.Core
         internal Context Deactivate()
         {
 #if PORTABLE
-            if (currentContext != this)
-                throw new InvalidOperationException("Context is not runing");
-            currentContext = oldContext;
-            var res = oldContext;
-            oldContext = null;
-            Monitor.Exit(this);
-            return res;
+            if (currentContextStack[currentContextStack.Count - 1] != this)
+                throw new InvalidOperationException("Context is not running");
+
+            currentContextStack.RemoveAt(currentContextStack.Count - 1);
+            return CurrentContext;
 #else
-            Context c = null;
+            int threadId = Thread.CurrentThread.ManagedThreadId;
+
             var i = 0;
-            for (; i < runnedContexts.Length; i++)
+            for (; i < MaxConcurentContexts; i++)
             {
-                c = runnedContexts[i];
-                if (c != null && c._threadId == _threadId)
+                if (ThreadIds[i] == 0)
+                    throw new InvalidOperationException("Context is not running");
+
+                if (ThreadIds[i] == threadId)
                 {
-                    if (c != this)
+                    if (RunningContexts[i][RunningContexts[i].Count - 1] != this)
                         throw new InvalidOperationException("Context is not running");
-                    runnedContexts[i] = (c = oldContext) ?? globalContext;
+
+                    _module = null;
+                    RunningContexts[i].RemoveAt(RunningContexts[i].Count - 1);
+                    if (RunningContexts[i].Count == 0)
+                        ThreadIds[i] = -1;
+
                     break;
                 }
             }
-            if (i == runnedContexts.Length)
-                throw new InvalidOperationException("Context is not running");
-            oldContext = null;
-            _threadId = 0;
-            _module = null;
-            return c;
+            
+            return RunningContexts[i].Count > 0 ? RunningContexts[i][RunningContexts[i].Count - 1] : null;
 #endif
         }
 
-        internal Context GetRunnedContextFor(Function function)
+        internal Context GetRunningContextFor(Function function)
         {
-            var context = CurrentContext;
-            while (context != null && context.owner != function)
+            Context context = null;
+            return GetRunningContextFor(function, out context);
+        }
+
+        internal Context GetRunningContextFor(Function function, out Context prevContext)
+        {
+            prevContext = null;
+
+            if (function == null)
+                return null;
+
+            var stack = GetCurrectContextStack();
+            
+            for (var i = stack.Count; i-->0; i++)
             {
-                context = context.oldContext;
+                if (stack[i].owner == function)
+                {
+                    if (i > 0)
+                        prevContext = stack[i - 1];
+                    return stack[i];
+                }
             }
-            return context;
+
+            return null;
         }
 
         internal virtual void ReplaceVariableInstance(string name, JSValue instance)
@@ -406,7 +425,7 @@ namespace NiL.JS.Core
             else
                 parent?.ReplaceVariableInstance(name, instance);
         }
-                
+
         public virtual JSValue DefineVariable(string name, bool deletable = false)
         {
             JSValue res = null;
@@ -424,7 +443,7 @@ namespace NiL.JS.Core
             res.valueType |= JSValueType.Undefined;
             return res;
         }
-                
+
         public JSValue GetVariable(string name)
         {
             return GetVariable(name, false);
@@ -499,7 +518,7 @@ namespace NiL.JS.Core
                 name = moduleType.Name;
             DefineConstructor(moduleType, name);
         }
-                
+
         public void DefineConstructor(Type type, string name)
         {
             fields.Add(name, TypeProxy.GetConstructor(type).CloneImpl(false));
@@ -553,12 +572,14 @@ namespace NiL.JS.Core
              * }
              */
 
-            var mainContext = this;
-            while (mainContext.oldContext != null
-                && mainContext.oldContext == mainContext.parent
-                && mainContext.owner == mainContext.oldContext.owner)
+            var mainFunctionContext = this;
+            var stack = GetCurrectContextStack();
+            while (stack != null
+                && stack.Count > 1
+                && stack[stack.Count - 2] == mainFunctionContext.parent
+                && stack[stack.Count - 2].owner == mainFunctionContext.owner)
             {
-                mainContext = mainContext.oldContext;
+                mainFunctionContext = mainFunctionContext.parent;
             }
 
             int index = 0;
@@ -596,11 +617,10 @@ namespace NiL.JS.Core
 
             body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
-#if DEV
             var debugging = this.debugging;
             this.debugging = false;
-#endif
             var runned = this.Activate();
+
             try
             {
                 var context = (suppressScopeCreation || !stats.WithLexicalEnvironment) && !body._strict && !strict ? this : new Context(this, false, owner)
@@ -615,7 +635,7 @@ namespace NiL.JS.Core
                         if (!body._variables[i].lexicalScope)
                         {
                             JSValue variable;
-                            var cc = mainContext;
+                            var cc = mainFunctionContext;
                             while (cc.parent != globalContext
                                && (cc.fields == null || !cc.fields.TryGetValue(body._variables[i].name, out variable)))
                             {
@@ -633,7 +653,7 @@ namespace NiL.JS.Core
                                 }
                             }
 
-                            variable = mainContext.DefineVariable(body._variables[i].name, !suppressScopeCreation);
+                            variable = mainFunctionContext.DefineVariable(body._variables[i].name, !suppressScopeCreation);
 
                             if (body._variables[i].initializer != null)
                             {
@@ -667,9 +687,7 @@ namespace NiL.JS.Core
             {
                 if (runned)
                     this.Deactivate();
-#if DEV
                 this.debugging = debugging;
-#endif
             }
         }
 

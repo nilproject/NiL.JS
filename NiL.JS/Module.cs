@@ -127,6 +127,8 @@ namespace NiL.JS
                 throw new ArgumentNullException();
 
             Code = code;
+            Context = new Context(Context.globalContext, true, null);
+            Context._module = this;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 if (!__modulesCache.ContainsKey(path))
@@ -151,7 +153,6 @@ namespace NiL.JS
             Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
             var body = root as CodeBlock;
             body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
-            Context = new Context(Context.globalContext, true, null);
             Context.thisBind = new GlobalObject(Context);
             Context.strict = body._strict;
 
@@ -182,12 +183,39 @@ namespace NiL.JS
             
             try
             {
-                Context.Activate(this);
+                Context.Activate();
                 root.Evaluate(Context);
             }
             finally
             {
                 Context.Deactivate();
+            }
+        }
+
+        /// <summary>
+        /// Run the script with time limit
+        /// </summary>
+        /// <param name="timeLimitInMilliseconds">Time limit</param>
+        public void Run(int timeLimitInMilliseconds)
+        {
+            var start = Environment.TickCount;
+            var oldDebugValue = Context.Debugging;
+            Context.Debugging = true;
+            DebuggerCallback callback = (context, e) =>
+            {
+                if (Environment.TickCount - start >= timeLimitInMilliseconds)
+                    throw new TimeoutException();
+            };
+            Context.DebuggerCallback += callback;
+
+            try
+            {
+                Run();
+            }
+            finally
+            {
+                Context.Debugging = oldDebugValue;
+                Context.DebuggerCallback -= callback;
             }
         }
 

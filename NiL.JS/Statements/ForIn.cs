@@ -178,10 +178,9 @@ namespace NiL.JS.Statements
             JSValue source = null;
             if (suspendData == null || suspendData.source == null)
             {
-#if DEV
                 if (context.debugging && !(_source is CodeBlock))
                     context.raiseDebugger(_source);
-#endif
+
                 source = _source.Evaluate(context);
                 if (context.executionMode == AbortReason.Suspend)
                 {
@@ -195,10 +194,9 @@ namespace NiL.JS.Statements
             JSValue variable = null;
             if (suspendData == null || suspendData.variable == null)
             {
-#if DEV
                 if (context.debugging && !(_variable is CodeBlock))
                     context.raiseDebugger(_variable);
-#endif
+
                 var varialeDefStat = _variable as VariableDefinition;
                 if (varialeDefStat != null)
                 {
@@ -246,11 +244,11 @@ namespace NiL.JS.Statements
                         processedKeys.Add(key);
                         if ((keys.Current.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
                             continue;
-#if DEV
+
                         if (context.debugging && !(_body is CodeBlock))
                             context.raiseDebugger(_body);
-#endif
                     }
+
                     context.lastResult = _body.Evaluate(context) ?? context.lastResult;
                     if (context.executionMode != AbortReason.None)
                     {

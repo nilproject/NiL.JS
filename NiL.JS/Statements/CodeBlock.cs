@@ -334,10 +334,8 @@ namespace NiL.JS.Statements
         {
             for (var ls = _lines; i < ls.Length; i++)
             {
-#if DEV
                 if (context.debugging)
                     context.raiseDebugger(_lines[i]);
-#endif
                 var t = ls[i].Evaluate(context);
                 if (t != null)
                     context.lastResult = t;

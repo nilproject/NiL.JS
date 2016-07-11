@@ -79,10 +79,9 @@ namespace NiL.JS.Statements
 
             if (context.executionMode != AbortReason.Resume || context.SuspendData[this] == condition)
             {
-#if DEV
                 if (context.executionMode != AbortReason.Resume && context.debugging)
                     context.raiseDebugger(condition);
-#endif
+
                 checkResult = condition.Evaluate(context);
                 if (context.executionMode == AbortReason.Suspend)
                 {
@@ -99,10 +98,9 @@ namespace NiL.JS.Statements
                  && (context.executionMode != AbortReason.Resume
                     || context.SuspendData[this] == body))
                 {
-#if DEV
                     if (context.executionMode != AbortReason.Resume && context.debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
-#endif
+
                     var temp = body.Evaluate(context);
                     if (temp != null)
                         context.lastResult = temp;
@@ -130,10 +128,9 @@ namespace NiL.JS.Statements
                     }
                 }
 
-#if DEV
                 if (context.executionMode != AbortReason.Resume && context.debugging)
                     context.raiseDebugger(condition);
-#endif
+
                 checkResult = condition.Evaluate(context);
                 if (context.executionMode == AbortReason.Suspend)
                 {

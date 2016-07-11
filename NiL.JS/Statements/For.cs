@@ -106,9 +106,10 @@ namespace NiL.JS.Statements
                     i++;
                 if (state.Code[i] != ')')
                     ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                do
-                    i++;
-                while (Tools.IsWhiteSpace(state.Code[i]));
+
+                i++;
+                Tools.SkipSpaces(state.Code, ref i);
+
                 state.AllowBreak.Push(true);
                 state.AllowContinue.Push(true);
                 try
@@ -161,10 +162,9 @@ namespace NiL.JS.Statements
         {
             if (_initializer != null && (context.executionMode != AbortReason.Resume || context.SuspendData[this] == _initializer))
             {
-#if DEV
                 if (context.executionMode != AbortReason.Resume && context.debugging)
                     context.raiseDebugger(_initializer);
-#endif
+
                 _initializer.Evaluate(context);
                 if (context.executionMode == AbortReason.Suspend)
                 {
@@ -179,10 +179,9 @@ namespace NiL.JS.Statements
 
             if (context.executionMode != AbortReason.Resume || context.SuspendData[this] == _condition)
             {
-#if DEV
                 if (context.executionMode != AbortReason.Resume && context.debugging)
                     context.raiseDebugger(_condition);
-#endif
+
                 @continue = (bool)_condition.Evaluate(context);
                 if (context.executionMode == AbortReason.Suspend)
                 {
@@ -198,10 +197,9 @@ namespace NiL.JS.Statements
             {
                 if (be && (context.executionMode != AbortReason.Resume || context.SuspendData[this] == _body))
                 {
-#if DEV
                     if (context.executionMode != AbortReason.Resume && context.debugging && !(_body is CodeBlock))
                         context.raiseDebugger(_body);
-#endif
+
                     var temp = _body.Evaluate(context);
                     if (temp != null)
                         context.lastResult = temp;
@@ -233,16 +231,15 @@ namespace NiL.JS.Statements
 
                 if (pe && (context.executionMode != AbortReason.Resume || context.SuspendData[this] == _post))
                 {
-#if DEV
                     if (context.executionMode != AbortReason.Resume && context.debugging)
                         context.raiseDebugger(_post);
-#endif
+
                     _post.Evaluate(context);
                 }
-#if DEV
+
                 if (context.executionMode != AbortReason.Resume && context.debugging)
                     context.raiseDebugger(_condition);
-#endif
+
                 @continue = (bool)_condition.Evaluate(context);
                 if (context.executionMode == AbortReason.Suspend)
                 {

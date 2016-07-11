@@ -29,7 +29,7 @@ namespace NiL.JS.Statements
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Try to break to undefined label.")));
             }
             else if (!state.AllowBreak.Peek())
-                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use break statement")));
+                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use of break statement")));
             var pos = index;
             index = i;
             state.breaksCount++;

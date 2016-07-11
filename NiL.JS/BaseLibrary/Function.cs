@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 using NiL.JS.Core;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
 using linqEx = System.Linq.Expressions;
-using System.ComponentModel;
-using System.Diagnostics;
 
 #if !PORTABLE
-using NiL.JS.Backward;
 #endif
 
 namespace NiL.JS.BaseLibrary
@@ -208,7 +206,7 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get
             {
-                var context = Context.GetRunnedContextFor(this);
+                var context = Context.GetRunningContextFor(this);
                 if (context == null)
                     return null;
                 if (creator.body._strict)
@@ -220,7 +218,7 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             set
             {
-                var context = Context.GetRunnedContextFor(this);
+                var context = Context.GetRunningContextFor(this);
                 if (context == null)
                     return;
                 if (creator.body._strict)
@@ -237,20 +235,22 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get
             {
-                var context = Context.GetRunnedContextFor(this);
-                if (context == null || context.oldContext == null)
+                Context oldContext;
+                var context = Context.GetRunningContextFor(this, out oldContext);
+                if (context == null || oldContext == null)
                     return null;
-                if (context.strict || (context.oldContext.strict && context.oldContext.owner != null))
+                if (context.strict || (oldContext.strict && oldContext.owner != null))
                     ExceptionsHelper.Throw(new TypeError("Property \"caller\" may not be accessed in strict mode."));
-                return context.oldContext.owner;
+                return oldContext.owner;
             }
             [Hidden]
             set
             {
-                var context = Context.GetRunnedContextFor(this);
-                if (context == null || context.oldContext == null)
+                Context oldContext;
+                var context = Context.GetRunningContextFor(this, out oldContext);
+                if (context == null || oldContext == null)
                     return;
-                if (context.strict || (context.oldContext.strict && context.oldContext.owner != null))
+                if (context.strict || (oldContext.strict && oldContext.owner != null))
                     ExceptionsHelper.Throw(new TypeError("Property \"caller\" may not be accessed in strict mode."));
             }
         }
@@ -697,12 +697,13 @@ namespace NiL.JS.BaseLibrary
 
         internal void BuildArgumentsObject()
         {
-            var context = Context.GetRunnedContextFor(this);
+            Context oldContext;
+            var context = Context.GetRunningContextFor(this, out oldContext);
             if (context != null && context.arguments == null)
             {
                 var args = new Arguments()
                 {
-                    caller = context.oldContext != null ? context.oldContext.owner : null,
+                    caller = oldContext != null ? oldContext.owner : null,
                     callee = this,
                     length = creator.parameters.Length
                 };
@@ -1030,8 +1031,6 @@ namespace NiL.JS.BaseLibrary
             delegateCache.Add(delegateType, @delegate);
 
             return @delegate;
-        }
-
-        public static implicit operator Function(Delegate action) => new MethodProxy(action.GetMethodInfo(), action.Target);
+        }        
     }
 }
