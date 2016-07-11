@@ -1,8 +1,10 @@
 ﻿using System;
+using ExamplesFramework;
 using NiL.JS.Core;
 
 namespace Examples.Pass_values_into_JavaScript_environment
 {
+    [Level(2)]
     public sealed class Via_Marshal : ExamplesFramework.Example
     {
         private sealed class ClassWithStringValue

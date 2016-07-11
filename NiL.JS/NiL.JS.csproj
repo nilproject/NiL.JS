@@ -424,6 +424,12 @@
   <ItemGroup>
     <None Include="NiL.JS.Keys.pfx" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExamplesFramework\ExamplesFramework.csproj">
+      <Project>{21c2efe5-3935-4e00-9c34-c1e6ba3643af}</Project>
+      <Name>ExamplesFramework</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

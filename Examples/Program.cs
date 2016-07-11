@@ -9,7 +9,7 @@ namespace Examples
 {
     class Program
     {
-        private static IList<KeyValuePair<string, IList<KeyValuePair<string, Example>>>> examples = ExamplesLoader.LoadExamples(typeof(Program).Assembly);
+        private static IList<KeyValuePair<string, IList<Example>>> examples = ExamplesLoader.LoadExamples(typeof(Program).Assembly);
 
         static void Main(string[] args)
         {
@@ -36,7 +36,7 @@ namespace Examples
                     Console.WriteLine("Category: " + examples[categoryIndex].Key);
                     for (var i = 0; i < examples[categoryIndex].Value.Count; i++)
                     {
-                        Console.WriteLine(i + ". " + examples[categoryIndex].Value[i].Key);
+                        Console.WriteLine(i + ". " + ExamplesLoader.PrepareExampleName(examples[categoryIndex].Value[i].GetType().Name));
                     }
                     Console.Write("Select example (index from 0 to " + (examples[categoryIndex].Value.Count - 1) + "): ");
                     if (!int.TryParse(Console.ReadLine(), out exampleIndex))
@@ -46,7 +46,7 @@ namespace Examples
 
                 Console.Clear();
 
-                examples[categoryIndex].Value[exampleIndex].Value.Run();
+                examples[categoryIndex].Value[exampleIndex].Run();
 
                 Console.WriteLine("Press any key to return to main menu");
                 Console.ReadKey();

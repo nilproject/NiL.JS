@@ -72,8 +72,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ExamplesFramework\ExamplesFramework.csproj">
-      <Project>{90e67fd1-c115-4326-93fe-49c25ce17958}</Project>
+    <ProjectReference Include="..\ExamplesFramework\ExamplesFramework.csproj">
+      <Project>{21C2EFE5-3935-4E00-9C34-C1E6BA3643AF}</Project>
       <Name>ExamplesFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\NiL.JS\NiL.JS.csproj">

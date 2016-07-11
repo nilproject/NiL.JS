@@ -1,9 +1,11 @@
 ﻿using System;
+using ExamplesFramework;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
 namespace Examples.Run_script
 {
+    [Level(0)]
     public sealed class Via_eval_with_code_and_inplace : ExamplesFramework.Example
     {
         public override void Run()
