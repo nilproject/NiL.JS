@@ -324,7 +324,7 @@ namespace NiL.JS.BaseLibrary
                         {
                             self.oValue = temp;
                             self.valueType = JSValueType.String;
-                            margs.length = 1 + m.Groups.Count - 1 + 1 + 1;
+                            margs.length = m.Groups.Count + 2;
                             match.oValue = m.Value;
                             JSValue t;
                             for (int i = 1; i < m.Groups.Count; i++)
@@ -333,6 +333,7 @@ namespace NiL.JS.BaseLibrary
                                 margs[i] = t;
                             }
                             t = m.Index;
+                            margs[0] = match;
                             margs[margs.length - 2] = t;
                             margs[margs.length - 1] = self;
                             return f.Call(margs).ToString();

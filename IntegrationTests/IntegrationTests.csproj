@@ -67,6 +67,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="BaseLibrary\StringTests.cs" />
     <Compile Include="Core\Functions\MethodProxyTests.cs" />
     <Compile Include="Core\JSValueTests.cs" />
     <Compile Include="Core\ParserTests.cs" />
