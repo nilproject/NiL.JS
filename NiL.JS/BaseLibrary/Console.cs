@@ -2,6 +2,7 @@
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 
+#if !NETCORE
 namespace NiL.JS.BaseLibrary
 {
     internal static class console
@@ -63,3 +64,4 @@ namespace NiL.JS.BaseLibrary
         }
     }
 }
+#endif

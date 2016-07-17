@@ -8,7 +8,7 @@ namespace NiL.JS.BaseLibrary
         {
             for (var i = 0; i < args.length; i++)
             {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
                 if (i < args.length)
                     System.Diagnostics.Debug.Write(args[0]);
                 else
@@ -19,7 +19,7 @@ namespace NiL.JS.BaseLibrary
 
         public static void write(Arguments args)
         {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             for (var i = 0; i < args.length; i++)
                 System.Diagnostics.Debug.WriteLine(args[0]);
 #else

@@ -9,7 +9,7 @@ namespace NiL.JS.Core.Interop
     /// Предоставляет возможность переопределить обработчики получения поля объекта 
     /// и получения перечислителя полей объекта.
     /// </summary>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public abstract class CustomType : JSObject

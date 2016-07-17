@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
 using NiL.JS.Core.JIT;
 #endif
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class GetArgumentsExpression : GetVariable
@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
         }
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public class GetVariable : VariableReference
@@ -116,7 +116,7 @@ namespace NiL.JS.Expressions
             return variableName;
         }
 
-#if !NET35 && !PORTABLE
+#if !NET35 && !(PORTABLE || NETCORE)
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             dynamicValues.Add(this);

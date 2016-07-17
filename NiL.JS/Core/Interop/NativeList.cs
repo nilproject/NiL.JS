@@ -147,7 +147,7 @@ namespace NiL.JS.Core.Interop
                                 {
                                     if (value is Delegate)
                                     {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                                         oValue = new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
 #else
                                         oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target);
@@ -209,7 +209,7 @@ namespace NiL.JS.Core.Interop
             this.elementType = data.GetType().GetElementType();
             if (elementType == null)
             {
-                var @interface = data.GetType().GetInterface(typeof(IList<>).Name);
+                var @interface = data.GetType().GetTypeInfo().GetInterface(typeof(IList<>).Name);
                 if (@interface != null)
                     elementType = @interface.GetGenericArguments()[0];
                 else

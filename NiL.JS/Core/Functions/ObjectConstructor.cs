@@ -5,7 +5,7 @@ using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core.Functions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     internal class ObjectConstructor : ProxyConstructor

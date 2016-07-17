@@ -3,7 +3,7 @@ using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Core
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class WithContext : Context

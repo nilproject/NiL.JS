@@ -6,11 +6,11 @@ namespace NiL.JS.Core.Interop
     /// Указывает на необходимость учитывать член при создании представителя в среде выполнения сценария 
     /// вне зависимости от модификатора доступа
     /// </summary>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     [AttributeUsage(AttributeTargets.All
-#if PORTABLE
+#if (PORTABLE || NETCORE)
         & ~AttributeTargets.Constructor
 #endif
 , AllowMultiple = false, Inherited = true)]

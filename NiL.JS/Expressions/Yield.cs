@@ -8,7 +8,7 @@ using NiL.JS.Extensions;
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Yield : Expression

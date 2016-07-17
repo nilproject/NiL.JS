@@ -8,7 +8,7 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class TryCatch : CodeNode
@@ -197,7 +197,7 @@ namespace NiL.JS.Statements
             if (catchBody is Empty)
                 return;
             JSValue cvar = null;
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
             if (e is RuntimeWrappedException)
             {
                 cvar = new JSValue();

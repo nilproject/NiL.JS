@@ -2,7 +2,7 @@
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
-#if PORTABLE
+#if (PORTABLE || NETCORE)
 using System.Reflection;
 #endif
 
@@ -11,7 +11,7 @@ namespace NiL.JS.Core.Functions
     /// <remarks>
     /// Доступ к типу не предоставляется из скрипта. Атрибуты не нужны
     /// </remarks>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     internal sealed class MethodGroup : BaseLibrary.Function
@@ -99,7 +99,7 @@ namespace NiL.JS.Core.Functions
                                 if (args[j] != null ?
                                     !methods[i].parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                                     methods[i].parameters[j].ParameterType.GetTypeInfo().IsValueType)
 #else
                                     methods[i].parameters[j].ParameterType.IsValueType)

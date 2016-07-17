@@ -5,7 +5,7 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public abstract class VariableReference : Expression

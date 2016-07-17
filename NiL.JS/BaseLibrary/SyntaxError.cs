@@ -5,7 +5,7 @@ using NiL.JS.Core.Interop;
 namespace NiL.JS.BaseLibrary
 {
     [Prototype(typeof(Error))]
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class SyntaxError : Error

@@ -7,7 +7,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Substract : Expression

@@ -171,7 +171,7 @@ namespace NiL.JS.Extensions
             throw new InvalidCastException();
         }
 
-#if DEBUG && !PORTABLE // TODO
+#if DEBUG && !(PORTABLE || NETCORE) // TODO
         //private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
 
         public static T AsImplementationOf<T>(this JSValue self)

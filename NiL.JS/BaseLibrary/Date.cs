@@ -5,7 +5,7 @@ using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Date
@@ -1061,7 +1061,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue toLocaleString()
         {
             var dt = ToDateTime();
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
             return dt.ToLongDateString() + " " + dt.ToLongTimeString();
 #else
             return dt.ToString();
@@ -1167,7 +1167,7 @@ namespace NiL.JS.BaseLibrary
             dt = dt.AddDays((System.Math.Abs(_time) % _weekMilliseconds) / _dayMilliseconds);
             dt = dt.AddMonths(getMonthImpl());
             dt = dt.AddYears(y);
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             return dt.ToString();
 #else
             return dt.ToLongDateString();

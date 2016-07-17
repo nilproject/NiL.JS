@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("NiL.JS")]
 [assembly: AssemblyDescription("JavaScript engine for .NET")]
 [assembly: AssemblyCompany("NiLProject")]
-[assembly: AssemblyCopyright("Copyright © NiLProject 2015")]
+[assembly: AssemblyCopyright("Copyright © NiLProject 2016")]
 [assembly: AssemblyTrademark("NiL.JS")]
 [assembly: AssemblyVersion("2.3.934")]
 [assembly: AssemblyFileVersion("2.3.934")]

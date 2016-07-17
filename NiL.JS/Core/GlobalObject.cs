@@ -4,7 +4,7 @@ using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Core
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     internal sealed class GlobalObject : JSObject

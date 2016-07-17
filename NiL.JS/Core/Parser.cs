@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
@@ -624,7 +625,12 @@ namespace NiL.JS.Core
             if (type == null)
                 ExceptionsHelper.ThrowArgumentNull("type");
 
-            var attributes = type.GetCustomAttributes(typeof(CustomCodeFragment), false);
+            var attributes = type.GetTypeInfo().GetCustomAttributes(typeof(CustomCodeFragment), false)
+#if NETCORE
+                .ToArray()
+#endif
+                ;
+
             if (attributes.Length == 0)
                 throw new ArgumentException("type must be marked with attribute \"" + typeof(CustomCodeFragment).Name + "\"");
             var attribute = attributes[0] as CustomCodeFragment;

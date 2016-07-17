@@ -7,7 +7,7 @@ namespace NiL.JS.Core
     /// <summary>
     /// Представляет ошибки, возникшие во время выполнения скрипта.
     /// </summary>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class JSException : Exception

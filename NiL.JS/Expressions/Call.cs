@@ -16,7 +16,7 @@ namespace NiL.JS.Expressions
         Super
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Call : Expression
@@ -189,7 +189,7 @@ namespace NiL.JS.Expressions
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private static void checkStackInternal(decimal a = 0, decimal b = 0, decimal c = 0, decimal d = 0)
         {
-#if !PORTABLE && !NET35
+#if !(PORTABLE || NETCORE) && !NET35
             RuntimeHelpers.EnsureSufficientExecutionStack();
 #endif
         }

@@ -11,7 +11,7 @@ namespace NiL.JS.Expressions
         Postincriment
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Increment : Expression

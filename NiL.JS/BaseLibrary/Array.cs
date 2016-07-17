@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 
 namespace NiL.JS.BaseLibrary
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Array : JSObject, IIterable
@@ -345,7 +346,7 @@ namespace NiL.JS.BaseLibrary
             bool nativeMode = arraySrc != null;
             if (!self.Defined || (self.valueType >= JSValueType.Object && self.oValue == null))
             {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                 ExceptionsHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
 #else
                 var stackTrace = new System.Diagnostics.StackTrace();
@@ -517,7 +518,7 @@ namespace NiL.JS.BaseLibrary
             bool nativeMode = arraySrc != null;
             if (!self.Defined || (self.valueType >= JSValueType.Object && self.oValue == null))
             {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                 ExceptionsHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
 #else
                 var stackTrace = new System.Diagnostics.StackTrace();
@@ -1760,8 +1761,9 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(0)]
         public new JSValue toString(Arguments args)
         {
-            if (this.GetType() != typeof(Array) && !this.GetType().IsSubclassOf(typeof(Array)))
-                ExceptionsHelper.Throw(new TypeError("Try to call Array.toString on not Array object."));
+            if (GetType() != typeof(Array) && !GetType().GetTypeInfo().IsSubclassOf(typeof(Array)))
+                ExceptionsHelper.Throw(new TypeError("Try to call Array.toString for object of another type."));
+
             return this.ToString();
         }
 

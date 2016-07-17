@@ -6,7 +6,7 @@ namespace NiL.JS.Core.Interop
     /// Объект-прослойка, созданный для типа, помеченного данным аттрибутом, 
     /// не будет допускать создание полей, которые не существуют в помеченном типе.
     /// </summary>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]

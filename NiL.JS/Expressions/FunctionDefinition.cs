@@ -10,7 +10,7 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class ParameterDescriptor : VariableDescriptor
@@ -32,7 +32,7 @@ namespace NiL.JS.Expressions
         }
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class ParameterReference : VariableReference
@@ -64,7 +64,7 @@ namespace NiL.JS.Expressions
         }
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class FunctionDefinition : EntityDefinition
@@ -679,7 +679,7 @@ namespace NiL.JS.Expressions
                 }
             }
         }
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             body.TryCompile(true, false, null, new List<CodeNode>());

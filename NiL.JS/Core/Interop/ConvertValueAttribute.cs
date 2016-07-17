@@ -2,7 +2,7 @@
 
 namespace NiL.JS.Core.Interop
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     [AttributeUsage(

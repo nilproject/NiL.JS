@@ -6,7 +6,7 @@ using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core.Functions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     [Prototype(typeof(Function))]
@@ -65,15 +65,15 @@ namespace NiL.JS.Core.Functions
             fields = typeProxy.fields;
             proxy = typeProxy;
 
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
                 ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #else
             if (proxy.hostedType.ContainsGenericParameters)
                 ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #endif
-            var ownew = typeProxy.hostedType.IsDefined(typeof(RequireNewKeywordAttribute), true);
-            var owonew = typeProxy.hostedType.IsDefined(typeof(DisallowNewKeywordAttribute), true);
+            var ownew = typeProxy.hostedType.GetTypeInfo().IsDefined(typeof(RequireNewKeywordAttribute), true);
+            var owonew = typeProxy.hostedType.GetTypeInfo().IsDefined(typeof(DisallowNewKeywordAttribute), true);
 
             if (ownew && owonew)
                 throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
@@ -86,7 +86,7 @@ namespace NiL.JS.Core.Functions
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             var ctors = System.Linq.Enumerable.ToArray(typeProxy.hostedType.GetTypeInfo().DeclaredConstructors);
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.GetTypeInfo().IsValueType ? 1 : 0));
 #else
@@ -188,7 +188,7 @@ namespace NiL.JS.Core.Functions
                 else
                 {
                     if ((arguments == null || arguments.length == 0)
-#if PORTABLE
+#if (PORTABLE || NETCORE)
  && proxy.hostedType.GetTypeInfo().IsValueType)
 #else
  && proxy.hostedType.IsValueType)
@@ -236,7 +236,7 @@ namespace NiL.JS.Core.Functions
                     {
                         objc.instance = obj;
 
-                        objc.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
+                        objc.attributes |= proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
                         if (obj.GetType() == typeof(Date))
                             objc.valueType = JSValueType.Date;
                         else if (res != null)
@@ -255,14 +255,14 @@ namespace NiL.JS.Core.Functions
 
                     res = res ?? new ObjectWrapper(obj)
                     {
-                        attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
+                        attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
                     };
                 }
                 return res;
             }
             catch (TargetInvocationException e)
             {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
                 if (System.Diagnostics.Debugger.IsAttached)
                     System.Diagnostics.Debugger.Log(10, "Exception", e.Message);
 #endif
@@ -305,7 +305,7 @@ namespace NiL.JS.Core.Functions
                                 if (args[j] != null ?
                                     !constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                                     constructors[i].parameters[j].ParameterType.GetTypeInfo().IsValueType)
 #else
                                     constructors[i].parameters[j].ParameterType.IsValueType)

@@ -9,7 +9,7 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Core
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public enum AbortReason
@@ -28,12 +28,12 @@ namespace NiL.JS.Core
     /// <summary>
     /// Контекст выполнения скрипта. Хранит состояние выполнения сценария.
     /// </summary>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public class Context : IEnumerable<string>
     {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
         [ThreadStatic]
         internal static List<Context> currentContextStack;
 
@@ -66,7 +66,7 @@ namespace NiL.JS.Core
         {
             get
             {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                 return currentContextStack.Count > 0 ? currentContextStack[currentContextStack.Count - 1] : null;
 #else
                 var stack = GetCurrectContextStack();
@@ -119,7 +119,7 @@ namespace NiL.JS.Core
                 globalContext.DefineConstructor(typeof(URIError));
                 globalContext.DefineConstructor(typeof(SyntaxError));
                 globalContext.DefineConstructor(typeof(RegExp));
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
                 globalContext.DefineConstructor(typeof(console));
 #endif
                 globalContext.DefineConstructor(typeof(ArrayBuffer));
@@ -149,7 +149,7 @@ namespace NiL.JS.Core
                 globalContext.DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
                 globalContext.DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
                 globalContext.DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
                 globalContext.DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
 #endif
                 #endregion
@@ -296,7 +296,7 @@ namespace NiL.JS.Core
         /// <returns>Истина если текущий контекст был активирован данным вызовом. Ложь если контекст уже активен.</returns>
         internal bool Activate()
         {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             if (currentContextStack == null)
                 currentContextStack = new List<Context>();
 
@@ -361,7 +361,7 @@ namespace NiL.JS.Core
         /// <returns>Текущий активный контекст</returns>
         internal Context Deactivate()
         {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             if (currentContextStack[currentContextStack.Count - 1] != this)
                 throw new InvalidOperationException("Context is not running");
 
@@ -512,7 +512,7 @@ namespace NiL.JS.Core
             if (fields == null)
                 fields = new StringMap<JSValue>();
             string name;
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             if (System.Reflection.IntrospectionExtensions.GetTypeInfo(moduleType).IsGenericType)
 #else
             if (moduleType.IsGenericType)

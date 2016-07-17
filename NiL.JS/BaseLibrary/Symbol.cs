@@ -5,7 +5,7 @@ using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     [DisallowNewKeyword]

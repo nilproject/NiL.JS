@@ -10,7 +10,7 @@ using System.Text;
 
 namespace NiL.JS.Statements
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public enum SuppressScopeIsolationMode
@@ -20,7 +20,7 @@ namespace NiL.JS.Statements
         DoNotSuppress
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class CodeBlock : CodeNode
@@ -339,7 +339,7 @@ namespace NiL.JS.Statements
                 var t = ls[i].Evaluate(context);
                 if (t != null)
                     context.lastResult = t;
-#if DEBUG && !PORTABLE
+#if DEBUG && !(PORTABLE || NETCORE)
                 if (!context.Running)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
@@ -705,7 +705,7 @@ namespace NiL.JS.Statements
             }
         }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             for (int i = 0; i < _lines.Length; i++)

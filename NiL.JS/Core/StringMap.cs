@@ -26,7 +26,7 @@ namespace NiL.JS.Core
         }
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     [DebuggerDisplay("Count = {Count}")]

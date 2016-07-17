@@ -6,7 +6,7 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Core.JIT
 {
-#if !NET35
+#if !(NET35 || NETCORE)
     internal static class JITHelpers
     {
         public static readonly FieldInfo _items = typeof(List<CodeNode>).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -25,11 +25,13 @@ namespace NiL.JS.Core.JIT
         {
             var methods = typeof(JSValue).GetMethods(BindingFlags.Static | BindingFlags.Public);
             for (var i = 0; i < methods.Length; i++)
+            {
                 if (methods[i].Name == "op_Explicite" && methods[i].ReturnType == typeof(bool))
                 {
                     JSObjectToBooleanMethod = methods[i];
                     break;
                 }
+            }
         }
 
         internal static Expression cnst(object obj)

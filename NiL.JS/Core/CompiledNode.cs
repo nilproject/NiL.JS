@@ -6,8 +6,8 @@ using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Core
 {
-#if !NET35
-#if !PORTABLE
+#if !(NET35 || NETCORE)
+#if !PORTABLE 
     [Serializable]
 #endif
     public sealed class CompiledNode : Expressions.Expression

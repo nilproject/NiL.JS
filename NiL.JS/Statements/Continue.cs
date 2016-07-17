@@ -4,7 +4,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Statements
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Continue : CodeNode

@@ -132,7 +132,7 @@ namespace NiL.JS.Core.Functions
 
                 if (!_wrapperCache.TryGetValue(method, out wrapper))
                 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
                     wrapper = makeMethodOverEmit(methodInfo, parameters, forceInstance);
 #else
                     wrapper = makeMethodOverExpression(methodInfo);
@@ -161,7 +161,7 @@ namespace NiL.JS.Core.Functions
             else
                 throw new NotImplementedException();
         }
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         private Func<object, object[], Arguments, object> makeMethodOverEmit(MethodInfo methodInfo, ParameterInfo[] parameters, bool forceInstance)
         {
             var impl = new DynamicMethod(
@@ -483,7 +483,7 @@ namespace NiL.JS.Core.Functions
                 {
                     target = getTargetObject(thisBind ?? undefined, method.DeclaringType);
                     if (target == null
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
                         || !method.DeclaringType.IsAssignableFrom(target.GetType())
 #endif
                         )
@@ -608,7 +608,7 @@ namespace NiL.JS.Core.Functions
             if (result == null)
             {
                 result = parameters[i].DefaultValue;
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                 if (result != null && result.GetType().FullName == "System.DBNull")
                 {
                     if (parameters[i].ParameterType.GetTypeInfo().IsValueType)

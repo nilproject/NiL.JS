@@ -9,13 +9,13 @@ using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
 using NiL.JS.Backward;
 #endif
 
 namespace NiL.JS.Core
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public enum PropertyScope
@@ -26,7 +26,7 @@ namespace NiL.JS.Core
         SuperProto = 3
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public enum JSValueType
@@ -46,7 +46,7 @@ namespace NiL.JS.Core
         SpreadOperatorResult = 2048 | Undefined // 100000000011
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public enum EnumerationMode
@@ -56,7 +56,7 @@ namespace NiL.JS.Core
         RequireValuesForWrite
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     [Flags]
@@ -80,7 +80,7 @@ namespace NiL.JS.Core
         ConstructingObject = 1 << 27
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     [Flags]
@@ -94,11 +94,11 @@ namespace NiL.JS.Core
         NonConfigurable = 1 << 4,
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<JSValue>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
 , ICloneable, IConvertible
 #endif
     {
@@ -986,7 +986,7 @@ namespace NiL.JS.Core
         }
 
         #region Члены IConvertible
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         TypeCode IConvertible.GetTypeCode()
         {
             return TypeCode.Object;
