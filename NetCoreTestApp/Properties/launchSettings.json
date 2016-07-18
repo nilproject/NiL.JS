@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NetCoreTestApp": {
+      "commandName": "Project",
+      "workingDirectory": "..\\Tests"
+    }
+  }
+}

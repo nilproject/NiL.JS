@@ -456,14 +456,14 @@ namespace NiL.JS.Core.Interop
 
                     if (mmbrs[i] is PropertyInfo)
                     {
-                        if (((mmbrs[i] as PropertyInfo).GetSetMethod() ?? (mmbrs[i] as PropertyInfo).GetGetMethod()).IsStatic != !(InstanceMode ^ instanceAttribute))
+                        if (((mmbrs[i] as PropertyInfo).GetSetMethod(true) ?? (mmbrs[i] as PropertyInfo).GetGetMethod(true)).IsStatic != !(InstanceMode ^ instanceAttribute))
                             continue;
-                        if (((mmbrs[i] as PropertyInfo).GetSetMethod() == null || !(mmbrs[i] as PropertyInfo).GetSetMethod().IsPublic)
-                            && ((mmbrs[i] as PropertyInfo).GetGetMethod() == null || !(mmbrs[i] as PropertyInfo).GetGetMethod().IsPublic))
+                        if (((mmbrs[i] as PropertyInfo).GetSetMethod(true) == null || !(mmbrs[i] as PropertyInfo).GetSetMethod(true).IsPublic)
+                            && ((mmbrs[i] as PropertyInfo).GetGetMethod(true) == null || !(mmbrs[i] as PropertyInfo).GetGetMethod(true).IsPublic))
                             continue;
                     }
                     if ((mmbrs[i] is EventInfo)
-                        && (!(mmbrs[i] as EventInfo).GetAddMethod().IsPublic || (mmbrs[i] as EventInfo).GetAddMethod().IsStatic != !InstanceMode))
+                        && (!(mmbrs[i] as EventInfo).GetAddMethod(true).IsPublic || (mmbrs[i] as EventInfo).GetAddMethod(true).IsStatic != !InstanceMode))
                         continue;
 
                     if ((mmbrs[i] is FieldInfo) && (!(mmbrs[i] as FieldInfo).IsPublic || (mmbrs[i] as FieldInfo).IsStatic != !InstanceMode))
