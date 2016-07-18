@@ -27,14 +27,14 @@ namespace NiL.JS.Core.Functions
         private static readonly Dictionary<MethodBase, Func<object, object[], Arguments, object>> _wrapperCache = new Dictionary<MethodBase, Func<object, object[], Arguments, object>>();
         private Func<object, object[], Arguments, object> wrapper;
         private bool forceInstance;
-        private bool strictConversion;
+        private bool _strictConversion;
 
-        private object hardTarget;
-        private MethodBase method;
+        private object _hardTarget;
+        private MethodBase _method;
         private ConvertValueAttribute returnConverter;
         private ConvertValueAttribute[] paramsConverters;
 
-        internal ParameterInfo[] parameters;
+        internal ParameterInfo[] _parameters;
         internal bool raw;
 
         [Hidden]
@@ -43,7 +43,7 @@ namespace NiL.JS.Core.Functions
             [Hidden]
             get
             {
-                return parameters;
+                return _parameters;
             }
         }
 
@@ -56,7 +56,7 @@ namespace NiL.JS.Core.Functions
             [Hidden]
             get
             {
-                return method.Name;
+                return _method.Name;
             }
         }
 
@@ -80,17 +80,17 @@ namespace NiL.JS.Core.Functions
 
         private MethodProxy()
         {
-            parameters = new ParameterInfo[0];
+            _parameters = new ParameterInfo[0];
             wrapper = delegate { return null; };
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
         public MethodProxy(MethodBase methodBase, object hardTarget)
         {
-            this.method = methodBase;
-            this.hardTarget = hardTarget;
-            this.parameters = methodBase.GetParameters();
-            this.strictConversion = methodBase.IsDefined(typeof(StrictConversionAttribute), true);
+            _method = methodBase;
+            _hardTarget = hardTarget;
+            _parameters = methodBase.GetParameters();
+            _strictConversion = methodBase.IsDefined(typeof(StrictConversionAttribute), true);
 
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
@@ -99,15 +99,15 @@ namespace NiL.JS.Core.Functions
             if (pc.Length != 0)
                 _length.iValue = (pc[0] as ArgumentsLengthAttribute).Count;
             else
-                _length.iValue = parameters.Length;
+                _length.iValue = _parameters.Length;
 
-            for (int i = 0; i < parameters.Length; i++)
+            for (int i = 0; i < _parameters.Length; i++)
             {
-                var t = parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false).ToArray();
+                var t = _parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false).ToArray();
                 if (t != null && t.Length != 0)
                 {
                     if (paramsConverters == null)
-                        paramsConverters = new ConvertValueAttribute[parameters.Length];
+                        paramsConverters = new ConvertValueAttribute[_parameters.Length];
                     paramsConverters[i] = t[0] as ConvertValueAttribute;
                 }
             }
@@ -122,40 +122,40 @@ namespace NiL.JS.Core.Functions
                 if (forceInstance)
                 {
                     if (!methodInfo.IsStatic
-                        || (parameters.Length == 0)
-                        || (parameters.Length > 2)
-                        || (parameters[0].ParameterType != typeof(JSValue))
-                        || (parameters.Length > 1 && parameters[1].ParameterType != typeof(Arguments)))
+                        || (_parameters.Length == 0)
+                        || (_parameters.Length > 2)
+                        || (_parameters[0].ParameterType != typeof(JSValue))
+                        || (_parameters.Length > 1 && _parameters[1].ParameterType != typeof(Arguments)))
                         throw new ArgumentException("Force-instance method \"" + methodBase + "\" have invalid signature");
                     raw = true;
                 }
 
-                if (!_wrapperCache.TryGetValue(method, out wrapper))
+                if (!_wrapperCache.TryGetValue(_method, out wrapper))
                 {
 #if !(PORTABLE || NETCORE)
-                    wrapper = makeMethodOverEmit(methodInfo, parameters, forceInstance);
+                    wrapper = makeMethodOverEmit(methodInfo, _parameters, forceInstance);
 #else
                     wrapper = makeMethodOverExpression(methodInfo);
 #endif
-                    _wrapperCache[method] = wrapper;
+                    _wrapperCache[_method] = wrapper;
                 }
                 else
                 {
-                    raw |= parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments));
+                    raw |= _parameters.Length == 0 || (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments));
                 }
 
                 RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
             }
             else if (methodBase is ConstructorInfo)
             {
-                if (!_wrapperCache.TryGetValue(method, out wrapper))
+                if (!_wrapperCache.TryGetValue(_method, out wrapper))
                 {
-                    wrapper = makeConstructorOverExpression(methodBase as ConstructorInfo, parameters);
-                    _wrapperCache[method] = wrapper;
+                    wrapper = makeConstructorOverExpression(methodBase as ConstructorInfo, _parameters);
+                    _wrapperCache[_method] = wrapper;
                 }
                 else
                 {
-                    raw |= parameters.Length == 0 || (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments));
+                    raw |= _parameters.Length == 0 || (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments));
                 }
             }
             else
@@ -319,14 +319,14 @@ namespace NiL.JS.Core.Functions
             {
                 for (; ; )
                 {
-                    if (methodInfo.IsStatic && parameters[0].ParameterType == typeof(JSValue))
+                    if (methodInfo.IsStatic && _parameters[0].ParameterType == typeof(JSValue))
                     {
-                        if (parameters.Length == 1)
+                        if (_parameters.Length == 1)
                         {
                             tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSValue)));
                             break;
                         }
-                        else if (parameters.Length == 2 && parameters[1].ParameterType == typeof(Arguments))
+                        else if (_parameters.Length == 2 && _parameters[1].ParameterType == typeof(Arguments))
                         {
                             tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSValue)), argsSource);
                             break;
@@ -335,7 +335,7 @@ namespace NiL.JS.Core.Functions
                     throw new ArgumentException("Invalid method signature");
                 }
             }
-            else if (parameters.Length == 0)
+            else if (_parameters.Length == 0)
             {
                 raw = true;
                 tree = methodInfo.IsStatic ?
@@ -345,8 +345,8 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                prms = new Expression[parameters.Length];
-                if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
+                prms = new Expression[_parameters.Length];
+                if (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments))
                 {
                     raw = true;
                     tree = methodInfo.IsStatic ?
@@ -357,7 +357,7 @@ namespace NiL.JS.Core.Functions
                 else
                 {
                     for (var i = 0; i < prms.Length; i++)
-                        prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
+                        prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), _parameters[i].ParameterType);
                     tree = methodInfo.IsStatic ?
                         Expression.Call(methodInfo, prms)
                         :
@@ -435,7 +435,7 @@ namespace NiL.JS.Core.Functions
                     ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
                 }
             }
-            if (parameters.Length == 0 || (forceInstance && parameters.Length == 1))
+            if (_parameters.Length == 0 || (forceInstance && _parameters.Length == 1))
                 return Invoke(withNew, correctTargetObject(targetObject, creator.body._strict), null);
 
             if (raw || withSpread)
@@ -445,7 +445,7 @@ namespace NiL.JS.Core.Functions
             else
             {
                 object[] args = null;
-                int targetCount = parameters.Length;
+                int targetCount = _parameters.Length;
                 args = new object[targetCount];
                 for (int i = 0; i < targetCount; i++)
                 {
@@ -461,7 +461,7 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         internal object InvokeImpl(JSValue thisBind, object[] args, Arguments argsSource)
         {
-            object target = hardTarget;
+            object target = _hardTarget;
             if (target == null)
             {
                 if (forceInstance)
@@ -479,17 +479,17 @@ namespace NiL.JS.Core.Functions
                     else
                         target = thisBind ?? undefined;
                 }
-                else if (!method.IsStatic && !method.IsConstructor)
+                else if (!_method.IsStatic && !_method.IsConstructor)
                 {
-                    target = getTargetObject(thisBind ?? undefined, method.DeclaringType);
+                    target = getTargetObject(thisBind ?? undefined, _method.DeclaringType);
                     if (target == null
 #if !(PORTABLE || NETCORE)
-                        || !method.DeclaringType.IsAssignableFrom(target.GetType())
+                        || !_method.DeclaringType.IsAssignableFrom(target.GetType())
 #endif
                         )
                     {
                         // Исключительная ситуация. Я не знаю почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
-                        if (method.Name == "get_length" && typeof(Function).IsAssignableFrom(method.DeclaringType))
+                        if (_method.Name == "get_length" && typeof(Function).IsAssignableFrom(_method.DeclaringType))
                             return 0;
 
                         ExceptionsHelper.Throw(new TypeError("Can not call function \"" + name + "\" for object of another type."));
@@ -521,14 +521,14 @@ namespace NiL.JS.Core.Functions
 
         private object getDummy()
         {
-            if (typeof(JSValue).IsAssignableFrom(method.DeclaringType))
-                if (typeof(Function).IsAssignableFrom(method.DeclaringType))
+            if (typeof(JSValue).IsAssignableFrom(_method.DeclaringType))
+                if (typeof(Function).IsAssignableFrom(_method.DeclaringType))
                     return this;
-                else if (typeof(TypedArray).IsAssignableFrom(method.DeclaringType))
+                else if (typeof(TypedArray).IsAssignableFrom(_method.DeclaringType))
                     return new Int8Array();
                 else
                     return new JSValue();
-            if (typeof(Error).IsAssignableFrom(method.DeclaringType))
+            if (typeof(Error).IsAssignableFrom(_method.DeclaringType))
                 return new Error();
             return null;
         }
@@ -549,14 +549,14 @@ namespace NiL.JS.Core.Functions
 
         internal object[] ConvertArgs(Arguments source, ConvertArgsOptions options)
         {
-            if (parameters.Length == 0)
+            if (_parameters.Length == 0)
                 return null;
 
             if (forceInstance)
                 ExceptionsHelper.Throw(new InvalidOperationException());
 
             object[] res = null;
-            int targetCount = parameters.Length;
+            int targetCount = _parameters.Length;
             for (int i = targetCount; i-- > 0;)
             {
                 var obj = source?[i] ?? undefined;
@@ -581,7 +581,7 @@ namespace NiL.JS.Core.Functions
         private object convertArg(int i, JSValue obj, ConvertArgsOptions options)
         {
             object result = null;
-            var strictConv = strictConversion || (options & ConvertArgsOptions.StrictConversion) != 0;
+            var strictConv = _strictConversion || (options & ConvertArgsOptions.StrictConversion) != 0;
 
             if (paramsConverters != null && paramsConverters[i] != null)
             {
@@ -592,26 +592,26 @@ namespace NiL.JS.Core.Functions
                 var trueNull = obj.valueType >= JSValueType.Object && obj.oValue == null;
 
                 if (!trueNull)
-                    result = Tools.convertJStoObj(obj, parameters[i].ParameterType, !strictConv);
+                    result = Tools.convertJStoObj(obj, _parameters[i].ParameterType, !strictConv);
 
-                if (strictConv && (trueNull ? parameters[i].ParameterType.GetTypeInfo().IsValueType : result == null))
+                if (strictConv && (trueNull ? _parameters[i].ParameterType.GetTypeInfo().IsValueType : result == null))
                 {
                     if ((options & ConvertArgsOptions.ThrowOnError) != 0)
-                        ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + parameters[i].ParameterType);
+                        ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + _parameters[i].ParameterType);
                     return null;
                 }
 
-                if (trueNull && parameters[i].ParameterType.GetTypeInfo().IsClass)
+                if (trueNull && _parameters[i].ParameterType.GetTypeInfo().IsClass)
                     return null;
             }
 
             if (result == null)
             {
-                result = parameters[i].DefaultValue;
+                result = _parameters[i].DefaultValue;
 #if (PORTABLE || NETCORE)
                 if (result != null && result.GetType().FullName == "System.DBNull")
                 {
-                    if (parameters[i].ParameterType.GetTypeInfo().IsValueType)
+                    if (_parameters[i].ParameterType.GetTypeInfo().IsValueType)
 #else
                 if (result is DBNull)
                 {
@@ -619,12 +619,12 @@ namespace NiL.JS.Core.Functions
                     if (strictConv)
                     {
                         if ((options & ConvertArgsOptions.ThrowOnError) != 0)
-                            ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + parameters[i].ParameterType);
+                            ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + _parameters[i].ParameterType);
                         return null;
                     }
 
-                    if ((options & ConvertArgsOptions.DummyValues) != 0 && parameters[i].ParameterType.GetTypeInfo().IsValueType)
-                        result = Activator.CreateInstance(parameters[i].ParameterType);
+                    if ((options & ConvertArgsOptions.DummyValues) != 0 && _parameters[i].ParameterType.GetTypeInfo().IsValueType)
+                        result = Activator.CreateInstance(_parameters[i].ParameterType);
                     else
                         result = null;
                 }
@@ -650,14 +650,14 @@ namespace NiL.JS.Core.Functions
 #if DEVELOPBRANCH || VERSION21
         public sealed override JSValue bind(Arguments args)
         {
-            if (hardTarget != null || args.Length == 0)
+            if (_hardTarget != null || args.Length == 0)
                 return this;
 
             return new MethodProxy()
             {
-                hardTarget = getTargetObject(args[0], method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
-                method = method,
-                parameters = parameters,
+                _hardTarget = getTargetObject(args[0], _method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
+                _method = _method,
+                _parameters = _parameters,
                 wrapper = wrapper,
                 forceInstance = forceInstance,
                 raw = raw
@@ -668,8 +668,8 @@ namespace NiL.JS.Core.Functions
         {
             try
             {
-                var methodInfo = method as MethodInfo;
-                return methodInfo.CreateDelegate(delegateType, hardTarget);
+                var methodInfo = _method as MethodInfo;
+                return methodInfo.CreateDelegate(delegateType, _hardTarget);
             }
             catch
             {

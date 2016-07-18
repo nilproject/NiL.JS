@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Interop;
 using NiL.JS.Core.Functions;
-using NiL.JS.Extensions;
+
+#if NET40
+using NiL.JS.Backward;
+#endif
 
 namespace NiL.JS.Core.Interop
 {
@@ -606,7 +608,7 @@ namespace NiL.JS.Core.Interop
             else
             {
 #if PORTABLE
-                switch (m[0].get_MemberType())
+                switch (m[0].GetMemberType())
 #else
                 switch (m[0].MemberType)
 #endif

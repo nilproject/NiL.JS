@@ -625,14 +625,10 @@ namespace NiL.JS.Core
             if (type == null)
                 ExceptionsHelper.ThrowArgumentNull("type");
 
-            var attributes = type.GetTypeInfo().GetCustomAttributes(typeof(CustomCodeFragment), false)
-#if NETCORE
-                .ToArray()
-#endif
-                ;
-
+            var attributes = type.GetTypeInfo().GetCustomAttributes(typeof(CustomCodeFragment), false).ToArray();
             if (attributes.Length == 0)
                 throw new ArgumentException("type must be marked with attribute \"" + typeof(CustomCodeFragment).Name + "\"");
+
             var attribute = attributes[0] as CustomCodeFragment;
 
             if (attribute.Type == CodeFragmentType.Statement)

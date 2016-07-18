@@ -6,6 +6,10 @@ using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 
+#if NET40
+using NiL.JS.Backward;
+#endif
+
 namespace NiL.JS.BaseLibrary
 {
 #if !(PORTABLE || NETCORE)

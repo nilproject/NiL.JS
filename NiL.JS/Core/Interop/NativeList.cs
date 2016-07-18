@@ -6,6 +6,10 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 
+#if NET40
+using NiL.JS.Backward;
+#endif
+
 namespace NiL.JS.Core.Interop
 {
     [Prototype(typeof(BaseLibrary.Array))]
@@ -209,7 +213,11 @@ namespace NiL.JS.Core.Interop
             this.elementType = data.GetType().GetElementType();
             if (elementType == null)
             {
+#if PORTABLE
+                var @interface = data.GetType().GetInterface(typeof(IList<>).Name);
+#else
                 var @interface = data.GetType().GetTypeInfo().GetInterface(typeof(IList<>).Name);
+#endif
                 if (@interface != null)
                     elementType = @interface.GetGenericArguments()[0];
                 else

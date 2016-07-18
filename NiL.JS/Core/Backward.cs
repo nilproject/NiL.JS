@@ -18,7 +18,7 @@ namespace NiL.JS.Backward
     internal delegate TResult Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>(T1 prm1, T2 prm2, T3 prm3, T4 prm4, T5 prm5, T6 prm6, T7 prm7, T8 prm8, T9 prm9, T10 prm10, T11 prm11, T12 prm12, T13 prm13, T14 prm14, T15 prm15, T16 prm16);
 #endif
 #if NET35 || NET40 || __MonoCS__
-    public static class ParameterInfoExtension
+    internal static class ParameterInfoExtension
     {
         public static Object GetCustomAttribute(this ParameterInfo _this, Type attributeType)
         {
@@ -37,7 +37,7 @@ namespace NiL.JS.Backward
         }
     }
 
-    public static class PropertyInfoExtension
+    internal static class PropertyInfoExtension
     {
         public static Object GetCustomAttribute(this PropertyInfo _this, Type attributeType)
         {
@@ -56,7 +56,7 @@ namespace NiL.JS.Backward
         }
     }
 
-    public static class FieldInfoExtension
+    internal static class FieldInfoExtension
     {
         public static object GetCustomAttribute(this FieldInfo _this, Type attributeType)
         {
@@ -75,7 +75,7 @@ namespace NiL.JS.Backward
         }
     }
 
-    public static class TypeExtensions
+    internal static class TypeExtensions
     {
         public static MethodInfo GetRuntimeMethod(this Type type, string name, Type[] types)
         {
@@ -93,7 +93,7 @@ namespace NiL.JS.Backward
         }
     }
 
-    public static class DelegateExtensions
+    internal static class DelegateExtensions
     {
         public static MethodInfo GetMethodInfo(this Delegate @delegate)
         {
@@ -101,7 +101,7 @@ namespace NiL.JS.Backward
         }
     }
 
-    public static class MethodInfoExtensions
+    internal static class MethodInfoExtensions
     {
         public static Delegate CreateDelegate(this MethodInfo methodInfo, Type delegateType)
         {

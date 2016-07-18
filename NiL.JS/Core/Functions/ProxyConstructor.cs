@@ -4,6 +4,10 @@ using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
+#if NET40
+using NiL.JS.Backward;
+#endif
+
 namespace NiL.JS.Core.Functions
 {
 #if !(PORTABLE || NETCORE)
@@ -203,7 +207,7 @@ namespace NiL.JS.Core.Functions
                         obj = constructor.InvokeImpl(
                             null,
                             args,
-                            arguments == null ? constructor.parameters.Length != 0 ? new Arguments()
+                            arguments == null ? constructor._parameters.Length != 0 ? new Arguments()
                                                                                    : null
                                               : arguments);
                     }
@@ -284,10 +288,10 @@ namespace NiL.JS.Core.Functions
             {
                 for (int i = 0; i < constructors.Length; i++)
                 {
-                    if (constructors[i].parameters.Length == 1 && constructors[i].raw)
+                    if (constructors[i]._parameters.Length == 1 && constructors[i].raw)
                         return constructors[i];
 
-                    if (pass == 1 || constructors[i].parameters.Length == len)
+                    if (pass == 1 || constructors[i]._parameters.Length == len)
                     {
                         if (len == 0)
                             args = _objectA;
@@ -303,12 +307,12 @@ namespace NiL.JS.Core.Functions
                             for (var j = args.Length; j-- > 0;)
                             {
                                 if (args[j] != null ?
-                                    !constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
+                                    !constructors[i]._parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
 #if (PORTABLE || NETCORE)
-                                    constructors[i].parameters[j].ParameterType.GetTypeInfo().IsValueType)
+                                    constructors[i]._parameters[j].ParameterType.GetTypeInfo().IsValueType)
 #else
-                                    constructors[i].parameters[j].ParameterType.IsValueType)
+                                    constructors[i]._parameters[j].ParameterType.IsValueType)
 #endif
                                 {
                                     j = 0;

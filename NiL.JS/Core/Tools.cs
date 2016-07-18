@@ -720,7 +720,11 @@ namespace NiL.JS.Core
                 Type elementType = null;
 
                 if ((targetType.IsArray && (elementType = targetType.GetElementType()) != null)
+#if PORTABLE
+                || ((@interface = targetType.GetInterface(typeof(IEnumerable<>).Name)) != null
+#else
                 || ((@interface = targetType.GetTypeInfo().GetInterface(typeof(IEnumerable<>).Name)) != null
+#endif
                      && targetType.IsAssignableFrom((elementType = @interface.GetGenericArguments()[0]).MakeArrayType())))
                 {
 #if (PORTABLE || NETCORE)
