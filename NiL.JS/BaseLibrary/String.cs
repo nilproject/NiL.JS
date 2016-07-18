@@ -317,25 +317,26 @@ namespace NiL.JS.BaseLibrary
                     string temp = self.oValue.ToString();
                     var match = new String();
                     var margs = new Arguments();
-                    margs.length = 1;
-                    margs[0] = match;
                     match.oValue = (args[0].oValue as RegExp).regEx.Replace(self.ToString(),
                         (m) =>
                         {
                             self.oValue = temp;
                             self.valueType = JSValueType.String;
                             margs.length = m.Groups.Count + 2;
-                            match.oValue = m.Value;
+
                             JSValue t;
                             for (int i = 1; i < m.Groups.Count; i++)
                             {
                                 t = m.Groups[i].Value;
                                 margs[i] = t;
                             }
+
                             t = m.Index;
+                            match.oValue = m.Value;
                             margs[0] = match;
                             margs[margs.length - 2] = t;
                             margs[margs.length - 1] = self;
+
                             return f.Call(margs).ToString();
                         }, (args[0].Value as RegExp)._global ? int.MaxValue : 1);
                     self.oValue = temp;
