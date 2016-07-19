@@ -57,11 +57,30 @@ namespace IntegrationTests
             {
                 module.Run(1000);
             }
-            catch (Exception e)
+            catch (TimeoutException)
             {
-                Assert.IsInstanceOfType(e, typeof(TimeoutException));
-            }
 
+            }
+            stopWatch.Stop();
+
+            Assert.AreEqual(1, Math.Round(stopWatch.Elapsed.TotalSeconds));
+        }
+
+        [TestMethod]
+        [Timeout(2000)]
+        public void ExecutionWithTimeout_ExceptionShouldNotBeCaughtByTryCatch()
+        {
+            var module = new Module("try{for(;;)}catch(e){throw'No, this is another exception';}");
+
+            var stopWatch = Stopwatch.StartNew();
+            try
+            {
+                module.Run(1000);
+            }
+            catch (TimeoutException)
+            {
+
+            }
             stopWatch.Stop();
 
             Assert.AreEqual(1, Math.Round(stopWatch.Elapsed.TotalSeconds));

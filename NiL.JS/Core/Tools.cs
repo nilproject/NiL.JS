@@ -960,6 +960,12 @@ namespace NiL.JS.Core
             }
         }
 
+        internal static void CheckEndOfInput(string code, ref int i)
+        {
+            if (i >= code.Length)
+                ExceptionsHelper.ThrowSyntaxError("Unexpected end of line", code, i);
+        }
+
         private struct IntStringCacheItem
         {
             public int key;

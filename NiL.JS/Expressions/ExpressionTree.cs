@@ -792,8 +792,9 @@ namespace NiL.JS.Expressions
                             bool withSpread = false;
                             for (;;)
                             {
-                                while (Tools.IsWhiteSpace(state.Code[i]))
-                                    i++;
+                                Tools.SkipSpaces(state.Code, ref i);
+                                Tools.CheckEndOfInput(state.Code, ref i);
+
                                 if (state.Code[i] == ')')
                                     break;
                                 else
