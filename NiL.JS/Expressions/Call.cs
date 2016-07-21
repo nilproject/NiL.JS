@@ -153,9 +153,30 @@ namespace NiL.JS.Expressions
                 if (callMode == CallMode.Construct)
                     targetObject = null;
 
-                func.attributes = (func.attributes & ~JSValueAttributesInternal.Eval) | (temp.attributes & JSValueAttributesInternal.Eval);
-                return func.InternalInvoke(targetObject, this._arguments, context, withSpread, callMode != 0);
+                if ((temp.attributes & JSValueAttributesInternal.Eval) != 0)
+                    return CallEval(context);
+
+                return func.InternalInvoke(targetObject, _arguments, context, withSpread, callMode != 0);
             }
+        }
+
+        private JSValue CallEval(Context context)
+        {
+            if (_arguments == null || _arguments.Length == 0)
+                return JSValue.NotExists;
+
+            var evalCode = _arguments[0].Evaluate(context);
+
+            for (int i = 1; i < this._arguments.Length; i++)
+            {
+                context.objectSource = null;
+                this._arguments[i].Evaluate(context);
+            }
+
+            if (evalCode.valueType != JSValueType.String)
+                return evalCode;
+
+            return context.Eval(evalCode.ToString(), false);
         }
 
         private void tailCall(Context context, Function func)
