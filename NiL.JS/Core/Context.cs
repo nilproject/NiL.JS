@@ -314,13 +314,20 @@ namespace NiL.JS.Core
                 if (ThreadIds[i] == threadId)
                 {
                     if (RunningContexts[i].Count > 0 && RunningContexts[i][RunningContexts[i].Count - 1] == this)
+                    {
+                        if (entered)
+                            Monitor.Exit(RunningContexts);
                         return false;
+                    }
 
                     // Бьёт по производительности
                     //if (RunnedContexts[i].Contains(this))
                     //    ExceptionsHelper.Throw(new ApplicationException("Try to reactivate context"));
 
                     RunningContexts[i].Add(this);
+
+                    if (entered)
+                        Monitor.Exit(RunningContexts);
                     return true;
                 }
 
