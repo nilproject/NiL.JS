@@ -10,7 +10,7 @@ using NiL.JS.Expressions;
 using NiL.JS.Statements;
 using linqEx = System.Linq.Expressions;
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
 #endif
 
 namespace NiL.JS.BaseLibrary
@@ -18,7 +18,7 @@ namespace NiL.JS.BaseLibrary
     /// <summary>
     /// Возможные типы функции в контексте использования.
     /// </summary>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public enum FunctionKind
@@ -34,7 +34,7 @@ namespace NiL.JS.BaseLibrary
         Arrow
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public enum RequireNewKeywordLevel
@@ -44,7 +44,7 @@ namespace NiL.JS.BaseLibrary
         WithoutNewOnly
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public partial class Function : JSObject, ICallable
@@ -52,7 +52,7 @@ namespace NiL.JS.BaseLibrary
         internal static readonly Function Empty = new Function();
         private static readonly FunctionDefinition creatorDummy = new FunctionDefinition("anonymous");
         private static readonly Function TTEProxy = new MethodProxy(typeof(Function)
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             .GetTypeInfo().GetDeclaredMethod("ThrowTypeError"))
 #else
 .GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic))
@@ -416,7 +416,7 @@ namespace NiL.JS.BaseLibrary
         
         private JSValue fastInvoke(JSValue targetObject, Expression[] arguments, Context initiator)
         {
-#if DEBUG && !PORTABLE
+#if DEBUG && !(PORTABLE || NETCORE)
             if (creator.trace)
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
 #endif
@@ -467,7 +467,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 finally
                 {
-#if DEBUG && !PORTABLE
+#if DEBUG && !(PORTABLE || NETCORE)
                     if (creator.trace)
                         System.Console.WriteLine("DEBUG: Exit \"" + creator.Reference.Name + "\"");
 #endif
@@ -501,7 +501,7 @@ namespace NiL.JS.BaseLibrary
 
         protected internal virtual JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-#if DEBUG && !PORTABLE
+#if DEBUG && !(PORTABLE || NETCORE)
             if (creator.trace)
                 System.Console.WriteLine("DEBUG: Run \"" + creator.Reference.Name + "\"");
 #endif
@@ -538,7 +538,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 finally
                 {
-#if DEBUG && !PORTABLE
+#if DEBUG && !(PORTABLE || NETCORE)
                     if (creator.trace)
                         System.Console.WriteLine("DEBUG: Exit \"" + creator.Reference.Name + "\"");
 #endif
@@ -1019,7 +1019,7 @@ namespace NiL.JS.BaseLibrary
             }
 
             MethodInfo invokeMethod = null;
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             invokeMethod = System.Linq.Enumerable.First(delegateType.GetRuntimeMethods(), x => x.Name == "Invoke");
 #else
             invokeMethod = delegateType.GetMethod("Invoke");

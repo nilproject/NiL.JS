@@ -4,7 +4,7 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class ConvertToInteger : Expression
@@ -38,7 +38,7 @@ namespace NiL.JS.Expressions
             tempContainer.valueType = JSValueType.Integer;
             return tempContainer;
         }
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var st = first.TryCompile(false, false, typeof(int), dynamicValues);

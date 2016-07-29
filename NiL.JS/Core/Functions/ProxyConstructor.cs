@@ -4,9 +4,13 @@ using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
+#if NET40
+using NiL.JS.Backward;
+#endif
+
 namespace NiL.JS.Core.Functions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     [Prototype(typeof(Function))]
@@ -65,15 +69,15 @@ namespace NiL.JS.Core.Functions
             fields = typeProxy.fields;
             proxy = typeProxy;
 
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
                 ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #else
             if (proxy.hostedType.ContainsGenericParameters)
                 ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
 #endif
-            var ownew = typeProxy.hostedType.IsDefined(typeof(RequireNewKeywordAttribute), true);
-            var owonew = typeProxy.hostedType.IsDefined(typeof(DisallowNewKeywordAttribute), true);
+            var ownew = typeProxy.hostedType.GetTypeInfo().IsDefined(typeof(RequireNewKeywordAttribute), true);
+            var owonew = typeProxy.hostedType.GetTypeInfo().IsDefined(typeof(DisallowNewKeywordAttribute), true);
 
             if (ownew && owonew)
                 throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
@@ -86,7 +90,7 @@ namespace NiL.JS.Core.Functions
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             var ctors = System.Linq.Enumerable.ToArray(typeProxy.hostedType.GetTypeInfo().DeclaredConstructors);
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.GetTypeInfo().IsValueType ? 1 : 0));
 #else
@@ -188,7 +192,7 @@ namespace NiL.JS.Core.Functions
                 else
                 {
                     if ((arguments == null || arguments.length == 0)
-#if PORTABLE
+#if (PORTABLE || NETCORE)
  && proxy.hostedType.GetTypeInfo().IsValueType)
 #else
  && proxy.hostedType.IsValueType)
@@ -203,7 +207,7 @@ namespace NiL.JS.Core.Functions
                         obj = constructor.InvokeImpl(
                             null,
                             args,
-                            arguments == null ? constructor.parameters.Length != 0 ? new Arguments()
+                            arguments == null ? constructor._parameters.Length != 0 ? new Arguments()
                                                                                    : null
                                               : arguments);
                     }
@@ -236,7 +240,7 @@ namespace NiL.JS.Core.Functions
                     {
                         objc.instance = obj;
 
-                        objc.attributes |= proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
+                        objc.attributes |= proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
                         if (obj.GetType() == typeof(Date))
                             objc.valueType = JSValueType.Date;
                         else if (res != null)
@@ -255,14 +259,14 @@ namespace NiL.JS.Core.Functions
 
                     res = res ?? new ObjectWrapper(obj)
                     {
-                        attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
+                        attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
                     };
                 }
                 return res;
             }
             catch (TargetInvocationException e)
             {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
                 if (System.Diagnostics.Debugger.IsAttached)
                     System.Diagnostics.Debugger.Log(10, "Exception", e.Message);
 #endif
@@ -284,10 +288,10 @@ namespace NiL.JS.Core.Functions
             {
                 for (int i = 0; i < constructors.Length; i++)
                 {
-                    if (constructors[i].parameters.Length == 1 && constructors[i].raw)
+                    if (constructors[i]._parameters.Length == 1 && constructors[i].raw)
                         return constructors[i];
 
-                    if (pass == 1 || constructors[i].parameters.Length == len)
+                    if (pass == 1 || constructors[i]._parameters.Length == len)
                     {
                         if (len == 0)
                             args = _objectA;
@@ -303,12 +307,12 @@ namespace NiL.JS.Core.Functions
                             for (var j = args.Length; j-- > 0;)
                             {
                                 if (args[j] != null ?
-                                    !constructors[i].parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
+                                    !constructors[i]._parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
-#if PORTABLE
-                                    constructors[i].parameters[j].ParameterType.GetTypeInfo().IsValueType)
+#if (PORTABLE || NETCORE)
+                                    constructors[i]._parameters[j].ParameterType.GetTypeInfo().IsValueType)
 #else
-                                    constructors[i].parameters[j].ParameterType.IsValueType)
+                                    constructors[i]._parameters[j].ParameterType.IsValueType)
 #endif
                                 {
                                     j = 0;

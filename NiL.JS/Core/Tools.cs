@@ -673,7 +673,7 @@ namespace NiL.JS.Core
                                 return jsobj.Value.ToString();
                         }
 
-                        if (!targetType.GetTypeInfo().IsAbstract && targetType.IsSubclassOf(typeof(Delegate)))
+                        if (!targetType.GetTypeInfo().IsAbstract && targetType.GetTypeInfo().IsSubclassOf(typeof(Delegate)))
                             return (jsobj.Value as Function).MakeDelegate(targetType);
 
                         goto default;
@@ -691,7 +691,7 @@ namespace NiL.JS.Core
 
             if (targetType.IsAssignableFrom(value.GetType()))
                 return value;
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             if (IntrospectionExtensions.GetTypeInfo(targetType).IsEnum && Enum.IsDefined(targetType, value))
                 return value;
 #else
@@ -720,10 +720,14 @@ namespace NiL.JS.Core
                 Type elementType = null;
 
                 if ((targetType.IsArray && (elementType = targetType.GetElementType()) != null)
+#if PORTABLE
                 || ((@interface = targetType.GetInterface(typeof(IEnumerable<>).Name)) != null
+#else
+                || ((@interface = targetType.GetTypeInfo().GetInterface(typeof(IEnumerable<>).Name)) != null
+#endif
                      && targetType.IsAssignableFrom((elementType = @interface.GetGenericArguments()[0]).MakeArrayType())))
                 {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                     if (elementType.GetTypeInfo().IsPrimitive)
                     {
 #else
@@ -954,6 +958,12 @@ namespace NiL.JS.Core
                 }
                 return res.ToString();
             }
+        }
+
+        internal static void CheckEndOfInput(string code, ref int i)
+        {
+            if (i >= code.Length)
+                ExceptionsHelper.ThrowSyntaxError("Unexpected end of line", code, i);
         }
 
         private struct IntStringCacheItem
@@ -1871,7 +1881,7 @@ namespace NiL.JS.Core
                 for (var i = 0; i < handlerArgumentsParameters.Length; i++)
                 {
                     Expression argument = handlerArgumentsParameters[i];
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                     if (argument.Type.GetTypeInfo().IsValueType)
 #else
                     if (argument.Type.IsValueType)

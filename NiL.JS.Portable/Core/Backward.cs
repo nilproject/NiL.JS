@@ -54,42 +54,37 @@ namespace System
     /// </summary>
     public static class PortableBackward
     {
-        public static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> self)
+        internal static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> self)
         {
             return new ReadOnlyCollection<T>(self);
         }
 
-        public static ReadOnlyCollection<T> AsReadOnly<T>(this List<T> self)
+        internal static ReadOnlyCollection<T> AsReadOnly<T>(this List<T> self)
         {
             return new ReadOnlyCollection<T>(self);
         }
 
-        public static bool IsAssignableFrom(this Type self, Type sourceType)
+        internal static bool IsAssignableFrom(this Type self, Type sourceType)
         {
             return self.GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo());
         }
 
-        public static bool IsSubclassOf(this Type self, Type sourceType)
+        internal static bool IsSubclassOf(this Type self, Type sourceType)
         {
             return self != sourceType && self.GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo());
         }
 
-        public static Attribute[] GetCustomAttributes(this Type self, Type attributeType, bool inherit)
+        internal static Attribute[] GetCustomAttributes(this Type self, Type attributeType, bool inherit)
         {
             return self.GetTypeInfo().GetCustomAttributes(attributeType, inherit).ToArray();
         }
 
-        public static bool IsDefined(this Type self, Type attributeType, bool inherit)
+        internal static bool IsDefined(this Type self, Type attributeType, bool inherit)
         {
             return self.GetTypeInfo().IsDefined(attributeType, inherit);
         }
-
-        /// <summary>
-        /// Реализация не полностью совместима с реализацией в полном .NET.
-        /// </summary>
-        /// <param name="self"></param>
-        /// <returns></returns>
-        public static MemberTypes get_MemberType(this MemberInfo self)
+        
+        internal static MemberTypes GetMemberType(this MemberInfo self)
         {
             if (self is ConstructorInfo)
                 return MemberTypes.Constructor;
@@ -106,17 +101,17 @@ namespace System
             return MemberTypes.Custom; // чёт своё, пускай сами разбираются
         }
 
-        public static MethodInfo GetGetMethod(this PropertyInfo self)
+        internal static MethodInfo GetGetMethod(this PropertyInfo self)
         {
             return self.GetMethod;
         }
 
-        public static MethodInfo GetSetMethod(this PropertyInfo self)
+        internal static MethodInfo GetSetMethod(this PropertyInfo self)
         {
             return self.SetMethod;
         }
 
-        public static MethodInfo GetAddMethod(this EventInfo self)
+        internal static MethodInfo GetAddMethod(this EventInfo self)
         {
             return self.AddMethod;
         }
@@ -144,7 +139,7 @@ namespace System
                 typeof(string)
             };
 
-        public static TypeCode GetTypeCode(this Type type)
+        internal static TypeCode GetTypeCode(this Type type)
         {
             if (type == null)
                 return TypeCode.Empty;
@@ -169,12 +164,12 @@ namespace System
             return TypeCode.Object;
         }
 
-        public static Type GetInterface(this Type type, string name)
+        internal static Type GetInterface(this Type type, string name)
         {
             return type.GetTypeInfo().ImplementedInterfaces.First(x => x.Name == name);
         }
 
-        public static Type[] GetGenericArguments(this Type type)
+        internal static Type[] GetGenericArguments(this Type type)
         {
             return type.GenericTypeArguments;
         }

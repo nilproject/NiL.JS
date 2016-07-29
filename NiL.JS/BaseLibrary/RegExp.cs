@@ -5,7 +5,7 @@ using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class RegExp : CustomType
@@ -19,7 +19,7 @@ namespace NiL.JS.BaseLibrary
         {
             _source = "";
             _global = false;
-            regEx = new System.Text.RegularExpressions.Regex("");
+            regEx = new Regex("");
         }
 
         private void makeRegex(Arguments args)

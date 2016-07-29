@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Globalization;
 using NiL.JS.Core;
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
 using NiL.JS.Core.JIT;
 #endif
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Addition : Expression
@@ -331,7 +331,7 @@ namespace NiL.JS.Expressions
                 return;
             }
         }
-#if !PORTABLE && !NET35
+#if !(PORTABLE || NETCORE) && !NET35
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var ft = first.TryCompile(false, false, null, dynamicValues);

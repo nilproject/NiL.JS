@@ -6,7 +6,7 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public enum VariableKind
@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
         ConstantInLexicalScope
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class VariableDefinition : CodeNode

@@ -8,7 +8,7 @@ namespace NiL.JS.Core.Functions
     /// <summary>
     /// Реализует поведение функции Function.prototype.bind.
     /// </summary>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     internal sealed class BindedFunction : Function

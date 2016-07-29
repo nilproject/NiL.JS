@@ -23,7 +23,7 @@ namespace NiL.JS.Core
         Full = 0xFF
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public class VariableDescriptor

@@ -16,7 +16,7 @@ namespace NiL.JS.Core.Functions
                 return "eval";
             }
         }
-        
+
         [Field]
         [DoNotDelete]
         [DoNotEnumerate]
@@ -38,7 +38,7 @@ namespace NiL.JS.Core.Functions
         public EvalFunction()
         {
             _length = new Number(1);
-            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
+            RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
         }
 
         internal override JSValue InternalInvoke(JSValue targetObject, Expression[] arguments, Context initiator, bool withSpread, bool construct)
@@ -46,38 +46,21 @@ namespace NiL.JS.Core.Functions
             if (construct)
                 ExceptionsHelper.ThrowTypeError("eval can not be called as constructor");
 
-            if ((this.attributes & JSValueAttributesInternal.Eval) == 0)
-                return base.InternalInvoke(targetObject, arguments, initiator, withSpread, construct);
-
-            this.attributes &= ~JSValueAttributesInternal.Eval;
-
             if (arguments == null || arguments.Length == 0)
                 return NotExists;
 
-            var arg = arguments[0].Evaluate(initiator);
-            if (arg.valueType == JSValueType.SpreadOperatorResult)
-            {
-                var list = arg.oValue as IList<JSValue>;
-                if (list.Count == 0)
-                    return NotExists;
-                arg = list[0];
-            }
-            for (var i = 1; i < arguments.Length; i++)
-                arguments[i].Evaluate(initiator);
-
-            if (arg.valueType != JSValueType.String)
-                return arg;
-
-            return initiator.Eval(arg.oValue.ToString(), false);
+            return base.InternalInvoke(targetObject, arguments, initiator, withSpread, construct);
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             if (arguments == null)
                 return NotExists;
+
             var arg = arguments[0];
             if (arg.valueType != JSValueType.String)
                 return arg;
+
             Stack<Context> stack = new Stack<Context>();
             try
             {

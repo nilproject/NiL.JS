@@ -8,7 +8,7 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class TryCatch : CodeNode
@@ -87,7 +87,8 @@ namespace NiL.JS.Statements
                 f = CodeBlock.Parse(state, ref i);
             }
             if (cb == null && f == null)
-                ExceptionsHelper.Throw((new SyntaxError("try block must contain 'catch' or/and 'finally' block")));
+                ExceptionsHelper.ThrowSyntaxError("try block must contain 'catch' or/and 'finally' block", state.Code, index);
+
             var pos = index;
             index = i;
             return new TryCatch()
@@ -197,7 +198,7 @@ namespace NiL.JS.Statements
             if (catchBody is Empty)
                 return;
             JSValue cvar = null;
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
             if (e is RuntimeWrappedException)
             {
                 cvar = new JSValue();
@@ -259,6 +260,7 @@ namespace NiL.JS.Statements
         {
             if (stats != null)
                 stats.ContainsTry = true;
+
             Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
             if (catchBody != null)
             {
@@ -275,14 +277,17 @@ namespace NiL.JS.Statements
                 else
                     variables.Remove(catchVariableDesc.name);
             }
+
             if (finallyBody != null)
                 Parser.Build(ref finallyBody, expressionDepth, variables, codeContext, message, stats, opts);
+
             if (body == null || (body is Empty))
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
                 _this = finallyBody;
             }
+
             if (@catch && (catchBody == null || (catchBody is Empty)))
             {
                 if (message != null)

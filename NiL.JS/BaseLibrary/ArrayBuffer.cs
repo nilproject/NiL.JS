@@ -5,12 +5,12 @@ using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class ArrayBuffer : CustomType
     {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         [Serializable]
 #endif
         private sealed class Element : JSValue

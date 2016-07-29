@@ -5,13 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using NiL.JS.BaseLibrary;
-using NiL.JS.Core.Interop;
 using NiL.JS.Core.Functions;
-using NiL.JS.Extensions;
+
+#if NET40
+using NiL.JS.Backward;
+#endif
 
 namespace NiL.JS.Core.Interop
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     internal sealed class TypeProxy : JSObject
@@ -20,7 +22,7 @@ namespace NiL.JS.Core.Interop
         private static readonly Dictionary<Type, TypeProxy> dynamicProxies = new Dictionary<Type, TypeProxy>();
 
         internal Type hostedType;
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         [NonSerialized]
 #endif
         internal Dictionary<string, IList<MemberInfo>> members;
@@ -31,7 +33,7 @@ namespace NiL.JS.Core.Interop
         {
             get
             {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                 if (_prototypeInstance == null && InstanceMode && !hostedType.GetTypeInfo().IsAbstract)
                 {
 #else
@@ -68,7 +70,7 @@ namespace NiL.JS.Core.Interop
                                 };
                             }
                         }
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
                     }
                     catch (COMException)
                     {
@@ -103,13 +105,13 @@ namespace NiL.JS.Core.Interop
                 __prototype = prototype;
                 try
                 {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                     ictor = hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
 #else
                     ictor = hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
 
-                    if (hostedType.IsDefined(typeof(ImmutableAttribute), false))
+                    if (hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false))
                         attributes |= JSValueAttributesInternal.Immutable;
                     var staticProxy = new TypeProxy()
                     {
@@ -121,7 +123,7 @@ namespace NiL.JS.Core.Interop
                     if (typeof(JSValue).IsAssignableFrom(hostedType))
                         _prototypeInstance = prototypeInstance;
 
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                     if (hostedType.GetTypeInfo().IsAbstract)
 #else
                     if (hostedType.IsAbstract)
@@ -316,7 +318,7 @@ namespace NiL.JS.Core.Interop
                         {
                             return new JSValue
                             {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                                 oValue = new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target),
 #else
                                 oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target),
@@ -355,7 +357,7 @@ namespace NiL.JS.Core.Interop
                     if (!create)
                         return null;
                     JSObject prototype = null;
-                    var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
+                    var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), false).ToArray();
                     if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
                     {
                         if ((pa[0] as PrototypeAttribute).Replace && (pa[0] as PrototypeAttribute).PrototypeType.IsAssignableFrom(type))
@@ -378,7 +380,7 @@ namespace NiL.JS.Core.Interop
             {
                 lock (staticProxies)
                 {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                     if (type.GetTypeInfo().ContainsGenericParameters)
 #else
                     if (type.ContainsGenericParameters)
@@ -386,7 +388,7 @@ namespace NiL.JS.Core.Interop
                         return staticProxies[type] = GetGenericTypeSelector(new[] { type });
 
                     JSObject prototype = null;
-                    var pa = type.GetCustomAttributes(typeof(PrototypeAttribute), false);
+                    var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), false).ToArray();
                     if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
                     {
                         if ((pa[0] as PrototypeAttribute).Replace && (pa[0] as PrototypeAttribute).PrototypeType.IsAssignableFrom(type))
@@ -413,7 +415,7 @@ namespace NiL.JS.Core.Interop
 
         internal override JSObject GetDefaultPrototype()
         {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             if (Context.currentContextStack == null)
                 throw new Exception();
 #else
@@ -433,7 +435,7 @@ namespace NiL.JS.Core.Interop
                 string prewName = null;
                 IList<MemberInfo> temp = null;
                 bool instanceAttribute = false;
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                     var mmbrs = hostedType.GetTypeInfo().DeclaredMembers
                         .Union(hostedType.GetRuntimeMethods())
                         .Union(hostedType.GetRuntimeProperties())
@@ -454,19 +456,19 @@ namespace NiL.JS.Core.Interop
 
                     if (mmbrs[i] is PropertyInfo)
                     {
-                        if (((mmbrs[i] as PropertyInfo).GetSetMethod() ?? (mmbrs[i] as PropertyInfo).GetGetMethod()).IsStatic != !(InstanceMode ^ instanceAttribute))
+                        if (((mmbrs[i] as PropertyInfo).GetSetMethod(true) ?? (mmbrs[i] as PropertyInfo).GetGetMethod(true)).IsStatic != !(InstanceMode ^ instanceAttribute))
                             continue;
-                        if (((mmbrs[i] as PropertyInfo).GetSetMethod() == null || !(mmbrs[i] as PropertyInfo).GetSetMethod().IsPublic)
-                            && ((mmbrs[i] as PropertyInfo).GetGetMethod() == null || !(mmbrs[i] as PropertyInfo).GetGetMethod().IsPublic))
+                        if (((mmbrs[i] as PropertyInfo).GetSetMethod(true) == null || !(mmbrs[i] as PropertyInfo).GetSetMethod(true).IsPublic)
+                            && ((mmbrs[i] as PropertyInfo).GetGetMethod(true) == null || !(mmbrs[i] as PropertyInfo).GetGetMethod(true).IsPublic))
                             continue;
                     }
                     if ((mmbrs[i] is EventInfo)
-                        && (!(mmbrs[i] as EventInfo).GetAddMethod().IsPublic || (mmbrs[i] as EventInfo).GetAddMethod().IsStatic != !InstanceMode))
+                        && (!(mmbrs[i] as EventInfo).GetAddMethod(true).IsPublic || (mmbrs[i] as EventInfo).GetAddMethod(true).IsStatic != !InstanceMode))
                         continue;
 
                     if ((mmbrs[i] is FieldInfo) && (!(mmbrs[i] as FieldInfo).IsPublic || (mmbrs[i] as FieldInfo).IsStatic != !InstanceMode))
                         continue;
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                     if ((mmbrs[i] is TypeInfo) && !(mmbrs[i] as TypeInfo).IsPublic)
                         continue;
 #else
@@ -487,7 +489,7 @@ namespace NiL.JS.Core.Interop
 
                     var membername = mmbrs[i].Name;
                     membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                     if (mmbrs[i] is TypeInfo && membername.Contains("`"))
 #else
                     if (mmbrs[i] is Type && membername.Contains('`'))
@@ -606,7 +608,7 @@ namespace NiL.JS.Core.Interop
             else
             {
 #if PORTABLE
-                switch (m[0].get_MemberType())
+                switch (m[0].GetMemberType())
 #else
                 switch (m[0].MemberType)
 #endif
@@ -657,7 +659,7 @@ namespace NiL.JS.Core.Interop
                                 valueType = JSValueType.Property,
                                 oValue = new GsPropertyPair
                                     (
-#if PORTABLE
+#if (PORTABLE || NETCORE)
 pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod) : null,
                                             pinfo.CanWrite && pinfo.SetMethod != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(pinfo.SetMethod) : null
 #else
@@ -683,7 +685,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                                 oValue = new GsPropertyPair
                                 (
                                     null,
-#if PORTABLE
+#if (PORTABLE || NETCORE)
  new MethodProxy(pinfo.AddMethod)
 #else
  new MethodProxy(pinfo.GetAddMethod())
@@ -693,7 +695,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                             break;
                         }
                     case MemberTypes.TypeInfo:
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                         {
                             r = GetConstructor((m[0] as TypeInfo).AsType());
                             break;

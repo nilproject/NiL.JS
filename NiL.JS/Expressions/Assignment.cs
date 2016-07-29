@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     internal sealed class ForceAssignmentOperator:Assignment
@@ -38,7 +38,7 @@ namespace NiL.JS.Expressions
         }
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public class Assignment : Expression

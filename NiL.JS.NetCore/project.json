@@ -1,0 +1,38 @@
+{
+  "title": "NiL.JS",
+  "description": "ECMAScript 6 (ES2015) engine",
+  "version": "2.3.949",
+  "authors": [ "NiLProject" ],
+  "packOptions": {
+    "owners": [ "NiLProject" ],
+    "tags": [ "js", "javascript", "java", "script", "ecma", "ecmascript", "es2015", "v8", "niljs", "nil", "nilproject" ],
+    "repository": { "url": "https://github.com/nilproject/NiL.JS" },
+    "iconUrl": "https://github.com/nilproject/NiL.JS/blob/develop/nil.js%20logo%20small.png",
+    "licenseUrl": "https://github.com/nilproject/NiL.JS/blob/develop/License"
+  },
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "System.Linq": "4.1.0",
+    "System.Reflection.TypeExtensions": "4.1.0",
+    "System.Resources.ResourceManager": "4.0.1",
+    "System.Runtime": "4.1.0"
+  },
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    }
+  },
+  "buildOptions": {
+    "define": [ "NETCORE" ],
+    "outputName": "NiL.JS",
+
+    "publicSign": true,
+    "keyFile": "../NiL.JS.Key.snk",
+
+    "optimize": true,
+    "warningsAsErrors": true
+  },
+  "scripts": {
+    "precompile": [ "makeSymLinks.bat" ]
+  }
+}

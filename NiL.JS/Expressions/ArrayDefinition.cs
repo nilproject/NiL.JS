@@ -6,7 +6,7 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class ArrayDefinition : Expression

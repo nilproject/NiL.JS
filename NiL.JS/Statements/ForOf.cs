@@ -8,7 +8,7 @@ using NiL.JS.Extensions;
 
 namespace NiL.JS.Statements
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class ForOf : CodeNode
@@ -32,7 +32,7 @@ namespace NiL.JS.Statements
         {
             get
             {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                 return new ReadOnlyCollection<string>(_labels);
 #else
                 return System.Array.AsReadOnly(_labels);

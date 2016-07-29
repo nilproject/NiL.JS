@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
         Predecriment,
         Postdecriment
     }
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Decrement : Expression

@@ -87,7 +87,7 @@ namespace NiL.JS.BaseLibrary
         {
             return Uri.EscapeDataString(x[0].ToString());
         }
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         internal static uint __pinvokeCalled;
         internal static JSValue __pinvoke(JSValue thisBind, Arguments args)
         {

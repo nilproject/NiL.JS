@@ -8,7 +8,7 @@ namespace NiL.JS.Core
     /// AST nodes visitor.
     /// </summary>
     /// <typeparam name="T">Type of return value</typeparam>
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public abstract class Visitor<T>
@@ -304,7 +304,7 @@ namespace NiL.JS.Core
         {
             return Visit(node as Expression);
         }
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         internal protected virtual T Visit(Yield node)
         {
             return Visit(node as Expression);

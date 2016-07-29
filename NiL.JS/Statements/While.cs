@@ -7,7 +7,7 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class While : CodeNode
@@ -190,7 +190,7 @@ namespace NiL.JS.Statements
                     this.condition.Eliminated = true;
                 }
             }
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             catch
             {
 #else

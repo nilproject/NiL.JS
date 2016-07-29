@@ -12,7 +12,7 @@ namespace NiL.JS.Expressions
      * Если желание твоё посетить сие место всё ещё живо и не угасло... и да хранит тебя Б-г. 
      */
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     internal enum OperationTypeGroups
@@ -35,7 +35,7 @@ namespace NiL.JS.Expressions
         Special = 0xF0
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     internal enum OperationType
@@ -87,7 +87,7 @@ namespace NiL.JS.Expressions
         Yield = OperationTypeGroups.Special + 4
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class ExpressionTree : Expression
@@ -792,8 +792,9 @@ namespace NiL.JS.Expressions
                             bool withSpread = false;
                             for (;;)
                             {
-                                while (Tools.IsWhiteSpace(state.Code[i]))
-                                    i++;
+                                Tools.SkipSpaces(state.Code, ref i);
+                                Tools.CheckEndOfInput(state.Code, ref i);
+
                                 if (state.Code[i] == ')')
                                     break;
                                 else

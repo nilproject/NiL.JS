@@ -5,7 +5,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 using System.Runtime.InteropServices;
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
 using NiL.JS.Core.JIT;
 #endif
 
@@ -29,14 +29,14 @@ namespace NiL.JS.Core
         InFunction = 2048
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public abstract class CodeNode
     {
         private static readonly CodeNode[] emptyCodeNodeArray = new CodeNode[0];
 
-#if !NET35 && !PORTABLE
+#if !NET35 && !(PORTABLE || NETCORE)
         internal System.Linq.Expressions.Expression JitOverCall(bool forAssign)
         {
             return System.Linq.Expressions.Expression.Call(
@@ -77,7 +77,7 @@ namespace NiL.JS.Core
         {
 
         }
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
         internal virtual System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             return null;

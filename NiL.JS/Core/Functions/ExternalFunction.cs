@@ -10,7 +10,7 @@ namespace NiL.JS.Core.Functions
     /// Представляет функцию платформы с фиксированной сигнатурой.
     /// </summary>
     [Prototype(typeof(Function))]
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class ExternalFunction : Function
@@ -21,7 +21,7 @@ namespace NiL.JS.Core.Functions
             [Hidden]
             get
             {
-#if PORTABLE
+#if (PORTABLE || NETCORE)
                 return System.Reflection.RuntimeReflectionExtensions.GetMethodInfo(_delegate).Name;
 #else
                 return _delegate.Method.Name;
@@ -56,7 +56,7 @@ namespace NiL.JS.Core.Functions
             if (_length == null)
                 _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
-#if PORTABLE
+#if (PORTABLE || NETCORE)
             var paramCountAttrbt = @delegate.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
 #else
             var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false);

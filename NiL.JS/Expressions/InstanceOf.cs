@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace NiL.JS.Expressions
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class InstanceOf : Expression

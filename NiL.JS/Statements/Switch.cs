@@ -7,7 +7,7 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
 {
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class SwitchCase
@@ -19,7 +19,7 @@ namespace NiL.JS.Statements
         public CodeNode Statement { get { return statement; } }
     }
 
-#if !PORTABLE
+#if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class Switch : CodeNode
