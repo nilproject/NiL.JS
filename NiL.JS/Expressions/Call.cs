@@ -213,7 +213,9 @@ namespace NiL.JS.Expressions
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private static void checkStackInternal()
         {
+#pragma warning disable CS0168
             decimal f0, f1, f2, f3, f4, f5, f6, f7, f8;
+#pragma warning restore CS0168
 #if !(PORTABLE || NETCORE) && !NET35
             RuntimeHelpers.EnsureSufficientExecutionStack();
 #endif
