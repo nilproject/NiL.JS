@@ -211,13 +211,9 @@ namespace NiL.JS.Expressions
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static void checkStackInternal(decimal a = 7)
+        private static void checkStackInternal()
         {
-            if (a > 0)
-            {
-                checkStackInternal(a - 1);
-                return;
-            }
+            decimal f0, f1, f2, f3, f4, f5, f6, f7, f8;
 #if !(PORTABLE || NETCORE) && !NET35
             RuntimeHelpers.EnsureSufficientExecutionStack();
 #endif
