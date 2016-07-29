@@ -24,9 +24,9 @@ namespace NiL.JS.Expressions
         private Expression[] _arguments;
         internal bool withSpread;
         internal bool allowTCO;
-        internal CallMode callMode;
+        internal CallMode _callMode;
 
-        public CallMode CallMode { get { return callMode; } }
+        public CallMode CallMode { get { return _callMode; } }
         protected internal override bool ContextIndependent { get { return false; } }
         internal override bool ResultInTempContainer { get { return false; } }
         protected internal override PredictedType ResultType
@@ -46,7 +46,7 @@ namespace NiL.JS.Expressions
             }
         }
         public Expression[] Arguments { get { return _arguments; } }
-        public bool AllowTCO { get { return allowTCO && callMode == 0; } }
+        public bool AllowTCO { get { return allowTCO && _callMode == 0; } }
 
         protected internal override bool NeedDecompose
         {
@@ -117,7 +117,7 @@ namespace NiL.JS.Expressions
             }
             else if (func == null)
             {
-                switch (callMode)
+                switch (_callMode)
                 {
                     case CallMode.Construct:
                         {
@@ -135,7 +135,7 @@ namespace NiL.JS.Expressions
             {
 
                 if (allowTCO
-                    && callMode == 0
+                    && _callMode == 0
                     && (func.creator.kind != FunctionKind.Generator)
                     && (func.creator.kind != FunctionKind.MethodGenerator)
                     && (func.creator.kind != FunctionKind.AnonymousGenerator)
@@ -150,18 +150,21 @@ namespace NiL.JS.Expressions
                     context.objectSource = null;
 
                 checkStack();
-                if (callMode == CallMode.Construct)
+                if (_callMode == CallMode.Construct)
                     targetObject = null;
 
                 if ((temp.attributes & JSValueAttributesInternal.Eval) != 0)
-                    return CallEval(context);
+                    return callEval(context);
 
-                return func.InternalInvoke(targetObject, _arguments, context, withSpread, callMode != 0);
+                return func.InternalInvoke(targetObject, _arguments, context, withSpread, _callMode != 0);
             }
         }
 
-        private JSValue CallEval(Context context)
+        private JSValue callEval(Context context)
         {
+            if (_callMode != CallMode.Regular)
+                ExceptionsHelper.ThrowTypeError("function eval(...) cannot be called as a constructor");
+
             if (_arguments == null || _arguments.Length == 0)
                 return JSValue.NotExists;
 
@@ -208,8 +211,13 @@ namespace NiL.JS.Expressions
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static void checkStackInternal(decimal a = 0, decimal b = 0, decimal c = 0, decimal d = 0)
+        private static void checkStackInternal(decimal a = 7)
         {
+            if (a > 0)
+            {
+                checkStackInternal(a - 1);
+                return;
+            }
 #if !(PORTABLE || NETCORE) && !NET35
             RuntimeHelpers.EnsureSufficientExecutionStack();
 #endif
@@ -227,7 +235,7 @@ namespace NiL.JS.Expressions
             if (super != null)
             {
                 super.ctorMode = true;
-                callMode = CallMode.Super;
+                _callMode = CallMode.Super;
             }
 
             for (var i = 0; i < _arguments.Length; i++)
@@ -337,7 +345,7 @@ namespace NiL.JS.Expressions
             }
             res += ")";
 
-            if (callMode == CallMode.Construct)
+            if (_callMode == CallMode.Construct)
                 return "new " + res;
             return res;
         }

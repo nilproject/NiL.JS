@@ -415,8 +415,8 @@ namespace NiL.JS.Core
                 return null;
 
             var stack = GetCurrectContextStack();
-            
-            for (var i = stack.Count; i-->0; i++)
+
+            for (var i = stack.Count; i-- > 0;)
             {
                 if (stack[i].owner == function)
                 {

@@ -74,7 +74,7 @@ namespace NiL.JS.Expressions
             if (message != null && expressionDepth <= 1)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use NewOperator for side effect");
 
-            (first as Call).callMode = CallMode.Construct;
+            (first as Call)._callMode = CallMode.Construct;
             _this = first;
 
             return true;
