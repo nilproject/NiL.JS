@@ -52,7 +52,7 @@ namespace System
     /// <summary>
     /// Portable version only!
     /// </summary>
-    public static class PortableBackward
+    internal static class PortableBackward
     {
         internal static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> self)
         {
@@ -101,17 +101,17 @@ namespace System
             return MemberTypes.Custom; // чёт своё, пускай сами разбираются
         }
 
-        internal static MethodInfo GetGetMethod(this PropertyInfo self)
+        internal static MethodInfo GetGetMethod(this PropertyInfo self, bool fictive)
         {
             return self.GetMethod;
         }
 
-        internal static MethodInfo GetSetMethod(this PropertyInfo self)
+        internal static MethodInfo GetSetMethod(this PropertyInfo self, bool fictive)
         {
             return self.SetMethod;
         }
 
-        internal static MethodInfo GetAddMethod(this EventInfo self)
+        internal static MethodInfo GetAddMethod(this EventInfo self, bool fictive)
         {
             return self.AddMethod;
         }
