@@ -206,5 +206,3 @@ if (JSON.stringify([,,1])!=='[null,null,1]')
 ({get [1](){return 1;},[2]:2})
 
 console.asserta(()=> (new class {}).toString(), {}.toString());
-
-console.log("test completed");

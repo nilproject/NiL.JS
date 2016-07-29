@@ -72,6 +72,7 @@ namespace NiL.JS.Test.Generated
 
             Console.SetOut(oldOutput);
             Assert.IsTrue(pass, output.ToString());
+            Assert.AreEqual(string.Empty, output.ToString().Trim());
         }
     }
 }

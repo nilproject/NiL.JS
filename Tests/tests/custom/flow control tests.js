@@ -106,64 +106,64 @@ if (null != null)
 if (null == 0)
     console.log("null == 0 fail");
 if (!(null != null))
-    console.log("!(null != null) pass");
+    console.log("");
 if (!(null == 0))
-    console.log("!(null == 0) pass");
+    console.log("");
 
 if (1)
-    console.log("if(1) pass");
+    console.log("");
 else
     console.log("if(1) fail");
 if (0)
     console.log("if(0) fail");
 else
-    console.log("if(0) pass");
+    console.log("");
 
 if ({})
-    console.log("if({}) pass");
+    console.log("");
 else
     console.log("if({}) fail");
 if (!{})
     console.log("if(!{}) fail");
 else
-    console.log("if(!{}) pass");
+    console.log("");
 var a = {}
 if (a == a)
-    console.log('if(a==a) pass');
+    console.log('');
 else
     console.log('if(a==a) fail');
 if (a != a)
     console.log('if(a!=a) fail');
 else
-    console.log('if(a!=a) pass');
+    console.log('');
 if (a === a)
-    console.log('if(a===a) pass');
+    console.log('');
 else
     console.log('if(a===a) fail');
 if (a !== a)
     console.log('if(a!==a) fail');
 else
-    console.log('if(a!==a) pass');
+    console.log('');
 
 for (var i = 0; i < 2; i++) if (i) break;
-console.log([, "pass", "fail"][i]);
+console.log([, "", "fail"][i]);
 
 _for: for (var i = 0; i < 2; i++) if (i) break _for;
-console.log([, "pass", "fail"][i]);
+console.log([, "", "fail"][i]);
 
 for (var i = 1; i > 0; i--) if (i) {
     if (i)
         continue;
     break;
 }
-console.log(["pass", "fail"][i]);
+console.log(["", "fail"][i]);
 
 _for: for (var i = 1; i > 0; i--) if (i) {
     if (i)
         continue _for;
     break;
 }
-console.log(["pass", "fail"][i]);
+console.log(["", "fail"][i]);
 
 var i = 1;
 do {
@@ -171,7 +171,7 @@ do {
         continue;
     break;
 } while (i--);
-console.log(["pass", "fail"][i]);
+console.log(["", "fail"][i]);
 
 var i = 1;
 _do: do {
@@ -179,7 +179,7 @@ _do: do {
         continue _do;
     break;
 } while (i--);
-console.log(["pass", "fail"][i]);
+console.log(["", "fail"][i]);
 
 _for: for (var j = 0; ; j++) {
     for (var i in [, 1, 2]) {
@@ -189,7 +189,7 @@ _for: for (var j = 0; ; j++) {
     }
     break;
 }
-console.log(["fail", "pass"][j]);
+console.log(["fail", ""][j]);
 function s(x) {
     return function () { return x };
 }
@@ -213,7 +213,7 @@ if (!(function () {
 
         break;
     } while (false);
-    console.log("dead do-while pass");
+    console.log("");
     return true;
 })())
     console.log("dead do-while fail")
@@ -438,7 +438,7 @@ console.log((function (x) {
             }
         case 1:
             var b;
-            x = "pass";
+            x = "";
             break;
         default
             :
