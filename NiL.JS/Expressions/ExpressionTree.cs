@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
         Addition = OperationTypeGroups.Arithmetic0 + 0,
         Substract = OperationTypeGroups.Arithmetic0 + 1,
         Multiply = OperationTypeGroups.Arithmetic1 + 0,
-        Module = OperationTypeGroups.Arithmetic1 + 1,
+        Modulo = OperationTypeGroups.Arithmetic1 + 1,
         Division = OperationTypeGroups.Arithmetic1 + 2,
 
         Negative = OperationTypeGroups.Unary0 + 0,
@@ -199,7 +199,7 @@ namespace NiL.JS.Expressions
                     {
                         return new SignedShiftRight(first, second);
                     }
-                case OperationType.Module:
+                case OperationType.Modulo:
                     {
                         return new Modulo(first, second);
                     }
@@ -287,6 +287,7 @@ namespace NiL.JS.Expressions
                     else
                         break;
                 }
+
                 types.Push(cur);
                 if (!(cur.second is ExpressionTree))
                     stats.Push(cur.second);
@@ -341,23 +342,28 @@ namespace NiL.JS.Expressions
             bool canAsign = !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binary = false;
-            bool repeat; // лёгкая замена goto. Тот самый случай, когда он уместен.
+            bool repeat;
             int rollbackPos;
+
             do
             {
                 repeat = false;
                 while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i]))
                     i++;
+
                 if (state.Code.Length <= i)
                     break;
                 rollbackPos = i;
+
                 while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                     i++;
+
                 if (state.Code.Length <= i)
                 {
                     i = rollbackPos;
                     break;
                 }
+
                 switch (state.Code[i])
                 {
                     case '\v':
@@ -649,7 +655,7 @@ namespace NiL.JS.Expressions
                                 break;
                             }
                             binary = true;
-                            kind = OperationType.Module;
+                            kind = OperationType.Modulo;
                             if (state.Code[i + 1] == '=')
                             {
                                 assign = true;
@@ -730,25 +736,30 @@ namespace NiL.JS.Expressions
                     case '.':
                         {
                             i++;
-                            while (Tools.IsWhiteSpace(state.Code[i]))
-                                i++;
+                            Tools.SkipSpaces(state.Code, ref i);
+
                             var s = i;
                             if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict))
                                 ExceptionsHelper.Throw(new SyntaxError(string.Format(Strings.InvalidPropertyName, CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+
                             string name = state.Code.Substring(s, i - s);
+
                             JSValue jsname = null;
                             if (!state.stringConstants.TryGetValue(name, out jsname))
                                 state.stringConstants[name] = jsname = name;
+                            else
+                                name = jsname.oValue.ToString();
 
                             first = new Property(first, new Constant(name)
-                            {
-                                Position = s,
-                                Length = i - s
-                            })
-                            {
-                                Position = first.Position,
-                                Length = i - first.Position
-                            };
+                                                        {
+                                                            Position = s,
+                                                            Length = i - s
+                                                        })
+                                    {
+                                        Position = first.Position,
+                                        Length = i - first.Position
+                                    };
+
                             repeat = true;
                             canAsign = true;
                             break;
@@ -905,15 +916,20 @@ namespace NiL.JS.Expressions
                             break;
                         }
                 }
-            } while (repeat);
+            }
+            while (repeat);
+
             if (state.strict
-                && (first is GetVariable) && ((first as GetVariable).Name == "arguments" || (first as GetVariable).Name == "eval"))
+                && (first is GetVariable) 
+                && ((first as GetVariable).Name == "arguments" || (first as GetVariable).Name == "eval"))
             {
                 if (assign || kind == OperationType.Assignment)
                     ExceptionsHelper.ThrowSyntaxError("Assignment to eval or arguments is not allowed in strict mode", state.Code, i);
             }
+
             if ((!canAsign) && ((kind == OperationType.Assignment) || (assign)))
                 ExceptionsHelper.ThrowSyntaxError("Invalid left-hand side in assignment", state.Code, i);
+
             if (binary && !forUnary)
             {
                 do
@@ -1069,6 +1085,12 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
+                        JSValue jsName = null;
+                        if (!state.stringConstants.TryGetValue(name, out jsName))
+                            state.stringConstants[name] = jsName = name;
+                        else
+                            name = jsName.oValue.ToString();
+
                         operand = new GetVariable(name, state.lexicalScopeLevel);
                     }
                 }
@@ -1078,10 +1100,11 @@ namespace NiL.JS.Expressions
                     if ((value[0] == '\'') || (value[0] == '"'))
                     {
                         value = Tools.Unescape(value.Substring(1, value.Length - 2), state.strict);
-                        if (state.stringConstants.ContainsKey(value))
-                            operand = new Constant(state.stringConstants[value]) { Position = start, Length = i - start };
-                        else
-                            operand = new Constant(state.stringConstants[value] = value) { Position = start, Length = i - start };
+                        JSValue jsValue = null;
+                        if (!state.stringConstants.TryGetValue(value, out jsValue))
+                            state.stringConstants[value] = jsValue = value;
+
+                        operand = new Constant(jsValue) { Position = start, Length = i - start };
                     }
                     else
                     {

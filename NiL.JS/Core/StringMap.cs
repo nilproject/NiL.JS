@@ -106,7 +106,7 @@ namespace NiL.JS.Core
 
             // не нашли
 
-            if ((_count > 50 && _count * 9 / 5 >= mask) || _count == mask + 1)
+            if ((_count > 50 && _count * 8 / 5 >= mask) || _count == mask + 1)
                 mask = increaseSize() - 1;
 
             int prewIndex = -1;
@@ -119,9 +119,10 @@ namespace NiL.JS.Core
                     index = _records[index].next - 1;
                     colisionCount++;
                 }
+
                 prewIndex = index;
                 while (_records[index].key != null)
-                    index = (index + 61) & mask;
+                    index = (index + 3) & mask;
             }
 
             _records[index].hash = hash;

@@ -1058,7 +1058,7 @@ namespace NiL.JS.Core
             }
 
             const string NaN = "NaN";
-            if (code.Length - i >= NaN.Length && code.IndexOf(NaN, i, NaN.Length) == i)
+            if (code.Length - i >= NaN.Length && code.IndexOf(NaN, i, NaN.Length, StringComparison.Ordinal) == i)
             {
                 index = i + NaN.Length;
                 value = double.NaN;
@@ -1070,7 +1070,7 @@ namespace NiL.JS.Core
                 sign = 44 - code[i++];
 
             const string Infinity = "Infinity";
-            if (code.Length - i >= Infinity.Length && code.IndexOf(Infinity, i, Infinity.Length) == i)
+            if (code.Length - i >= Infinity.Length && code.IndexOf(Infinity, i, Infinity.Length, StringComparison.Ordinal) == i)
             {
                 index = i + Infinity.Length;
                 value = sign * double.PositiveInfinity;
