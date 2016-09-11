@@ -17,17 +17,17 @@ namespace NiL.JS.BaseLibrary
         internal static JSValue isNaN(JSValue thisBind, Arguments x)
         {
             var r = x[0];
-            if (r.valueType >= JSValueType.Object)
+            if (r._valueType >= JSValueType.Object)
                 r = r.ToPrimitiveValue_Value_String();
-            if (r.valueType == JSValueType.Double)
-                return double.IsNaN(r.dValue);
-            if (r.valueType == JSValueType.Boolean || r.valueType == JSValueType.Integer)
+            if (r._valueType == JSValueType.Double)
+                return double.IsNaN(r._dValue);
+            if (r._valueType == JSValueType.Boolean || r._valueType == JSValueType.Integer)
                 return false;
-            if (r.valueType == JSValueType.String)
+            if (r._valueType == JSValueType.String)
             {
                 double d = 0;
                 int i = 0;
-                if (Tools.ParseNumber(r.oValue.ToString(), i, out d, ParseNumberOptions.Default))
+                if (Tools.ParseNumber(r._oValue.ToString(), i, out d, ParseNumberOptions.Default))
                     return double.IsNaN(d);
                 return true;
             }
@@ -54,12 +54,12 @@ namespace NiL.JS.BaseLibrary
             if (radix != 0 && (radix < 2 || radix > 36))
                 return Number.NaN;
             var source = args[0];
-            if (source.valueType == JSValueType.Integer)
+            if (source._valueType == JSValueType.Integer)
                 return source;
-            if (source.valueType == JSValueType.Double)
-                return double.IsInfinity(source.dValue) || double.IsNaN(source.dValue) ?
-                    Number.NaN : source.dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
-                    (Number)System.Math.Truncate(source.dValue);
+            if (source._valueType == JSValueType.Double)
+                return double.IsInfinity(source._dValue) || double.IsNaN(source._dValue) ?
+                    Number.NaN : source._dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
+                    (Number)System.Math.Truncate(source._dValue);
             var arg = source.ToString().Trim(Tools.TrimChars);
             if (!string.IsNullOrEmpty(arg))
                 Tools.ParseNumber(arg, out result, radix, ParseNumberOptions.AllowAutoRadix);
@@ -72,10 +72,10 @@ namespace NiL.JS.BaseLibrary
         {
             double result = double.NaN;
             var source = x[0];
-            if (source.valueType == JSValueType.Integer)
+            if (source._valueType == JSValueType.Integer)
                 return source;
-            if (source.valueType == JSValueType.Double)
-                return source.dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
+            if (source._valueType == JSValueType.Double)
+                return source._dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
                     source;
             var arg = source.ToString().Trim(Tools.TrimChars);
             if (!string.IsNullOrEmpty(arg))
@@ -99,7 +99,7 @@ namespace NiL.JS.BaseLibrary
                 return null;
             if (argsCount > 1)
                 threadsCount = Tools.JSObjectToInt32(args[1]);
-            var function = args[0].oValue as Function;
+            var function = args[0]._oValue as Function;
             Thread[] threads = null;
             if (function != null && threadsCount > 0)
             {

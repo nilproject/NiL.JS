@@ -31,11 +31,11 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var t = first.Evaluate(context);
-            if (t.valueType == JSValueType.Integer)
-                tempContainer.iValue = t.iValue;
+            if (t._valueType == JSValueType.Integer)
+                tempContainer._iValue = t._iValue;
             else
-                tempContainer.iValue = Tools.JSObjectToInt32(t, 0, false);
-            tempContainer.valueType = JSValueType.Integer;
+                tempContainer._iValue = Tools.JSObjectToInt32(t, 0, false);
+            tempContainer._valueType = JSValueType.Integer;
             return tempContainer;
         }
 #if !(PORTABLE || NETCORE)

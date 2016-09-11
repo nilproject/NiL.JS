@@ -25,18 +25,18 @@ namespace NiL.JS.BaseLibrary
         private void makeRegex(Arguments args)
         {
             var ptrn = args[0];
-            if (ptrn.valueType == JSValueType.Object && ptrn.Value is RegExp)
+            if (ptrn._valueType == JSValueType.Object && ptrn.Value is RegExp)
             {
-                if (args.GetProperty("length").iValue > 1 && args[1].valueType > JSValueType.Undefined)
+                if (args.GetProperty("length")._iValue > 1 && args[1]._valueType > JSValueType.Undefined)
                     ExceptionsHelper.Throw(new TypeError("Cannot supply flags when constructing one RegExp from another"));
-                oValue = ptrn.oValue;
+                _oValue = ptrn._oValue;
                 regEx = (ptrn.Value as RegExp).regEx;
                 _global = (ptrn.Value as RegExp).global;
                 _source = (ptrn.Value as RegExp)._source;
                 return;
             }
-            var pattern = ptrn.valueType > JSValueType.Undefined ? ptrn.ToString() : "";
-            var flags = args.GetProperty("length").iValue > 1 && args[1].valueType > JSValueType.Undefined ? args[1].ToString() : "";
+            var pattern = ptrn._valueType > JSValueType.Undefined ? ptrn.ToString() : "";
+            var flags = args.GetProperty("length")._iValue > 1 && args[1]._valueType > JSValueType.Undefined ? args[1].ToString() : "";
             makeRegex(pattern, flags);
         }
 
@@ -194,31 +194,31 @@ namespace NiL.JS.BaseLibrary
         {
             string input = (arg ?? "null").ToString();
             lIndex = Tools.JSObjectToNumber(lastIndex);
-            if ((lIndex.attributes & JSValueAttributesInternal.SystemObject) != 0)
+            if ((lIndex._attributes & JSValueAttributesInternal.SystemObject) != 0)
                 lIndex = lIndex.CloneImpl(false);
-            if (lIndex.valueType == JSValueType.Double)
+            if (lIndex._valueType == JSValueType.Double)
             {
-                lIndex.valueType = JSValueType.Integer;
-                lIndex.iValue = (int)lIndex.dValue;
+                lIndex._valueType = JSValueType.Integer;
+                lIndex._iValue = (int)lIndex._dValue;
             }
-            if (lIndex.iValue < 0)
-                lIndex.iValue = 0;
-            if (lIndex.iValue >= input.Length && input.Length > 0)
+            if (lIndex._iValue < 0)
+                lIndex._iValue = 0;
+            if (lIndex._iValue >= input.Length && input.Length > 0)
             {
-                lIndex.iValue = 0;
+                lIndex._iValue = 0;
                 return JSValue.@null;
             }
-            var m = regEx.Match(input, lIndex.iValue);
+            var m = regEx.Match(input, lIndex._iValue);
             if (!m.Success)
             {
-                lIndex.iValue = 0;
+                lIndex._iValue = 0;
                 return JSValue.@null;
             }
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)
                 res.data[i] = m.Groups[i].Success ? (JSValue)m.Groups[i].Value : null;
             if (_global)
-                lIndex.iValue = m.Index + m.Length;
+                lIndex._iValue = m.Index + m.Length;
             res.DefineProperty("index").Assign(m.Index);
             res.DefineProperty("input").Assign(input);
             return res;
@@ -229,24 +229,24 @@ namespace NiL.JS.BaseLibrary
         {
             string input = (arg ?? "null").ToString();
             lIndex = Tools.JSObjectToNumber(lIndex);
-            if (lIndex.valueType == JSValueType.Double)
+            if (lIndex._valueType == JSValueType.Double)
             {
-                lIndex.valueType = JSValueType.Integer;
-                lIndex.iValue = (int)lIndex.dValue;
+                lIndex._valueType = JSValueType.Integer;
+                lIndex._iValue = (int)lIndex._dValue;
             }
-            if (lIndex.iValue >= input.Length || lIndex.iValue < 0)
+            if (lIndex._iValue >= input.Length || lIndex._iValue < 0)
             {
-                lIndex.iValue = 0;
+                lIndex._iValue = 0;
                 return false;
             }
-            var m = regEx.Match(input, lIndex.iValue);
+            var m = regEx.Match(input, lIndex._iValue);
             if (!m.Success)
             {
-                lIndex.iValue = 0;
+                lIndex._iValue = 0;
                 return false;
             }
             if (_global)
-                lastIndex.iValue = m.Index + m.Length;
+                lastIndex._iValue = m.Index + m.Length;
             return m.Success;
         }
 

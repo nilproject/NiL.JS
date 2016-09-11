@@ -40,18 +40,18 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var temp = first.Evaluate(context);
-            if (temp.valueType < JSValueType.Undefined)
+            if (temp._valueType < JSValueType.Undefined)
                 return true;
-            else if ((temp.attributes & JSValueAttributesInternal.Argument) != 0)
+            else if ((temp._attributes & JSValueAttributesInternal.Argument) != 0)
             {
                 return false;
             }
-            else if ((temp.attributes & JSValueAttributesInternal.DoNotDelete) == 0)
+            else if ((temp._attributes & JSValueAttributesInternal.DoNotDelete) == 0)
             {
-                if ((temp.attributes & JSValueAttributesInternal.SystemObject) == 0)
+                if ((temp._attributes & JSValueAttributesInternal.SystemObject) == 0)
                 {
-                    temp.valueType = JSValueType.NotExists;
-                    temp.oValue = null;
+                    temp._valueType = JSValueType.NotExists;
+                    temp._oValue = null;
                 }
                 return true;
             }

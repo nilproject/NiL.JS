@@ -49,29 +49,29 @@ namespace NiL.JS.Expressions
             JSValue f = first.Evaluate(context);
             JSValue s = null;
             long l = 0;
-            if (((int)f.valueType & 0xf) > 3) // bool - b0111, int - b1011
+            if (((int)f._valueType & 0xf) > 3) // bool - b0111, int - b1011
             {
-                int a = f.iValue;
+                int a = f._iValue;
                 s = second.Evaluate(context);
-                if (((int)s.valueType & 0xf) > 3)
+                if (((int)s._valueType & 0xf) > 3)
                 {
-                    if (((a | s.iValue) & 0xFFFF0000) == 0)
+                    if (((a | s._iValue) & 0xFFFF0000) == 0)
                     {
-                        tempContainer.iValue = a * s.iValue;
-                        tempContainer.valueType = JSValueType.Integer;
+                        tempContainer._iValue = a * s._iValue;
+                        tempContainer._valueType = JSValueType.Integer;
                     }
                     else
                     {
-                        l = (long)a * s.iValue;
+                        l = (long)a * s._iValue;
                         if (l > 2147483647L || l < -2147483648L)
                         {
-                            tempContainer.dValue = l;
-                            tempContainer.valueType = JSValueType.Double;
+                            tempContainer._dValue = l;
+                            tempContainer._valueType = JSValueType.Double;
                         }
                         else
                         {
-                            tempContainer.iValue = (int)l;
-                            tempContainer.valueType = JSValueType.Integer;
+                            tempContainer._iValue = (int)l;
+                            tempContainer._valueType = JSValueType.Integer;
                         }
                     }
                     return tempContainer;
@@ -84,8 +84,8 @@ namespace NiL.JS.Expressions
                 da = Tools.JSObjectToDouble(f);
                 s = second.Evaluate(context);
             }
-            tempContainer.dValue = da * Tools.JSObjectToDouble(s);
-            tempContainer.valueType = JSValueType.Double;
+            tempContainer._dValue = da * Tools.JSObjectToDouble(s);
+            tempContainer._valueType = JSValueType.Double;
             return tempContainer;
 #else
             tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) * Tools.JSObjectToDouble(second.Invoke(context));
@@ -125,8 +125,8 @@ namespace NiL.JS.Expressions
         public override string ToString()
         {
             if (first is Constant
-                && ((first as Constant).value.valueType == JSValueType.Integer)
-                && ((first as Constant).value.iValue == -1))
+                && ((first as Constant).value._valueType == JSValueType.Integer)
+                && ((first as Constant).value._iValue == -1))
                 return "-" + second;
             return "(" + first + " * " + second + ")";
         }

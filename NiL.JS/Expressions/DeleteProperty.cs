@@ -38,10 +38,10 @@ namespace NiL.JS.Expressions
         {
             JSValue source = null;
             source = first.Evaluate(context);
-            if (source.valueType < JSValueType.Object)
+            if (source._valueType < JSValueType.Object)
                 source = source.CloneImpl(false);
             else
-                source = source.oValue as JSValue ?? source;
+                source = source._oValue as JSValue ?? source;
 
             var res = source.DeleteProperty(cachedMemberName ?? second.Evaluate(context));
             context.objectSource = null;

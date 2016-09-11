@@ -78,17 +78,17 @@ namespace NiL.JS.Expressions
             ICallable callable = null;
             Function func = null;
 
-            if (temp.valueType >= JSValueType.Object)
+            if (temp._valueType >= JSValueType.Object)
             {
-                if (temp.valueType == JSValueType.Function)
+                if (temp._valueType == JSValueType.Function)
                 {
-                    func = temp.oValue as Function;
+                    func = temp._oValue as Function;
                     callable = func;
                 }
 
                 if (func == null)
                 {
-                    callable = temp.oValue as ICallable;
+                    callable = temp._oValue as ICallable;
                     if (callable == null)
                         callable = temp.Value as ICallable;
                     if (callable == null)
@@ -140,7 +140,7 @@ namespace NiL.JS.Expressions
                     && (func.creator.kind != FunctionKind.MethodGenerator)
                     && (func.creator.kind != FunctionKind.AnonymousGenerator)
                     && context.owner != null
-                    && func == context.owner.oValue)
+                    && func == context.owner._oValue)
                 {
                     tailCall(context, func);
                     context.objectSource = targetObject;
@@ -153,7 +153,7 @@ namespace NiL.JS.Expressions
                 if (_callMode == CallMode.Construct)
                     targetObject = null;
 
-                if ((temp.attributes & JSValueAttributesInternal.Eval) != 0)
+                if ((temp._attributes & JSValueAttributesInternal.Eval) != 0)
                     return callEval(context);
 
                 return func.InternalInvoke(targetObject, _arguments, context, withSpread, _callMode != 0);
@@ -176,7 +176,7 @@ namespace NiL.JS.Expressions
                 this._arguments[i].Evaluate(context);
             }
 
-            if (evalCode.valueType != JSValueType.String)
+            if (evalCode._valueType != JSValueType.String)
                 return evalCode;
 
             return context.Eval(evalCode.ToString(), false);

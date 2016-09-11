@@ -58,7 +58,7 @@ namespace NiL.JS.BaseLibrary
 .GetMethod("ThrowTypeError", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic))
 #endif
         {
-            attributes = JSValueAttributesInternal.DoNotDelete
+            _attributes = JSValueAttributesInternal.DoNotDelete
                 | JSValueAttributesInternal.Immutable
                 | JSValueAttributesInternal.DoNotEnumerate
                 | JSValueAttributesInternal.ReadOnly
@@ -69,9 +69,9 @@ namespace NiL.JS.BaseLibrary
         }
         internal static readonly JSValue propertiesDummySM = new JSValue()
         {
-            valueType = JSValueType.Property,
-            oValue = new GsPropertyPair() { get = TTEProxy, set = TTEProxy },
-            attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
+            _valueType = JSValueType.Property,
+            _oValue = new GsPropertyPair() { get = TTEProxy, set = TTEProxy },
+            _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
 
         private Dictionary<Type, Delegate> delegateCache;
@@ -113,8 +113,8 @@ namespace NiL.JS.BaseLibrary
             {
                 if (_length == null)
                 {
-                    _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
-                    _length.iValue = creator.parameters.Length;
+                    _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
+                    _length._iValue = creator.parameters.Length;
                 }
                 return _length;
             }
@@ -171,7 +171,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (_prototype == null)
                 {
-                    if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0)
+                    if ((_attributes & JSValueAttributesInternal.ProxyPrototype) != 0)
                     {
                         // Вызывается в случае Function.prototype.prototype
                         _prototype = new JSValue(); // выдавать тут константу undefined нельзя, иначе будет падать на вызове defineProperty
@@ -179,8 +179,8 @@ namespace NiL.JS.BaseLibrary
                     else
                     {
                         var res = JSObject.CreateObject(true);
-                        res.attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable;
-                        (res.fields["constructor"] = this.CloneImpl(false)).attributes = JSValueAttributesInternal.DoNotEnumerate;
+                        res._attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable;
+                        (res.fields["constructor"] = this.CloneImpl(false))._attributes = JSValueAttributesInternal.DoNotEnumerate;
                         _prototype = res;
                     }
                 }
@@ -192,7 +192,7 @@ namespace NiL.JS.BaseLibrary
                 if (value == null)
                     _prototype = Null;
                 else
-                    _prototype = value.oValue as JSObject ?? value;
+                    _prototype = value._oValue as JSObject ?? value;
             }
         }
         /// <summary>
@@ -259,16 +259,16 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Function()
         {
-            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
+            _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
             creator = creatorDummy;
-            valueType = JSValueType.Function;
-            this.oValue = this;
+            _valueType = JSValueType.Function;
+            this._oValue = this;
         }
 
         [DoNotEnumerate]
         public Function(Arguments args)
         {
-            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
+            _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
             parentContext = (Context.CurrentContext ?? Context.GlobalContext).Root;
             if (parentContext == Context.globalContext)
                 throw new InvalidOperationException("Special Functions constructor can be called only while javascript running.");
@@ -291,18 +291,18 @@ namespace NiL.JS.BaseLibrary
             }
             else
                 ExceptionsHelper.Throw(new SyntaxError("Unknown syntax error"));
-            valueType = JSValueType.Function;
-            this.oValue = this;
+            _valueType = JSValueType.Function;
+            this._oValue = this;
         }
 
         [Hidden]
         internal Function(Context context, FunctionDefinition creator)
         {
-            attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
+            _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
             this.parentContext = context;
             this.creator = creator;
-            valueType = JSValueType.Function;
-            this.oValue = this;
+            _valueType = JSValueType.Function;
+            this._oValue = this;
         }
 
         [Hidden]
@@ -314,9 +314,9 @@ namespace NiL.JS.BaseLibrary
             }
 
             JSValue targetObject = ConstructObject();
-            targetObject.attributes |= JSValueAttributesInternal.ConstructingObject;
+            targetObject._attributes |= JSValueAttributesInternal.ConstructingObject;
             var result = Construct(targetObject, arguments);
-            targetObject.attributes &= ~JSValueAttributesInternal.ConstructingObject;
+            targetObject._attributes &= ~JSValueAttributesInternal.ConstructingObject;
             return result;
         }
 
@@ -329,16 +329,16 @@ namespace NiL.JS.BaseLibrary
             }
 
             var res = Invoke(true, targetObject, arguments);
-            if (res.valueType < JSValueType.Object || res.oValue == null)
+            if (res._valueType < JSValueType.Object || res._oValue == null)
                 return targetObject;
             return res;
         }
 
         protected internal virtual JSValue ConstructObject()
         {
-            JSValue targetObject = new JSObject() { valueType = JSValueType.Object };
-            targetObject.oValue = targetObject;
-            targetObject.__proto__ = prototype.valueType < JSValueType.Object ? GlobalPrototype : prototype.oValue as JSObject;
+            JSValue targetObject = new JSObject() { _valueType = JSValueType.Object };
+            targetObject._oValue = targetObject;
+            targetObject.__proto__ = prototype._valueType < JSValueType.Object ? GlobalPrototype : prototype._oValue as JSObject;
 
             return targetObject;
         }
@@ -349,7 +349,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var body = creator.body;
                 var result = notExists;
-                notExists.valueType = JSValueType.NotExists;
+                notExists._valueType = JSValueType.NotExists;
                 for (;;)
                 {
                     if (body != null)
@@ -406,7 +406,7 @@ namespace NiL.JS.BaseLibrary
 
             if (construct)
             {
-                if (targetObject == null || targetObject.valueType < JSValueType.Object)
+                if (targetObject == null || targetObject._valueType < JSValueType.Object)
                     return Construct(argumentsObject);
                 return Construct(targetObject, argumentsObject);
             }
@@ -509,7 +509,7 @@ namespace NiL.JS.BaseLibrary
             var body = creator.body;
             if (body._lines.Length == 0)
             {
-                notExists.valueType = JSValueType.NotExists;
+                notExists._valueType = JSValueType.NotExists;
                 return notExists;
             }
 
@@ -561,17 +561,17 @@ namespace NiL.JS.BaseLibrary
             if (internalContext.executionMode == AbortReason.TailRecursion)
                 return null;
             var ai = internalContext.executionInfo;
-            if (ai == null || ai.valueType < JSValueType.Undefined)
+            if (ai == null || ai._valueType < JSValueType.Undefined)
             {
-                notExists.valueType = JSValueType.NotExists;
+                notExists._valueType = JSValueType.NotExists;
                 return notExists;
             }
-            else if (ai.valueType == JSValueType.Undefined)
+            else if (ai._valueType == JSValueType.Undefined)
                 return undefined;
             else
             {
                 // константы и новосозданные объекты копировать нет смысла
-                if ((ai.attributes & JSValueAttributesInternal.SystemObject) == 0)
+                if ((ai._attributes & JSValueAttributesInternal.SystemObject) == 0)
                     return ai.CloneImpl(false);
                 return ai;
             }
@@ -679,10 +679,10 @@ namespace NiL.JS.BaseLibrary
             if (creator.parameters[index].assignments != null)
             {
                 value = value.CloneImpl(false);
-                value.attributes |= JSValueAttributesInternal.Argument;
+                value._attributes |= JSValueAttributesInternal.Argument;
             }
             else
-                value.attributes &= ~JSValueAttributesInternal.Cloned;
+                value._attributes &= ~JSValueAttributesInternal.Cloned;
             if (!value.Defined && creator.parameters.Length > index && creator.parameters[index].initializer != null)
                 value.Assign(creator.parameters[index].initializer.Evaluate(context));
             creator.parameters[index].cacheRes = value;
@@ -739,7 +739,7 @@ namespace NiL.JS.BaseLibrary
                     internalContext.fields["arguments"] = arguments;
                 if (creator.body._strict)
                 {
-                    arguments.attributes |= JSValueAttributesInternal.ReadOnly;
+                    arguments._attributes |= JSValueAttributesInternal.ReadOnly;
                     arguments.callee = propertiesDummySM;
                     arguments.caller = propertiesDummySM;
                 }
@@ -790,14 +790,14 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (prm.assignments != null
                         || ceaw
-                        || (t.attributes & JSValueAttributesInternal.Temporary) != 0)
+                        || (t._attributes & JSValueAttributesInternal.Temporary) != 0)
                     {
                         t = t.CloneImpl(false);
                         args[i] = t;
-                        t.attributes |= JSValueAttributesInternal.Argument;
+                        t._attributes |= JSValueAttributesInternal.Argument;
                     }
                 }
-                t.attributes &= ~JSValueAttributesInternal.Cloned;
+                t._attributes &= ~JSValueAttributesInternal.Cloned;
                 if (prm.captured || ceaw)
                     (internalContext.fields ?? (internalContext.fields = getFieldsContainer()))[prm.Name] = t;
                 prm.cacheContext = internalContext;
@@ -811,7 +811,7 @@ namespace NiL.JS.BaseLibrary
                 JSValue t = args[i];
                 if (ceaw)
                     args[i] = t = t.CloneImpl(false);
-                t.attributes |= JSValueAttributesInternal.Argument;
+                t._attributes |= JSValueAttributesInternal.Argument;
 
                 if (restArray != null)
                 {
@@ -842,8 +842,8 @@ namespace NiL.JS.BaseLibrary
                         if (i == min && restArray != null)
                             arg.cacheRes = restArray.CloneImpl(false);
                         else
-                            arg.cacheRes = new JSValue() { valueType = JSValueType.Undefined };
-                        arg.cacheRes.attributes = JSValueAttributesInternal.Argument;
+                            arg.cacheRes = new JSValue() { _valueType = JSValueType.Undefined };
+                        arg.cacheRes._attributes = JSValueAttributesInternal.Argument;
                     }
                     else
                     {
@@ -873,12 +873,12 @@ namespace NiL.JS.BaseLibrary
             {
                 if (!strict) // Поправляем this
                 {
-                    if (thisBind.valueType > JSValueType.Undefined && thisBind.valueType < JSValueType.Object)
+                    if (thisBind._valueType > JSValueType.Undefined && thisBind._valueType < JSValueType.Object)
                         return thisBind.ToObject();
-                    else if (thisBind.valueType <= JSValueType.Undefined || thisBind.oValue == null)
+                    else if (thisBind._valueType <= JSValueType.Undefined || thisBind._oValue == null)
                         return parentContext.Root.thisBind;
                 }
-                else if (thisBind.valueType <= JSValueType.Undefined)
+                else if (thisBind._valueType <= JSValueType.Undefined)
                     return undefined;
             }
             return thisBind;
@@ -899,12 +899,12 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal protected override JSValue GetProperty(JSValue nameObj, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < PropertyScope.Super && nameObj.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && nameObj._valueType != JSValueType.Symbol)
             {
                 string name = nameObj.ToString();
                 if (creator.body._strict && (name == "caller" || name == "arguments"))
                     return propertiesDummySM;
-                if ((attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
+                if ((_attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
                     return prototype;
             }
 
@@ -968,11 +968,11 @@ namespace NiL.JS.BaseLibrary
                 nargs.Reset();
             if (argsSource.Defined)
             {
-                if (argsSource.valueType < JSValueType.Object)
+                if (argsSource._valueType < JSValueType.Object)
                     ExceptionsHelper.Throw(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
-                if (len.valueType == JSValueType.Property)
-                    len = (len.oValue as GsPropertyPair).get.Call(argsSource, null);
+                if (len._valueType == JSValueType.Property)
+                    len = (len._oValue as GsPropertyPair).get.Call(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
                 if (nargs.length >= 50000)
                     ExceptionsHelper.Throw(new RangeError("Too many arguments."));
@@ -994,7 +994,7 @@ namespace NiL.JS.BaseLibrary
 
             var newThis = args[0];
             var strict = (creator.body != null && creator.body._strict) || Context.CurrentContext.strict;
-            if ((newThis != null && newThis.valueType > JSValueType.Undefined) || strict)
+            if ((newThis != null && newThis._valueType > JSValueType.Undefined) || strict)
                 return new BindedFunction(this, args);
 
             return this;

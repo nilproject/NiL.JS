@@ -93,15 +93,15 @@ namespace NiL.JS.Core
             else
             {
                 res = context.GetVariable(name, forWrite);
-                if ((res.attributes & JSValueAttributesInternal.SystemObject) != 0)
+                if ((res._attributes & JSValueAttributesInternal.SystemObject) != 0)
                     return res;
                 if (forWrite
                     && !IsDefined
-                    && res.valueType == JSValueType.NotExists)
-                    res.attributes = JSValueAttributesInternal.None;
+                    && res._valueType == JSValueType.NotExists)
+                    res._attributes = JSValueAttributesInternal.None;
                 else
                 {
-                    tp = res.oValue as TypeProxy;
+                    tp = res._oValue as TypeProxy;
                     if (tp != null)
                         res = tp.prototypeInstance ?? res;
                 }

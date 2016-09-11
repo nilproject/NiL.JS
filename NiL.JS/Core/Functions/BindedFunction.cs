@@ -60,7 +60,7 @@ namespace NiL.JS.Core.Functions
         {
             if (_length == null)
                 _length = new Number(0);
-            _length.iValue = proto.length.iValue;
+            _length._iValue = proto.length._iValue;
             this.original = proto;
             this._thisBind = args[0];
             this.bindedArguments = args;
@@ -69,9 +69,9 @@ namespace NiL.JS.Core.Functions
                 args.length--;
                 for (var i = 0; i < args.length; i++)
                     args[i] = args[i + 1];
-                _length.iValue -= args.length;
-                if (_length.iValue < 0)
-                    _length.iValue = 0;
+                _length._iValue -= args.length;
+                if (_length._iValue < 0)
+                    _length._iValue = 0;
                 args[args.length] = null;
                 if (args.length == 0)
                     bindedArguments = null;

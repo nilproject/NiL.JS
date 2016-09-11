@@ -31,14 +31,14 @@ namespace NiL.JS.Core
         {
             this.instance = instance;
             if (instance is Date)
-                valueType = JSValueType.Date;
+                _valueType = JSValueType.Date;
             else
-                valueType = JSValueType.Object;
-            oValue = this;
-            attributes = JSValueAttributesInternal.SystemObject;
+                _valueType = JSValueType.Object;
+            _oValue = this;
+            _attributes = JSValueAttributesInternal.SystemObject;
             if (proto != null)
             {
-                attributes |= proto.attributes & JSValueAttributesInternal.Immutable;
+                _attributes |= proto._attributes & JSValueAttributesInternal.Immutable;
                 __prototype = proto;
             }
         }

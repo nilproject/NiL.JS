@@ -40,7 +40,7 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var val = first.Evaluate(context);
-            switch (val.valueType)
+            switch (val._valueType)
             {
                 case JSValueType.Integer:
                 case JSValueType.Double:

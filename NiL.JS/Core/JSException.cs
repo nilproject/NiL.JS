@@ -40,15 +40,15 @@ namespace NiL.JS.Core
         {
             get
             {
-                if (Error.oValue is Error)
+                if (Error._oValue is Error)
                 {
                     var n = Error.GetProperty("name");
-                    if (n.valueType == JSValueType.Property)
-                        n = (n.oValue as GsPropertyPair).get.Call(Error, null).ToString();
+                    if (n._valueType == JSValueType.Property)
+                        n = (n._oValue as GsPropertyPair).get.Call(Error, null).ToString();
 
                     var m = Error.GetProperty("message");
-                    if (m.valueType == JSValueType.Property)
-                        return n + ": " + (m.oValue as GsPropertyPair).get.Call(Error, null);
+                    if (m._valueType == JSValueType.Property)
+                        return n + ": " + (m._oValue as GsPropertyPair).get.Call(Error, null);
                     else
                         return n + ": " + m;
                 }

@@ -38,14 +38,14 @@ namespace NiL.JS.Expressions
             JSValue res = null;
             JSValue source = null;
             source = first.Evaluate(context);
-            if (source.valueType < JSValueType.Object)
+            if (source._valueType < JSValueType.Object)
                 source = source.Clone() as JSValue;
             else
-                source = source.oValue as JSValue ?? source;
+                source = source._oValue as JSValue ?? source;
             res = source.GetProperty(cachedMemberName ?? second.Evaluate(context), true, memberScope);
             context.objectSource = source;
-            if (res.valueType == JSValueType.NotExists)
-                res.valueType = JSValueType.NotExistsInObject;
+            if (res._valueType == JSValueType.NotExists)
+                res._valueType = JSValueType.NotExistsInObject;
             return res;
         }
 
@@ -54,11 +54,11 @@ namespace NiL.JS.Expressions
             JSValue res = null;
             JSValue source = null;
             source = first.Evaluate(context);
-            if (source.valueType < JSValueType.Object)
+            if (source._valueType < JSValueType.Object)
                 source = source.CloneImpl(false);
-            else if (source != source.oValue)
+            else if (source != source._oValue)
             {
-                res = source.oValue as JSValue;
+                res = source._oValue as JSValue;
                 if (res != null)
                 {
                     source = res;
@@ -67,9 +67,9 @@ namespace NiL.JS.Expressions
             }
             res = source.GetProperty(cachedMemberName ?? second.Evaluate(context), false, memberScope);
             context.objectSource = source;
-            if (res.valueType == JSValueType.NotExists)
-                res.valueType = JSValueType.NotExistsInObject;
-            else if (res.valueType == JSValueType.Property)
+            if (res._valueType == JSValueType.NotExists)
+                res._valueType = JSValueType.NotExistsInObject;
+            else if (res._valueType == JSValueType.Property)
                 res = Tools.InvokeGetter(res, source);
             return res;
         }

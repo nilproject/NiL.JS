@@ -191,8 +191,8 @@ namespace NiL.JS.BaseLibrary
 
         public Promise then(Function onFulfilment, Function onRejection)
         {
-            var thenPromise = onFulfilment != null && onFulfilment.valueType == JSValueType.Function ? new CompletionPromise(onFulfilment) : null;
-            var catchPromise = onRejection != null && onRejection.valueType == JSValueType.Function ? new CompletionPromise(onRejection) : null;
+            var thenPromise = onFulfilment != null && onFulfilment._valueType == JSValueType.Function ? new CompletionPromise(onFulfilment) : null;
+            var catchPromise = onRejection != null && onRejection._valueType == JSValueType.Function ? new CompletionPromise(onRejection) : null;
 
             return then(thenPromise, catchPromise);
         }

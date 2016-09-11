@@ -58,7 +58,7 @@ namespace NiL.JS.Core.Functions
                 return NotExists;
 
             var arg = arguments[0];
-            if (arg.valueType != JSValueType.String)
+            if (arg._valueType != JSValueType.String)
                 return arg;
 
             Stack<Context> stack = new Stack<Context>();
@@ -95,7 +95,7 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
                 if (key.ToString() == "prototype")
                     return undefined;

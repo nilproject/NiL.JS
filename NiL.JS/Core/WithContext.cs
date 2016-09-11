@@ -15,13 +15,13 @@ namespace NiL.JS.Core
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");
-            if (obj.valueType == JSValueType.NotExists)
+            if (obj._valueType == JSValueType.NotExists)
                 ExceptionsHelper.Throw((new ReferenceError("Variable is not defined.")));
-            if (obj.valueType <= JSValueType.Undefined)
+            if (obj._valueType <= JSValueType.Undefined)
                 ExceptionsHelper.Throw(new TypeError("Can't access to property value of \"undefined\"."));
-            if (obj.valueType >= JSValueType.Object && obj.oValue == null)
+            if (obj._valueType >= JSValueType.Object && obj._oValue == null)
                 ExceptionsHelper.Throw(new TypeError("Can't access to property value of \"null\"."));
-            @object = obj.oValue as JSValue ?? obj;
+            @object = obj._oValue as JSValue ?? obj;
         }
 
         public override JSValue DefineVariable(string name, bool deletable)
@@ -33,7 +33,7 @@ namespace NiL.JS.Core
         {
             thisBind = parent.thisBind;
             var res = @object.GetProperty(name, create, PropertyScope.Сommon);
-            if (res.valueType < JSValueType.Undefined)
+            if (res._valueType < JSValueType.Undefined)
             {
                 res = parent.GetVariable(name, create);
                 objectSource = parent.objectSource;

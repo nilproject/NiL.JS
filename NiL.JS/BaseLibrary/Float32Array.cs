@@ -14,13 +14,13 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 var res = new Element(this, index);
-                res.dValue = BitConverter.ToSingle(buffer.data, index * BYTES_PER_ELEMENT + byteOffset);
-                res.valueType = JSValueType.Double;
+                res._dValue = BitConverter.ToSingle(buffer.data, index * BYTES_PER_ELEMENT + byteOffset);
+                res._valueType = JSValueType.Double;
                 return res;
             }
             set
             {
-                if (index < 0 || index > length.iValue)
+                if (index < 0 || index > length._iValue)
                     ExceptionsHelper.Throw(new RangeError());
                 var v = BitConverter.GetBytes((float)Tools.JSObjectToDouble(value));
                 if (BitConverter.IsLittleEndian)

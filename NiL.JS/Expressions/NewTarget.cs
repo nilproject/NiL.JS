@@ -40,7 +40,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (context.thisBind != null && (context.thisBind.attributes & JSValueAttributesInternal.ConstructingObject) != 0)
+            if (context.thisBind != null && (context.thisBind._attributes & JSValueAttributesInternal.ConstructingObject) != 0)
             {
                 var stack = Context.GetCurrectContextStack();
 

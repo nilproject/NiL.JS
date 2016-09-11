@@ -25,7 +25,7 @@ namespace NiL.JS.Statements
             if (Parser.ValidateName(state.Code, ref i, state.strict))
             {
                 label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict);
-                if (!state.Labels.Contains(label.oValue.ToString()))
+                if (!state.Labels.Contains(label._oValue.ToString()))
                     ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Try to break to undefined label.")));
             }
             else if (!state.AllowBreak.Peek())

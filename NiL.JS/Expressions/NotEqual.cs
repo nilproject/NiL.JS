@@ -24,7 +24,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            return base.Evaluate(context).iValue == 0;
+            return base.Evaluate(context)._iValue == 0;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
                 if (state.strict)
                 {
                     if (exptn == "arguments" || exptn == "eval")
-                        ExceptionsHelper.Throw((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                        ExceptionsHelper.Throw((new SyntaxError("Varible name can not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
 
                 Tools.SkipSpaces(state.Code, ref i);
@@ -149,8 +149,10 @@ namespace NiL.JS.Statements
                     exception = null;
                 }
             }
+
             if (context.executionMode != AbortReason.Suspend && exception != null)
                 throw exception;
+
             return null;
         }
 
@@ -207,7 +209,7 @@ namespace NiL.JS.Statements
             else
 #endif
                 cvar = e is JSException ? (e as JSException).Error.CloneImpl(false) : TypeProxy.Proxy(e);
-            cvar.attributes |= JSValueAttributesInternal.DoNotDelete;
+            cvar._attributes |= JSValueAttributesInternal.DoNotDelete;
             var catchContext = new CatchContext(cvar, context, catchVariableDesc.name);
 #if DEBUG
             if (!(e is JSException))

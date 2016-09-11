@@ -34,26 +34,26 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var f = first.Evaluate(context);
-            if (f.valueType == JSValueType.Integer)
+            if (f._valueType == JSValueType.Integer)
             {
-                var ileft = f.iValue;
+                var ileft = f._iValue;
                 f = second.Evaluate(context);
-                if (ileft >= 0 && f.valueType == JSValueType.Integer && f.iValue != 0)
+                if (ileft >= 0 && f._valueType == JSValueType.Integer && f._iValue != 0)
                 {
-                    tempContainer.valueType = JSValueType.Integer;
-                    tempContainer.iValue = ileft % f.iValue;
+                    tempContainer._valueType = JSValueType.Integer;
+                    tempContainer._iValue = ileft % f._iValue;
                 }
                 else
                 {
-                    tempContainer.valueType = JSValueType.Double;
-                    tempContainer.dValue = ileft % Tools.JSObjectToDouble(f);
+                    tempContainer._valueType = JSValueType.Double;
+                    tempContainer._dValue = ileft % Tools.JSObjectToDouble(f);
                 }
             }
             else
             {
                 double left = Tools.JSObjectToDouble(f);
-                tempContainer.dValue = left % Tools.JSObjectToDouble(second.Evaluate(context));
-                tempContainer.valueType = JSValueType.Double;
+                tempContainer._dValue = left % Tools.JSObjectToDouble(second.Evaluate(context));
+                tempContainer._valueType = JSValueType.Double;
             }
             return tempContainer;
         }

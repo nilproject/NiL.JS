@@ -93,13 +93,13 @@ namespace NiL.JS.Core.Functions
             _strictConversion = methodBase.IsDefined(typeof(StrictConversionAttribute), true);
 
             if (_length == null)
-                _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
+                _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
             var pc = methodBase.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
             if (pc.Length != 0)
-                _length.iValue = (pc[0] as ArgumentsLengthAttribute).Count;
+                _length._iValue = (pc[0] as ArgumentsLengthAttribute).Count;
             else
-                _length.iValue = _parameters.Length;
+                _length._iValue = _parameters.Length;
 
             for (int i = 0; i < _parameters.Length; i++)
             {
@@ -466,7 +466,7 @@ namespace NiL.JS.Core.Functions
             {
                 if (forceInstance)
                 {
-                    if (thisBind != null && thisBind.valueType >= JSValueType.Object)
+                    if (thisBind != null && thisBind._valueType >= JSValueType.Object)
                     {
                         // Объект нужно развернуть до основного значения. Даже если это обёртка над примитивным значением
                         target = thisBind.Value;
@@ -542,7 +542,7 @@ namespace NiL.JS.Core.Functions
         {
             if (_this == null)
                 return null;
-            _this = _this.oValue as JSValue ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
+            _this = _this._oValue as JSValue ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
             var res = Tools.convertJStoObj(_this, targetType, false);
             return res;
         }
@@ -562,7 +562,7 @@ namespace NiL.JS.Core.Functions
                 var obj = source?[i] ?? undefined;
 
                 var trueNull = (options & ConvertArgsOptions.DummyValues) != 0 
-                    || (obj.valueType >= JSValueType.Object && obj.oValue == null);
+                    || (obj._valueType >= JSValueType.Object && obj._oValue == null);
 
                 var t = convertArg(i, obj, options);
 
@@ -589,7 +589,7 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                var trueNull = obj.valueType >= JSValueType.Object && obj.oValue == null;
+                var trueNull = obj._valueType >= JSValueType.Object && obj._oValue == null;
 
                 if (!trueNull)
                     result = Tools.convertJStoObj(obj, _parameters[i].ParameterType, !strictConv);

@@ -225,7 +225,7 @@ namespace NiL.JS.Statements
                 variable = suspendData.variable;
 
             if (!source.Defined
-                || (source.valueType >= JSValueType.Object && source.oValue == null)
+                || (source._valueType >= JSValueType.Object && source._oValue == null)
                 || _body == null)
                 return JSValue.undefined;
 
@@ -239,12 +239,12 @@ namespace NiL.JS.Statements
                     if (context.executionMode != AbortReason.Resume)
                     {
                         var key = keys.Current.Key;
-                        variable.valueType = JSValueType.String;
-                        variable.oValue = key;
+                        variable._valueType = JSValueType.String;
+                        variable._oValue = key;
                         if (processedKeys.Contains(key))
                             continue;
                         processedKeys.Add(key);
-                        if ((keys.Current.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
+                        if ((keys.Current.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
                             continue;
 
                         if (context.debugging && !(_body is CodeBlock))
@@ -256,7 +256,7 @@ namespace NiL.JS.Statements
                     {
                         if (context.executionMode < AbortReason.Return)
                         {
-                            var me = context.executionInfo == null || System.Array.IndexOf(labels, context.executionInfo.oValue as string) != -1;
+                            var me = context.executionInfo == null || System.Array.IndexOf(labels, context.executionInfo._oValue as string) != -1;
                             var _break = (context.executionMode > AbortReason.Continue) || !me;
                             if (me)
                             {
@@ -286,7 +286,7 @@ namespace NiL.JS.Statements
                 }
 
                 source = source.__proto__;
-                if (source == JSValue.@null || !source.Defined || (source.valueType >= JSValueType.Object && source.oValue == null))
+                if (source == JSValue.@null || !source.Defined || (source._valueType >= JSValueType.Object && source._oValue == null))
                     break;
             }
             return null;

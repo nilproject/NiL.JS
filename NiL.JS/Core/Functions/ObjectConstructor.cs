@@ -22,10 +22,10 @@ namespace NiL.JS.Core.Functions
             if (arguments != null && arguments.length > 0)
                 oVal = arguments[0];
             if ((oVal == null) 
-                || ((oVal.valueType >= JSValueType.Object && oVal.oValue == null) 
-                    || oVal.valueType <= JSValueType.Undefined))
+                || ((oVal._valueType >= JSValueType.Object && oVal._oValue == null) 
+                    || oVal._valueType <= JSValueType.Undefined))
                 return CreateObject();
-            else if (oVal.valueType >= JSValueType.Object && oVal.oValue != null)
+            else if (oVal._valueType >= JSValueType.Object && oVal._oValue != null)
                 return oVal;
 
             return oVal.ToObject();

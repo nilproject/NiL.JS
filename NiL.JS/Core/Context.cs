@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
@@ -99,7 +100,7 @@ namespace NiL.JS.Core
                 JSObject.GlobalPrototype = null;
                 TypeProxy.Clear();
                 globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl(false));
-                globalContext.fields["Object"].attributes = JSValueAttributesInternal.DoNotDelete;
+                globalContext.fields["Object"]._attributes = JSValueAttributesInternal.DoNotDelete;
                 JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
                 Core.GlobalObject.refreshGlobalObjectProto();
                 globalContext.DefineConstructor(typeof(BaseLibrary.Math));
@@ -138,7 +139,7 @@ namespace NiL.JS.Core
 
                 #region Base Function
                 globalContext.DefineVariable("eval").Assign(new EvalFunction());
-                globalContext.fields["eval"].attributes |= JSValueAttributesInternal.Eval;
+                globalContext.fields["eval"]._attributes |= JSValueAttributesInternal.Eval;
                 globalContext.DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
                 globalContext.DefineVariable("unescape").Assign(new ExternalFunction(GlobalFunctions.unescape));
                 globalContext.DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
@@ -161,7 +162,7 @@ namespace NiL.JS.Core
                 #endregion
 
                 foreach (var v in globalContext.fields.Values)
-                    v.attributes |= JSValueAttributesInternal.DoNotEnumerate;
+                    v._attributes |= JSValueAttributesInternal.DoNotEnumerate;
             }
             catch
             {
@@ -447,12 +448,55 @@ namespace NiL.JS.Core
 
                 fields[name] = res = new JSValue();
                 if (!deletable)
-                    res.attributes = JSValueAttributesInternal.DoNotDelete;
+                    res._attributes = JSValueAttributesInternal.DoNotDelete;
             }
-            else if ((res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
+            else if ((res._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                 fields[name] = res = res.CloneImpl(false);
-            res.valueType |= JSValueType.Undefined;
+            res._valueType |= JSValueType.Undefined;
             return res;
+        }
+
+        /// <summary>
+        /// Creates new property with Getter and Setter in the object
+        /// </summary>
+        /// <param name="name">Name of the property</param>
+        /// <param name="getter">Function called when there is an attempt to get a value. Can be null</param>
+        /// <param name="setter">Function called when there is an attempt to set a value. Can be null</param>
+        /// <exception cref="System.ArgumentException">if property already exists</exception>
+        /// <exception cref="System.InvalidOperationException">if unable to create property</exception>
+        public void DefineGetSetVariable(string name, Func<object> getter, Action<object> setter)
+        {
+            var property = GetVariable(name);
+            if (property.ValueType >= JSValueType.Undefined)
+                throw new ArgumentException();
+
+            property = DefineVariable(name);
+            if (property.ValueType < JSValueType.Undefined)
+                throw new InvalidOperationException();
+
+            property._valueType = JSValueType.Property;
+
+            Function jsGetter = null;
+            if (getter != null)
+            {
+#if NET40
+                jsGetter = new MethodProxy(getter.Method, getter.Target);
+#else
+                jsGetter = new MethodProxy(getter.GetMethodInfo(), getter.Target);
+#endif
+            }
+
+            Function jsSetter = null;
+            if (setter != null)
+            {
+#if NET40
+                jsSetter = new MethodProxy(setter.Method, setter.Target);
+#else
+                jsSetter = new MethodProxy(setter.GetMethodInfo(), setter.Target);
+#endif
+            }
+
+            property._oValue = new GsPropertyPair(jsGetter, jsSetter);
         }
 
         public JSValue GetVariable(string name)
@@ -476,14 +520,14 @@ namespace NiL.JS.Core
                 {
                     if (create)
                     {
-                        res = new JSValue() { valueType = JSValueType.NotExists };
+                        res = new JSValue() { _valueType = JSValueType.NotExists };
                         fields[name] = res;
                     }
                     else
                     {
                         res = JSObject.GlobalPrototype.GetProperty(name, false, PropertyScope.Сommon);
-                        if (res.valueType == JSValueType.NotExistsInObject)
-                            res.valueType = JSValueType.NotExists;
+                        if (res._valueType == JSValueType.NotExistsInObject)
+                            res._valueType = JSValueType.NotExists;
                     }
                 }
             }
@@ -491,7 +535,7 @@ namespace NiL.JS.Core
                 objectSource = parent.objectSource;
             else
             {
-                if (create && (res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
+                if (create && (res._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                     fields[name] = res = res.CloneImpl(false);
             }
 
@@ -533,7 +577,7 @@ namespace NiL.JS.Core
         public void DefineConstructor(Type type, string name)
         {
             fields.Add(name, TypeProxy.GetConstructor(type).CloneImpl(false));
-            fields[name].attributes = JSValueAttributesInternal.DoNotEnumerate;
+            fields[name]._attributes = JSValueAttributesInternal.DoNotEnumerate;
         }
 
         public void SetAbortState(AbortReason abortReason, JSValue abortInfo)

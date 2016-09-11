@@ -232,7 +232,7 @@ namespace NiL.JS.Statements
                 {
                     if (context.executionMode < AbortReason.Return)
                     {
-                        var me = context.executionInfo == null || System.Array.IndexOf(_labels, context.executionInfo.oValue as string) != -1;
+                        var me = context.executionInfo == null || System.Array.IndexOf(_labels, context.executionInfo._oValue as string) != -1;
                         var _break = (context.executionMode > AbortReason.Continue) || !me;
                         if (me)
                         {

@@ -208,7 +208,7 @@ namespace NiL.JS.Statements
                     {
                         if (context.executionMode < AbortReason.Return)
                         {
-                            var me = context.executionInfo == null || System.Array.IndexOf(labels, context.executionInfo.oValue as string) != -1;
+                            var me = context.executionInfo == null || System.Array.IndexOf(labels, context.executionInfo._oValue as string) != -1;
                             var _break = (context.executionMode > AbortReason.Continue) || !me;
                             if (me)
                             {
@@ -363,12 +363,12 @@ namespace NiL.JS.Statements
                             {
                                 var vvalue = value.Evaluate(null);
                                 var lvalue = limit.Evaluate(null);
-                                if ((vvalue.valueType == JSValueType.Integer
-                                    || vvalue.valueType == JSValueType.Boolean
-                                    || vvalue.valueType == JSValueType.Double)
-                                    && (lvalue.valueType == JSValueType.Integer
-                                    || lvalue.valueType == JSValueType.Boolean
-                                    || lvalue.valueType == JSValueType.Double))
+                                if ((vvalue._valueType == JSValueType.Integer
+                                    || vvalue._valueType == JSValueType.Boolean
+                                    || vvalue._valueType == JSValueType.Double)
+                                    && (lvalue._valueType == JSValueType.Integer
+                                    || lvalue._valueType == JSValueType.Boolean
+                                    || lvalue._valueType == JSValueType.Double))
                                 {
                                     _post.Eliminated = true;
                                     _condition.Eliminated = true;

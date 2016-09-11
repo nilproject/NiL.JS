@@ -153,7 +153,7 @@ namespace NiL.JS.Expressions
             if (Mode == TemplateStringMode.Regular)
                 return result.ToString();
             else
-                return new JSValue { oValue = tagResult, valueType = JSValueType.SpreadOperatorResult };
+                return new JSValue { _oValue = tagResult, _valueType = JSValueType.SpreadOperatorResult };
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)

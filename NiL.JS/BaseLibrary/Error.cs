@@ -81,7 +81,7 @@ namespace NiL.JS.BaseLibrary
             string mstring;
             string nstring;
             if (message == null
-                || message.valueType <= JSValueType.Undefined
+                || message._valueType <= JSValueType.Undefined
                 || string.IsNullOrEmpty((mstring = message.ToString())))
                 return name.ToString()
 #if CALLSTACKTOSTRING
@@ -89,7 +89,7 @@ namespace NiL.JS.BaseLibrary
 #endif
 ;
             if (name == null
-                || name.valueType <= JSValueType.Undefined
+                || name._valueType <= JSValueType.Undefined
                 || string.IsNullOrEmpty((nstring = name.ToString())))
                 return mstring
 #if CALLSTACKTOSTRING

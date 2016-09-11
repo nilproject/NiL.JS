@@ -63,7 +63,7 @@ namespace NiL.JS.Core.Functions
             for (var i = 0; i < methods.Length; i++)
                 len = System.Math.Max(len, methods[i]._parameters.Length);
 
-            _length = new BaseLibrary.Number(len) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
+            _length = new BaseLibrary.Number(len) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
         }
 
         internal override JSObject GetDefaultPrototype()

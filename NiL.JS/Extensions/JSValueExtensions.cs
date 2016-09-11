@@ -12,7 +12,7 @@ namespace NiL.JS.Extensions
     {
         public static bool Is(this JSValue self, JSValueType type)
         {
-            return self != null && self.valueType == type;
+            return self != null && self._valueType == type;
         }
 
         public static bool Is<T>(this JSValue self)
@@ -31,13 +31,13 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Byte:
                     {
-                        return self.Is(JSValueType.Integer) && (self.iValue & ~byte.MaxValue) == 0;
+                        return self.Is(JSValueType.Integer) && (self._iValue & ~byte.MaxValue) == 0;
                     }
                 case TypeCode.Char:
                     {
                         return (self != null
-                            && self.valueType == JSValueType.Object
-                            && self.oValue is char);
+                            && self._valueType == JSValueType.Object
+                            && self._oValue is char);
                     }
                 case TypeCode.Decimal:
                     {
@@ -49,7 +49,7 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Int16:
                     {
-                        return self.Is(JSValueType.Integer) && (self.iValue & ~ushort.MaxValue) == 0;
+                        return self.Is(JSValueType.Integer) && (self._iValue & ~ushort.MaxValue) == 0;
                     }
                 case TypeCode.Int32:
                     {
@@ -57,7 +57,7 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Int64:
                     {
-                        return self.Is(JSValueType.Integer) || (self.Is(JSValueType.Double) && self.dValue == (long)self.dValue);
+                        return self.Is(JSValueType.Integer) || (self.Is(JSValueType.Double) && self._dValue == (long)self._dValue);
                     }
                 case TypeCode.Object:
                     {
@@ -65,11 +65,11 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.SByte:
                     {
-                        return self.Is(JSValueType.Integer) && (self.iValue & ~byte.MaxValue) == 0;
+                        return self.Is(JSValueType.Integer) && (self._iValue & ~byte.MaxValue) == 0;
                     }
                 case TypeCode.Single:
                     {
-                        return self.Is(JSValueType.Double) && (float)self.dValue == self.dValue;
+                        return self.Is(JSValueType.Double) && (float)self._dValue == self._dValue;
                     }
                 case TypeCode.String:
                     {
@@ -77,7 +77,7 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.UInt16:
                     {
-                        return self.Is(JSValueType.Integer) && (self.iValue & ~ushort.MaxValue) == 0;
+                        return self.Is(JSValueType.Integer) && (self._iValue & ~ushort.MaxValue) == 0;
                     }
                 case TypeCode.UInt32:
                     {
@@ -85,7 +85,7 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.UInt64:
                     {
-                        return (self.Is(JSValueType.Integer) && self.iValue >= 0) || (self.Is(JSValueType.Double) && self.dValue == (ulong)self.dValue);
+                        return (self.Is(JSValueType.Integer) && self._iValue >= 0) || (self.Is(JSValueType.Double) && self._dValue == (ulong)self._dValue);
                     }
                 default:
                     {
@@ -110,9 +110,9 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Char:
                     {
-                        if (self.valueType == JSValueType.Object
-                            && self.oValue is char)
-                            return (T)self.oValue;
+                        if (self._valueType == JSValueType.Object
+                            && self._oValue is char)
+                            return (T)self._oValue;
                         break;
                     }
                 case TypeCode.Decimal:
@@ -179,8 +179,8 @@ namespace NiL.JS.Extensions
             if (!typeof(T).IsInterface)
                 throw new ArgumentException(typeof(T).FullName + " is not an interface type");
 
-            if (self.oValue is T)
-                return (T)self.oValue;
+            if (self._oValue is T)
+                return (T)self._oValue;
             if (typeof(T) == typeof(IIterable))
                 return (T)self.AsIterable();
             if (typeof(T) == typeof(IIterator))

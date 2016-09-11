@@ -75,11 +75,11 @@ namespace NiL.JS.Expressions
             if (context.strict || forceThrow)
             {
                 var res = Descriptor.Get(context, false, _scopeLevel);
-                if (res.valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
+                if (res._valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
                     ExceptionsHelper.ThrowVariableNotDefined(variableName);
                 if (context.strict)
                 {
-                    if ((res.attributes & JSValueAttributesInternal.Argument) != 0)
+                    if ((res._attributes & JSValueAttributesInternal.Argument) != 0)
                         context.owner.BuildArgumentsObject();
                 }
                 return res;
@@ -90,7 +90,7 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var res = _descriptor.Get(context, false, _scopeLevel);
-            switch (res.valueType)
+            switch (res._valueType)
             {
                 case JSValueType.NotExists:
                     {

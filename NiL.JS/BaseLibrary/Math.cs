@@ -47,41 +47,41 @@ namespace NiL.JS.BaseLibrary
         public static JSValue abs(Arguments args)
         {
             var arg = args[0];
-            switch (arg.valueType)
+            switch (arg._valueType)
             {
                 case JSValueType.Integer:
                     {
-                        if ((arg.iValue & int.MinValue) == 0)
+                        if ((arg._iValue & int.MinValue) == 0)
                             return arg;
-                        if (arg.iValue == int.MinValue)
+                        if (arg._iValue == int.MinValue)
                             goto default;
-                        if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
+                        if ((arg._attributes & JSValueAttributesInternal.Cloned) != 0)
                         {
-                            arg.valueType = JSValueType.Integer;
-                            arg.iValue = -arg.iValue;
+                            arg._valueType = JSValueType.Integer;
+                            arg._iValue = -arg._iValue;
                             return arg;
                         }
-                        return -arg.iValue;
+                        return -arg._iValue;
                     }
                 case JSValueType.Double:
                     {
-                        if (arg.dValue >= 0)
+                        if (arg._dValue >= 0)
                             return arg;
-                        if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
+                        if ((arg._attributes & JSValueAttributesInternal.Cloned) != 0)
                         {
-                            arg.valueType = JSValueType.Double;
-                            arg.dValue = -arg.dValue;
+                            arg._valueType = JSValueType.Double;
+                            arg._dValue = -arg._dValue;
                             return arg;
                         }
-                        return -arg.dValue;
+                        return -arg._dValue;
                     }
                 default:
                     {
                         var value = System.Math.Abs(Tools.JSObjectToDouble(arg));
-                        if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
+                        if ((arg._attributes & JSValueAttributesInternal.Cloned) != 0)
                         {
-                            arg.valueType = JSValueType.Double;
-                            arg.dValue = value;
+                            arg._valueType = JSValueType.Double;
+                            arg._dValue = value;
                             return arg;
                         }
                         return value;
@@ -145,10 +145,10 @@ namespace NiL.JS.BaseLibrary
         {
             var arg = args[0];
             var res = System.Math.Exp(Tools.JSObjectToDouble(arg));
-            if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
+            if ((arg._attributes & JSValueAttributesInternal.Cloned) != 0)
             {
-                arg.valueType = JSValueType.Double;
-                arg.dValue = res;
+                arg._valueType = JSValueType.Double;
+                arg._dValue = res;
                 return arg;
             }
             return res;
@@ -169,15 +169,15 @@ namespace NiL.JS.BaseLibrary
         public static JSValue floor(Arguments args)
         {
             var arg = args.a0 ?? JSValue.notExists;
-            if (arg.valueType == JSValueType.Integer)
+            if (arg._valueType == JSValueType.Integer)
                 return arg;
             var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
-                if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
+                if ((arg._attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
-                    arg.valueType = JSValueType.Integer;
-                    arg.iValue = 0;
+                    arg._valueType = JSValueType.Integer;
+                    arg._iValue = 0;
                     return arg;
                 }
                 return a;
@@ -200,17 +200,17 @@ namespace NiL.JS.BaseLibrary
                 }
 
                 var r = (long)shl(m, e) * s;
-                if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
+                if ((arg._attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
                     if (r <= int.MaxValue)
                     {
-                        arg.valueType = JSValueType.Integer;
-                        arg.iValue = (int)r;
+                        arg._valueType = JSValueType.Integer;
+                        arg._iValue = (int)r;
                     }
                     else
                     {
-                        arg.valueType = JSValueType.Double;
-                        arg.dValue = r;
+                        arg._valueType = JSValueType.Double;
+                        arg._dValue = r;
                     }
 
                     return arg;
@@ -238,7 +238,7 @@ namespace NiL.JS.BaseLibrary
             double res = double.NegativeInfinity;
             for (int i = 0; i < args.Length; i++)
             {
-                if (reso == null && (args[i].attributes & JSValueAttributesInternal.Cloned) != 0)
+                if (reso == null && (args[i]._attributes & JSValueAttributesInternal.Cloned) != 0)
                     reso = args[i];
                 var t = Tools.JSObjectToDouble(args[i]);
                 if (double.IsNaN(t))
@@ -247,8 +247,8 @@ namespace NiL.JS.BaseLibrary
             }
             if (reso != null)
             {
-                reso.valueType = JSValueType.Double;
-                reso.dValue = res;
+                reso._valueType = JSValueType.Double;
+                reso._dValue = res;
                 return reso;
             }
             return res;
@@ -277,19 +277,19 @@ namespace NiL.JS.BaseLibrary
         {
             JSValue result = 0;
             if (args.Length < 2)
-                result.dValue = double.NaN;
+                result._dValue = double.NaN;
             else
             {
                 var @base = Tools.JSObjectToDouble(args[0]);
                 var degree = Tools.JSObjectToDouble(args[1]);
                 if (@base == 1 && double.IsInfinity(degree))
-                    result.dValue = double.NaN;
+                    result._dValue = double.NaN;
                 else if (double.IsNaN(@base) && degree == 0.0)
-                    result.dValue = 1;
+                    result._dValue = 1;
                 else
-                    result.dValue = System.Math.Pow(@base, degree);
+                    result._dValue = System.Math.Pow(@base, degree);
             }
-            result.valueType = JSValueType.Double;
+            result._valueType = JSValueType.Double;
             return result;
         }
 
@@ -305,16 +305,16 @@ namespace NiL.JS.BaseLibrary
         public static JSValue round(Arguments args)
         {
             var arg = args[0];
-            if (arg.valueType == JSValueType.Integer)
+            if (arg._valueType == JSValueType.Integer)
                 return arg;
 
             var a = Tools.JSObjectToDouble(arg);
             if (a == 0.0)
             {
-                if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
+                if ((arg._attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
-                    arg.valueType = JSValueType.Integer;
-                    arg.iValue = 0;
+                    arg._valueType = JSValueType.Integer;
+                    arg._iValue = 0;
                     return arg;
                 }
 
@@ -342,17 +342,17 @@ namespace NiL.JS.BaseLibrary
                 }
 
                 var r = ((long)shl(m, e) + ((long)shl(m, (e - 1)) & 1) * s) * s;
-                if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
+                if ((arg._attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
                     if (r <= int.MaxValue)
                     {
-                        arg.valueType = JSValueType.Integer;
-                        arg.iValue = (int)r;
+                        arg._valueType = JSValueType.Integer;
+                        arg._iValue = (int)r;
                     }
                     else
                     {
-                        arg.valueType = JSValueType.Double;
-                        arg.dValue = r;
+                        arg._valueType = JSValueType.Double;
+                        arg._dValue = r;
                     }
 
                     return arg;
@@ -377,10 +377,10 @@ namespace NiL.JS.BaseLibrary
         {
             var arg = args[0];
             var res = System.Math.Sqrt(Tools.JSObjectToDouble(arg));
-            if ((arg.attributes & JSValueAttributesInternal.Cloned) != 0)
+            if ((arg._attributes & JSValueAttributesInternal.Cloned) != 0)
             {
-                arg.valueType = JSValueType.Double;
-                arg.dValue = res;
+                arg._valueType = JSValueType.Double;
+                arg._dValue = res;
                 return arg;
             }
             return res;

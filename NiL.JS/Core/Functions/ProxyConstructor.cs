@@ -88,7 +88,7 @@ namespace NiL.JS.Core.Functions
                 RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
 
             if (_length == null)
-                _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
+                _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 #if (PORTABLE || NETCORE)
             var ctors = System.Linq.Enumerable.ToArray(typeProxy.hostedType.GetTypeInfo().DeclaredConstructors);
@@ -105,7 +105,7 @@ namespace NiL.JS.Core.Functions
                 if (!ctors[i].IsDefined(typeof(HiddenAttribute), false) || ctors[i].IsDefined(typeof(ForceUseAttribute), true))
                 {
                     ctorsL.Add(new MethodProxy(ctors[i]));
-                    length.iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length.iValue, _length.iValue);
+                    length._iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length._iValue, _length._iValue);
                 }
             }
             ctorsL.Sort((x, y) => x.Parameters.Length == 1 && x.Parameters[0].ParameterType == typeof(Arguments) ? 1 :
@@ -117,7 +117,7 @@ namespace NiL.JS.Core.Functions
         [Hidden]
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
                 if (key.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
@@ -130,7 +130,7 @@ namespace NiL.JS.Core.Functions
                     return res;
                 }
                 res = __proto__.GetProperty(key, forWrite, memberScope);
-                if (memberScope == PropertyScope.Own && (res.valueType != JSValueType.Property || (res.attributes & JSValueAttributesInternal.Field) == 0))
+                if (memberScope == PropertyScope.Own && (res._valueType != JSValueType.Property || (res._attributes & JSValueAttributesInternal.Field) == 0))
                     return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
                 return res;
             }
@@ -170,13 +170,13 @@ namespace NiL.JS.Core.Functions
                                 break;
                             case 1:
                                 {
-                                    switch (arguments.a0.valueType)
+                                    switch (arguments.a0._valueType)
                                     {
                                         case JSValueType.Integer:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0.iValue);
+                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0._iValue);
                                             break;
                                         case JSValueType.Double:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0.dValue);
+                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0._dValue);
                                             break;
                                         default:
                                             obj = new NiL.JS.BaseLibrary.Array(arguments);
@@ -220,16 +220,16 @@ namespace NiL.JS.Core.Functions
                     if (res != null)
                     {
                         // Для Number, Boolean и String
-                        if (res.valueType < JSValueType.Object)
+                        if (res._valueType < JSValueType.Object)
                         {
                             objc.instance = obj;
                             if (objc.__prototype == null)
                                 objc.__prototype = res.__proto__;
                             res = objc;
                         }
-                        else if (res.oValue is JSValue)
+                        else if (res._oValue is JSValue)
                         {
-                            res.oValue = res;
+                            res._oValue = res;
                             // На той стороне понять, по new или нет вызван конструктор не удастся,
                             // поэтому по соглашению такие типы себя настраивают так, как будто они по new,
                             // а в oValue пишут экземпляр аргумента на тот случай, если вызван конструктор типа как функция
@@ -240,11 +240,11 @@ namespace NiL.JS.Core.Functions
                     {
                         objc.instance = obj;
 
-                        objc.attributes |= proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
+                        objc._attributes |= proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
                         if (obj.GetType() == typeof(Date))
-                            objc.valueType = JSValueType.Date;
+                            objc._valueType = JSValueType.Date;
                         else if (res != null)
-                            objc.valueType = (JSValueType)System.Math.Max((int)objc.valueType, (int)res.valueType);
+                            objc._valueType = (JSValueType)System.Math.Max((int)objc._valueType, (int)res._valueType);
 
                         res = objc;
                     }
@@ -253,13 +253,13 @@ namespace NiL.JS.Core.Functions
                 {
                     if (proxy.hostedType == typeof(JSValue))
                     {
-                        if ((res.oValue is JSValue) && (res.oValue as JSValue).valueType >= JSValueType.Object)
-                            return res.oValue as JSValue;
+                        if ((res._oValue is JSValue) && (res._oValue as JSValue)._valueType >= JSValueType.Object)
+                            return res._oValue as JSValue;
                     }
 
                     res = res ?? new ObjectWrapper(obj)
                     {
-                        attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
+                        _attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
                     };
                 }
                 return res;

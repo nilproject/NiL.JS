@@ -20,11 +20,11 @@ namespace NiL.JS.BaseLibrary
 
             public Element(int index, ArrayBuffer parent)
             {
-                this.valueType = JSValueType.Integer;
+                this._valueType = JSValueType.Integer;
                 this.index = index;
-                this.iValue = parent.data[index];
+                this._iValue = parent.data[index];
                 this.data = parent.data;
-                this.attributes |= JSValueAttributesInternal.Reassign;
+                this._attributes |= JSValueAttributesInternal.Reassign;
             }
 
             public override void Assign(JSValue value)
@@ -68,7 +68,7 @@ namespace NiL.JS.BaseLibrary
             if (data == null)
                 throw new ArgumentNullException();
             this.data = data;
-            attributes |= JSValueAttributesInternal.SystemObject;
+            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         public int byteLength
@@ -113,7 +113,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
                 uint index = 0;
                 double dindex = Tools.JSObjectToDouble(key);

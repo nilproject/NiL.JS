@@ -229,7 +229,7 @@ namespace NiL.JS.Expressions
                             && (second as ExpressionTree)._operationKind == OperationType.None
                             && (second as ExpressionTree).second == null)
                             second = (second as ExpressionTree).first;
-                        return new Conditional(first, (Expression[])second.Evaluate(null).oValue);
+                        return new Conditional(first, (Expression[])second.Evaluate(null)._oValue);
                     }
                 case OperationType.TypeOf:
                     {
@@ -748,7 +748,7 @@ namespace NiL.JS.Expressions
                             if (!state.stringConstants.TryGetValue(name, out jsname))
                                 state.stringConstants[name] = jsname = name;
                             else
-                                name = jsname.oValue.ToString();
+                                name = jsname._oValue.ToString();
 
                             first = new Property(first, new Constant(name)
                                                         {
@@ -788,10 +788,10 @@ namespace NiL.JS.Expressions
                                 startPos = 0;
                                 var cname = mname as Constant;
                                 if (cname != null
-                                    && cname.value.valueType == JSValueType.String
-                                    && Parser.ValidateName(cname.value.oValue.ToString(), ref startPos, false)
-                                    && startPos == cname.value.oValue.ToString().Length)
-                                    state.message(MessageLevel.Recomendation, CodeCoordinates.FromTextPosition(state.Code, mname.Position, mname.Length), "[\"" + cname.value.oValue + "\"] is better written in dot notation.");
+                                    && cname.value._valueType == JSValueType.String
+                                    && Parser.ValidateName(cname.value._oValue.ToString(), ref startPos, false)
+                                    && startPos == cname.value._oValue.ToString().Length)
+                                    state.message(MessageLevel.Recomendation, CodeCoordinates.FromTextPosition(state.Code, mname.Position, mname.Length), "[\"" + cname.value._oValue + "\"] is better written in dot notation.");
                             }
                             break;
                         }
@@ -1051,7 +1051,7 @@ namespace NiL.JS.Expressions
                         {
                             JSValue tempStr;
                             if (state.stringConstants.TryGetValue(name, out tempStr))
-                                name = tempStr.oValue.ToString();
+                                name = tempStr._oValue.ToString();
                             else
                                 state.stringConstants[name] = name;
 
@@ -1089,7 +1089,7 @@ namespace NiL.JS.Expressions
                         if (!state.stringConstants.TryGetValue(name, out jsName))
                             state.stringConstants[name] = jsName = name;
                         else
-                            name = jsName.oValue.ToString();
+                            name = jsName._oValue.ToString();
 
                         operand = new GetVariable(name, state.lexicalScopeLevel);
                     }
@@ -1360,7 +1360,7 @@ namespace NiL.JS.Expressions
                 do
                     i++;
                 while (Tools.IsWhiteSpace(state.Code[i]));
-                result = new Constant(new JSValue() { valueType = JSValueType.Object, oValue = threads }) { Position = position };
+                result = new Constant(new JSValue() { _valueType = JSValueType.Object, _oValue = threads }) { Position = position };
                 threads[1] = Parse(state, ref i, false, false, false, true, forEnumeration);
                 result.Length = i - position;
             }

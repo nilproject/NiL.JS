@@ -62,7 +62,7 @@ namespace NiL.JS.Expressions
             protected internal override JSValue ConstructObject()
             {
                 var result = CreateObject();
-                result.__proto__ = prototype.oValue as JSObject;
+                result.__proto__ = prototype._oValue as JSObject;
                 return result;
             }
 
@@ -474,14 +474,14 @@ namespace NiL.JS.Expressions
             JSValue baseProto = JSObject.GlobalPrototype;
             if (this._baseClass != null)
             {
-                baseProto = _baseClass.Evaluate(context).oValue as JSObject;
+                baseProto = _baseClass.Evaluate(context)._oValue as JSObject;
                 if (baseProto == null)
                 {
                     ctor.prototype.__proto__ = null;
                 }
                 else
                 {
-                    ctor.prototype.__proto__ = Tools.InvokeGetter(baseProto.GetProperty("prototype"), baseProto).oValue as JSObject;
+                    ctor.prototype.__proto__ = Tools.InvokeGetter(baseProto.GetProperty("prototype"), baseProto)._oValue as JSObject;
                 }
                 ctor.__proto__ = baseProto as JSObject;
             }
@@ -514,7 +514,7 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    target = ctor.prototype.oValue as JSObject;
+                    target = ctor.prototype._oValue as JSObject;
                 }
 
                 var key = member._name.Evaluate(context).CloneImpl(false);

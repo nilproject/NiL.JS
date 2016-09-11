@@ -35,8 +35,8 @@ namespace NiL.JS.Expressions
         {
             return new JSObject
             {
-                oValue = first.Evaluate(context).AsIterable().AsEnumerable().ToArray(),
-                valueType = JSValueType.SpreadOperatorResult
+                _oValue = first.Evaluate(context).AsIterable().AsEnumerable().ToArray(),
+                _valueType = JSValueType.SpreadOperatorResult
             };
         }
 

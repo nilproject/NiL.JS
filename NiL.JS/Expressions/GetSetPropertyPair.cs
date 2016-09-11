@@ -45,12 +45,12 @@ namespace NiL.JS.Expressions
         public GetSetPropertyPair(Expression getter, Expression setter)
             : base(getter, setter, true)
         {
-            tempContainer.valueType = JSValueType.Property;
+            tempContainer._valueType = JSValueType.Property;
         }
         
         public override JSValue Evaluate(Context context)
         {
-            tempContainer.oValue = new GsPropertyPair
+            tempContainer._oValue = new GsPropertyPair
             (
                 Getter == null ? null : (Function)Getter.Evaluate(context),
                 Setter == null ? null : (Function)Setter.Evaluate(context)

@@ -77,7 +77,7 @@ namespace NiL.JS.Expressions
             this.first = first;
             this.second = second;
             if (createTempContainer)
-                tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
+                tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
@@ -94,12 +94,12 @@ namespace NiL.JS.Expressions
                 try
                 {
                     var res = this.Evaluate(null);
-                    if (res.valueType == JSValueType.Double
-                        && !double.IsNegativeInfinity(1.0 / res.dValue)
-                        && res.dValue == (double)(int)res.dValue)
+                    if (res._valueType == JSValueType.Double
+                        && !double.IsNegativeInfinity(1.0 / res._dValue)
+                        && res._dValue == (double)(int)res._dValue)
                     {
-                        res.iValue = (int)res.dValue;
-                        res.valueType = JSValueType.Integer;
+                        res._iValue = (int)res._dValue;
+                        res._valueType = JSValueType.Integer;
                     }
                     _this = new Constant(res) as CodeNode;
                     return true;

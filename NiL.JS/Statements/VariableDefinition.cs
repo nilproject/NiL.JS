@@ -191,7 +191,7 @@ namespace NiL.JS.Statements
                     variables[i].cacheContext = context;
 
                     if (mode == VariableKind.ConstantInLexicalScope)
-                        f.attributes |= JSValueAttributesInternal.ReadOnly;
+                        f._attributes |= JSValueAttributesInternal.ReadOnly;
                 }
 
                 initializers[i].Evaluate(context);

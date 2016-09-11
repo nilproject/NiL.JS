@@ -164,7 +164,7 @@ namespace NiL.JS.Statements
                 }
 
                 for (var j = body.Count; j-- > 0;)
-                    (body[j] as Constant).value.oValue = Tools.Unescape((body[j] as Constant).value.oValue.ToString(), state.strict);
+                    (body[j] as Constant).value._oValue = Tools.Unescape((body[j] as Constant).value._oValue.ToString(), state.strict);
 
                 bool expectSemicolon = false;
                 while ((sroot && position < state.Code.Length) || (!sroot && state.Code[position] != '}'))
@@ -345,12 +345,12 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("Context was stopped");
-                if (Number.NaN.valueType != JSValueType.Double || !double.IsNaN(Number.NaN.dValue))
+                if (Number.NaN._valueType != JSValueType.Double || !double.IsNaN(Number.NaN._dValue))
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("NaN has been rewitten");
-                if (JSValue.undefined.valueType != JSValueType.Undefined)
+                if (JSValue.undefined._valueType != JSValueType.Undefined)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
@@ -360,16 +360,16 @@ namespace NiL.JS.Statements
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("notExists has been rewitten");
-                if (BaseLibrary.Boolean.False.valueType != JSValueType.Boolean
-                    || BaseLibrary.Boolean.False.iValue != 0
-                    || BaseLibrary.Boolean.False.attributes != JSValueAttributesInternal.SystemObject)
+                if (BaseLibrary.Boolean.False._valueType != JSValueType.Boolean
+                    || BaseLibrary.Boolean.False._iValue != 0
+                    || BaseLibrary.Boolean.False._attributes != JSValueAttributesInternal.SystemObject)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
                         throw new ApplicationException("Boolean.False has been rewitten");
-                if (BaseLibrary.Boolean.True.valueType != JSValueType.Boolean
-                    || BaseLibrary.Boolean.True.iValue != 1
-                    || BaseLibrary.Boolean.True.attributes != JSValueAttributesInternal.SystemObject)
+                if (BaseLibrary.Boolean.True._valueType != JSValueType.Boolean
+                    || BaseLibrary.Boolean.True._iValue != 1
+                    || BaseLibrary.Boolean.True._attributes != JSValueAttributesInternal.SystemObject)
                     if (System.Diagnostics.Debugger.IsAttached)
                         System.Diagnostics.Debugger.Break();
                     else
@@ -688,8 +688,8 @@ namespace NiL.JS.Statements
 
                 JSValue f = new JSValue()
                 {
-                    valueType = JSValueType.Undefined,
-                    attributes = JSValueAttributesInternal.DoNotDelete
+                    _valueType = JSValueType.Undefined,
+                    _attributes = JSValueAttributesInternal.DoNotDelete
                 };
                 v.cacheRes = f;
                 v.cacheContext = context;
@@ -698,7 +698,7 @@ namespace NiL.JS.Statements
                 if (v.initializer != null)
                     f.Assign(v.initializer.Evaluate(context));
                 if (v.isReadOnly)
-                    f.attributes |= JSValueAttributesInternal.ReadOnly;
+                    f._attributes |= JSValueAttributesInternal.ReadOnly;
 
                 if (isArg)
                     context.arguments = f;

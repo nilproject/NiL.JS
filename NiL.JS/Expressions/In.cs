@@ -32,19 +32,19 @@ namespace NiL.JS.Expressions
         {
             bool res;
             if (tempContainer == null)
-                tempContainer = new JSValue { attributes = JSValueAttributesInternal.Temporary };
+                tempContainer = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
             tempContainer.Assign(first.Evaluate(context));
             var temp = tempContainer;
             tempContainer = null;
             var source = second.Evaluate(context);
-            if (source.valueType < JSValueType.Object)
+            if (source._valueType < JSValueType.Object)
                 ExceptionsHelper.Throw(new TypeError("Right-hand value of operator in is not object."));
-            if (temp.valueType == JSValueType.Integer)
+            if (temp._valueType == JSValueType.Integer)
             {
-                var array = source.oValue as BaseLibrary.Array;
+                var array = source._oValue as BaseLibrary.Array;
                 if (array != null)
                 {
-                    res = temp.iValue >= 0 && temp.iValue < array.data.Length && (array.data[temp.iValue] ?? JSValue.notExists).Exists;
+                    res = temp._iValue >= 0 && temp._iValue < array.data.Length && (array.data[temp._iValue] ?? JSValue.notExists).Exists;
                     tempContainer = temp;
                     return res;
                 }

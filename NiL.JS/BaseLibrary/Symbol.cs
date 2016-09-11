@@ -27,8 +27,8 @@ namespace NiL.JS.BaseLibrary
         public Symbol(string description)
         {
             Description = description;
-            oValue = this;
-            valueType = JSValueType.Symbol;
+            _oValue = this;
+            _valueType = JSValueType.Symbol;
             if (!symbolsCache.ContainsKey(description))
                 symbolsCache[description] = this;
         }

@@ -297,9 +297,9 @@ namespace NiL.JS.Expressions
             {
                 var val = values[i].Evaluate(context);
                 val = val.CloneImpl(false);
-                val.attributes = JSValueAttributesInternal.None;
+                val._attributes = JSValueAttributesInternal.None;
                 if (this.fieldNames[i] == "__proto__")
-                    res.__proto__ = val.oValue as JSObject;
+                    res.__proto__ = val._oValue as JSObject;
                 else
                     res.fields[this.fieldNames[i]] = val;
             }

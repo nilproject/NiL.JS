@@ -20,20 +20,20 @@ namespace NiL.JS.Expressions
         {
             JSValue temp;
             JSValue field = first.EvaluateForWrite(context);
-            if (field.valueType == JSValueType.Property)
+            if (field._valueType == JSValueType.Property)
             {
                 return setProperty(context, field);
             }
             else
             {
-                if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0 && context.strict)
+                if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context.strict)
                     throwRoError();
             }
             temp = second.Evaluate(context);
-            var oldAttributes = field.attributes;
-            field.attributes &= ~JSValueAttributesInternal.ReadOnly;
+            var oldAttributes = field._attributes;
+            field._attributes &= ~JSValueAttributesInternal.ReadOnly;
             field.Assign(temp);
-            field.attributes = oldAttributes;
+            field._attributes = oldAttributes;
             return temp;
         }
     }
@@ -76,13 +76,13 @@ namespace NiL.JS.Expressions
         {
             JSValue temp;
             JSValue field = first.EvaluateForWrite(context);
-            if (field.valueType == JSValueType.Property)
+            if (field._valueType == JSValueType.Property)
             {
                 return setProperty(context, field);
             }
             else
             {
-                if ((field.attributes & JSValueAttributesInternal.ReadOnly) != 0 && context.strict)
+                if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context.strict)
                     throwRoError();
             }
             temp = second.Evaluate(context);
@@ -115,7 +115,7 @@ namespace NiL.JS.Expressions
                 setterArgs.Reset();
                 setterArgs.length = 1;
                 setterArgs[0] = temp;
-                var setter = (field.oValue as GsPropertyPair).set;
+                var setter = (field._oValue as GsPropertyPair).set;
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (context.strict)

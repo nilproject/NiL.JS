@@ -66,7 +66,7 @@ namespace NiL.JS
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
                 var name = key.ToString();
                 JSValue res = null;

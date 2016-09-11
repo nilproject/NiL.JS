@@ -133,13 +133,13 @@ namespace NiL.JS.Extensions
         [Hidden]
         public IterableAdapter(JSValue source)
         {
-            this.source = source.IsBox ? source.oValue as JSValue : source;
+            this.source = source.IsBox ? source._oValue as JSValue : source;
         }
 
         public IIterator iterator()
         {
             var iteratorFunction = source.GetProperty(Symbol.iterator, false, PropertyScope.Сommon);
-            if (iteratorFunction.valueType != JSValueType.Function)
+            if (iteratorFunction._valueType != JSValueType.Function)
                 return null;
             var iterator = iteratorFunction.As<Function>().Call(source, null);
             if (iterator == null)

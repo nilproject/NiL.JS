@@ -41,26 +41,26 @@ namespace NiL.JS.Expressions
                 JSValue s = null;
                 long l = 0;
                 int a;
-                if (f.valueType == JSValueType.Integer
-                    || f.valueType == JSValueType.Boolean)
+                if (f._valueType == JSValueType.Integer
+                    || f._valueType == JSValueType.Boolean)
                 {
-                    a = f.iValue;
+                    a = f._iValue;
                     s = second.Evaluate(context);
-                    if (s.valueType == JSValueType.Integer
-                    || s.valueType == JSValueType.Boolean)
+                    if (s._valueType == JSValueType.Integer
+                    || s._valueType == JSValueType.Boolean)
                     {
-                        l = (long)a - s.iValue;
+                        l = (long)a - s._iValue;
                         //if (l > 2147483647L
                         //    || l < -2147483648L)
                         if (l != (int)l)
                         {
-                            tempContainer.dValue = l;
-                            tempContainer.valueType = JSValueType.Double;
+                            tempContainer._dValue = l;
+                            tempContainer._valueType = JSValueType.Double;
                         }
                         else
                         {
-                            tempContainer.iValue = (int)l;
-                            tempContainer.valueType = JSValueType.Integer;
+                            tempContainer._iValue = (int)l;
+                            tempContainer._valueType = JSValueType.Integer;
                         }
                         return tempContainer;
                     }
@@ -72,8 +72,8 @@ namespace NiL.JS.Expressions
                     da = Tools.JSObjectToDouble(f);
                     s = second.Evaluate(context);
                 }
-                tempContainer.dValue = da - Tools.JSObjectToDouble(s);
-                tempContainer.valueType = JSValueType.Double;
+                tempContainer._dValue = da - Tools.JSObjectToDouble(s);
+                tempContainer._valueType = JSValueType.Double;
                 return tempContainer;
 #else
                 tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) - Tools.JSObjectToDouble(second.Invoke(context));

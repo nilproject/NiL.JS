@@ -14,8 +14,8 @@ namespace NiL.JS.Core
         internal static void refreshGlobalObjectProto()
         {
             thisProto = CreateObject();
-            thisProto.oValue = thisProto;
-            thisProto.attributes |= JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete;
+            thisProto._oValue = thisProto;
+            thisProto._attributes |= JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete;
         }
 
         private Context context;
@@ -28,16 +28,16 @@ namespace NiL.JS.Core
         public GlobalObject(Context context)
             : base()
         {
-            attributes = JSValueAttributesInternal.SystemObject;
+            _attributes = JSValueAttributesInternal.SystemObject;
             this.context = context;
             fields = context.fields;
-            valueType = JSValueType.Object;
-            oValue = this;
+            _valueType = JSValueType.Object;
+            _oValue = this;
         }
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
                 var nameStr = key.ToString();
                 var res = context.GetVariable(nameStr, forWrite);
@@ -49,10 +49,10 @@ namespace NiL.JS.Core
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             foreach (var i in context.fields)
-                if (i.Value.Exists && (!hideNonEnumerable || (i.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                if (i.Value.Exists && (!hideNonEnumerable || (i.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return i;
             foreach (var i in Context.globalContext.fields)
-                if (i.Value.Exists && (!hideNonEnumerable || (i.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                if (i.Value.Exists && (!hideNonEnumerable || (i.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return i;
         }
 

@@ -49,22 +49,22 @@ namespace NiL.JS.Core.Interop
                                 _prototypeInstance = CreateObject();
                                 _prototypeInstance.__prototype = @null;
                                 _prototypeInstance.fields = fields;
-                                _prototypeInstance.attributes |= JSValueAttributesInternal.ProxyPrototype;
+                                _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
                             }
                             else if (typeof(JSObject).IsAssignableFrom(hostedType))
                             {
                                 _prototypeInstance = ictor.Invoke(null) as JSObject;
                                 _prototypeInstance.__prototype = __proto__;
-                                _prototypeInstance.attributes |= JSValueAttributesInternal.ProxyPrototype;
+                                _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
                                 _prototypeInstance.fields = fields;
                                 //_prototypeInstance.valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
-                                valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
+                                _valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance._valueType);
                             }
                             else
                             {
                                 _prototypeInstance = new ObjectWrapper(ictor.Invoke(null))
                                 {
-                                    attributes = attributes | JSValueAttributesInternal.ProxyPrototype,
+                                    _attributes = _attributes | JSValueAttributesInternal.ProxyPrototype,
                                     fields = fields,
                                     __prototype = JSObject.GlobalPrototype
                                 };
@@ -87,9 +87,9 @@ namespace NiL.JS.Core.Interop
 
         private TypeProxy()
         {
-            valueType = JSValueType.Object;
-            oValue = this;
-            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.DoNotEnumerate;
+            _valueType = JSValueType.Object;
+            _oValue = this;
+            _attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.DoNotEnumerate;
             fields = getFieldsContainer();
         }
 
@@ -112,7 +112,7 @@ namespace NiL.JS.Core.Interop
 #endif
 
                     if (hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false))
-                        attributes |= JSValueAttributesInternal.Immutable;
+                        _attributes |= JSValueAttributesInternal.Immutable;
                     var staticProxy = new TypeProxy()
                     {
                         hostedType = type,
@@ -138,8 +138,8 @@ namespace NiL.JS.Core.Interop
                             ctor = new ObjectConstructor(staticProxy);
                         else
                             ctor = new ProxyConstructor(staticProxy);
-                        ctor.attributes = attributes;
-                        attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly;
+                        ctor._attributes = _attributes;
+                        _attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly;
                         staticProxies[type] = ctor;
                         if (hostedType != typeof(ProxyConstructor))
                             fields["constructor"] = ctor;
@@ -174,24 +174,24 @@ namespace NiL.JS.Core.Interop
                     {
                         return new JSValue
                         {
-                            iValue = (bool)value ? 1 : 0,
-                            valueType = JSValueType.Boolean
+                            _iValue = (bool)value ? 1 : 0,
+                            _valueType = JSValueType.Boolean
                         };
                     }
                 case TypeCode.Byte:
                     {
                         return new JSValue
                         {
-                            iValue = (byte)value,
-                            valueType = JSValueType.Integer
+                            _iValue = (byte)value,
+                            _valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Char:
                     {
                         return new JSValue
                         {
-                            oValue = ((char)value).ToString(),
-                            valueType = JSValueType.String
+                            _oValue = ((char)value).ToString(),
+                            _valueType = JSValueType.String
                         };
                     }
                 case TypeCode.DateTime:
@@ -204,72 +204,72 @@ namespace NiL.JS.Core.Interop
                     {
                         return new JSValue
                         {
-                            dValue = (double)(decimal)value,
-                            valueType = JSValueType.Double
+                            _dValue = (double)(decimal)value,
+                            _valueType = JSValueType.Double
                         };
                     }
                 case TypeCode.Double:
                     {
                         return new JSValue
                         {
-                            dValue = (double)value,
-                            valueType = JSValueType.Double
+                            _dValue = (double)value,
+                            _valueType = JSValueType.Double
                         };
                     }
                 case TypeCode.Int16:
                     {
                         return new JSValue
                         {
-                            iValue = (short)value,
-                            valueType = JSValueType.Integer
+                            _iValue = (short)value,
+                            _valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Int32:
                     {
                         return new JSValue
                         {
-                            iValue = (int)value,
-                            valueType = JSValueType.Integer
+                            _iValue = (int)value,
+                            _valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Int64:
                     {
                         return new JSValue
                         {
-                            dValue = (long)value,
-                            valueType = JSValueType.Double
+                            _dValue = (long)value,
+                            _valueType = JSValueType.Double
                         };
                     }
                 case TypeCode.SByte:
                     {
                         return new JSValue
                         {
-                            iValue = (sbyte)value,
-                            valueType = JSValueType.Integer
+                            _iValue = (sbyte)value,
+                            _valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.Single:
                     {
                         return new JSValue
                         {
-                            dValue = (float)value,
-                            valueType = JSValueType.Double
+                            _dValue = (float)value,
+                            _valueType = JSValueType.Double
                         };
                     }
                 case TypeCode.String:
                     {
                         return new JSValue
                         {
-                            oValue = value,
-                            valueType = JSValueType.String
+                            _oValue = value,
+                            _valueType = JSValueType.String
                         };
                     }
                 case TypeCode.UInt16:
                     {
                         return new JSValue
                         {
-                            iValue = (ushort)value,
-                            valueType = JSValueType.Integer
+                            _iValue = (ushort)value,
+                            _valueType = JSValueType.Integer
                         };
                     }
                 case TypeCode.UInt32:
@@ -279,16 +279,16 @@ namespace NiL.JS.Core.Interop
                         {
                             return new JSValue
                             {
-                                dValue = v,
-                                valueType = JSValueType.Double
+                                _dValue = v,
+                                _valueType = JSValueType.Double
                             };
                         }
                         else
                         {
                             return new JSValue
                             {
-                                iValue = (int)v,
-                                valueType = JSValueType.Integer
+                                _iValue = (int)v,
+                                _valueType = JSValueType.Integer
                             };
                         }
                     }
@@ -299,16 +299,16 @@ namespace NiL.JS.Core.Interop
                         {
                             return new JSValue
                             {
-                                dValue = v,
-                                valueType = JSValueType.Double
+                                _dValue = v,
+                                _valueType = JSValueType.Double
                             };
                         }
                         else
                         {
                             return new JSValue
                             {
-                                iValue = (int)v,
-                                valueType = JSValueType.Integer
+                                _iValue = (int)v,
+                                _valueType = JSValueType.Integer
                             };
                         }
                     }
@@ -319,19 +319,19 @@ namespace NiL.JS.Core.Interop
                             return new JSValue
                             {
 #if (PORTABLE || NETCORE)
-                                oValue = new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target),
+                                _oValue = new MethodProxy(((Delegate)value).GetMethodInfo(), ((Delegate)value).Target),
 #else
-                                oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target),
+                                _oValue = new MethodProxy(((Delegate)value).Method, ((Delegate)value).Target),
 #endif
-                                valueType = JSValueType.Function
+                                _valueType = JSValueType.Function
                             };
                         }
                         else if (value is IList)
                         {
                             return new JSValue
                             {
-                                oValue = new NativeList(value as IList),
-                                valueType = JSValueType.Object
+                                _oValue = new NativeList(value as IList),
+                                _valueType = JSValueType.Object
                             };
                         }
                         else
@@ -544,10 +544,10 @@ namespace NiL.JS.Core.Interop
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope == PropertyScope.Super || key.valueType == JSValueType.Symbol)
+            if (memberScope == PropertyScope.Super || key._valueType == JSValueType.Symbol)
                 return base.GetProperty(key, forWrite, memberScope);
 
-            forWrite &= (attributes & JSValueAttributesInternal.Immutable) == 0;
+            forWrite &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
 
             string name = key.ToString();
             JSValue r = null;
@@ -561,12 +561,12 @@ namespace NiL.JS.Core.Interop
                         if (t.Exists)
                         {
                             r.Assign(t);
-                            r.valueType = t.valueType;
+                            r._valueType = t._valueType;
                         }
                     }
                 }
                 if (forWrite
-                    && (r.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
+                    && (r._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                     fields[name] = r = r.CloneImpl(false);
                 return r;
             }
@@ -617,7 +617,7 @@ namespace NiL.JS.Core.Interop
                         {
                             var method = (MethodInfo)m[0];
                             r = new MethodProxy(method);
-                            r.attributes &= ~(JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotEnumerate);
+                            r._attributes &= ~(JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotEnumerate);
                             break;
                         }
                     case MemberTypes.Field:
@@ -627,14 +627,14 @@ namespace NiL.JS.Core.Interop
                                 && (field.Attributes & FieldAttributes.Static) != 0)
                             {
                                 r = Proxy(field.GetValue(null));
-                                r.attributes |= JSValueAttributesInternal.ReadOnly;
+                                r._attributes |= JSValueAttributesInternal.ReadOnly;
                             }
                             else
                             {
                                 r = new JSValue()
                                 {
-                                    valueType = JSValueType.Property,
-                                    oValue = new GsPropertyPair
+                                    _valueType = JSValueType.Property,
+                                    _oValue = new GsPropertyPair
                                     (
                                         new ExternalFunction((thisBind, a) => Proxy(field.GetValue(field.IsStatic ? null : thisBind.Value))),
                                         !m[0].IsDefined(typeof(Interop.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
@@ -644,9 +644,9 @@ namespace NiL.JS.Core.Interop
                                         }) : null
                                     )
                                 };
-                                r.attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
-                                if ((r.oValue as GsPropertyPair).set == null)
-                                    r.attributes |= JSValueAttributesInternal.ReadOnly;
+                                r._attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
+                                if ((r._oValue as GsPropertyPair).set == null)
+                                    r._attributes |= JSValueAttributesInternal.ReadOnly;
 
                             }
                             break;
@@ -656,8 +656,8 @@ namespace NiL.JS.Core.Interop
                             var pinfo = (PropertyInfo)m[0];
                             r = new JSValue()
                             {
-                                valueType = JSValueType.Property,
-                                oValue = new GsPropertyPair
+                                _valueType = JSValueType.Property,
+                                _oValue = new GsPropertyPair
                                     (
 #if (PORTABLE || NETCORE)
 pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(pinfo.GetMethod) : null,
@@ -669,11 +669,11 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
 )
                             };
 
-                            r.attributes = JSValueAttributesInternal.Immutable;
-                            if ((r.oValue as GsPropertyPair).set == null)
-                                r.attributes |= JSValueAttributesInternal.ReadOnly;
+                            r._attributes = JSValueAttributesInternal.Immutable;
+                            if ((r._oValue as GsPropertyPair).set == null)
+                                r._attributes |= JSValueAttributesInternal.ReadOnly;
                             if (pinfo.IsDefined(typeof(FieldAttribute), false))
-                                r.attributes |= JSValueAttributesInternal.Field;
+                                r._attributes |= JSValueAttributesInternal.Field;
                             break;
                         }
                     case MemberTypes.Event:
@@ -681,8 +681,8 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                             var pinfo = (EventInfo)m[0];
                             r = new JSValue()
                             {
-                                valueType = JSValueType.Property,
-                                oValue = new GsPropertyPair
+                                _valueType = JSValueType.Property,
+                                _oValue = new GsPropertyPair
                                 (
                                     null,
 #if (PORTABLE || NETCORE)
@@ -712,20 +712,20 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
                 }
             }
             if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))
-                r.attributes |= JSValueAttributesInternal.DoNotEnumerate;
-            if (forWrite && (r.attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject)
+                r._attributes |= JSValueAttributesInternal.DoNotEnumerate;
+            if (forWrite && (r._attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject)
                 r = r.CloneImpl(false);
 
             for (var i = m.Count; i-- > 0;)
             {
                 if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
-                    r.attributes &= ~JSValueAttributesInternal.DoNotEnumerate;
+                    r._attributes &= ~JSValueAttributesInternal.DoNotEnumerate;
                 if (m[i].IsDefined(typeof(ReadOnlyAttribute), false))
-                    r.attributes |= JSValueAttributesInternal.ReadOnly;
+                    r._attributes |= JSValueAttributesInternal.ReadOnly;
                 if (m[i].IsDefined(typeof(NotConfigurable), false))
-                    r.attributes |= JSValueAttributesInternal.NonConfigurable;
+                    r._attributes |= JSValueAttributesInternal.NonConfigurable;
                 if (m[i].IsDefined(typeof(DoNotDeleteAttribute), false))
-                    r.attributes |= JSValueAttributesInternal.DoNotDelete;
+                    r._attributes |= JSValueAttributesInternal.DoNotDelete;
             }
             return r;
         }
@@ -738,10 +738,10 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             JSValue field = null;
             if (fields != null
                 && fields.TryGetValue(tname = name.ToString(), out field)
-                && (!field.Exists || (field.attributes & JSValueAttributesInternal.DoNotDelete) == 0))
+                && (!field.Exists || (field._attributes & JSValueAttributesInternal.DoNotDelete) == 0))
             {
-                if ((field.attributes & JSValueAttributesInternal.SystemObject) == 0)
-                    field.valueType = JSValueType.NotExistsInObject;
+                if ((field._attributes & JSValueAttributesInternal.SystemObject) == 0)
+                    field._valueType = JSValueType.NotExistsInObject;
                 return fields.Remove(tname) | members.Remove(tname); // it's not mistake
             }
             else
@@ -768,7 +768,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             var name = args[0].ToString();
             JSValue temp;
             if (fields != null && fields.TryGetValue(name, out temp))
-                return temp.Exists && (temp.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0;
+                return temp.Exists && (temp._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0;
             IList<MemberInfo> m = null;
             if (members.TryGetValue(name, out m))
             {
@@ -794,7 +794,7 @@ pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(pinfo.GetGe
             {
                 foreach (var f in fields)
                 {
-                    if (!hideNonEnumerable || (f.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0)
+                    if (!hideNonEnumerable || (f.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0)
                         yield return f;
                 }
             }
