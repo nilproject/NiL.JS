@@ -414,6 +414,7 @@ namespace NiL.JS.Core
         /// <param name="setter">Function called when there is an attempt to set a value. Can be null</param>
         /// <exception cref="System.ArgumentException">if property already exists</exception>
         /// <exception cref="System.InvalidOperationException">if unable to create property</exception>
+        [Hidden]
         public void DefineGetSetProperty(string name, Func<object> getter, Action<object> setter)
         {
             var property = GetProperty(name);
