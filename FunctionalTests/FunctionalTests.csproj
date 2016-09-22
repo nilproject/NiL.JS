@@ -69,6 +69,11 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Generated\Embedded.cs">
+      <DependentUpon>Embedded.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Generated\FileTestBase.cs" />
     <Compile Include="Generated\Custom.cs">
       <DependentUpon>Custom.tt</DependentUpon>
@@ -85,6 +90,13 @@
     <Compile Include="UglifyJs.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Array\entries.js" />
+    <Content Include="Array\includes.js" />
+    <Content Include="Array\findIndex.js" />
+    <Content Include="Generated\Embedded.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Embedded.cs</LastGenOutput>
+    </Content>
     <Content Include="Generated\Custom.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Custom.cs</LastGenOutput>
@@ -93,6 +105,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SputnikTests.cs</LastGenOutput>
     </Content>
+    <Content Include="Array\find.js" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

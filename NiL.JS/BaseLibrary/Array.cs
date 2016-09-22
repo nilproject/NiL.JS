@@ -220,6 +220,58 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
+        public static JSValue find(JSValue self, Arguments args)
+        {
+            if (self._valueType < JSValueType.Object)
+                self = self.ToObject();
+
+            var result = undefined;
+
+            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            {
+                value = value.CloneImpl(false);
+
+                if ((bool)jsCallback.Call(thisBind, new Arguments { value, index, self }))
+                {
+                    result = value.CloneImpl(false);
+                    return false;
+                }
+
+                return true;
+            });
+
+            return result;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
+        public static JSValue findIndex(JSValue self, Arguments args)
+        {
+            if (self._valueType < JSValueType.Object)
+                self = self.ToObject();
+
+            var result = -1L;
+
+            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            {
+                value = value.CloneImpl(false);
+
+                if ((bool)jsCallback.Call(thisBind, new Arguments { value, index, self }))
+                {
+                    result = index;
+                    return false;
+                }
+
+                return true;
+            });
+
+            return result;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
         public static JSValue every(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -342,6 +394,30 @@ namespace NiL.JS.BaseLibrary
             });
 
             return result;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
+        public static JSValue includes(JSValue self, Arguments args)
+        {
+            var result = -1L;
+
+            iterateImpl(self, null, args[1], (value, index, thisBind, jsCallback) =>
+            {
+                if (args[0].IsNaN() ?
+                        value.IsNaN()
+                    :
+                        Expressions.StrictEqual.Check(args[0], value))
+                {
+                    result = index;
+                    return false;
+                }
+
+                return true;
+            });
+
+            return result != -1L;
         }
 
         private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, Func<JSValue, long, JSValue, Function, bool> callback)
@@ -2072,6 +2148,58 @@ namespace NiL.JS.BaseLibrary
         public IIterator iterator()
         {
             return data.GetEnumerator().AsIterator();
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        public static IIterator entries(JSValue self)
+        {
+            IEnumerable enumerable;
+            var array = self.As<Array>();
+            if (array != null)
+            {
+                enumerable = array.getEntriesEnumerator();
+            }
+            else
+            {
+                enumerable = getGenericEntriesEnumerator(self);
+            }
+
+            return enumerable.AsIterable().iterator();
+        }
+
+        private static IEnumerable getGenericEntriesEnumerator(JSValue self)
+        {
+            var length = Tools.getLengthOfArraylike(self, false);
+            for (var i = 0U; i < length; i++)
+            {
+                JSValue value;
+                if (i < int.MaxValue)
+                    value = self.GetProperty(Tools.Int32ToString((int)i));
+                else
+                    value = self.GetProperty(i.ToString());
+                yield return new Array { i, value };
+            }
+        }
+
+        private IEnumerable<Array> getEntriesEnumerator()
+        {
+            var prev = -1;
+            foreach (var item in data.DirectOrder)
+            {
+                if (item.Key - prev > 1)
+                {
+                    while (prev < item.Key - 1)
+                    {
+                        ++prev;
+                        yield return new Array { prev, this[prev] };
+                    }
+                }
+
+                prev = item.Key;
+
+                yield return new Array() { item.Key, item.Value };
+            }
         }
     }
 }

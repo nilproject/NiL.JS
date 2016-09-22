@@ -980,11 +980,13 @@ namespace NiL.JS.Core
         {
             if (value == 0)
                 return "0";
+
             for (var i = cacheSize; i-- > 0;)
             {
                 if (intStringCache[i].key == value)
                     return intStringCache[i].value;
             }
+
             return (intStringCache[intStrCacheIndex = (intStrCacheIndex + 1) & (cacheSize - 1)] = new IntStringCacheItem { key = value, value = value.ToString(CultureInfo.InvariantCulture) }).value;
         }
 

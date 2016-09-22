@@ -22,29 +22,28 @@ namespace NiL.JS.Test.Generated
 
         protected void RunFile(string fileName)
         {
-            var output = new StringBuilder();
-            var oldOutput = Console.Out;
-            Console.SetOut(new StringWriter(output));
-
-            var pass = true;
             string code;
-            var negative = false;
-            Module module;
-            Context.RefreshGlobalContext();
             using (var f = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             using (var sr = new StreamReader(f))
                 code = sr.ReadToEnd();
 
+            var negative = false;
+            Context.RefreshGlobalContext();
+            var output = new StringBuilder();
+            var oldOutput = Console.Out;
+            Console.SetOut(new StringWriter(output));
+            var pass = true;
+            Module module;
             if (!string.IsNullOrEmpty(_sta))
             {
-                module = new Module(_sta);
+                module = new Module(fileName.Split(new[] { '/', '\\' }).Last(), _sta);
                 module.Run();
 
                 negative = code.IndexOf("@negative") != -1;
             }
             else
             {
-                module = new Module("");
+                module = new Module(fileName.Split(new[] { '/', '\\' }).Last(), "");
             }
 
             try

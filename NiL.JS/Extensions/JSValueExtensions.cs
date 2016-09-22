@@ -141,7 +141,14 @@ namespace NiL.JS.Extensions
                         if (self.Value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
                             return ((Function)self.Value).MakeDelegate<T>();
 #endif
-                        return (T)(Tools.convertJStoObj(self, typeof(T), true) ?? self.Value);
+                        try
+                        {
+                            return (T)(Tools.convertJStoObj(self, typeof(T), true) ?? self.Value);
+                        }
+                        catch (InvalidCastException)
+                        {
+                            return default(T);
+                        }
                     }
                 case TypeCode.SByte:
                     {
@@ -168,7 +175,13 @@ namespace NiL.JS.Extensions
                         return (T)(object)(ulong)Tools.JSObjectToInt64(self);
                     }
             }
+
             throw new InvalidCastException();
+        }
+
+        public static bool IsNaN(this JSValue self)
+        {
+            return self != null && self._valueType == JSValueType.Double && double.IsNaN(self._dValue);
         }
 
 #if DEBUG && !(PORTABLE || NETCORE) // TODO
