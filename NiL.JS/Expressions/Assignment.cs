@@ -226,7 +226,8 @@ namespace NiL.JS.Expressions
                         }
                     }
                 }
-                if (_this == this && second.ResultInTempContainer) // это присваивание, не последнее, без with
+                
+                /*if (_this == this && second.ResultInTempContainer) // это присваивание, не последнее, без with
                 {
                     _this = new AssignmentOverReplace(first, second)
                     {
@@ -234,7 +235,7 @@ namespace NiL.JS.Expressions
                         Length = Length,
                         _codeContext = _codeContext
                     };
-                }
+                }*/
             }
         }
 
