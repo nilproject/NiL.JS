@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Statements;
@@ -131,8 +131,11 @@ namespace NiL.JS
             Context._module = this;
             if (!string.IsNullOrWhiteSpace(path))
             {
-                if (!__modulesCache.ContainsKey(path))
-                    __modulesCache[path] = this;
+                lock (__modulesCache)
+                {
+                    if (!__modulesCache.ContainsKey(path))
+                        __modulesCache[path] = this;
+                }
 
                 this.FilePath = path;
             }
@@ -281,6 +284,22 @@ namespace NiL.JS
             Module result;
             __modulesCache.TryGetValue(e.ModulePath, out result);
             e.Module = result;
+        }
+
+        public static void ClearModuleCache()
+        {
+            lock (__modulesCache)
+            {
+                __modulesCache.Clear();
+            }
+        }
+
+        public static bool RemoveFromModuleCache(string path)
+        {
+            lock (__modulesCache)
+            {
+                return __modulesCache.Remove(path);
+            }
         }
 
 #if !PORTABLE
