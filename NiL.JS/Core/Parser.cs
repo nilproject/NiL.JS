@@ -375,21 +375,35 @@ namespace NiL.JS.Core
             int j = index;
             if (code[j] == '/')
             {
+                var escape = false;
                 j++;
-                while ((j < code.Length) && (code[j] != '/'))
+                while ((j < code.Length) && (escape || code[j] != '/'))
                 {
                     if (Tools.IsLineTerminator(code[j]))
                         return false;
+
                     if (code[j] == '\\')
                     {
                         j++;
                         if (Tools.IsLineTerminator(code[j]))
                             return false;
                     }
+
+                    if (code[j] == '[')
+                    {
+                        escape = true;
+                    }
+                    if (code[j] == ']')
+                    {
+                        escape = false;
+                    }
+
                     j++;
                 }
+
                 if (j == code.Length)
                     return false;
+
                 bool w = true;
                 bool g = false, i = false, m = false;
                 while (w)
@@ -544,7 +558,8 @@ namespace NiL.JS.Core
                 || (c == '?')
                 || (c == ':')
                 || (c == ',')
-                || (c == '.');
+                || (c == '.')
+                || (c == '|');
         }
 
         public static bool IsIdentificatorTerminator(char c)
