@@ -177,6 +177,7 @@ a = console ? 1 : 2, { test: 1 };
     // parse only
     var r;
     if (r) for (t = 0; u > t; t++) n[t][e][1] /= r; else for (t = 0; u > t; t++) n[t][e][1] = o;
+    (this||/[/]/);
 });
 
 var undefined;
