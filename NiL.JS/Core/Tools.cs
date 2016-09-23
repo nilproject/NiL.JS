@@ -52,8 +52,10 @@ namespace NiL.JS.Core
         {
             if (text == null)
                 throw new ArgumentNullException("text");
+
             if (position < 0)
                 throw new ArgumentOutOfRangeException("position");
+
             int line = 1;
             int column = 1;
             for (int i = 0; i < position; i++)
@@ -62,18 +64,20 @@ namespace NiL.JS.Core
                 {
                     column = 0;
                     line++;
-                    if (text[i + 1] == '\r')
+                    if (text.Length > i + 1 && text[i + 1] == '\r')
                         i++;
                 }
                 else if (text[i] == '\r')
                 {
                     column = 0;
                     line++;
-                    if (text[i + 1] == '\n')
+                    if (text.Length > i + 1 && text[i + 1] == '\n')
                         i++;
                 }
+                
                 column++;
             }
+            
             return new CodeCoordinates(line, column, length);
         }
     }
