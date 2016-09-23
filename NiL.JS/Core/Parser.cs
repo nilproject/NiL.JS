@@ -388,16 +388,18 @@ namespace NiL.JS.Core
                         if (Tools.IsLineTerminator(code[j]))
                             return false;
                     }
-
-                    if (code[j] == '[')
+                    else
                     {
-                        escape = true;
+                        if (code[j] == '[')
+                        {
+                            escape = true;
+                        }
+                        if (code[j] == ']')
+                        {
+                            escape = false;
+                        }
                     }
-                    if (code[j] == ']')
-                    {
-                        escape = false;
-                    }
-
+                    
                     j++;
                 }
 
