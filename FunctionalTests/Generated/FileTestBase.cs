@@ -34,16 +34,17 @@ namespace NiL.JS.Test.Generated
             Console.SetOut(new StringWriter(output));
             var pass = true;
             Module module;
+            var moduleName = fileName.Split(new[] { '/', '\\' }).Last();
             if (!string.IsNullOrEmpty(_sta))
             {
-                module = new Module(fileName.Split(new[] { '/', '\\' }).Last(), _sta);
+                module = new Module(moduleName, _sta);
                 module.Run();
 
                 negative = code.IndexOf("@negative") != -1;
             }
             else
             {
-                module = new Module(fileName.Split(new[] { '/', '\\' }).Last(), "");
+                module = new Module(moduleName, "");
             }
 
             try
@@ -68,6 +69,8 @@ namespace NiL.JS.Test.Generated
                 System.Diagnostics.Debugger.Break();
                 pass = false;
             }
+
+            Module.RemoveFromModuleCache(moduleName);
 
             Console.SetOut(oldOutput);
             Assert.IsTrue(pass, output.ToString());
