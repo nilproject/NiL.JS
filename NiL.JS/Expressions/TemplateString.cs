@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
         public static Expression Parse(ParseInfo state, ref int index, TemplateStringMode mode)
         {
             if (state.Code[index] != '`')
-                ExceptionsHelper.ThrowSyntaxError(JS.Strings.UnexpectedToken, state.Code, index);
+                ExceptionHelper.ThrowSyntaxError(JS.Strings.UnexpectedToken, state.Code, index);
 
             var strings = new List<string>();
             var expressions = new List<Expression>();
@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
 
                     Tools.SkipSpaces(state.Code, ref pos);
                     if (state.Code[pos] != '}')
-                        ExceptionsHelper.ThrowSyntaxError(JS.Strings.UnexpectedToken, state.Code, pos);
+                        ExceptionHelper.ThrowSyntaxError(JS.Strings.UnexpectedToken, state.Code, pos);
                 }
 
                 pos++;
@@ -89,9 +89,9 @@ namespace NiL.JS.Expressions
             JSValue[] tagResult = null;
             int i = 0;
 
-            if (context.executionMode >= AbortReason.Resume)
+            if (context._executionMode >= AbortReason.Resume)
             {
-                var suspendData = context.suspendData[this] as SuspendData;
+                var suspendData = context._suspendData[this] as SuspendData;
 
                 if (Mode == TemplateStringMode.Regular)
                 {
@@ -125,9 +125,9 @@ namespace NiL.JS.Expressions
                 if (i > 0)
                 {
                     var temp = expressions[i - 1].Evaluate(context);
-                    if (context.executionMode != AbortReason.None)
+                    if (context._executionMode != AbortReason.None)
                     {
-                        if (context.executionMode == AbortReason.Suspend)
+                        if (context._executionMode == AbortReason.Suspend)
                         {
                             var suspendData = new SuspendData();
                             suspendData.Index = i;

@@ -91,13 +91,13 @@ namespace NiL.JS.Statements
                     && (init as ExpressionTree).second == null)
                     init = (init as ExpressionTree).first;
                 if (state.Code[i] != ';')
-                    ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 do
                     i++;
                 while (Tools.IsWhiteSpace(state.Code[i]));
                 condition = state.Code[i] == ';' ? null as CodeNode : ExpressionTree.Parse(state, ref i, forForLoop: true);
                 if (state.Code[i] != ';')
-                    ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 do
                     i++;
                 while (Tools.IsWhiteSpace(state.Code[i]));
@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
                 while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != ')')
-                    ExceptionsHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
 
                 i++;
                 Tools.SkipSpaces(state.Code, ref i);
@@ -120,7 +120,7 @@ namespace NiL.JS.Statements
                     {
                         if (vds.Kind >= VariableKind.ConstantInLexicalScope)
                         {
-                            ExceptionsHelper.ThrowSyntaxError("Block scope variables can not be declared in for-loop directly", state.Code, body.Position);
+                            ExceptionHelper.ThrowSyntaxError("Block scope variables can not be declared in for-loop directly", state.Code, body.Position);
                         }
 
                         if (state.message != null)
@@ -160,13 +160,13 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            if (_initializer != null && (context.executionMode != AbortReason.Resume || context.SuspendData[this] == _initializer))
+            if (_initializer != null && (context._executionMode != AbortReason.Resume || context.SuspendData[this] == _initializer))
             {
-                if (context.executionMode != AbortReason.Resume && context.debugging)
+                if (context._executionMode != AbortReason.Resume && context._debugging)
                     context.raiseDebugger(_initializer);
 
                 _initializer.Evaluate(context);
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = _initializer;
                     return null;
@@ -177,13 +177,13 @@ namespace NiL.JS.Statements
             var pe = _post != null;
             var @continue = false;
 
-            if (context.executionMode != AbortReason.Resume || context.SuspendData[this] == _condition)
+            if (context._executionMode != AbortReason.Resume || context.SuspendData[this] == _condition)
             {
-                if (context.executionMode != AbortReason.Resume && context.debugging)
+                if (context._executionMode != AbortReason.Resume && context._debugging)
                     context.raiseDebugger(_condition);
 
                 @continue = (bool)_condition.Evaluate(context);
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = _condition;
                     return null;
@@ -195,31 +195,31 @@ namespace NiL.JS.Statements
 
             do
             {
-                if (be && (context.executionMode != AbortReason.Resume || context.SuspendData[this] == _body))
+                if (be && (context._executionMode != AbortReason.Resume || context.SuspendData[this] == _body))
                 {
-                    if (context.executionMode != AbortReason.Resume && context.debugging && !(_body is CodeBlock))
+                    if (context._executionMode != AbortReason.Resume && context._debugging && !(_body is CodeBlock))
                         context.raiseDebugger(_body);
 
                     var temp = _body.Evaluate(context);
                     if (temp != null)
-                        context.lastResult = temp;
+                        context._lastResult = temp;
 
-                    if (context.executionMode != AbortReason.None)
+                    if (context._executionMode != AbortReason.None)
                     {
-                        if (context.executionMode < AbortReason.Return)
+                        if (context._executionMode < AbortReason.Return)
                         {
-                            var me = context.executionInfo == null || System.Array.IndexOf(labels, context.executionInfo._oValue as string) != -1;
-                            var _break = (context.executionMode > AbortReason.Continue) || !me;
+                            var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
+                            var _break = (context._executionMode > AbortReason.Continue) || !me;
                             if (me)
                             {
-                                context.executionMode = AbortReason.None;
-                                context.executionInfo = null;
+                                context._executionMode = AbortReason.None;
+                                context._executionInfo = null;
                             }
 
                             if (_break)
                                 return null;
                         }
-                        else if (context.executionMode == AbortReason.Suspend)
+                        else if (context._executionMode == AbortReason.Suspend)
                         {
                             context.SuspendData[this] = _body;
                             return null;
@@ -229,19 +229,19 @@ namespace NiL.JS.Statements
                     }
                 }
 
-                if (pe && (context.executionMode != AbortReason.Resume || context.SuspendData[this] == _post))
+                if (pe && (context._executionMode != AbortReason.Resume || context.SuspendData[this] == _post))
                 {
-                    if (context.executionMode != AbortReason.Resume && context.debugging)
+                    if (context._executionMode != AbortReason.Resume && context._debugging)
                         context.raiseDebugger(_post);
 
                     _post.Evaluate(context);
                 }
 
-                if (context.executionMode != AbortReason.Resume && context.debugging)
+                if (context._executionMode != AbortReason.Resume && context._debugging)
                     context.raiseDebugger(_condition);
 
                 @continue = (bool)_condition.Evaluate(context);
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = _condition;
                     return null;

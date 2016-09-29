@@ -71,12 +71,12 @@ namespace NiL.JS.Core
         private void insert(string key, TValue value, int hash, bool @throw)
         {
             if (key == null)
-                ExceptionsHelper.ThrowArgumentNull("key");
+                ExceptionHelper.ThrowArgumentNull("key");
 
             if (key.Length == 0)
             {
                 if (@throw && _emptyKeyValueExists)
-                    ExceptionsHelper.Throw(new InvalidOperationException("Item already exists"));
+                    ExceptionHelper.Throw(new InvalidOperationException("Item already exists"));
                 _emptyKeyValueExists = true;
                 _emptyKeyValue = value;
                 return;
@@ -95,7 +95,7 @@ namespace NiL.JS.Core
                 if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
                 {
                     if (@throw)
-                        ExceptionsHelper.Throw(new InvalidOperationException("Item already Exists"));
+                        ExceptionHelper.Throw(new InvalidOperationException("Item already Exists"));
                     _records[index].value = value;
                     return;
                 }
@@ -170,7 +170,7 @@ namespace NiL.JS.Core
         public bool TryGetValue(string key, out TValue value)
         {
             if (key == null)
-                ExceptionsHelper.ThrowArgumentNull("key");
+                ExceptionHelper.ThrowArgumentNull("key");
 
             if (key.Length == 0)
             {

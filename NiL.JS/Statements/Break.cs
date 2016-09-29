@@ -26,10 +26,10 @@ namespace NiL.JS.Statements
             {
                 label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict);
                 if (!state.Labels.Contains(label._oValue.ToString()))
-                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Try to break to undefined label.")));
+                    ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Try to break to undefined label.")));
             }
             else if (!state.AllowBreak.Peek())
-                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use of break statement")));
+                ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use of break statement")));
             var pos = index;
             index = i;
             state.breaksCount++;
@@ -43,8 +43,8 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            context.executionMode = AbortReason.Break;
-            context.executionInfo = label;
+            context._executionMode = AbortReason.Break;
+            context._executionInfo = label;
             return null;
         }
 

@@ -63,51 +63,58 @@ namespace NiL.JS.Core
 
         internal JSValue Get(Context context, bool forWrite, int scopeLevel)
         {
-            context.objectSource = null;
+            context._objectSource = null;
+
             if (((definitionScopeLevel | scopeLevel) & int.MinValue) != 0)
                 return context.GetVariable(name, forWrite);
-            if (context == cacheContext)
+
+            if (context == cacheContext && !forWrite)
                 return cacheRes;
+
             return deepGet(context, forWrite, scopeLevel);
         }
 
         private JSValue deepGet(Context context, bool forWrite, int depth)
         {
-            TypeProxy tp = null;
             JSValue res = null;
+
             var defsl = depth - definitionScopeLevel;
             while (defsl > 0)
             {
                 defsl--;
-                context = context.parent;
+                context = context._parent;
             }
-            if (context != cacheContext)
-                cacheRes = null;
-            else if (cacheRes != null)
-                return cacheRes;
-            if (lexicalScope)
+
+            if (context != cacheContext || cacheRes == null)
             {
-                if (context.fields == null || !context.fields.TryGetValue(name, out res))
-                    return JSValue.NotExists;
+                if (lexicalScope)
+                {
+                    if (context._variables == null || !context._variables.TryGetValue(name, out res))
+                        return JSValue.NotExists;
+                }
+                else
+                {
+                    res = context.GetVariable(name, forWrite);
+                }
+
+                if ((!forWrite && IsDefined)
+                    || (res._attributes & JSValueAttributesInternal.SystemObject) == 0)
+                {
+                    cacheContext = context;
+                    cacheRes = res;
+                }
             }
             else
             {
-                res = context.GetVariable(name, forWrite);
-                if ((res._attributes & JSValueAttributesInternal.SystemObject) != 0)
-                    return res;
-                if (forWrite
-                    && !IsDefined
-                    && res._valueType == JSValueType.NotExists)
-                    res._attributes = JSValueAttributesInternal.None;
-                else
-                {
-                    tp = res._oValue as TypeProxy;
-                    if (tp != null)
-                        res = tp.prototypeInstance ?? res;
-                }
+                res = cacheRes;
             }
-            cacheContext = context;
-            cacheRes = res;
+
+            if (forWrite && res.NeedClone)
+            {
+                res = context.GetVariable(name, forWrite);
+                cacheRes = res;
+            }
+
             return res;
         }
 

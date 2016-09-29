@@ -63,7 +63,7 @@ namespace NiL.JS.Expressions
                 if (state.Code[i] == ',')
                 {
                     if (spread)
-                        ExceptionsHelper.ThrowSyntaxError("Expected expression", state.Code, i);
+                        ExceptionHelper.ThrowSyntaxError("Expected expression", state.Code, i);
                     elms.Add(null);
                 }
                 else
@@ -79,7 +79,7 @@ namespace NiL.JS.Expressions
                     while (Tools.IsWhiteSpace(state.Code[i]));
                 }
                 else if (state.Code[i] != ']')
-                    ExceptionsHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
+                    ExceptionHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
             }
             i++;
             var pos = index;

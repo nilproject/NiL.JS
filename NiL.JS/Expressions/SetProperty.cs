@@ -66,8 +66,8 @@ namespace NiL.JS.Expressions
                 source.SetProperty(
                     cachedMemberName ?? safeGet(tempContainer1, second, context),
                     safeGet(tempContainer, value, context),
-                    context.strict);
-                context.objectSource = null;
+                    context._strict);
+                context._objectSource = null;
                 return tempContainer;
             }
         }

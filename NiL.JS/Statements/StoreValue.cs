@@ -51,7 +51,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var temp = _forWrite ? _source.EvaluateForWrite(context) : _source.Evaluate(context);
-            if (context.executionMode == AbortReason.Suspend)
+            if (context._executionMode == AbortReason.Suspend)
             {
                 return null;
             }

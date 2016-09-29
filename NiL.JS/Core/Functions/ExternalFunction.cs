@@ -62,9 +62,10 @@ namespace NiL.JS.Core.Functions
             var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false);
 #endif
             _length._iValue = paramCountAttrbt.Length > 0 ? ((ArgumentsLengthAttribute)paramCountAttrbt[0]).Count : 1;
-            _prototype = undefined;
+            
             if (@delegate == null)
                 throw new ArgumentNullException();
+
             _delegate = @delegate;
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }

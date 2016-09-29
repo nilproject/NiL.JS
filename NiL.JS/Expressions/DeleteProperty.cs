@@ -44,9 +44,9 @@ namespace NiL.JS.Expressions
                 source = source._oValue as JSValue ?? source;
 
             var res = source.DeleteProperty(cachedMemberName ?? second.Evaluate(context));
-            context.objectSource = null;
-            if (!res && context.strict)
-                ExceptionsHelper.ThrowTypeError("Cannot delete property \"" + first + "\".");
+            context._objectSource = null;
+            if (!res && context._strict)
+                ExceptionHelper.ThrowTypeError("Cannot delete property \"" + first + "\".");
             return res;
         }
 

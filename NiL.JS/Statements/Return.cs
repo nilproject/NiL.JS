@@ -35,7 +35,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "return", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
             if (state.AllowReturn == 0)
-                ExceptionsHelper.Throw(new SyntaxError("Invalid use of return statement."));
+                ExceptionHelper.Throw(new SyntaxError("Invalid use of return statement."));
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i]))
                 i++;
             var body = state.Code[i] == ';' || Tools.IsLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, CodeFragmentType.Expression);
@@ -52,11 +52,11 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var result = value != null ? value.Evaluate(context) : null;
-            if (context.executionMode == AbortReason.None)
+            if (context._executionMode == AbortReason.None)
             {
-                context.executionInfo = result;
-                if (context.executionMode < AbortReason.Return)
-                    context.executionMode = AbortReason.Return;
+                context._executionInfo = result;
+                if (context._executionMode < AbortReason.Return)
+                    context._executionMode = AbortReason.Return;
             }
             return JSValue.notExists;
         }

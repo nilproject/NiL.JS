@@ -56,7 +56,7 @@ namespace NiL.JS.Core.Functions
         }
 
         public BindedFunction(Function proto, Arguments args)
-            : base(null, proto.creator)
+            : base(proto.Context, proto._creator)
         {
             if (_length == null)
                 _length = new Number(0);
@@ -118,7 +118,7 @@ namespace NiL.JS.Core.Functions
 
         internal override JSObject GetDefaultPrototype()
         {
-            return TypeProxy.GetPrototype(typeof(Function));
+            return Context.BaseContext.GetPrototype(typeof(Function));
         }
 
         [Hidden]

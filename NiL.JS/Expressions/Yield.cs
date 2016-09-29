@@ -53,7 +53,7 @@ namespace NiL.JS.Expressions
         public static CodeNode Parse(ParseInfo state, ref int index)
         {
             if ((state.CodeContext & CodeContext.InGenerator) == 0)
-                ExceptionsHelper.Throw(new SyntaxError("Invalid use of yield operator"));
+                ExceptionHelper.Throw(new SyntaxError("Invalid use of yield operator"));
 
             var i = index;
             if (!Parser.Validate(state.Code, "yield", ref i))
@@ -74,7 +74,7 @@ namespace NiL.JS.Expressions
             if (source == null)
             {
                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
             }
 
             index = i;
@@ -84,17 +84,17 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (context.executionMode == AbortReason.ResumeThrow)
+            if (context._executionMode == AbortReason.ResumeThrow)
             {
                 context.SuspendData.Clear();
-                context.executionMode = AbortReason.None;
-                var exceptionData = context.executionInfo;
-                ExceptionsHelper.Throw(exceptionData);
+                context._executionMode = AbortReason.None;
+                var exceptionData = context._executionInfo;
+                ExceptionHelper.Throw(exceptionData);
             }
 
             if (_reiterate)
             {
-                if (context.executionMode == AbortReason.None)
+                if (context._executionMode == AbortReason.None)
                 {
                     var iterator = first.Evaluate(context).AsIterable().iterator();
                     var iteratorResult = iterator.next();
@@ -103,43 +103,43 @@ namespace NiL.JS.Expressions
                         return JSValue.undefined;
 
                     context.SuspendData[this] = iterator;
-                    context.executionInfo = iteratorResult.value;
-                    context.executionMode = AbortReason.Suspend;
+                    context._executionInfo = iteratorResult.value;
+                    context._executionMode = AbortReason.Suspend;
                     return JSValue.notExists;
                 }
-                else if (context.executionMode == AbortReason.Resume)
+                else if (context._executionMode == AbortReason.Resume)
                 {
                     IIterator iterator = context.SuspendData[this] as IIterator;
-                    var iteratorResult = iterator.next(context.executionInfo.Defined ? new Arguments { context.executionInfo } : null);
+                    var iteratorResult = iterator.next(context._executionInfo.Defined ? new Arguments { context._executionInfo } : null);
 
-                    context.executionInfo = iteratorResult.value;
+                    context._executionInfo = iteratorResult.value;
 
                     if (iteratorResult.done)
                     {
-                        context.executionMode = AbortReason.None;
+                        context._executionMode = AbortReason.None;
                         return iteratorResult.value;
                     }
                     else
                     {
                         context.SuspendData[this] = iterator;
-                        context.executionMode = AbortReason.Suspend;
+                        context._executionMode = AbortReason.Suspend;
                         return JSValue.notExists;
                     }
                 }
             }
             else
             {
-                if (context.executionMode == AbortReason.None)
+                if (context._executionMode == AbortReason.None)
                 {
-                    context.executionInfo = first.Evaluate(context);
-                    context.executionMode = AbortReason.Suspend;
+                    context._executionInfo = first.Evaluate(context);
+                    context._executionMode = AbortReason.Suspend;
                     return JSValue.notExists;
                 }
-                else if (context.executionMode == AbortReason.Resume)
+                else if (context._executionMode == AbortReason.Resume)
                 {
-                    context.executionMode = AbortReason.None;
-                    var result = context.executionInfo;
-                    context.executionInfo = null;
+                    context._executionMode = AbortReason.None;
+                    var result = context._executionInfo;
+                    context._executionInfo = null;
                     return result;
                 }
             }

@@ -14,26 +14,26 @@ namespace NiL.JS.Core
     {
         public JSValue Error { get; private set; }
 
-        public JSException(Error avatar)
+        public JSException(Error data)
         {
-            Error = TypeProxy.Proxy(avatar);
+            Error = Context.CurrentBaseContext.ProxyValue(data);
         }
 
-        public JSException(JSValue avatar)
+        public JSException(JSValue data)
         {
-            Error = avatar;
+            Error = data;
         }
 
-        public JSException(JSValue avatar, Exception innerException)
-            : base("", innerException)
+        public JSException(JSValue data, Exception innerException)
+            : base("External error", innerException)
         {
-            Error = avatar;
+            Error = data;
         }
 
         public JSException(Error avatar, Exception innerException)
             : base("", innerException)
         {
-            Error = TypeProxy.Proxy(avatar);
+            Error = Context.CurrentBaseContext.ProxyValue(avatar);
         }
 
         public override string Message

@@ -497,7 +497,7 @@ namespace NiL.JS.Core
                     {
                         if (!@throw)
                             return false;
-                        ExceptionsHelper.Throw((new SyntaxError("Unterminated string constant")));
+                        ExceptionHelper.Throw((new SyntaxError("Unterminated string constant")));
                     }
                     j++;
                     if (j >= code.Length)
@@ -613,7 +613,7 @@ namespace NiL.JS.Core
                 }
             }
             if (throwError)
-                ExceptionsHelper.ThrowUnknownToken(state.Code, sindex);
+                ExceptionHelper.ThrowUnknownToken(state.Code, sindex);
             return null;
         }
 
@@ -640,7 +640,7 @@ namespace NiL.JS.Core
         public static void DefineCustomCodeFragment(Type type)
         {
             if (type == null)
-                ExceptionsHelper.ThrowArgumentNull("type");
+                ExceptionHelper.ThrowArgumentNull("type");
 
             var attributes = type.GetTypeInfo().GetCustomAttributes(typeof(CustomCodeFragment), false).ToArray();
             if (attributes.Length == 0)

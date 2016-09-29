@@ -27,20 +27,20 @@ namespace NiL.JS.Statements
         {
             for (;;)
             {
-                if (context.debugging && !(body is CodeBlock))
+                if (context._debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
 
-                context.lastResult = body.Evaluate(context) ?? context.lastResult;
-                if (context.executionMode != AbortReason.None)
+                context._lastResult = body.Evaluate(context) ?? context._lastResult;
+                if (context._executionMode != AbortReason.None)
                 {
-                    if (context.executionMode < AbortReason.Return)
+                    if (context._executionMode < AbortReason.Return)
                     {
-                        var me = context.executionInfo == null || System.Array.IndexOf(labels, context.executionInfo._oValue as string) != -1;
-                        var _break = (context.executionMode > AbortReason.Continue) || !me;
+                        var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
+                        var _break = (context._executionMode > AbortReason.Continue) || !me;
                         if (me)
                         {
-                            context.executionMode = AbortReason.None;
-                            context.executionInfo = JSValue.notExists;
+                            context._executionMode = AbortReason.None;
+                            context._executionInfo = JSValue.notExists;
                         }
                         if (_break)
                             return null;

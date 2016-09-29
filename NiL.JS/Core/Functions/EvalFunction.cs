@@ -44,7 +44,7 @@ namespace NiL.JS.Core.Functions
         internal override JSValue InternalInvoke(JSValue targetObject, Expression[] arguments, Context initiator, bool withSpread, bool construct)
         {
             if (construct)
-                ExceptionsHelper.ThrowTypeError("eval can not be called as constructor");
+                ExceptionHelper.ThrowTypeError("eval can not be called as constructor");
 
             if (arguments == null || arguments.Length == 0)
                 return NotExists;

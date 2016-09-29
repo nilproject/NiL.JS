@@ -19,25 +19,25 @@ namespace NiL.JS.Expressions
 
         internal protected override JSValue EvaluateForWrite(Context context)
         {
-            if (context.owner.creator.kind == BaseLibrary.FunctionKind.Arrow)
-                context = context.parent;
-            if (context.arguments == null)
-                context.owner.BuildArgumentsObject();
-            var res = context.arguments;
+            if (context._owner._creator.kind == BaseLibrary.FunctionKind.Arrow)
+                context = context._parent;
+            if (context._arguments == null)
+                context._owner.BuildArgumentsObject();
+            var res = context._arguments;
             if (res is Arguments)
-                context.arguments = res = res.CloneImpl(false);
-            if (context.fields != null && context.fields.ContainsKey(Name))
-                context.fields[Name] = res;
+                context._arguments = res = res.CloneImpl(false);
+            if (context._variables != null && context._variables.ContainsKey(Name))
+                context._variables[Name] = res;
             return res;
         }
 
         public override JSValue Evaluate(Context context)
         {
-            if (context.owner.creator.kind == BaseLibrary.FunctionKind.Arrow)
-                context = context.parent;
-            if (context.arguments == null)
-                context.owner.BuildArgumentsObject();
-            return context.arguments;
+            if (context._owner._creator.kind == BaseLibrary.FunctionKind.Arrow)
+                context = context._parent;
+            if (context._arguments == null)
+                context._owner.BuildArgumentsObject();
+            return context._arguments;
         }
     }
 
@@ -72,19 +72,21 @@ namespace NiL.JS.Expressions
 
         internal protected override JSValue EvaluateForWrite(Context context)
         {
-            if (context.strict || forceThrow)
+            var result = _descriptor.Get(context, true, _scopeLevel);
+
+            if (context._strict || forceThrow)
             {
-                var res = Descriptor.Get(context, false, _scopeLevel);
-                if (res._valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
-                    ExceptionsHelper.ThrowVariableNotDefined(variableName);
-                if (context.strict)
+                if (result._valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
+                    ExceptionHelper.ThrowVariableNotDefined(variableName);
+
+                if (context._strict)
                 {
-                    if ((res._attributes & JSValueAttributesInternal.Argument) != 0)
-                        context.owner.BuildArgumentsObject();
+                    if ((result._attributes & JSValueAttributesInternal.Argument) != 0)
+                        context._owner.BuildArgumentsObject();
                 }
-                return res;
             }
-            return _descriptor.Get(context, true, _scopeLevel);
+
+            return result;
         }
 
         public override JSValue Evaluate(Context context)
@@ -95,12 +97,12 @@ namespace NiL.JS.Expressions
                 case JSValueType.NotExists:
                     {
                         if (!suspendThrow)
-                            ExceptionsHelper.ThrowVariableNotDefined(variableName);
+                            ExceptionHelper.ThrowVariableNotDefined(variableName);
                         break;
                     }
                 case JSValueType.Property:
                     {
-                        return Tools.InvokeGetter(res, context.objectSource);
+                        return Tools.InvokeGetter(res, context._objectSource);
                     }
             }
             return res;

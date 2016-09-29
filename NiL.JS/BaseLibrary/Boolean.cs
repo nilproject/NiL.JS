@@ -102,7 +102,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue toLocaleString(JSValue self)
         {
             if (self.GetType() != typeof(Boolean) && self._valueType != JSValueType.Boolean)
-                ExceptionsHelper.Throw(new TypeError("Boolean.prototype.toLocaleString called for not boolean."));
+                ExceptionHelper.Throw(new TypeError("Boolean.prototype.toLocaleString called for not boolean."));
             return self._iValue != 0 ? "true" : "false";
         }
 
@@ -114,7 +114,7 @@ namespace NiL.JS.BaseLibrary
             if (self.GetType() == typeof(Boolean))
                 return self._iValue != 0;
             if (self._valueType != JSValueType.Boolean)
-                ExceptionsHelper.Throw(new TypeError("Boolean.prototype.valueOf called for not boolean."));
+                ExceptionHelper.Throw(new TypeError("Boolean.prototype.valueOf called for not boolean."));
             return self;
         }
 
@@ -125,7 +125,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue toString(JSValue self, Arguments args)
         {
             if (self.GetType() != typeof(Boolean) && self._valueType != JSValueType.Boolean)
-                ExceptionsHelper.Throw(new TypeError("Boolean.prototype.toString called for not boolean."));
+                ExceptionHelper.Throw(new TypeError("Boolean.prototype.toString called for not boolean."));
             return self._iValue != 0 ? "true" : "false";
         }
     }

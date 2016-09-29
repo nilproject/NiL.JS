@@ -40,8 +40,8 @@ namespace NiL.JS.Core.Interop
         [Hidden]
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
         {
-            if (fields != null)
-                foreach (var r in fields)
+            if (_fields != null)
+                foreach (var r in _fields)
                     if (r.Value.Exists && (!hideNonEnum || (r.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                         yield return r;
         }

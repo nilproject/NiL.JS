@@ -74,7 +74,7 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var temp = first.Evaluate(context);
-            JSValue targetObject = context.objectSource;
+            JSValue targetObject = context._objectSource;
             ICallable callable = null;
             Function func = null;
 
@@ -93,7 +93,7 @@ namespace NiL.JS.Expressions
                         callable = temp.Value as ICallable;
                     if (callable == null)
                     {
-                        var typeProxy = temp.Value as TypeProxy;
+                        var typeProxy = temp.Value as Proxy;
                         if (typeProxy != null)
                             callable = typeProxy.prototypeInstance as ICallable;
                     }
@@ -104,14 +104,14 @@ namespace NiL.JS.Expressions
             {
                 for (int i = 0; i < this._arguments.Length; i++)
                 {
-                    context.objectSource = null;
+                    context._objectSource = null;
                     this._arguments[i].Evaluate(context);
                 }
 
-                context.objectSource = null;
+                context._objectSource = null;
 
                 // Аргументы должны быть вычислены даже если функция не существует.
-                ExceptionsHelper.ThrowTypeError(first.ToString() + " is not a function");
+                ExceptionHelper.ThrowTypeError(first.ToString() + " is not a function");
 
                 return null;
             }
@@ -136,18 +136,18 @@ namespace NiL.JS.Expressions
 
                 if (allowTCO
                     && _callMode == 0
-                    && (func.creator.kind != FunctionKind.Generator)
-                    && (func.creator.kind != FunctionKind.MethodGenerator)
-                    && (func.creator.kind != FunctionKind.AnonymousGenerator)
-                    && context.owner != null
-                    && func == context.owner._oValue)
+                    && (func._creator.kind != FunctionKind.Generator)
+                    && (func._creator.kind != FunctionKind.MethodGenerator)
+                    && (func._creator.kind != FunctionKind.AnonymousGenerator)
+                    && context._owner != null
+                    && func == context._owner._oValue)
                 {
                     tailCall(context, func);
-                    context.objectSource = targetObject;
+                    context._objectSource = targetObject;
                     return JSValue.undefined;
                 }
                 else
-                    context.objectSource = null;
+                    context._objectSource = null;
 
                 checkStack();
                 if (_callMode == CallMode.Construct)
@@ -163,7 +163,7 @@ namespace NiL.JS.Expressions
         private JSValue callEval(Context context)
         {
             if (_callMode != CallMode.Regular)
-                ExceptionsHelper.ThrowTypeError("function eval(...) cannot be called as a constructor");
+                ExceptionHelper.ThrowTypeError("function eval(...) cannot be called as a constructor");
 
             if (_arguments == null || _arguments.Length == 0)
                 return JSValue.NotExists;
@@ -172,7 +172,7 @@ namespace NiL.JS.Expressions
 
             for (int i = 1; i < this._arguments.Length; i++)
             {
-                context.objectSource = null;
+                context._objectSource = null;
                 this._arguments[i].Evaluate(context);
             }
 
@@ -184,7 +184,7 @@ namespace NiL.JS.Expressions
 
         private void tailCall(Context context, Function func)
         {
-            context.executionMode = AbortReason.TailRecursion;
+            context._executionMode = AbortReason.TailRecursion;
 
             var arguments = new Arguments(context)
             {
@@ -192,10 +192,10 @@ namespace NiL.JS.Expressions
             };
             for (int i = 0; i < this._arguments.Length; i++)
                 arguments[i] = Tools.PrepareArg(context, this._arguments[i]);
-            context.objectSource = null;
+            context._objectSource = null;
 
             arguments.callee = func;
-            context.executionInfo = arguments;
+            context._executionInfo = arguments;
         }
 
         private static void checkStack()

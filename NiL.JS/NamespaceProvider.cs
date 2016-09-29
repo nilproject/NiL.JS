@@ -116,7 +116,7 @@ namespace NiL.JS
 
                 if (ut != null)
                 {
-                    res = TypeProxy.GetGenericTypeSelector(ut);
+                    res = Proxy.GetGenericTypeSelector(ut);
 
                     if (childs == null)
                         childs = new BinaryTree<JSValue>();
@@ -126,7 +126,7 @@ namespace NiL.JS
                 }
 
                 if (resultType != null)
-                    return TypeProxy.GetConstructor(resultType);
+                    return Context.CurrentBaseContext.GetConstructor(resultType);
 
                 selection = types.StartedWith(reqname).GetEnumerator();
                 if (selection.MoveNext() && selection.Current.Key[reqname.Length] == '.')

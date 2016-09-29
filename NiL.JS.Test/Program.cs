@@ -61,33 +61,8 @@ namespace NiL.JS.Test
 
         private static void testEx()
         {
-            Action task = () =>
-            {
-                var context = new Context();
-                context.Eval("function test(a, i) { a.F(i); }");
-
-                var a = new A();
-
-                Console.WriteLine(".start");
-
-                for (var i = 0; i < 1000; ++i)
-                {
-                    context.GetVariable("test").As<Function>().Call(new Arguments() { JSValue.Wrap(a), Thread.CurrentThread.ManagedThreadId });
-                }
-
-                Console.WriteLine(".end");
-            };
-
-            Task.WaitAll(Task.Run(task), Task.Run(task),
-                         Task.Run(task), Task.Run(task),
-                         Task.Run(task), Task.Run(task),
-                         Task.Run(task), Task.Run(task),
-                         Task.Run(task), Task.Run(task),
-                         Task.Run(task), Task.Run(task),
-                         Task.Run(task), Task.Run(task),
-                         Task.Run(task), Task.Run(task),
-                         Task.Run(task), Task.Run(task),
-                         Task.Run(task), Task.Run(task));
+            var tsc = new Module(File.ReadAllText("tsc.js"));
+            tsc.Run();
         }
 
         static void Main(string[] args)
@@ -134,8 +109,8 @@ namespace NiL.JS.Test
                 })
             }));
 #endif
-
-            int mode = 3
+            
+            int mode = 2
                     ;
             switch (mode)
             {
@@ -177,7 +152,7 @@ namespace NiL.JS.Test
                         var currentTimeZone = TimeZone.CurrentTimeZone;
                         var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                         offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
-                        runFiles("tests/custom/");
+                        //runFiles("tests/custom/");
                         sputnikTests();
                         break;
                     }
@@ -437,7 +412,7 @@ namespace NiL.JS.Test
                     Context econtext = null;
                     if (refresh || s == null)
                     {
-                        Context.RefreshGlobalContext();
+                        Context.ResetGlobalContext();
                         s = new Module(staCode);// инициализация
                         s.Run();
                         econtext = s.Context;
@@ -461,7 +436,7 @@ namespace NiL.JS.Test
                 }
                 catch (Exception e)
                 {
-                    System.Diagnostics.Debugger.Break();
+                    Debugger.Break();
                     Console.WriteLine(e);
                     pass = false;
                 }
@@ -542,7 +517,7 @@ namespace NiL.JS.Test
                     Context econtext = null;
                     if (refresh || s == null)
                     {
-                        Context.RefreshGlobalContext();
+                        Context.ResetGlobalContext();
                         s = new Module(preCode);
                         s.Run();
                         econtext = s.Context;
@@ -985,7 +960,7 @@ for (var i = 0; i < 10000000; )
             long _total = 0;
             var round = 0;
             long min = long.MaxValue;
-            Context.RefreshGlobalContext();
+            Context.ResetGlobalContext();
             for (; round < 1; round++)
             {
                 TimeSpan total = new TimeSpan();
@@ -1014,7 +989,7 @@ for (var i = 0; i < 10000000; )
                     sw.Stop();
                     total += sw.Elapsed;
                     _(sw.Elapsed.ToString());
-                    Context.RefreshGlobalContext();
+                    Context.ResetGlobalContext();
                     GC.Collect(0);
                     GC.Collect(1);
                     GC.Collect(2);

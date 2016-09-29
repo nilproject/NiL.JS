@@ -49,7 +49,7 @@ namespace NiL.JS.Statements
             if (body is FunctionDefinition)
             {
                 if (state.strict)
-                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
                 body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
@@ -74,7 +74,7 @@ namespace NiL.JS.Statements
                 if (elseBody is FunctionDefinition)
                 {
                     if (state.strict)
-                        ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                        ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                     if (state.message != null)
                         state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, elseBody.Position, elseBody.Length), "Do not declare function in nested blocks.");
                     elseBody = new CodeBlock(new[] { elseBody }); // для того, чтобы не дублировать код по декларации функции, 
@@ -98,38 +98,39 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             bool conditionResult;
-            if (context.executionMode != AbortReason.Resume || !context.SuspendData.ContainsKey(this))
+            if (context._executionMode != AbortReason.Resume || !context.SuspendData.ContainsKey(this))
             {
-                if (context.debugging)
+                if (context._debugging)
                     context.raiseDebugger(condition);
 
                 conditionResult = (bool)condition.Evaluate(context);
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                     return null;
             }
             else
             {
                 conditionResult = (bool)context.SuspendData[this];
             }
+
             if (conditionResult)
             {
-                if (context.debugging && !(then is CodeBlock))
+                if (context._debugging && !(then is CodeBlock))
                     context.raiseDebugger(then);
 
                 var temp = then.Evaluate(context);
                 if (temp != null)
-                    context.lastResult = temp;
+                    context._lastResult = temp;
             }
             else if (@else != null)
             {
-                if (context.debugging && !(@else is CodeBlock))
+                if (context._debugging && !(@else is CodeBlock))
                     context.raiseDebugger(@else);
 
                 var temp = @else.Evaluate(context);
                 if (temp != null)
-                    context.lastResult = temp;
+                    context._lastResult = temp;
             }
-            if (context.executionMode == AbortReason.Suspend)
+            if (context._executionMode == AbortReason.Suspend)
                 context.SuspendData[this] = conditionResult;
             return null;
         }

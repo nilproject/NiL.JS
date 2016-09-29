@@ -71,15 +71,15 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(state.Code, ref position, state.strict))
                 {
                     if (Parser.ValidateName(state.Code, ref position, false, true, state.strict))
-                        ExceptionsHelper.Throw((new SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.strict) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s))));
-                    ExceptionsHelper.Throw((new SyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s))));
+                        ExceptionHelper.Throw((new SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.strict) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s))));
+                    ExceptionHelper.Throw((new SyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s))));
                 }
 
                 string name = Tools.Unescape(state.Code.Substring(s, position - s), state.strict);
                 if (state.strict)
                 {
                     if (name == "arguments" || name == "eval")
-                        ExceptionsHelper.ThrowSyntaxError("Varible name cannot be \"arguments\" or \"eval\" in strict mode", state.Code, s, position - s);
+                        ExceptionHelper.ThrowSyntaxError("Varible name cannot be \"arguments\" or \"eval\" in strict mode", state.Code, s, position - s);
                 }
                 names.Add(name);
 
@@ -103,7 +103,7 @@ namespace NiL.JS.Statements
                     }
 
                     if (!valid)
-                        ExceptionsHelper.ThrowSyntaxError("Invalid variable initializer", state.Code, position);
+                        ExceptionHelper.ThrowSyntaxError("Invalid variable initializer", state.Code, position);
                 }
 
                 initializers.Add(expression);
@@ -142,7 +142,7 @@ namespace NiL.JS.Statements
                     if (state.Variables[j].name == names[i] && state.Variables[j].definitionScopeLevel >= level)
                     {
                         if (state.Variables[j].lexicalScope && mode > VariableKind.FunctionScope)
-                            ExceptionsHelper.ThrowSyntaxError(string.Format(Strings.IdentifierAlreadyDeclared, names[i]), state.Code, index);
+                            ExceptionHelper.ThrowSyntaxError(string.Format(Strings.IdentifierAlreadyDeclared, names[i]), state.Code, index);
 
                         skip = true;
                         variables[i] = state.Variables[j];
@@ -176,14 +176,14 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             int i = 0;
-            if (context.executionMode >= AbortReason.Resume)
+            if (context._executionMode >= AbortReason.Resume)
             {
                 i = (int)context.SuspendData[this];
             }
 
             for (; i < initializers.Length; i++)
             {
-                if (context.executionMode == AbortReason.None && mode > VariableKind.FunctionScope && variables[i].lexicalScope)
+                if (context._executionMode == AbortReason.None && mode > VariableKind.FunctionScope && variables[i].lexicalScope)
                 {
                     JSValue f = context.DefineVariable(variables[i].name, false);
 
@@ -196,7 +196,7 @@ namespace NiL.JS.Statements
 
                 initializers[i].Evaluate(context);
 
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = i;
                     return null;

@@ -43,7 +43,7 @@ namespace NiL.JS.Expressions
         internal protected override JSValue EvaluateForWrite(Context context)
         {
             var res = first.EvaluateForWrite(context);
-            secondResult = Tools.InvokeGetter(res, context.objectSource);
+            secondResult = Tools.InvokeGetter(res, context._objectSource);
             return res;
         }
 

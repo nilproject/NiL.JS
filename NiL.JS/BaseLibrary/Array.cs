@@ -36,7 +36,7 @@ namespace NiL.JS.BaseLibrary
             _oValue = this;
             _valueType = JSValueType.Object;
             if (length < 0)
-                ExceptionsHelper.Throw((new RangeError("Invalid array length.")));
+                ExceptionHelper.Throw((new RangeError("Invalid array length.")));
             data = new SparseArray<JSValue>((int)System.Math.Min(100000, (uint)length));
 
             if (length > 0)
@@ -50,7 +50,7 @@ namespace NiL.JS.BaseLibrary
             _oValue = this;
             _valueType = JSValueType.Object;
             if (length < 0 || length > uint.MaxValue)
-                ExceptionsHelper.Throw((new RangeError("Invalid array length.")));
+                ExceptionHelper.Throw((new RangeError("Invalid array length.")));
             data = new SparseArray<JSValue>((int)System.Math.Min(100000, length));
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -61,7 +61,7 @@ namespace NiL.JS.BaseLibrary
             _oValue = this;
             _valueType = JSValueType.Object;
             if (((long)length != length) || (length < 0) || (length > 0xffffffff))
-                ExceptionsHelper.Throw((new RangeError("Invalid array length.")));
+                ExceptionHelper.Throw((new RangeError("Invalid array length.")));
             data = new SparseArray<JSValue>();
 
             if (length > 0)
@@ -109,7 +109,7 @@ namespace NiL.JS.BaseLibrary
             while (source.MoveNext())
             {
                 var e = source.Current;
-                data[index++] = (e as JSValue ?? TypeProxy.Proxy(e)).CloneImpl(false);
+                data[index++] = (e as JSValue ?? Context.CurrentBaseContext.ProxyValue(e)).CloneImpl(false);
             }
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -149,7 +149,7 @@ namespace NiL.JS.BaseLibrary
             if (data.Length == nlen)
                 return true;
             if (nlen < 0)
-                ExceptionsHelper.Throw(new RangeError("Invalid array length"));
+                ExceptionHelper.Throw(new RangeError("Invalid array length"));
             if (data.Length > nlen)
             {
                 var res = true;
@@ -430,7 +430,7 @@ namespace NiL.JS.BaseLibrary
                 ExceptionsHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
 #else
                 var stackTrace = new System.Diagnostics.StackTrace();
-                ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
 #endif
             }
 
@@ -444,7 +444,7 @@ namespace NiL.JS.BaseLibrary
                 // forEach, map, filter, every, some, reduce
                 jsCallback = args[0] == null ? null : args[0]._oValue as Function;
                 if (jsCallback == null)
-                    ExceptionsHelper.Throw(new TypeError("Callback is not a function."));
+                    ExceptionHelper.Throw(new TypeError("Callback is not a function."));
 
                 thisBind = args.Length > 1 ? args[1] : null;
             }
@@ -602,7 +602,7 @@ namespace NiL.JS.BaseLibrary
                 ExceptionsHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
 #else
                 var stackTrace = new System.Diagnostics.StackTrace();
-                ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
 #endif
             }
 
@@ -616,7 +616,7 @@ namespace NiL.JS.BaseLibrary
                 // reduceRight
                 jsCallback = args[0] == null ? null : args[0]._oValue as Function;
                 if (jsCallback == null)
-                    ExceptionsHelper.Throw(new TypeError("Callback is not a function."));
+                    ExceptionHelper.Throw(new TypeError("Callback is not a function."));
 
                 thisBind = args.Length > 1 ? args[1] : null;
             }
@@ -727,8 +727,9 @@ namespace NiL.JS.BaseLibrary
         public static JSValue isArray(Arguments args)
         {
             if (args == null)
-                throw new ArgumentNullException("args");
-            return args[0].Value is Array || args[0].Value == TypeProxy.GetPrototype(typeof(Array));
+                ExceptionHelper.ThrowArgumentNull("args");
+
+            return args[0].Value is Array || args[0].Value == Context.CurrentBaseContext.GetPrototype(typeof(Array));
         }
 
         [DoNotEnumerate]
@@ -742,7 +743,7 @@ namespace NiL.JS.BaseLibrary
         private static string joinImpl(JSValue self, string separator, bool locale)
         {
             if ((self._oValue == null && self._valueType >= JSValueType.Object) || self._valueType <= JSValueType.Undefined)
-                ExceptionsHelper.Throw(new TypeError("Array.prototype.join called for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Array.prototype.join called for null or undefined"));
 
             if (self._valueType >= JSValueType.Object && self._oValue.GetType() == typeof(Array))
             {
@@ -863,10 +864,10 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (selfa.data.Length == uint.MaxValue)
                     {
-                        if (selfa.fields == null)
-                            selfa.fields = getFieldsContainer();
-                        selfa.fields[uint.MaxValue.ToString()] = args.a0.CloneImpl(false);
-                        ExceptionsHelper.Throw(new RangeError("Invalid length of array"));
+                        if (selfa._fields == null)
+                            selfa._fields = getFieldsContainer();
+                        selfa._fields[uint.MaxValue.ToString()] = args.a0.CloneImpl(false);
+                        ExceptionHelper.Throw(new RangeError("Invalid length of array"));
                     }
                     selfa.data.Add(args[i].CloneImpl(false));
                 }
@@ -1041,7 +1042,7 @@ namespace NiL.JS.BaseLibrary
             });
 
             if (len == 0 || skip)
-                ExceptionsHelper.ThrowTypeError("Length of array cannot be 0");
+                ExceptionHelper.ThrowTypeError("Length of array cannot be 0");
 
             return result;
         }
@@ -1086,7 +1087,7 @@ namespace NiL.JS.BaseLibrary
             });
 
             if (len == 0 || skip)
-                ExceptionsHelper.ThrowTypeError("Length of array cannot be 0");
+                ExceptionHelper.ThrowTypeError("Length of array cannot be 0");
 
             return result;
         }
@@ -1182,7 +1183,7 @@ namespace NiL.JS.BaseLibrary
 
                 long _length = (long)(uint)Tools.JSObjectToDouble(lenObj);
                 if (_length > uint.MaxValue)
-                    ExceptionsHelper.Throw(new RangeError("Invalid array length"));
+                    ExceptionHelper.Throw(new RangeError("Invalid array length"));
                 if (_length == 0)
                 {
                     self["length"] = lenObj = _length;
@@ -1268,7 +1269,7 @@ namespace NiL.JS.BaseLibrary
             if (args == null)
                 throw new ArgumentNullException("args");
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
-                ExceptionsHelper.Throw(new TypeError("Can not call Array.prototype.slice for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Can not call Array.prototype.slice for null or undefined"));
             HashSet<string> processedKeys = new HashSet<string>();
             Array res = new Array();
             for (;;)
@@ -1869,16 +1870,16 @@ namespace NiL.JS.BaseLibrary
             }
             if (!hideNonEnum)
                 yield return new KeyValuePair<string, JSValue>("length", length);
-            if (fields != null)
+            if (_fields != null)
             {
-                foreach (var f in fields)
+                foreach (var f in _fields)
                 {
                     if (f.Value.Exists && (!hideNonEnum || (f.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     {
                         var value = f.Value;
                         if (enumeratorMode == EnumerationMode.RequireValuesForWrite && (value._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
                         {
-                            fields[f.Key] = value = value.CloneImpl(true);
+                            _fields[f.Key] = value = value.CloneImpl(true);
                         }
 
                         yield return new KeyValuePair<string, JSValue>(f.Key, value);
@@ -1981,7 +1982,7 @@ namespace NiL.JS.BaseLibrary
                         if (_lengthObj != null && (_lengthObj._attributes & JSValueAttributesInternal.ReadOnly) != 0 && index >= data.Length)
                         {
                             if (memberScope == PropertyScope.Own)
-                                ExceptionsHelper.Throw(new TypeError("Can not add item to fixed size array"));
+                                ExceptionHelper.Throw(new TypeError("Can not add item to fixed size array"));
                             return notExists;
                         }
                         var res = data[index];
@@ -2128,7 +2129,7 @@ namespace NiL.JS.BaseLibrary
                 var nlenD = Tools.JSObjectToDouble(value);
                 var nlen = (uint)nlenD;
                 if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
-                    ExceptionsHelper.Throw(new RangeError("Invalid array length"));
+                    ExceptionHelper.Throw(new RangeError("Invalid array length"));
                 if ((_attributes & JSValueAttributesInternal.ReadOnly) != 0)
                     return;
                 array.SetLenght(nlen);

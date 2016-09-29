@@ -99,7 +99,7 @@ namespace NiL.JS.BaseLibrary
             _valueType = JSValueType.Double;
             double d = 0;
             int i = 0;
-            if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, ParseNumberOptions.Default | (Context.CurrentContext.strict ? ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
+            if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, ParseNumberOptions.Default | (Context.CurrentContext._strict ? ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
                 _dValue = d;
             _attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
@@ -140,7 +140,7 @@ namespace NiL.JS.BaseLibrary
                 case JSValueType.Object:
                     {
                         if (typeof(Number) != self.GetType())
-                            ExceptionsHelper.Throw((new TypeError("Try to call Number.toExponential on not number object.")));
+                            ExceptionHelper.Throw((new TypeError("Try to call Number.toExponential on not number object.")));
                         res = self._iValue == 0 ? self._dValue : self._iValue;
                         break;
                     }
@@ -206,7 +206,7 @@ namespace NiL.JS.BaseLibrary
                 case JSValueType.Object:
                     {
                         if (typeof(Number) != self.GetType())
-                            ExceptionsHelper.Throw((new TypeError("Try to call Number.toFixed on not number object.")));
+                            ExceptionHelper.Throw((new TypeError("Try to call Number.toFixed on not number object.")));
                         res = self._iValue == 0 ? self._dValue : self._iValue;
                         break;
                     }
@@ -215,7 +215,7 @@ namespace NiL.JS.BaseLibrary
             }
             int dgts = Tools.JSObjectToInt32(digits[0], true);
             if (dgts < 0 || dgts > 20)
-                ExceptionsHelper.Throw((new RangeError("toFixed() digits argument must be between 0 and 20")));
+                ExceptionHelper.Throw((new RangeError("toFixed() digits argument must be between 0 and 20")));
             if (System.Math.Abs(self._dValue) >= 1e+21)
                 return self._dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
             if (dgts > 0)
@@ -242,13 +242,13 @@ namespace NiL.JS.BaseLibrary
             try
             {
                 if (self._valueType != JSValueType.Integer && self._valueType != JSValueType.Double)
-                    ExceptionsHelper.Throw((new TypeError("Try to call Number.toString on not Number object")));
+                    ExceptionHelper.Throw((new TypeError("Try to call Number.toString on not Number object")));
                 int r = 10;
                 if (radix != null && radix.GetProperty("length")._iValue > 0)
                 {
                     var ar = radix[0];
                     if (ar._valueType == JSValueType.Object && ar._oValue == null)
-                        ExceptionsHelper.Throw((new Error("Radix can't be null.")));
+                        ExceptionHelper.Throw((new Error("Radix can't be null.")));
                     switch (ar._valueType)
                     {
                         case JSValueType.Integer:
@@ -276,7 +276,7 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 if (r < 2 || r > 36)
-                    ExceptionsHelper.Throw((new TypeError("Radix must be between 2 and 36.")));
+                    ExceptionHelper.Throw((new TypeError("Radix must be between 2 and 36.")));
                 if (r == 10)
                     return self.ToString();
                 else
@@ -323,7 +323,7 @@ namespace NiL.JS.BaseLibrary
                     if (neg)
                         res = -res;
                     if (res < 0)
-                        ExceptionsHelper.Throw(new Error("Internal error"));
+                        ExceptionHelper.Throw(new Error("Internal error"));
                     sres.Append(Tools.NumChars[res % r]);
                     res /= r;
                     while (res != 0)
@@ -357,7 +357,7 @@ namespace NiL.JS.BaseLibrary
             if (self is Number)
                 return self._iValue == 0 ? self._dValue : self._iValue;
             if (self._valueType != JSValueType.Integer && self._valueType != JSValueType.Double)
-                ExceptionsHelper.Throw((new TypeError("Try to call Number.valueOf on not number object.")));
+                ExceptionHelper.Throw((new TypeError("Try to call Number.valueOf on not number object.")));
             return self;
         }
 

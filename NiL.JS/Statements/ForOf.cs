@@ -83,7 +83,7 @@ namespace NiL.JS.Statements
                     if (state.strict)
                     {
                         if (varName == "arguments" || varName == "eval")
-                            ExceptionsHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
+                            ExceptionHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                     }
                     result._variable = new GetVariable(varName, state.lexicalScopeLevel) { Position = start, Length = i - start, ScopeLevel = state.lexicalScopeLevel };
                 }
@@ -126,14 +126,14 @@ namespace NiL.JS.Statements
                 if (result._variable is VariableDefinition)
                 {
                     if ((result._variable as VariableDefinition).variables.Length > 1)
-                        ExceptionsHelper.ThrowSyntaxError("Too many variables in for-of loop", state.Code, i);
+                        ExceptionHelper.ThrowSyntaxError("Too many variables in for-of loop", state.Code, i);
                 }
 
                 result._source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
                 Tools.SkipSpaces(state.Code, ref i);
 
                 if (state.Code[i] != ')')
-                    ExceptionsHelper.Throw(new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
+                    ExceptionHelper.Throw(new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
 
                 i++;
                 state.AllowBreak.Push(true);
@@ -162,7 +162,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             SuspendData suspendData = null;
-            if (context.executionMode >= AbortReason.Resume)
+            if (context._executionMode >= AbortReason.Resume)
             {
                 suspendData = context.SuspendData[this] as SuspendData;
             }
@@ -170,11 +170,11 @@ namespace NiL.JS.Statements
             JSValue source = null;
             if (suspendData == null || suspendData.source == null)
             {
-                if (context.debugging && !(_source is CodeBlock))
+                if (context._debugging && !(_source is CodeBlock))
                     context.raiseDebugger(_source);
 
                 source = _source.Evaluate(context);
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;
@@ -186,7 +186,7 @@ namespace NiL.JS.Statements
             JSValue variable = null;
             if (suspendData == null || suspendData.variable == null)
             {
-                if (context.debugging && !(_variable is CodeBlock))
+                if (context._debugging && !(_variable is CodeBlock))
                     context.raiseDebugger(_variable);
 
                 var varialeDefStat = _variable as VariableDefinition;
@@ -202,7 +202,7 @@ namespace NiL.JS.Statements
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                 {
                     if (suspendData == null)
                         suspendData = new SuspendData();
@@ -221,28 +221,28 @@ namespace NiL.JS.Statements
             if (iterator == null)
                 return null;
 
-            IIteratorResult iteratorResult = context.executionMode != AbortReason.Resume ? iterator.next() : null;
-            while (context.executionMode >= AbortReason.Resume || !iteratorResult.done)
+            IIteratorResult iteratorResult = context._executionMode != AbortReason.Resume ? iterator.next() : null;
+            while (context._executionMode >= AbortReason.Resume || !iteratorResult.done)
             {
-                if (context.executionMode != AbortReason.Resume)
+                if (context._executionMode != AbortReason.Resume)
                     variable.Assign(iteratorResult.value);
                 _body.Evaluate(context);
 
-                if (context.executionMode != AbortReason.None)
+                if (context._executionMode != AbortReason.None)
                 {
-                    if (context.executionMode < AbortReason.Return)
+                    if (context._executionMode < AbortReason.Return)
                     {
-                        var me = context.executionInfo == null || System.Array.IndexOf(_labels, context.executionInfo._oValue as string) != -1;
-                        var _break = (context.executionMode > AbortReason.Continue) || !me;
+                        var me = context._executionInfo == null || System.Array.IndexOf(_labels, context._executionInfo._oValue as string) != -1;
+                        var _break = (context._executionMode > AbortReason.Continue) || !me;
                         if (me)
                         {
-                            context.executionMode = AbortReason.None;
-                            context.executionInfo = JSValue.notExists;
+                            context._executionMode = AbortReason.None;
+                            context._executionInfo = JSValue.notExists;
                         }
                         if (_break)
                             return null;
                     }
-                    else if (context.executionMode == AbortReason.Suspend)
+                    else if (context._executionMode == AbortReason.Suspend)
                     {
                         if (suspendData == null)
                             suspendData = new SuspendData();

@@ -43,7 +43,7 @@ namespace NiL.JS.Expressions
             else
                 source = source._oValue as JSValue ?? source;
             res = source.GetProperty(cachedMemberName ?? second.Evaluate(context), true, memberScope);
-            context.objectSource = source;
+            context._objectSource = source;
             if (res._valueType == JSValueType.NotExists)
                 res._valueType = JSValueType.NotExistsInObject;
             return res;
@@ -66,7 +66,7 @@ namespace NiL.JS.Expressions
                 }
             }
             res = source.GetProperty(cachedMemberName ?? second.Evaluate(context), false, memberScope);
-            context.objectSource = source;
+            context._objectSource = source;
             if (res._valueType == JSValueType.NotExists)
                 res._valueType = JSValueType.NotExistsInObject;
             else if (res._valueType == JSValueType.Property)

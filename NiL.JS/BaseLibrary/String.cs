@@ -231,7 +231,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue match(JSValue self, Arguments args)
         {
             if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
-                ExceptionsHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
+                ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
             var a0 = args[0];
             var regex = a0._oValue as RegExp;
             if (a0._valueType == JSValueType.Object && regex != null)
@@ -273,7 +273,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue search(JSValue self, Arguments args)
         {
             if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
-                ExceptionsHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
+                ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
             if (args.length == 0)
                 return 0;
             var a0 = args[0];
@@ -796,7 +796,7 @@ namespace NiL.JS.BaseLibrary
                 case JSValueType.NotExists:
                 case JSValueType.NotExistsInObject:
                     {
-                        ExceptionsHelper.Throw(new TypeError("string can't be undefined"));
+                        ExceptionHelper.Throw(new TypeError("string can't be undefined"));
                         break;
                     }
                 case JSValueType.Function:
@@ -804,7 +804,7 @@ namespace NiL.JS.BaseLibrary
                 case JSValueType.Object:
                     {
                         if (self._oValue == null)
-                            ExceptionsHelper.Throw(new TypeError("string can't be null"));
+                            ExceptionHelper.Throw(new TypeError("string can't be null"));
                         break;
                     }
             }
@@ -855,7 +855,7 @@ namespace NiL.JS.BaseLibrary
             if ((self as object) is String && self._valueType == JSValueType.Object) // prototype instance
                 return self.ToString();
             if (self._valueType != JSValueType.String)
-                ExceptionsHelper.Throw(new TypeError("Try to call String.toString for not string object."));
+                ExceptionHelper.Throw(new TypeError("Try to call String.toString for not string object."));
             return self;
         }
 
@@ -867,7 +867,7 @@ namespace NiL.JS.BaseLibrary
             if ((self as object) is String && self._valueType == JSValueType.Object) // prototype instance
                 return self.ToString();
             if (self._valueType != JSValueType.String)
-                ExceptionsHelper.Throw(new TypeError("Try to call String.valueOf for not string object."));
+                ExceptionHelper.Throw(new TypeError("Try to call String.valueOf for not string object."));
             return self;
         }
 
@@ -896,7 +896,7 @@ namespace NiL.JS.BaseLibrary
         public override string ToString()
         {
             if (this._valueType != JSValueType.String)
-                ExceptionsHelper.Throw(new TypeError("Try to call String.toString for not string object."));
+                ExceptionHelper.Throw(new TypeError("Try to call String.toString for not string object."));
             return _oValue.ToString();
         }
 
@@ -946,9 +946,9 @@ namespace NiL.JS.BaseLibrary
                 yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumeratorMode > 0 ? str[i].ToString() : null);
             if (!hideNonEnum)
                 yield return new KeyValuePair<string, JSValue>("length", length);
-            if (fields != null)
+            if (_fields != null)
             {
-                foreach (var f in fields)
+                foreach (var f in _fields)
                 {
                     if (f.Value.Exists && (!hideNonEnum || (f.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                         yield return f;

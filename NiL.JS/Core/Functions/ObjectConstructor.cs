@@ -10,25 +10,42 @@ namespace NiL.JS.Core.Functions
 #endif
     internal class ObjectConstructor : ProxyConstructor
     {
-        public ObjectConstructor(TypeProxy proxy)
-            : base(proxy)
+        public override string name
+        {
+            get
+            {
+                return "Object";
+            }
+        }
+
+        public ObjectConstructor(Context context, StaticProxy staticProxy, PrototypeProxy dynamicProxy)
+            : base(context, staticProxy, dynamicProxy)
         {
             _length = new Number(1);
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            JSValue oVal = null;
-            if (arguments != null && arguments.length > 0)
-                oVal = arguments[0];
-            if ((oVal == null) 
-                || ((oVal._valueType >= JSValueType.Object && oVal._oValue == null) 
-                    || oVal._valueType <= JSValueType.Undefined))
-                return CreateObject();
-            else if (oVal._valueType >= JSValueType.Object && oVal._oValue != null)
-                return oVal;
+            JSValue nestedValue = targetObject;
 
-            return oVal.ToObject();
+            if (arguments != null && arguments.length > 0)
+                nestedValue = arguments[0];
+
+            if (nestedValue == null)
+                return ConstructObject();
+
+            if (nestedValue._valueType >= JSValueType.Object)
+            {
+                if (nestedValue._oValue == null)
+                    return ConstructObject();
+
+                return nestedValue;
+            }
+
+            if (nestedValue._valueType <= JSValueType.Undefined)
+                return ConstructObject();
+
+            return nestedValue.ToObject();
         }
 
         protected internal override JSValue ConstructObject()
@@ -38,24 +55,12 @@ namespace NiL.JS.Core.Functions
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
         {
-            var pe = proxy.GetEnumerator(hideNonEnum, enumerationMode);
+            var pe = _staticProxy.GetEnumerator(hideNonEnum, enumerationMode);
             while (pe.MoveNext())
                 yield return pe.Current;
             pe = __proto__.GetEnumerator(hideNonEnum, enumerationMode);
             while (pe.MoveNext())
                 yield return pe.Current;
-        }
-        
-        public override string ToString(bool headerOnly)
-        {
-            var result = "function " + name + "()";
-
-            if (!headerOnly)
-            {
-                result += " { [native code] }";
-            }
-
-            return result;
         }
     }
 }

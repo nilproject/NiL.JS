@@ -21,7 +21,7 @@ namespace NiL.JS.BaseLibrary
             set
             {
                 if (index < 0 || index > length._iValue)
-                    ExceptionsHelper.Throw(new RangeError());
+                    ExceptionHelper.Throw(new RangeError());
                 var v = BitConverter.DoubleToInt64Bits(Tools.JSObjectToDouble(value));
                 if (BitConverter.IsLittleEndian)
                 {

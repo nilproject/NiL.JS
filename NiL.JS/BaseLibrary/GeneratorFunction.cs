@@ -28,14 +28,14 @@ namespace NiL.JS.BaseLibrary
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             if (construct)
-                ExceptionsHelper.ThrowTypeError("Generators cannot be invoked as a constructor");
+                ExceptionHelper.ThrowTypeError("Generators cannot be invoked as a constructor");
 
-            return TypeProxy.Proxy(new GeneratorIterator(this, targetObject, arguments));
+            return Context.BaseContext.ProxyValue(new GeneratorIterator(this, targetObject, arguments));
         }
 
         internal override JSObject GetDefaultPrototype()
         {
-            return TypeProxy.GetPrototype(typeof(Function));
+            return Context.BaseContext.GetPrototype(typeof(Function));
         }
     }
 
@@ -66,11 +66,11 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                switch (generatorContext.executionMode)
+                switch (generatorContext._executionMode)
                 {
                     case AbortReason.Suspend:
                         {
-                            generatorContext.executionMode = AbortReason.Resume;
+                            generatorContext._executionMode = AbortReason.Resume;
                             break;
                         }
                     case AbortReason.ResumeThrow:
@@ -80,7 +80,7 @@ namespace NiL.JS.BaseLibrary
                     default:
                         return new GeneratorResult(JSValue.undefined, true);
                 };
-                generatorContext.executionInfo = args != null ? args[0] : JSValue.undefined;
+                generatorContext._executionInfo = args != null ? args[0] : JSValue.undefined;
             }
             generatorContext.Activate();
             JSValue result = null;
@@ -92,13 +92,13 @@ namespace NiL.JS.BaseLibrary
             {
                 generatorContext.Deactivate();
             }
-            return new GeneratorResult(result, generatorContext.executionMode != AbortReason.Suspend);
+            return new GeneratorResult(result, generatorContext._executionMode != AbortReason.Suspend);
         }
 
         private void initContext()
         {
             generatorContext = new Context(initialContext, true, generator);
-            generatorContext.variables = generator.creator.body._variables;
+            generatorContext._definedVariables = generator._creator.body._variables;
             generator.initParameters(initialArgs, generatorContext);
             generator.initContext(targetObject, initialArgs, true, generatorContext);
         }
@@ -107,7 +107,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (generatorContext == null)
                 initContext();
-            generatorContext.executionMode = AbortReason.Return;
+            generatorContext._executionMode = AbortReason.Return;
             return next(null);
         }
 
@@ -115,7 +115,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (generatorContext == null)
                 return new GeneratorResult(JSValue.undefined, true);
-            generatorContext.executionMode = AbortReason.ResumeThrow;
+            generatorContext._executionMode = AbortReason.ResumeThrow;
             return next(arguments);
         }
 

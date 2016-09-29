@@ -89,17 +89,17 @@ namespace NiL.JS.Expressions
             {
                 var ppair = val._oValue as GsPropertyPair;
                 setter = ppair.set;
-                if (context.strict && setter == null)
+                if (context._strict && setter == null)
                     raiseErrorProp();
                 args = new Arguments();
                 if (ppair.get == null)
                     val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
                 else
-                    val = ppair.get.Call(context.objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
+                    val = ppair.get.Call(context._objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
             }
             else if ((val._attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
-                if (context.strict)
+                if (context._strict)
                     raiseErrorValue();
                 val = val.CloneImpl(false);
             }
@@ -145,7 +145,7 @@ namespace NiL.JS.Expressions
                     }
                 case JSValueType.NotExists:
                     {
-                        ExceptionsHelper.ThrowIfNotExists(val, first);
+                        ExceptionHelper.ThrowIfNotExists(val, first);
                         break;
                     }
             }
@@ -186,7 +186,7 @@ namespace NiL.JS.Expressions
             {
                 args.length = 1;
                 args[0] = val;
-                setter.Call(context.objectSource, args);
+                setter.Call(context._objectSource, args);
             }
             else if ((val._attributes & JSValueAttributesInternal.Reassign) != 0)
                 val.Assign(val);
@@ -195,12 +195,12 @@ namespace NiL.JS.Expressions
 
         private void raiseErrorValue()
         {
-            ExceptionsHelper.Throw(new TypeError("Can not decrement readonly \"" + (first) + "\""));
+            ExceptionHelper.Throw(new TypeError("Can not decrement readonly \"" + (first) + "\""));
         }
 
         private void raiseErrorProp()
         {
-            ExceptionsHelper.Throw(new TypeError("Can not decrement property \"" + (first) + "\" without setter."));
+            ExceptionHelper.Throw(new TypeError("Can not decrement property \"" + (first) + "\" without setter."));
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)

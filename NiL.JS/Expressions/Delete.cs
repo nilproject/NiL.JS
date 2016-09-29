@@ -55,9 +55,9 @@ namespace NiL.JS.Expressions
                 }
                 return true;
             }
-            else if (context.strict)
+            else if (context._strict)
             {
-                ExceptionsHelper.Throw(new TypeError("Can not delete property \"" + first + "\"."));
+                ExceptionHelper.Throw(new TypeError("Can not delete property \"" + first + "\"."));
             }
             return false;
         }
@@ -69,7 +69,7 @@ namespace NiL.JS.Expressions
             if (first is GetVariable)
             {
                 if ((codeContext & CodeContext.Strict) != 0)
-                    ExceptionsHelper.Throw(new SyntaxError("Can not delete variable in strict mode"));
+                    ExceptionHelper.Throw(new SyntaxError("Can not delete variable in strict mode"));
                 (first as GetVariable).suspendThrow = true;
             }
             var gme = first as Property;

@@ -30,7 +30,7 @@ namespace NiL.JS.Core.Functions
         /// </summary>
         private const int passCount = 3;
 
-        private readonly MethodProxy[] methods;
+        private readonly MethodProxy[] _methods;
 
         public override JSValue prototype
         {
@@ -48,13 +48,14 @@ namespace NiL.JS.Core.Functions
         {
             get
             {
-                return methods[0].name;
+                return _methods[0].name;
             }
         }
 
         public MethodGroup(MethodProxy[] methods)
+            : base(Context.CurrentContext ?? Context.globalContext)
         {
-            this.methods = methods;
+            _methods = methods;
 
             if (methods == null)
                 throw new ArgumentNullException();
@@ -63,12 +64,15 @@ namespace NiL.JS.Core.Functions
             for (var i = 0; i < methods.Length; i++)
                 len = System.Math.Max(len, methods[i]._parameters.Length);
 
-            _length = new BaseLibrary.Number(len) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
+            _length = new Number(len)
+            {
+                _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate
+            };
         }
 
         internal override JSObject GetDefaultPrototype()
         {
-            return TypeProxy.GetPrototype(typeof(Function));
+            return Context.BaseContext.GetPrototype(typeof(Function));
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
@@ -78,17 +82,17 @@ namespace NiL.JS.Core.Functions
 
             for (int pass = 0; pass < passCount; pass++)
             {
-                for (var i = 0; i < methods.Length; i++)
+                for (var i = 0; i < _methods.Length; i++)
                 {
-                    if (methods[i].Parameters.Length == 1 && methods[i].raw)
-                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, null, arguments));
+                    if (_methods[i].Parameters.Length == 1 && _methods[i].raw)
+                        return Context.BaseContext.ProxyValue(_methods[i].InvokeImpl(targetObject, null, arguments));
 
-                    if (pass == 1 || methods[i].Parameters.Length == l)
+                    if (pass == 1 || _methods[i].Parameters.Length == l)
                     {
                         if (l != 0)
                         {
-                            args = methods[i].ConvertArgs(
-                                arguments, 
+                            args = _methods[i].ConvertArgs(
+                                arguments,
                                 (pass >= 1 ? ConvertArgsOptions.None : ConvertArgsOptions.StrictConversion) | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.None));
 
                             if (args == null)
@@ -97,12 +101,12 @@ namespace NiL.JS.Core.Functions
                             for (var j = args.Length; j-- > 0;)
                             {
                                 if (args[j] != null ?
-                                    !methods[i]._parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
+                                    !_methods[i]._parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
 #if (PORTABLE || NETCORE)
                                     methods[i]._parameters[j].ParameterType.GetTypeInfo().IsValueType)
 #else
-                                    methods[i]._parameters[j].ParameterType.IsValueType)
+                                    _methods[i]._parameters[j].ParameterType.IsValueType)
 #endif
                                 {
                                     j = 0;
@@ -113,12 +117,13 @@ namespace NiL.JS.Core.Functions
                             if (args == null)
                                 continue;
                         }
-                        return TypeProxy.Proxy(methods[i].InvokeImpl(targetObject, args, arguments));
+
+                        return Context.BaseContext.ProxyValue(_methods[i].InvokeImpl(targetObject, args, arguments));
                     }
                 }
             }
 
-            ExceptionsHelper.Throw(new TypeError("Invalid arguments for function " + methods[0].name));
+            ExceptionHelper.Throw(new TypeError("Invalid arguments for function " + _methods[0].name));
             return null;
         }
     }

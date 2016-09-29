@@ -247,7 +247,11 @@
     <Compile Include="Core\ICallable.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
+    <Compile Include="Core\Interop\StaticProxy.cs" />
+    <Compile Include="Core\Interop\PrototypeProxy.cs" />
     <Compile Include="Core\Interop\StrictConversionAttribute.cs" />
+    <Compile Include="Core\BaseContext.cs" />
+    <Compile Include="Core\Scope.cs" />
     <Compile Include="ExportTable.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />
     <Compile Include="Expressions\GetSetPropertyPair.cs" />
@@ -287,7 +291,7 @@
     <Compile Include="Core\Interop\NotConfigurable.cs" />
     <Compile Include="Core\Interop\DisallowNewKeywordAttribute.cs" />
     <Compile Include="Core\Interop\RequireNewKeywordAttribute.cs" />
-    <Compile Include="ExceptionsHelper.cs" />
+    <Compile Include="ExceptionHelper.cs" />
     <Compile Include="Core\IIterator.cs" />
     <Compile Include="Expressions\Spread.cs" />
     <Compile Include="Expressions\EntityDefinition.cs" />
@@ -314,7 +318,7 @@
     <Compile Include="Core\Interop\ImmutableAttribute.cs" />
     <Compile Include="BaseLibrary\Math.cs" />
     <Compile Include="Core\Tools.cs" />
-    <Compile Include="Core\Interop\TypeProxy.cs" />
+    <Compile Include="Core\Interop\Proxy.cs" />
     <Compile Include="Core\Interop\ReadOnlyAttribute.cs" />
     <Compile Include="Core\Functions\ProxyConstructor.cs" />
     <Compile Include="Core\Visitor.cs" />

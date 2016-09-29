@@ -156,8 +156,8 @@ namespace NiL.JS
             Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
             var body = root as CodeBlock;
             body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
-            Context.thisBind = new GlobalObject(Context);
-            Context.strict = body._strict;
+            Context._thisBind = new GlobalObject(Context);
+            Context._strict = body._strict;
 
             var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
@@ -318,7 +318,7 @@ namespace NiL.JS
                 {
                     if (type.Namespace == @namespace)
                     {
-                        result.Exports[type.Name] = TypeProxy.GetConstructor(type);
+                        result.Exports[type.Name] = Context.CurrentBaseContext.GetConstructor(type);
                     }
                     else if (type.Namespace.StartsWith(@namespace) && type.Namespace[@namespace.Length] == '.')
                     {

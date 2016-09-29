@@ -26,7 +26,7 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context.strict)
+                if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
                     throwRoError();
             }
             temp = second.Evaluate(context);
@@ -82,7 +82,7 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context.strict)
+                if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
                     throwRoError();
             }
             temp = second.Evaluate(context);
@@ -92,7 +92,7 @@ namespace NiL.JS.Expressions
 
         protected void throwRoError()
         {
-            ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
+            ExceptionHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
         }
 
         protected JSValue setProperty(Context context, JSValue field)
@@ -102,7 +102,7 @@ namespace NiL.JS.Expressions
             {
                 if (setterArgs == null)
                     setterArgs = new Arguments();
-                var fieldSource = context.objectSource;
+                var fieldSource = context._objectSource;
                 temp = second.Evaluate(context);
                 if (saveResult)
                 {
@@ -118,8 +118,8 @@ namespace NiL.JS.Expressions
                 var setter = (field._oValue as GsPropertyPair).set;
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
-                else if (context.strict)
-                    ExceptionsHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
+                else if (context._strict)
+                    ExceptionHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
                 if (saveResult)
                     tempContainer = temp;
                 return temp;

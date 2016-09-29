@@ -175,7 +175,7 @@ namespace NiL.JS.Statements
                         if (position < state.Code.Length)
                         {
                             if (sroot && state.Code[position] == '}')
-                                ExceptionsHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
+                                ExceptionHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
 
                             if ((state.Code[position] == ';' || state.Code[position] == ','))
                             {
@@ -252,7 +252,7 @@ namespace NiL.JS.Statements
                         if (declaredVariables != null)
                         {
                             if (declaredVariables.Contains(variables[targetIndex].name) && variables[targetIndex].lexicalScope)
-                                ExceptionsHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" has already been defined", state.Code, i);
+                                ExceptionHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" has already been defined", state.Code, i);
 
                             declaredVariables.Add(variables[targetIndex].name);
                         }
@@ -274,7 +274,7 @@ namespace NiL.JS.Statements
             int i = 0;
             bool clearSuspendData = false;
 
-            if (context.executionMode >= AbortReason.Resume)
+            if (context._executionMode >= AbortReason.Resume)
             {
                 var suspendData = context.SuspendData[this] as SuspendData;
                 context = suspendData.Context;
@@ -285,14 +285,14 @@ namespace NiL.JS.Statements
             {
                 if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 {
-                    context = new Context(context, false, context.owner)
+                    context = new Context(context, false, context._owner)
                     {
-                        suspendData = context.suspendData,
-                        variables = _variables,
-                        thisBind = context.thisBind,
-                        strict = context.strict,
-                        executionInfo = context.executionInfo,
-                        executionMode = context.executionMode
+                        _suspendData = context._suspendData,
+                        _definedVariables = _variables,
+                        _thisBind = context._thisBind,
+                        _strict = context._strict,
+                        _executionInfo = context._executionInfo,
+                        _executionMode = context._executionMode
                     };
                 }
 
@@ -321,9 +321,9 @@ namespace NiL.JS.Statements
                 {
                     if (activated)
                         context.Deactivate();
-                    context.parent.lastResult = context.lastResult;
-                    context.parent.executionInfo = context.executionInfo;
-                    context.parent.executionMode = context.executionMode;
+                    context._parent._lastResult = context._lastResult;
+                    context._parent._executionInfo = context._executionInfo;
+                    context._parent._executionMode = context._executionMode;
                     if (_variables.Length != 0)
                         clearVariablesCache();
                 }
@@ -334,11 +334,11 @@ namespace NiL.JS.Statements
         {
             for (var ls = _lines; i < ls.Length; i++)
             {
-                if (context.debugging)
+                if (context._debugging)
                     context.raiseDebugger(_lines[i]);
                 var t = ls[i].Evaluate(context);
                 if (t != null)
-                    context.lastResult = t;
+                    context._lastResult = t;
 #if DEBUG && !(PORTABLE || NETCORE)
                 if (!context.Running)
                     if (System.Diagnostics.Debugger.IsAttached)
@@ -375,9 +375,9 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
-                if (context.executionMode != AbortReason.None)
+                if (context._executionMode != AbortReason.None)
                 {
-                    if (context.executionMode == AbortReason.Suspend)
+                    if (context._executionMode == AbortReason.Suspend)
                     {
                         context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
                     }
@@ -666,7 +666,7 @@ namespace NiL.JS.Statements
 
         internal void initVariables(Context context)
         {
-            var stats = context.owner?.creator?._functionInfo;
+            var stats = context._owner?._creator?._functionInfo;
             var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.ContainsYield;
             for (var i = 0; i < _variables.Length; i++)
             {
@@ -674,19 +674,19 @@ namespace NiL.JS.Statements
 
                 if (v.cacheContext != null)
                 {
-                    if (v.cacheContext.fields == null)
-                        v.cacheContext.fields = JSObject.getFieldsContainer();
-                    v.cacheContext.fields[v.name] = v.cacheRes;
+                    if (v.cacheContext._variables == null)
+                        v.cacheContext._variables = JSObject.getFieldsContainer();
+                    v.cacheContext._variables[v.name] = v.cacheRes;
                 }
 
                 if (v.lexicalScope)
                     continue;
 
-                bool isArg = stats != null && string.CompareOrdinal(v.name, "arguments") == 0;
+                var isArg = stats != null && string.CompareOrdinal(v.name, "arguments") == 0;
                 if (isArg && v.initializer == null)
                     continue;
 
-                JSValue f = new JSValue()
+                var f = new JSValue()
                 {
                     _valueType = JSValueType.Undefined,
                     _attributes = JSValueAttributesInternal.DoNotDelete
@@ -694,14 +694,14 @@ namespace NiL.JS.Statements
                 v.cacheRes = f;
                 v.cacheContext = context;
                 if (v.definitionScopeLevel < 0 || v.captured || cew)
-                    (context.fields ?? (context.fields = JSObject.getFieldsContainer()))[v.name] = f;
+                    (context._variables ?? (context._variables = JSObject.getFieldsContainer()))[v.name] = f;
                 if (v.initializer != null)
                     f.Assign(v.initializer.Evaluate(context));
                 if (v.isReadOnly)
                     f._attributes |= JSValueAttributesInternal.ReadOnly;
 
                 if (isArg)
-                    context.arguments = f;
+                    context._arguments = f;
             }
         }
 

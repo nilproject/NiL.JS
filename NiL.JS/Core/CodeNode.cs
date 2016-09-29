@@ -62,7 +62,7 @@ namespace NiL.JS.Core
 
         internal protected virtual JSValue EvaluateForWrite(NiL.JS.Core.Context context)
         {
-            ExceptionsHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
+            ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
             return null;
         }
 

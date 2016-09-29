@@ -206,4 +206,12 @@ if (JSON.stringify([,,1])!=='[null,null,1]')
 
 ({get [1](){return 1;},[2]:2})
 
-console.asserta(()=> (new class {}).toString(), {}.toString());
+console.assert(((x) => { var r = "" + x; return r })("123"), "123");
+
+if (Object.name !== "Object")
+    throw "Invalid name of Object(...)";
+
+if (Object.toString() !== "function Object() { [native code] }")
+    throw "Incorrect toString of Object(...)";
+
+console.asserta(() => (new class {}).toString(), {}.toString());

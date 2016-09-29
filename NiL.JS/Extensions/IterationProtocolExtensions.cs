@@ -53,12 +53,14 @@ namespace NiL.JS.Extensions
 
     internal sealed class EnumeratorToIteratorWrapper : IterableProtocolBase, IIterator, IIterable
     {
-        private IEnumerator enumerator;
+        private IEnumerator _enumerator;
+        private BaseContext _context;
 
         [Hidden]
         public EnumeratorToIteratorWrapper(IEnumerator enumerator)
         {
-            this.enumerator = enumerator;
+            _enumerator = enumerator;
+            _context = Context.CurrentBaseContext;
         }
 
         public IIterator iterator()
@@ -68,7 +70,7 @@ namespace NiL.JS.Extensions
 
         public IIteratorResult next(Arguments arguments = null)
         {
-            return new EnumeratorResult(!enumerator.MoveNext(), TypeProxy.Proxy(enumerator.Current));
+            return new EnumeratorResult(!_enumerator.MoveNext(), _context.ProxyValue(_enumerator.Current));
         }
 
         public IIteratorResult @return()

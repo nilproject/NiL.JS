@@ -28,7 +28,7 @@ namespace NiL.JS.Test.Generated
                 code = sr.ReadToEnd();
 
             var negative = false;
-            Context.RefreshGlobalContext();
+            Context.ResetGlobalContext();
             var output = new StringBuilder();
             var oldOutput = Console.Out;
             Console.SetOut(new StringWriter(output));

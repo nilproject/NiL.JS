@@ -21,7 +21,7 @@ namespace NiL.JS.BaseLibrary
             set
             {
                 if (index < 0 || index > length._iValue)
-                    ExceptionsHelper.Throw(new RangeError());
+                    ExceptionHelper.Throw(new RangeError());
                 buffer.data[index + byteOffset] = (byte)System.Math.Min(255, System.Math.Max(0, Tools.JSObjectToInt32(value, 0, false)));
             }
         }

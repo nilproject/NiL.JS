@@ -22,7 +22,7 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
                 return null;
             if (state.strict)
-                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
+                ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
 
             if (state.message != null)
                 state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, index, 4), "Do not use \"with\".");
@@ -31,7 +31,7 @@ namespace NiL.JS.Statements
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != ')')
-                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid syntax WithStatement.")));
+                ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid syntax WithStatement.")));
             do
                 i++;
             while (Tools.IsWhiteSpace(state.Code[i]));
@@ -76,7 +76,7 @@ namespace NiL.JS.Statements
             WithContext intcontext = null;
             Action<Context> action = null;
 
-            if (context.executionMode >= AbortReason.Resume)
+            if (context._executionMode >= AbortReason.Resume)
             {
                 action = context.SuspendData[this] as Action<Context>;
                 if (action != null)
@@ -86,11 +86,11 @@ namespace NiL.JS.Statements
                 }
             }
 
-            if (context.executionMode != AbortReason.Resume && context.debugging)
+            if (context._executionMode != AbortReason.Resume && context._debugging)
                 context.raiseDebugger(scope);
 
             scopeObject = scope.Evaluate(context);
-            if (context.executionMode == AbortReason.Suspend)
+            if (context._executionMode == AbortReason.Suspend)
             {
                 context.SuspendData[this] = null;
                 return null;
@@ -101,13 +101,13 @@ namespace NiL.JS.Statements
             {
                 try
                 {
-                    intcontext.executionMode = c.executionMode;
-                    intcontext.executionInfo = c.executionInfo;
+                    intcontext._executionMode = c._executionMode;
+                    intcontext._executionInfo = c._executionInfo;
                     intcontext.Activate();
-                    c.lastResult = body.Evaluate(intcontext) ?? intcontext.lastResult;
-                    c.executionMode = intcontext.executionMode;
-                    c.executionInfo = intcontext.executionInfo;
-                    if (c.executionMode == AbortReason.Suspend)
+                    c._lastResult = body.Evaluate(intcontext) ?? intcontext._lastResult;
+                    c._executionMode = intcontext._executionMode;
+                    c._executionInfo = intcontext._executionInfo;
+                    if (c._executionMode == AbortReason.Suspend)
                     {
                         c.SuspendData[this] = action;
                     }
@@ -118,7 +118,7 @@ namespace NiL.JS.Statements
                 }
             };
 
-            if (context.debugging && !(body is CodeBlock))
+            if (context._debugging && !(body is CodeBlock))
                 context.raiseDebugger(body);
 
             action(context);

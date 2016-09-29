@@ -702,8 +702,8 @@ namespace NiL.JS.Core
             if (targetType.IsEnum && Enum.IsDefined(targetType, value))
                 return value;
 #endif
-            var tpres = value as TypeProxy;
-            if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
+            var tpres = value as Proxy;
+            if (tpres != null && targetType.IsAssignableFrom(tpres._hostedType))
             {
                 jsobj = tpres.prototypeInstance;
                 if (jsobj is ObjectWrapper)
@@ -714,7 +714,7 @@ namespace NiL.JS.Core
 
             if (value is ProxyConstructor && typeof(Type).IsAssignableFrom(targetType))
             {
-                return (value as ProxyConstructor).proxy.hostedType;
+                return (value as ProxyConstructor)._staticProxy._hostedType;
             }
 
             if ((value is BaseLibrary.Array || value is TypedArray || value is ArrayBuffer)
@@ -967,7 +967,7 @@ namespace NiL.JS.Core
         internal static void CheckEndOfInput(string code, ref int i)
         {
             if (i >= code.Length)
-                ExceptionsHelper.ThrowSyntaxError("Unexpected end of line", code, i);
+                ExceptionHelper.ThrowSyntaxError("Unexpected end of line", code, i);
         }
 
         private struct IntStringCacheItem
@@ -1105,7 +1105,7 @@ namespace NiL.JS.Core
                     else if (radix == 0 && IsDigit(code[i + 1]))
                     {
                         if (raiseOctal)
-                            ExceptionsHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
+                            ExceptionHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
 
                         i += 1;
                         if (processOctal)
@@ -1323,7 +1323,7 @@ namespace NiL.JS.Core
                     value = temp;
 
                 if (value == 0 && skiped && raiseOctal)
-                    ExceptionsHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
+                    ExceptionHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
 
                 value *= sign;
                 index = i;
@@ -1412,7 +1412,7 @@ namespace NiL.JS.Core
                                         break;
                                     }
                                     else
-                                        ExceptionsHelper.Throw((new SyntaxError("Invalid escape code (\"" + code + "\")")));
+                                        ExceptionHelper.Throw((new SyntaxError("Invalid escape code (\"" + code + "\")")));
                                 }
                                 string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
                                 ushort chc = 0;
@@ -1427,7 +1427,7 @@ namespace NiL.JS.Core
                                     if (processRegexComp)
                                         res.Append(code[i]);
                                     else
-                                        ExceptionsHelper.Throw((new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
+                                        ExceptionHelper.Throw((new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
                                 }
                                 break;
                             }
@@ -1503,7 +1503,7 @@ namespace NiL.JS.Core
                                 if (IsDigit(code[i]) && !processRegexComp)
                                 {
                                     if (strict)
-                                        ExceptionsHelper.Throw((new SyntaxError("Octal literals are not allowed in strict mode.")));
+                                        ExceptionHelper.Throw((new SyntaxError("Octal literals are not allowed in strict mode.")));
                                     var ccode = code[i] - '0';
                                     if (i + 1 < code.Length && IsDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
@@ -1562,7 +1562,7 @@ namespace NiL.JS.Core
                                 while (index + 1 < code.Length && (code[index] != '*' || code[index + 1] != '/'))
                                     index++;
                                 if (index + 1 >= code.Length)
-                                    ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
+                                    ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
                                 index += 2;
                                 work = true;
                                 break;
@@ -1896,10 +1896,15 @@ namespace NiL.JS.Core
                         argument = Expression.Convert(argument, typeof(object));
                     }
 
+                    var currentBaseContext = Context.CurrentBaseContext;
+
                     expressions.Add(Expression.Call(
                         argumentsParameter,
                         typeof(Arguments).GetRuntimeMethod("Add", new[] { typeof(JSValue) }),
-                        Expression.Call(Tools.methodof<object, JSValue>(TypeProxy.Proxy), argument)));
+                        Expression.Call(
+                            Expression.Constant(currentBaseContext), 
+                            methodof<object, JSValue>(currentBaseContext.ProxyValue), 
+                            argument)));
                 }
             }
 

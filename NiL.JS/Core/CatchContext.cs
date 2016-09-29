@@ -9,7 +9,7 @@ namespace NiL.JS.Core
         private string errorVariableName;
 
         internal CatchContext(JSValue e, Context proto, string name)
-            : base(proto, false, proto.owner)
+            : base(proto, false, proto._owner)
         {
             if (e == null)
                 throw new ArgumentNullException();
@@ -20,8 +20,8 @@ namespace NiL.JS.Core
             errorContainer = e;
             prototype = proto;
             errorVariableName = name;
-            strict = proto.strict;
-            fields = proto.fields;
+            _strict = proto._strict;
+            _variables = proto._variables;
         }
 
         public override JSValue DefineVariable(string name, bool deletable)

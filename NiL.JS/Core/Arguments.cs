@@ -114,9 +114,9 @@ namespace NiL.JS.Core
                         a4 = value;
                         break;
                     default:
-                        if (fields == null)
-                            fields = getFieldsContainer();
-                        fields[index.ToString()] = value;
+                        if (_fields == null)
+                            _fields = getFieldsContainer();
+                        _fields[index.ToString()] = value;
                         break;
                 }
 
@@ -127,7 +127,7 @@ namespace NiL.JS.Core
             : this()
         {
             if (context != null)
-                caller = context.strict && context.owner != null && context.owner.creator.body._strict ? Function.propertiesDummySM : context.owner;
+                caller = context._strict && context._owner != null && context._owner._creator.body._strict ? Function.propertiesDummySM : context._owner;
         }
 
         public Arguments()
@@ -301,7 +301,7 @@ namespace NiL.JS.Core
 
         internal void Reset()
         {
-            fields = null;
+            _fields = null;
             length = 0;
             a0 = null;
             a1 = null;

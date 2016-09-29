@@ -45,7 +45,7 @@ namespace NiL.JS.Statements
             if (body is FunctionDefinition)
             {
                 if (state.strict)
-                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                    ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
                 body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
@@ -58,13 +58,13 @@ namespace NiL.JS.Statements
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
-                ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
+                ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
             if (!Parser.Validate(state.Code, "while", ref i))
-                ExceptionsHelper.Throw((new SyntaxError("Expected \"while\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionHelper.Throw((new SyntaxError("Expected \"while\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != '(')
-                ExceptionsHelper.Throw((new SyntaxError("Expected \"(\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionHelper.Throw((new SyntaxError("Expected \"(\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do
                 i++;
             while (Tools.IsWhiteSpace(state.Code[i]));
@@ -72,7 +72,7 @@ namespace NiL.JS.Statements
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (state.Code[i] != ')')
-                ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             i++;
             var pos = index;
             index = i;
@@ -92,22 +92,22 @@ namespace NiL.JS.Statements
             JSValue checkResult;
             do
             {
-                if (context.executionMode != AbortReason.Resume || !context.SuspendData.ContainsKey(this))
+                if (context._executionMode != AbortReason.Resume || !context.SuspendData.ContainsKey(this))
                 {
-                    if (context.debugging && !(body is CodeBlock))
+                    if (context._debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
 
-                    context.lastResult = body.Evaluate(context) ?? context.lastResult;
-                    if (context.executionMode != AbortReason.None)
+                    context._lastResult = body.Evaluate(context) ?? context._lastResult;
+                    if (context._executionMode != AbortReason.None)
                     {
-                        if (context.executionMode < AbortReason.Return)
+                        if (context._executionMode < AbortReason.Return)
                         {
-                            var me = context.executionInfo == null || System.Array.IndexOf(labels, context.executionInfo._oValue as string) != -1;
-                            var _break = (context.executionMode > AbortReason.Continue) || !me;
+                            var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
+                            var _break = (context._executionMode > AbortReason.Continue) || !me;
                             if (me)
                             {
-                                context.executionMode = AbortReason.None;
-                                context.executionInfo = JSValue.notExists;
+                                context._executionMode = AbortReason.None;
+                                context._executionInfo = JSValue.notExists;
                             }
                             if (_break)
                                 return null;
@@ -117,11 +117,11 @@ namespace NiL.JS.Statements
                     }
                 }
 
-                if (context.debugging)
+                if (context._debugging)
                     context.raiseDebugger(condition);
 
                 checkResult = condition.Evaluate(context);
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;

@@ -90,18 +90,18 @@ namespace NiL.JS.Expressions
             {
                 var ppair = val._oValue as GsPropertyPair;
                 setter = ppair.set;
-                if (context.strict && setter == null)
-                    ExceptionsHelper.ThrowIncrementPropertyWOSetter(first);
+                if (context._strict && setter == null)
+                    ExceptionHelper.ThrowIncrementPropertyWOSetter(first);
                 args = new Arguments();
                 if (ppair.get == null)
                     val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
                 else
-                    val = ppair.get.Call(context.objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
+                    val = ppair.get.Call(context._objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
             }
             else if ((val._attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
-                if (context.strict)
-                    ExceptionsHelper.ThrowIncrementReadonly(first);
+                if (context._strict)
+                    ExceptionHelper.ThrowIncrementReadonly(first);
                 val = val.CloneImpl(false);
             }
             switch (val._valueType)
@@ -146,7 +146,7 @@ namespace NiL.JS.Expressions
                     }
                 case JSValueType.NotExists:
                     {
-                        ExceptionsHelper.ThrowIfNotExists(val, first);
+                        ExceptionHelper.ThrowIfNotExists(val, first);
                         break;
                     }
             }
@@ -187,7 +187,7 @@ namespace NiL.JS.Expressions
             {
                 args.length = 1;
                 args[0] = val;
-                setter.Call(context.objectSource, args);
+                setter.Call(context._objectSource, args);
             }
             else if ((val._attributes & JSValueAttributesInternal.Reassign) != 0)
                 val.Assign(val);

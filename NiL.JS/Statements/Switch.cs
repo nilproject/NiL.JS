@@ -55,12 +55,12 @@ namespace NiL.JS.Statements
                 i++;
             var image = ExpressionTree.Parse(state, ref i);
             if (state.Code[i] != ')')
-                ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do
                 i++;
             while (Tools.IsWhiteSpace(state.Code[i]));
             if (state.Code[i] != '{')
-                ExceptionsHelper.Throw((new SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionHelper.Throw((new SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             do
                 i++;
             while (Tools.IsWhiteSpace(state.Code[i]));
@@ -86,7 +86,7 @@ namespace NiL.JS.Statements
                                 i++;
                             var sample = ExpressionTree.Parse(state, ref i);
                             if (state.Code[i] != ':')
-                                ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                                ExceptionHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                             i++;
                             cases.Add(new SwitchCase() { index = body.Count, statement = sample });
                         }
@@ -96,9 +96,9 @@ namespace NiL.JS.Statements
                             while (Tools.IsWhiteSpace(state.Code[i]))
                                 i++;
                             if (cases[0].index != int.MaxValue)
-                                ExceptionsHelper.Throw((new SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                                ExceptionHelper.Throw((new SyntaxError("Duplicate default case in switch at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                             if (state.Code[i] != ':')
-                                ExceptionsHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                                ExceptionHelper.Throw((new SyntaxError("Expected \":\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                             i++;
                             cases[0].index = body.Count;
                         }
@@ -108,7 +108,7 @@ namespace NiL.JS.Statements
                             i++;
                     } while (true);
                     if (cases.Count == 1 && cases[0].index == int.MaxValue)
-                        ExceptionsHelper.Throw((new SyntaxError("Switch statement must contain cases. " + CodeCoordinates.FromTextPosition(state.Code, index, 0))));
+                        ExceptionHelper.Throw((new SyntaxError("Switch statement must contain cases. " + CodeCoordinates.FromTextPosition(state.Code, index, 0))));
 
                     var t = Parser.Parse(state, ref i, 0);
                     if (t == null)
@@ -150,7 +150,7 @@ namespace NiL.JS.Statements
             int caseIndex = 1;
             int lineIndex = cases[0].index;
 
-            if (context.executionMode >= AbortReason.Resume)
+            if (context._executionMode >= AbortReason.Resume)
             {
                 var sdata = context.SuspendData[this] as SuspendData;
                 if (sdata.imageValue == null)
@@ -162,12 +162,12 @@ namespace NiL.JS.Statements
             }
             else
             {
-                if (context.debugging)
+                if (context._debugging)
                     context.raiseDebugger(image);
 
                 imageValue = image.Evaluate(context);
             }
-            if (context.executionMode == AbortReason.Suspend)
+            if (context._executionMode == AbortReason.Suspend)
             {
                 context.SuspendData[this] = new SuspendData() { caseIndex = 1 };
                 return null;
@@ -175,11 +175,11 @@ namespace NiL.JS.Statements
 
             for (; caseIndex < cases.Length; caseIndex++)
             {
-                if (context.debugging)
+                if (context._debugging)
                     context.raiseDebugger(cases[caseIndex].statement);
 
                 var cseResult = cases[caseIndex].statement.Evaluate(context);
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                 {
                     context.SuspendData[this] = new SuspendData()
                     {
@@ -201,14 +201,14 @@ namespace NiL.JS.Statements
                 if (lines[lineIndex] == null)
                     continue;
 
-                context.lastResult = lines[lineIndex].Evaluate(context) ?? context.lastResult;
-                if (context.executionMode != AbortReason.None)
+                context._lastResult = lines[lineIndex].Evaluate(context) ?? context._lastResult;
+                if (context._executionMode != AbortReason.None)
                 {
-                    if (context.executionMode == AbortReason.Break)
+                    if (context._executionMode == AbortReason.Break)
                     {
-                        context.executionMode = AbortReason.None;
+                        context._executionMode = AbortReason.None;
                     }
-                    else if (context.executionMode == AbortReason.Suspend)
+                    else if (context._executionMode == AbortReason.Suspend)
                     {
                         context.SuspendData[this] = new SuspendData()
                         {

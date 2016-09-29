@@ -154,7 +154,7 @@ namespace NiL.JS.Expressions
             {
                 var n = i;
                 if (!Parser.ValidateName(code, ref i, true) && !Parser.Validate(code, "null", ref i))
-                    ExceptionsHelper.ThrowSyntaxError("Invalid base class name", state.Code, i);
+                    ExceptionHelper.ThrowSyntaxError("Invalid base class name", state.Code, i);
 
                 var baseClassName = code.Substring(n, i - n);
                 if (baseClassName == "null")
@@ -169,7 +169,7 @@ namespace NiL.JS.Expressions
                     i++;
             }
             if (code[i] != '{')
-                ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
 
             FunctionDefinition ctor = null;
             ClassDefinition result = null;
@@ -218,7 +218,7 @@ namespace NiL.JS.Expressions
                         while (Tools.IsWhiteSpace(state.Code[i]))
                             i++;
                         if (state.Code[i] != ']')
-                            ExceptionsHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
+                            ExceptionHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
                         do
                             i++;
                         while (Tools.IsWhiteSpace(state.Code[i]));
@@ -272,7 +272,7 @@ namespace NiL.JS.Expressions
                             var vle = flds[accessorName].Value as GetSetPropertyPair;
 
                             if (vle == null)
-                                ExceptionsHelper.Throw((new SyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
+                                ExceptionHelper.Throw((new SyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
 
                             do
                             {
@@ -293,7 +293,7 @@ namespace NiL.JS.Expressions
                                     }
                                 }
 
-                                ExceptionsHelper.ThrowSyntaxError("Try to redefine " + mode.ToString().ToLowerInvariant() + " of " + propertyAccessor.Name, state.Code, s);
+                                ExceptionHelper.ThrowSyntaxError("Try to redefine " + mode.ToString().ToLowerInvariant() + " of " + propertyAccessor.Name, state.Code, s);
                             }
                             while (false);
                         }
@@ -322,17 +322,17 @@ namespace NiL.JS.Expressions
                         }
 
                         if (fieldName == null)
-                            ExceptionsHelper.Throw((new SyntaxError("Invalid member name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                            ExceptionHelper.Throw((new SyntaxError("Invalid member name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
 
                         if (fieldName == "constructor")
                         {
                             if (@static)
                             {
-                                ExceptionsHelper.ThrowSyntaxError(Strings.ConstructorCannotBeStatic, state.Code, s);
+                                ExceptionHelper.ThrowSyntaxError(Strings.ConstructorCannotBeStatic, state.Code, s);
                             }
                             if (ctor != null)
                             {
-                                ExceptionsHelper.ThrowSyntaxError("Trying to redefinition constructor", state.Code, s);
+                                ExceptionHelper.ThrowSyntaxError("Trying to redefinition constructor", state.Code, s);
                             }
 
                             state.CodeContext |= CodeContext.InClassConstructor;
@@ -343,7 +343,7 @@ namespace NiL.JS.Expressions
                             state.CodeContext |= CodeContext.InStaticMember;
                         }
                         if (flds.ContainsKey(fieldName))
-                            ExceptionsHelper.Throw(new SyntaxError("Trying to redefinition member \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
+                            ExceptionHelper.Throw(new SyntaxError("Trying to redefinition member \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
 
                         state.CodeContext |= CodeContext.InClassDefenition;
                         state.CodeContext &= ~CodeContext.InGenerator;
@@ -360,7 +360,7 @@ namespace NiL.JS.Expressions
                             flds[fieldName] = new MemberDescriptor(new Constant(method._name), method, @static);
                         }
                         if (method == null)
-                            ExceptionsHelper.Throw(new SyntaxError());
+                            ExceptionHelper.Throw(new SyntaxError());
                     }
                 }
                 if (ctor == null)
@@ -387,11 +387,11 @@ namespace NiL.JS.Expressions
                 {
                     if (string.IsNullOrEmpty(name))
                     {
-                        ExceptionsHelper.ThrowSyntaxError("Class must have name", state.Code, index);
+                        ExceptionHelper.ThrowSyntaxError("Class must have name", state.Code, index);
                     }
                     if (state.strict && state.functionScopeLevel != state.lexicalScopeLevel)
                     {
-                        ExceptionsHelper.ThrowSyntaxError("In strict mode code, class can only be declared at top level or immediately within other function.", state.Code, index);
+                        ExceptionHelper.ThrowSyntaxError("In strict mode code, class can only be declared at top level or immediately within other function.", state.Code, index);
                     }
 
                     state.Variables.Add(result.reference._descriptor);
@@ -535,8 +535,8 @@ namespace NiL.JS.Expressions
                 else
                 {
                     stringKey = key.As<string>();
-                    if (!target.fields.TryGetValue(stringKey, out existedValue))
-                        target.fields[stringKey] = existedValue = value;
+                    if (!target._fields.TryGetValue(stringKey, out existedValue))
+                        target._fields[stringKey] = existedValue = value;
                 }
 
                 if (existedValue != value)
@@ -556,7 +556,7 @@ namespace NiL.JS.Expressions
                         }
                         else
                         {
-                            target.fields[stringKey] = value;
+                            target._fields[stringKey] = value;
                         }
                     }
                 }
