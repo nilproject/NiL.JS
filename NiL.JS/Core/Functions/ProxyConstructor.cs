@@ -144,13 +144,13 @@ namespace NiL.JS.Core.Functions
 
                         return res;
                     }
+
+                    res = __proto__.GetProperty(key, forWrite, memberScope);
+                    if (memberScope == PropertyScope.Own && (res._valueType != JSValueType.Property || (res._attributes & JSValueAttributesInternal.Field) == 0))
+                        return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
+
+                    return res;
                 }
-
-                res = __proto__.GetProperty(key, forWrite, memberScope);
-                if (memberScope == PropertyScope.Own && (res._valueType != JSValueType.Property || (res._attributes & JSValueAttributesInternal.Field) == 0))
-                    return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
-
-                return res;
             }
 
             return base.GetProperty(key, forWrite, memberScope);

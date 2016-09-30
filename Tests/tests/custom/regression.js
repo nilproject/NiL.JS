@@ -214,4 +214,9 @@ if (Object.name !== "Object")
 if (Object.toString() !== "function Object() { [native code] }")
     throw "Incorrect toString of Object(...)";
 
+Object.toString = () =>'hello';
+
+if (Object.toString() !== "function Object() { [native code] }")
+    throw "toString of Object(...) does not change";
+
 console.asserta(() => (new class {}).toString(), {}.toString());
