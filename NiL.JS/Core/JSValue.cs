@@ -377,15 +377,17 @@ namespace NiL.JS.Core
                 case JSValueType.String:
                     return Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.String));
             }
+
             if (_oValue != null && _oValue != this)
             {
-                var rojso = _oValue as JSValue;
-                if (rojso != null)
-                    return rojso.GetDefaultPrototype() ?? @null;
+                var oValueAsJsObject = _oValue as JSValue;
+                if (oValueAsJsObject != null)
+                    return oValueAsJsObject.GetDefaultPrototype() ?? @null;
                 else
                     return Context.CurrentBaseContext.GetPrototype(_oValue.GetType());
             }
-            return Context.CurrentBaseContext.GetPrototype(this.GetType());
+
+            return Context.CurrentBaseContext.GetPrototype(GetType());
         }
 
         [Hidden]
@@ -1178,12 +1180,12 @@ namespace NiL.JS.Core
 
         public static JSValue GetConstructor(Type type)
         {
-            return Context.GlobalContext.GetConstructor(type);
+            return Context.DefaultGlobalContext.GetConstructor(type);
         }
 
         public static Function GetGenericTypeSelector(IList<Type> types)
         {
-            return Context.GlobalContext.GetGenericTypeSelector(types);
+            return Context.DefaultGlobalContext.GetGenericTypeSelector(types);
         }
     }
 }

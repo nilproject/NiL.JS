@@ -54,7 +54,7 @@ namespace NiL.JS.Extensions
     internal sealed class EnumeratorToIteratorWrapper : IterableProtocolBase, IIterator, IIterable
     {
         private IEnumerator _enumerator;
-        private BaseContext _context;
+        private GlobalContext _context;
 
         [Hidden]
         public EnumeratorToIteratorWrapper(IEnumerator enumerator)

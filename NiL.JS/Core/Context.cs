@@ -47,7 +47,7 @@ namespace NiL.JS.Core
 #else
         internal const int MaxConcurentContexts = 65535;
         internal static readonly List<Context>[] RunningContexts = new List<Context>[MaxConcurentContexts];
-        internal static readonly int[] ThreadIds = new int[MaxConcurentContexts];
+        private static readonly int[] _ThreadIds = new int[MaxConcurentContexts];
 
         internal static List<Context> GetCurrectContextStack()
         {
@@ -55,10 +55,10 @@ namespace NiL.JS.Core
 
             for (var i = 0; i < MaxConcurentContexts; i++)
             {
-                if (ThreadIds[i] == 0)
+                if (_ThreadIds[i] == 0)
                     break;
 
-                if (ThreadIds[i] == threadId)
+                if (_ThreadIds[i] == threadId)
                     return RunningContexts[i];
             }
 
@@ -75,13 +75,14 @@ namespace NiL.JS.Core
                 var stack = GetCurrectContextStack();
                 if (stack == null || stack.Count == 0)
                     return null;
+
                 return stack[stack.Count - 1];
 #endif
             }
         }
 
-        internal readonly static BaseContext globalContext = new BaseContext() { _strict = true };
-        public static BaseContext GlobalContext { get { return globalContext; } }
+        internal readonly static GlobalContext _DefaultGlobalContext = new GlobalContext() { _strict = true };
+        public static GlobalContext DefaultGlobalContext { get { return _DefaultGlobalContext; } }
 
         internal AbortReason _executionMode;
         internal JSValue _objectSource;
@@ -97,23 +98,20 @@ namespace NiL.JS.Core
         internal VariableDescriptor[] _definedVariables;
         internal Module _module;
 
-        public Context Root
+        public Context RootContext
         {
             get
             {
                 var res = this;
-                if (res._parent != null && res._parent != globalContext)
-                {
-                    do
-                        res = res._parent;
-                    while (res._parent != null && res._parent != globalContext);
-                }
+
+                while (res._parent != null && res._parent._parent != null)
+                    res = res._parent;
 
                 return res;
             }
         }
 
-        public BaseContext BaseContext
+        public GlobalContext GlobalContext
         {
             get
             {
@@ -125,7 +123,7 @@ namespace NiL.JS.Core
                     while (iter._parent != null);
                 }
 
-                BaseContext result = iter as BaseContext;
+                GlobalContext result = iter as GlobalContext;
 
                 if (result == null)
                     throw new Exception("Incorrect state");
@@ -134,20 +132,24 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static BaseContext CurrentBaseContext => (CurrentContext ?? globalContext).BaseContext;
+        internal static GlobalContext CurrentBaseContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
 
         public JSValue ThisBind
         {
             get
             {
+                if (_parent == null)
+                    ExceptionHelper.Throw(new InvalidOperationException("Unable to get this-binding for Global Context"));
+
                 var c = this;
                 if (_thisBind == null)
                 {
                     if (_strict)
                         return JSValue.undefined;
+
                     for (; c._thisBind == null;)
                     {
-                        if (c._parent == globalContext)
+                        if (c._parent._parent == null)
                         {
                             _thisBind = new GlobalObject(c);
                             c._thisBind = _thisBind;
@@ -156,8 +158,10 @@ namespace NiL.JS.Core
                         else
                             c = c._parent;
                     }
+
                     _thisBind = c._thisBind;
                 }
+
                 return _thisBind;
             }
         }
@@ -194,11 +198,10 @@ namespace NiL.JS.Core
 
         static Context()
         {
-            ResetGlobalContext();
         }
 
         public Context()
-            : this(GlobalContext, true, Function.Empty)
+            : this(CurrentBaseContext, true, Function.Empty)
         {
         }
 
@@ -221,12 +224,13 @@ namespace NiL.JS.Core
 
             if (createFields)
                 _variables = JSObject.getFieldsContainer();
+
             _executionInfo = JSValue.notExists;
         }
 
         public static void ResetGlobalContext()
         {
-            globalContext.ResetContext();
+            _DefaultGlobalContext.ResetContext();
         }
 
         internal bool Activate()
@@ -242,16 +246,18 @@ namespace NiL.JS.Core
             return true;
 #else
             int threadId = Thread.CurrentThread.ManagedThreadId;
+            var firstEmptyIndex = -1;
             var i = 0;
             bool entered = false;
             do
             {
-                if (ThreadIds[i] == threadId)
+                if (_ThreadIds[i] == threadId)
                 {
                     if (RunningContexts[i].Count > 0 && RunningContexts[i][RunningContexts[i].Count - 1] == this)
                     {
                         if (entered)
                             Monitor.Exit(RunningContexts);
+
                         return false;
                     }
 
@@ -263,6 +269,7 @@ namespace NiL.JS.Core
 
                     if (entered)
                         Monitor.Exit(RunningContexts);
+
                     return true;
                 }
 
@@ -271,22 +278,32 @@ namespace NiL.JS.Core
                     Monitor.Enter(RunningContexts);
                     entered = true;
                 }
-
-                if (ThreadIds[i] <= 0)
+                
+                if (_ThreadIds[i] == 0)
                 {
-                    if (RunningContexts[i] == null)
-                        RunningContexts[i] = new List<Context>();
-
-                    ThreadIds[i] = threadId;
-                    RunningContexts[i].Add(this);
-
-                    Monitor.Exit(RunningContexts);
-                    return true;
+                    firstEmptyIndex = i;
+                    break;
+                }
+                else if (_ThreadIds[i] == -1)
+                {
+                    firstEmptyIndex = i;
                 }
 
                 i++;
             }
             while (i < MaxConcurentContexts);
+
+            if (firstEmptyIndex != -1)
+            {
+                if (RunningContexts[i] == null)
+                    RunningContexts[i] = new List<Context>();
+
+                _ThreadIds[i] = threadId;
+                RunningContexts[i].Add(this);
+
+                Monitor.Exit(RunningContexts);
+                return true;
+            }
 
             Monitor.Exit(RunningContexts);
 
@@ -310,10 +327,10 @@ namespace NiL.JS.Core
             var i = 0;
             for (; i < MaxConcurentContexts; i++)
             {
-                if (ThreadIds[i] == 0)
+                if (_ThreadIds[i] == 0)
                     throw new InvalidOperationException("Context is not running");
 
-                if (ThreadIds[i] == threadId)
+                if (_ThreadIds[i] == threadId)
                 {
                     if (RunningContexts[i][RunningContexts[i].Count - 1] != this)
                         throw new InvalidOperationException("Context is not running");
@@ -321,7 +338,7 @@ namespace NiL.JS.Core
                     _module = null;
                     RunningContexts[i].RemoveAt(RunningContexts[i].Count - 1);
                     if (RunningContexts[i].Count == 0)
-                        ThreadIds[i] = -1;
+                        _ThreadIds[i] = -1;
 
                     break;
                 }
@@ -450,7 +467,7 @@ namespace NiL.JS.Core
 
             if (res == null) // значит вышли из глобального контекста
             {
-                if (this == globalContext)
+                if (_parent == null)
                 {
                     return null;
                 }
@@ -463,7 +480,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        res = JSObject.GlobalPrototype.GetProperty(name, false, PropertyScope.Сommon);
+                        res = GlobalContext._GlobalPrototype.GetProperty(name, false, PropertyScope.Сommon);
                         if (res._valueType == JSValueType.NotExistsInObject)
                             res._valueType = JSValueType.NotExists;
                     }
@@ -518,7 +535,7 @@ namespace NiL.JS.Core
 
         public void DefineConstructor(Type type, string name)
         {
-            _variables.Add(name, BaseContext.GetConstructor(type));
+            _variables.Add(name, GlobalContext.GetConstructor(type));
             _variables[name]._attributes |= JSValueAttributesInternal.DoNotEnumerate;
         }
 
@@ -634,7 +651,7 @@ namespace NiL.JS.Core
                         {
                             JSValue variable;
                             var cc = mainFunctionContext;
-                            while (cc._parent != globalContext
+                            while (cc._parent._parent != null
                                && (cc._variables == null || !cc._variables.TryGetValue(body._variables[i].name, out variable)))
                             {
                                 cc = cc._parent;
@@ -701,7 +718,7 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
-            return this == globalContext ? "Global context" : "Context";
+            return "Context of " + _owner.name;
         }
 
         /*

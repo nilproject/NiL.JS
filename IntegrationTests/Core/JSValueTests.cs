@@ -7,6 +7,18 @@ namespace IntegrationTests.Core
     [TestClass]
     public class JSValueTests
     {
+        [TestInitializeAttribute]
+        public void TestInitialize()
+        {
+            new GlobalContext().ActivateInCurrentThread();
+        }
+
+        [TestCleanup]
+        public void MyTestMethod()
+        {
+            Context.CurrentContext.GlobalContext.Deactivate();
+        }
+
         [TestMethod]
         public void PrimitiveTypeShouldBeWrappedAsClass()
         {

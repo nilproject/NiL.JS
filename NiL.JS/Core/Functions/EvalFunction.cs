@@ -65,7 +65,7 @@ namespace NiL.JS.Core.Functions
             try
             {
                 var ccontext = Context.CurrentContext;
-                var root = ccontext.Root;
+                var root = ccontext.RootContext;
                 while (ccontext != root && ccontext != null)
                 {
                     stack.Push(ccontext);

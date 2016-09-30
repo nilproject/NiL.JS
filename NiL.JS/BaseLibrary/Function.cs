@@ -51,7 +51,7 @@ namespace NiL.JS.BaseLibrary
     {
         internal static readonly Function Empty = new Function();
         private static readonly FunctionDefinition creatorDummy = new FunctionDefinition();
-        private static readonly Function TTEProxy = new MethodProxy(new Context { _parent = null }, typeof(Function)
+        private static readonly Function TTEProxy = new MethodProxy(new Context(null, false, Empty), typeof(Function)
 #if (PORTABLE || NETCORE)
             .GetTypeInfo().GetDeclaredMethod("ThrowTypeError"))
 #else
@@ -278,10 +278,12 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Function(Arguments args)
         {
-            _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
-            _context = (Context.CurrentContext ?? Context.GlobalContext).Root;
-            if (_context == Context.globalContext)
+            _context = (Context.CurrentContext ?? Context.DefaultGlobalContext).RootContext;
+            if (_context == Context._DefaultGlobalContext || _context == null)
                 throw new InvalidOperationException("Special Functions constructor can be called from javascript code only");
+
+            _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
+            
             var index = 0;
             int len = args.Length - 1;
             var argn = "";
@@ -348,7 +350,7 @@ namespace NiL.JS.BaseLibrary
         {
             JSValue targetObject = new JSObject() { _valueType = JSValueType.Object };
             targetObject._oValue = targetObject;
-            targetObject.__proto__ = prototype._valueType < JSValueType.Object ? GlobalPrototype : prototype._oValue as JSObject;
+            targetObject.__proto__ = prototype._valueType < JSValueType.Object ? Context.GlobalContext._GlobalPrototype : prototype._oValue as JSObject;
 
             return targetObject;
         }
@@ -539,6 +541,7 @@ namespace NiL.JS.BaseLibrary
                 var internalContext = new Context(_context, ceocw, this);
                 internalContext._definedVariables = body._variables;
                 internalContext.Activate();
+
                 try
                 {
                     initContext(targetObject, arguments, ceocw, internalContext);
@@ -878,7 +881,7 @@ namespace NiL.JS.BaseLibrary
         internal JSValue correctTargetObject(JSValue thisBind, bool strict)
         {
             if (thisBind == null)
-                return strict ? undefined : _context != null ? _context.Root._thisBind : null;
+                return strict ? undefined : _context != null ? _context.RootContext._thisBind : null;
             else if (_context != null)
             {
                 if (!strict) // Поправляем this
@@ -886,7 +889,7 @@ namespace NiL.JS.BaseLibrary
                     if (thisBind._valueType > JSValueType.Undefined && thisBind._valueType < JSValueType.Object)
                         return thisBind.ToObject();
                     else if (thisBind._valueType <= JSValueType.Undefined || thisBind._oValue == null)
-                        return _context.Root._thisBind;
+                        return _context.RootContext._thisBind;
                 }
                 else if (thisBind._valueType <= JSValueType.Undefined)
                     return undefined;

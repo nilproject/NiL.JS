@@ -471,7 +471,7 @@ namespace NiL.JS.Expressions
             var ctor = new ClassConstructor(context, this._constructor, this);
             ctor.RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
 
-            JSValue baseProto = JSObject.GlobalPrototype;
+            JSValue baseProto = context.GlobalContext._GlobalPrototype;
             if (this._baseClass != null)
             {
                 baseProto = _baseClass.Evaluate(context)._oValue as JSObject;

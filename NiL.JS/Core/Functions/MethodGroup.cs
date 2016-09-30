@@ -53,7 +53,7 @@ namespace NiL.JS.Core.Functions
         }
 
         public MethodGroup(MethodProxy[] methods)
-            : base(Context.CurrentContext ?? Context.globalContext)
+            : base(Context.CurrentContext ?? Context._DefaultGlobalContext)
         {
             _methods = methods;
 
@@ -72,7 +72,7 @@ namespace NiL.JS.Core.Functions
 
         internal override JSObject GetDefaultPrototype()
         {
-            return Context.BaseContext.GetPrototype(typeof(Function));
+            return Context.GlobalContext.GetPrototype(typeof(Function));
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
@@ -85,7 +85,7 @@ namespace NiL.JS.Core.Functions
                 for (var i = 0; i < _methods.Length; i++)
                 {
                     if (_methods[i].Parameters.Length == 1 && _methods[i].raw)
-                        return Context.BaseContext.ProxyValue(_methods[i].InvokeImpl(targetObject, null, arguments));
+                        return Context.GlobalContext.ProxyValue(_methods[i].InvokeImpl(targetObject, null, arguments));
 
                     if (pass == 1 || _methods[i].Parameters.Length == l)
                     {
@@ -104,7 +104,7 @@ namespace NiL.JS.Core.Functions
                                     !_methods[i]._parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
 #if (PORTABLE || NETCORE)
-                                    methods[i]._parameters[j].ParameterType.GetTypeInfo().IsValueType)
+                                    _methods[i]._parameters[j].ParameterType.GetTypeInfo().IsValueType)
 #else
                                     _methods[i]._parameters[j].ParameterType.IsValueType)
 #endif
@@ -118,7 +118,7 @@ namespace NiL.JS.Core.Functions
                                 continue;
                         }
 
-                        return Context.BaseContext.ProxyValue(_methods[i].InvokeImpl(targetObject, args, arguments));
+                        return Context.GlobalContext.ProxyValue(_methods[i].InvokeImpl(targetObject, args, arguments));
                     }
                 }
             }

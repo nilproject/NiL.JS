@@ -427,7 +427,7 @@ namespace NiL.JS.BaseLibrary
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
             {
 #if (PORTABLE || NETCORE)
-                ExceptionsHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
 #else
                 var stackTrace = new System.Diagnostics.StackTrace();
                 ExceptionHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
@@ -599,7 +599,7 @@ namespace NiL.JS.BaseLibrary
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
             {
 #if (PORTABLE || NETCORE)
-                ExceptionsHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
 #else
                 var stackTrace = new System.Diagnostics.StackTrace();
                 ExceptionHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));

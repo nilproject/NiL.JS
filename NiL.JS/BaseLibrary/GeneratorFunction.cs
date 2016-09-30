@@ -30,12 +30,12 @@ namespace NiL.JS.BaseLibrary
             if (construct)
                 ExceptionHelper.ThrowTypeError("Generators cannot be invoked as a constructor");
 
-            return Context.BaseContext.ProxyValue(new GeneratorIterator(this, targetObject, arguments));
+            return Context.GlobalContext.ProxyValue(new GeneratorIterator(this, targetObject, arguments));
         }
 
         internal override JSObject GetDefaultPrototype()
         {
-            return Context.BaseContext.GetPrototype(typeof(Function));
+            return Context.GlobalContext.GetPrototype(typeof(Function));
         }
     }
 

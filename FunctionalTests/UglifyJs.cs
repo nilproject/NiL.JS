@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS;
+using NiL.JS.Core;
 
 namespace FunctionalTests
 {
@@ -19,10 +20,19 @@ namespace FunctionalTests
         [TestInitialize]
         public void Initialize()
         {
+            new GlobalContext().ActivateInCurrentThread();
+
             using (var file = new FileStream(UglifyJsScriptPath, FileMode.Open))
             using (var fileReader = new StreamReader(file))
                 _module = new Module(fileReader.ReadToEnd());
+
             _module.Run();
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _module.Context.GlobalContext.Deactivate();
         }
 
         [TestMethod]

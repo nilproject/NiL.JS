@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace NiL.JS
 {
-    internal static class ExceptionsHelper
+    internal static class ExceptionHelper
     {
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
@@ -115,7 +115,7 @@ namespace NiL.JS
         internal static T ThrowIfNotExists<T>(T obj, object name) where T : JSValue
         {
             if (obj._valueType == JSValueType.NotExists)
-                ExceptionsHelper.Throw((new ReferenceError("Variable \"" + name + "\" has not been defined.")));
+                ExceptionHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" has not been defined.")));
             return obj;
         }
 

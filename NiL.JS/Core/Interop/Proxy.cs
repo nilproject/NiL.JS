@@ -23,7 +23,7 @@ namespace NiL.JS.Core.Interop
         [NonSerialized]
 #endif
         internal Dictionary<string, IList<MemberInfo>> members;
-        internal BaseContext _context;
+        internal GlobalContext _context;
 
         private ConstructorInfo instanceCtor;
         private JSObject _prototypeInstance;
@@ -32,7 +32,7 @@ namespace NiL.JS.Core.Interop
             get
             {
 #if (PORTABLE || NETCORE)
-                if (_prototypeInstance == null && InstanceMode && !hostedType.GetTypeInfo().IsAbstract)
+                if (_prototypeInstance == null && IsInstancePrototype && !_hostedType.GetTypeInfo().IsAbstract)
                 {
 #else
                 if (_prototypeInstance == null && IsInstancePrototype && !_hostedType.IsAbstract)
@@ -65,7 +65,7 @@ namespace NiL.JS.Core.Interop
                                 {
                                     _attributes = _attributes | JSValueAttributesInternal.ProxyPrototype,
                                     _fields = _fields,
-                                    __prototype = JSObject.GlobalPrototype
+                                    __prototype = _context.GlobalContext._GlobalPrototype
                                 };
                             }
                         }
@@ -84,7 +84,7 @@ namespace NiL.JS.Core.Interop
 
         internal abstract bool IsInstancePrototype { get; }
 
-        internal Proxy(BaseContext context, Type type)
+        internal Proxy(GlobalContext context, Type type)
         {
             _valueType = JSValueType.Object;
             _oValue = this;
@@ -106,7 +106,7 @@ namespace NiL.JS.Core.Interop
             if (Context.RunningContexts.Length == 0) // always false, but it protects from uninitialized global context
                 throw new Exception();
 #endif
-            return GlobalPrototype;
+            return _context.GlobalContext._GlobalPrototype;
         }
 
         private void fillMembers()
@@ -120,11 +120,11 @@ namespace NiL.JS.Core.Interop
                 IList<MemberInfo> temp = null;
                 bool instanceAttribute = false;
 #if (PORTABLE || NETCORE)
-                    var mmbrs = hostedType.GetTypeInfo().DeclaredMembers
-                        .Union(hostedType.GetRuntimeMethods())
-                        .Union(hostedType.GetRuntimeProperties())
-                        .Union(hostedType.GetRuntimeFields())
-                        .Union(hostedType.GetRuntimeEvents()).ToArray(); // ïðèõîäèòñÿ äåëàòü âîò òàê íåîïòèìàëüíî, äðóãîãî ñïîñîáà íåò
+                    var mmbrs = _hostedType.GetTypeInfo().DeclaredMembers
+                         .Union(_hostedType.GetRuntimeMethods())
+                         .Union(_hostedType.GetRuntimeProperties())
+                         .Union(_hostedType.GetRuntimeFields())
+                         .Union(_hostedType.GetRuntimeEvents()).ToArray();
 #else
                 var mmbrs = _hostedType.GetMembers();
 #endif

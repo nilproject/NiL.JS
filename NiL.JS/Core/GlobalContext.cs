@@ -12,13 +12,26 @@ using NiL.JS.Extensions;
 
 namespace NiL.JS.Core
 {
-    public sealed class BaseContext : Context
+    public sealed class GlobalContext : Context
     {
+        internal JSObject _GlobalPrototype;
         private readonly Dictionary<Type, JSObject> _proxies;
 
-        public BaseContext() 
+        public string Name { get; private set; }
+
+        public GlobalContext()
+            : this("")
+        {
+            Name = null;
+        }
+
+        public GlobalContext(string name)
             : base(null)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            Name = name;
             _proxies = new Dictionary<Type, JSObject>();
             ResetContext();
         }
@@ -34,13 +47,15 @@ namespace NiL.JS.Core
                 _variables = new StringMap<JSValue>();
 
             _proxies.Clear();
-            JSObject.GlobalPrototype = null;
+            _GlobalPrototype = null;
+
             var objectConstructor = GetConstructor(typeof(JSObject)) as Function;
-            JSObject.GlobalPrototype = objectConstructor.prototype as JSObject;
             _variables.Add("Object", objectConstructor);
             objectConstructor._attributes |= JSValueAttributesInternal.DoNotDelete;
 
-            Core.GlobalObject.refreshGlobalObjectProto();
+            _GlobalPrototype = objectConstructor.prototype as JSObject;
+            _GlobalPrototype.__prototype = JSValue.@null;
+
             DefineConstructor(typeof(BaseLibrary.Math));
             DefineConstructor(typeof(BaseLibrary.Array));
             DefineConstructor(typeof(JSON));
@@ -101,6 +116,24 @@ namespace NiL.JS.Core
 
             foreach (var v in _variables.Values)
                 v._attributes |= JSValueAttributesInternal.DoNotEnumerate;
+        }
+
+        public void ActivateInCurrentThread()
+        {
+            if (CurrentContext != null)
+                throw new InvalidOperationException();
+
+            if (!base.Activate())
+                throw new Exception("Unable to activate base context");
+        }
+
+        public new void Deactivate()
+        {
+            if (CurrentContext != this)
+                throw new InvalidOperationException();
+
+            if (base.Deactivate() != null)
+                throw new InvalidOperationException("Invalid state");
         }
 
         internal JSObject GetPrototype(Type type)
@@ -209,7 +242,7 @@ namespace NiL.JS.Core
                 return GetConstructor(type.MakeGenericType(parameters));
             });
         }
-        
+
         internal JSValue ProxyValue(object value)
         {
             JSValue res;
@@ -393,6 +426,15 @@ namespace NiL.JS.Core
                         }
                     }
             }
+        }
+
+        public override string ToString()
+        {
+            var result = "Global Context";
+            if (string.IsNullOrEmpty(Name))
+                return result;
+
+            return result + " \"" + Name + "\"";
         }
     }
 }

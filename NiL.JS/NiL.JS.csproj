@@ -250,7 +250,7 @@
     <Compile Include="Core\Interop\StaticProxy.cs" />
     <Compile Include="Core\Interop\PrototypeProxy.cs" />
     <Compile Include="Core\Interop\StrictConversionAttribute.cs" />
-    <Compile Include="Core\BaseContext.cs" />
+    <Compile Include="Core\GlobalContext.cs" />
     <Compile Include="Core\Scope.cs" />
     <Compile Include="ExportTable.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />

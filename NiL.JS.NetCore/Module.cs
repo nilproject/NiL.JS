@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Statements;
@@ -18,9 +18,6 @@ namespace NiL.JS
     /// <summary>
     /// Represents and manages JavaScript module
     /// </summary>
-#if !((PORTABLE || NETCORE) || NETCORE)
-    [Serializable]
-#endif
     public sealed class Module
     {
         private static readonly char[] __pathSplitChars = new[] { '\\', '/' };
@@ -127,12 +124,15 @@ namespace NiL.JS
                 throw new ArgumentNullException();
 
             Code = code;
-            Context = new Context(Context.globalContext, true, null);
+            Context = new Context(Context.CurrentBaseContext, true, null);
             Context._module = this;
             if (!string.IsNullOrWhiteSpace(path))
             {
-                if (!__modulesCache.ContainsKey(path))
-                    __modulesCache[path] = this;
+                lock (__modulesCache)
+                {
+                    if (!__modulesCache.ContainsKey(path))
+                        __modulesCache[path] = this;
+                }
 
                 this.FilePath = path;
             }
@@ -153,8 +153,8 @@ namespace NiL.JS
             Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
             var body = root as CodeBlock;
             body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
-            Context.thisBind = new GlobalObject(Context);
-            Context.strict = body._strict;
+            Context._thisBind = new GlobalObject(Context);
+            Context._strict = body._strict;
 
             var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
@@ -283,36 +283,20 @@ namespace NiL.JS
             e.Module = result;
         }
 
-#if !((PORTABLE || NETCORE) || NETCORE)
-        /// <summary>
-        /// Returns module, which provides access to clr-namespace
-        /// </summary>
-        /// <param name="namespace">Namespace</param>
-        /// <returns></returns>
-        public static Module ClrNamespace(string @namespace)
+        public static void ClearModuleCache()
         {
-            var result = new Module();
-
-            foreach (var type in NamespaceProvider.GetTypesByPrefix(@namespace))
+            lock (__modulesCache)
             {
-                try
-                {
-                    if (type.Namespace == @namespace)
-                    {
-                        result.Exports[type.Name] = TypeProxy.GetConstructor(type);
-                    }
-                    else if (type.Namespace.StartsWith(@namespace) && type.Namespace[@namespace.Length] == '.')
-                    {
-                        var nextSegment = type.Namespace.Substring(@namespace.Length).Split('.')[1];
-                        result.Exports[nextSegment] = new NamespaceProvider($"{@namespace}.{nextSegment}");
-                    }
-                }
-                catch
-                { }
+                __modulesCache.Clear();
             }
-
-            return result;
         }
-#endif
+
+        public static bool RemoveFromModuleCache(string path)
+        {
+            lock (__modulesCache)
+            {
+                return __modulesCache.Remove(path);
+            }
+        }        
     }
 }

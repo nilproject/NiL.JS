@@ -118,7 +118,7 @@ namespace NiL.JS.Core.Functions
 
         internal override JSObject GetDefaultPrototype()
         {
-            return Context.BaseContext.GetPrototype(typeof(Function));
+            return Context.GlobalContext.GetPrototype(typeof(Function));
         }
 
         [Hidden]

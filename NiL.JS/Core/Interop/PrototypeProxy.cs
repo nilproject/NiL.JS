@@ -16,7 +16,7 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        public PrototypeProxy(BaseContext context, Type type, JSObject prototype)
+        public PrototypeProxy(GlobalContext context, Type type, JSObject prototype)
             : base(context, type)
         {
             __prototype = prototype;

@@ -65,12 +65,15 @@ namespace NiL.JS.Expressions
                     res = null;
                 }
             }
+
             res = source.GetProperty(cachedMemberName ?? second.Evaluate(context), false, memberScope);
             context._objectSource = source;
+
             if (res._valueType == JSValueType.NotExists)
                 res._valueType = JSValueType.NotExistsInObject;
             else if (res._valueType == JSValueType.Property)
                 res = Tools.InvokeGetter(res, source);
+
             return res;
         }
 

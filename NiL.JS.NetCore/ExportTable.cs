@@ -14,7 +14,7 @@ namespace NiL.JS
             get
             {
                 if (string.IsNullOrWhiteSpace(key) || !Parser.ValidateName(key))
-                    ExceptionsHelper.Throw(new ArgumentException());
+                    ExceptionHelper.Throw(new ArgumentException());
 
                 var result = JSValue.undefined;
 
@@ -51,9 +51,9 @@ namespace NiL.JS
             foreach(var item in _items)
             {
                 if (item.Key != "")
-                    result.fields[item.Key] = item.Value;
+                    result._fields[item.Key] = item.Value;
                 else
-                    result.fields["default"] = item.Value;
+                    result._fields["default"] = item.Value;
             }
 
             return result;

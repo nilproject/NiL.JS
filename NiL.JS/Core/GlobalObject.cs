@@ -9,19 +9,11 @@ namespace NiL.JS.Core
 #endif
     internal sealed class GlobalObject : JSObject
     {
-        private static JSObject _globalObjectPrototype;
-
-        internal static void refreshGlobalObjectProto()
-        {
-            _globalObjectPrototype = CreateObject();
-            _globalObjectPrototype._attributes |= JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete;
-        }
-
         private Context _context;
 
         internal override JSObject GetDefaultPrototype()
         {
-            return _globalObjectPrototype;
+            throw new InvalidOperationException();
         }
 
         public GlobalObject(Context context)
@@ -32,6 +24,7 @@ namespace NiL.JS.Core
             _fields = context._variables;
             _valueType = JSValueType.Object;
             _oValue = this;
+            __prototype = context.GlobalContext._GlobalPrototype;
         }
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
@@ -51,7 +44,8 @@ namespace NiL.JS.Core
             foreach (var i in _context._variables)
                 if (i.Value.Exists && (!hideNonEnumerable || (i.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return i;
-            foreach (var i in Context.globalContext._variables)
+
+            foreach (var i in _context.GlobalContext._variables)
                 if (i.Value.Exists && (!hideNonEnumerable || (i.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return i;
         }

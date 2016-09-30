@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
                     _exception == null ? 
                         JSValue.undefined 
                     : 
-                        context.BaseContext.ProxyValue(_exception) 
+                        context.GlobalContext.ProxyValue(_exception) 
                 : _body.Evaluate(context);
 
             if (context._executionMode == AbortReason.Suspend)

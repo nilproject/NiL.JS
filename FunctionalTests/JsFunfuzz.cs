@@ -20,6 +20,8 @@ namespace FunctionalTests
         [TestInitialize]
         public void Initialize()
         {
+            new GlobalContext().ActivateInCurrentThread();
+
             using (var file = new FileStream(JsFunfuzzScriptPath, FileMode.Open))
             using (var fileReader = new StreamReader(file))
                 _module = new Module(fileReader.ReadToEnd());
@@ -36,6 +38,8 @@ namespace FunctionalTests
         {
             Console.SetOut(_oldOutput);
             Console.SetError(_oldErrOutput);
+
+            Context.CurrentContext.GlobalContext.Deactivate();
         }
 
         [TestMethod]

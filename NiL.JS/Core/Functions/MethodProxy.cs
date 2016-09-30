@@ -456,7 +456,7 @@ namespace NiL.JS.Core.Functions
                     args[i] = convertArg(i, obj, ConvertArgsOptions.ThrowOnError | ConvertArgsOptions.DummyValues);
                 }
 
-                return Context.BaseContext.ProxyValue(InvokeImpl(targetObject, args, null));
+                return Context.GlobalContext.ProxyValue(InvokeImpl(targetObject, args, null));
             }
         }
 
@@ -646,7 +646,7 @@ namespace NiL.JS.Core.Functions
             if (result == null)
                 return undefined;
             
-            return result as JSValue ?? Context.BaseContext.ProxyValue(result);
+            return result as JSValue ?? Context.GlobalContext.ProxyValue(result);
         }
 
         internal static object[] argumentsToArray(Arguments source)

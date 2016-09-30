@@ -128,6 +128,8 @@ namespace NiL.JS.Core
         {
             if (context != null)
                 caller = context._strict && context._owner != null && context._owner._creator.body._strict ? Function.propertiesDummySM : context._owner;
+
+            __prototype = context.GlobalContext._GlobalPrototype;
         }
 
         public Arguments()
@@ -144,7 +146,7 @@ namespace NiL.JS.Core
 
         internal override JSObject GetDefaultPrototype()
         {
-            return GlobalPrototype ?? @null;
+            return Context.CurrentBaseContext._GlobalPrototype ?? @null;
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool createMember, PropertyScope memberScope)

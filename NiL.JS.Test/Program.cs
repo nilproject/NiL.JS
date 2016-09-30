@@ -72,21 +72,21 @@ namespace NiL.JS.Test
 
             Module.ResolveModule += Module_ResolveModule;
 
-            Context.GlobalContext.DebuggerCallback += (sender, e) => Debugger.Break();
-            Context.GlobalContext.DefineVariable("$").Assign(JSValue.Wrap(
+            Context.DefaultGlobalContext.DebuggerCallback += (sender, e) => Debugger.Break();
+            Context.DefaultGlobalContext.DefineVariable("$").Assign(JSValue.Wrap(
                 new
                 {
                     sleep = new Action<int>(time => Thread.Sleep(time))
                 }));
 #if !PORTABLE
-            Context.GlobalContext.DefineVariable("$nil").Assign(JSValue.Wrap(
+            Context.DefaultGlobalContext.DefineVariable("$nil").Assign(JSValue.Wrap(
                 new
                 {
                     GetCtor = new Func<string, JSValue>(name => JSValue.GetConstructor(NamespaceProvider.GetType(name)))
                 }));
 #endif
-            Context.GlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
-            Context.GlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
+            Context.DefaultGlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
+            Context.DefaultGlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
             {
                 for (var i = 0; i < a.Length; i++)
                     System.Console.WriteLine(a[i]);
@@ -110,7 +110,7 @@ namespace NiL.JS.Test
             }));
 #endif
             
-            int mode = 2
+            int mode = 101
                     ;
             switch (mode)
             {
@@ -294,7 +294,7 @@ namespace NiL.JS.Test
                     }
                 case 100:
                     {
-                        Context.GlobalContext.DefineVariable("load").Assign(new ExternalFunction((_th, e) =>
+                        Context.DefaultGlobalContext.DefineVariable("load").Assign(new ExternalFunction((_th, e) =>
                         {
                             using (var f = new FileStream("v8\\" + e["0"], FileMode.Open, FileAccess.Read))
                             {

@@ -13,8 +13,6 @@ namespace NiL.JS.Core
 {
     public class JSObject : JSValue
     {
-        internal static JSObject GlobalPrototype;
-
         internal IDictionary<string, JSValue> _fields;
         internal IDictionary<Symbol, JSValue> symbols;
         internal JSObject __prototype;
@@ -28,22 +26,28 @@ namespace NiL.JS.Core
             [Hidden]
             get
             {
-                if (GlobalPrototype == this)
-                    return @null;
-                if (!this.Defined || this.IsNull)
+                if (!Defined || IsNull)
                     ExceptionHelper.Throw(new TypeError("Can not get prototype of null or undefined"));
+
                 if (_valueType >= JSValueType.Object
                     && _oValue != this // вот такого теперь быть не должно
                     && (_oValue as JSObject) != null)
                     return (_oValue as JSObject).__proto__;
+
                 if (__prototype != null)
                 {
                     if (__prototype._valueType < JSValueType.Object)
+                    {
                         __prototype = GetDefaultPrototype(); // такого тоже
+                    }
                     else if (__prototype._oValue == null)
+                    {
                         return @null;
+                    }
+
                     return __prototype;
                 }
+
                 return __prototype = GetDefaultPrototype();
             }
             [Hidden]
@@ -100,13 +104,15 @@ namespace NiL.JS.Core
         {
             var t = new JSObject()
             {
-                _valueType = JSValueType.Object,
-                __prototype = GlobalPrototype,
+                _valueType = JSValueType.Object
             };
+            
             t._oValue = t;
+            t._attributes = (JSValueAttributesInternal)attributes;
+
             if (createFields)
                 t._fields = getFieldsContainer();
-            t._attributes = (JSValueAttributesInternal)attributes;
+
             return t;
         }
 

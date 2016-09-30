@@ -11,6 +11,18 @@ namespace IntegrationTests.Core.Functions
     [TestClass]
     public class MethodProxyTests
     {
+        [TestInitializeAttribute]
+        public void TestInitialize()
+        {
+            new GlobalContext().ActivateInCurrentThread();
+        }
+
+        [TestCleanup]
+        public void MyTestMethod()
+        {
+            Context.CurrentContext.GlobalContext.Deactivate();
+        }
+
         public class MyObject
         {
             public string Text { get; set; }

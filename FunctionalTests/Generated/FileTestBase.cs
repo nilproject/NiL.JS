@@ -27,54 +27,65 @@ namespace NiL.JS.Test.Generated
             using (var sr = new StreamReader(f))
                 code = sr.ReadToEnd();
 
-            var negative = false;
-            Context.ResetGlobalContext();
-            var output = new StringBuilder();
-            var oldOutput = Console.Out;
-            Console.SetOut(new StringWriter(output));
-            var pass = true;
-            Module module;
-            var moduleName = fileName.Split(new[] { '/', '\\' }).Last();
-            if (!string.IsNullOrEmpty(_sta))
-            {
-                module = new Module(moduleName, _sta);
-                module.Run();
-
-                negative = code.IndexOf("@negative") != -1;
-            }
-            else
-            {
-                module = new Module(moduleName, "");
-            }
+            var globalContext = new GlobalContext();
+            globalContext.ActivateInCurrentThread();
 
             try
             {
+                var negative = false;
+                var output = new StringBuilder();
+                var oldOutput = Console.Out;
+                Console.SetOut(new StringWriter(output));
+                var pass = true;
+                Module module;
+                var moduleName = fileName.Split(new[] { '/', '\\' }).Last();
+                if (!string.IsNullOrEmpty(_sta))
+                {
+                    module = new Module(moduleName, _sta);
+                    module.Run();
+
+                    negative = code.IndexOf("@negative") != -1;
+                }
+                else
+                {
+                    module = new Module(moduleName, "");
+                }
+
                 try
                 {
-                    module.Context.Eval(code, true);
+                    try
+                    {
+                        module.Context.Eval(code, true);
+                    }
+                    finally
+                    {
+                        pass ^= negative;
+                    }
+                }
+                catch (JSException e)
+                {
+                    pass = negative;
+                    if (!pass)
+                        Console.WriteLine(e.Message);
+                }
+                catch (Exception)
+                {
+                    System.Diagnostics.Debugger.Break();
+                    pass = false;
                 }
                 finally
                 {
-                    pass ^= negative;
+                    Module.RemoveFromModuleCache(moduleName);
+                    Console.SetOut(oldOutput);
                 }
-            }
-            catch (JSException e)
-            {
-                pass = negative;
-                if (!pass)
-                    Console.WriteLine(e.Message);
-            }
-            catch (Exception)
-            {
-                System.Diagnostics.Debugger.Break();
-                pass = false;
-            }
 
-            Module.RemoveFromModuleCache(moduleName);
-
-            Console.SetOut(oldOutput);
-            Assert.IsTrue(pass, output.ToString());
-            Assert.AreEqual(string.Empty, output.ToString().Trim());
+                Assert.IsTrue(pass, output.ToString());
+                Assert.AreEqual(string.Empty, output.ToString().Trim());
+            }
+            finally
+            {
+                globalContext.Deactivate();
+            }
         }
     }
 }

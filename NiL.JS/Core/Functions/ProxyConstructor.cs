@@ -77,8 +77,8 @@ namespace NiL.JS.Core.Functions
             _prototype = dynamicProxy;
 
 #if (PORTABLE || NETCORE)
-            if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
-                ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+            if (_staticProxy._hostedType.GetTypeInfo().ContainsGenericParameters)
+                ExceptionHelper.Throw(new TypeError(_staticProxy._hostedType.Name + " can't be created because it's generic type."));
 #else
             if (_staticProxy._hostedType.ContainsGenericParameters)
                 ExceptionHelper.ThrowTypeError(_staticProxy._hostedType.Name + " can't be created because it's generic type.");
@@ -98,8 +98,8 @@ namespace NiL.JS.Core.Functions
                 _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 #if (PORTABLE || NETCORE)
-            var ctors = System.Linq.Enumerable.ToArray(typeProxy.hostedType.GetTypeInfo().DeclaredConstructors);
-            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.GetTypeInfo().IsValueType ? 1 : 0));
+            var ctors = System.Linq.Enumerable.ToArray(staticProxy._hostedType.GetTypeInfo().DeclaredConstructors);
+            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.GetTypeInfo().IsValueType ? 1 : 0));
 #else
             var ctors = staticProxy._hostedType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
             List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.IsValueType ? 1 : 0));
@@ -212,7 +212,7 @@ namespace NiL.JS.Core.Functions
                 {
                     if ((arguments == null || arguments.length == 0)
 #if (PORTABLE || NETCORE)
- && proxy.hostedType.GetTypeInfo().IsValueType)
+ && _staticProxy._hostedType.GetTypeInfo().IsValueType)
 #else
  && _staticProxy._hostedType.IsValueType)
 #endif
@@ -297,7 +297,7 @@ namespace NiL.JS.Core.Functions
         {
             return new ObjectWrapper(null)
             {
-                __prototype = Context.BaseContext.GetPrototype(_staticProxy._hostedType)
+                __prototype = Context.GlobalContext.GetPrototype(_staticProxy._hostedType)
             };
         }
 
@@ -356,7 +356,7 @@ namespace NiL.JS.Core.Functions
 
         internal override JSObject GetDefaultPrototype()
         {
-            return Context.BaseContext.GetPrototype(typeof(Function));
+            return Context.GlobalContext.GetPrototype(typeof(Function));
         }
 
         [Hidden]

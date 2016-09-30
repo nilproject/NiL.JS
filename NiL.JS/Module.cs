@@ -127,7 +127,7 @@ namespace NiL.JS
                 throw new ArgumentNullException();
 
             Code = code;
-            Context = new Context(Context.globalContext, true, null);
+            Context = new Context(Context.CurrentBaseContext, true, null);
             Context._module = this;
             if (!string.IsNullOrWhiteSpace(path))
             {

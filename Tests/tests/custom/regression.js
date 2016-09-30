@@ -216,7 +216,7 @@ if (Object.toString() !== "function Object() { [native code] }")
 
 Object.toString = () =>'hello';
 
-if (Object.toString() !== "function Object() { [native code] }")
+if (Object.toString() === "function Object() { [native code] }")
     throw "toString of Object(...) does not change";
 
 console.asserta(() => (new class {}).toString(), {}.toString());

@@ -26,7 +26,7 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        public StaticProxy(BaseContext context, Type type)
+        public StaticProxy(GlobalContext context, Type type)
             : base(context, type)
         {
 
