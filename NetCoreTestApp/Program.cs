@@ -105,7 +105,7 @@ namespace NetCoreTestApp
                     Context econtext = null;
                     if (refresh || s == null)
                     {
-                        Context.RefreshGlobalContext();
+                        Context.ResetGlobalContext();
                         s = new Module(staCode);// инициализация
                         s.Run();
                         econtext = s.Context;

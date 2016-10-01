@@ -512,9 +512,9 @@ namespace NiL.JS.BaseLibrary
             if (args.length == 1)
             {
                 var arg = args[0];
-                if (arg.valueType >= JSValueType.Object)
+                if (arg._valueType >= JSValueType.Object)
                     arg = arg.ToPrimitiveValue_Value_String();
-                switch (arg.valueType)
+                switch (arg._valueType)
                 {
                     case JSValueType.Integer:
                     case JSValueType.Boolean:
@@ -624,7 +624,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (value == null
                || !value.Defined
-               || (value.valueType == JSValueType.Double && (double.IsNaN(value.dValue) || double.IsInfinity(value.dValue))))
+               || (value._valueType == JSValueType.Double && (double.IsNaN(value._dValue) || double.IsInfinity(value._dValue))))
             {
                 _error = true;
                 _time = 0;
@@ -872,7 +872,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (time == null
                 || !time.Defined
-                || (time.valueType == JSValueType.Double && (double.IsNaN(time.dValue) || double.IsInfinity(time.dValue))))
+                || (time._valueType == JSValueType.Double && (double.IsNaN(time._dValue) || double.IsInfinity(time._dValue))))
             {
                 _error = true;
                 this._time = 0;
@@ -965,7 +965,7 @@ namespace NiL.JS.BaseLibrary
             if (month != null && month.Exists)
             {
                 if (!month.Defined
-                || (month.valueType == JSValueType.Double && (double.IsNaN(month.dValue) || double.IsInfinity(month.dValue))))
+                || (month._valueType == JSValueType.Double && (double.IsNaN(month._dValue) || double.IsInfinity(month._dValue))))
                 {
                     _error = true;
                     _time = 0;
@@ -1011,7 +1011,7 @@ namespace NiL.JS.BaseLibrary
             if (year != null && year.Exists)
             {
                 if (!year.Defined
-                   || (year.valueType == JSValueType.Double && (double.IsNaN(year.dValue) || double.IsInfinity(year.dValue))))
+                   || (year._valueType == JSValueType.Double && (double.IsNaN(year._dValue) || double.IsInfinity(year._dValue))))
                 {
                     _error = true;
                     _time = 0;
@@ -1096,7 +1096,7 @@ namespace NiL.JS.BaseLibrary
             {
                 _time -= _timeZoneOffset;
                 if (_time > 8702135600400000 || _time < -8577864403200000 || _error)
-                    ExceptionsHelper.Throw(new RangeError("Invalid time value"));
+                    ExceptionHelper.Throw(new RangeError("Invalid time value"));
                 var y = getYearImpl();
 
                 return y +

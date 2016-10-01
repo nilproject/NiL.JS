@@ -62,17 +62,17 @@ namespace NiL.JS.Expressions
 
         private static object prep(JSValue x)
         {
-            if (x.valueType == JSValueType.String)
+            if (x._valueType == JSValueType.String)
             {
-                return x.oValue;
+                return x._oValue;
             }
-            if (x.valueType == JSValueType.Date)
+            if (x._valueType == JSValueType.Date)
                 x = x.ToPrimitiveValue_String_Value();
             else
                 x = x.ToPrimitiveValue_Value_String();
-            if (x.valueType == JSValueType.String)
+            if (x._valueType == JSValueType.String)
             {
-                return x.oValue;
+                return x._oValue;
             }
             return x.ToString();
         }
@@ -82,8 +82,8 @@ namespace NiL.JS.Expressions
             object res = prep(_parts[0].Evaluate(context));
             for (var i = 1; i < _parts.Count; i++)
                 res = new RopeString(res, prep(_parts[i].Evaluate(context)));
-            tempContainer.valueType = JSValueType.String;
-            tempContainer.oValue = res;
+            tempContainer._valueType = JSValueType.String;
+            tempContainer._oValue = res;
             return tempContainer;
         }
 

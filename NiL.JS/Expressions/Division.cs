@@ -31,29 +31,29 @@ namespace NiL.JS.Expressions
         {
             int itemp;
             var jstemp = first.Evaluate(context);
-            if (jstemp.valueType == JSValueType.Integer
-                || jstemp.valueType == JSValueType.Boolean)
+            if (jstemp._valueType == JSValueType.Integer
+                || jstemp._valueType == JSValueType.Boolean)
             {
-                itemp = jstemp.iValue;
+                itemp = jstemp._iValue;
                 jstemp = second.Evaluate(context);
-                if ((jstemp.valueType == JSValueType.Boolean
-                    || jstemp.valueType == JSValueType.Integer)
-                    && jstemp.iValue > 0
+                if ((jstemp._valueType == JSValueType.Boolean
+                    || jstemp._valueType == JSValueType.Integer)
+                    && jstemp._iValue > 0
                     && itemp > 0
-                    && (itemp % jstemp.iValue) == 0)
+                    && (itemp % jstemp._iValue) == 0)
                 {
-                    tempContainer.valueType = JSValueType.Integer;
-                    tempContainer.iValue = itemp / jstemp.iValue;
+                    tempContainer._valueType = JSValueType.Integer;
+                    tempContainer._iValue = itemp / jstemp._iValue;
                 }
                 else
                 {
-                    tempContainer.valueType = JSValueType.Double;
-                    tempContainer.dValue = itemp / Tools.JSObjectToDouble(jstemp);
+                    tempContainer._valueType = JSValueType.Double;
+                    tempContainer._dValue = itemp / Tools.JSObjectToDouble(jstemp);
                 }
                 return tempContainer;
             }
-            tempContainer.dValue = Tools.JSObjectToDouble(jstemp) / Tools.JSObjectToDouble(second.Evaluate(context));
-            tempContainer.valueType = JSValueType.Double;
+            tempContainer._dValue = Tools.JSObjectToDouble(jstemp) / Tools.JSObjectToDouble(second.Evaluate(context));
+            tempContainer._valueType = JSValueType.Double;
             return tempContainer;
         }
 

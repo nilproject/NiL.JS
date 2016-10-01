@@ -30,8 +30,8 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            tempContainer.iValue = Tools.JSObjectToInt32(first.Evaluate(context)) | Tools.JSObjectToInt32(second.Evaluate(context));
-            tempContainer.valueType = JSValueType.Integer;
+            tempContainer._iValue = Tools.JSObjectToInt32(first.Evaluate(context)) | Tools.JSObjectToInt32(second.Evaluate(context));
+            tempContainer._valueType = JSValueType.Integer;
             return tempContainer;
         }
 

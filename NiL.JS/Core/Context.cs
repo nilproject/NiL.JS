@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
-using NiL.JS.Core.Interop;
 using NiL.JS.Statements;
+
+#if NET40
+using NiL.JS.Backward;
+#endif
 
 namespace NiL.JS.Core
 {
@@ -44,7 +48,7 @@ namespace NiL.JS.Core
 #else
         internal const int MaxConcurentContexts = 65535;
         internal static readonly List<Context>[] RunningContexts = new List<Context>[MaxConcurentContexts];
-        internal static readonly int[] ThreadIds = new int[MaxConcurentContexts];
+        private static readonly int[] _ThreadIds = new int[MaxConcurentContexts];
 
         internal static List<Context> GetCurrectContextStack()
         {
@@ -52,10 +56,10 @@ namespace NiL.JS.Core
 
             for (var i = 0; i < MaxConcurentContexts; i++)
             {
-                if (ThreadIds[i] == 0)
+                if (_ThreadIds[i] == 0)
                     break;
 
-                if (ThreadIds[i] == threadId)
+                if (_ThreadIds[i] == threadId)
                     return RunningContexts[i];
             }
 
@@ -72,161 +76,99 @@ namespace NiL.JS.Core
                 var stack = GetCurrectContextStack();
                 if (stack == null || stack.Count == 0)
                     return null;
+
                 return stack[stack.Count - 1];
 #endif
             }
         }
 
-        internal readonly static Context globalContext = new Context() { strict = true };
-        /// <summary>
-        /// Глобальный контекст выполнения. Хранит глобальные объекты, определённые спецификацией.
-        /// Создание переменных в этом контексте невозможно во время выполнения скрипта.
-        /// </summary>
-        public static Context GlobalContext { get { return globalContext; } }
+        internal readonly static GlobalContext _DefaultGlobalContext = new GlobalContext() { _strict = true };
+        public static GlobalContext DefaultGlobalContext { get { return _DefaultGlobalContext; } }
 
-        /// <summary>
-        /// Очищает глобальный контекст, после чего создаёт в нём глобальные объекты, определённые спецификацией, 
-        /// </summary>
-        public static void RefreshGlobalContext()
-        {
-            globalContext.Activate();
-            try
-            {
-                if (globalContext.fields != null)
-                    globalContext.fields.Clear();
-                else
-                    globalContext.fields = new StringMap<JSValue>();
-                JSObject.GlobalPrototype = null;
-                TypeProxy.Clear();
-                globalContext.fields.Add("Object", TypeProxy.GetConstructor(typeof(JSObject)).CloneImpl(false));
-                globalContext.fields["Object"].attributes = JSValueAttributesInternal.DoNotDelete;
-                JSObject.GlobalPrototype = TypeProxy.GetPrototype(typeof(JSObject));
-                Core.GlobalObject.refreshGlobalObjectProto();
-                globalContext.DefineConstructor(typeof(BaseLibrary.Math));
-                globalContext.DefineConstructor(typeof(BaseLibrary.Array));
-                globalContext.DefineConstructor(typeof(JSON));
-                globalContext.DefineConstructor(typeof(BaseLibrary.String));
-                globalContext.DefineConstructor(typeof(Function));
-                globalContext.DefineConstructor(typeof(Date));
-                globalContext.DefineConstructor(typeof(Number));
-                globalContext.DefineConstructor(typeof(Symbol));
-                globalContext.DefineConstructor(typeof(BaseLibrary.Boolean));
-                globalContext.DefineConstructor(typeof(Error));
-                globalContext.DefineConstructor(typeof(TypeError));
-                globalContext.DefineConstructor(typeof(ReferenceError));
-                globalContext.DefineConstructor(typeof(EvalError));
-                globalContext.DefineConstructor(typeof(RangeError));
-                globalContext.DefineConstructor(typeof(URIError));
-                globalContext.DefineConstructor(typeof(SyntaxError));
-                globalContext.DefineConstructor(typeof(RegExp));
-#if !(PORTABLE || NETCORE)
-                globalContext.DefineConstructor(typeof(console));
-#endif
-                globalContext.DefineConstructor(typeof(ArrayBuffer));
-                globalContext.DefineConstructor(typeof(Int8Array));
-                globalContext.DefineConstructor(typeof(Uint8Array));
-                globalContext.DefineConstructor(typeof(Uint8ClampedArray));
-                globalContext.DefineConstructor(typeof(Int16Array));
-                globalContext.DefineConstructor(typeof(Uint16Array));
-                globalContext.DefineConstructor(typeof(Int32Array));
-                globalContext.DefineConstructor(typeof(Uint32Array));
-                globalContext.DefineConstructor(typeof(Float32Array));
-                globalContext.DefineConstructor(typeof(Float64Array));
-                GlobalContext.DefineConstructor(typeof(Promise));
-
-                globalContext.DefineConstructor(typeof(Debug));
-
-                #region Base Function
-                globalContext.DefineVariable("eval").Assign(new EvalFunction());
-                globalContext.fields["eval"].attributes |= JSValueAttributesInternal.Eval;
-                globalContext.DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
-                globalContext.DefineVariable("unescape").Assign(new ExternalFunction(GlobalFunctions.unescape));
-                globalContext.DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
-                globalContext.DefineVariable("encodeURI").Assign(new ExternalFunction(GlobalFunctions.encodeURI));
-                globalContext.DefineVariable("encodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.encodeURIComponent));
-                globalContext.DefineVariable("decodeURI").Assign(new ExternalFunction(GlobalFunctions.decodeURI));
-                globalContext.DefineVariable("decodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.decodeURIComponent));
-                globalContext.DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
-                globalContext.DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
-                globalContext.DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));
-#if !(PORTABLE || NETCORE)
-                globalContext.DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
-#endif
-                #endregion
-                #region Consts
-                globalContext.fields["undefined"] = JSValue.undefined;
-                globalContext.fields["Infinity"] = Number.POSITIVE_INFINITY;
-                globalContext.fields["NaN"] = Number.NaN;
-                globalContext.fields["null"] = JSValue.@null;
-                #endregion
-
-                foreach (var v in globalContext.fields.Values)
-                    v.attributes |= JSValueAttributesInternal.DoNotEnumerate;
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
-                globalContext.Deactivate();
-            }
-        }
-        
-        internal AbortReason executionMode;
-        internal JSValue objectSource;
-        internal JSValue executionInfo;
-        internal JSValue lastResult;
-        internal JSValue arguments;
-        internal JSValue thisBind;
-        internal Function owner;
-        internal Context parent;
-        internal IDictionary<string, JSValue> fields;
-        internal bool strict;
-        internal Dictionary<CodeNode, object> suspendData;
-        internal VariableDescriptor[] variables;
+        internal AbortReason _executionMode;
+        internal JSValue _objectSource;
+        internal JSValue _executionInfo;
+        internal JSValue _lastResult;
+        internal JSValue _arguments;
+        internal JSValue _thisBind;
+        internal Function _owner;
+        internal Context _parent;
+        internal IDictionary<string, JSValue> _variables;
+        internal bool _strict;
+        internal Dictionary<CodeNode, object> _suspendData;
+        internal VariableDescriptor[] _definedVariables;
         internal Module _module;
 
-        public Context Root
+        public Context RootContext
         {
             get
             {
                 var res = this;
-                if (res.parent != null && res.parent != globalContext)
-                    do
-                        res = res.parent;
-                    while (res.parent != null && res.parent != globalContext);
+
+                while (res._parent != null && res._parent._parent != null)
+                    res = res._parent;
+
                 return res;
             }
         }
+
+        public GlobalContext GlobalContext
+        {
+            get
+            {
+                var iter = this;
+                if (iter._parent != null)
+                {
+                    do
+                        iter = iter._parent;
+                    while (iter._parent != null);
+                }
+
+                GlobalContext result = iter as GlobalContext;
+
+                if (result == null)
+                    throw new Exception("Incorrect state");
+
+                return result;
+            }
+        }
+
+        internal static GlobalContext CurrentBaseContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
+
         public JSValue ThisBind
         {
             get
             {
+                if (_parent == null)
+                    ExceptionHelper.Throw(new InvalidOperationException("Unable to get this-binding for Global Context"));
+
                 var c = this;
-                if (thisBind == null)
+                if (_thisBind == null)
                 {
-                    if (strict)
+                    if (_strict)
                         return JSValue.undefined;
-                    for (; c.thisBind == null;)
+
+                    for (; c._thisBind == null;)
                     {
-                        if (c.parent == globalContext)
+                        if (c._parent._parent == null)
                         {
-                            thisBind = new GlobalObject(c);
-                            c.thisBind = thisBind;
+                            _thisBind = new GlobalObject(c);
+                            c._thisBind = _thisBind;
                             break;
                         }
                         else
-                            c = c.parent;
+                            c = c._parent;
                     }
-                    thisBind = c.thisBind;
+
+                    _thisBind = c._thisBind;
                 }
-                return thisBind;
+
+                return _thisBind;
             }
         }
 
-        internal bool debugging;
-        public bool Debugging { get { return debugging; } set { debugging = value; } }
+        internal bool _debugging;
+        public bool Debugging { get { return _debugging; } set { _debugging = value; } }
         public event DebuggerCallback DebuggerCallback;
 
         public bool Running
@@ -241,7 +183,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return executionMode;
+                return _executionMode;
             }
         }
 
@@ -249,19 +191,18 @@ namespace NiL.JS.Core
         {
             get
             {
-                return executionInfo;
+                return _executionInfo;
             }
         }
 
-        public Dictionary<CodeNode, object> SuspendData { get { return suspendData ?? (suspendData = new Dictionary<CodeNode, object>()); } }
+        public Dictionary<CodeNode, object> SuspendData { get { return _suspendData ?? (_suspendData = new Dictionary<CodeNode, object>()); } }
 
         static Context()
         {
-            RefreshGlobalContext();
         }
 
         public Context()
-            : this(globalContext, true, Function.Empty)
+            : this(CurrentBaseContext, true, Function.Empty)
         {
         }
 
@@ -272,28 +213,27 @@ namespace NiL.JS.Core
 
         internal Context(Context prototype, bool createFields, Function owner)
         {
-            this.owner = owner;
+            _owner = owner;
             if (prototype != null)
             {
-                if (owner == prototype.owner)
-                    arguments = prototype.arguments;
-                this.parent = prototype;
-                this.thisBind = prototype.thisBind;
-                this.debugging = prototype.debugging;
+                if (owner == prototype._owner)
+                    _arguments = prototype._arguments;
+                _parent = prototype;
+                _thisBind = prototype._thisBind;
+                _debugging = prototype._debugging;
             }
 
             if (createFields)
-                this.fields = JSObject.getFieldsContainer();
-            this.executionInfo = JSValue.notExists;
+                _variables = JSObject.getFieldsContainer();
+
+            _executionInfo = JSValue.notExists;
         }
 
-        /// <summary>
-        /// Делает контекст активным в текущем потоке выполнения.
-        /// </summary>
-        /// <exception cref="System.ApplicationException">Возникает, если контекст не является активным, 
-        /// но хранит ссылку на предыдущий активный контекст. Обычно это возникает в том случае, 
-        /// когда указанный контекст находится в цепочке вложенности активированных контекстов.</exception>
-        /// <returns>Истина если текущий контекст был активирован данным вызовом. Ложь если контекст уже активен.</returns>
+        public static void ResetGlobalContext()
+        {
+            _DefaultGlobalContext.ResetContext();
+        }
+
         internal bool Activate()
         {
 #if (PORTABLE || NETCORE)
@@ -307,16 +247,18 @@ namespace NiL.JS.Core
             return true;
 #else
             int threadId = Thread.CurrentThread.ManagedThreadId;
+            var firstEmptyIndex = -1;
             var i = 0;
             bool entered = false;
             do
             {
-                if (ThreadIds[i] == threadId)
+                if (_ThreadIds[i] == threadId)
                 {
                     if (RunningContexts[i].Count > 0 && RunningContexts[i][RunningContexts[i].Count - 1] == this)
                     {
                         if (entered)
                             Monitor.Exit(RunningContexts);
+
                         return false;
                     }
 
@@ -328,6 +270,7 @@ namespace NiL.JS.Core
 
                     if (entered)
                         Monitor.Exit(RunningContexts);
+
                     return true;
                 }
 
@@ -336,36 +279,41 @@ namespace NiL.JS.Core
                     Monitor.Enter(RunningContexts);
                     entered = true;
                 }
-
-                if (ThreadIds[i] <= 0)
+                
+                if (_ThreadIds[i] == 0)
                 {
-                    if (RunningContexts[i] == null)
-                        RunningContexts[i] = new List<Context>();
-
-                    ThreadIds[i] = threadId;
-                    RunningContexts[i].Add(this);
-
-                    Monitor.Exit(RunningContexts);
-                    return true;
+                    firstEmptyIndex = i;
+                    break;
+                }
+                else if (_ThreadIds[i] == -1)
+                {
+                    firstEmptyIndex = i;
                 }
 
                 i++;
             }
             while (i < MaxConcurentContexts);
 
+            if (firstEmptyIndex != -1)
+            {
+                if (RunningContexts[i] == null)
+                    RunningContexts[i] = new List<Context>();
+
+                _ThreadIds[i] = threadId;
+                RunningContexts[i].Add(this);
+
+                Monitor.Exit(RunningContexts);
+                return true;
+            }
+
             Monitor.Exit(RunningContexts);
 
-            ExceptionsHelper.Throw(new InvalidOperationException("Too many concurrent contexts."));
+            ExceptionHelper.Throw(new InvalidOperationException("Too many concurrent contexts."));
 
             return false;
 #endif
         }
 
-        /// <summary>
-        /// Деактивирует контекст и активирует предыдущий активный контекст.
-        /// </summary>
-        /// <exception cref="System.InvalidOperationException">Возникает, если текущий контекст не активен.</exception>
-        /// <returns>Текущий активный контекст</returns>
         internal Context Deactivate()
         {
 #if (PORTABLE || NETCORE)
@@ -380,10 +328,10 @@ namespace NiL.JS.Core
             var i = 0;
             for (; i < MaxConcurentContexts; i++)
             {
-                if (ThreadIds[i] == 0)
+                if (_ThreadIds[i] == 0)
                     throw new InvalidOperationException("Context is not running");
 
-                if (ThreadIds[i] == threadId)
+                if (_ThreadIds[i] == threadId)
                 {
                     if (RunningContexts[i][RunningContexts[i].Count - 1] != this)
                         throw new InvalidOperationException("Context is not running");
@@ -391,12 +339,12 @@ namespace NiL.JS.Core
                     _module = null;
                     RunningContexts[i].RemoveAt(RunningContexts[i].Count - 1);
                     if (RunningContexts[i].Count == 0)
-                        ThreadIds[i] = -1;
+                        _ThreadIds[i] = -1;
 
                     break;
                 }
             }
-            
+
             return RunningContexts[i].Count > 0 ? RunningContexts[i][RunningContexts[i].Count - 1] : null;
 #endif
         }
@@ -418,7 +366,7 @@ namespace NiL.JS.Core
 
             for (var i = stack.Count; i-- > 0;)
             {
-                if (stack[i].owner == function)
+                if (stack[i]._owner == function)
                 {
                     if (i > 0)
                         prevContext = stack[i - 1];
@@ -431,28 +379,78 @@ namespace NiL.JS.Core
 
         internal virtual void ReplaceVariableInstance(string name, JSValue instance)
         {
-            if (fields != null && fields.ContainsKey(name))
-                fields[name] = instance;
+            if (_variables != null && _variables.ContainsKey(name))
+                _variables[name] = instance;
             else
-                parent?.ReplaceVariableInstance(name, instance);
+                _parent?.ReplaceVariableInstance(name, instance);
         }
 
         public virtual JSValue DefineVariable(string name, bool deletable = false)
         {
             JSValue res = null;
-            if (fields == null || !fields.TryGetValue(name, out res))
+            if (_variables == null || !_variables.TryGetValue(name, out res))
             {
-                if (fields == null)
-                    fields = JSObject.getFieldsContainer();
+                if (_variables == null)
+                    _variables = JSObject.getFieldsContainer();
 
-                fields[name] = res = new JSValue();
+                res = new JSValue();
+                _variables[name] = res;
+
                 if (!deletable)
-                    res.attributes = JSValueAttributesInternal.DoNotDelete;
+                    res._attributes = JSValueAttributesInternal.DoNotDelete;
             }
-            else if ((res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
-                fields[name] = res = res.CloneImpl(false);
-            res.valueType |= JSValueType.Undefined;
+            else if (res.NeedClone)
+            {
+                res = res.CloneImpl(false);
+                _variables[name] = res;
+            }
+
+            res._valueType |= JSValueType.Undefined;
+
             return res;
+        }
+
+        /// <summary>
+        /// Creates new property with Getter and Setter in the object
+        /// </summary>
+        /// <param name="name">Name of the property</param>
+        /// <param name="getter">Function called when there is an attempt to get a value. Can be null</param>
+        /// <param name="setter">Function called when there is an attempt to set a value. Can be null</param>
+        /// <exception cref="System.ArgumentException">if property already exists</exception>
+        /// <exception cref="System.InvalidOperationException">if unable to create property</exception>
+        public void DefineGetSetVariable(string name, Func<object> getter, Action<object> setter)
+        {
+            var property = GetVariable(name);
+            if (property.ValueType >= JSValueType.Undefined)
+                throw new ArgumentException();
+
+            property = DefineVariable(name);
+            if (property.ValueType < JSValueType.Undefined)
+                throw new InvalidOperationException();
+
+            property._valueType = JSValueType.Property;
+
+            Function jsGetter = null;
+            if (getter != null)
+            {
+#if NET40
+                jsGetter = new MethodProxy(this, getter.Method, getter.Target);
+#else
+                jsGetter = new MethodProxy(this, getter.GetMethodInfo(), getter.Target);
+#endif
+            }
+
+            Function jsSetter = null;
+            if (setter != null)
+            {
+#if NET40
+                jsSetter = new MethodProxy(this, setter.Method, setter.Target);
+#else
+                jsSetter = new MethodProxy(this, setter.GetMethodInfo(), setter.Target);
+#endif
+            }
+
+            property._oValue = new GsPropertyPair(jsGetter, jsSetter);
         }
 
         public JSValue GetVariable(string name)
@@ -460,39 +458,46 @@ namespace NiL.JS.Core
             return GetVariable(name, false);
         }
 
-        internal protected virtual JSValue GetVariable(string name, bool create)
+        internal protected virtual JSValue GetVariable(string name, bool forWrite)
         {
             JSValue res = null;
 
-            bool fromProto = fields == null || (!fields.TryGetValue(name, out res) && (parent != null));
+            bool fromProto = _variables == null || (!_variables.TryGetValue(name, out res) && (_parent != null));
             if (fromProto)
-                res = parent.GetVariable(name, create);
+                res = _parent.GetVariable(name, forWrite);
 
             if (res == null) // значит вышли из глобального контекста
             {
-                if (this == globalContext)
+                if (_parent == null)
+                {
                     return null;
+                }
                 else
                 {
-                    if (create)
+                    if (forWrite)
                     {
-                        res = new JSValue() { valueType = JSValueType.NotExists };
-                        fields[name] = res;
+                        res = new JSValue() { _valueType = JSValueType.NotExists };
+                        _variables[name] = res;
                     }
                     else
                     {
-                        res = JSObject.GlobalPrototype.GetProperty(name, false, PropertyScope.Сommon);
-                        if (res.valueType == JSValueType.NotExistsInObject)
-                            res.valueType = JSValueType.NotExists;
+                        res = GlobalContext._GlobalPrototype.GetProperty(name, false, PropertyScope.Сommon);
+                        if (res._valueType == JSValueType.NotExistsInObject)
+                            res._valueType = JSValueType.NotExists;
                     }
                 }
             }
             else if (fromProto)
-                objectSource = parent.objectSource;
+            {
+                _objectSource = _parent._objectSource;
+            }
             else
             {
-                if (create && (res.attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
-                    fields[name] = res = res.CloneImpl(false);
+                if (forWrite && res.NeedClone)
+                {
+                    res = res.CloneImpl(false);
+                    _variables[name] = res;
+                }
             }
 
             return res;
@@ -508,7 +513,7 @@ namespace NiL.JS.Core
                     p.DebuggerCallback(this, new DebuggerCallbackEventArgs() { Statement = nextStatement });
                     return;
                 }
-                p = p.parent;
+                p = p._parent;
             }
             if (System.Diagnostics.Debugger.IsAttached)
                 System.Diagnostics.Debugger.Break();
@@ -516,30 +521,29 @@ namespace NiL.JS.Core
 
         public void DefineConstructor(Type moduleType)
         {
-            if (fields == null)
-                fields = new StringMap<JSValue>();
             string name;
-#if (PORTABLE || NETCORE)
-            if (System.Reflection.IntrospectionExtensions.GetTypeInfo(moduleType).IsGenericType)
-#else
-            if (moduleType.IsGenericType)
-#endif
+
+            if (_variables == null)
+                _variables = new StringMap<JSValue>();
+
+            if (moduleType.GetTypeInfo().IsGenericType)
                 name = moduleType.Name.Substring(0, moduleType.Name.LastIndexOf('`'));
             else
                 name = moduleType.Name;
+
             DefineConstructor(moduleType, name);
         }
 
         public void DefineConstructor(Type type, string name)
         {
-            fields.Add(name, TypeProxy.GetConstructor(type).CloneImpl(false));
-            fields[name].attributes = JSValueAttributesInternal.DoNotEnumerate;
+            _variables.Add(name, GlobalContext.GetConstructor(type));
+            _variables[name]._attributes |= JSValueAttributesInternal.DoNotEnumerate;
         }
 
         public void SetAbortState(AbortReason abortReason, JSValue abortInfo)
         {
-            this.executionMode = abortReason;
-            this.executionInfo = abortInfo;
+            this._executionMode = abortReason;
+            this._executionInfo = abortInfo;
         }
 
         /// <summary>
@@ -560,8 +564,9 @@ namespace NiL.JS.Core
         /// <returns>Result of last evaluated operation</returns>
         public JSValue Eval(string code, bool suppressScopeCreation)
         {
-            if (parent == null)
+            if (_parent == null)
                 throw new InvalidOperationException("Cannot execute script in global context");
+
             if (string.IsNullOrEmpty(code))
                 return JSValue.undefined;
 
@@ -587,17 +592,17 @@ namespace NiL.JS.Core
             var stack = GetCurrectContextStack();
             while (stack != null
                 && stack.Count > 1
-                && stack[stack.Count - 2] == mainFunctionContext.parent
-                && stack[stack.Count - 2].owner == mainFunctionContext.owner)
+                && stack[stack.Count - 2] == mainFunctionContext._parent
+                && stack[stack.Count - 2]._owner == mainFunctionContext._owner)
             {
-                mainFunctionContext = mainFunctionContext.parent;
+                mainFunctionContext = mainFunctionContext._parent;
             }
 
             int index = 0;
             string c = Tools.RemoveComments(code, 0);
             var ps = new ParseInfo(c, code, null)
             {
-                strict = strict,
+                strict = _strict,
                 AllowDirectives = true,
                 CodeContext = CodeContext.InEval
             };
@@ -609,7 +614,7 @@ namespace NiL.JS.Core
             var stats = new FunctionInfo();
 
             CodeNode cb = body;
-            Parser.Build(ref cb, 0, variables, (strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, stats, Options.None);
+            Parser.Build(ref cb, 0, variables, (_strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, stats, Options.None);
 
             var tv = stats.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stats, tv, body._variables.Length == 0 || !stats.WithLexicalEnvironment ? 1 : 0);
@@ -628,18 +633,18 @@ namespace NiL.JS.Core
 
             body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
-            var debugging = this.debugging;
-            this.debugging = false;
+            var debugging = this._debugging;
+            this._debugging = false;
             var runned = this.Activate();
 
             try
             {
-                var context = (suppressScopeCreation || !stats.WithLexicalEnvironment) && !body._strict && !strict ? this : new Context(this, false, owner)
+                var context = (suppressScopeCreation || !stats.WithLexicalEnvironment) && !body._strict && !_strict ? this : new Context(this, false, _owner)
                 {
-                    strict = strict || body._strict
+                    _strict = _strict || body._strict
                 };
 
-                if (!strict && !body._strict)
+                if (!_strict && !body._strict)
                 {
                     for (var i = 0; i < body._variables.Length; i++)
                     {
@@ -647,19 +652,19 @@ namespace NiL.JS.Core
                         {
                             JSValue variable;
                             var cc = mainFunctionContext;
-                            while (cc.parent != globalContext
-                               && (cc.fields == null || !cc.fields.TryGetValue(body._variables[i].name, out variable)))
+                            while (cc._parent._parent != null
+                               && (cc._variables == null || !cc._variables.TryGetValue(body._variables[i].name, out variable)))
                             {
-                                cc = cc.parent;
+                                cc = cc._parent;
                             }
 
-                            if (cc.variables != null)
+                            if (cc._definedVariables != null)
                             {
-                                for (var j = 0; j < cc.variables.Length; j++)
+                                for (var j = 0; j < cc._definedVariables.Length; j++)
                                 {
-                                    if (cc.variables[j].name == body._variables[i].name)
+                                    if (cc._definedVariables[j].name == body._variables[i].name)
                                     {
-                                        cc.variables[j].definitionScopeLevel = -1;
+                                        cc._definedVariables[j].definitionScopeLevel = -1;
                                     }
                                 }
                             }
@@ -686,7 +691,7 @@ namespace NiL.JS.Core
                 var runContextOfEval = context.Activate();
                 try
                 {
-                    return body.Evaluate(context) ?? context.lastResult ?? JSValue.notExists;
+                    return body.Evaluate(context) ?? context._lastResult ?? JSValue.notExists;
                 }
                 finally
                 {
@@ -698,13 +703,13 @@ namespace NiL.JS.Core
             {
                 if (runned)
                     this.Deactivate();
-                this.debugging = debugging;
+                this._debugging = debugging;
             }
         }
 
         public IEnumerator<string> GetEnumerator()
         {
-            return fields.Keys.GetEnumerator();
+            return _variables.Keys.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -714,7 +719,70 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
-            return this == globalContext ? "Global context" : "Context";
+            return "Context of " + _owner.name;
         }
+
+        /*
+        internal Proxy GetPrototype(Type type, bool create)
+        {
+            Proxy prototype = null;
+            lock (prototypeProxies)
+            {
+                if (!prototypeProxies.TryGetValue(type, out prototype))
+                {
+                    if (!create)
+                        return null;
+
+                    JSObject parentPrototype = null;
+                    var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), false).ToArray();
+                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
+                    {
+                        if ((pa[0] as PrototypeAttribute).Replace && (pa[0] as PrototypeAttribute).PrototypeType.IsAssignableFrom(type))
+                            return GetPrototype((pa[0] as PrototypeAttribute).PrototypeType, create);
+
+                        parentPrototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType, true);
+                    }
+
+                    prototype = new PrototypeProxy(type, parentPrototype);
+                    prototypeProxies[type] = prototype;
+
+                }
+            }
+
+            return prototype;
+        }
+
+        internal JSValue GetConstructor(Type type)
+        {
+            JSValue constructor = null;
+            if (!staticProxies.TryGetValue(type, out constructor))
+            {
+                lock (staticProxies)
+                {
+#if (PORTABLE || NETCORE)
+                    if (type.GetTypeInfo().ContainsGenericParameters)
+#else
+                    if (type.ContainsGenericParameters)
+#endif
+                        return staticProxies[type] = GetGenericTypeSelector(new[] { type });
+
+                    JSObject prototype = null;
+                    var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), false).ToArray();
+                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
+                    {
+                        if ((pa[0] as PrototypeAttribute).Replace && (pa[0] as PrototypeAttribute).PrototypeType.IsAssignableFrom(type))
+                            return GetConstructor((pa[0] as PrototypeAttribute).PrototypeType);
+
+                        prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
+                    }
+
+                    new Proxy(type, prototype); // It's ok. This instance will be registered and saved
+                    constructor = staticProxies[type];
+                }
+            }
+
+            return constructor;
+        }
+        */
     }
 }

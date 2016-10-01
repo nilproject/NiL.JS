@@ -35,13 +35,13 @@ namespace NiL.JS.Expressions
             if (second != null)
             {
                 if (context != null)
-                    context.objectSource = null;
+                    context._objectSource = null;
                 temp = second.Evaluate(context);
             }
             if (context != null)
-                context.objectSource = null;
-            if (temp.valueType >= JSValueType.Object)
-                return temp.oValue as JSValue ?? temp;
+                context._objectSource = null;
+            if (temp._valueType >= JSValueType.Object)
+                return temp._oValue as JSValue ?? temp;
             return temp;
         }
 

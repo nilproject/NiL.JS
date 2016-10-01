@@ -34,13 +34,13 @@ namespace NiL.JS.Expressions
             var t = left >> Tools.JSObjectToInt32(second.Evaluate(context));
             if (t <= int.MaxValue)
             {
-                tempContainer.iValue = (int)t;
-                tempContainer.valueType = JSValueType.Integer;
+                tempContainer._iValue = (int)t;
+                tempContainer._valueType = JSValueType.Integer;
             }
             else
             {
-                tempContainer.dValue = (double)t;
-                tempContainer.valueType = JSValueType.Double;
+                tempContainer._dValue = (double)t;
+                tempContainer._valueType = JSValueType.Double;
             }
             return tempContainer;
         }

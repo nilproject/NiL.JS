@@ -33,9 +33,9 @@ namespace NiL.JS.Statements
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
-                ExceptionsHelper.Throw(new SyntaxError("Unexpected end of line."));
+                ExceptionHelper.Throw(new SyntaxError("Unexpected end of line."));
             if (state.Code[i] != '{')
-                ExceptionsHelper.Throw((new SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                ExceptionHelper.Throw((new SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             var b = CodeBlock.Parse(state, ref i);
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
@@ -47,23 +47,23 @@ namespace NiL.JS.Statements
 
                 int s = i;
                 if (!Parser.ValidateName(state.Code, ref i, state.strict))
-                    ExceptionsHelper.Throw((new SyntaxError("Catch block must contain variable name " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionHelper.Throw((new SyntaxError("Catch block must contain variable name " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
 
                 exptn = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
                 if (state.strict)
                 {
                     if (exptn == "arguments" || exptn == "eval")
-                        ExceptionsHelper.Throw((new SyntaxError("Varible name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                        ExceptionHelper.Throw((new SyntaxError("Varible name can not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                 }
 
                 Tools.SkipSpaces(state.Code, ref i);
 
                 if (!Parser.Validate(state.Code, ")", ref i))
-                    ExceptionsHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != '{')
-                    ExceptionsHelper.Throw((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionHelper.Throw((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 state.lexicalScopeLevel++;
                 try
                 {
@@ -83,11 +83,11 @@ namespace NiL.JS.Statements
                 while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
                 if (state.Code[i] != '{')
-                    ExceptionsHelper.Throw((new SyntaxError("Invalid finally block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionHelper.Throw((new SyntaxError("Invalid finally block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 f = CodeBlock.Parse(state, ref i);
             }
             if (cb == null && f == null)
-                ExceptionsHelper.ThrowSyntaxError("try block must contain 'catch' or/and 'finally' block", state.Code, index);
+                ExceptionHelper.ThrowSyntaxError("try block must contain 'catch' or/and 'finally' block", state.Code, index);
 
             var pos = index;
             index = i;
@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             Exception exception = null;
-            if (context.executionMode >= AbortReason.Resume)
+            if (context._executionMode >= AbortReason.Resume)
             {
                 var action = context.SuspendData[this] as Action<Context>;
                 if (action != null)
@@ -116,7 +116,7 @@ namespace NiL.JS.Statements
             }
             else
             {
-                if (context.debugging && !(body is CodeBlock))
+                if (context._debugging && !(body is CodeBlock))
                     context.raiseDebugger(body);
             }
 
@@ -124,7 +124,7 @@ namespace NiL.JS.Statements
             {
                 body.Evaluate(context);
 
-                if (context.executionMode == AbortReason.Suspend)
+                if (context._executionMode == AbortReason.Suspend)
                     context.SuspendData[this] = null;
             }
             catch (Exception e)
@@ -143,24 +143,26 @@ namespace NiL.JS.Statements
             }
             finally
             {
-                if (context.executionMode != AbortReason.Suspend && finallyBody != null)
+                if (context._executionMode != AbortReason.Suspend && finallyBody != null)
                 {
                     finallyHandler(context, exception);
                     exception = null;
                 }
             }
-            if (context.executionMode != AbortReason.Suspend && exception != null)
+
+            if (context._executionMode != AbortReason.Suspend && exception != null)
                 throw exception;
+
             return null;
         }
 
         private void finallyHandler(Context context, Exception exception)
         {
-            if (context.debugging)
+            if (context._debugging)
                 context.raiseDebugger(finallyBody);
 
-            var abort = context.executionMode;
-            var ainfo = context.executionInfo;
+            var abort = context._executionMode;
+            var ainfo = context._executionInfo;
             if (abort == AbortReason.Return && ainfo != null)
             {
                 if (ainfo.Defined)
@@ -168,21 +170,21 @@ namespace NiL.JS.Statements
                 else
                     ainfo = JSValue.Undefined;
             }
-            context.executionMode = AbortReason.None;
-            context.executionInfo = JSValue.undefined;
+            context._executionMode = AbortReason.None;
+            context._executionInfo = JSValue.undefined;
 
             Action<Context> finallyAction = null;
             finallyAction = (c) =>
             {
-                c.lastResult = finallyBody.Evaluate(c) ?? context.lastResult;
-                if (c.executionMode == AbortReason.None)
+                c._lastResult = finallyBody.Evaluate(c) ?? context._lastResult;
+                if (c._executionMode == AbortReason.None)
                 {
-                    c.executionMode = abort;
-                    c.executionInfo = ainfo;
+                    c._executionMode = abort;
+                    c._executionInfo = ainfo;
                     if (exception != null)
-                        throw exception;
+                        throw exception as JSException ?? new JSException(null as JSValue, exception);
                 }
-                else if (c.executionMode == AbortReason.Suspend)
+                else if (c._executionMode == AbortReason.Suspend)
                 {
                     c.SuspendData[this] = finallyAction;
                 }
@@ -192,7 +194,7 @@ namespace NiL.JS.Statements
 
         private void catchHandler(Context context, Exception e)
         {
-            if (context.debugging)
+            if (context._debugging)
                 context.raiseDebugger(catchBody);
 
             if (catchBody is Empty)
@@ -206,8 +208,8 @@ namespace NiL.JS.Statements
             }
             else
 #endif
-                cvar = e is JSException ? (e as JSException).Error.CloneImpl(false) : TypeProxy.Proxy(e);
-            cvar.attributes |= JSValueAttributesInternal.DoNotDelete;
+                cvar = e is JSException ? (e as JSException).Error.CloneImpl(false) : context.GlobalContext.ProxyValue(e);
+            cvar._attributes |= JSValueAttributesInternal.DoNotDelete;
             var catchContext = new CatchContext(cvar, context, catchVariableDesc.name);
 #if DEBUG
             if (!(e is JSException))
@@ -219,20 +221,20 @@ namespace NiL.JS.Statements
             {
                 try
                 {
-                    catchContext.executionMode = c.executionMode;
-                    catchContext.executionInfo = c.executionInfo;
+                    catchContext._executionMode = c._executionMode;
+                    catchContext._executionInfo = c._executionInfo;
                     catchContext.Activate();
-                    catchContext.lastResult = catchBody.Evaluate(catchContext) ?? catchContext.lastResult;
+                    catchContext._lastResult = catchBody.Evaluate(catchContext) ?? catchContext._lastResult;
                 }
                 finally
                 {
-                    c.lastResult = catchContext.lastResult ?? c.lastResult;
+                    c._lastResult = catchContext._lastResult ?? c._lastResult;
                     catchContext.Deactivate();
                 }
-                c.executionMode = catchContext.executionMode;
-                c.executionInfo = catchContext.executionInfo;
+                c._executionMode = catchContext._executionMode;
+                c._executionInfo = catchContext._executionInfo;
 
-                if (c.executionMode == AbortReason.Suspend)
+                if (c._executionMode == AbortReason.Suspend)
                 {
                     if (finallyBody != null)
                     {
@@ -244,7 +246,7 @@ namespace NiL.JS.Statements
                             }
                             finally
                             {
-                                if (c2.executionMode != AbortReason.Suspend)
+                                if (c2._executionMode != AbortReason.Suspend)
                                     finallyHandler(c2, e);
                             }
                         });

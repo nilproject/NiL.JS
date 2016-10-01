@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
             if (result == null)
             {
                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                ExceptionsHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
             }
             if (result is Call)
                 result = new New(result as Call) { Position = index, Length = i - index };

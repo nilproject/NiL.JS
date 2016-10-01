@@ -63,7 +63,7 @@ namespace NiL.JS.Expressions
                 if (state.Code[i] == ',')
                 {
                     if (spread)
-                        ExceptionsHelper.ThrowSyntaxError("Expected expression", state.Code, i);
+                        ExceptionHelper.ThrowSyntaxError("Expected expression", state.Code, i);
                     elms.Add(null);
                 }
                 else
@@ -79,7 +79,7 @@ namespace NiL.JS.Expressions
                     while (Tools.IsWhiteSpace(state.Code[i]));
                 }
                 else if (state.Code[i] != ']')
-                    ExceptionsHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
+                    ExceptionHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
             }
             i++;
             var pos = index;
@@ -106,9 +106,9 @@ namespace NiL.JS.Expressions
                     if (elements[sourceIndex] != null)
                     {
                         var e = elements[sourceIndex].Evaluate(context);
-                        if (e.valueType == JSValueType.SpreadOperatorResult)
+                        if (e._valueType == JSValueType.SpreadOperatorResult)
                         {
-                            var spreadArray = e.oValue as IList<JSValue>;
+                            var spreadArray = e._oValue as IList<JSValue>;
                             for (var i = 0; i < spreadArray.Count; i++, targetIndex++)
                             {
                                 res.data[targetIndex] = spreadArray[i].CloneImpl(false);
@@ -118,14 +118,14 @@ namespace NiL.JS.Expressions
                         else
                         {
                             e = e.CloneImpl(true);
-                            e.attributes = 0;
+                            e._attributes = 0;
                             res.data[targetIndex] = e;
                         }
                     }
                     else
                     {
                         if (writableNotExists == null)
-                            writableNotExists = new JSValue() { valueType = JSValueType.NotExistsInObject, attributes = JSValueAttributesInternal.SystemObject };
+                            writableNotExists = new JSValue() { _valueType = JSValueType.NotExistsInObject, _attributes = JSValueAttributesInternal.SystemObject };
                         res.data[targetIndex] = writableNotExists;
                     }
                 }

@@ -130,13 +130,34 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal FunctionDefinition(string name)
+        public bool Strict
+        {
+            get
+            {
+                return body?.Strict ?? false;
+            }
+            internal set
+            {
+                if (body != null)
+                    body._strict = value;
+            }
+        }
+
+        private FunctionDefinition(string name)
             : base(name)
         {
-            parameters = new ParameterDescriptor[0];
-            body = new CodeBlock(new CodeNode[0]);
-            body._variables = new VariableDescriptor[0];
             _functionInfo = new FunctionInfo();
+        }
+
+        internal FunctionDefinition()
+            : this("anonymous")
+        {
+            parameters = new ParameterDescriptor[0];
+            body = new CodeBlock(new CodeNode[0])
+            {
+                _strict = true,
+                _variables = new VariableDescriptor[0]
+            };
         }
 
         internal static CodeNode ParseFunction(ParseInfo state, ref int index)
@@ -229,17 +250,17 @@ namespace NiL.JS.Expressions
                     else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateNumber(code, ref i))
                         name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
                     else
-                        ExceptionsHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, i - nameStartPos);
+                        ExceptionHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, i - nameStartPos);
 
                     Tools.SkipSpaces(code, ref i);
 
                     if (code[i] != '(')
-                        ExceptionsHelper.ThrowUnknownToken(code, i);
+                        ExceptionHelper.ThrowUnknownToken(code, i);
                 }
                 else if (kind == FunctionKind.Getter || kind == FunctionKind.Setter)
-                    ExceptionsHelper.ThrowSyntaxError("Getter and Setter must have name", code, index);
+                    ExceptionHelper.ThrowSyntaxError("Getter and Setter must have name", code, index);
                 else if (kind == FunctionKind.Method || kind == FunctionKind.MethodGenerator)
-                    ExceptionsHelper.ThrowSyntaxError("Method must have name", code, index);
+                    ExceptionHelper.ThrowSyntaxError("Method must have name", code, index);
             }
             else if (code[i] != '(')
             {
@@ -250,17 +271,17 @@ namespace NiL.JS.Expressions
                 i++;
             while (Tools.IsWhiteSpace(code[i]));
             if (code[i] == ',')
-                ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
             while (code[i] != ')')
             {
                 if (parameters.Count == 255 || (kind == FunctionKind.Setter && parameters.Count == 1) || kind == FunctionKind.Getter)
-                    ExceptionsHelper.ThrowSyntaxError(string.Format(Strings.TooManyArgumentsForFunction, name), code, index);
+                    ExceptionHelper.ThrowSyntaxError(string.Format(Strings.TooManyArgumentsForFunction, name), code, index);
 
                 bool rest = Parser.Validate(code, "...", ref i);
 
                 int n = i;
                 if (!Parser.ValidateName(code, ref i, state.strict))
-                    ExceptionsHelper.ThrowUnknownToken(code, nameStartPos);
+                    ExceptionHelper.ThrowUnknownToken(code, nameStartPos);
 
                 var pname = Tools.Unescape(code.Substring(n, i - n), state.strict);
                 var desc = new ParameterReference(pname, rest, state.lexicalScopeLevel + 1)
@@ -279,10 +300,10 @@ namespace NiL.JS.Expressions
                 if (code[i] == '=')
                 {
                     if (kind == FunctionKind.Arrow)
-                        ExceptionsHelper.ThrowSyntaxError("Parameters of arrow-function cannot have an initializer", code, i);
+                        ExceptionHelper.ThrowSyntaxError("Parameters of arrow-function cannot have an initializer", code, i);
 
                     if (rest)
-                        ExceptionsHelper.ThrowSyntaxError("Rest parameters can not have an initializer", code, i);
+                        ExceptionHelper.ThrowSyntaxError("Rest parameters can not have an initializer", code, i);
                     do
                         i++;
                     while (Tools.IsWhiteSpace(code[i]));
@@ -291,7 +312,7 @@ namespace NiL.JS.Expressions
                 if (code[i] == ',')
                 {
                     if (rest)
-                        ExceptionsHelper.ThrowSyntaxError("Rest parameters must be the last in parameters list", code, i);
+                        ExceptionHelper.ThrowSyntaxError("Rest parameters must be the last in parameters list", code, i);
                     do
                         i++;
                     while (Tools.IsWhiteSpace(code[i]));
@@ -303,7 +324,7 @@ namespace NiL.JS.Expressions
                 case FunctionKind.Setter:
                     {
                         if (parameters.Count != 1)
-                            ExceptionsHelper.ThrowSyntaxError("Setter must have only one argument", code, index);
+                            ExceptionHelper.ThrowSyntaxError("Setter must have only one argument", code, index);
                         break;
                     }
             }
@@ -314,7 +335,7 @@ namespace NiL.JS.Expressions
             if (kind == FunctionKind.Arrow)
             {
                 if (!Parser.Validate(code, "=>", ref i))
-                    ExceptionsHelper.ThrowSyntaxError("Expected \"=>\"", code, i);
+                    ExceptionHelper.ThrowSyntaxError("Expected \"=>\"", code, i);
                 Tools.SkipSpaces(code, ref i);
             }
 
@@ -339,7 +360,7 @@ namespace NiL.JS.Expressions
                         body.Length = body._lines[0].Length;
                     }
                     else
-                        ExceptionsHelper.ThrowUnknownToken(code, i);
+                        ExceptionHelper.ThrowUnknownToken(code, i);
                 }
                 finally
                 {
@@ -381,16 +402,17 @@ namespace NiL.JS.Expressions
                 for (var j = parameters.Count; j-- > 1;)
                     for (var k = j; k-- > 0;)
                         if (parameters[j].Name == parameters[k].Name)
-                            ExceptionsHelper.ThrowSyntaxError("Duplicate names of function parameters not allowed in strict mode", code, index);
+                            ExceptionHelper.ThrowSyntaxError("Duplicate names of function parameters not allowed in strict mode", code, index);
                 if (name == "arguments" || name == "eval")
-                    ExceptionsHelper.ThrowSyntaxError("Functions name can not be \"arguments\" or \"eval\" in strict mode at", code, index);
+                    ExceptionHelper.ThrowSyntaxError("Functions name can not be \"arguments\" or \"eval\" in strict mode at", code, index);
                 for (int j = parameters.Count; j-- > 0;)
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
-                        ExceptionsHelper.ThrowSyntaxError("Parameters name cannot be \"arguments\" or \"eval\" in strict mode at", code, parameters[j].references[0].Position, parameters[j].references[0].Length);
+                        ExceptionHelper.ThrowSyntaxError("Parameters name cannot be \"arguments\" or \"eval\" in strict mode at", code, parameters[j].references[0].Position, parameters[j].references[0].Length);
                 }
             }
-            FunctionDefinition func = new FunctionDefinition(name)
+
+            var func = new FunctionDefinition(name)
             {
                 parameters = parameters.ToArray(),
                 body = body,
@@ -401,6 +423,7 @@ namespace NiL.JS.Expressions
                 trace = body.directives != null ? body.directives.Contains("debug trace") : false
 #endif
             };
+
             if (!string.IsNullOrEmpty(name))
             {
                 func.Reference.ScopeLevel = state.lexicalScopeLevel;
@@ -409,6 +432,7 @@ namespace NiL.JS.Expressions
 
                 func.reference._descriptor.definitionScopeLevel = func.reference.ScopeLevel;
             }
+
             if (parameters.Count != 0)
             {
                 var newVariablesCount = body._variables.Length + parameters.Count;
@@ -450,6 +474,7 @@ namespace NiL.JS.Expressions
 
                 body._variables = newVariables;
             }
+
             if ((state.CodeContext & CodeContext.InExpression) == 0 && kind == FunctionKind.Function)
             // Позволяет делать вызов сразу при объявлении функции 
             // (в таком случае функция не добавляется в контекст).
@@ -486,25 +511,27 @@ namespace NiL.JS.Expressions
                     while (i < code.Length && Tools.IsWhiteSpace(code[i]))
                         i++;
                     if (i < code.Length && code[i] == ';')
-                        ExceptionsHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
+                        ExceptionHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
                     return new Call(func, args.ToArray());
                 }
                 else
                     i = tindex;
             }
+
             if ((state.CodeContext & CodeContext.InExpression) == 0)
             {
                 if (string.IsNullOrEmpty(name))
                 {
-                    ExceptionsHelper.ThrowSyntaxError("Function must have name", state.Code, index);
+                    ExceptionHelper.ThrowSyntaxError("Function must have name", state.Code, index);
                 }
                 if (state.strict && state.functionScopeLevel != state.lexicalScopeLevel)
                 {
-                    ExceptionsHelper.ThrowSyntaxError("In strict mode code, functions can only be declared at top level or immediately within other function.", state.Code, index);
+                    ExceptionHelper.ThrowSyntaxError("In strict mode code, functions can only be declared at top level or immediately within other function.", state.Code, index);
                 }
 
                 state.Variables.Add(func.reference._descriptor);
             }
+
             index = i;
             return func;
         }

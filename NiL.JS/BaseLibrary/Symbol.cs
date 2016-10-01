@@ -27,8 +27,8 @@ namespace NiL.JS.BaseLibrary
         public Symbol(string description)
         {
             Description = description;
-            oValue = this;
-            valueType = JSValueType.Symbol;
+            _oValue = this;
+            _valueType = JSValueType.Symbol;
             if (!symbolsCache.ContainsKey(description))
                 symbolsCache[description] = this;
         }
@@ -43,7 +43,7 @@ namespace NiL.JS.BaseLibrary
         public static string keyFor(Symbol symbol)
         {
             if (symbol == null)
-                ExceptionsHelper.Throw(new TypeError("Invalid argument"));
+                ExceptionHelper.Throw(new TypeError("Invalid argument"));
             return symbol.Description;
         }
 

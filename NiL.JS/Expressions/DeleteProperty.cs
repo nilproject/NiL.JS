@@ -38,15 +38,15 @@ namespace NiL.JS.Expressions
         {
             JSValue source = null;
             source = first.Evaluate(context);
-            if (source.valueType < JSValueType.Object)
+            if (source._valueType < JSValueType.Object)
                 source = source.CloneImpl(false);
             else
-                source = source.oValue as JSValue ?? source;
+                source = source._oValue as JSValue ?? source;
 
             var res = source.DeleteProperty(cachedMemberName ?? second.Evaluate(context));
-            context.objectSource = null;
-            if (!res && context.strict)
-                ExceptionsHelper.ThrowTypeError("Cannot delete property \"" + first + "\".");
+            context._objectSource = null;
+            if (!res && context._strict)
+                ExceptionHelper.ThrowTypeError("Cannot delete property \"" + first + "\".");
             return res;
         }
 

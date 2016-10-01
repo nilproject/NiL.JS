@@ -14,14 +14,14 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 var res = new Element(this, index);
-                res.dValue = getValue(index);
-                res.valueType = JSValueType.Double;
+                res._dValue = getValue(index);
+                res._valueType = JSValueType.Double;
                 return res;
             }
             set
             {
-                if (index < 0 || index > length.iValue)
-                    ExceptionsHelper.Throw(new RangeError());
+                if (index < 0 || index > length._iValue)
+                    ExceptionHelper.Throw(new RangeError());
                 var v = BitConverter.DoubleToInt64Bits(Tools.JSObjectToDouble(value));
                 if (BitConverter.IsLittleEndian)
                 {
@@ -101,7 +101,7 @@ namespace NiL.JS.BaseLibrary
 
         protected internal override System.Array ToNativeArray()
         {
-            var res = new double[length.iValue];
+            var res = new double[length._iValue];
             for (var i = 0; i < res.Length; i++)
                 res[i] = getValue(i);
             return res;

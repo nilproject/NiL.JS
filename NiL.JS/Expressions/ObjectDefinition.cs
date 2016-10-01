@@ -99,7 +99,7 @@ namespace NiL.JS.Expressions
                     while (Tools.IsWhiteSpace(state.Code[i]))
                         i++;
                     if (state.Code[i] != ']')
-                        ExceptionsHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
+                        ExceptionHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
                     do
                         i++;
                     while (Tools.IsWhiteSpace(state.Code[i]));
@@ -108,7 +108,7 @@ namespace NiL.JS.Expressions
                     if (state.Code[s] != 'g' && state.Code[s] != 's')
                     {
                         if (!Parser.Validate(state.Code, ":", ref i))
-                            ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
+                            ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
                         Tools.SkipSpaces(state.Code, ref i);
                     }
 
@@ -161,7 +161,7 @@ namespace NiL.JS.Expressions
                         var vle = flds[accessorName] as GetSetPropertyPair;
 
                         if (vle == null)
-                            ExceptionsHelper.ThrowSyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field", state.Code, s);
+                            ExceptionHelper.ThrowSyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field", state.Code, s);
 
                         do
                         {
@@ -182,7 +182,7 @@ namespace NiL.JS.Expressions
                                 }
                             }
 
-                            ExceptionsHelper.ThrowSyntaxError("Try to redefine " + mode.ToString().ToLowerInvariant() + " of " + propertyAccessor.Name, state.Code, s);
+                            ExceptionHelper.ThrowSyntaxError("Try to redefine " + mode.ToString().ToLowerInvariant() + " of " + propertyAccessor.Name, state.Code, s);
                         }
                         while (false);
                     }
@@ -203,7 +203,7 @@ namespace NiL.JS.Expressions
                     else if (Parser.ValidateValue(state.Code, ref i))
                     {
                         if (state.Code[s] == '-')
-                            ExceptionsHelper.Throw(new SyntaxError("Invalid char \"-\" at " + CodeCoordinates.FromTextPosition(state.Code, s, 1)));
+                            ExceptionHelper.Throw(new SyntaxError("Invalid char \"-\" at " + CodeCoordinates.FromTextPosition(state.Code, s, 1)));
                         double d = 0.0;
                         int n = s;
                         if (Tools.ParseNumber(state.Code, ref n, out d))
@@ -211,7 +211,7 @@ namespace NiL.JS.Expressions
                         else if (state.Code[s] == '\'' || state.Code[s] == '"')
                             fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.strict);
                         else if (flds.Count != 0)
-                            ExceptionsHelper.Throw((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                            ExceptionHelper.Throw((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
                         else
                             return null;
                     }
@@ -232,18 +232,18 @@ namespace NiL.JS.Expressions
                     {
                         if (asterisk)
                         {
-                            ExceptionsHelper.ThrowSyntaxError("Unexpected token", state.Code, i);
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token", state.Code, i);
                         }
 
                         if (state.Code[i] != ':' && state.Code[i] != ',' && state.Code[i] != '}')
-                            ExceptionsHelper.ThrowSyntaxError("Expected ',', ';' or '}'", state.Code, i);
+                            ExceptionHelper.ThrowSyntaxError("Expected ',', ';' or '}'", state.Code, i);
 
                         Expression aei = null;
                         if (flds.TryGetValue(fieldName, out aei))
                         {
                             if (state.strict ? (!(aei is Constant) || (aei as Constant).value != JSValue.undefined)
                                              : aei is GetSetPropertyPair)
-                                ExceptionsHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
+                                ExceptionHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
                             if (state.message != null)
                                 state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 0), "Duplicate key \"" + fieldName + "\"");
                         }
@@ -251,7 +251,7 @@ namespace NiL.JS.Expressions
                         if (state.Code[i] == ',' || state.Code[i] == '}')
                         {
                             if (!Parser.ValidateName(fieldName, 0))
-                                ExceptionsHelper.ThrowSyntaxError("Invalid variable name", state.Code, i);
+                                ExceptionHelper.ThrowSyntaxError("Invalid variable name", state.Code, i);
 
                             if (state.Code[i] == ',')
                             {
@@ -292,16 +292,16 @@ namespace NiL.JS.Expressions
             var res = JSObject.CreateObject();
             if (fieldNames.Length == 0 && computedProperties.Length == 0)
                 return res;
-            res.fields = JSObject.getFieldsContainer();
+            res._fields = JSObject.getFieldsContainer();
             for (int i = 0; i < fieldNames.Length; i++)
             {
                 var val = values[i].Evaluate(context);
                 val = val.CloneImpl(false);
-                val.attributes = JSValueAttributesInternal.None;
+                val._attributes = JSValueAttributesInternal.None;
                 if (this.fieldNames[i] == "__proto__")
-                    res.__proto__ = val.oValue as JSObject;
+                    res.__proto__ = val._oValue as JSObject;
                 else
-                    res.fields[this.fieldNames[i]] = val;
+                    res._fields[this.fieldNames[i]] = val;
             }
 
             for (var i = 0; i < computedProperties.Length; i++)
@@ -324,8 +324,8 @@ namespace NiL.JS.Expressions
                 else
                 {
                     stringKey = key.As<string>();
-                    if (!res.fields.TryGetValue(stringKey, out existedValue))
-                        res.fields[stringKey] = existedValue = value;
+                    if (!res._fields.TryGetValue(stringKey, out existedValue))
+                        res._fields[stringKey] = existedValue = value;
                 }
 
                 if (existedValue != value)
@@ -345,7 +345,7 @@ namespace NiL.JS.Expressions
                         }
                         else
                         {
-                            res.fields[stringKey] = value;
+                            res._fields[stringKey] = value;
                         }
                     }
                 }

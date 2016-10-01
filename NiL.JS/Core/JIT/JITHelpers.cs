@@ -45,44 +45,44 @@ namespace NiL.JS.Core.JIT
             {
                 case TypeCode.Boolean:
                     {
-                        dest.iValue = (bool)(object)source ? 1 : 0;
-                        dest.valueType = JSValueType.Boolean;
+                        dest._iValue = (bool)(object)source ? 1 : 0;
+                        dest._valueType = JSValueType.Boolean;
                         break;
                     }
                 case TypeCode.Byte:
                     {
-                        dest.iValue = (byte)(object)source;
-                        dest.valueType = JSValueType.Integer;
+                        dest._iValue = (byte)(object)source;
+                        dest._valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.Char:
                     {
-                        dest.oValue = source.ToString();
-                        dest.valueType = JSValueType.String;
+                        dest._oValue = source.ToString();
+                        dest._valueType = JSValueType.String;
                         break;
                     }
                 case TypeCode.Decimal:
                     {
-                        dest.dValue = (double)(decimal)(object)source;
-                        dest.valueType = JSValueType.Double;
+                        dest._dValue = (double)(decimal)(object)source;
+                        dest._valueType = JSValueType.Double;
                         break;
                     }
                 case TypeCode.Double:
                     {
-                        dest.dValue = (double)(object)source;
-                        dest.valueType = JSValueType.Double;
+                        dest._dValue = (double)(object)source;
+                        dest._valueType = JSValueType.Double;
                         break;
                     }
                 case TypeCode.Int16:
                     {
-                        dest.iValue = (short)(object)source;
-                        dest.valueType = JSValueType.Integer;
+                        dest._iValue = (short)(object)source;
+                        dest._valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.Int32:
                     {
-                        dest.iValue = (int)(object)source;
-                        dest.valueType = JSValueType.Integer;
+                        dest._iValue = (int)(object)source;
+                        dest._valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.Int64:
@@ -90,38 +90,38 @@ namespace NiL.JS.Core.JIT
                         var t = (long)(object)source;
                         if (t > int.MaxValue || t < int.MinValue)
                         {
-                            dest.dValue = t;
-                            dest.valueType = JSValueType.Double;
+                            dest._dValue = t;
+                            dest._valueType = JSValueType.Double;
                         }
                         else
                         {
-                            dest.iValue = (int)t;
-                            dest.valueType = JSValueType.Integer;
+                            dest._iValue = (int)t;
+                            dest._valueType = JSValueType.Integer;
                         }
                         break;
                     }
                 case TypeCode.SByte:
                     {
-                        dest.iValue = (sbyte)(object)source;
-                        dest.valueType = JSValueType.Integer;
+                        dest._iValue = (sbyte)(object)source;
+                        dest._valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.Single:
                     {
-                        dest.dValue = (float)(object)source;
-                        dest.valueType = JSValueType.Double;
+                        dest._dValue = (float)(object)source;
+                        dest._valueType = JSValueType.Double;
                         break;
                     }
                 case TypeCode.String:
                     {
-                        dest.oValue = source.ToString();
-                        dest.valueType = JSValueType.String;
+                        dest._oValue = source.ToString();
+                        dest._valueType = JSValueType.String;
                         break;
                     }
                 case TypeCode.UInt16:
                     {
-                        dest.iValue = (ushort)(object)source;
-                        dest.valueType = JSValueType.Integer;
+                        dest._iValue = (ushort)(object)source;
+                        dest._valueType = JSValueType.Integer;
                         break;
                     }
                 case TypeCode.UInt32:
@@ -129,13 +129,13 @@ namespace NiL.JS.Core.JIT
                         var t = (uint)(object)source;
                         if (t > int.MaxValue)
                         {
-                            dest.dValue = t;
-                            dest.valueType = JSValueType.Double;
+                            dest._dValue = t;
+                            dest._valueType = JSValueType.Double;
                         }
                         else
                         {
-                            dest.iValue = (int)t;
-                            dest.valueType = JSValueType.Integer;
+                            dest._iValue = (int)t;
+                            dest._valueType = JSValueType.Integer;
                         }
                         break;
                     }
@@ -144,20 +144,20 @@ namespace NiL.JS.Core.JIT
                         var t = (ulong)(object)source;
                         if (t > int.MaxValue)
                         {
-                            dest.dValue = t;
-                            dest.valueType = JSValueType.Double;
+                            dest._dValue = t;
+                            dest._valueType = JSValueType.Double;
                         }
                         else
                         {
-                            dest.iValue = (int)t;
-                            dest.valueType = JSValueType.Integer;
+                            dest._iValue = (int)t;
+                            dest._valueType = JSValueType.Integer;
                         }
                         break;
                     }
                 default:
                     {
-                        dest.oValue = new ObjectWrapper(source);
-                        dest.valueType = JSValueType.Object;
+                        dest._oValue = new ObjectWrapper(source);
+                        dest._valueType = JSValueType.Object;
                         break;
                     }
             }

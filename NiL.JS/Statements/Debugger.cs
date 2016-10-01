@@ -26,7 +26,7 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            if (!context.debugging)
+            if (!context._debugging)
                 // Без этого условия обработчик остановки вызывается дважды с одним выражением.
                 // Первый вызов происходит из цикла CodeBlock, второй из строки ниже.
                 context.raiseDebugger(this);

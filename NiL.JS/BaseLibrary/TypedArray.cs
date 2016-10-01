@@ -18,7 +18,7 @@ namespace NiL.JS.BaseLibrary
             {
                 this.owner = owner;
                 this.index = index;
-                attributes |= JSValueAttributesInternal.Reassign;
+                _attributes |= JSValueAttributesInternal.Reassign;
             }
 
             public override void Assign(JSValue value)
@@ -78,8 +78,8 @@ namespace NiL.JS.BaseLibrary
         protected TypedArray()
         {
             buffer = new ArrayBuffer();
-            valueType = JSValueType.Object;
-            oValue = this;
+            _valueType = JSValueType.Object;
+            _oValue = this;
         }
 
         [DoNotEnumerate]
@@ -89,25 +89,25 @@ namespace NiL.JS.BaseLibrary
             this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
             this.byteLength = length * BYTES_PER_ELEMENT;
             this.byteOffset = 0;
-            this.valueType = JSValueType.Object;
-            this.oValue = this;
+            this._valueType = JSValueType.Object;
+            this._oValue = this;
         }
 
         [DoNotEnumerate]
         protected TypedArray(ArrayBuffer buffer, int byteOffset, int length)
         {
             if (byteOffset % BYTES_PER_ELEMENT != 0)
-                ExceptionsHelper.Throw(new RangeError("Offset is not alligned"));
+                ExceptionHelper.Throw(new RangeError("Offset is not alligned"));
             if (buffer.byteLength % BYTES_PER_ELEMENT != 0)
-                ExceptionsHelper.Throw(new RangeError("buffer.byteLength is not alligned"));
+                ExceptionHelper.Throw(new RangeError("buffer.byteLength is not alligned"));
             if (buffer.byteLength < byteOffset)
-                ExceptionsHelper.Throw(new RangeError("Invalid offset"));
+                ExceptionHelper.Throw(new RangeError("Invalid offset"));
             this.byteLength = System.Math.Min(buffer.byteLength - byteOffset, length * BYTES_PER_ELEMENT);
             this.buffer = buffer;
             this.length = new Number(byteLength / BYTES_PER_ELEMENT);
             this.byteOffset = byteOffset;
-            this.valueType = JSValueType.Object;
-            this.oValue = this;
+            this._valueType = JSValueType.Object;
+            this._oValue = this;
         }
 
         [DoNotEnumerate]
@@ -120,8 +120,8 @@ namespace NiL.JS.BaseLibrary
             this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
             this.length = new Number(length);
             this.byteLength = length * BYTES_PER_ELEMENT;
-            this.valueType = JSValueType.Object;
-            this.oValue = this;
+            this._valueType = JSValueType.Object;
+            this._oValue = this;
             foreach (var item in src.data.ReversOrder)
                 this[item.Key] = item.Value;
         }
@@ -134,26 +134,26 @@ namespace NiL.JS.BaseLibrary
                 return;
             var offset = Tools.JSObjectToInt64(args.a1 ?? undefined, 0, false);
             var src = args.a0 ?? undefined;
-            if (src.valueType < JSValueType.String)
+            if (src._valueType < JSValueType.String)
                 return;
             var length = Tools.JSObjectToInt64(src["length"], 0, false);
-            if (this.length.iValue - offset < length)
-                ExceptionsHelper.Throw(new RangeError("Invalid source length or offset argument"));
+            if (this.length._iValue - offset < length)
+                ExceptionHelper.Throw(new RangeError("Invalid source length or offset argument"));
             JSValue index = 0;
             var dummyArgs = new Arguments();
             for (var i = 0L; i < length; i++)
             {
                 if (i > int.MaxValue)
                 {
-                    index.valueType = JSValueType.Double;
-                    index.dValue = i;
+                    index._valueType = JSValueType.Double;
+                    index._dValue = i;
                 }
                 else
-                    index.iValue = (int)i;
+                    index._iValue = (int)i;
                 var value = src.GetProperty(index, false, PropertyScope.Сommon);
-                if (value.valueType == JSValueType.Property)
+                if (value._valueType == JSValueType.Property)
                 {
-                    value = ((value.oValue as GsPropertyPair).get ?? Function.Empty).Call(src, dummyArgs);
+                    value = ((value._oValue as GsPropertyPair).get ?? Function.Empty).Call(src, dummyArgs);
                     dummyArgs.Reset();
                 }
                 this[(int)(i + offset)] = value;
@@ -167,11 +167,11 @@ namespace NiL.JS.BaseLibrary
         {
             var bi = Tools.JSObjectToInt32(begin, 0, false);
             var ei = end.Exists ? Tools.JSObjectToInt32(end, 0, false) : Tools.JSObjectToInt32(length);
-            if (bi == 0 && ei >= length.iValue)
+            if (bi == 0 && ei >= length._iValue)
                 return (T)this;
             var r = new T();
             r.buffer = buffer;
-            r.byteLength = System.Math.Max(0, System.Math.Min(ei, length.iValue) - bi) * BYTES_PER_ELEMENT;
+            r.byteLength = System.Math.Max(0, System.Math.Min(ei, length._iValue) - bi) * BYTES_PER_ELEMENT;
             r.byteOffset = byteOffset + bi * BYTES_PER_ELEMENT;
             r.length = new Number(r.byteLength / BYTES_PER_ELEMENT);
             return r;
@@ -179,42 +179,42 @@ namespace NiL.JS.BaseLibrary
 
         protected internal sealed override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
-                if (key.valueType == JSValueType.String && "length".Equals(key.oValue))
+                if (key._valueType == JSValueType.String && "length".Equals(key._oValue))
                     return length;
                 bool isIndex = false;
                 int index = 0;
                 JSValue tname = key;
-                if (tname.valueType >= JSValueType.Object)
+                if (tname._valueType >= JSValueType.Object)
                     tname = tname.ToPrimitiveValue_String_Value();
-                switch (tname.valueType)
+                switch (tname._valueType)
                 {
                     case JSValueType.Object:
                     case JSValueType.Boolean:
                         break;
                     case JSValueType.Integer:
                         {
-                            isIndex = tname.iValue >= 0;
-                            index = tname.iValue;
+                            isIndex = tname._iValue >= 0;
+                            index = tname._iValue;
                             break;
                         }
                     case JSValueType.Double:
                         {
-                            isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
+                            isIndex = tname._dValue >= 0 && tname._dValue < uint.MaxValue && (long)tname._dValue == tname._dValue;
                             if (isIndex)
-                                index = (int)(uint)tname.dValue;
+                                index = (int)(uint)tname._dValue;
                             break;
                         }
                     case JSValueType.String:
                         {
-                            var fc = tname.oValue.ToString()[0];
+                            var fc = tname._oValue.ToString()[0];
                             if ('0' <= fc && '9' >= fc)
                             {
                                 var dindex = 0.0;
                                 int si = 0;
-                                if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
-                                    && (si == tname.oValue.ToString().Length)
+                                if (Tools.ParseNumber(tname._oValue.ToString(), ref si, out dindex)
+                                    && (si == tname._oValue.ToString().Length)
                                     && dindex >= 0
                                     && dindex < uint.MaxValue
                                     && (long)dindex == dindex)
@@ -229,8 +229,8 @@ namespace NiL.JS.BaseLibrary
                 if (isIndex)
                 {
                     if (index < 0)
-                        ExceptionsHelper.Throw(new RangeError("Invalid array index"));
-                    if (index >= length.iValue)
+                        ExceptionHelper.Throw(new RangeError("Invalid array index"));
+                    if (index >= length._iValue)
                         return undefined;
                     return this[index];
                 }
@@ -240,40 +240,40 @@ namespace NiL.JS.BaseLibrary
 
         protected internal override void SetProperty(JSValue name, JSValue value, PropertyScope memberScope, bool strict)
         {
-            if (name.valueType == JSValueType.String && "length".Equals(name.oValue))
+            if (name._valueType == JSValueType.String && "length".Equals(name._oValue))
                 return;
             bool isIndex = false;
             int index = 0;
             JSValue tname = name;
-            if (tname.valueType >= JSValueType.Object)
+            if (tname._valueType >= JSValueType.Object)
                 tname = tname.ToPrimitiveValue_String_Value();
-            switch (tname.valueType)
+            switch (tname._valueType)
             {
                 case JSValueType.Object:
                 case JSValueType.Boolean:
                     break;
                 case JSValueType.Integer:
                     {
-                        isIndex = tname.iValue >= 0;
-                        index = tname.iValue;
+                        isIndex = tname._iValue >= 0;
+                        index = tname._iValue;
                         break;
                     }
                 case JSValueType.Double:
                     {
-                        isIndex = tname.dValue >= 0 && tname.dValue < uint.MaxValue && (long)tname.dValue == tname.dValue;
+                        isIndex = tname._dValue >= 0 && tname._dValue < uint.MaxValue && (long)tname._dValue == tname._dValue;
                         if (isIndex)
-                            index = (int)(uint)tname.dValue;
+                            index = (int)(uint)tname._dValue;
                         break;
                     }
                 case JSValueType.String:
                     {
-                        var fc = tname.oValue.ToString()[0];
+                        var fc = tname._oValue.ToString()[0];
                         if ('0' <= fc && '9' >= fc)
                         {
                             var dindex = 0.0;
                             int si = 0;
-                            if (Tools.ParseNumber(tname.oValue.ToString(), ref si, out dindex)
-                                && (si == tname.oValue.ToString().Length)
+                            if (Tools.ParseNumber(tname._oValue.ToString(), ref si, out dindex)
+                                && (si == tname._oValue.ToString().Length)
                                 && dindex >= 0
                                 && dindex < uint.MaxValue
                                 && (long)dindex == dindex)
@@ -288,8 +288,8 @@ namespace NiL.JS.BaseLibrary
             if (isIndex)
             {
                 if (index < 0)
-                    ExceptionsHelper.Throw(new RangeError("Invalid array index"));
-                if (index >= length.iValue)
+                    ExceptionHelper.Throw(new RangeError("Invalid array index"));
+                if (index >= length._iValue)
                     return;
                 this[index] = value;
                 return;

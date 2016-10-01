@@ -50,7 +50,7 @@ namespace NiL.JS.Statements
                         Tools.SkipSpaces(state.Code, ref index);
                         var alias = parseAlias(state.Code, ref index);
                         if (alias == null)
-                            ExceptionsHelper.ThrowSyntaxError("Expected identifier", state.Code, index);
+                            ExceptionHelper.ThrowSyntaxError("Expected identifier", state.Code, index);
                         result._map.Add(new KeyValuePair<string, string>("*", alias));
                     }
                     else if (state.Code[index] == '{')
@@ -59,14 +59,14 @@ namespace NiL.JS.Statements
                     }
                     else
                     {
-                        ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
+                        ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
                     }
                 }
 
                 Tools.SkipSpaces(state.Code, ref index);
 
                 if (!Parser.Validate(state.Code, "from", ref index))
-                    ExceptionsHelper.ThrowSyntaxError("Expected 'from'", state.Code, index);
+                    ExceptionHelper.ThrowSyntaxError("Expected 'from'", state.Code, index);
 
                 Tools.SkipSpaces(state.Code, ref index);
 
@@ -74,7 +74,7 @@ namespace NiL.JS.Statements
             }
 
             if (!Parser.ValidateString(state.Code, ref index, true))
-                ExceptionsHelper.ThrowSyntaxError("Expected module name", state.Code, index);
+                ExceptionHelper.ThrowSyntaxError("Expected module name", state.Code, index);
 
             result._moduleName = Tools.Unescape(state.Code.Substring(start + 1, index - start - 2), false);
 
@@ -87,13 +87,13 @@ namespace NiL.JS.Statements
             Tools.SkipSpaces(code, ref index);
 
             if (code[index] == '}')
-                ExceptionsHelper.ThrowSyntaxError("Empty import map", code, index);
+                ExceptionHelper.ThrowSyntaxError("Empty import map", code, index);
 
             while (code[index] != '}')
             {
                 var start = index;
                 if (!Parser.ValidateName(code, ref index))
-                    ExceptionsHelper.ThrowSyntaxError("Invalid import name", code, index);
+                    ExceptionHelper.ThrowSyntaxError("Invalid import name", code, index);
                 var name = code.Substring(start, index - start);
                 var alias = name;
 
@@ -104,7 +104,7 @@ namespace NiL.JS.Statements
                 for (var i = 0; i < import._map.Count; i++)
                 {
                     if (import._map[i].Key == name)
-                        ExceptionsHelper.ThrowSyntaxError("Duplicate import", code, index);
+                        ExceptionHelper.ThrowSyntaxError("Duplicate import", code, index);
                 }
 
                 import._map.Add(new KeyValuePair<string, string>(name, alias));
@@ -125,7 +125,7 @@ namespace NiL.JS.Statements
 
                 var start = index;
                 if (!Parser.ValidateName(code, ref index))
-                    ExceptionsHelper.ThrowSyntaxError("Invalid import alias", code, index);
+                    ExceptionHelper.ThrowSyntaxError("Invalid import alias", code, index);
 
                 alias = code.Substring(start, index - start);
 
@@ -142,9 +142,9 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             if (context._module == null)
-                ExceptionsHelper.Throw(new BaseLibrary.Error("Module undefined"));
+                ExceptionHelper.Throw(new BaseLibrary.Error("Module undefined"));
             if (string.IsNullOrEmpty(context._module.FilePath))
-                ExceptionsHelper.Throw(new BaseLibrary.Error("Module must has name"));
+                ExceptionHelper.Throw(new BaseLibrary.Error("Module must has name"));
 
             Module module = context._module.Import(_moduleName);
             if (module == null)
@@ -173,7 +173,7 @@ namespace NiL.JS.Statements
                         }
                 }
 
-                context.fields[_map[i].Value] = value;
+                context._variables[_map[i].Value] = value;
             }
 
             return null;

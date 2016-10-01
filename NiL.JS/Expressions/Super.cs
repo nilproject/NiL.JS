@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
 
         protected internal override Core.JSValue EvaluateForWrite(Core.Context context)
         {
-            ExceptionsHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
+            ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
             return null;
         }
 
@@ -50,12 +50,12 @@ namespace NiL.JS.Expressions
         {
             if (ctorMode)
             {
-                context.objectSource = context.thisBind;
-                return context.owner.__proto__;
+                context._objectSource = context._thisBind;
+                return context._owner.__proto__;
             }
             else
             {
-                return context.thisBind;
+                return context._thisBind;
             }
         }
 

@@ -11,35 +11,35 @@ namespace NiL.JS.Core
         private JSValue @object;
 
         public WithContext(JSValue obj, Context prototype)
-            : base(prototype, false, prototype.owner)
+            : base(prototype, false, prototype._owner)
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");
-            if (obj.valueType == JSValueType.NotExists)
-                ExceptionsHelper.Throw((new ReferenceError("Variable is not defined.")));
-            if (obj.valueType <= JSValueType.Undefined)
-                ExceptionsHelper.Throw(new TypeError("Can't access to property value of \"undefined\"."));
-            if (obj.valueType >= JSValueType.Object && obj.oValue == null)
-                ExceptionsHelper.Throw(new TypeError("Can't access to property value of \"null\"."));
-            @object = obj.oValue as JSValue ?? obj;
+            if (obj._valueType == JSValueType.NotExists)
+                ExceptionHelper.Throw((new ReferenceError("Variable is not defined.")));
+            if (obj._valueType <= JSValueType.Undefined)
+                ExceptionHelper.Throw(new TypeError("Can't access to property value of \"undefined\"."));
+            if (obj._valueType >= JSValueType.Object && obj._oValue == null)
+                ExceptionHelper.Throw(new TypeError("Can't access to property value of \"null\"."));
+            @object = obj._oValue as JSValue ?? obj;
         }
 
         public override JSValue DefineVariable(string name, bool deletable)
         {
-            return parent.DefineVariable(name);
+            return _parent.DefineVariable(name);
         }
 
         internal protected override JSValue GetVariable(string name, bool create)
         {
-            thisBind = parent.thisBind;
+            _thisBind = _parent._thisBind;
             var res = @object.GetProperty(name, create, PropertyScope.Сommon);
-            if (res.valueType < JSValueType.Undefined)
+            if (res._valueType < JSValueType.Undefined)
             {
-                res = parent.GetVariable(name, create);
-                objectSource = parent.objectSource;
+                res = _parent.GetVariable(name, create);
+                _objectSource = _parent._objectSource;
             }
             else
-                objectSource = @object;
+                _objectSource = @object;
             return res;
         }
     }

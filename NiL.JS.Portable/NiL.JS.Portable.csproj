@@ -181,6 +181,9 @@
     <Compile Include="..\NiL.JS\Core\Functions\ProxyConstructor.cs">
       <Link>Core\Functions\ProxyConstructor.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\GlobalContext.cs">
+      <Link>Core\GlobalContext.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\GlobalObject.cs">
       <Link>Core\GlobalObject.cs</Link>
     </Compile>
@@ -241,17 +244,23 @@
     <Compile Include="..\NiL.JS\Core\Interop\PrototypeAttribute.cs">
       <Link>Core\Interop\PrototypeAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\PrototypeProxy.cs">
+      <Link>Core\Interop\PrototypeProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\Proxy.cs">
+      <Link>Core\Interop\Proxy.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\ReadOnlyAttribute.cs">
       <Link>Core\Interop\ReadOnlyAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\RequireNewKeywordAttribute.cs">
       <Link>Core\Interop\RequireNewKeywordAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\StaticProxy.cs">
+      <Link>Core\Interop\StaticProxy.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\StrictConversionAttribute.cs">
       <Link>Core\Interop\StrictConversionAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Core\Interop\TypeProxy.cs">
-      <Link>Core\Interop\TypeProxy.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\JSException.cs">
       <Link>Core\JSException.cs</Link>
@@ -298,8 +307,8 @@
     <Compile Include="..\NiL.JS\Core\WithContext.cs">
       <Link>Core\WithContext.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\ExceptionsHelper.cs">
-      <Link>ExceptionsHelper.cs</Link>
+    <Compile Include="..\NiL.JS\ExceptionHelper.cs">
+      <Link>ExceptionHelper.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\ExportTable.cs">
       <Link>ExportTable.cs</Link>

@@ -30,26 +30,26 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var a = tempContainer ?? new JSValue { attributes = JSValueAttributesInternal.Temporary };
+            var a = tempContainer ?? new JSValue { _attributes = JSValueAttributesInternal.Temporary };
             tempContainer = null;
             a.Assign(first.Evaluate(context));
             var c = second.Evaluate(context);
             tempContainer = a;
-            if (c.valueType != JSValueType.Function)
-                ExceptionsHelper.Throw(new TypeError("Right-hand value of instanceof is not a function."));
+            if (c._valueType != JSValueType.Function)
+                ExceptionHelper.Throw(new TypeError("Right-hand value of instanceof is not a function."));
 
-            if (a.valueType < JSValueType.Object)
+            if (a._valueType < JSValueType.Object)
                 return false;
 
-            var p = (c.oValue as Function).prototype;
-            if (p.valueType < JSValueType.Object || p.IsNull)
-                ExceptionsHelper.Throw(new TypeError("Property \"prototype\" of function not represent object."));
+            var p = (c._oValue as Function).prototype;
+            if (p._valueType < JSValueType.Object || p.IsNull)
+                ExceptionHelper.Throw(new TypeError("Property \"prototype\" of function not represent object."));
 
-            if (p.oValue != null)
+            if (p._oValue != null)
             {
-                while (a != null && a.valueType >= JSValueType.Object && a.oValue != null)
+                while (a != null && a._valueType >= JSValueType.Object && a._oValue != null)
                 {
-                    if (a.oValue == p.oValue)
+                    if (a._oValue == p._oValue)
                         return true;
                     a = a.__proto__;
                 }

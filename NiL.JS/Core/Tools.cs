@@ -52,8 +52,10 @@ namespace NiL.JS.Core
         {
             if (text == null)
                 throw new ArgumentNullException("text");
+
             if (position < 0)
                 throw new ArgumentOutOfRangeException("position");
+
             int line = 1;
             int column = 1;
             for (int i = 0; i < position; i++)
@@ -62,18 +64,20 @@ namespace NiL.JS.Core
                 {
                     column = 0;
                     line++;
-                    if (text[i + 1] == '\r')
+                    if (text.Length > i + 1 && text[i + 1] == '\r')
                         i++;
                 }
                 else if (text[i] == '\r')
                 {
                     column = 0;
                     line++;
-                    if (text[i + 1] == '\n')
+                    if (text.Length > i + 1 && text[i + 1] == '\n')
                         i++;
                 }
+                
                 column++;
             }
+            
             return new CodeCoordinates(line, column, length);
         }
     }
@@ -198,22 +202,22 @@ namespace NiL.JS.Core
             {
                 if (arg == null)
                     return double.NaN;
-                switch (arg.valueType)
+                switch (arg._valueType)
                 {
                     case JSValueType.Boolean:
                     case JSValueType.Integer:
                         {
-                            return arg.iValue;
+                            return arg._iValue;
                         }
                     case JSValueType.Double:
                         {
-                            return arg.dValue;
+                            return arg._dValue;
                         }
                     case JSValueType.String:
                         {
                             double x = double.NaN;
                             int ix = 0;
-                            string s = (arg.oValue.ToString());
+                            string s = (arg._oValue.ToString());
                             if (s.Length > 0 && (Tools.IsWhiteSpace(s[0]) || Tools.IsWhiteSpace(s[s.Length - 1])))
                                 s = s.Trim(Tools.TrimChars);
                             if (Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
@@ -224,7 +228,7 @@ namespace NiL.JS.Core
                     case JSValueType.Function:
                     case JSValueType.Object:
                         {
-                            if (arg.oValue == null)
+                            if (arg._oValue == null)
                                 return 0;
                             arg = arg.ToPrimitiveValue_Value_String();
                             break;
@@ -250,8 +254,8 @@ namespace NiL.JS.Core
 #endif
         public static int JSObjectToInt32(JSValue arg)
         {
-            if (arg.valueType == JSValueType.Integer)
-                return arg.iValue;
+            if (arg._valueType == JSValueType.Integer)
+                return arg._iValue;
             return JSObjectToInt32(arg, 0, false);
         }
 
@@ -301,26 +305,26 @@ namespace NiL.JS.Core
             if (arg == null)
                 return nullOrUndef;
             var r = arg;
-            switch (r.valueType)
+            switch (r._valueType)
             {
                 case JSValueType.Boolean:
                 case JSValueType.Integer:
                     {
-                        return r.iValue;
+                        return r._iValue;
                     }
                 case JSValueType.Double:
                     {
-                        if (double.IsNaN(r.dValue))
+                        if (double.IsNaN(r._dValue))
                             return 0;
-                        if (double.IsInfinity(r.dValue))
-                            return alternateInfinity ? double.IsPositiveInfinity(r.dValue) ? int.MaxValue : int.MinValue : 0;
-                        return (int)(long)r.dValue;
+                        if (double.IsInfinity(r._dValue))
+                            return alternateInfinity ? double.IsPositiveInfinity(r._dValue) ? int.MaxValue : int.MinValue : 0;
+                        return (int)(long)r._dValue;
                     }
                 case JSValueType.String:
                     {
                         double x = 0;
                         int ix = 0;
-                        string s = (r.oValue.ToString()).Trim();
+                        string s = (r._oValue.ToString()).Trim();
                         if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                             return 0;
                         if (double.IsNaN(x))
@@ -333,7 +337,7 @@ namespace NiL.JS.Core
                 case JSValueType.Function:
                 case JSValueType.Object:
                     {
-                        if (r.oValue == null)
+                        if (r._oValue == null)
                             return nullOrUndef;
                         r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt32(r);
@@ -388,26 +392,26 @@ namespace NiL.JS.Core
             if (arg == null)
                 return nullOrUndef;
             var r = arg;
-            switch (r.valueType)
+            switch (r._valueType)
             {
                 case JSValueType.Boolean:
                 case JSValueType.Integer:
                     {
-                        return r.iValue;
+                        return r._iValue;
                     }
                 case JSValueType.Double:
                     {
-                        if (double.IsNaN(r.dValue))
+                        if (double.IsNaN(r._dValue))
                             return 0;
-                        if (double.IsInfinity(r.dValue))
-                            return alternateInfinity ? double.IsPositiveInfinity(r.dValue) ? long.MaxValue : long.MinValue : 0;
-                        return (long)r.dValue;
+                        if (double.IsInfinity(r._dValue))
+                            return alternateInfinity ? double.IsPositiveInfinity(r._dValue) ? long.MaxValue : long.MinValue : 0;
+                        return (long)r._dValue;
                     }
                 case JSValueType.String:
                     {
                         double x = 0;
                         int ix = 0;
-                        string s = (r.oValue.ToString()).Trim();
+                        string s = (r._oValue.ToString()).Trim();
                         if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                             return 0;
                         if (double.IsNaN(x))
@@ -420,7 +424,7 @@ namespace NiL.JS.Core
                 case JSValueType.Function:
                 case JSValueType.Object:
                     {
-                        if (r.oValue == null)
+                        if (r._oValue == null)
                             return nullOrUndef;
                         r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt64(r);
@@ -446,16 +450,16 @@ namespace NiL.JS.Core
         {
             if (arg == null)
             {
-                result.valueType = JSValueType.Integer;
-                result.iValue = 0;
+                result._valueType = JSValueType.Integer;
+                result._iValue = 0;
                 return result;
             }
-            switch (arg.valueType)
+            switch (arg._valueType)
             {
                 case JSValueType.Boolean:
                     {
-                        result.valueType = JSValueType.Integer;
-                        result.iValue = arg.iValue;
+                        result._valueType = JSValueType.Integer;
+                        result._iValue = arg._iValue;
                         return result;
                     }
                 case JSValueType.Integer:
@@ -465,21 +469,21 @@ namespace NiL.JS.Core
                     {
                         double x = 0;
                         int ix = 0;
-                        string s = (arg.oValue.ToString()).Trim(TrimChars);
+                        string s = (arg._oValue.ToString()).Trim(TrimChars);
                         if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
                             x = double.NaN;
-                        result.valueType = JSValueType.Double;
-                        result.dValue = x;
+                        result._valueType = JSValueType.Double;
+                        result._dValue = x;
                         return result;
                     }
                 case JSValueType.Date:
                 case JSValueType.Function:
                 case JSValueType.Object:
                     {
-                        if (arg.oValue == null)
+                        if (arg._oValue == null)
                         {
-                            result.valueType = JSValueType.Integer;
-                            result.iValue = 0;
+                            result._valueType = JSValueType.Integer;
+                            result._iValue = 0;
                             return result;
                         }
                         arg = arg.ToPrimitiveValue_Value_String();
@@ -489,8 +493,8 @@ namespace NiL.JS.Core
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
                     {
-                        result.valueType = JSValueType.Double;
-                        result.dValue = double.NaN;
+                        result._valueType = JSValueType.Double;
+                        result._dValue = double.NaN;
                         return result;
                     }
                 default:
@@ -510,22 +514,22 @@ namespace NiL.JS.Core
                 targetType = targetType.GetGenericArguments()[0];
 
             object value = null;
-            switch (jsobj.valueType)
+            switch (jsobj._valueType)
             {
                 case JSValueType.Boolean:
                     {
                         if (hightLoyalty)
                         {
                             if (targetType == typeof(string))
-                                return jsobj.iValue != 0 ? jsbool.TrueString : jsbool.FalseString;
+                                return jsobj._iValue != 0 ? jsbool.TrueString : jsbool.FalseString;
 
                         }
 
                         if (targetType == typeof(bool))
-                            return jsobj.iValue != 0;
+                            return jsobj._iValue != 0;
 
                         if (targetType == typeof(jsbool))
-                            return new jsbool(jsobj.iValue != 0);
+                            return new jsbool(jsobj._iValue != 0);
 
                         return null;
                     }
@@ -534,27 +538,27 @@ namespace NiL.JS.Core
                         if (hightLoyalty)
                         {
                             if (targetType == typeof(int))
-                                return (int)jsobj.dValue;
+                                return (int)jsobj._dValue;
                             if (targetType == typeof(uint))
-                                return (uint)jsobj.dValue;
+                                return (uint)jsobj._dValue;
                             if (targetType == typeof(long))
-                                return (long)jsobj.dValue;
+                                return (long)jsobj._dValue;
                             if (targetType == typeof(ulong))
-                                return (ulong)jsobj.iValue;
+                                return (ulong)jsobj._iValue;
                             if (targetType == typeof(string))
-                                return DoubleToString(jsobj.dValue);
+                                return DoubleToString(jsobj._dValue);
                         }
 
                         if (targetType == typeof(double))
-                            return (double)jsobj.dValue;
+                            return (double)jsobj._dValue;
                         if (targetType == typeof(float))
-                            return (float)jsobj.dValue;
+                            return (float)jsobj._dValue;
 
                         if (targetType == typeof(Number))
-                            return new Number(jsobj.dValue);
+                            return new Number(jsobj._dValue);
 
                         if (targetType.GetTypeInfo().IsEnum)
-                            return Enum.ToObject(targetType, jsobj.dValue);
+                            return Enum.ToObject(targetType, jsobj._dValue);
 
                         return null;
                     }
@@ -563,30 +567,30 @@ namespace NiL.JS.Core
                         if (hightLoyalty)
                         {
                             if (targetType == typeof(string))
-                                return Int32ToString(jsobj.iValue);
+                                return Int32ToString(jsobj._iValue);
                         }
 
                         if (targetType == typeof(int))
-                            return (int)jsobj.iValue;
+                            return (int)jsobj._iValue;
 
                         if (targetType == typeof(uint))
-                            return (uint)jsobj.iValue;
+                            return (uint)jsobj._iValue;
                         if (targetType == typeof(long))
-                            return (long)jsobj.iValue;
+                            return (long)jsobj._iValue;
                         if (targetType == typeof(ulong))
-                            return (ulong)jsobj.iValue;
+                            return (ulong)jsobj._iValue;
                         if (targetType == typeof(double))
-                            return (double)jsobj.iValue;
+                            return (double)jsobj._iValue;
                         if (targetType == typeof(float))
-                            return (float)jsobj.iValue;
+                            return (float)jsobj._iValue;
                         if (targetType == typeof(decimal))
-                            return (decimal)jsobj.iValue;
+                            return (decimal)jsobj._iValue;
 
                         if (targetType == typeof(Number))
-                            return new Number(jsobj.iValue);
+                            return new Number(jsobj._iValue);
 
                         if (targetType.GetTypeInfo().IsEnum)
-                            return Enum.ToObject(targetType, jsobj.iValue);
+                            return Enum.ToObject(targetType, jsobj._iValue);
 
                         return null;
                     }
@@ -698,8 +702,8 @@ namespace NiL.JS.Core
             if (targetType.IsEnum && Enum.IsDefined(targetType, value))
                 return value;
 #endif
-            var tpres = value as TypeProxy;
-            if (tpres != null && targetType.IsAssignableFrom(tpres.hostedType))
+            var tpres = value as Proxy;
+            if (tpres != null && targetType.IsAssignableFrom(tpres._hostedType))
             {
                 jsobj = tpres.prototypeInstance;
                 if (jsobj is ObjectWrapper)
@@ -710,7 +714,7 @@ namespace NiL.JS.Core
 
             if (value is ProxyConstructor && typeof(Type).IsAssignableFrom(targetType))
             {
-                return (value as ProxyConstructor).proxy.hostedType;
+                return (value as ProxyConstructor)._staticProxy._hostedType;
             }
 
             if ((value is BaseLibrary.Array || value is TypedArray || value is ArrayBuffer)
@@ -963,7 +967,7 @@ namespace NiL.JS.Core
         internal static void CheckEndOfInput(string code, ref int i)
         {
             if (i >= code.Length)
-                ExceptionsHelper.ThrowSyntaxError("Unexpected end of line", code, i);
+                ExceptionHelper.ThrowSyntaxError("Unexpected end of line", code, i);
         }
 
         private struct IntStringCacheItem
@@ -980,11 +984,13 @@ namespace NiL.JS.Core
         {
             if (value == 0)
                 return "0";
+
             for (var i = cacheSize; i-- > 0;)
             {
                 if (intStringCache[i].key == value)
                     return intStringCache[i].value;
             }
+
             return (intStringCache[intStrCacheIndex = (intStrCacheIndex + 1) & (cacheSize - 1)] = new IntStringCacheItem { key = value, value = value.ToString(CultureInfo.InvariantCulture) }).value;
         }
 
@@ -1058,7 +1064,7 @@ namespace NiL.JS.Core
             }
 
             const string NaN = "NaN";
-            if (code.Length - i >= NaN.Length && code.IndexOf(NaN, i, NaN.Length) == i)
+            if (code.Length - i >= NaN.Length && code.IndexOf(NaN, i, NaN.Length, StringComparison.Ordinal) == i)
             {
                 index = i + NaN.Length;
                 value = double.NaN;
@@ -1070,7 +1076,7 @@ namespace NiL.JS.Core
                 sign = 44 - code[i++];
 
             const string Infinity = "Infinity";
-            if (code.Length - i >= Infinity.Length && code.IndexOf(Infinity, i, Infinity.Length) == i)
+            if (code.Length - i >= Infinity.Length && code.IndexOf(Infinity, i, Infinity.Length, StringComparison.Ordinal) == i)
             {
                 index = i + Infinity.Length;
                 value = sign * double.PositiveInfinity;
@@ -1099,7 +1105,7 @@ namespace NiL.JS.Core
                     else if (radix == 0 && IsDigit(code[i + 1]))
                     {
                         if (raiseOctal)
-                            ExceptionsHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
+                            ExceptionHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
 
                         i += 1;
                         if (processOctal)
@@ -1317,7 +1323,7 @@ namespace NiL.JS.Core
                     value = temp;
 
                 if (value == 0 && skiped && raiseOctal)
-                    ExceptionsHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
+                    ExceptionHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
 
                 value *= sign;
                 index = i;
@@ -1406,7 +1412,7 @@ namespace NiL.JS.Core
                                         break;
                                     }
                                     else
-                                        ExceptionsHelper.Throw((new SyntaxError("Invalid escape code (\"" + code + "\")")));
+                                        ExceptionHelper.Throw((new SyntaxError("Invalid escape code (\"" + code + "\")")));
                                 }
                                 string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
                                 ushort chc = 0;
@@ -1421,7 +1427,7 @@ namespace NiL.JS.Core
                                     if (processRegexComp)
                                         res.Append(code[i]);
                                     else
-                                        ExceptionsHelper.Throw((new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
+                                        ExceptionHelper.Throw((new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
                                 }
                                 break;
                             }
@@ -1497,7 +1503,7 @@ namespace NiL.JS.Core
                                 if (IsDigit(code[i]) && !processRegexComp)
                                 {
                                     if (strict)
-                                        ExceptionsHelper.Throw((new SyntaxError("Octal literals are not allowed in strict mode.")));
+                                        ExceptionHelper.Throw((new SyntaxError("Octal literals are not allowed in strict mode.")));
                                     var ccode = code[i] - '0';
                                     if (i + 1 < code.Length && IsDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
@@ -1556,7 +1562,7 @@ namespace NiL.JS.Core
                                 while (index + 1 < code.Length && (code[index] != '*' || code[index + 1] != '/'))
                                     index++;
                                 if (index + 1 >= code.Length)
-                                    ExceptionsHelper.Throw(new SyntaxError("Unexpected end of source."));
+                                    ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
                                 index += 2;
                                 work = true;
                                 break;
@@ -1657,8 +1663,8 @@ namespace NiL.JS.Core
             var result = (uint)JSObjectToInt64(InvokeGetter(length, src).ToPrimitiveValue_Value_String(), 0, false);
             if (reassignLen)
             {
-                if (length.valueType == JSValueType.Property)
-                    ((length.oValue as GsPropertyPair).set ?? Function.Empty).Call(src, new Arguments() { result });
+                if (length._valueType == JSValueType.Property)
+                    ((length._oValue as GsPropertyPair).set ?? Function.Empty).Call(src, new Arguments() { result });
                 else
                     length.Assign(result);
             }
@@ -1690,8 +1696,8 @@ namespace NiL.JS.Core
                         {
                             goDeep = true;
                         }
-                        if (evalProps && value.valueType == JSValueType.Property)
-                            value = (value.oValue as GsPropertyPair).get == null ? JSValue.undefined : (value.oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
+                        if (evalProps && value._valueType == JSValueType.Property)
+                            value = (value._oValue as GsPropertyPair).get == null ? JSValue.undefined : (value._oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (temp.data[element.Key] == null)
@@ -1713,8 +1719,8 @@ namespace NiL.JS.Core
                         var value = index.Value;
                         if (!value.Exists)
                             continue;
-                        if (evalProps && value.valueType == JSValueType.Property)
-                            value = (value.oValue as GsPropertyPair).get == null ? JSValue.undefined : (value.oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
+                        if (evalProps && value._valueType == JSValueType.Property)
+                            value = (value._oValue as GsPropertyPair).get == null ? JSValue.undefined : (value._oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
@@ -1728,8 +1734,8 @@ namespace NiL.JS.Core
                 }
                 if (src.__proto__ == JSValue.@null)
                     break;
-                src = src.__proto__.oValue as JSValue ?? src.__proto__;
-                if (src == null || (src.valueType >= JSValueType.String && src.oValue == null))
+                src = src.__proto__._oValue as JSValue ?? src.__proto__;
+                if (src == null || (src._valueType >= JSValueType.String && src._oValue == null))
                     break;
             }
             temp.data[(int)(_length - 1)] = temp.data[(int)(_length - 1)];
@@ -1738,7 +1744,7 @@ namespace NiL.JS.Core
 
         internal static IEnumerable<KeyValuePair<uint, JSValue>> EnumerateArraylike(long length, JSValue src)
         {
-            if (src.valueType == JSValueType.Object && src.Value is BaseLibrary.Array)
+            if (src._valueType == JSValueType.Object && src.Value is BaseLibrary.Array)
             {
                 foreach (var item in (src.Value as BaseLibrary.Array).data.DirectOrder)
                 {
@@ -1774,13 +1780,13 @@ namespace NiL.JS.Core
 
         internal static JSValue InvokeGetter(JSValue property, JSValue target)
         {
-            if (property.valueType != JSValueType.Property)
+            if (property._valueType != JSValueType.Property)
                 return property;
-            var getter = property.oValue as GsPropertyPair;
+            var getter = property._oValue as GsPropertyPair;
             if (getter == null || getter.get == null)
                 return JSValue.undefined;
             property = getter.get.Call(target, null);
-            if (property.valueType < JSValueType.Undefined)
+            if (property._valueType < JSValueType.Undefined)
                 property = JSValue.undefined;
             return property;
         }
@@ -1790,10 +1796,10 @@ namespace NiL.JS.Core
             var a = source.Evaluate(context);
             if (a == null)
                 return JSValue.undefined;
-            if (a.valueType != JSValueType.SpreadOperatorResult)
+            if (a._valueType != JSValueType.SpreadOperatorResult)
             {
                 a = a.CloneImpl(false);
-                a.attributes |= JSValueAttributesInternal.Cloned;
+                a._attributes |= JSValueAttributesInternal.Cloned;
             }
             return a;
         }
@@ -1836,10 +1842,10 @@ namespace NiL.JS.Core
                 else
                 {
                     var value = Tools.PrepareArg(initiator, arguments[sourceIndex]);
-                    if (value.valueType == JSValueType.SpreadOperatorResult)
+                    if (value._valueType == JSValueType.SpreadOperatorResult)
                     {
                         spreadIndex = 0;
-                        spreadSource = value.oValue as IList<JSValue>;
+                        spreadSource = value._oValue as IList<JSValue>;
                         continue;
                     }
                     else
@@ -1890,10 +1896,15 @@ namespace NiL.JS.Core
                         argument = Expression.Convert(argument, typeof(object));
                     }
 
+                    var currentBaseContext = Context.CurrentBaseContext;
+
                     expressions.Add(Expression.Call(
                         argumentsParameter,
                         typeof(Arguments).GetRuntimeMethod("Add", new[] { typeof(JSValue) }),
-                        Expression.Call(Tools.methodof<object, JSValue>(TypeProxy.Proxy), argument)));
+                        Expression.Call(
+                            Expression.Constant(currentBaseContext), 
+                            methodof<object, JSValue>(currentBaseContext.ProxyValue), 
+                            argument)));
                 }
             }
 

@@ -48,54 +48,54 @@ namespace NiL.JS.Expressions
             long ltemp;
             double dtemp;
             var op = first.Evaluate(context);
-            if (op.valueType == Core.JSValueType.Integer)
+            if (op._valueType == Core.JSValueType.Integer)
             {
-                itemp = op.iValue;
+                itemp = op._iValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSValueType.Integer)
+                if (op._valueType == Core.JSValueType.Integer)
                 {
-                    ltemp = (long)itemp + op.iValue;
+                    ltemp = (long)itemp + op._iValue;
                     if ((int)ltemp == ltemp)
                     {
-                        tempContainer.valueType = JSValueType.Integer;
-                        tempContainer.iValue = (int)ltemp;
+                        tempContainer._valueType = JSValueType.Integer;
+                        tempContainer._iValue = (int)ltemp;
                     }
                     else
                     {
-                        tempContainer.valueType = JSValueType.Double;
-                        tempContainer.dValue = (double)ltemp;
+                        tempContainer._valueType = JSValueType.Double;
+                        tempContainer._dValue = (double)ltemp;
                     }
                 }
-                else if (op.valueType == Core.JSValueType.Double)
+                else if (op._valueType == Core.JSValueType.Double)
                 {
-                    tempContainer.valueType = JSValueType.Double;
-                    tempContainer.dValue = itemp + op.dValue;
+                    tempContainer._valueType = JSValueType.Double;
+                    tempContainer._dValue = itemp + op._dValue;
                 }
                 else
                 {
-                    tempContainer.valueType = JSValueType.Integer;
-                    tempContainer.iValue = itemp;
+                    tempContainer._valueType = JSValueType.Integer;
+                    tempContainer._iValue = itemp;
                     Addition.Impl(tempContainer, tempContainer, op);
                 }
             }
-            else if (op.valueType == Core.JSValueType.Double)
+            else if (op._valueType == Core.JSValueType.Double)
             {
-                dtemp = op.dValue;
+                dtemp = op._dValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSValueType.Integer)
+                if (op._valueType == Core.JSValueType.Integer)
                 {
-                    tempContainer.valueType = JSValueType.Double;
-                    tempContainer.dValue = dtemp + op.iValue;
+                    tempContainer._valueType = JSValueType.Double;
+                    tempContainer._dValue = dtemp + op._iValue;
                 }
-                else if (op.valueType == Core.JSValueType.Double)
+                else if (op._valueType == Core.JSValueType.Double)
                 {
-                    tempContainer.valueType = JSValueType.Double;
-                    tempContainer.dValue = dtemp + op.dValue;
+                    tempContainer._valueType = JSValueType.Double;
+                    tempContainer._dValue = dtemp + op._dValue;
                 }
                 else
                 {
-                    tempContainer.valueType = JSValueType.Double;
-                    tempContainer.dValue = dtemp;
+                    tempContainer._valueType = JSValueType.Double;
+                    tempContainer._dValue = dtemp;
                     Addition.Impl(tempContainer, tempContainer, op);
                 }
             }

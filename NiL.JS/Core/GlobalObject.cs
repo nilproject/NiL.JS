@@ -9,50 +9,44 @@ namespace NiL.JS.Core
 #endif
     internal sealed class GlobalObject : JSObject
     {
-        private static JSObject thisProto;
-
-        internal static void refreshGlobalObjectProto()
-        {
-            thisProto = CreateObject();
-            thisProto.oValue = thisProto;
-            thisProto.attributes |= JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete;
-        }
-
-        private Context context;
+        private Context _context;
 
         internal override JSObject GetDefaultPrototype()
         {
-            return thisProto;
+            throw new InvalidOperationException();
         }
 
         public GlobalObject(Context context)
             : base()
         {
-            attributes = JSValueAttributesInternal.SystemObject;
-            this.context = context;
-            fields = context.fields;
-            valueType = JSValueType.Object;
-            oValue = this;
+            _attributes = JSValueAttributesInternal.SystemObject;
+            _context = context;
+            _fields = context._variables;
+            _valueType = JSValueType.Object;
+            _oValue = this;
+            __prototype = context.GlobalContext._GlobalPrototype;
         }
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
                 var nameStr = key.ToString();
-                var res = context.GetVariable(nameStr, forWrite);
+                var res = _context.GetVariable(nameStr, forWrite);
                 return res;
             }
+
             return base.GetProperty(key, forWrite, memberScope);
         }
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
-            foreach (var i in context.fields)
-                if (i.Value.Exists && (!hideNonEnumerable || (i.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+            foreach (var i in _context._variables)
+                if (i.Value.Exists && (!hideNonEnumerable || (i.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return i;
-            foreach (var i in Context.globalContext.fields)
-                if (i.Value.Exists && (!hideNonEnumerable || (i.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+
+            foreach (var i in _context.GlobalContext._variables)
+                if (i.Value.Exists && (!hideNonEnumerable || (i.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return i;
         }
 

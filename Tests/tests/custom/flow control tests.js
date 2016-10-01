@@ -1,169 +1,175 @@
-﻿if (true) {
+﻿const dummy = ()=>{};
+const print = (x) => {
+    if (x !== '')
+        console.log(x);
+};
+
+if (true) {
     if (false)
-        console.log("'if (false)' fail");
+        print("'if (false)' fail");
 }
 else {
-    console.log("'if (true)' fail");
+    print("'if (true)' fail");
 }
 
 var b = true;
 if (!b)
-    console.log("if (!true) fail")
+    print("if (!true) fail")
 b = false;
 if (b)
-    console.log("if (false) fail")
+    print("if (false) fail")
 
 b = 1 == 1;
 if (!b)
-    console.log("'1 == 1' fail");
+    print("'1 == 1' fail");
 b = 1 == 1.0;
 if (!b)
-    console.log("'1 == 1.0' fail");
+    print("'1 == 1.0' fail");
 b = 1 == '1';
 if (!b)
-    console.log("'1 == '1'' fail");
+    print("'1 == '1'' fail");
 b = 1 == '1.0';
 if (!b)
-    console.log("'1 == '1.0'' fail");
+    print("'1 == '1.0'' fail");
 b = 1 == '1.0str';
 if (b)
-    console.log("'1 == '1.00str'' fail");
+    print("'1 == '1.00str'' fail");
 b = 1 != 1;
 if (b)
-    console.log("'1 != 1' fail");
+    print("'1 != 1' fail");
 b = 1 != 1.0;
 if (b)
-    console.log("'1 != 1.0' fail");
+    print("'1 != 1.0' fail");
 b = 1 != '1';
 if (b)
-    console.log("'1 != '1'' fail");
+    print("'1 != '1'' fail");
 b = 1 != '1.0';
 if (b)
-    console.log("'1 != '1.0'' fail");
+    print("'1 != '1.0'' fail");
 b = 1 != '1.0str';
 if (!b)
-    console.log("'1 != '1.00str'' fail");
+    print("'1 != '1.00str'' fail");
 
 b = 1.0 == 1;
 if (!b)
-    console.log("'1.0 == 1' fail");
+    print("'1.0 == 1' fail");
 b = 1.0 == 1.0;
 if (!b)
-    console.log("'1.0 == 1.0' fail");
+    print("'1.0 == 1.0' fail");
 b = 1.0 == '1';
 if (!b)
-    console.log("'1.0 == '1'' fail");
+    print("'1.0 == '1'' fail");
 b = 1.0 == '1.0';
 if (!b)
-    console.log("'1.0 == '1.0'' fail");
+    print("'1.0 == '1.0'' fail");
 b = 1.0 != 1;
 if (b)
-    console.log("'1.0 != 1' fail");
+    print("'1.0 != 1' fail");
 b = 1.0 != 1.0;
 if (b)
-    console.log("'1.0 != 1.0' fail");
+    print("'1.0 != 1.0' fail");
 b = 1.0 != '1';
 if (b)
-    console.log("'1.0 != '1'' fail");
+    print("'1.0 != '1'' fail");
 b = 1.0 != '1.0';
 if (b)
-    console.log("'1.0 != '1.0'' fail");
+    print("'1.0 != '1.0'' fail");
 b = 1.0 != '1.0str';
 if (!b)
-    console.log("'1.0 != '1.0str'' fail");
+    print("'1.0 != '1.0str'' fail");
 
 b = 'a' == 'a';
 if (!b)
-    console.log("'a' == 'a'' fail");
+    print("'a' == 'a'' fail");
 b = 'a' != 'a';
 if (b)
-    console.log("'a' != 'a'' fail");
+    print("'a' != 'a'' fail");
 
 if (1 != true)
-    console.log("1 != true");
+    print("1 != true");
 if (0 != false)
-    console.log("0 != false");
+    print("0 != false");
 if (true != 1)
-    console.log("true != 1");
+    print("true != 1");
 if (false != 0)
-    console.log("false != 0");
+    print("false != 0");
 if (!false)
 { }
 else
-    console.log("!false fail");
+    print("!false fail");
 
 if (0. != 0)
-    console.log("0. != 0");
+    print("0. != 0");
 if (.0 != 0)
-    console.log(".0 != 0");
+    print(".0 != 0");
 if (0. != 0.0)
-    console.log("0. != 0.0");
+    print("0. != 0.0");
 if (.0 != 0.0)
-    console.log(".0 != 0.0");
+    print(".0 != 0.0");
 
 if (null != null)
-    console.log("null != null fail");
+    print("null != null fail");
 if (null == 0)
-    console.log("null == 0 fail");
+    print("null == 0 fail");
 if (!(null != null))
-    console.log("");
+    print("");
 if (!(null == 0))
-    console.log("");
+    print("");
 
 if (1)
-    console.log("");
+    print("");
 else
-    console.log("if(1) fail");
+    print("if(1) fail");
 if (0)
-    console.log("if(0) fail");
+    print("if(0) fail");
 else
-    console.log("");
+    print("");
 
 if ({})
-    console.log("");
+    print("");
 else
-    console.log("if({}) fail");
+    print("if({}) fail");
 if (!{})
-    console.log("if(!{}) fail");
+    print("if(!{}) fail");
 else
-    console.log("");
+    print("");
 var a = {}
 if (a == a)
-    console.log('');
+    dummy();
 else
-    console.log('if(a==a) fail');
+    print('if(a==a) fail');
 if (a != a)
-    console.log('if(a!=a) fail');
+    print('if(a!=a) fail');
 else
-    console.log('');
+    dummy();
 if (a === a)
-    console.log('');
+    dummy();
 else
-    console.log('if(a===a) fail');
+    print('if(a===a) fail');
 if (a !== a)
-    console.log('if(a!==a) fail');
+    print('if(a!==a) fail');
 else
-    console.log('');
+    dummy();
 
 for (var i = 0; i < 2; i++) if (i) break;
-console.log([, "", "fail"][i]);
+print([, "", "fail"][i]);
 
 _for: for (var i = 0; i < 2; i++) if (i) break _for;
-console.log([, "", "fail"][i]);
+print([, "", "fail"][i]);
 
 for (var i = 1; i > 0; i--) if (i) {
     if (i)
         continue;
     break;
 }
-console.log(["", "fail"][i]);
+print(["", "fail"][i]);
 
 _for: for (var i = 1; i > 0; i--) if (i) {
     if (i)
         continue _for;
     break;
 }
-console.log(["", "fail"][i]);
+print(["", "fail"][i]);
 
 var i = 1;
 do {
@@ -171,7 +177,7 @@ do {
         continue;
     break;
 } while (i--);
-console.log(["", "fail"][i]);
+print(["", "fail"][i]);
 
 var i = 1;
 _do: do {
@@ -179,7 +185,7 @@ _do: do {
         continue _do;
     break;
 } while (i--);
-console.log(["", "fail"][i]);
+print(["", "fail"][i]);
 
 _for: for (var j = 0; ; j++) {
     for (var i in [, 1, 2]) {
@@ -189,40 +195,40 @@ _for: for (var j = 0; ; j++) {
     }
     break;
 }
-console.log(["fail", ""][j]);
+print(["fail", ""][j]);
 function s(x) {
     return function () { return x };
 }
 var a = s(1);
 var b = s(2);
 if (a() != 1)
-    console.log("scope #1 fail");
+    print("scope #1 fail");
 if (b() != 2)
-    console.log("scope #2 fail");
+    print("scope #2 fail");
 if (s(3)() != 3)
-    console.log("scope #3 fail");
+    print("scope #3 fail");
 if (a() != 1)
-    console.log("scope #1 fail");
+    print("scope #1 fail");
 if (b() != 2)
-    console.log("scope #2 fail");
+    print("scope #2 fail");
 if (s(3)() != 3)
-    console.log("scope #3 fail");
+    print("scope #3 fail");
 
 if (!(function () {
     do {
 
         break;
     } while (false);
-    console.log("");
+    print("");
     return true;
 })())
-    console.log("dead do-while fail")
+    print("dead do-while fail")
 
 function mul(a, mul) {
     return a * mul;
 }
 if (mul(2, 2) != 4)
-    console.log("function args link fail")
+    print("function args link fail")
 
 for (var a = 2; a; (a-- , a--));
 
@@ -246,13 +252,13 @@ test(1);
 (function (x, zero) {
     if ((x != -1 >>> 0)
         || (x != -1 >>> zero))
-        console.log("-1 >>> 0 fail");
+        print("-1 >>> 0 fail");
 })((1 << 30) * 4 - 1, 0);
 
 var a = {};
 var b = {};
 if (a == (a = b, b))
-    console.log("(a == (a = b, b)) fail");
+    print("(a == (a = b, b)) fail");
 
 1[0]
 
@@ -386,7 +392,7 @@ sum(10000, 0);
 try {
     if (Const != undefined)
         throw "Invalid const predefined value";
-    console.log("TDZ didn't throw exception");
+    print("TDZ didn't throw exception");
 }
 catch (e) {
 
@@ -394,7 +400,7 @@ catch (e) {
 const Const = 0;
 Const++;
 if (Const != 0)
-    throw "Const was rewrited";
+    throw "Const was rewritten";
 
 if (Object);
 
@@ -428,12 +434,12 @@ if ((false ? false : 0 * 1 + 2) != 2)
 if ((false ? false : undefined = 0 * 1 + 2) != 2)
     throw "Tree of condition of conditional operator has not been rebuilded #6";
 
-console.log((function (x) {
+print((function (x) {
     switch (x) {
         case 0:
             {
                 var a;
-                console.log(x);
+                print(x);
                 break;
             }
         case 1:

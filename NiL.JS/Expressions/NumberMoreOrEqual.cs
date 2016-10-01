@@ -32,55 +32,55 @@ namespace NiL.JS.Expressions
             int itemp;
             double dtemp;
             var op = first.Evaluate(context);
-            if (op.valueType == Core.JSValueType.Integer
-            || op.valueType == Core.JSValueType.Boolean)
+            if (op._valueType == Core.JSValueType.Integer
+            || op._valueType == Core.JSValueType.Boolean)
             {
-                itemp = op.iValue;
+                itemp = op._iValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSValueType.Integer
-                || op.valueType == Core.JSValueType.Boolean)
+                if (op._valueType == Core.JSValueType.Integer
+                || op._valueType == Core.JSValueType.Boolean)
                 {
-                    return itemp >= op.iValue;
+                    return itemp >= op._iValue;
                 }
-                else if (op.valueType == Core.JSValueType.Double)
+                else if (op._valueType == Core.JSValueType.Double)
                 {
-                    return itemp >= op.dValue;
+                    return itemp >= op._dValue;
                 }
                 else
                 {
                     if (tempContainer == null)
-                        tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
-                    tempContainer.valueType = JSValueType.Integer;
-                    tempContainer.iValue = itemp;
+                        tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                    tempContainer._valueType = JSValueType.Integer;
+                    tempContainer._iValue = itemp;
                     return !Less.Check(tempContainer, op, true);
                 }
             }
-            else if (op.valueType == Core.JSValueType.Double)
+            else if (op._valueType == Core.JSValueType.Double)
             {
-                dtemp = op.dValue;
+                dtemp = op._dValue;
                 op = second.Evaluate(context);
-                if (op.valueType == Core.JSValueType.Integer
-                || op.valueType == Core.JSValueType.Boolean)
+                if (op._valueType == Core.JSValueType.Integer
+                || op._valueType == Core.JSValueType.Boolean)
                 {
-                    return dtemp >= op.iValue;
+                    return dtemp >= op._iValue;
                 }
-                else if (op.valueType == Core.JSValueType.Double)
+                else if (op._valueType == Core.JSValueType.Double)
                 {
-                    return dtemp >= op.dValue;
+                    return dtemp >= op._dValue;
                 }
                 else
                 {
                     if (tempContainer == null)
-                        tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
-                    tempContainer.valueType = JSValueType.Double;
-                    tempContainer.dValue = dtemp;
+                        tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                    tempContainer._valueType = JSValueType.Double;
+                    tempContainer._dValue = dtemp;
                     return !Less.Check(tempContainer, op, true);
                 }
             }
             else
             {
                 if (tempContainer == null)
-                    tempContainer = new JSValue() { attributes = JSValueAttributesInternal.Temporary };
+                    tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
                 var temp = tempContainer;
                 temp.Assign(op);
                 tempContainer = null;

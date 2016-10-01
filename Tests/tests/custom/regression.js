@@ -177,6 +177,7 @@ a = console ? 1 : 2, { test: 1 };
     // parse only
     var r;
     if (r) for (t = 0; u > t; t++) n[t][e][1] /= r; else for (t = 0; u > t; t++) n[t][e][1] = o;
+    (this||/[/]/);
 });
 
 var undefined;
@@ -205,4 +206,17 @@ if (JSON.stringify([,,1])!=='[null,null,1]')
 
 ({get [1](){return 1;},[2]:2})
 
-console.asserta(()=> (new class {}).toString(), {}.toString());
+console.assert(((x) => { var r = "" + x; return r })("123"), "123");
+
+if (Object.name !== "Object")
+    throw "Invalid name of Object(...)";
+
+if (Object.toString() !== "function Object() { [native code] }")
+    throw "Incorrect toString of Object(...)";
+
+Object.toString = () =>'hello';
+
+if (Object.toString() === "function Object() { [native code] }")
+    throw "toString of Object(...) does not change";
+
+console.asserta(() => (new class {}).toString(), {}.toString());

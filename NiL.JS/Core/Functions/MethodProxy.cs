@@ -78,14 +78,16 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        private MethodProxy()
+        private MethodProxy(Context context)
+            : base(context)
         {
             _parameters = new ParameterInfo[0];
             wrapper = delegate { return null; };
             RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
-        public MethodProxy(MethodBase methodBase, object hardTarget)
+        public MethodProxy(Context context, MethodBase methodBase, object hardTarget)
+            : base(context)
         {
             _method = methodBase;
             _hardTarget = hardTarget;
@@ -93,13 +95,13 @@ namespace NiL.JS.Core.Functions
             _strictConversion = methodBase.IsDefined(typeof(StrictConversionAttribute), true);
 
             if (_length == null)
-                _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
+                _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
             var pc = methodBase.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
             if (pc.Length != 0)
-                _length.iValue = (pc[0] as ArgumentsLengthAttribute).Count;
+                _length._iValue = (pc[0] as ArgumentsLengthAttribute).Count;
             else
-                _length.iValue = _parameters.Length;
+                _length._iValue = _parameters.Length;
 
             for (int i = 0; i < _parameters.Length; i++)
             {
@@ -425,18 +427,18 @@ namespace NiL.JS.Core.Functions
             {
                 if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
                 {
-                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
+                    ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
                 }
             }
             else
             {
                 if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithNewOnly)
                 {
-                    ExceptionsHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
+                    ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
                 }
             }
             if (_parameters.Length == 0 || (forceInstance && _parameters.Length == 1))
-                return Invoke(withNew, correctTargetObject(targetObject, creator.body._strict), null);
+                return Invoke(withNew, correctTargetObject(targetObject, _creator.body._strict), null);
 
             if (raw || withSpread)
             {
@@ -454,7 +456,7 @@ namespace NiL.JS.Core.Functions
                     args[i] = convertArg(i, obj, ConvertArgsOptions.ThrowOnError | ConvertArgsOptions.DummyValues);
                 }
 
-                return TypeProxy.Proxy(InvokeImpl(targetObject, args, null));
+                return Context.GlobalContext.ProxyValue(InvokeImpl(targetObject, args, null));
             }
         }
 
@@ -466,12 +468,15 @@ namespace NiL.JS.Core.Functions
             {
                 if (forceInstance)
                 {
-                    if (thisBind != null && thisBind.valueType >= JSValueType.Object)
+                    if (thisBind != null && thisBind._valueType >= JSValueType.Object)
                     {
                         // Объект нужно развернуть до основного значения. Даже если это обёртка над примитивным значением
                         target = thisBind.Value;
-                        if (target is TypeProxy)
-                            target = (target as TypeProxy).prototypeInstance ?? thisBind.Value;
+
+                        var proxy = target as Proxy;
+                        if (proxy != null)
+                            target = proxy.prototypeInstance ?? thisBind.Value;
+
                         // ForceInstance работает только если первый аргумент типа JSValue
                         if (!(target is JSValue))
                             target = thisBind;
@@ -492,7 +497,7 @@ namespace NiL.JS.Core.Functions
                         if (_method.Name == "get_length" && typeof(Function).IsAssignableFrom(_method.DeclaringType))
                             return 0;
 
-                        ExceptionsHelper.Throw(new TypeError("Can not call function \"" + name + "\" for object of another type."));
+                        ExceptionHelper.Throw(new TypeError("Can not call function \"" + name + "\" for object of another type."));
                     }
                 }
             }
@@ -514,7 +519,7 @@ namespace NiL.JS.Core.Functions
                     e = e.InnerException;
                 if (e is JSException)
                     throw e;
-                ExceptionsHelper.Throw(new TypeError(e.Message), e);
+                ExceptionHelper.Throw(new TypeError(e.Message), e);
             }
             return null;
         }
@@ -533,17 +538,18 @@ namespace NiL.JS.Core.Functions
             return null;
         }
 
-        public MethodProxy(MethodBase methodBase)
-            : this(methodBase, null)
+        public MethodProxy(Context context, MethodBase methodBase)
+            : this(context, methodBase, null)
         {
         }
 
-        private static object getTargetObject(JSValue _this, Type targetType)
+        private static object getTargetObject(JSValue target, Type targetType)
         {
-            if (_this == null)
+            if (target == null)
                 return null;
-            _this = _this.oValue as JSValue ?? _this; // это может быть лишь ссылка на какой-то другой контейнер
-            var res = Tools.convertJStoObj(_this, targetType, false);
+
+            target = target._oValue as JSValue ?? target; // это может быть лишь ссылка на какой-то другой контейнер
+            var res = Tools.convertJStoObj(target, targetType, false);
             return res;
         }
 
@@ -553,7 +559,7 @@ namespace NiL.JS.Core.Functions
                 return null;
 
             if (forceInstance)
-                ExceptionsHelper.Throw(new InvalidOperationException());
+                ExceptionHelper.Throw(new InvalidOperationException());
 
             object[] res = null;
             int targetCount = _parameters.Length;
@@ -562,7 +568,7 @@ namespace NiL.JS.Core.Functions
                 var obj = source?[i] ?? undefined;
 
                 var trueNull = (options & ConvertArgsOptions.DummyValues) != 0 
-                    || (obj.valueType >= JSValueType.Object && obj.oValue == null);
+                    || (obj._valueType >= JSValueType.Object && obj._oValue == null);
 
                 var t = convertArg(i, obj, options);
 
@@ -589,7 +595,7 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                var trueNull = obj.valueType >= JSValueType.Object && obj.oValue == null;
+                var trueNull = obj._valueType >= JSValueType.Object && obj._oValue == null;
 
                 if (!trueNull)
                     result = Tools.convertJStoObj(obj, _parameters[i].ParameterType, !strictConv);
@@ -597,7 +603,7 @@ namespace NiL.JS.Core.Functions
                 if (strictConv && (trueNull ? _parameters[i].ParameterType.GetTypeInfo().IsValueType : result == null))
                 {
                     if ((options & ConvertArgsOptions.ThrowOnError) != 0)
-                        ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + _parameters[i].ParameterType);
+                        ExceptionHelper.ThrowTypeError("Cannot convert " + obj + " to type " + _parameters[i].ParameterType);
                     return null;
                 }
 
@@ -619,7 +625,7 @@ namespace NiL.JS.Core.Functions
                     if (strictConv)
                     {
                         if ((options & ConvertArgsOptions.ThrowOnError) != 0)
-                            ExceptionsHelper.ThrowTypeError("Cannot convert " + obj + " to type " + _parameters[i].ParameterType);
+                            ExceptionHelper.ThrowTypeError("Cannot convert " + obj + " to type " + _parameters[i].ParameterType);
                         return null;
                     }
 
@@ -635,7 +641,12 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            return TypeProxy.Proxy(InvokeImpl(targetObject, null, arguments));
+            var result = InvokeImpl(targetObject, null, arguments);
+
+            if (result == null)
+                return undefined;
+            
+            return result as JSValue ?? Context.GlobalContext.ProxyValue(result);
         }
 
         internal static object[] argumentsToArray(Arguments source)
@@ -653,7 +664,7 @@ namespace NiL.JS.Core.Functions
             if (_hardTarget != null || args.Length == 0)
                 return this;
 
-            return new MethodProxy()
+            return new MethodProxy(Context)
             {
                 _hardTarget = getTargetObject(args[0], _method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
                 _method = _method,

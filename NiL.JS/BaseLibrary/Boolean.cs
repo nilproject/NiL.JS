@@ -13,16 +13,16 @@ namespace NiL.JS.BaseLibrary
         internal const string FalseString = "false";
 
         [Hidden]
-        internal static readonly Boolean True = new Boolean(true) { attributes = JSValueAttributesInternal.SystemObject };
+        internal static readonly Boolean True = new Boolean(true) { _attributes = JSValueAttributesInternal.SystemObject };
         [Hidden]
-        internal static readonly Boolean False = new Boolean(false) { attributes = JSValueAttributesInternal.SystemObject };
+        internal static readonly Boolean False = new Boolean(false) { _attributes = JSValueAttributesInternal.SystemObject };
 
         [DoNotEnumerate]
         public Boolean()
         {
-            valueType = JSValueType.Boolean;
-            iValue = 0;
-            attributes |= JSValueAttributesInternal.SystemObject;
+            _valueType = JSValueType.Boolean;
+            _iValue = 0;
+            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [StrictConversion]
@@ -31,45 +31,45 @@ namespace NiL.JS.BaseLibrary
         {
             if (obj == null)
                 throw new ArgumentNullException("obj");
-            valueType = JSValueType.Boolean;
-            iValue = (bool)obj[0] ? 1 : 0;
-            attributes |= JSValueAttributesInternal.SystemObject;
+            _valueType = JSValueType.Boolean;
+            _iValue = (bool)obj[0] ? 1 : 0;
+            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [StrictConversion]
         [DoNotEnumerate]
         public Boolean(bool value)
         {
-            valueType = JSValueType.Boolean;
-            iValue = value ? 1 : 0;
-            attributes |= JSValueAttributesInternal.SystemObject;
+            _valueType = JSValueType.Boolean;
+            _iValue = value ? 1 : 0;
+            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [StrictConversion]
         [DoNotEnumerate]
         public Boolean(double value)
         {
-            valueType = JSValueType.Boolean;
-            iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
-            attributes |= JSValueAttributesInternal.SystemObject;
+            _valueType = JSValueType.Boolean;
+            _iValue = value != 0 && !double.IsNaN(value) ? 1 : 0;
+            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [StrictConversion]
         [DoNotEnumerate]
         public Boolean(int value)
         {
-            valueType = JSValueType.Boolean;
-            iValue = value != 0 ? 1 : 0;
-            attributes |= JSValueAttributesInternal.SystemObject;
+            _valueType = JSValueType.Boolean;
+            _iValue = value != 0 ? 1 : 0;
+            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [StrictConversion]
         [DoNotEnumerate]
         public Boolean(string value)
         {
-            valueType = JSValueType.Boolean;
-            iValue = !string.IsNullOrEmpty(value) ? 1 : 0;
-            attributes |= JSValueAttributesInternal.SystemObject;
+            _valueType = JSValueType.Boolean;
+            _iValue = !string.IsNullOrEmpty(value) ? 1 : 0;
+            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
 #if INLINE
@@ -79,9 +79,9 @@ namespace NiL.JS.BaseLibrary
         public static implicit operator Boolean(bool value)
         {
 #if DEBUG
-            if (Boolean.True.iValue != 1)
+            if (Boolean.True._iValue != 1)
                 System.Diagnostics.Debugger.Break();
-            if (Boolean.False.iValue != 0)
+            if (Boolean.False._iValue != 0)
                 System.Diagnostics.Debugger.Break();
 #endif
             return value ? Boolean.True : Boolean.False;
@@ -93,7 +93,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public static implicit operator bool(Boolean value)
         {
-            return value != null && value.iValue != 0;
+            return value != null && value._iValue != 0;
         }
 
         [DoNotEnumerate]
@@ -101,9 +101,9 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(0)]
         public static JSValue toLocaleString(JSValue self)
         {
-            if (self.GetType() != typeof(Boolean) && self.valueType != JSValueType.Boolean)
-                ExceptionsHelper.Throw(new TypeError("Boolean.prototype.toLocaleString called for not boolean."));
-            return self.iValue != 0 ? "true" : "false";
+            if (self.GetType() != typeof(Boolean) && self._valueType != JSValueType.Boolean)
+                ExceptionHelper.Throw(new TypeError("Boolean.prototype.toLocaleString called for not boolean."));
+            return self._iValue != 0 ? "true" : "false";
         }
 
         [DoNotEnumerate]
@@ -112,9 +112,9 @@ namespace NiL.JS.BaseLibrary
         public static JSValue valueOf(JSValue self)
         {
             if (self.GetType() == typeof(Boolean))
-                return self.iValue != 0;
-            if (self.valueType != JSValueType.Boolean)
-                ExceptionsHelper.Throw(new TypeError("Boolean.prototype.valueOf called for not boolean."));
+                return self._iValue != 0;
+            if (self._valueType != JSValueType.Boolean)
+                ExceptionHelper.Throw(new TypeError("Boolean.prototype.valueOf called for not boolean."));
             return self;
         }
 
@@ -124,9 +124,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public static JSValue toString(JSValue self, Arguments args)
         {
-            if (self.GetType() != typeof(Boolean) && self.valueType != JSValueType.Boolean)
-                ExceptionsHelper.Throw(new TypeError("Boolean.prototype.toString called for not boolean."));
-            return self.iValue != 0 ? "true" : "false";
+            if (self.GetType() != typeof(Boolean) && self._valueType != JSValueType.Boolean)
+                ExceptionHelper.Throw(new TypeError("Boolean.prototype.toString called for not boolean."));
+            return self._iValue != 0 ? "true" : "false";
         }
     }
 }

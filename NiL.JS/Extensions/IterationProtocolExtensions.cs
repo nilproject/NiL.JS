@@ -7,7 +7,28 @@ using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Extensions
 {
-    internal sealed class EnumeratorResult : IIteratorResult
+    internal abstract class IterableProtocolBase
+    {
+        [Hidden]
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        [Hidden]
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        [Hidden]
+        public override string ToString()
+        {
+            return base.ToString();
+        }
+    }
+
+    internal sealed class EnumeratorResult : IterableProtocolBase, IIteratorResult
     {
         private JSValue _value;
         private bool _done;
@@ -30,18 +51,26 @@ namespace NiL.JS.Extensions
         }
     }
 
-    internal sealed class EnumeratorToIteratorWrapper : IIterator
+    internal sealed class EnumeratorToIteratorWrapper : IterableProtocolBase, IIterator, IIterable
     {
-        private IEnumerator enumerator;
+        private IEnumerator _enumerator;
+        private GlobalContext _context;
 
+        [Hidden]
         public EnumeratorToIteratorWrapper(IEnumerator enumerator)
         {
-            this.enumerator = enumerator;
+            _enumerator = enumerator;
+            _context = Context.CurrentBaseContext;
+        }
+
+        public IIterator iterator()
+        {
+            return this;
         }
 
         public IIteratorResult next(Arguments arguments = null)
         {
-            return new EnumeratorResult(!enumerator.MoveNext(), TypeProxy.Proxy(enumerator.Current));
+            return new EnumeratorResult(!_enumerator.MoveNext(), _context.ProxyValue(_enumerator.Current));
         }
 
         public IIteratorResult @return()
@@ -55,10 +84,11 @@ namespace NiL.JS.Extensions
         }
     }
 
-    internal sealed class EnumerableToIterableWrapper : IIterable
+    internal sealed class EnumerableToIterableWrapper : IterableProtocolBase, IIterable
     {
         private IEnumerable enumerable;
 
+        [Hidden]
         public EnumerableToIterableWrapper(IEnumerable enumerable)
         {
             this.enumerable = enumerable;
@@ -70,7 +100,7 @@ namespace NiL.JS.Extensions
         }
     }
 
-    internal sealed class IteratorItemAdapter : IIteratorResult
+    internal sealed class IteratorItemAdapter : IterableProtocolBase, IIteratorResult
     {
         private JSValue result;
 
@@ -97,7 +127,7 @@ namespace NiL.JS.Extensions
         }
     }
 
-    internal sealed class IteratorAdapter : IIterator
+    internal sealed class IteratorAdapter : IterableProtocolBase, IIterator, IIterable
     {
         private JSValue iterator;
 
@@ -124,22 +154,27 @@ namespace NiL.JS.Extensions
             var result = iterator["throw"].As<Function>().Call(iterator, null);
             return new IteratorItemAdapter(result);
         }
+
+        IIterator IIterable.iterator()
+        {
+            return this;
+        }
     }
 
-    internal sealed class IterableAdapter : IIterable
+    internal sealed class IterableAdapter : IterableProtocolBase, IIterable
     {
         private JSValue source;
 
         [Hidden]
         public IterableAdapter(JSValue source)
         {
-            this.source = source.IsBox ? source.oValue as JSValue : source;
+            this.source = source.IsBox ? source._oValue as JSValue : source;
         }
 
         public IIterator iterator()
         {
             var iteratorFunction = source.GetProperty(Symbol.iterator, false, PropertyScope.Сommon);
-            if (iteratorFunction.valueType != JSValueType.Function)
+            if (iteratorFunction._valueType != JSValueType.Function)
                 return null;
             var iterator = iteratorFunction.As<Function>().Call(source, null);
             if (iterator == null)
@@ -160,7 +195,7 @@ namespace NiL.JS.Extensions
                 item = iterator.next();
             }
         }
-        
+
         public static IIterable AsIterable(this JSValue source)
         {
             if (source == null)

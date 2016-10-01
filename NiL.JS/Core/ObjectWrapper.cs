@@ -31,21 +31,21 @@ namespace NiL.JS.Core
         {
             this.instance = instance;
             if (instance is Date)
-                valueType = JSValueType.Date;
+                _valueType = JSValueType.Date;
             else
-                valueType = JSValueType.Object;
-            oValue = this;
-            attributes = JSValueAttributesInternal.SystemObject;
+                _valueType = JSValueType.Object;
+            _oValue = this;
+            _attributes = JSValueAttributesInternal.SystemObject;
             if (proto != null)
             {
-                attributes |= proto.attributes & JSValueAttributesInternal.Immutable;
+                _attributes |= proto._attributes & JSValueAttributesInternal.Immutable;
                 __prototype = proto;
             }
         }
 
         [Hidden]
         public ObjectWrapper(object instance)
-            : this(instance, instance != null ? TypeProxy.GetPrototype(instance.GetType()) : null)
+            : this(instance, instance != null ? Context.CurrentBaseContext.GetPrototype(instance.GetType()) : null)
         {
         }
 

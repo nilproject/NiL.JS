@@ -12,19 +12,20 @@ namespace NiL.JS.Statements
 #endif
     public sealed class Throw : CodeNode
     {
-        private Expression body;
+        private Expression _body;
+        private Exception _exception;
 
         public Throw(Exception e)
         {
-            body = new Constant(TypeProxy.Proxy(e));
+            _exception = e;
         }
 
         internal Throw(Expression statement)
         {
-            body = statement;
+            _body = statement;
         }
 
-        public CodeNode Body { get { return body; } }
+        public CodeNode Body { get { return _body; } }
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
@@ -35,7 +36,7 @@ namespace NiL.JS.Statements
                 i++;
             var b = state.Code[i] == ';' || Tools.IsLineTerminator(state.Code[i]) ? null : (Expression)Parser.Parse(state, ref i, CodeFragmentType.Expression);
             if (b is Empty)
-                ExceptionsHelper.Throw((new SyntaxError("Can't throw result of EmptyStatement " + CodeCoordinates.FromTextPosition(state.Code, i - 1, 0))));
+                ExceptionHelper.Throw((new SyntaxError("Can't throw result of EmptyStatement " + CodeCoordinates.FromTextPosition(state.Code, i - 1, 0))));
             var pos = index;
             index = i;
             return new Throw(b)
@@ -47,11 +48,18 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            var value = body == null ? JSValue.undefined : body.Evaluate(context);
-            if (context.executionMode == AbortReason.Suspend)
+            var value = 
+                _body == null ? 
+                    _exception == null ? 
+                        JSValue.undefined 
+                    : 
+                        context.GlobalContext.ProxyValue(_exception) 
+                : _body.Evaluate(context);
+
+            if (context._executionMode == AbortReason.Suspend)
                 return null;
 
-            ExceptionsHelper.Throw(value);
+            ExceptionHelper.Throw(value);
             return null;
         }
 
@@ -59,7 +67,7 @@ namespace NiL.JS.Statements
         {
             var res = new List<CodeNode>()
             {
-                body
+                _body
             };
             res.RemoveAll(x => x == null);
             return res.ToArray();
@@ -67,25 +75,25 @@ namespace NiL.JS.Statements
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref body, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _body, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             return false;
         }
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            if (body != null)
-                body.Optimize(ref body, owner, message, opts, stats);
+            if (_body != null)
+                _body.Optimize(ref _body, owner, message, opts, stats);
         }
 
         public override void Decompose(ref CodeNode self)
         {
-            if (body != null)
-                body.Decompose(ref body);
+            if (_body != null)
+                _body.Decompose(ref _body);
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -95,7 +103,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return "throw" + (body != null ? " " + body : "");
+            return "throw" + (_body != null ? " " + _body : _exception != null ? "\"<native exception>\"" : "");
         }
     }
 }

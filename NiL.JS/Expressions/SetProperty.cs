@@ -49,11 +49,11 @@ namespace NiL.JS.Expressions
                 JSValue sjso = null;
                 JSValue source = null;
                 source = first.Evaluate(context);
-                if (source.valueType >= JSValueType.Object
-                    && source.oValue != null
-                    && source.oValue != source
-                    && (sjso = source.oValue as JSValue) != null
-                    && sjso.valueType >= JSValueType.Object)
+                if (source._valueType >= JSValueType.Object
+                    && source._oValue != null
+                    && source._oValue != source
+                    && (sjso = source._oValue as JSValue) != null
+                    && sjso._valueType >= JSValueType.Object)
                 {
                     source = sjso;
                     sjso = null;
@@ -66,8 +66,8 @@ namespace NiL.JS.Expressions
                 source.SetProperty(
                     cachedMemberName ?? safeGet(tempContainer1, second, context),
                     safeGet(tempContainer, value, context),
-                    context.strict);
-                context.objectSource = null;
+                    context._strict);
+                context._objectSource = null;
                 return tempContainer;
             }
         }

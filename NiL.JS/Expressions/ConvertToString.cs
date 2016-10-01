@@ -30,10 +30,10 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var t = first.Evaluate(context);
-            if (t.valueType == JSValueType.String)
+            if (t._valueType == JSValueType.String)
                 return t;
-            tempContainer.valueType = JSValueType.String;
-            tempContainer.oValue = t.ToPrimitiveValue_Value_String().ToString();
+            tempContainer._valueType = JSValueType.String;
+            tempContainer._oValue = t.ToPrimitiveValue_Value_String().ToString();
             return tempContainer;
         }
 

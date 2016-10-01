@@ -50,7 +50,7 @@ namespace NiL.JS.Statements
                     ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function);
 
                 if (definition == null)
-                    ExceptionsHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
+                    ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
 
                 result._internalDefinition = definition;
             }
@@ -60,18 +60,18 @@ namespace NiL.JS.Statements
             if (Parser.Validate(state.Code, "from", ref index))
             {
                 if (reexport == -1)
-                    ExceptionsHelper.ThrowSyntaxError("Reexport is not allowed with this syntax", state.Code, index - 4);
+                    ExceptionHelper.ThrowSyntaxError("Reexport is not allowed with this syntax", state.Code, index - 4);
 
                 Tools.SkipSpaces(state.Code, ref index);
 
                 var start = index;
                 if (!Parser.ValidateString(state.Code, ref index, false))
-                    ExceptionsHelper.ThrowSyntaxError("Expected module name", state.Code, index);
+                    ExceptionHelper.ThrowSyntaxError("Expected module name", state.Code, index);
 
                 result._reexportSourceModuleName = Tools.Unescape(state.Code.Substring(start + 1, index - start - 2), false);
             }
             else if (reexport == 1)
-                ExceptionsHelper.ThrowSyntaxError("Expected 'from'", state.Code, index);
+                ExceptionHelper.ThrowSyntaxError("Expected 'from'", state.Code, index);
 
             return result;
         }
@@ -82,13 +82,13 @@ namespace NiL.JS.Statements
             Tools.SkipSpaces(state.Code, ref index);
 
             if (state.Code[index] == '}')
-                ExceptionsHelper.ThrowSyntaxError("Empty export map", state.Code, index);
+                ExceptionHelper.ThrowSyntaxError("Empty export map", state.Code, index);
 
             while (state.Code[index] != '}')
             {
                 var start = index;
                 if (!Parser.ValidateName(state.Code, ref index))
-                    ExceptionsHelper.ThrowSyntaxError("Invalid export name", state.Code, index);
+                    ExceptionHelper.ThrowSyntaxError("Invalid export name", state.Code, index);
                 var name = state.Code.Substring(start, index - start);
                 var alias = name;
 
@@ -99,7 +99,7 @@ namespace NiL.JS.Statements
                 for (var i = 0; i < export._map.Count; i++)
                 {
                     if (export._map[i].Key == name)
-                        ExceptionsHelper.ThrowSyntaxError("Duplicate import", state.Code, index);
+                        ExceptionHelper.ThrowSyntaxError("Duplicate import", state.Code, index);
                 }
 
                 export._map.Add(
@@ -127,7 +127,7 @@ namespace NiL.JS.Statements
 
                 var start = index;
                 if (!Parser.ValidateName(code, ref index) && !Parser.Validate(code, "default", ref index))
-                    ExceptionsHelper.ThrowSyntaxError("Invalid export alias", code, index);
+                    ExceptionHelper.ThrowSyntaxError("Invalid export alias", code, index);
 
                 alias = code.Substring(start, index - start);
 
@@ -148,12 +148,12 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             if (context._module == null)
-                ExceptionsHelper.Throw(new BaseLibrary.Error("Module undefined"));
+                ExceptionHelper.Throw(new BaseLibrary.Error("Module undefined"));
 
             if (_reexportSourceModuleName != null)
             {
                 if (string.IsNullOrEmpty(context._module.FilePath))
-                    ExceptionsHelper.Throw(new BaseLibrary.Error("Module must has name"));
+                    ExceptionHelper.Throw(new BaseLibrary.Error("Module must has name"));
 
                 var module = context._module.Import(_reexportSourceModuleName);
 

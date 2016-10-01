@@ -29,55 +29,55 @@ namespace NiL.JS.Expressions
 
         internal static bool Check(JSValue first, JSValue second)
         {
-            switch (first.valueType)
+            switch (first._valueType)
             {
                 case JSValueType.NotExistsInObject:
                 case JSValueType.NotExists:
                 case JSValueType.Undefined:
                     {
-                        return second.valueType <= JSValueType.Undefined;
+                        return second._valueType <= JSValueType.Undefined;
                     }
                 case JSValueType.Boolean:
                     {
-                        if (first.valueType != second.valueType)
+                        if (first._valueType != second._valueType)
                             return false;
-                        return first.iValue == second.iValue;
+                        return first._iValue == second._iValue;
                     }
                 case JSValueType.Integer:
                     {
-                        if (second.valueType == JSValueType.Double)
-                            return first.iValue == second.dValue;
-                        else if (second.valueType != JSValueType.Integer)
+                        if (second._valueType == JSValueType.Double)
+                            return first._iValue == second._dValue;
+                        else if (second._valueType != JSValueType.Integer)
                             return false;
                         else
-                            return first.iValue == second.iValue;
+                            return first._iValue == second._iValue;
                     }
                 case JSValueType.Double:
                     {
-                        if (second.valueType == JSValueType.Integer)
-                            return first.dValue == second.iValue;
-                        else if (second.valueType != JSValueType.Double)
+                        if (second._valueType == JSValueType.Integer)
+                            return first._dValue == second._iValue;
+                        else if (second._valueType != JSValueType.Double)
                             return false;
                         else
-                            return first.dValue == second.dValue;
+                            return first._dValue == second._dValue;
                     }
                 case JSValueType.String:
                     {
-                        if (second.valueType != JSValueType.String)
+                        if (second._valueType != JSValueType.String)
                             return false;
-                        return string.CompareOrdinal(first.oValue.ToString(), second.oValue.ToString()) == 0;
+                        return string.CompareOrdinal(first._oValue.ToString(), second._oValue.ToString()) == 0;
                     }
                 case JSValueType.Date:
                 case JSValueType.Function:
                 case JSValueType.Symbol:
                 case JSValueType.Object:
                     {
-                        if (first.valueType != second.valueType)
+                        if (first._valueType != second._valueType)
                             return false;
-                        else if (first.oValue == null)
-                            return second.oValue == null;
+                        else if (first._oValue == null)
+                            return second._oValue == null;
                         else
-                            return object.ReferenceEquals(second.oValue, first.oValue);
+                            return object.ReferenceEquals(second._oValue, first._oValue);
                     }
                 default:
                     throw new NotImplementedException();

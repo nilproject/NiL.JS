@@ -36,7 +36,7 @@ namespace NiL.JS.BaseLibrary
         {
             var length = Tools.JSObjectToInt32(args.length);
             var code = args[0].ToString();
-            Function reviewer = length > 1 ? args[1].oValue as Function : null;
+            Function reviewer = length > 1 ? args[1]._oValue as Function : null;
             return parse(code, reviewer);
         }
 
@@ -87,10 +87,10 @@ namespace NiL.JS.BaseLibrary
                 if (Tools.IsDigit(code[start]) || (code[start] == '-' && Tools.IsDigit(code[start + 1])))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                     double value;
                     if (!Tools.ParseNumber(code, ref pos, out value))
-                        ExceptionsHelper.Throw((new SyntaxError("Invalid number definition.")));
+                        ExceptionHelper.Throw((new SyntaxError("Invalid number definition.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = value;
@@ -102,7 +102,7 @@ namespace NiL.JS.BaseLibrary
                     for (var i = value.Length; i-- > 0;)
                     {
                         if ((value[i] >= 0 && value[i] <= 0x1f))
-                            ExceptionsHelper.Throw(new SyntaxError("Invalid string char '\\u000" + (int)value[i] + "'"));
+                            ExceptionHelper.Throw(new SyntaxError("Invalid string char '\\u000" + (int)value[i] + "'"));
                     }
                     if (stack.Peek().state == ParseState.Name)
                     {
@@ -111,14 +111,14 @@ namespace NiL.JS.BaseLibrary
                         while (isSpace(code[pos]))
                             pos++;
                         if (code[pos] != ':')
-                            ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                            ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                         pos++;
                     }
                     else
                     {
                         value = Tools.Unescape(value, false);
                         if (stack.Peek().state != ParseState.Value)
-                            ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                            ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                         var v = stack.Peek();
                         v.state = ParseState.End;
                         v.value = value;
@@ -127,7 +127,7 @@ namespace NiL.JS.BaseLibrary
                 else if (Parser.Validate(code, "null", ref pos))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = JSValue.@null;
@@ -135,7 +135,7 @@ namespace NiL.JS.BaseLibrary
                 else if (Parser.Validate(code, "true", ref pos))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = true;
@@ -143,7 +143,7 @@ namespace NiL.JS.BaseLibrary
                 else if (Parser.Validate(code, "false", ref pos))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = false;
@@ -151,7 +151,7 @@ namespace NiL.JS.BaseLibrary
                 else if (code[pos] == '{')
                 {
                     if (stack.Peek().state == ParseState.Name)
-                        ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                     stack.Peek().value = JSObject.CreateObject();
                     stack.Peek().state = ParseState.Object;
                     pos++;
@@ -159,13 +159,13 @@ namespace NiL.JS.BaseLibrary
                 else if (code[pos] == '[')
                 {
                     if (stack.Peek().state == ParseState.Name)
-                        ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                     stack.Peek().value = new Array();
                     stack.Peek().state = ParseState.Array;
                     pos++;
                 }
                 else if (stack.Peek().state != ParseState.End)
-                    ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                    ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                 if (stack.Peek().state == ParseState.End)
                 {
                     var t = stack.Pop();
@@ -195,7 +195,7 @@ namespace NiL.JS.BaseLibrary
                 if (code.Length <= pos)
                 {
                     if (stack.Peek().state != ParseState.End)
-                        ExceptionsHelper.Throw(new SyntaxError("Unexpected end of string."));
+                        ExceptionHelper.Throw(new SyntaxError("Unexpected end of string."));
                     else
                         break;
                 }
@@ -208,14 +208,14 @@ namespace NiL.JS.BaseLibrary
                             else if (stack.Peek().state == ParseState.Object)
                                 stack.Push(new StackFrame() { state = ParseState.Name, container = stack.Peek().value });
                             else
-                                ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                                ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                             pos++;
                             break;
                         }
                     case ']':
                         {
                             if (stack.Peek().state != ParseState.Array)
-                                ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                                ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                             stack.Peek().state = ParseState.End;
                             pos++;
                             break;
@@ -223,7 +223,7 @@ namespace NiL.JS.BaseLibrary
                     case '}':
                         {
                             if (stack.Peek().state != ParseState.Object)
-                                ExceptionsHelper.Throw((new SyntaxError("Unexpected token.")));
+                                ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
                             stack.Peek().state = ParseState.End;
                             pos++;
                             break;
@@ -240,7 +240,7 @@ namespace NiL.JS.BaseLibrary
                 while (code.Length > pos && isSpace(code[pos]))
                     pos++;
                 if (code.Length <= pos && stack.Peek().state != ParseState.End)
-                    ExceptionsHelper.Throw(new SyntaxError("Unexpected end of string."));
+                    ExceptionHelper.Throw(new SyntaxError("Unexpected end of string."));
             }
             return stack.Pop().value;
         }
@@ -250,28 +250,28 @@ namespace NiL.JS.BaseLibrary
         public static JSValue stringify(Arguments args)
         {
             var length = args.length;
-            Function replacer = length > 1 ? args[1].oValue as Function : null;
+            Function replacer = length > 1 ? args[1]._oValue as Function : null;
             string space = null;
             if (args.length > 2)
             {
                 var sa = args[2];
-                if (sa.valueType >= JSValueType.Object)
-                    sa = sa.oValue as JSValue ?? sa;
+                if (sa._valueType >= JSValueType.Object)
+                    sa = sa._oValue as JSValue ?? sa;
                 if (sa is ObjectWrapper)
                     sa = sa.Value as JSValue ?? sa;
-                if (sa.valueType == JSValueType.Integer
-                    || sa.valueType == JSValueType.Double
-                    || sa.valueType == JSValueType.String)
+                if (sa._valueType == JSValueType.Integer
+                    || sa._valueType == JSValueType.Double
+                    || sa._valueType == JSValueType.String)
                 {
-                    if (sa.valueType == JSValueType.Integer)
+                    if (sa._valueType == JSValueType.Integer)
                     {
-                        if (sa.iValue > 0)
-                            space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, sa.iValue)));
+                        if (sa._iValue > 0)
+                            space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, sa._iValue)));
                     }
-                    else if (sa.valueType == JSValueType.Double)
+                    else if (sa._valueType == JSValueType.Double)
                     {
-                        if ((int)sa.dValue > 0)
-                            space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, (int)sa.dValue)));
+                        if ((int)sa._dValue > 0)
+                            space = "          ".Substring(10 - System.Math.Max(0, System.Math.Min(10, (int)sa._dValue)));
                     }
                     else
                     {
@@ -290,7 +290,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public static string stringify(JSValue obj, Function replacer, string space)
         {
-            if (obj.valueType >= JSValueType.Object && obj.Value == null)
+            if (obj._valueType >= JSValueType.Object && obj.Value == null)
                 return "null";
             return stringifyImpl("", obj, replacer, space, new List<JSValue>(), new Arguments());
         }
@@ -354,29 +354,29 @@ namespace NiL.JS.BaseLibrary
             if (replacer != null)
             {
                 args[0] = "";
-                args[0].oValue = key;
+                args[0]._oValue = key;
                 args[1] = obj;
                 args.length = 2;
                 var t = replacer.Call(args);
-                if (t.valueType >= JSValueType.Object && t.oValue == null)
+                if (t._valueType >= JSValueType.Object && t._oValue == null)
                     return "null";
-                if (t.valueType <= JSValueType.Undefined)
+                if (t._valueType <= JSValueType.Undefined)
                     return null;
                 obj = t;
             }
             obj = obj.Value as JSValue ?? obj;
             if (processed.IndexOf(obj) != -1)
-                ExceptionsHelper.Throw(new TypeError("Can not convert circular structure to JSON."));
+                ExceptionHelper.Throw(new TypeError("Can not convert circular structure to JSON."));
             processed.Add(obj);
             try
             {
                 StringBuilder res = null;
                 string strval = null;
-                if (obj.valueType < JSValueType.Object)
+                if (obj._valueType < JSValueType.Object)
                 {
-                    if (obj.valueType <= JSValueType.Undefined)
+                    if (obj._valueType <= JSValueType.Undefined)
                         return null;
-                    if (obj.valueType == JSValueType.String)
+                    if (obj._valueType == JSValueType.String)
                     {
                         res = new StringBuilder("\"");
                         strval = obj.ToString();
@@ -389,12 +389,12 @@ namespace NiL.JS.BaseLibrary
                 }
                 if (obj.Value == null)
                     return null;
-                if (obj.valueType == JSValueType.Function)
+                if (obj._valueType == JSValueType.Function)
                     return null;
                 var toJSONmemb = obj["toJSON"];
                 toJSONmemb = toJSONmemb.Value as JSValue ?? toJSONmemb;
-                if (toJSONmemb.valueType == JSValueType.Function)
-                    return stringifyImpl("", (toJSONmemb.oValue as Function).Call(obj, null), null, space, processed, null);
+                if (toJSONmemb._valueType == JSValueType.Function)
+                    return stringifyImpl("", (toJSONmemb._oValue as Function).Call(obj, null), null, space, processed, null);
                 res = new StringBuilder(obj is Array ? "[" : "{");
 
                 string prevKey = null;
@@ -403,11 +403,11 @@ namespace NiL.JS.BaseLibrary
                 {
                     var value = member.Value;
                     value = value.Value as JSValue ?? value;
-                    if (value.valueType < JSValueType.Undefined)
+                    if (value._valueType < JSValueType.Undefined)
                         continue;
 
-                    if (value.valueType == JSValueType.Property)
-                        value = ((value.oValue as GsPropertyPair).get ?? Function.Empty).Call(obj, null);
+                    if (value._valueType == JSValueType.Property)
+                        value = ((value._oValue as GsPropertyPair).get ?? Function.Empty).Call(obj, null);
                     strval = stringifyImpl(member.Key, value, replacer, space, processed, args);
 
                     if (strval == null)

@@ -19,7 +19,7 @@ namespace NiL.JS.Expressions
             {
                 if (value == null)
                     return PredictedType.Unknown;
-                switch (value.valueType)
+                switch (value._valueType)
                 {
                     case JSValueType.Undefined:
                     case JSValueType.NotExists:
@@ -72,8 +72,8 @@ namespace NiL.JS.Expressions
 
         protected internal override CodeNode[] getChildsImpl()
         {
-            if (value != null && value.oValue is CodeNode[])
-                return value.oValue as CodeNode[];
+            if (value != null && value._oValue is CodeNode[])
+                return value._oValue as CodeNode[];
             return null;
         }
 
@@ -85,7 +85,7 @@ namespace NiL.JS.Expressions
             {
                 _this = null;
                 Eliminated = true;
-                if (message != null && (value.valueType != JSValueType.String || value.oValue.ToString() != "use strict"))
+                if (message != null && (value._valueType != JSValueType.String || value._oValue.ToString() != "use strict"))
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused constant was removed. Maybe, something missing.");
             }
 
@@ -101,13 +101,13 @@ namespace NiL.JS.Expressions
         {
             if (value == null)
                 return "";
-            if (value.valueType == JSValueType.String)
-                return "\"" + value.oValue + "\"";
-            if (value.oValue is CodeNode[])
+            if (value._valueType == JSValueType.String)
+                return "\"" + value._oValue + "\"";
+            if (value._oValue is CodeNode[])
             {
                 string res = "";
-                for (var i = (value.oValue as CodeNode[]).Length; i-- > 0;)
-                    res = (i != 0 ? ", " : "") + (value.oValue as CodeNode[])[i] + res;
+                for (var i = (value._oValue as CodeNode[]).Length; i-- > 0;)
+                    res = (i != 0 ? ", " : "") + (value._oValue as CodeNode[])[i] + res;
                 return res;
             }
             return value.ToString();

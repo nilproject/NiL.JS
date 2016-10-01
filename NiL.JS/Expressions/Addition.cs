@@ -67,11 +67,11 @@ namespace NiL.JS.Expressions
             var temp = tempContainer;
             tempContainer = null;
             if (temp == null)
-                temp = new JSValue { attributes = JSValueAttributesInternal.Temporary };
-            temp.valueType = f.valueType;
-            temp.iValue = f.iValue;
-            temp.dValue = f.dValue;
-            temp.oValue = f.oValue;
+                temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+            temp._valueType = f._valueType;
+            temp._iValue = f._iValue;
+            temp._dValue = f._dValue;
+            temp._oValue = f._oValue;
             Impl(temp, temp, second.Evaluate(context));
             tempContainer = temp;
             return temp;
@@ -79,55 +79,55 @@ namespace NiL.JS.Expressions
 
         internal static void Impl(JSValue resultContainer, JSValue first, JSValue second)
         {
-            switch (first.valueType)
+            switch (first._valueType)
             {
                 case JSValueType.Boolean:
                 case JSValueType.Integer:
                     {
-                        if (second.valueType >= JSValueType.Object)
+                        if (second._valueType >= JSValueType.Object)
                             second = second.ToPrimitiveValue_Value_String();
-                        switch (second.valueType)
+                        switch (second._valueType)
                         {
                             case JSValueType.Integer:
                             case JSValueType.Boolean:
                                 {
-                                    long tl = (long)first.iValue + second.iValue;
+                                    long tl = (long)first._iValue + second._iValue;
                                     if ((int)tl == tl)
                                     {
-                                        resultContainer.valueType = JSValueType.Integer;
-                                        resultContainer.iValue = (int)tl;
+                                        resultContainer._valueType = JSValueType.Integer;
+                                        resultContainer._iValue = (int)tl;
                                     }
                                     else
                                     {
-                                        resultContainer.valueType = JSValueType.Double;
-                                        resultContainer.dValue = (double)tl;
+                                        resultContainer._valueType = JSValueType.Double;
+                                        resultContainer._dValue = (double)tl;
                                     }
                                     return;
                                 }
                             case JSValueType.Double:
                                 {
-                                    resultContainer.valueType = JSValueType.Double;
-                                    resultContainer.dValue = first.iValue + second.dValue;
+                                    resultContainer._valueType = JSValueType.Double;
+                                    resultContainer._dValue = first._iValue + second._dValue;
                                     return;
                                 }
                             case JSValueType.String:
                                 {
-                                    resultContainer.oValue = new RopeString((first.valueType == JSValueType.Boolean ? (first.iValue != 0 ? "true" : "false") : first.iValue.ToString(CultureInfo.InvariantCulture)), second.oValue);
-                                    resultContainer.valueType = JSValueType.String;
+                                    resultContainer._oValue = new RopeString((first._valueType == JSValueType.Boolean ? (first._iValue != 0 ? "true" : "false") : first._iValue.ToString(CultureInfo.InvariantCulture)), second._oValue);
+                                    resultContainer._valueType = JSValueType.String;
                                     return;
                                 }
                             case JSValueType.NotExists:
                             case JSValueType.NotExistsInObject:
                             case JSValueType.Undefined:
                                 {
-                                    resultContainer.dValue = double.NaN;
-                                    resultContainer.valueType = JSValueType.Double;
+                                    resultContainer._dValue = double.NaN;
+                                    resultContainer._valueType = JSValueType.Double;
                                     return;
                                 }
                             case JSValueType.Object: // x+null
                                 {
-                                    resultContainer.iValue = first.iValue;
-                                    resultContainer.valueType = JSValueType.Integer;
+                                    resultContainer._iValue = first._iValue;
+                                    resultContainer._valueType = JSValueType.Integer;
                                     return;
                                 }
                         }
@@ -135,41 +135,41 @@ namespace NiL.JS.Expressions
                     }
                 case JSValueType.Double:
                     {
-                        if (second.valueType >= JSValueType.Object)
+                        if (second._valueType >= JSValueType.Object)
                             second = second.ToPrimitiveValue_Value_String();
-                        switch (second.valueType)
+                        switch (second._valueType)
                         {
                             case JSValueType.Integer:
                             case JSValueType.Boolean:
                                 {
-                                    resultContainer.valueType = JSValueType.Double;
-                                    resultContainer.dValue = first.dValue + second.iValue;
+                                    resultContainer._valueType = JSValueType.Double;
+                                    resultContainer._dValue = first._dValue + second._iValue;
                                     return;
                                 }
                             case JSValueType.Double:
                                 {
-                                    resultContainer.valueType = JSValueType.Double;
-                                    resultContainer.dValue = first.dValue + second.dValue;
+                                    resultContainer._valueType = JSValueType.Double;
+                                    resultContainer._dValue = first._dValue + second._dValue;
                                     return;
                                 }
                             case JSValueType.String:
                                 {
-                                    resultContainer.oValue = new RopeString(Tools.DoubleToString(first.dValue), second.oValue);
-                                    resultContainer.valueType = JSValueType.String;
+                                    resultContainer._oValue = new RopeString(Tools.DoubleToString(first._dValue), second._oValue);
+                                    resultContainer._valueType = JSValueType.String;
                                     return;
                                 }
                             case JSValueType.Object: // null
                                 {
-                                    resultContainer.dValue = first.dValue;
-                                    resultContainer.valueType = JSValueType.Double;
+                                    resultContainer._dValue = first._dValue;
+                                    resultContainer._valueType = JSValueType.Double;
                                     return;
                                 }
                             case JSValueType.NotExists:
                             case JSValueType.NotExistsInObject:
                             case JSValueType.Undefined:
                                 {
-                                    resultContainer.dValue = double.NaN;
-                                    resultContainer.valueType = JSValueType.Double;
+                                    resultContainer._dValue = double.NaN;
+                                    resultContainer._valueType = JSValueType.Double;
                                     return;
                                 }
                         }
@@ -177,27 +177,27 @@ namespace NiL.JS.Expressions
                     }
                 case JSValueType.String:
                     {
-                        object tstr = first.oValue;
-                        switch (second.valueType)
+                        object tstr = first._oValue;
+                        switch (second._valueType)
                         {
                             case JSValueType.String:
                                 {
-                                    tstr = new RopeString(tstr, second.oValue);
+                                    tstr = new RopeString(tstr, second._oValue);
                                     break;
                                 }
                             case JSValueType.Boolean:
                                 {
-                                    tstr = new RopeString(tstr, second.iValue != 0 ? "true" : "false");
+                                    tstr = new RopeString(tstr, second._iValue != 0 ? "true" : "false");
                                     break;
                                 }
                             case JSValueType.Integer:
                                 {
-                                    tstr = new RopeString(tstr, second.iValue.ToString(CultureInfo.InvariantCulture));
+                                    tstr = new RopeString(tstr, second._iValue.ToString(CultureInfo.InvariantCulture));
                                     break;
                                 }
                             case JSValueType.Double:
                                 {
-                                    tstr = new RopeString(tstr, Tools.DoubleToString(second.dValue));
+                                    tstr = new RopeString(tstr, Tools.DoubleToString(second._dValue));
                                     break;
                                 }
                             case JSValueType.Undefined:
@@ -214,8 +214,8 @@ namespace NiL.JS.Expressions
                                     break;
                                 }
                         }
-                        resultContainer.oValue = tstr;
-                        resultContainer.valueType = JSValueType.String;
+                        resultContainer._oValue = tstr;
+                        resultContainer._valueType = JSValueType.String;
                         return;
                     }
                 case JSValueType.Date:
@@ -227,30 +227,30 @@ namespace NiL.JS.Expressions
                 case JSValueType.NotExistsInObject:
                 case JSValueType.Undefined:
                     {
-                        if (second.valueType >= JSValueType.Object)
+                        if (second._valueType >= JSValueType.Object)
                             second = second.ToPrimitiveValue_Value_String();
-                        switch (second.valueType)
+                        switch (second._valueType)
                         {
                             case JSValueType.String:
                                 {
-                                    resultContainer.valueType = JSValueType.String;
-                                    resultContainer.oValue = new RopeString("undefined", second.oValue);
+                                    resultContainer._valueType = JSValueType.String;
+                                    resultContainer._oValue = new RopeString("undefined", second._oValue);
                                     return;
                                 }
                             case JSValueType.Double:
                             case JSValueType.Boolean:
                             case JSValueType.Integer:
                                 {
-                                    resultContainer.valueType = JSValueType.Double;
-                                    resultContainer.dValue = double.NaN;
+                                    resultContainer._valueType = JSValueType.Double;
+                                    resultContainer._dValue = double.NaN;
                                     return;
                                 }
                             case JSValueType.Object: // undefined+null
                             case JSValueType.NotExistsInObject:
                             case JSValueType.Undefined:
                                 {
-                                    resultContainer.valueType = JSValueType.Double;
-                                    resultContainer.dValue = double.NaN;
+                                    resultContainer._valueType = JSValueType.Double;
+                                    resultContainer._dValue = double.NaN;
                                     return;
                                 }
                         }
@@ -260,24 +260,24 @@ namespace NiL.JS.Expressions
                 case JSValueType.Object:
                     {
                         first = first.ToPrimitiveValue_Value_String();
-                        if (first.valueType == JSValueType.Integer || first.valueType == JSValueType.Boolean)
+                        if (first._valueType == JSValueType.Integer || first._valueType == JSValueType.Boolean)
                             goto case JSValueType.Integer;
-                        else if (first.valueType == JSValueType.Object) // null
+                        else if (first._valueType == JSValueType.Object) // null
                         {
-                            if (second.valueType >= JSValueType.String)
+                            if (second._valueType >= JSValueType.String)
                                 second = second.ToPrimitiveValue_Value_String();
-                            if (second.valueType == JSValueType.String)
+                            if (second._valueType == JSValueType.String)
                             {
-                                resultContainer.oValue = new RopeString("null", second.oValue);
-                                resultContainer.valueType = JSValueType.String;
+                                resultContainer._oValue = new RopeString("null", second._oValue);
+                                resultContainer._valueType = JSValueType.String;
                                 return;
                             }
-                            first.iValue = 0;
+                            first._iValue = 0;
                             goto case JSValueType.Integer;
                         }
-                        else if (first.valueType == JSValueType.Double)
+                        else if (first._valueType == JSValueType.Double)
                             goto case JSValueType.Double;
-                        else if (first.valueType == JSValueType.String)
+                        else if (first._valueType == JSValueType.String)
                             goto case JSValueType.String;
                         break;
                     }
@@ -301,14 +301,14 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    if (first.ContextIndependent && first.Evaluate(null).valueType == JSValueType.String)
+                    if (first.ContextIndependent && first.Evaluate(null)._valueType == JSValueType.String)
                     {
                         if (first.Evaluate(null).ToString().Length == 0)
                             _this = new ConvertToString(second);
                         else
                             _this = new StringConcatenation(new List<Expression>() { first, second });
                     }
-                    else if (second.ContextIndependent && second.Evaluate(null).valueType == JSValueType.String)
+                    else if (second.ContextIndependent && second.Evaluate(null)._valueType == JSValueType.String)
                     {
                         if (second.Evaluate(null).ToString().Length == 0)
                             _this = new ConvertToString(first);

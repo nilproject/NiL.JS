@@ -16,9 +16,9 @@ namespace NiL.JS.Core.Interop
     {
         protected CustomType()
         {
-            valueType = JSValueType.Object;
-            oValue = this;
-            attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
+            _valueType = JSValueType.Object;
+            _oValue = this;
+            _attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
 
         [CLSCompliant(false)]
@@ -31,7 +31,7 @@ namespace NiL.JS.Core.Interop
         [Hidden]
         public override string ToString()
         {
-            if (oValue != this || valueType < JSValueType.Object)
+            if (_oValue != this || _valueType < JSValueType.Object)
                 return base.ToString();
             else
                 return GetType().ToString();
@@ -40,9 +40,9 @@ namespace NiL.JS.Core.Interop
         [Hidden]
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
         {
-            if (fields != null)
-                foreach (var r in fields)
-                    if (r.Value.Exists && (!hideNonEnum || (r.Value.attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+            if (_fields != null)
+                foreach (var r in _fields)
+                    if (r.Value.Exists && (!hideNonEnum || (r.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                         yield return r;
         }
     }

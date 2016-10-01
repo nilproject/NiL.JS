@@ -14,14 +14,14 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 var res = new Element(this, index);
-                res.iValue = getValue(index);
-                res.valueType = JSValueType.Integer;
+                res._iValue = getValue(index);
+                res._valueType = JSValueType.Integer;
                 return res;
             }
             set
             {
-                if (index < 0 || index > length.iValue)
-                    ExceptionsHelper.Throw(new RangeError());
+                if (index < 0 || index > length._iValue)
+                    ExceptionHelper.Throw(new RangeError());
                 buffer.data[index + byteOffset] = (byte)Tools.JSObjectToInt32(value, 0, false);
             }
         }
@@ -78,7 +78,7 @@ namespace NiL.JS.BaseLibrary
 
         protected internal override System.Array ToNativeArray()
         {
-            var res = new sbyte[length.iValue];
+            var res = new sbyte[length._iValue];
             for (var i = 0; i < res.Length; i++)
                 res[i] = getValue(i);
             return res;

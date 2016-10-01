@@ -31,7 +31,7 @@ namespace NiL.JS.Core.Functions
         private const int passesCount = 3;
 
         private static readonly object[] _objectA = new object[0];
-        internal readonly TypeProxy proxy;
+        internal readonly StaticProxy _staticProxy;
         private MethodProxy[] constructors;
 
         [Hidden]
@@ -40,7 +40,7 @@ namespace NiL.JS.Core.Functions
             [Hidden]
             get
             {
-                return proxy.hostedType.Name;
+                return _staticProxy._hostedType.Name;
             }
         }
 
@@ -54,7 +54,7 @@ namespace NiL.JS.Core.Functions
             [Hidden]
             get
             {
-                return _prototype ?? (_prototype = TypeProxy.GetPrototype(proxy.hostedType));
+                return _prototype;
             }
             [Hidden]
             set
@@ -64,38 +64,45 @@ namespace NiL.JS.Core.Functions
         }
 
         [Hidden]
-        public ProxyConstructor(TypeProxy typeProxy)
+        public ProxyConstructor(Context context, StaticProxy staticProxy, PrototypeProxy dynamicProxy)
+            : base(context)
         {
-            fields = typeProxy.fields;
-            proxy = typeProxy;
+            if (staticProxy == null)
+                throw new ArgumentNullException(nameof(staticProxy));
+            if (dynamicProxy == null)
+                throw new ArgumentNullException(nameof(dynamicProxy));
+
+            _fields = staticProxy._fields;
+            _staticProxy = staticProxy;
+            _prototype = dynamicProxy;
 
 #if (PORTABLE || NETCORE)
-            if (proxy.hostedType.GetTypeInfo().ContainsGenericParameters)
-                ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+            if (_staticProxy._hostedType.GetTypeInfo().ContainsGenericParameters)
+                ExceptionHelper.Throw(new TypeError(_staticProxy._hostedType.Name + " can't be created because it's generic type."));
 #else
-            if (proxy.hostedType.ContainsGenericParameters)
-                ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created because it's generic type.")));
+            if (_staticProxy._hostedType.ContainsGenericParameters)
+                ExceptionHelper.ThrowTypeError(_staticProxy._hostedType.Name + " can't be created because it's generic type.");
 #endif
-            var ownew = typeProxy.hostedType.GetTypeInfo().IsDefined(typeof(RequireNewKeywordAttribute), true);
-            var owonew = typeProxy.hostedType.GetTypeInfo().IsDefined(typeof(DisallowNewKeywordAttribute), true);
+            var withNewOnly = staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(RequireNewKeywordAttribute), true);
+            var withoutNewOnly = staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(DisallowNewKeywordAttribute), true);
 
-            if (ownew && owonew)
-                throw new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type.");
+            if (withNewOnly && withoutNewOnly)
+                ExceptionHelper.Throw(new InvalidOperationException("Unacceptably use of " + typeof(RequireNewKeywordAttribute).Name + " and " + typeof(DisallowNewKeywordAttribute).Name + " for same type."));
 
-            if (ownew)
+            if (withNewOnly)
                 RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
-            if (owonew)
+            if (withoutNewOnly)
                 RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
 
             if (_length == null)
-                _length = new Number(0) { attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
+                _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 #if (PORTABLE || NETCORE)
-            var ctors = System.Linq.Enumerable.ToArray(typeProxy.hostedType.GetTypeInfo().DeclaredConstructors);
-            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.GetTypeInfo().IsValueType ? 1 : 0));
+            var ctors = System.Linq.Enumerable.ToArray(staticProxy._hostedType.GetTypeInfo().DeclaredConstructors);
+            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.GetTypeInfo().IsValueType ? 1 : 0));
 #else
-            var ctors = typeProxy.hostedType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (typeProxy.hostedType.IsValueType ? 1 : 0));
+            var ctors = staticProxy._hostedType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.IsValueType ? 1 : 0));
 #endif
             for (int i = 0; i < ctors.Length; i++)
             {
@@ -104,42 +111,54 @@ namespace NiL.JS.Core.Functions
 
                 if (!ctors[i].IsDefined(typeof(HiddenAttribute), false) || ctors[i].IsDefined(typeof(ForceUseAttribute), true))
                 {
-                    ctorsL.Add(new MethodProxy(ctors[i]));
-                    length.iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length.iValue, _length.iValue);
+                    ctorsL.Add(new MethodProxy(context, ctors[i]));
+                    length._iValue = System.Math.Max(ctorsL[ctorsL.Count - 1]._length._iValue, _length._iValue);
                 }
             }
-            ctorsL.Sort((x, y) => x.Parameters.Length == 1 && x.Parameters[0].ParameterType == typeof(Arguments) ? 1 :
+
+            ctorsL.Sort((x, y) =>
+                x.Parameters.Length == 1 && x.Parameters[0].ParameterType == typeof(Arguments) ? 1 :
                 y.Parameters.Length == 1 && y.Parameters[0].ParameterType == typeof(Arguments) ? -1 :
                 x.Parameters.Length - y.Parameters.Length);
+
             constructors = ctorsL.ToArray();
         }
 
         [Hidden]
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (memberScope < PropertyScope.Super && key.valueType != JSValueType.Symbol)
+            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
-                if (key.ToString() == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
+                var keyString = key.ToString();
+                if (keyString == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
-                
-                var res = proxy.GetProperty(key, forWrite && memberScope == PropertyScope.Own, memberScope);
-                if (res.Exists || (memberScope == PropertyScope.Own && forWrite))
+
+                JSValue res;
+                if (forWrite || keyString != "toString")
                 {
-                    if (forWrite && res.NeedClone)
-                        res = proxy.GetProperty(key, true, memberScope);
+                    res = _staticProxy.GetProperty(key, forWrite && memberScope == PropertyScope.Own, memberScope);
+                    if (res.Exists || (memberScope == PropertyScope.Own && forWrite))
+                    {
+                        if (forWrite && res.NeedClone)
+                            res = _staticProxy.GetProperty(key, true, memberScope);
+
+                        return res;
+                    }
+
+                    res = __proto__.GetProperty(key, forWrite, memberScope);
+                    if (memberScope == PropertyScope.Own && (res._valueType != JSValueType.Property || (res._attributes & JSValueAttributesInternal.Field) == 0))
+                        return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
+
                     return res;
                 }
-                res = __proto__.GetProperty(key, forWrite, memberScope);
-                if (memberScope == PropertyScope.Own && (res.valueType != JSValueType.Property || (res.attributes & JSValueAttributesInternal.Field) == 0))
-                    return notExists; // если для записи, то первая ветка всё разрулит и сюда выполнение не придёт
-                return res;
             }
+
             return base.GetProperty(key, forWrite, memberScope);
         }
 
         protected internal override bool DeleteProperty(JSValue name)
         {
-            return proxy.DeleteProperty(name) && __proto__.DeleteProperty(name);
+            return _staticProxy.DeleteProperty(name) && __proto__.DeleteProperty(name);
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
@@ -151,14 +170,14 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                if (proxy.hostedType == typeof(Date))
+                if (_staticProxy._hostedType == typeof(Date))
                     return new Date().ToString();
             }
 
             try
             {
                 object obj;
-                if (proxy.hostedType == typeof(NiL.JS.BaseLibrary.Array))
+                if (_staticProxy._hostedType == typeof(NiL.JS.BaseLibrary.Array))
                 {
                     if (arguments == null)
                         obj = new NiL.JS.BaseLibrary.Array();
@@ -170,13 +189,13 @@ namespace NiL.JS.Core.Functions
                                 break;
                             case 1:
                                 {
-                                    switch (arguments.a0.valueType)
+                                    switch (arguments.a0._valueType)
                                     {
                                         case JSValueType.Integer:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0.iValue);
+                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0._iValue);
                                             break;
                                         case JSValueType.Double:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0.dValue);
+                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0._dValue);
                                             break;
                                         default:
                                             obj = new NiL.JS.BaseLibrary.Array(arguments);
@@ -193,17 +212,17 @@ namespace NiL.JS.Core.Functions
                 {
                     if ((arguments == null || arguments.length == 0)
 #if (PORTABLE || NETCORE)
- && proxy.hostedType.GetTypeInfo().IsValueType)
+ && _staticProxy._hostedType.GetTypeInfo().IsValueType)
 #else
- && proxy.hostedType.IsValueType)
+ && _staticProxy._hostedType.IsValueType)
 #endif
-                        obj = Activator.CreateInstance(proxy.hostedType);
+                        obj = Activator.CreateInstance(_staticProxy._hostedType);
                     else
                     {
                         object[] args = null;
                         MethodProxy constructor = findConstructor(arguments, ref args);
                         if (constructor == null)
-                            ExceptionsHelper.Throw((new TypeError(proxy.hostedType.Name + " can't be created.")));
+                            ExceptionHelper.Throw((new TypeError(_staticProxy._hostedType.Name + " can't be created.")));
                         obj = constructor.InvokeImpl(
                             null,
                             args,
@@ -220,16 +239,16 @@ namespace NiL.JS.Core.Functions
                     if (res != null)
                     {
                         // Для Number, Boolean и String
-                        if (res.valueType < JSValueType.Object)
+                        if (res._valueType < JSValueType.Object)
                         {
                             objc.instance = obj;
                             if (objc.__prototype == null)
                                 objc.__prototype = res.__proto__;
                             res = objc;
                         }
-                        else if (res.oValue is JSValue)
+                        else if (res._oValue is JSValue)
                         {
-                            res.oValue = res;
+                            res._oValue = res;
                             // На той стороне понять, по new или нет вызван конструктор не удастся,
                             // поэтому по соглашению такие типы себя настраивают так, как будто они по new,
                             // а в oValue пишут экземпляр аргумента на тот случай, если вызван конструктор типа как функция
@@ -240,26 +259,26 @@ namespace NiL.JS.Core.Functions
                     {
                         objc.instance = obj;
 
-                        objc.attributes |= proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
+                        objc._attributes |= _staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
                         if (obj.GetType() == typeof(Date))
-                            objc.valueType = JSValueType.Date;
+                            objc._valueType = JSValueType.Date;
                         else if (res != null)
-                            objc.valueType = (JSValueType)System.Math.Max((int)objc.valueType, (int)res.valueType);
+                            objc._valueType = (JSValueType)System.Math.Max((int)objc._valueType, (int)res._valueType);
 
                         res = objc;
                     }
                 }
                 else
                 {
-                    if (proxy.hostedType == typeof(JSValue))
+                    if (_staticProxy._hostedType == typeof(JSValue))
                     {
-                        if ((res.oValue is JSValue) && (res.oValue as JSValue).valueType >= JSValueType.Object)
-                            return res.oValue as JSValue;
+                        if ((res._oValue is JSValue) && (res._oValue as JSValue)._valueType >= JSValueType.Object)
+                            return res._oValue as JSValue;
                     }
 
                     res = res ?? new ObjectWrapper(obj)
                     {
-                        attributes = JSValueAttributesInternal.SystemObject | (proxy.hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
+                        _attributes = JSValueAttributesInternal.SystemObject | (_staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
                     };
                 }
                 return res;
@@ -276,7 +295,10 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue ConstructObject()
         {
-            return new ObjectWrapper(null) { __prototype = TypeProxy.GetPrototype(proxy.hostedType) };
+            return new ObjectWrapper(null)
+            {
+                __prototype = Context.GlobalContext.GetPrototype(_staticProxy._hostedType)
+            };
         }
 
         [Hidden]
@@ -334,7 +356,7 @@ namespace NiL.JS.Core.Functions
 
         internal override JSObject GetDefaultPrototype()
         {
-            return TypeProxy.GetPrototype(typeof(Function));
+            return Context.GlobalContext.GetPrototype(typeof(Function));
         }
 
         [Hidden]
@@ -343,7 +365,7 @@ namespace NiL.JS.Core.Functions
             var e = __proto__.GetEnumerator(hideNonEnumerable, enumerationMode);
             while (e.MoveNext())
                 yield return e.Current;
-            e = proxy.GetEnumerator(hideNonEnumerable, enumerationMode);
+            e = _staticProxy.GetEnumerator(hideNonEnumerable, enumerationMode);
             while (e.MoveNext())
                 yield return e.Current;
         }

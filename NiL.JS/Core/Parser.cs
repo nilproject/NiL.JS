@@ -375,21 +375,37 @@ namespace NiL.JS.Core
             int j = index;
             if (code[j] == '/')
             {
+                var escape = false;
                 j++;
-                while ((j < code.Length) && (code[j] != '/'))
+                while ((j < code.Length) && (escape || code[j] != '/'))
                 {
                     if (Tools.IsLineTerminator(code[j]))
                         return false;
+
                     if (code[j] == '\\')
                     {
                         j++;
                         if (Tools.IsLineTerminator(code[j]))
                             return false;
                     }
+                    else
+                    {
+                        if (code[j] == '[')
+                        {
+                            escape = true;
+                        }
+                        if (code[j] == ']')
+                        {
+                            escape = false;
+                        }
+                    }
+                    
                     j++;
                 }
+
                 if (j == code.Length)
                     return false;
+
                 bool w = true;
                 bool g = false, i = false, m = false;
                 while (w)
@@ -481,7 +497,7 @@ namespace NiL.JS.Core
                     {
                         if (!@throw)
                             return false;
-                        ExceptionsHelper.Throw((new SyntaxError("Unterminated string constant")));
+                        ExceptionHelper.Throw((new SyntaxError("Unterminated string constant")));
                     }
                     j++;
                     if (j >= code.Length)
@@ -544,7 +560,8 @@ namespace NiL.JS.Core
                 || (c == '?')
                 || (c == ':')
                 || (c == ',')
-                || (c == '.');
+                || (c == '.')
+                || (c == '|');
         }
 
         public static bool IsIdentificatorTerminator(char c)
@@ -596,7 +613,7 @@ namespace NiL.JS.Core
                 }
             }
             if (throwError)
-                ExceptionsHelper.ThrowUnknownToken(state.Code, sindex);
+                ExceptionHelper.ThrowUnknownToken(state.Code, sindex);
             return null;
         }
 
@@ -623,7 +640,7 @@ namespace NiL.JS.Core
         public static void DefineCustomCodeFragment(Type type)
         {
             if (type == null)
-                ExceptionsHelper.ThrowArgumentNull("type");
+                ExceptionHelper.ThrowArgumentNull("type");
 
             var attributes = type.GetTypeInfo().GetCustomAttributes(typeof(CustomCodeFragment), false).ToArray();
             if (attributes.Length == 0)

@@ -19,15 +19,15 @@ namespace NiL.JS.Statements
             if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
                 return null;
             if (!state.AllowContinue.Peek())
-                ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use of continue statement")));
+                ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use of continue statement")));
             while (Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i])) i++;
             int sl = i;
             JSValue label = null;
             if (Parser.ValidateName(state.Code, ref i, state.strict))
             {
                 label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict);
-                if (!state.Labels.Contains(label.oValue.ToString()))
-                    ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Try to continue to undefined label.")));
+                if (!state.Labels.Contains(label._oValue.ToString()))
+                    ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Try to continue to undefined label.")));
             }
             int pos = index;
             index = i;
@@ -42,8 +42,8 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            context.executionMode = AbortReason.Continue;
-            context.executionInfo = label;
+            context._executionMode = AbortReason.Continue;
+            context._executionInfo = label;
             return null;
         }
 

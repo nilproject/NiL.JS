@@ -12,6 +12,18 @@ namespace IntegrationTests.BaseLibrary
     [TestClass]
     public class StringTests
     {
+        [TestInitializeAttribute]
+        public void TestInitialize()
+        {
+            new GlobalContext().ActivateInCurrentThread();
+        }
+
+        [TestCleanup]
+        public void MyTestMethod()
+        {
+            Context.CurrentContext.GlobalContext.Deactivate();
+        }
+
         [TestMethod]
         public void ReplaceWithRegexpAndReplacer()
         {

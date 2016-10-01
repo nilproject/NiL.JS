@@ -40,18 +40,18 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (context.thisBind != null && (context.thisBind.attributes & JSValueAttributesInternal.ConstructingObject) != 0)
+            if (context._thisBind != null && (context._thisBind._attributes & JSValueAttributesInternal.ConstructingObject) != 0)
             {
                 var stack = Context.GetCurrectContextStack();
 
                 var i = 2;
-                while (stack.Count >= i && stack[stack.Count - i].thisBind == context.thisBind)
+                while (stack.Count >= i && stack[stack.Count - i]._thisBind == context._thisBind)
                 {
                     context = stack[stack.Count - i];
                     i++;
                 }
 
-                return context.owner;
+                return context._owner;
             }
 
             return JSValue.undefined;
