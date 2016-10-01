@@ -93,8 +93,12 @@ namespace NiL.JS.Core.Interop
 
             _context = context;
             _hostedType = type;
-
+            
+#if (PORTABLE || NETCORE)
             instanceCtor = _hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
+#else
+            instanceCtor = _hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
+#endif
         }
 
         internal override JSObject GetDefaultPrototype()

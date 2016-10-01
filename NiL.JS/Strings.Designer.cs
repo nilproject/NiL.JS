@@ -13,7 +13,7 @@ namespace NiL.JS {
     using System.Reflection;
 
 #if NET40
-    using NiL.JS.Backward;
+    using Backward;
 #endif
 
     /// <summary>
