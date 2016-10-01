@@ -61,6 +61,8 @@
     <Compile Include="5. Namespaces and external types\Using NamespaceProvider.cs" />
     <Compile Include="6. Syntax extensions\Custom operator.cs" />
     <Compile Include="6. Syntax extensions\Custom statement.cs" />
+    <Compile Include="7. Few words about Global Context\Bring objects from scope of one Global Context to other.cs" />
+    <Compile Include="7. Few words about Global Context\What it is.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="0. Run script\Canonical way.cs" />
@@ -68,9 +70,6 @@
     <Compile Include="2. Pass values into JavaScript environment\Via Marshal.cs" />
     <Compile Include="2. Pass values into JavaScript environment\Via Wrap.cs" />
     <Compile Include="2. Pass values into JavaScript environment\Primitive values over data conversion.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExamplesFramework\ExamplesFramework.csproj">
