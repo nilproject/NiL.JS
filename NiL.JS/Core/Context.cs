@@ -282,10 +282,12 @@ namespace NiL.JS.Core
                 
                 if (_ThreadIds[i] == 0)
                 {
-                    firstEmptyIndex = i;
+                    if (firstEmptyIndex == -1)
+                        firstEmptyIndex = i;
+
                     break;
                 }
-                else if (_ThreadIds[i] == -1)
+                else if (_ThreadIds[i] == -1 && firstEmptyIndex == -1)
                 {
                     firstEmptyIndex = i;
                 }
@@ -296,11 +298,11 @@ namespace NiL.JS.Core
 
             if (firstEmptyIndex != -1)
             {
-                if (RunningContexts[i] == null)
-                    RunningContexts[i] = new List<Context>();
+                if (RunningContexts[firstEmptyIndex] == null)
+                    RunningContexts[firstEmptyIndex] = new List<Context>();
 
-                _ThreadIds[i] = threadId;
-                RunningContexts[i].Add(this);
+                _ThreadIds[firstEmptyIndex] = threadId;
+                RunningContexts[firstEmptyIndex].Add(this);
 
                 Monitor.Exit(RunningContexts);
                 return true;
