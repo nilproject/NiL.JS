@@ -29,24 +29,24 @@ namespace Examples._7.Few_words_about_Global_Context
             var secondContext = new Context(secondGlobalContext);
 
             firstContext.Eval(@"
-function DefineGlobalVariable(name, value) {
-    (function() { return this })()[name] = value;
+function WriteObjectProperty(name, value) {
+    Object[name] = value;
 }
 ");
 
             firstContext.Eval(@"
-DefineGlobalVariable('someName', 'someValue');
-console.log(typeof someName); // Output: string
-console.log(this.someName);   // Output: someValue
+WriteObjectProperty('someName', 'someValue');
+console.log(typeof Object.someName); // Output: string
+console.log(Object.someName);   // Output: someValue
 ");
 
-            secondContext.DefineVariable("DefineGlobalVariable")
-                .Assign(firstContext.GetVariable("DefineGlobalVariable"));
+            secondContext.DefineVariable("WriteObjectProperty")
+                .Assign(firstContext.GetVariable("WriteObjectProperty"));
 
             secondContext.Eval(@"
-DefineGlobalVariable('someName', 'someValue');
-console.log(typeof someName); // Output: undefined
-console.log(this.someName);   // Output: undefined
+WriteObjectProperty('someName', 'someValue');
+console.log(typeof Object.someName); // Output: undefined
+console.log(Object.someName);   // Output: undefined
 ");
         }
     }
