@@ -1387,10 +1387,13 @@ namespace NiL.JS.Core
         {
             if (code == null)
                 throw new ArgumentNullException("code");
+            if (code.Length == 0)
+                return code;
+
             StringBuilder res = null;
             for (int i = 0; i < code.Length; i++)
             {
-                if (code[i] == '\\' && i + 1 < code.Length)
+                if ((code[i] == '\\' && i + 1 < code.Length))
                 {
                     if (res == null)
                     {
@@ -1398,6 +1401,7 @@ namespace NiL.JS.Core
                         for (var j = 0; j < i; j++)
                             res.Append(code[j]);
                     }
+
                     i++;
                     switch (code[i])
                     {
@@ -1461,6 +1465,18 @@ namespace NiL.JS.Core
                                 res.Append(processRegexComp ? "\\r" : "\r");
                                 break;
                             }
+                        case '\n':
+                            {
+                                if (code.Length > i + 1 && code[i] == '\r')
+                                    i++;
+                                break;
+                            }
+                        case '\r':
+                            {
+                                if (code.Length > i + 1 && code[i] == '\n')
+                                    i++;
+                                break;
+                            }
                         case 'c':
                         case 'C':
                             {
@@ -1512,7 +1528,9 @@ namespace NiL.JS.Core
                                     res.Append((char)ccode);
                                 }
                                 else if (processUnknown)
+                                {
                                     res.Append(code[i]);
+                                }
                                 else
                                 {
                                     res.Append('\\');
@@ -1525,6 +1543,7 @@ namespace NiL.JS.Core
                 else if (res != null)
                     res.Append(code[i]);
             }
+
             return (res as object ?? code).ToString();
         }
 
