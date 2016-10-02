@@ -129,6 +129,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (_lengthObj == null)
                     _lengthObj = new LengthField(this);
+
                 if (data.Length <= int.MaxValue)
                 {
                     _lengthObj._iValue = (int)data.Length;
@@ -228,7 +229,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = undefined;
 
-            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -254,7 +255,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = -1L;
 
-            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -280,7 +281,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = true;
 
-            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -299,7 +300,7 @@ namespace NiL.JS.BaseLibrary
                 self = self.ToObject();
 
             var result = true;
-            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -319,7 +320,7 @@ namespace NiL.JS.BaseLibrary
 
             Array result = new Array();
 
-            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -342,7 +343,7 @@ namespace NiL.JS.BaseLibrary
 
             Array result = new Array();
 
-            var len = iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
+            var len = iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -364,7 +365,7 @@ namespace NiL.JS.BaseLibrary
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
-            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -383,7 +384,7 @@ namespace NiL.JS.BaseLibrary
         {
             var result = -1L;
 
-            iterateImpl(self, null, args[1], undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, args[1], undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 if (Expressions.StrictEqual.Check(args[0], value))
                 {
@@ -404,7 +405,7 @@ namespace NiL.JS.BaseLibrary
         {
             var result = -1L;
 
-            iterateImpl(self, null, args[1], undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, args[1], undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 if (args[0].IsNaN() ?
                         value.IsNaN()
@@ -421,7 +422,7 @@ namespace NiL.JS.BaseLibrary
             return result != -1L;
         }
 
-        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, JSValue endIndexSrc, Func<JSValue, long, JSValue, Function, bool> callback)
+        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, JSValue endIndexSrc, bool processMissing, Func<JSValue, long, JSValue, Function, bool> callback)
         {
             Array arraySrc = self._oValue as Array;
             bool nativeMode = arraySrc != null;
@@ -509,7 +510,7 @@ namespace NiL.JS.BaseLibrary
                                             tempKey._valueType = JSValueType.Double;
                                         }
                                         var value = source.GetProperty(tempKey, false, PropertyScope.Сommon);
-                                        if (value.Exists)
+                                        if (processMissing || value.Exists)
                                         {
                                             if (!callback(Tools.InvokeGetter(value, self), i, thisBind, jsCallback))
                                                 return length;
@@ -574,7 +575,7 @@ namespace NiL.JS.BaseLibrary
                                 }
 
                                 value = self.GetProperty(tempKey, false, PropertyScope.Сommon);
-                                if (value.Exists)
+                                if (processMissing || value.Exists)
                                 {
                                     if (!callback(Tools.InvokeGetter(value, self), i, thisBind, jsCallback))
                                         return length;
@@ -1035,7 +1036,7 @@ namespace NiL.JS.BaseLibrary
                 args.length = 1;
             }
 
-            var len = (skip ? 0 : 1) + iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
+            var len = (skip ? 0 : 1) + iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -1284,18 +1285,22 @@ namespace NiL.JS.BaseLibrary
                 throw new ArgumentNullException("args");
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
                 ExceptionHelper.Throw(new TypeError("Can not call Array.prototype.slice for null or undefined"));
-            
-            var endIndex = Tools.JSObjectToInt64(args[1], long.MaxValue, true);
 
-            Array result = new Array();
-            iterateImpl(self, null, args[0], args[1], (value, index, thisBind, jsCallback) =>
+            var result = new Array();
+            var index = 0L;
+            iterateImpl(self, null, args[0], args[1], true, (value, itemIndex, thisBind, jsCallback) =>
             {
-                value = value.CloneImpl(false);
-                if (index < uint.MaxValue - 1)
-                    result.data[(int)index] = value;
-                else
-                    result[index.ToString()] = value;
+                if (value.Exists)
+                {
+                    value = value.CloneImpl(false);
 
+                    if (index < uint.MaxValue - 1)
+                        result.data[(int)index] = value;
+                    else
+                        result[index.ToString()] = value;
+                }
+
+                index++;
                 return true;
             });
 
@@ -1866,12 +1871,18 @@ namespace NiL.JS.BaseLibrary
         {
             if (key._valueType != JSValueType.Symbol && memberScope < PropertyScope.Super)
             {
-                if (key._valueType == JSValueType.String && string.CompareOrdinal("length", (string)key._oValue.ToString()) == 0)
-                    return this.length;
+                if (key._valueType == JSValueType.String && string.CompareOrdinal("length", key._oValue.ToString()) == 0)
+                    return length;
+
                 bool isIndex = false;
                 int index = 0;
                 if (key._valueType >= JSValueType.Object)
+                {
                     key = key.ToPrimitiveValue_String_Value();
+                    var keyValue = key.Value;
+                    if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
+                        return length;
+                }
 
                 switch (key._valueType)
                 {
