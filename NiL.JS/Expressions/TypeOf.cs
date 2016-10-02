@@ -80,7 +80,7 @@ namespace NiL.JS.Expressions
         {
             base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (first is GetVariable)
-                (first as GetVariable).suspendThrow = true;
+                (first as GetVariable)._SuspendThrow = true;
             return false;
         }
 

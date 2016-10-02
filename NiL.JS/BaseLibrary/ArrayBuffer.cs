@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
@@ -85,9 +86,11 @@ namespace NiL.JS.BaseLibrary
         {
             if (end < begin || begin >= data.Length || end >= data.Length)
                 ExceptionHelper.Throw((new RangeError("Invalid begin or end index")));
+
             var res = new ArrayBuffer(end - begin + 1);
             for (int i = 0, j = begin; j <= end; j++, i++)
                 res.data[i] = data[j];
+
             return res;
         }
 
@@ -97,6 +100,7 @@ namespace NiL.JS.BaseLibrary
             return slice(begin, data.Length - 1);
         }
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public ArrayBuffer slice(Arguments args)
         {
             if (args == null)

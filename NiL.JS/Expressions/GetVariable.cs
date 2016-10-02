@@ -46,11 +46,11 @@ namespace NiL.JS.Expressions
 #endif
     public class GetVariable : VariableReference
     {
-        private string variableName;
-        internal bool suspendThrow;
-        internal bool forceThrow;
+        private string _variableName;
+        internal bool _SuspendThrow;
+        internal bool _ForceThrow;
 
-        public override string Name { get { return variableName; } }
+        public override string Name { get { return _variableName; } }
 
         protected internal override bool ContextIndependent
         {
@@ -60,24 +60,24 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal GetVariable(string name, int scopeDepth)
+        internal GetVariable(string name, int scopeLevel)
         {
-            this.ScopeLevel = scopeDepth;
-            int i = 0;
-            if (!Parser.ValidateName(name, i, true, true, false))
+            int fake = 0;
+            if (!Parser.ValidateName(name, fake, true, true, false))
                 throw new ArgumentException("Invalid variable name");
 
-            this.variableName = name;
+            ScopeLevel = scopeLevel;
+            _variableName = name;
         }
 
         internal protected override JSValue EvaluateForWrite(Context context)
         {
             var result = _descriptor.Get(context, true, _scopeLevel);
 
-            if (context._strict || forceThrow)
+            if (context._strict || _ForceThrow)
             {
-                if (result._valueType < JSValueType.Undefined && (!suspendThrow || forceThrow))
-                    ExceptionHelper.ThrowVariableNotDefined(variableName);
+                if (result._valueType < JSValueType.Undefined && (!_SuspendThrow || _ForceThrow))
+                    ExceptionHelper.ThrowVariableNotDefined(_variableName);
 
                 if (context._strict)
                 {
@@ -96,8 +96,8 @@ namespace NiL.JS.Expressions
             {
                 case JSValueType.NotExists:
                     {
-                        if (!suspendThrow)
-                            ExceptionHelper.ThrowVariableNotDefined(variableName);
+                        if (!_SuspendThrow)
+                            ExceptionHelper.ThrowVariableNotDefined(_variableName);
                         break;
                     }
                 case JSValueType.Property:
@@ -115,7 +115,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return variableName;
+            return _variableName;
         }
 
 #if !NET35 && !(PORTABLE || NETCORE)
@@ -142,10 +142,10 @@ namespace NiL.JS.Expressions
             _codeContext = codeContext;
 
             VariableDescriptor desc = null;
-            if (!variables.TryGetValue(variableName, out desc) || desc == null)
+            if (!variables.TryGetValue(_variableName, out desc) || desc == null)
             {
                 desc = new VariableDescriptor(this, 1) { isDefined = false };
-                variables[variableName] = this.Descriptor;
+                variables[_variableName] = this.Descriptor;
             }
             else
             {
@@ -154,7 +154,7 @@ namespace NiL.JS.Expressions
                 _descriptor = desc;
             }
 
-            if (variableName == "this")
+            if (_variableName == "this")
             {
                 stats.ContainsThis = true;
                 desc.definitionScopeLevel = -1;
@@ -165,7 +165,7 @@ namespace NiL.JS.Expressions
                 desc.definitionScopeLevel = -Math.Abs(desc.definitionScopeLevel);
             }
 
-            forceThrow |= desc.lexicalScope; // часть TDZ
+            _ForceThrow |= desc.lexicalScope; // часть TDZ
 
             if (expressionDepth >= 0 && expressionDepth < 2 && desc.IsDefined && !desc.lexicalScope && (opts & Options.SuppressUselessExpressionsElimination) == 0)
             {
@@ -174,7 +174,7 @@ namespace NiL.JS.Expressions
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused getting of defined variable was removed. Maybe something missing.");
             }
-            else if (variableName == "arguments" && (codeContext & CodeContext.InFunction) != 0)
+            else if (_variableName == "arguments" && (codeContext & CodeContext.InFunction) != 0)
             {
                 if (stats != null)
                     stats.ContainsArguments = true;

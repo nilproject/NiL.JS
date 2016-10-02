@@ -232,9 +232,10 @@ namespace NiL.JS.BaseLibrary
         {
             if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
-            var a0 = args[0];
-            var regex = a0._oValue as RegExp;
-            if (a0._valueType == JSValueType.Object && regex != null)
+
+            var a0 = args.a0;
+            var regex = a0.Value as RegExp;
+            if (regex != null)
             {
                 if (!regex._global)
                 {
@@ -244,23 +245,28 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    var match = regex.regEx.Match(self.ToString());
+                    var match = regex._Regex.Match(self.ToString());
                     int index = 0;
+
+                    // Result should be w/o 'index' and 'input'
                     var res = new Array();
                     while (match.Success)
                     {
                         res.data[index++] = match.Value;
                         match = match.NextMatch();
                     }
+
                     return res;
                 }
             }
             else
             {
                 var match = new Regex((a0._valueType > JSValueType.Undefined ? (object)a0 : "").ToString(), RegexOptions.ECMAScript).Match(self.ToString());
+
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
                     res.data[i] = match.Groups[i].Value;
+
                 res.SetProperty("index", match.Index, false);
                 res.SetProperty("input", self, true);
                 return res;
@@ -290,7 +296,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    return regex.regEx.Match(self.ToString()).Index;
+                    return regex._Regex.Match(self.ToString()).Index;
                 }
             }
             else
@@ -317,7 +323,7 @@ namespace NiL.JS.BaseLibrary
                     string temp = self._oValue.ToString();
                     var match = new String();
                     var margs = new Arguments();
-                    match._oValue = (args[0]._oValue as RegExp).regEx.Replace(self.ToString(),
+                    match._oValue = (args[0]._oValue as RegExp)._Regex.Replace(self.ToString(),
                         (m) =>
                         {
                             self._oValue = temp;
@@ -345,7 +351,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    return (args[0].Value as RegExp).regEx.Replace(self.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].Value as RegExp)._global ? int.MaxValue : 1);
+                    return (args[0].Value as RegExp)._Regex.Replace(self.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].Value as RegExp)._global ? int.MaxValue : 1);
                 }
             }
             else
@@ -510,8 +516,8 @@ namespace NiL.JS.BaseLibrary
             if (args[0]._valueType == JSValueType.Object && args[0]._oValue is RegExp)
             {
                 string selfString = self.ToPrimitiveValue_Value_String().ToString();
-                var match = (args[0]._oValue as RegExp).regEx.Match(selfString);
-                if ((args[0]._oValue as RegExp).regEx.ToString().Length == 0)
+                var match = (args[0]._oValue as RegExp)._Regex.Match(selfString);
+                if ((args[0]._oValue as RegExp)._Regex.ToString().Length == 0)
                 {
                     match = match.NextMatch();
                     if (limit == uint.MaxValue)

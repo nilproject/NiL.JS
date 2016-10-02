@@ -438,7 +438,7 @@ for (var y = 0; y < size; y++) {\n\
 
 testOutput = arrayToCanvasCommands(raytraceScene());
 
-var expectedLength = 19197; // поправлено из-за некорректного перевода дробных чисел в строку. Оригинальное значение: 20970;
+var expectedLength = 19160; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: 20970;
 
 if (testOutput.length != expectedLength)
     throw "Error: bad result: expected length " + expectedLength + " but got " + testOutput.length;

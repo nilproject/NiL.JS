@@ -497,8 +497,10 @@ namespace NiL.JS.Core
                     {
                         if (!@throw)
                             return false;
-                        ExceptionHelper.Throw((new SyntaxError("Unterminated string constant")));
+
+                        ExceptionHelper.Throw(new SyntaxError("Unterminated string constant"));
                     }
+
                     j++;
                     if (j >= code.Length)
                         return false;

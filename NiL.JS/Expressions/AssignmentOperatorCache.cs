@@ -109,7 +109,7 @@ namespace NiL.JS.Expressions
 
             var res = first.Build(ref _this, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
             if (!res && first is GetVariable)
-                (first as GetVariable).forceThrow = true;
+                (first as GetVariable)._ForceThrow = true;
             return res;
         }
     }

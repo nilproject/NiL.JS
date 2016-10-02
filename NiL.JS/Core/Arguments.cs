@@ -127,9 +127,13 @@ namespace NiL.JS.Core
             : this()
         {
             if (context != null)
-                caller = context._strict && context._owner != null && context._owner._creator.body._strict ? Function.propertiesDummySM : context._owner;
+            {
+                caller = context._strict
+                    && context._owner != null
+                    && context._owner._creator.body._strict ? Function.propertiesDummySM : context._owner;
 
-            __prototype = context.GlobalContext._GlobalPrototype;
+                __prototype = context.GlobalContext._GlobalPrototype;
+            }
         }
 
         public Arguments()

@@ -128,7 +128,7 @@ namespace NiL.JS.Core.Functions
                         || (_parameters.Length > 2)
                         || (_parameters[0].ParameterType != typeof(JSValue))
                         || (_parameters.Length > 1 && _parameters[1].ParameterType != typeof(Arguments)))
-                        throw new ArgumentException("Force-instance method \"" + methodBase + "\" have invalid signature");
+                        throw new ArgumentException("Force-instance method \"" + methodBase + "\" has invalid signature");
                     raw = true;
                 }
 

@@ -38,6 +38,7 @@ namespace NiL.JS.Core.Functions
         public EvalFunction()
         {
             _length = new Number(1);
+            _prototype = undefined;
             RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
         }
 
@@ -91,16 +92,6 @@ namespace NiL.JS.Core.Functions
                 while (stack.Count != 0)
                     stack.Pop().Activate();
             }
-        }
-
-        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
-        {
-            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
-            {
-                if (key.ToString() == "prototype")
-                    return undefined;
-            }
-            return base.GetProperty(key, forWrite, memberScope);
         }
 
         [Hidden]

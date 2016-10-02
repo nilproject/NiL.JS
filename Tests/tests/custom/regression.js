@@ -219,4 +219,7 @@ Object.toString = () =>'hello';
 if (Object.toString() === "function Object() { [native code] }")
     throw "toString of Object(...) does not change";
 
+if ([1, , 2, 3][['length']] != 4)
+    throw "Invalid array.length optimization";
+
 console.asserta(() => (new class {}).toString(), {}.toString());

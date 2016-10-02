@@ -50,16 +50,16 @@ namespace NiL.JS.Core
         }
 
         private static readonly Record[] emptyRecords = new Record[0];
+        
+        private int _count;
+        private int _eicount;
+        private int _previousIndex;
 
         private Record[] _records = emptyRecords;
         private int[] _existsedIndexes;
 
         private bool _emptyKeyValueExists = false;
         private TValue _emptyKeyValue;
-
-        private int _count;
-        private int _eicount;
-        private int _previousIndex;
 
         private LinkedList<KeyValuePair<uint, int>> _numberKeysIndexes = null;
 
@@ -179,7 +179,14 @@ namespace NiL.JS.Core
                     value = default(TValue);
                     return false;
                 }
+
                 value = _emptyKeyValue;
+                return true;
+            }
+
+            if (_previousIndex != -1 && string.CompareOrdinal(_records[_previousIndex].key, key) == 0)
+            {
+                value = _records[_previousIndex].value;
                 return true;
             }
 
@@ -189,12 +196,6 @@ namespace NiL.JS.Core
             {
                 value = default(TValue);
                 return false;
-            }
-
-            if (_previousIndex != -1 && string.CompareOrdinal(_records[_previousIndex].key, key) == 0)
-            {
-                value = _records[_previousIndex].value;
-                return true;
             }
 
             int hash = computeHash(key);

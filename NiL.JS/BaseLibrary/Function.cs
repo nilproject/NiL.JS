@@ -184,6 +184,7 @@ namespace NiL.JS.BaseLibrary
                         _prototype = res;
                     }
                 }
+
                 return _prototype;
             }
             [Hidden]
@@ -343,6 +344,7 @@ namespace NiL.JS.BaseLibrary
             var res = Invoke(true, targetObject, arguments);
             if (res._valueType < JSValueType.Object || res._oValue == null)
                 return targetObject;
+
             return res;
         }
 
@@ -916,10 +918,17 @@ namespace NiL.JS.BaseLibrary
             if (memberScope < PropertyScope.Super && nameObj._valueType != JSValueType.Symbol)
             {
                 string name = nameObj.ToString();
+
                 if (_creator.body._strict && (name == "caller" || name == "arguments"))
                     return propertiesDummySM;
-                if ((_attributes & JSValueAttributesInternal.ProxyPrototype) != 0 && name == "prototype")
+
+                if ((!forWrite || (_attributes & JSValueAttributesInternal.ProxyPrototype) != 0) && name == "prototype")
+                {
                     return prototype;
+                }
+
+                if (nameObj._valueType != JSValueType.String)
+                    nameObj = name;
             }
 
             return base.GetProperty(nameObj, forWrite, memberScope);

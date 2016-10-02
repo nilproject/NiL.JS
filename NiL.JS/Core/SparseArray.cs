@@ -152,6 +152,7 @@ namespace NiL.JS.Core
                                 pseudoLength = _index + 1;
                             return;
                         }
+
                         if (_index < 8)
                         {
                             // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца. 
@@ -176,11 +177,13 @@ namespace NiL.JS.Core
                         return;
                     }
                 }
+
                 if (allocatedCount == 0)
                 {
                     allocatedCount = 1;
                     pseudoLength = 1;
                 }
+
                 if (_index < allocatedCount)
                 {
                     if (navyData[index].index == _index)
@@ -191,6 +194,7 @@ namespace NiL.JS.Core
                         return;
                     }
                 }
+
                 int bi = 31;
                 for (uint i = 0, ni = 0; ; bi--)
                 {
@@ -204,6 +208,7 @@ namespace NiL.JS.Core
                             // по-умолчанию и был вызван Trim
                             return;
                         }
+
                         var oi = navyData[i].index;
                         var ov = values[i];
                         navyData[i].index = _index;
@@ -220,18 +225,23 @@ namespace NiL.JS.Core
                         {
                             if (pseudoLength <= _index)
                                 pseudoLength = _index + 1;
+
                             if (@default)
                                 return;
+
                             if (b)
                                 navyData[i].zeroContinue = ni = allocatedCount++;
                             else
                                 navyData[i].oneContinue = ni = allocatedCount++;
+
                             if (navyData.Length <= allocatedCount)
                                 ensureCapacity(navyData.Length * 2);
+
                             navyData[ni].index = _index;
                             values[ni] = value;
                             return;
                         }
+
                         i = ni;
                     }
                     else
@@ -253,6 +263,7 @@ namespace NiL.JS.Core
         {
             if (pseudoLength == uint.MaxValue)
                 throw new InvalidOperationException();
+
             this[(int)(pseudoLength)] = item;
         }
 

@@ -167,8 +167,3 @@ for ( var n = 3; n <= 24; n *= 2 ) {
         ret += bodies.energy();
     })();
 }
-
-var expected = -1.3524862408537374; // оригинальное значение: -1.3524862408537381;
-if (ret != expected)
-    throw "ERROR: bad result: expected " + expected + " but got " + ret;
-

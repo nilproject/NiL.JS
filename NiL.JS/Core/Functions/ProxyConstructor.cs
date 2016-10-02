@@ -130,8 +130,12 @@ namespace NiL.JS.Core.Functions
             if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
                 var keyString = key.ToString();
+                
                 if (keyString == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
+
+                if (key._valueType != JSValueType.String)
+                    key = keyString;
 
                 JSValue res;
                 if (forWrite || keyString != "toString")
