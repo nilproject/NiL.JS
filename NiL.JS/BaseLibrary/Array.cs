@@ -214,6 +214,7 @@ namespace NiL.JS.BaseLibrary
                     res.data.Add(v.CloneImpl(false));
                 }
             }
+
             return res;
         }
 
@@ -227,7 +228,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = undefined;
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -253,7 +254,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = -1L;
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -279,7 +280,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = true;
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -298,7 +299,7 @@ namespace NiL.JS.BaseLibrary
                 self = self.ToObject();
 
             var result = true;
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -318,7 +319,7 @@ namespace NiL.JS.BaseLibrary
 
             Array result = new Array();
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -341,7 +342,7 @@ namespace NiL.JS.BaseLibrary
 
             Array result = new Array();
 
-            var len = iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            var len = iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -363,7 +364,7 @@ namespace NiL.JS.BaseLibrary
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -382,7 +383,7 @@ namespace NiL.JS.BaseLibrary
         {
             var result = -1L;
 
-            iterateImpl(self, null, args[1], (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, args[1], undefined, (value, index, thisBind, jsCallback) =>
             {
                 if (Expressions.StrictEqual.Check(args[0], value))
                 {
@@ -403,7 +404,7 @@ namespace NiL.JS.BaseLibrary
         {
             var result = -1L;
 
-            iterateImpl(self, null, args[1], (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, args[1], undefined, (value, index, thisBind, jsCallback) =>
             {
                 if (args[0].IsNaN() ?
                         value.IsNaN()
@@ -420,7 +421,7 @@ namespace NiL.JS.BaseLibrary
             return result != -1L;
         }
 
-        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, Func<JSValue, long, JSValue, Function, bool> callback)
+        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, JSValue endIndexSrc, Func<JSValue, long, JSValue, Function, bool> callback)
         {
             Array arraySrc = self._oValue as Array;
             bool nativeMode = arraySrc != null;
@@ -436,6 +437,7 @@ namespace NiL.JS.BaseLibrary
 
             var length = nativeMode ? arraySrc.data.Length : Tools.getLengthOfArraylike(self, false);
             long startIndex = 0;
+            long endIndex = 0;
             Function jsCallback = null;
             JSValue thisBind = null;
 
@@ -450,7 +452,7 @@ namespace NiL.JS.BaseLibrary
             }
             else if (startIndexSrc.Exists)
             {
-                // indexOf
+                // indexOf, slice
                 startIndex = Tools.JSObjectToInt64(startIndexSrc, 0, true);
                 if (startIndex > length)
                     startIndex = length;
@@ -458,6 +460,17 @@ namespace NiL.JS.BaseLibrary
                     startIndex += length;
                 if (startIndex < 0)
                     startIndex = 0;
+
+                endIndex = Tools.JSObjectToInt64(endIndexSrc, long.MaxValue, true);
+                if (endIndex > length)
+                    endIndex = length;
+                if (endIndex < 0)
+                    endIndex += length;
+                if (endIndex < 0)
+                    endIndex = 0;
+
+                if (length > endIndex)
+                    length = endIndex;
             }
 
             if (length > 0)
@@ -525,9 +538,10 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    long prevKey = startIndex - 1;
+                    var tempKey = new JSValue();
+                    var prevKey = startIndex - 1;
                     var mainEnum = arraySrc.data.DirectOrder.GetEnumerator();
-                    bool moved = true;
+                    var moved = true;
                     while (moved)
                     {
                         moved = mainEnum.MoveNext();
@@ -548,7 +562,6 @@ namespace NiL.JS.BaseLibrary
 
                             for (var i = prevKey + 1; i < index; i++)
                             {
-                                var tempKey = new JSValue();
                                 if (i <= int.MaxValue)
                                 {
                                     tempKey._iValue = (int)i;
@@ -559,6 +572,7 @@ namespace NiL.JS.BaseLibrary
                                     tempKey._dValue = i;
                                     tempKey._valueType = JSValueType.Double;
                                 }
+
                                 value = self.GetProperty(tempKey, false, PropertyScope.Сommon);
                                 if (value.Exists)
                                 {
@@ -1021,7 +1035,7 @@ namespace NiL.JS.BaseLibrary
                 args.length = 1;
             }
 
-            var len = (skip ? 0 : 1) + iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            var len = (skip ? 0 : 1) + iterateImpl(self, args, undefined, undefined, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -1270,102 +1284,22 @@ namespace NiL.JS.BaseLibrary
                 throw new ArgumentNullException("args");
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
                 ExceptionHelper.Throw(new TypeError("Can not call Array.prototype.slice for null or undefined"));
-            HashSet<string> processedKeys = new HashSet<string>();
-            Array res = new Array();
-            for (;;)
+            
+            var endIndex = Tools.JSObjectToInt64(args[1], long.MaxValue, true);
+
+            Array result = new Array();
+            iterateImpl(self, null, args[0], args[1], (value, index, thisBind, jsCallback) =>
             {
-                var selfa = self as Array;
-                if (selfa != null)
-                {
-                    var startIndex = Tools.JSObjectToInt64(args[0], 0, true);
-                    if (startIndex < 0)
-                        startIndex += selfa.data.Length;
-                    if (startIndex < 0)
-                        startIndex = 0;
-                    var endIndex = Tools.JSObjectToInt64(args[1], selfa.data.Length, true);
-                    if (endIndex < 0)
-                        endIndex += selfa.data.Length;
-                    var len = selfa.data.Length;
-                    foreach (var element in selfa.data.DirectOrder)
-                    {
-                        if (element.Key >= len) // ýýý...
-                            break;
-                        var value = element.Value;
-                        if (value == null || !value.Exists)
-                            continue;
-                        if (value._valueType == JSValueType.Property)
-                            value = Tools.InvokeGetter(value, self);
-
-                        if (processedKeys != null)
-                        {
-                            var sk = element.Key.ToString();
-                            if (processedKeys.Contains(sk))
-                                continue;
-                            processedKeys.Add(sk);
-                        }
-                        if (element.Key >= startIndex && element.Key < endIndex)
-                            res.data[element.Key - (int)startIndex] = element.Value.CloneImpl(false);
-                    }
-                }
+                value = value.CloneImpl(false);
+                if (index < uint.MaxValue - 1)
+                    result.data[(int)index] = value;
                 else
-                {
-                    var lenObj = self["length"]; // проверка на null/undefined с бросанием исключения
-                    if (!lenObj.Defined)
-                        return res;
-                    if (lenObj._valueType == JSValueType.Property)
-                        lenObj = Tools.InvokeGetter(lenObj, self);
+                    result[index.ToString()] = value;
 
-                    if (lenObj._valueType >= JSValueType.Object)
-                        lenObj = lenObj.ToPrimitiveValue_Value_String();
-                    if (!lenObj.Defined)
-                        return new Array();
-                    long _length = (uint)Tools.JSObjectToInt64(lenObj);
-                    var startIndex = Tools.JSObjectToInt64(args[0], 0, true);
-                    if (startIndex < 0)
-                        startIndex += _length;
-                    if (startIndex < 0)
-                        startIndex = 0;
-                    var endIndex = Tools.JSObjectToInt64(args[1], _length, true);
-                    if (endIndex < 0)
-                        endIndex += _length;
-                    var @enum = self.GetEnumerator(false, EnumerationMode.RequireValues);
-                    while (@enum.MoveNext())
-                    {
-                        var i = @enum.Current.Key;
-                        var pindex = 0;
-                        var dindex = 0.0;
-                        long lindex = 0;
-                        if (Tools.ParseNumber(i, ref pindex, out dindex)
-                            && (pindex == i.Length)
-                            && dindex < _length
-                            && (lindex = (long)dindex) == dindex)
-                        {
-                            var temp = @enum.Current.Value;
-                            if (temp._valueType == JSValueType.Property)
-                                temp = Tools.InvokeGetter(temp, self);
+                return true;
+            });
 
-                            if (!temp.Exists)
-                                continue;
-                            if (processedKeys != null)
-                            {
-                                var sk = lindex.ToString();
-                                if (processedKeys.Contains(sk))
-                                    continue;
-                                processedKeys.Add(sk);
-                            }
-                            if (lindex >= startIndex && lindex < endIndex)
-                                res.data[(int)lindex - (int)startIndex] = temp.CloneImpl(false);
-                        }
-                    }
-                }
-                var crnt = self;
-                if (self.__proto__ == @null)
-                    break;
-                self = self.__proto__;
-                if (self == null || (self._valueType >= JSValueType.String && self._oValue == null))
-                    break;
-            }
-            return res;
+            return result;
         }
 
         [DoNotEnumerate]
