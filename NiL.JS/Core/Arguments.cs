@@ -26,17 +26,15 @@ namespace NiL.JS.Core
             }
         }
 
-        internal JSValue a0;
-        internal JSValue a1;
-        internal JSValue a2;
-        internal JSValue a3;
-        internal JSValue a4;
-        //internal JSObject a5;
-        //internal JSObject a6;
-        //internal JSObject a7;
+        private JSValue a0;
+        private JSValue a1;
+        private JSValue a2;
+        private JSValue a3;
+        private JSValue a4;
         internal JSValue callee;
         internal JSValue caller;
         private _LengthContainer _length;
+
         internal int length;
 
         public int Length
@@ -90,8 +88,10 @@ namespace NiL.JS.Core
                     default:
                         return base[index.ToString()];
                 }
+
                 if (res == null)
                     return notExists;
+
                 return res;
             }
             set

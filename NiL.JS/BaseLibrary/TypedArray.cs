@@ -132,10 +132,12 @@ namespace NiL.JS.BaseLibrary
         {
             if (args == null)
                 return;
-            var offset = Tools.JSObjectToInt64(args.a1 ?? undefined, 0, false);
-            var src = args.a0 ?? undefined;
+
+            var offset = Tools.JSObjectToInt64(args[1], 0, false);
+            var src = args[0] ?? undefined;
             if (src._valueType < JSValueType.String)
                 return;
+
             var length = Tools.JSObjectToInt64(src["length"], 0, false);
             if (this.length._iValue - offset < length)
                 ExceptionHelper.Throw(new RangeError("Invalid source length or offset argument"));

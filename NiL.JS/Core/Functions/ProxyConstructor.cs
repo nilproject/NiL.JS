@@ -184,8 +184,11 @@ namespace NiL.JS.Core.Functions
                 if (_staticProxy._hostedType == typeof(NiL.JS.BaseLibrary.Array))
                 {
                     if (arguments == null)
-                        obj = new NiL.JS.BaseLibrary.Array();
+                    {
+                        obj = new BaseLibrary.Array();
+                    }
                     else
+                    {
                         switch (arguments.length)
                         {
                             case 0:
@@ -193,16 +196,17 @@ namespace NiL.JS.Core.Functions
                                 break;
                             case 1:
                                 {
-                                    switch (arguments.a0._valueType)
+                                    var a0 = arguments[0];
+                                    switch (a0._valueType)
                                     {
                                         case JSValueType.Integer:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0._iValue);
+                                            obj = new BaseLibrary.Array(a0._iValue);
                                             break;
                                         case JSValueType.Double:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0._dValue);
+                                            obj = new BaseLibrary.Array(a0._dValue);
                                             break;
                                         default:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments);
+                                            obj = new BaseLibrary.Array(arguments);
                                             break;
                                     }
                                     break;
@@ -211,6 +215,7 @@ namespace NiL.JS.Core.Functions
                                 obj = new NiL.JS.BaseLibrary.Array(arguments);
                                 break;
                         }
+                    }
                 }
                 else
                 {

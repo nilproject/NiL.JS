@@ -682,14 +682,17 @@ namespace NiL.JS.Core
                 ExceptionHelper.Throw(new TypeError("Cannot change value of not configurable peoperty."));
             if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0)
                 ExceptionHelper.Throw(new TypeError("Cannot change value of readonly peoperty."));
+
             if (field._valueType == JSValueType.Property)
-                (field._oValue as GsPropertyPair).get = args.a1._oValue as Function;
+            {
+                (field._oValue as GsPropertyPair).get = args[1].Value as Function;
+            }
             else
             {
                 field._valueType = JSValueType.Property;
                 field._oValue = new GsPropertyPair
                 {
-                    get = args.a1._oValue as Function
+                    get = args[1].Value as Function
                 };
             }
         }
@@ -708,13 +711,13 @@ namespace NiL.JS.Core
             if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0)
                 ExceptionHelper.Throw(new TypeError("Cannot change value of readonly peoperty."));
             if (field._valueType == JSValueType.Property)
-                (field._oValue as GsPropertyPair).set = args.a1._oValue as Function;
+                (field._oValue as GsPropertyPair).set = args[1]._oValue as Function;
             else
             {
                 field._valueType = JSValueType.Property;
                 field._oValue = new GsPropertyPair
                 {
-                    set = args.a1._oValue as Function
+                    set = args[1].Value as Function
                 };
             }
         }

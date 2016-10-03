@@ -722,6 +722,7 @@ namespace NiL.JS.BaseLibrary
                     callee = this,
                     length = _creator.parameters.Length
                 };
+
                 for (var i = 0; i < _creator.parameters.Length; i++)
                 {
                     if (_creator.body._strict)
@@ -729,6 +730,7 @@ namespace NiL.JS.BaseLibrary
                     else
                         args[i] = _creator.parameters[i].cacheRes;
                 }
+
                 context._arguments = args;
             }
         }

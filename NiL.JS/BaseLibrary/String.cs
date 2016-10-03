@@ -77,7 +77,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue charCodeAt(JSValue self, Arguments pos)
         {
-            int p = Tools.JSObjectToInt32(pos.a0 ?? notExists, true);
+            int p = Tools.JSObjectToInt32(pos[0], true);
             var selfStr = self.ToString();
             if ((p < 0) || (p >= selfStr.Length))
                 return Number.NaN;
@@ -233,7 +233,7 @@ namespace NiL.JS.BaseLibrary
             if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
 
-            var a0 = args.a0;
+            var a0 = args[0];
             var regex = a0.Value as RegExp;
             if (regex != null)
             {
