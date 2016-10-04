@@ -526,11 +526,11 @@ namespace NiL.JS.Expressions
                 if (key.Is<Symbol>())
                 {
                     symbolKey = key.As<Symbol>();
-                    if (target.symbols == null)
-                        target.symbols = new Dictionary<Symbol, JSValue>();
+                    if (target._symbols == null)
+                        target._symbols = new Dictionary<Symbol, JSValue>();
 
-                    if (!target.symbols.TryGetValue(symbolKey, out existedValue))
-                        target.symbols[symbolKey] = existedValue = value;
+                    if (!target._symbols.TryGetValue(symbolKey, out existedValue))
+                        target._symbols[symbolKey] = existedValue = value;
                 }
                 else
                 {
@@ -552,7 +552,7 @@ namespace NiL.JS.Expressions
                     {
                         if (key.Is<Symbol>())
                         {
-                            target.symbols[symbolKey] = value;
+                            target._symbols[symbolKey] = value;
                         }
                         else
                         {

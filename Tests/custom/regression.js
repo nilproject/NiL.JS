@@ -222,4 +222,13 @@ if (Object.toString() === "function Object() { [native code] }")
 if ([1, , 2, 3][['length']] != 4)
     throw "Invalid array.length optimization";
 
+if (isNaN.__proto__ != Function.__proto__)
+    throw "Incorrect prototype of ExternalFunction";
+
+[...new Date()];
+
+console.asserta(() => Error.constructor == Function.constructor);
+console.asserta(() => Error.constructor().__proto__ == Function.prototype);
+console.asserta(() => Object.call(Error).__proto__ == Object.prototype);
+
 console.asserta(() => (new class {}).toString(), {}.toString());

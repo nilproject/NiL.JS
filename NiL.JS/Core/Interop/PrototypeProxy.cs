@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace NiL.JS.Core.Interop
 {
+    [Prototype(typeof(JSObject), true)]
     internal sealed class PrototypeProxy : Proxy
     {
         internal override bool IsInstancePrototype
@@ -16,10 +17,9 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        public PrototypeProxy(GlobalContext context, Type type, JSObject prototype)
+        public PrototypeProxy(GlobalContext context, Type type)
             : base(context, type)
         {
-            __prototype = prototype;
         }
     }
 }

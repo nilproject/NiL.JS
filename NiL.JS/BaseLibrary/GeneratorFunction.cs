@@ -4,6 +4,7 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.BaseLibrary
 {
+    [Prototype(typeof(Function), true)]
     internal sealed class GeneratorFunction : Function
     {
         public override JSValue prototype
@@ -17,8 +18,7 @@ namespace NiL.JS.BaseLibrary
 
             }
         }
-
-        [Hidden]
+        
         public GeneratorFunction(Context context, FunctionDefinition generator)
             : base(context, generator)
         {
@@ -31,11 +31,6 @@ namespace NiL.JS.BaseLibrary
                 ExceptionHelper.ThrowTypeError("Generators cannot be invoked as a constructor");
 
             return Context.GlobalContext.ProxyValue(new GeneratorIterator(this, targetObject, arguments));
-        }
-
-        internal override JSObject GetDefaultPrototype()
-        {
-            return Context.GlobalContext.GetPrototype(typeof(Function));
         }
     }
 

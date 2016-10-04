@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core
 {
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
+    [Prototype(typeof(JSObject), true)]
     public sealed class Arguments : JSObject, IEnumerable
     {
         private sealed class _LengthContainer : JSValue
@@ -132,7 +134,7 @@ namespace NiL.JS.Core
                     && context._owner != null
                     && context._owner._creator.body._strict ? Function.propertiesDummySM : context._owner;
 
-                __prototype = context.GlobalContext._GlobalPrototype;
+                _objectPrototype = context.GlobalContext._GlobalPrototype;
             }
         }
 
@@ -140,17 +142,14 @@ namespace NiL.JS.Core
         {
             _valueType = JSValueType.Object;
             _oValue = this;
-            _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
+            _attributes = JSValueAttributesInternal.DoNotDelete 
+                | JSValueAttributesInternal.DoNotEnumerate 
+                | JSValueAttributesInternal.SystemObject;
         }
 
         public void Add(JSValue arg)
         {
             this[length++] = arg;
-        }
-
-        internal override JSObject GetDefaultPrototype()
-        {
-            return Context.CurrentBaseContext._GlobalPrototype ?? @null;
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool createMember, PropertyScope memberScope)
@@ -319,7 +318,7 @@ namespace NiL.JS.Core
             //a7 = null;
             callee = null;
             caller = null;
-            __prototype = null;
+            _objectPrototype = null;
             _length = null;
             _valueType = JSValueType.Object;
             _oValue = this;

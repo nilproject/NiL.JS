@@ -113,9 +113,17 @@ namespace NiL.JS.BaseLibrary
             {
                 if (_length == null)
                 {
-                    _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
+                    _length = new Number(0)
+                    {
+                        _attributes = 
+                        JSValueAttributesInternal.ReadOnly 
+                        | JSValueAttributesInternal.DoNotDelete 
+                        | JSValueAttributesInternal.DoNotEnumerate
+                        | JSValueAttributesInternal.NonConfigurable
+                    };
                     _length._iValue = _creator.parameters.Length;
                 }
+
                 return _length;
             }
         }
@@ -174,7 +182,9 @@ namespace NiL.JS.BaseLibrary
                     if ((_attributes & JSValueAttributesInternal.ProxyPrototype) != 0)
                     {
                         // Вызывается в случае Function.prototype.prototype
-                        _prototype = new JSObject(); // выдавать тут константу undefined нельзя, иначе будет падать на вызове defineProperty
+                        // выдавать тут константу undefined нельзя, иначе будет падать на вызове defineProperty
+                        // присваивание нужно для простановки атрибутов
+                        prototype = new JSObject();
                     }
                     else
                     {
@@ -187,13 +197,33 @@ namespace NiL.JS.BaseLibrary
 
                 return _prototype;
             }
+
             [Hidden]
             set
             {
+                if (value == _prototype)
+                    return;
+
+                var oldValue = _prototype;
+
                 if (value == null)
                     _prototype = @null;
                 else
                     _prototype = value._valueType >= JSValueType.Object ? value._oValue as JSObject ?? value : value;
+
+                _prototype = _prototype.CloneImpl(true);
+                if (oldValue == null)
+                {
+                    _prototype._attributes =
+                        JSValueAttributesInternal.Field
+                        | JSValueAttributesInternal.DoNotDelete
+                        | JSValueAttributesInternal.DoNotEnumerate
+                        | JSValueAttributesInternal.NonConfigurable;
+                }
+                else
+                {
+                    _prototype._attributes = oldValue._attributes;
+                }
             }
         }
         /// <summary>
@@ -210,10 +240,13 @@ namespace NiL.JS.BaseLibrary
                 var context = Context.GetRunningContextFor(this);
                 if (context == null)
                     return null;
+
                 if (_creator.body._strict)
                     ExceptionHelper.Throw(new TypeError("Property \"arguments\" may not be accessed in strict mode."));
+                
                 if (context._arguments == null && _creator.recursionDepth > 0)
                     BuildArgumentsObject();
+
                 return context._arguments;
             }
             [Hidden]
@@ -222,8 +255,10 @@ namespace NiL.JS.BaseLibrary
                 var context = Context.GetRunningContextFor(this);
                 if (context == null)
                     return;
+
                 if (_creator.body._strict)
                     ExceptionHelper.Throw(new TypeError("Property \"arguments\" may not be accessed in strict mode."));
+
                 context._arguments = value;
             }
         }
@@ -240,8 +275,10 @@ namespace NiL.JS.BaseLibrary
                 var context = Context.GetRunningContextFor(this, out oldContext);
                 if (context == null || oldContext == null)
                     return null;
+
                 if (context._strict || (oldContext._strict && oldContext._owner != null))
                     ExceptionHelper.Throw(new TypeError("Property \"caller\" may not be accessed in strict mode."));
+
                 return oldContext._owner;
             }
             [Hidden]
@@ -251,6 +288,7 @@ namespace NiL.JS.BaseLibrary
                 var context = Context.GetRunningContextFor(this, out oldContext);
                 if (context == null || oldContext == null)
                     return;
+
                 if (context._strict || (oldContext._strict && oldContext._owner != null))
                     ExceptionHelper.Throw(new TypeError("Property \"caller\" may not be accessed in strict mode."));
             }
@@ -284,7 +322,7 @@ namespace NiL.JS.BaseLibrary
                 throw new InvalidOperationException("Special Functions constructor can be called from javascript code only");
 
             _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
-            
+
             var index = 0;
             int len = args.Length - 1;
             var argn = "";
@@ -427,7 +465,7 @@ namespace NiL.JS.BaseLibrary
             else
                 return Call(targetObject, argumentsObject);
         }
-        
+
         private JSValue fastInvoke(JSValue targetObject, Expression[] arguments, Context initiator)
         {
 #if DEBUG && !(PORTABLE || NETCORE)
@@ -814,6 +852,7 @@ namespace NiL.JS.BaseLibrary
                         t._attributes |= JSValueAttributesInternal.Argument;
                     }
                 }
+
                 t._attributes &= ~JSValueAttributesInternal.Cloned;
                 if (prm.captured || ceaw)
                     (internalContext._variables ?? (internalContext._variables = getFieldsContainer()))[prm.Name] = t;
@@ -1056,6 +1095,6 @@ namespace NiL.JS.BaseLibrary
             delegateCache.Add(delegateType, @delegate);
 
             return @delegate;
-        }        
+        }
     }
 }

@@ -14,15 +14,15 @@ namespace NiL.JS.Core.Interop
         public Type PrototypeType { get; private set; }
         public bool Replace { get; private set; }
 
-        public PrototypeAttribute(Type prototypeType)
+        public PrototypeAttribute(Type type)
+            : this(type, false)
         {
-            PrototypeType = prototypeType;
         }
 
         internal PrototypeAttribute(Type type, bool replace)
-            : this(type)
         {
             Replace = replace;
+            PrototypeType = type;
         }
     }
 }

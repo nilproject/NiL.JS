@@ -9,16 +9,14 @@ namespace NiL.JS.Core.Functions
     /// <summary>
     /// Представляет функцию платформы с фиксированной сигнатурой.
     /// </summary>
-    [Prototype(typeof(Function))]
+    [Prototype(typeof(Function), true)]
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public sealed class ExternalFunction : Function
     {
-        [Hidden]
         public override string name
         {
-            [Hidden]
             get
             {
 #if (PORTABLE || NETCORE)
@@ -29,18 +27,12 @@ namespace NiL.JS.Core.Functions
             }
         }
         
-        [Field]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        [NotConfigurable]
         public override JSValue prototype
         {
-            [Hidden]
             get
             {
                 return null;
             }
-            [Hidden]
             set
             {
             }
@@ -48,7 +40,6 @@ namespace NiL.JS.Core.Functions
 
         private readonly ExternalFunctionDelegate _delegate;
 
-        [Hidden]
         public ExternalFunctionDelegate Delegate { get { return _delegate; } }
 
         public ExternalFunction(ExternalFunctionDelegate @delegate)
@@ -74,11 +65,10 @@ namespace NiL.JS.Core.Functions
         {
             var res = _delegate(targetObject, arguments);
             if (res == null)
-                return JSValue.NotExists;
+                return NotExists;
             return res;
         }
         
-        [Hidden]
         public override string ToString(bool headerOnly)
         {
             var result = "function " + name + "()";

@@ -39,7 +39,7 @@ namespace NiL.JS.Core
             if (proto != null)
             {
                 _attributes |= proto._attributes & JSValueAttributesInternal.Immutable;
-                __prototype = proto;
+                _objectPrototype = proto;
             }
         }
 

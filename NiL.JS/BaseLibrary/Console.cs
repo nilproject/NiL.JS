@@ -39,7 +39,7 @@ namespace NiL.JS.BaseLibrary
         
         public static void asserta(Function f, JSValue sample)
         {
-            if (!sample.Exists)
+            if (sample == null || !sample.Exists)
                 sample = Boolean.True;
 
             if (!JSObject.@is(f.Call(null), sample))

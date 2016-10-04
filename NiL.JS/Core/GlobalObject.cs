@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core
 {
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
+    [Prototype(typeof(JSObject), true)]
     internal sealed class GlobalObject : JSObject
     {
         private Context _context;
-
-        internal override JSObject GetDefaultPrototype()
-        {
-            throw new InvalidOperationException();
-        }
 
         public GlobalObject(Context context)
             : base()
@@ -24,7 +21,7 @@ namespace NiL.JS.Core
             _fields = context._variables;
             _valueType = JSValueType.Object;
             _oValue = this;
-            __prototype = context.GlobalContext._GlobalPrototype;
+            _objectPrototype = context.GlobalContext._GlobalPrototype;
         }
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)

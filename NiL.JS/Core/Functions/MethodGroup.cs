@@ -11,10 +11,11 @@ namespace NiL.JS.Core.Functions
     /// <remarks>
     /// Доступ к типу не предоставляется из скрипта. Атрибуты не нужны
     /// </remarks>
+    [Prototype(typeof(Function), true)]
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    internal sealed class MethodGroup : BaseLibrary.Function
+    internal sealed class MethodGroup : Function
     {
         /// <summary>
         /// На первом проходе будут выбираться методы со строгим соответствием типов
@@ -68,11 +69,6 @@ namespace NiL.JS.Core.Functions
             {
                 _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate
             };
-        }
-
-        internal override JSObject GetDefaultPrototype()
-        {
-            return Context.GlobalContext.GetPrototype(typeof(Function));
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)

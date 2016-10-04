@@ -8,6 +8,7 @@ namespace NiL.JS.Core.Functions
     /// <summary>
     /// Реализует поведение функции Function.prototype.bind.
     /// </summary>
+    [Prototype(typeof(Function), true)]
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
@@ -104,24 +105,16 @@ namespace NiL.JS.Core.Functions
             return original.ConstructObject();
         }
 
-        [Hidden]
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode)
         {
             return original.GetEnumerator(hideNonEnumerable, enumeratorMode);
         }
 
-        [Hidden]
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             return original.GetProperty(key, forWrite, memberScope);
         }
 
-        internal override JSObject GetDefaultPrototype()
-        {
-            return Context.GlobalContext.GetPrototype(typeof(Function));
-        }
-
-        [Hidden]
         public override string ToString(bool headerOnly)
         {
             return original.ToString(headerOnly);

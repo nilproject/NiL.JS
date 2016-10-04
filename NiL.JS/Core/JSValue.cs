@@ -365,7 +365,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal virtual JSObject GetDefaultPrototype()
+        internal JSObject GetDefaultPrototype()
         {
             switch (_valueType)
             {

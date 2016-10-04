@@ -64,15 +64,18 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var f = first.Evaluate(context);
+
             var temp = tempContainer;
             tempContainer = null;
             if (temp == null)
                 temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+
             temp._valueType = f._valueType;
             temp._iValue = f._iValue;
             temp._dValue = f._dValue;
             temp._oValue = f._oValue;
             Impl(temp, temp, second.Evaluate(context));
+
             tempContainer = temp;
             return temp;
         }
@@ -286,7 +289,7 @@ namespace NiL.JS.Expressions
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
+            var res = base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
             if (!res && _this == this)
             {
                 if (first is StringConcatenation)

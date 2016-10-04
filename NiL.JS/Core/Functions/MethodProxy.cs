@@ -22,6 +22,7 @@ namespace NiL.JS.Core.Functions
         DummyValues = 4
     }
 
+    [Prototype(typeof(Function), true)]
     internal sealed class MethodProxy : Function
     {
         private static readonly Dictionary<MethodBase, Func<object, object[], Arguments, object>> _wrapperCache = new Dictionary<MethodBase, Func<object, object[], Arguments, object>>();
@@ -37,41 +38,28 @@ namespace NiL.JS.Core.Functions
         internal ParameterInfo[] _parameters;
         internal bool raw;
 
-        [Hidden]
         public ParameterInfo[] Parameters
         {
-            [Hidden]
             get
             {
                 return _parameters;
             }
         }
 
-        [Field]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        [NotConfigurable]
         public override string name
         {
-            [Hidden]
             get
             {
                 return _method.Name;
             }
         }
 
-        [Field]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        [NotConfigurable]
         public override JSValue prototype
         {
-            [Hidden]
             get
             {
                 return null;
             }
-            [Hidden]
             set
             {
 
@@ -460,7 +448,6 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        [Hidden]
         internal object InvokeImpl(JSValue thisBind, object[] args, Arguments argsSource)
         {
             object target = _hardTarget;
@@ -691,7 +678,6 @@ namespace NiL.JS.Core.Functions
 #endif
 #endif
 
-        [Hidden]
         public override string ToString(bool headerOnly)
         {
             var result = "function " + name + "()";

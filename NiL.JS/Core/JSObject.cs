@@ -14,8 +14,8 @@ namespace NiL.JS.Core
     public class JSObject : JSValue
     {
         internal IDictionary<string, JSValue> _fields;
-        internal IDictionary<Symbol, JSValue> symbols;
-        internal JSObject __prototype;
+        internal IDictionary<Symbol, JSValue> _symbols;
+        internal JSObject _objectPrototype;
 
         [DoNotDelete]
         [DoNotEnumerate]
@@ -29,26 +29,26 @@ namespace NiL.JS.Core
                 if (!Defined || IsNull)
                     ExceptionHelper.Throw(new TypeError("Can not get prototype of null or undefined"));
 
-                if (_valueType >= JSValueType.Object
-                    && _oValue != this // вот такого теперь быть не должно
-                    && (_oValue as JSObject) != null)
-                    return (_oValue as JSObject).__proto__;
-
-                if (__prototype != null)
+                if (_valueType >= JSValueType.Object && _oValue != this)
                 {
-                    if (__prototype._valueType < JSValueType.Object)
+                    var oValueAsJs = _oValue as JSValue;
+                    if (oValueAsJs != null)
                     {
-                        __prototype = GetDefaultPrototype(); // такого тоже
+                        return oValueAsJs.__proto__;
                     }
-                    else if (__prototype._oValue == null)
-                    {
-                        return @null;
-                    }
-
-                    return __prototype;
                 }
 
-                return __prototype = GetDefaultPrototype();
+                if (_objectPrototype == null || _objectPrototype._valueType < JSValueType.Object)
+                {
+                    _objectPrototype = GetDefaultPrototype();
+                    if (_objectPrototype == null)
+                        _objectPrototype = @null;
+                }
+
+                if (_objectPrototype._oValue == null)
+                    return @null;
+
+                return _objectPrototype;
             }
             [Hidden]
             set
@@ -59,15 +59,17 @@ namespace NiL.JS.Core
                     return;
                 if (value != null && value._valueType < JSValueType.Object)
                     return;
+
                 if (_oValue != this && (_oValue as JSObject) != null)
                 {
                     (_oValue as JSObject).__proto__ = value;
-                    __prototype = null;
+                    _objectPrototype = null;
                     return;
                 }
+
                 if (value == null || value._oValue == null)
                 {
-                    __prototype = @null;
+                    _objectPrototype = @null;
                 }
                 else
                 {
@@ -78,7 +80,8 @@ namespace NiL.JS.Core
                             ExceptionHelper.Throw(new Error("Try to set cyclic __proto__ value."));
                         c = c.__proto__;
                     }
-                    __prototype = value._oValue as JSObject ?? value;
+
+                    _objectPrototype = value._oValue as JSObject ?? value;
                 }
             }
         }
@@ -133,7 +136,9 @@ namespace NiL.JS.Core
             {
                 if (forWrite || _fields != null)
                     name = key.ToString();
+
                 fromProto = (memberScope >= PropertyScope.Super || _fields == null || !_fields.TryGetValue(name, out res) || res._valueType < JSValueType.Undefined) && ((proto = __proto__)._oValue != null);
+
                 if (fromProto)
                 {
                     res = proto.GetProperty(key, false, memberScope > 0 ? memberScope - 1 : 0);
@@ -141,6 +146,7 @@ namespace NiL.JS.Core
                         || res._valueType < JSValueType.Undefined)
                         res = null;
                 }
+
                 if (res == null)
                 {
                     if (!forWrite || (_attributes & JSValueAttributesInternal.Immutable) != 0)
@@ -179,22 +185,27 @@ namespace NiL.JS.Core
             JSObject proto = null;
             JSValue res = null;
             var symbol = key._oValue as Symbol;
-            var fromProto = (symbols == null || !symbols.TryGetValue(symbol, out res) || res._valueType < JSValueType.Undefined) && ((proto = __proto__)._oValue != null);
+
+            var fromProto = (_symbols == null 
+                            || !_symbols.TryGetValue(symbol, out res) 
+                            || res._valueType < JSValueType.Undefined) 
+                                  && ((proto = __proto__)._oValue != null);
             if (fromProto)
             {
                 res = proto.GetProperty(key, false, memberScope);
                 if ((memberScope == PropertyScope.Own && ((res._attributes & JSValueAttributesInternal.Field) == 0 || res._valueType != JSValueType.Property)) || res._valueType < JSValueType.Undefined)
                     res = null;
             }
+
             if (res == null)
             {
                 if (!forWrite || (_attributes & JSValueAttributesInternal.Immutable) != 0)
                     return notExists;
 
                 res = new JSValue { _valueType = JSValueType.NotExistsInObject };
-                if (symbols == null)
-                    symbols = new Dictionary<Symbol, JSValue>();
-                symbols[symbol] = res;
+                if (_symbols == null)
+                    _symbols = new Dictionary<Symbol, JSValue>();
+                _symbols[symbol] = res;
             }
             else if (forWrite)
             {
@@ -204,9 +215,9 @@ namespace NiL.JS.Core
                         && (res._valueType != JSValueType.Property || memberScope == PropertyScope.Own))
                     {
                         res = res.CloneImpl(false);
-                        if (symbols == null)
-                            symbols = new Dictionary<Symbol, JSValue>();
-                        symbols[symbol] = res;
+                        if (_symbols == null)
+                            _symbols = new Dictionary<Symbol, JSValue>();
+                        _symbols[symbol] = res;
                     }
                 }
             }
@@ -297,9 +308,10 @@ namespace NiL.JS.Core
                         yield return f;
                 }
             }
-            if (__prototype != null)
+
+            if (_objectPrototype != null)
             {
-                for (var e = __prototype.GetEnumerator(hideNonEnum, EnumerationMode.RequireValues); e.MoveNext();)
+                for (var e = _objectPrototype.GetEnumerator(hideNonEnum, EnumerationMode.RequireValues); e.MoveNext();)
                 {
                     if (e.Current.Value._valueType >= JSValueType.Undefined
                         && (e.Current.Value._attributes & JSValueAttributesInternal.Field) != 0)
@@ -343,7 +355,7 @@ namespace NiL.JS.Core
                 ExceptionHelper.Throw(new TypeError("Properties descriptor may be only Object."));
             var res = CreateObject(true);
             if (proto._valueType >= JSValueType.Object)
-                res.__prototype = proto;
+                res._objectPrototype = proto;
             if (members._valueType >= JSValueType.Object)
             {
                 foreach (var item in members)
@@ -462,8 +474,10 @@ namespace NiL.JS.Core
                             ExceptionHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
                         desc = (getter._oValue as Function).Call(members, null);
                     }
+
                     if (desc._valueType < JSValueType.Object || desc._oValue == null)
                         ExceptionHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
+
                     definePropertyImpl(target, desc._oValue as JSObject, item.Key);
                 }
             }
@@ -515,6 +529,7 @@ namespace NiL.JS.Core
             var set = desc["set"];
             if (set._valueType == JSValueType.Property)
                 set = Tools.InvokeGetter(set, desc);
+
             if (value.Exists && (get.Exists || set.Exists))
                 ExceptionHelper.Throw(new TypeError("Property can not have getter or setter and default value."));
             if (writable.Exists && (get.Exists || set.Exists))
@@ -523,6 +538,7 @@ namespace NiL.JS.Core
                 ExceptionHelper.Throw(new TypeError("Getter mast be a function."));
             if (set.Defined && set._valueType != JSValueType.Function)
                 ExceptionHelper.Throw(new TypeError("Setter mast be a function."));
+
             JSValue obj = null;
             obj = target.DefineProperty(memberName);
             if ((obj._attributes & JSValueAttributesInternal.Argument) != 0 && (set.Exists || get.Exists))
@@ -534,10 +550,11 @@ namespace NiL.JS.Core
                     target._fields[memberName] = obj = obj.CloneImpl(JSValueAttributesInternal.SystemObject);
                 obj._attributes &= ~JSValueAttributesInternal.Argument;
             }
+
             if ((obj._attributes & JSValueAttributesInternal.SystemObject) != 0)
                 ExceptionHelper.Throw(new TypeError("Can not define property \"" + memberName + "\". Object immutable."));
 
-            if (target is NiL.JS.BaseLibrary.Array)
+            if (target is BaseLibrary.Array)
             {
                 if (memberName == "length")
                 {
@@ -549,12 +566,15 @@ namespace NiL.JS.Core
                             var nlen = (uint)nlenD;
                             if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
                                 ExceptionHelper.Throw(new RangeError("Invalid array length"));
+
                             if ((obj._attributes & JSValueAttributesInternal.ReadOnly) != 0
                                 && ((obj._valueType == JSValueType.Double && nlenD != obj._dValue)
                                     || (obj._valueType == JSValueType.Integer && nlen != obj._iValue)))
                                 ExceptionHelper.Throw(new TypeError("Cannot change length of fixed size array"));
-                            if (!(target as NiL.JS.BaseLibrary.Array).SetLenght(nlen))
+
+                            if (!(target as BaseLibrary.Array).SetLenght(nlen))
                                 ExceptionHelper.Throw(new TypeError("Unable to reduce length because Exists not configurable elements"));
+
                             value = notExists;
                         }
                     }
@@ -582,13 +602,16 @@ namespace NiL.JS.Core
 
                 if ((obj._valueType != JSValueType.Property || ((obj._attributes & JSValueAttributesInternal.Field) != 0)) && (set.Exists || get.Exists))
                     ExceptionHelper.Throw(new TypeError("Cannot redefine not configurable property from immediate value to accessor property"));
+
                 if (obj._valueType == JSValueType.Property && (obj._attributes & JSValueAttributesInternal.Field) == 0 && value.Exists)
                     ExceptionHelper.Throw(new TypeError("Cannot redefine not configurable property from accessor property to immediate value"));
+
                 if (obj._valueType == JSValueType.Property && (obj._attributes & JSValueAttributesInternal.Field) == 0
                     && set.Exists
                     && (((obj._oValue as GsPropertyPair).set != null && (obj._oValue as GsPropertyPair).set._oValue != set._oValue)
                         || ((obj._oValue as GsPropertyPair).set == null && set.Defined)))
                     ExceptionHelper.Throw(new TypeError("Cannot redefine setter of not configurable property."));
+
                 if (obj._valueType == JSValueType.Property && (obj._attributes & JSValueAttributesInternal.Field) == 0
                     && get.Exists
                     && (((obj._oValue as GsPropertyPair).get != null && (obj._oValue as GsPropertyPair).get._oValue != get._oValue)
@@ -978,7 +1001,7 @@ namespace NiL.JS.Core
 
         public static BaseLibrary.Array getOwnPropertySymbols(JSObject obj)
         {
-            return new BaseLibrary.Array(obj?.symbols.Keys ?? new Symbol[0]);
+            return new BaseLibrary.Array(obj?._symbols.Keys ?? new Symbol[0]);
         }
     }
 }
