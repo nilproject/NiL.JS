@@ -114,15 +114,15 @@ namespace NiL.JS.BaseLibrary
         protected TypedArray(JSValue iterablyObject)
         {
             var src = Tools.arraylikeToArray(iterablyObject, true, false, false, -1);
-            if (src.data.Length > int.MaxValue)
+            if (src._data.Length > int.MaxValue)
                 throw new System.OutOfMemoryException();
-            var length = (int)src.data.Length;
+            var length = (int)src._data.Length;
             this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
             this.length = new Number(length);
             this.byteLength = length * BYTES_PER_ELEMENT;
             this._valueType = JSValueType.Object;
             this._oValue = this;
-            foreach (var item in src.data.ReversOrder)
+            foreach (var item in src._data.ReversOrder)
                 this[item.Key] = item.Value;
         }
 

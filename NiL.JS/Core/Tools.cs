@@ -762,11 +762,11 @@ namespace NiL.JS.Core
             if (array == null)
                 return null;
 
-            var result = (IList)Activator.CreateInstance(elementType.MakeArrayType(), new object[] { (int)array.data.Length });
+            var result = (IList)Activator.CreateInstance(elementType.MakeArrayType(), new object[] { (int)array._data.Length });
 
             for (var j = result.Count; j-- > 0;)
             {
-                var temp = (array.data[j] ?? JSValue.undefined);
+                var temp = (array._data[j] ?? JSValue.undefined);
                 result[j] = convertJStoObj(temp, elementType, hightLoyalty);
             }
 
@@ -1702,9 +1702,9 @@ namespace NiL.JS.Core
                 if (srca != null)
                 {
                     if (_length == -1)
-                        _length = srca.data.Length;
+                        _length = srca._data.Length;
                     long prew = -1;
-                    foreach (var element in srca.data.DirectOrder)
+                    foreach (var element in srca._data.DirectOrder)
                     {
                         if (element.Key >= _length) // эээ...
                             break;
@@ -1719,8 +1719,8 @@ namespace NiL.JS.Core
                             value = (value._oValue as GsPropertyPair).get == null ? JSValue.undefined : (value._oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
-                        if (temp.data[element.Key] == null)
-                            temp.data[element.Key] = value;
+                        if (temp._data[element.Key] == null)
+                            temp._data[element.Key] = value;
                     }
                     goDeep |= System.Math.Abs(prew - _length) > 1;
                 }
@@ -1746,8 +1746,8 @@ namespace NiL.JS.Core
                         {
                             goDeep = true;
                         }
-                        if (temp.data[(int)(uint)index.Key] == null)
-                            temp.data[(int)(uint)index.Key] = value;
+                        if (temp._data[(int)(uint)index.Key] == null)
+                            temp._data[(int)(uint)index.Key] = value;
                     }
                     goDeep |= System.Math.Abs(prew - _length) > 1;
                 }
@@ -1757,7 +1757,7 @@ namespace NiL.JS.Core
                 if (src == null || (src._valueType >= JSValueType.String && src._oValue == null))
                     break;
             }
-            temp.data[(int)(_length - 1)] = temp.data[(int)(_length - 1)];
+            temp._data[(int)(_length - 1)] = temp._data[(int)(_length - 1)];
             return temp;
         }
 
@@ -1765,7 +1765,7 @@ namespace NiL.JS.Core
         {
             if (src._valueType == JSValueType.Object && src.Value is BaseLibrary.Array)
             {
-                foreach (var item in (src.Value as BaseLibrary.Array).data.DirectOrder)
+                foreach (var item in (src.Value as BaseLibrary.Array)._data.DirectOrder)
                 {
                     yield return new KeyValuePair<uint, JSValue>((uint)item.Key, item.Value);
                 }

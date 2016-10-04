@@ -823,7 +823,7 @@ namespace NiL.JS.Core
             var arr = obj as NiL.JS.BaseLibrary.Array;
             if (arr != null)
             {
-                foreach (var node in arr.data)
+                foreach (var node in arr._data)
                 {
                     if (node != null
                         && node.Exists
@@ -876,7 +876,7 @@ namespace NiL.JS.Core
             var arr = obj as NiL.JS.BaseLibrary.Array;
             if (arr != null)
             {
-                foreach (var node in arr.data.DirectOrder)
+                foreach (var node in arr._data.DirectOrder)
                 {
                     if (node.Value != null && node.Value.Exists &&
                         ((node.Value._attributes & JSValueAttributesInternal.NonConfigurable) == 0

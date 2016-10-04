@@ -871,7 +871,7 @@ namespace NiL.JS.BaseLibrary
 
                 if (restArray != null)
                 {
-                    restArray.data.Add(t);
+                    restArray._data.Add(t);
                 }
             }
 

@@ -216,7 +216,7 @@ namespace NiL.JS.BaseLibrary
             }
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)
-                res.data[i] = m.Groups[i].Success ? (JSValue)m.Groups[i].Value : null;
+                res._data[i] = m.Groups[i].Success ? (JSValue)m.Groups[i].Value : null;
             if (_global)
                 lIndex._iValue = m.Index + m.Length;
             res.DefineProperty("index").Assign(m.Index);

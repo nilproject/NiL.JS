@@ -252,7 +252,7 @@ namespace NiL.JS.BaseLibrary
                     var res = new Array();
                     while (match.Success)
                     {
-                        res.data[index++] = match.Value;
+                        res._data[index++] = match.Value;
                         match = match.NextMatch();
                     }
 
@@ -265,7 +265,7 @@ namespace NiL.JS.BaseLibrary
 
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
-                    res.data[i] = match.Groups[i].Value;
+                    res._data[i] = match.Groups[i].Value;
 
                 res.SetProperty("index", match.Index, false);
                 res.SetProperty("input", self, true);
@@ -525,23 +525,23 @@ namespace NiL.JS.BaseLibrary
                 }
                 Array res = new Array();
                 int index = 0;
-                while (res.data.Length < limit)
+                while (res._data.Length < limit)
                 {
                     if (!match.Success)
                     {
-                        res.data.Add(selfString.Substring(index, selfString.Length - index));
+                        res._data.Add(selfString.Substring(index, selfString.Length - index));
                         break;
                     }
                     int nindex = match.Index;
                     if (nindex == -1)
                     {
-                        res.data.Add(selfString.Substring(index, selfString.Length - index));
+                        res._data.Add(selfString.Substring(index, selfString.Length - index));
                         break;
                     }
                     else
                     {
                         var item = selfString.Substring(index, nindex - index);
-                        res.data.Add(item);
+                        res._data.Add(item);
                         index = nindex + match.Length;
                     }
                     match = match.NextMatch();
@@ -556,23 +556,23 @@ namespace NiL.JS.BaseLibrary
                 if (string.IsNullOrEmpty(fstr))
                 {
                     for (var i = 0; i < System.Math.Min(selfString.Length, limit); i++)
-                        res.data.Add(selfString[i]);
+                        res._data.Add(selfString[i]);
                 }
                 else
                 {
                     int index = 0;
-                    while (res.data.Length < limit)
+                    while (res._data.Length < limit)
                     {
                         int nindex = selfString.IndexOf(fstr, index);
                         if (nindex == -1)
                         {
-                            res.data.Add(selfString.Substring(index, selfString.Length - index));
+                            res._data.Add(selfString.Substring(index, selfString.Length - index));
                             break;
                         }
                         else
                         {
                             var item = selfString.Substring(index, nindex - index);
-                            res.data.Add(item);
+                            res._data.Add(item);
                             index = nindex + fstr.Length;
                         }
                     }
@@ -967,14 +967,14 @@ namespace NiL.JS.BaseLibrary
             var result = new StringBuilder();
             var strings = args[0].Value as Array ?? Tools.arraylikeToArray(args[0], true, false, false, -1);
 
-            for (var i = 0; i < strings.data.Length; i++)
+            for (var i = 0; i < strings._data.Length; i++)
             {
                 if (i > 0)
                 {
                     result.Append(args[i]);
                 }
 
-                result.Append(strings.data[i]);
+                result.Append(strings._data[i]);
             }
 
             return result.ToString();
