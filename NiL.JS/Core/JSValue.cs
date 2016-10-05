@@ -23,7 +23,7 @@ namespace NiL.JS.Core
         Сommon = 0,
         Own = 1,
         Super = 2,
-        SuperProto = 3
+        PrototypeOfSuperclass = 3
     }
 
 #if !(PORTABLE || NETCORE)
@@ -736,6 +736,7 @@ namespace NiL.JS.Core
                 return _oValue.ToString();
             if (_valueType <= JSValueType.Undefined)
                 return "undefined";
+
             if (_valueType == JSValueType.Property)
             {
                 var tempStr = "[";
@@ -748,6 +749,7 @@ namespace NiL.JS.Core
                 tempStr += "]";
                 return tempStr;
             }
+
             var res = this._valueType >= JSValueType.Object ? ToPrimitiveValue_String_Value() : this;
             switch (res._valueType)
             {
@@ -884,6 +886,7 @@ namespace NiL.JS.Core
                 if (innerObject != null)
                     return innerObject.GetEnumerator(hideNonEnumerable, enumeratorMode);
             }
+
             return GetEnumeratorImpl(hideNonEnumerable);
         }
 

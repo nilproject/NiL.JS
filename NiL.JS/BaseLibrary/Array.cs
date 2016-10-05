@@ -222,6 +222,96 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
+        public static JSValue copyWithin(JSValue self, Arguments args)
+        {
+            if (self == null
+             || self.IsNull
+             || self.IsUndefined())
+                ExceptionHelper.ThrowTypeError("this is null or undefined");
+
+            var length = Tools._GetLengthOfArraylike(self, false);
+
+            var target = Tools.JSObjectToInt64(args[0], 0, true);
+            if (target < 0)
+                target += length;
+            if (target < 0)
+                target = 0;
+            if (target > length)
+                target = length;
+
+            var start = Tools.JSObjectToInt64(args[1], 0, true);
+            if (start < 0)
+                start += length;
+            if (start < 0)
+                start = 0;
+            if (start > length)
+                start = length;
+
+            var end = Tools.JSObjectToInt64(args[2], length, true);
+            if (end < 0)
+                end += length;
+            if (end < 0)
+                end = 0;
+            if (end > length)
+                end = length;
+
+            if (start == target
+                || self._valueType < JSValueType.Object)
+                return self.ToObject();
+
+            var direction = System.Math.Sign(start - target);
+            var fromIndex = System.Math.Min(start * direction, target * direction) * direction;
+            var count = System.Math.Min(end - start, length - target);
+            var modifier = (count - 1) * (-(direction - 1) / 2);
+
+            var array = self.Value as Array;
+            if (array != null)
+            {
+                for (long from = start + modifier, to = target + modifier; count != 0; from += direction, to += direction, count--)
+                {
+                    array._data[(int)to] = array._data[(int)from];
+                }
+            }
+            else
+            {
+                var key = new JSValue();
+                for (long from = start + modifier, to = target + modifier; count != 0; from += direction, to += direction, count--)
+                {
+                    if ((int)from == from)
+                    {
+                        key._iValue = (int)from;
+                        key._valueType = JSValueType.Integer;
+                    }
+                    else
+                    {
+                        key._dValue = (int)from;
+                        key._valueType = JSValueType.Double;
+                    }
+
+                    var value = Tools.InvokeGetter(self.GetProperty(key, false, PropertyScope.Own), self);
+
+                    if ((int)to == to)
+                    {
+                        key._iValue = (int)to;
+                        key._valueType = JSValueType.Integer;
+                    }
+                    else
+                    {
+                        key._dValue = (int)to;
+                        key._valueType = JSValueType.Double;
+                    }
+
+                    self.SetProperty(key, value, true);
+                }
+            }
+
+            return self;
+        }
+
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
         public static JSValue find(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -436,7 +526,7 @@ namespace NiL.JS.BaseLibrary
 #endif
             }
 
-            var length = nativeMode ? arraySrc._data.Length : Tools.getLengthOfArraylike(self, false);
+            var length = nativeMode ? arraySrc._data.Length : Tools._GetLengthOfArraylike(self, false);
             long startIndex = 0;
             long endIndex = 0;
             Function jsCallback = null;
@@ -621,7 +711,7 @@ namespace NiL.JS.BaseLibrary
 #endif
             }
 
-            var length = nativeMode ? arraySrc._data.Length : Tools.getLengthOfArraylike(self, false);
+            var length = nativeMode ? arraySrc._data.Length : Tools._GetLengthOfArraylike(self, false);
             long startIndex = length - 1;
             Function jsCallback = null;
             JSValue thisBind = null;
@@ -846,7 +936,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var length = Tools.getLengthOfArraylike(self, true);
+                var length = Tools._GetLengthOfArraylike(self, true);
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
                 length--;
@@ -890,7 +980,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var length = (long)Tools.getLengthOfArraylike(self, false);
+                var length = (long)Tools._GetLengthOfArraylike(self, false);
                 var i = length;
                 length += args.length;
                 self["length"] = length;
@@ -956,7 +1046,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var length = Tools.getLengthOfArraylike(self, false);
+                var length = Tools._GetLengthOfArraylike(self, false);
                 for (var i = 0; i < length >> 1; i++)
                 {
                     JSValue i0 = i.ToString();
@@ -1140,10 +1230,10 @@ namespace NiL.JS.BaseLibrary
 
                     if (element.Key == 0)
                         continue;
-                    
+
                     if ((uint)element.Key < length - 1 && (element.Value == null || !element.Value.Exists))
                         continue;
-                    
+
                     JSValue value = null;
                     int key = 0;
                     for (; prewIndex < length && prewIndex <= (uint)element.Key; prewIndex++)
@@ -1415,7 +1505,7 @@ namespace NiL.JS.BaseLibrary
             }
             else // êòî-òî îòïðàâèë îáúåêò ñ ïîëåì length
             {
-                long _length = Tools.getLengthOfArraylike(self, false);
+                long _length = Tools._GetLengthOfArraylike(self, false);
                 var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
                 long pos1 = 0;
                 if (args.Length > 1)
@@ -1710,7 +1800,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var len = Tools.getLengthOfArraylike(self, false);
+                var len = Tools._GetLengthOfArraylike(self, false);
                 if (comparer != null)
                 {
                     var second = new JSValue();
@@ -1805,7 +1895,7 @@ namespace NiL.JS.BaseLibrary
             args[0] = 0;
             args[1] = args[0];
             spliceImpl(self, args, false);
-            return Tools.getLengthOfArraylike(self, false);
+            return Tools._GetLengthOfArraylike(self, false);
         }
 
         [Hidden]
@@ -2153,7 +2243,7 @@ namespace NiL.JS.BaseLibrary
 
         private static IEnumerable getGenericEntriesEnumerator(JSValue self)
         {
-            var length = Tools.getLengthOfArraylike(self, false);
+            var length = Tools._GetLengthOfArraylike(self, false);
             for (var i = 0U; i < length; i++)
             {
                 JSValue value;

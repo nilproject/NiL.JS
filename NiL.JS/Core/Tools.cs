@@ -269,14 +269,14 @@ namespace NiL.JS.Core
         /// Преобразует JSObject в значение типа integer.
         /// </summary>
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
-        /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <param name="nullOrUndefined">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static int JSObjectToInt32(JSValue arg, int nullOrUndef)
+        public static int JSObjectToInt32(JSValue arg, int nullOrUndefined)
         {
-            return JSObjectToInt32(arg, nullOrUndef, false);
+            return JSObjectToInt32(arg, nullOrUndefined, false);
         }
 
         /// <summary>
@@ -297,13 +297,13 @@ namespace NiL.JS.Core
         /// Преобразует JSObject в значение типа Int32.
         /// </summary>
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
-        /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <param name="nullOrUndefined">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-        public static int JSObjectToInt32(JSValue arg, int nullOrUndef, bool alternateInfinity)
+        public static int JSObjectToInt32(JSValue arg, int nullOrUndefined, bool alternateInfinity)
         {
             if (arg == null)
-                return nullOrUndef;
+                return nullOrUndefined;
             var r = arg;
             switch (r._valueType)
             {
@@ -338,7 +338,7 @@ namespace NiL.JS.Core
                 case JSValueType.Object:
                     {
                         if (r._oValue == null)
-                            return nullOrUndef;
+                            return nullOrUndefined;
                         r = r.ToPrimitiveValue_Value_String();
                         return JSObjectToInt32(r);
                     }
@@ -346,7 +346,7 @@ namespace NiL.JS.Core
                 //ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable not defined.")));
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
-                    return nullOrUndef;
+                    return nullOrUndefined;
                 default:
                     throw new NotImplementedException();
             }
@@ -1675,7 +1675,7 @@ namespace NiL.JS.Core
             return ((p % 'a' % 'A' + 10) % ('0' + 10));
         }
 
-        internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
+        internal static long _GetLengthOfArraylike(JSValue src, bool reassignLen)
         {
             var length = src.GetProperty("length", true, PropertyScope.Сommon); // тут же проверка на null/undefined с падением если надо
 
@@ -1728,7 +1728,7 @@ namespace NiL.JS.Core
                 {
                     if (_length == -1)
                     {
-                        _length = getLengthOfArraylike(src, reassignLen);
+                        _length = _GetLengthOfArraylike(src, reassignLen);
                         if (_length == 0)
                             return temp;
                     }

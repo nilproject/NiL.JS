@@ -8,7 +8,7 @@ namespace NiL.JS.Core.Interop
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum | AttributeTargets.Struct, AllowMultiple = false, Inherited = true)]
     public sealed class PrototypeAttribute : Attribute
     {
         public Type PrototypeType { get; private set; }

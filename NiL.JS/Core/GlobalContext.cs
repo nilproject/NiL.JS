@@ -166,7 +166,7 @@ namespace NiL.JS.Core
                         }
 
                         JSObject parentPrototype = null;
-                        var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), false).ToArray();
+                        var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), true).ToArray();
                         if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
                         {
                             var parentType = (pa[0] as PrototypeAttribute).PrototypeType;

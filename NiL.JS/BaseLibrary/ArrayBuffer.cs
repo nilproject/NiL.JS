@@ -142,9 +142,10 @@ namespace NiL.JS.BaseLibrary
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
-            var be = GetEnumerator();
+            var be = base.GetEnumerator(hideNonEnumerable, enumerationMode);
             while (be.MoveNext())
                 yield return be.Current;
+
             for (var i = 0; i < data.Length; i++)
                 yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumerationMode > 0 ? getElement(i) : null);
         }

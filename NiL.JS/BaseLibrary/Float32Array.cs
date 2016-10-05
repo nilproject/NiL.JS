@@ -42,7 +42,7 @@ namespace NiL.JS.BaseLibrary
 
         public override int BYTES_PER_ELEMENT
         {
-            get { return 4; }
+            get { return sizeof(float); }
         }
 
         public Float32Array()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
@@ -7,6 +8,7 @@ namespace NiL.JS.BaseLibrary
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
+    [Prototype(typeof(Array))]
     public abstract class TypedArray : JSObject
     {
         protected sealed class Element : JSValue
@@ -34,34 +36,43 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Field]
+        [DoNotEnumerate]
         public ArrayBuffer buffer
         {
             [Hidden]
             get;
             private set;
         }
+
         [Field]
+        [DoNotEnumerate]
         public int byteLength
         {
             [Hidden]
             get;
             private set;
         }
+
         [Field]
+        [DoNotEnumerate]
         public int byteOffset
         {
             [Hidden]
             get;
             private set;
         }
+
         [Field]
+        [DoNotEnumerate]
         public Number length
         {
             [Hidden]
             get;
             private set;
         }
+
         [Field]
+        [DoNotEnumerate]
         public abstract int BYTES_PER_ELEMENT
         {
             [Hidden]
@@ -78,8 +89,10 @@ namespace NiL.JS.BaseLibrary
         protected TypedArray()
         {
             buffer = new ArrayBuffer();
+
             _valueType = JSValueType.Object;
             _oValue = this;
+            length = 0;
         }
 
         [DoNotEnumerate]
@@ -301,5 +314,14 @@ namespace NiL.JS.BaseLibrary
 
         protected internal abstract System.Array ToNativeArray();
 
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
+        {
+            var baseEnum = base.GetEnumerator(hideNonEnum, enumeratorMode);
+            while(baseEnum.MoveNext())
+                yield return baseEnum.Current;
+
+            for (int i = 0, len = Tools.JSObjectToInt32(length); i < len; i++)
+                yield return new KeyValuePair<string, JSValue>(i.ToString(), this[i]);
+        }
     }
 }

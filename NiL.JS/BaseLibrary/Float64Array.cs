@@ -55,7 +55,7 @@ namespace NiL.JS.BaseLibrary
 
         public override int BYTES_PER_ELEMENT
         {
-            get { return 8; }
+            get { return sizeof(double); }
         }
 
         public Float64Array()
