@@ -113,6 +113,29 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
+        public static JSValue endsWith(JSValue self, Arguments args)
+        {
+            var selfAsString = (self ?? undefinedString).ToString();
+            var value = (args?[0] ?? undefinedString).ToString();
+
+            return selfAsString.EndsWith(value) ? Boolean.True : Boolean.False;
+        }
+
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
+        public static JSValue includes(JSValue self, Arguments args)
+        {
+            var selfAsString = (self ?? undefinedString).ToString();
+            var value = (args?[0] ?? undefinedString).ToString();
+
+            return selfAsString.IndexOf(value) != -1 ? Boolean.True : Boolean.False;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
         public static JSValue indexOf(JSValue self, Arguments args)
         {
             if (args.Length == 0)
@@ -275,38 +298,6 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
-        public static JSValue search(JSValue self, Arguments args)
-        {
-            if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
-                ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
-            if (args.length == 0)
-                return 0;
-            var a0 = args[0];
-            if (a0._valueType == JSValueType.Object
-                && a0._oValue is RegExp)
-            {
-                var regex = a0._oValue as RegExp;
-                if (!regex._global)
-                {
-                    var res = regex.exec(self);
-                    if ((res ?? @null) != @null)
-                        return res["index"];
-                    return -1;
-                }
-                else
-                {
-                    return regex._Regex.Match(self.ToString()).Index;
-                }
-            }
-            else
-            {
-                return self.ToString().IndexOf(a0.ToString());
-            }
-        }
-
-        [DoNotEnumerate]
-        [InstanceMember]
         [ArgumentsLength(2)]
         [AllowNullArguments]
         public static JSValue replace(JSValue self, Arguments args)
@@ -385,6 +376,38 @@ namespace NiL.JS.BaseLibrary
                         return self;
                     return str.Substring(0, index) + replace + str.Substring(index + pattern.Length);
                 }
+            }
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
+        public static JSValue search(JSValue self, Arguments args)
+        {
+            if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
+            if (args.length == 0)
+                return 0;
+            var a0 = args[0];
+            if (a0._valueType == JSValueType.Object
+                && a0._oValue is RegExp)
+            {
+                var regex = a0._oValue as RegExp;
+                if (!regex._global)
+                {
+                    var res = regex.exec(self);
+                    if ((res ?? @null) != @null)
+                        return res["index"];
+                    return -1;
+                }
+                else
+                {
+                    return regex._Regex.Match(self.ToString()).Index;
+                }
+            }
+            else
+            {
+                return self.ToString().IndexOf(a0.ToString());
             }
         }
 
@@ -579,6 +602,17 @@ namespace NiL.JS.BaseLibrary
                 }
                 return res;
             }
+        }
+        
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
+        public static JSValue startsWith(JSValue self, Arguments args)
+        {
+            var selfAsString = (self ?? undefinedString).ToString();
+            var value = (args?[0] ?? undefinedString).ToString();
+
+            return selfAsString.StartsWith(value) ? Boolean.True : Boolean.False;
         }
 
         [DoNotEnumerate]

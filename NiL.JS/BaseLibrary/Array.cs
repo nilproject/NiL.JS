@@ -221,7 +221,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsLength(2)]
         public static JSValue copyWithin(JSValue self, Arguments args)
         {
             if (self == null
@@ -297,7 +297,71 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        key._dValue = (int)to;
+                        key._dValue = to;
+                        key._valueType = JSValueType.Double;
+                    }
+
+                    if (value.Exists)
+                        self.SetProperty(key, value, true);
+                    else
+                        self.DeleteProperty(key);
+                }
+            }
+
+            return self;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(2)]
+        public static JSValue fill(JSValue self, Arguments args)
+        {
+            if (self == null
+             || self.IsNull
+             || self.IsUndefined())
+                ExceptionHelper.ThrowTypeError("this is null or undefined");
+
+            var length = Tools._GetLengthOfArraylike(self, false);
+
+            var value = args[0];
+
+            var start = Tools.JSObjectToInt64(args[1], 0, true);
+            if (start < 0)
+                start += length;
+            if (start < 0)
+                start = 0;
+            if (start > length)
+                start = length;
+
+            var end = Tools.JSObjectToInt64(args[2], length, true);
+            if (end < 0)
+                end += length;
+            if (end < 0)
+                end = 0;
+            if (end > length)
+                end = length;
+
+            var array = self.Value as Array;
+            if (array != null)
+            {
+                for (var i = start; i < end; i++)
+                {
+                    array._data[(int)i] = value;
+                }
+            }
+            else
+            {
+                var key = new JSValue();
+                for (var i = start; i < end; i++)
+                {
+                    if ((int)i == i)
+                    {
+                        key._iValue = (int)i;
+                        key._valueType = JSValueType.Integer;
+                    }
+                    else
+                    {
+                        key._dValue = i;
                         key._valueType = JSValueType.Double;
                     }
 
