@@ -231,4 +231,7 @@ console.asserta(() => Error.constructor == Function.constructor);
 console.asserta(() => Error.constructor().__proto__ == Function.prototype);
 console.asserta(() => Object.call(Error).__proto__ == Object.prototype);
 
+if ((function(a = 5) { return a })() != 5)
+    throw new 'Something wrong with default parameter value';
+
 console.asserta(() => (new class {}).toString(), {}.toString());

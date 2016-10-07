@@ -438,7 +438,14 @@ namespace NiL.JS.Statements
 
                 for (var i = 0; i < _variables.Length; i++)
                 {
-                    Parser.Build(ref _variables[i].initializer, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this._strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
+                    Parser.Build(
+                        ref _variables[i].initializer, 
+                        System.Math.Max(2, expressionDepth),
+                        variables, 
+                        codeContext | (this._strict ? CodeContext.Strict : CodeContext.None), 
+                        message, 
+                        stats, 
+                        opts);
                 }
             }
 

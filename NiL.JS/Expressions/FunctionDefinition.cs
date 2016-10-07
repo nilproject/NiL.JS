@@ -297,6 +297,7 @@ namespace NiL.JS.Expressions
                     i--;
                     break;
                 }
+
                 if (code[i] == '=')
                 {
                     if (kind == FunctionKind.Arrow)
@@ -309,6 +310,7 @@ namespace NiL.JS.Expressions
                     while (Tools.IsWhiteSpace(code[i]));
                     desc.initializer = ExpressionTree.Parse(state, ref i, false, false) as Expression;
                 }
+
                 if (code[i] == ',')
                 {
                     if (rest)
@@ -606,9 +608,12 @@ namespace NiL.JS.Expressions
                 variables[_name] = reference._descriptor;
             }
 
-            var bodyCode = body as CodeNode;
             _functionInfo.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
+
+            var bodyCode = body as CodeNode;
             bodyCode.Build(ref bodyCode, 0, variables, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval | CodeContext.InWith) | CodeContext.InFunction, message, _functionInfo, opts);
+            body = bodyCode as CodeBlock;
+
             if (message != null)
             {
                 for (var i = parameters.Length; i-- > 0;)
@@ -619,7 +624,8 @@ namespace NiL.JS.Expressions
                         break;
                 }
             }
-            body = bodyCode as CodeBlock;
+
+            
             body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             checkUsings();
             if (stats != null)
