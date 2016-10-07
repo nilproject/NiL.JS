@@ -2,30 +2,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
+using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Core
 {
     public sealed class RopeString : IEnumerable<char>, IEnumerable, IEquatable<string>
     {
+        private int _length;
         private object _firstSource;
         private object _secondSource;
         private string firstSource
         {
             get
             {
-                if (_firstSource == null || _firstSource is string)
-                    return _firstSource as string;
-                return (_firstSource = _firstSource.ToString()) as string;
+                if (_firstSource == null)
+                    return null;
+
+                return _firstSource as string ?? (_firstSource = _firstSource.ToString()) as string;
             }
         }
         private string secondSource
         {
             get
             {
-                if (_secondSource == null || _secondSource is string)
-                    return _secondSource as string;
-                return (_secondSource = _secondSource.ToString()) as string;
+                if (_secondSource == null)
+                    return null;
+
+                return _secondSource as string ?? (_secondSource = _secondSource.ToString()) as string;
             }
         }
 
@@ -43,8 +48,13 @@ namespace NiL.JS.Core
 
         public RopeString(object firstSource, object secondSource)
         {
-            this._firstSource = firstSource ?? "";
-            this._secondSource = secondSource ?? "";
+            _firstSource = firstSource ?? "";
+            _secondSource = secondSource ?? "";
+
+            _length = calcLength();
+
+            if (_length < 0)
+                ExceptionHelper.Throw(new RangeError("String is too large"));
         }
 
         public char this[int index]
@@ -60,6 +70,7 @@ namespace NiL.JS.Core
                     if (firstSource.Length < index)
                         return firstSource[index];
                 }
+
                 if (_secondSource != null)
                 {
                     if (_secondSource is RopeString)
@@ -68,6 +79,7 @@ namespace NiL.JS.Core
                         return (_secondSource as StringBuilder)[index];
                     return secondSource[index];
                 }
+
                 throw new ArgumentOutOfRangeException();
             }
         }
@@ -76,50 +88,10 @@ namespace NiL.JS.Core
         {
             get
             {
-                return ToString().Length;
-                //int res = 0;
-                //if (_firstSource != null)
-                //{
-                //    try
-                //    {
-                //        if (_firstSource is RopeString)
-                //        {
-                //            RuntimeHelpers.EnsureSufficientExecutionStack();
-                //            res = (_firstSource as RopeString).Length;
-                //        }
-                //        else if (_firstSource is StringBuilder)
-                //            res = (_firstSource as StringBuilder).Length;
-                //        else
-                //            res = firstSource.Length;
-                //    }
-                //    catch (InsufficientExecutionStackException)
-                //    {
-                //        res = firstSource.Length;
-                //    }
-                //}
-                //if (_secondSource != null)
-                //{
-                //    try
-                //    {
-                //        if (_secondSource is RopeString)
-                //        {
-                //            RuntimeHelpers.EnsureSufficientExecutionStack();
-                //            res += (_secondSource as RopeString).Length;
-                //        }
-                //        else if (_secondSource is StringBuilder)
-                //            res += (_secondSource as StringBuilder).Length;
-                //        else
-                //            res += secondSource.Length;
-                //    }
-                //    catch (InsufficientExecutionStackException)
-                //    {
-                //        res += secondSource.Length;
-                //    }
-                //}
-                //return res;
+                return _length;
             }
         }
-
+        
         public object Clone()
         {
             return new RopeString(_firstSource, _secondSource);
@@ -408,7 +380,7 @@ namespace NiL.JS.Core
             var str = arg.ToString();
             var start = sb.Length;
             if (sb.Capacity < start + str.Length)
-                sb.EnsureCapacity(Math.Max(sb.Capacity << 1, start + str.Length));
+                sb.EnsureCapacity(System.Math.Max(sb.Capacity << 1, start + str.Length));
             sb.Length += str.Length;
             for (var i = 0; i < str.Length; i++)
             {
@@ -511,6 +483,13 @@ namespace NiL.JS.Core
 
         public static bool operator ==(RopeString left, RopeString right)
         {
+            if (ReferenceEquals(left, right))
+                return true;
+
+            if (ReferenceEquals(left, null)
+                || ReferenceEquals(right, null))
+                return false;
+
             return left.ToString() == right.ToString();
         }
 
@@ -551,5 +530,47 @@ namespace NiL.JS.Core
         }
 
         #endregion
+
+        private int calcLength()
+        {
+            //return ToString().Length;
+
+            int res = 0;
+            if (_firstSource != null)
+            {
+                var rs = _firstSource as RopeString;
+                if (rs != null)
+                {
+                    res = rs.Length;
+                }
+                else
+                {
+                    var sb = _firstSource as StringBuilder;
+                    if (sb != null)
+                        res = sb.Length;
+                    else
+                        res = firstSource.Length;
+                }
+            }
+
+            if (_secondSource != null)
+            {
+                var rs = _secondSource as RopeString;
+                if (rs != null)
+                {
+                    res += rs.Length;
+                }
+                else
+                {
+                    var sb = _secondSource as StringBuilder;
+                    if (sb != null)
+                        res += sb.Length;
+                    else
+                        res += secondSource.Length;
+                }
+            }
+
+            return res;
+        }
     }
 }

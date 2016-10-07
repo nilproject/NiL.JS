@@ -7,9 +7,9 @@ catch(e) {
     /* WoW! I caugth stack owerflow! I'm amazing! */
 }
 
-//try {
-//    var s = ' ';
-//    for (;;) s += s;
-//} catch (e) {
-//    /* Max string length is 2^31 - 1 */
-//}
+try {
+   var s = ' ';
+   for (;;) s += s;
+} catch (e) {
+   /* Max string length is 2^31 - 1 */
+}
