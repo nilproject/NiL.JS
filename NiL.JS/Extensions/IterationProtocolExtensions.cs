@@ -70,7 +70,10 @@ namespace NiL.JS.Extensions
 
         public IIteratorResult next(Arguments arguments = null)
         {
-            return new EnumeratorResult(!_enumerator.MoveNext(), _context.ProxyValue(_enumerator.Current));
+            var read = _enumerator.MoveNext();
+            return new EnumeratorResult(
+                !read,
+                _context.ProxyValue(read ? _enumerator.Current : null));
         }
 
         public IIteratorResult @return()

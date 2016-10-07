@@ -219,6 +219,8 @@
   <ItemGroup>
     <Compile Include="BaseLibrary\GeneratorFunction.cs" />
     <Compile Include="BaseLibrary\GlobalFunctions.cs" />
+    <Compile Include="BaseLibrary\Set.cs" />
+    <Compile Include="BaseLibrary\Map.cs" />
     <Compile Include="BaseLibrary\Promise.cs" />
     <Compile Include="BaseLibrary\Symbol.cs" />
     <Compile Include="CompilerNotification.cs" />

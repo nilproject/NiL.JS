@@ -35,8 +35,8 @@ namespace NiL.JS.Core
         private JSValue a4;
         internal JSValue callee;
         internal JSValue caller;
-        private _LengthContainer _length;
 
+        private _LengthContainer _lengthContainer;
         internal int length;
 
         public int Length
@@ -152,6 +152,11 @@ namespace NiL.JS.Core
             this[length++] = arg;
         }
 
+        public void Add(object value)
+        {
+            this[length++] = JSValue.Marshal(value);
+        }
+
         protected internal override JSValue GetProperty(JSValue key, bool createMember, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
@@ -199,14 +204,14 @@ namespace NiL.JS.Core
                     //    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                     case "length":
                         {
-                            if (_length == null)
-                                _length = new _LengthContainer(this)
+                            if (_lengthContainer == null)
+                                _lengthContainer = new _LengthContainer(this)
                                 {
                                     _valueType = JSValueType.Integer,
                                     _iValue = length,
                                     _attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.Reassign
                                 };
-                            return _length;
+                            return _lengthContainer;
                         }
                     case "callee":
                         {
@@ -251,8 +256,8 @@ namespace NiL.JS.Core
                 yield return new KeyValuePair<string, JSValue>("callee", callee);
             if (caller != null && callee.Exists && (!hideNonEnum || (caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("caller", caller);
-            if (_length != null && _length.Exists && (!hideNonEnum || (_length._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                yield return new KeyValuePair<string, JSValue>("length", _length);
+            if (_lengthContainer != null && _lengthContainer.Exists && (!hideNonEnum || (_lengthContainer._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("length", _lengthContainer);
             var be = base.GetEnumerator(hideNonEnum, enumeratorMode);
             while (be.MoveNext())
                 yield return be.Current;
@@ -319,7 +324,7 @@ namespace NiL.JS.Core
             callee = null;
             caller = null;
             _objectPrototype = null;
-            _length = null;
+            _lengthContainer = null;
             _valueType = JSValueType.Object;
             _oValue = this;
             _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;

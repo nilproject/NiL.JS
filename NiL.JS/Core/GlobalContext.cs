@@ -89,6 +89,8 @@ namespace NiL.JS.Core
             DefineConstructor(typeof(Float32Array));
             DefineConstructor(typeof(Float64Array));
             DefineConstructor(typeof(Promise));
+            DefineConstructor(typeof(Map));
+            DefineConstructor(typeof(Set));
 
             DefineConstructor(typeof(Debug));
 
