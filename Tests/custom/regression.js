@@ -233,5 +233,11 @@ console.asserta(() => Object.call(Error).__proto__ == Object.prototype);
 
 if ((function(a = 5) { return a })() != 5)
     throw new 'Something wrong with default parameter value';
+    
+if ("1234".substring(0, null) !== "")
+    throw "null should be used as 0";
+
+if ("1234".substring(0, undefined) !== "1234")
+    throw "undefined should be used as string.length";
 
 console.asserta(() => (new class {}).toString(), {}.toString());

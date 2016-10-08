@@ -7,7 +7,7 @@
 <#@ output extension=".cs" #>
 <# 
 	var testsRoot = Directory.GetParent(Host.TemplateFile).Parent.Parent.FullName.ToString().Replace("\\","/") + "/Tests/"; 
-	var tests = testsRoot + "tests/custom/";
+	var tests = testsRoot + "custom/";
 #>
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

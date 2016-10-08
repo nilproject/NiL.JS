@@ -94,7 +94,7 @@ namespace NiL.JS.Test
             }));
 
 #if PORTABLE
-            Context.GlobalContext.DefineVariable("console").Assign(JSValue.Wrap(new
+            Context.DefaultGlobalContext.DefineVariable("console").Assign(JSValue.Wrap(new
             {
                 log = new Action<Arguments>(arguments =>
                 {
@@ -121,7 +121,7 @@ namespace NiL.JS.Test
                     }
                 case -3:
                     {
-                        runFiles("tests/custom/");
+                        runFiles("custom/");
                         break;
                     }
                 case -1:
@@ -129,7 +129,7 @@ namespace NiL.JS.Test
                         //var currentTimeZone = TimeZone.CurrentTimeZone;
                         //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                         //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
-                        runFiles("tests/custom/");
+                        runFiles("custom/");
                         sputnikTests(@"tests\sputnik\ch15\15.1\");
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
                         sputnikTests(@"tests\sputnik\ch15\15.3\");
@@ -152,13 +152,13 @@ namespace NiL.JS.Test
                         var currentTimeZone = TimeZone.CurrentTimeZone;
                         var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                         offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
-                        //runFiles("tests/custom/");
+                        //runFiles("custom/");
                         sputnikTests();
                         break;
                     }
                 case 1:
                     {
-                        runFiles("tests/custom/");
+                        runFiles("custom/");
                         webkitTests();
                         break;
                     }
@@ -312,6 +312,11 @@ namespace NiL.JS.Test
                         sunspider();
                         break;
                     }
+                case 102:
+                    {
+                        dromaeoTests();
+                        break;
+                    }
                 case 103:
                     {
                         kraken();
@@ -364,6 +369,49 @@ namespace NiL.JS.Test
 
             if (e.Module != null)
                 e.Module.Run();
+        }
+
+        private static void dromaeoTests()
+        {
+            const string rootPath = "dromaeo\\";
+
+            Action<string> _ = Console.WriteLine;
+            var sw = new Stopwatch();
+
+            var runner = File.ReadAllText(rootPath + "runner.js");
+
+            var tests = Directory.EnumerateFiles(rootPath + "tests\\", "*.js", SearchOption.AllDirectories)
+                .Select(x => new Module(x, File.ReadAllText(x)))
+                .ToArray();
+
+            tests.All(x => x.Context.Eval(runner) != null);
+
+            long _total = 0;
+            var round = 0;
+            long min = long.MaxValue;
+            for (; round < 1; round++)
+            {
+                TimeSpan total = new TimeSpan();
+
+                for (var i = 0; i < tests.Length; i++)
+                {
+                    _("Process " + tests[i].FilePath);
+
+                    sw.Restart();
+                    tests[i].Run();
+                    sw.Stop();
+
+                    total += sw.Elapsed;
+                    _(sw.Elapsed.ToString());
+                    _("");
+                }
+                _("Total: " + total);
+                _total += total.Ticks;
+                min = System.Math.Min(total.Ticks, min);
+                GC.GetTotalMemory(true);
+            }
+            _("Average: " + new TimeSpan(_total / round));
+            _("Minimum: " + new TimeSpan(min));
         }
 
         private static void sputnikTests(string folderPath = "tests\\sputnik\\")
@@ -454,7 +502,7 @@ namespace NiL.JS.Test
                         _("Failed");
                     failed++;
                 }
-                if (Environment.TickCount - lastUpdate > 100)
+                if (Environment.TickCount - lastUpdate > 250)
                 {
                     Console.Title = "passed: " + passed + ". failed: " + failed;
                     lastUpdate = Environment.TickCount;
@@ -903,14 +951,16 @@ for (var i = 0; i < 10000000; )
 
         private static void sunspider()
         {
-            var folderPath = "sunspider-0.9.1";
+            var rootPath = "sunspider-0.9.1";
 
             Action<string> _ = Console.WriteLine;
             var sw = new Stopwatch();
-            _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
+            _("Directory: \"" + Directory.GetParent(rootPath) + "\"");
             _("Scaning directory...");
-            var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();
-            _("Found " + fls.Length + " js-files");
+
+            var tests = Directory.EnumerateFiles(rootPath, "*.js", SearchOption.AllDirectories)
+                .Select(x => new Module(x, File.ReadAllText(x)))
+                .ToArray();
 
             long _total = 0;
             var round = 0;
@@ -919,19 +969,12 @@ for (var i = 0; i < 10000000; )
             {
                 TimeSpan total = new TimeSpan();
 
-                for (var i = 0; i < fls.Length; i++)
+                for (var i = 0; i < tests.Length; i++)
                 {
-                    _("Process " + fls[i]);
-                    var f = new FileStream(fls[i], FileMode.Open, FileAccess.Read);
-                    var sr = new StreamReader(f);
-                    var script = sr.ReadToEnd();
-                    sr.Dispose();
-                    f.Dispose();
-
-                    var m = new Module(script);
+                    _("Process " + tests[i].FilePath);
 
                     sw.Restart();
-                    m.Run();
+                    tests[i].Run();
                     sw.Stop();
 
                     total += sw.Elapsed;

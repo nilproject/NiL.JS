@@ -295,12 +295,12 @@ namespace NiL.JS.Core
 
         public static int JSObjectToInt32(JSValue arg, int nullOrUndefined, bool alternateInfinity)
         {
-            return JSObjectToInt32(arg, nullOrUndefined, 0, true);
+            return JSObjectToInt32(arg, nullOrUndefined, 0, alternateInfinity);
         }
 
         public static int JSObjectToInt32(JSValue arg, int nullOrUndefined, int nan, bool alternateInfinity)
         {
-            return JSObjectToInt32(arg, nullOrUndefined, nullOrUndefined, nan, true);
+            return JSObjectToInt32(arg, nullOrUndefined, nullOrUndefined, nan, alternateInfinity);
         }
 
         public static int JSObjectToInt32(JSValue arg, int @null, int undefined, int nan, bool alternateInfinity)
@@ -439,7 +439,7 @@ namespace NiL.JS.Core
                         if (r._oValue == null)
                             return nullOrUndefined;
                         r = r.ToPrimitiveValue_Value_String();
-                        return JSObjectToInt64(r, nullOrUndefined, true);
+                        return JSObjectToInt64(r, nullOrUndefined, alternateInfinity);
                     }
                 case JSValueType.NotExists:
                 case JSValueType.Undefined:
