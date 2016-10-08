@@ -256,7 +256,7 @@ namespace NiL.JS.Core
         {
             if (arg._valueType == JSValueType.Integer)
                 return arg._iValue;
-            return JSObjectToInt32(arg, 0, false);
+            return JSObjectToInt32(arg, 0, 0, false);
         }
 
         internal static void SkipSpaces(string code, ref int i)
@@ -269,14 +269,14 @@ namespace NiL.JS.Core
         /// Преобразует JSObject в значение типа integer.
         /// </summary>
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
-        /// <param name="nullOrUndefined">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <param name="nullOrUndefinedOrNan">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static int JSObjectToInt32(JSValue arg, int nullOrUndefined)
+        public static int JSObjectToInt32(JSValue arg, int nullOrUndefinedOrNan)
         {
-            return JSObjectToInt32(arg, nullOrUndefined, false);
+            return JSObjectToInt32(arg, nullOrUndefinedOrNan, 0, false);
         }
 
         /// <summary>
@@ -290,20 +290,24 @@ namespace NiL.JS.Core
 #endif
         public static int JSObjectToInt32(JSValue arg, bool alternateInfinity)
         {
-            return JSObjectToInt32(arg, 0, alternateInfinity);
+            return JSObjectToInt32(arg, 0, 0, alternateInfinity);
         }
 
-        /// <summary>
-        /// Преобразует JSObject в значение типа Int32.
-        /// </summary>
-        /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
-        /// <param name="nullOrUndefined">Значение, которое будет возвращено, если значение arg null или undefined.</param>
-        /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
-        /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
         public static int JSObjectToInt32(JSValue arg, int nullOrUndefined, bool alternateInfinity)
         {
+            return JSObjectToInt32(arg, nullOrUndefined, 0, true);
+        }
+
+        public static int JSObjectToInt32(JSValue arg, int nullOrUndefined, int nan, bool alternateInfinity)
+        {
+            return JSObjectToInt32(arg, nullOrUndefined, nullOrUndefined, nan, true);
+        }
+
+        public static int JSObjectToInt32(JSValue arg, int @null, int undefined, int nan, bool alternateInfinity)
+        {
             if (arg == null)
-                return nullOrUndefined;
+                return @null;
+
             var r = arg;
             switch (r._valueType)
             {
@@ -315,9 +319,11 @@ namespace NiL.JS.Core
                 case JSValueType.Double:
                     {
                         if (double.IsNaN(r._dValue))
-                            return 0;
+                            return nan;
+
                         if (double.IsInfinity(r._dValue))
                             return alternateInfinity ? double.IsPositiveInfinity(r._dValue) ? int.MaxValue : int.MinValue : 0;
+
                         return (int)(long)r._dValue;
                     }
                 case JSValueType.String:
@@ -325,12 +331,16 @@ namespace NiL.JS.Core
                         double x = 0;
                         int ix = 0;
                         string s = (r._oValue.ToString()).Trim();
+
                         if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                             return 0;
+
                         if (double.IsNaN(x))
-                            return 0;
+                            return nan;
+
                         if (double.IsInfinity(x))
                             return alternateInfinity ? double.IsPositiveInfinity(x) ? int.MaxValue : int.MinValue : 0;
+
                         return (int)x;
                     }
                 case JSValueType.Date:
@@ -338,15 +348,16 @@ namespace NiL.JS.Core
                 case JSValueType.Object:
                     {
                         if (r._oValue == null)
-                            return nullOrUndefined;
+                            return @null;
+
                         r = r.ToPrimitiveValue_Value_String();
-                        return JSObjectToInt32(r);
+                        return JSObjectToInt32(r, @null, undefined, nan, true);
                     }
                 case JSValueType.NotExists:
                 //ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable not defined.")));
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
-                    return nullOrUndefined;
+                    return undefined;
                 default:
                     throw new NotImplementedException();
             }
@@ -370,27 +381,28 @@ namespace NiL.JS.Core
         /// Преобразует JSObject в значение типа integer.
         /// </summary>
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
-        /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <param name="nullOrUndefinedOrNan">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        public static long JSObjectToInt64(JSValue arg, long nullOrUndef)
+        public static long JSObjectToInt64(JSValue arg, long nullOrUndefinedOrNan)
         {
-            return JSObjectToInt64(arg, nullOrUndef, false);
+            return JSObjectToInt64(arg, nullOrUndefinedOrNan, false);
         }
 
         /// <summary>
         /// Преобразует JSObject в значение типа Int64.
         /// </summary>
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
-        /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
+        /// <param name="nullOrUndefined">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-        public static long JSObjectToInt64(JSValue arg, long nullOrUndef, bool alternateInfinity)
+        public static long JSObjectToInt64(JSValue arg, long nullOrUndefined, bool alternateInfinity)
         {
             if (arg == null)
-                return nullOrUndef;
+                return nullOrUndefined;
+
             var r = arg;
             switch (r._valueType)
             {
@@ -425,14 +437,14 @@ namespace NiL.JS.Core
                 case JSValueType.Object:
                     {
                         if (r._oValue == null)
-                            return nullOrUndef;
+                            return nullOrUndefined;
                         r = r.ToPrimitiveValue_Value_String();
-                        return JSObjectToInt64(r);
+                        return JSObjectToInt64(r, nullOrUndefined, true);
                     }
                 case JSValueType.NotExists:
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
-                    return nullOrUndef;
+                    return nullOrUndefined;
                 default:
                     throw new NotImplementedException();
             }
