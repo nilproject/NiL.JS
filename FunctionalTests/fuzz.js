@@ -183,15 +183,15 @@ a = console ? 1 : 2, { test: 1 };
 var undefined;
 
 try {
-	undefined.test = 1;
-	console.log("'undefined.test = 1' did not thrown exception")
+    undefined.test = 1;
+    console.log("'undefined.test = 1' did not thrown exception")
 }
 catch (e) {
 }
 
 try {
-	delete undefined.test;
-	console.log("'delete undefined.test' did not thrown exception")
+    delete undefined.test;
+    console.log("'delete undefined.test' did not thrown exception")
 }
 catch (e) {
 }
@@ -218,5 +218,26 @@ Object.toString = () =>'hello';
 
 if (Object.toString() === "function Object() { [native code] }")
     throw "toString of Object(...) does not change";
+
+if ([1, , 2, 3][['length']] != 4)
+    throw "Invalid array.length optimization";
+
+if (isNaN.__proto__ != Function.__proto__)
+    throw "Incorrect prototype of ExternalFunction";
+
+[...new Date()];
+
+console.asserta(() => Error.constructor == Function.constructor);
+console.asserta(() => Error.constructor().__proto__ == Function.prototype);
+console.asserta(() => Object.call(Error).__proto__ == Object.prototype);
+
+if ((function(a = 5) { return a })() != 5)
+    throw new 'Something wrong with default parameter value';
+    
+if ("1234".substring(0, null) !== "")
+    throw "null should be used as 0";
+
+if ("1234".substring(0, undefined) !== "1234")
+    throw "undefined should be used as string.length";
 
 console.asserta(() => (new class {}).toString(), {}.toString());

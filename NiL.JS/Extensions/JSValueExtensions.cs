@@ -179,5 +179,10 @@ namespace NiL.JS.Extensions
         {
             return self != null && self._valueType == JSValueType.Double && double.IsNaN(self._dValue);
         }
+
+        public static bool IsUndefined(this JSValue self)
+        {
+            return self != null && self._valueType <= JSValueType.Undefined;
+        }
     }
 }

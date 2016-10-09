@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.BaseLibrary
 {
@@ -77,7 +78,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(1)]
         public static JSValue charCodeAt(JSValue self, Arguments pos)
         {
-            int p = Tools.JSObjectToInt32(pos.a0 ?? notExists, true);
+            int p = Tools.JSObjectToInt32(pos[0], true);
             var selfStr = self.ToString();
             if ((p < 0) || (p >= selfStr.Length))
                 return Number.NaN;
@@ -113,52 +114,50 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsLength(1)]
+        public static JSValue endsWith(JSValue self, Arguments args)
+        {
+            var selfAsString = (self ?? undefinedString).ToString();
+            var value = (args?[0] ?? undefinedString).ToString();
+
+            return selfAsString.EndsWith(value) ? Boolean.True : Boolean.False;
+        }
+
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
+        public static JSValue includes(JSValue self, Arguments args)
+        {
+            var selfAsString = (self ?? undefinedString).ToString();
+            var value = (args?[0] ?? undefinedString).ToString();
+
+            return selfAsString.IndexOf(value) != -1 ? Boolean.True : Boolean.False;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
         public static JSValue indexOf(JSValue self, Arguments args)
         {
             if (args.Length == 0)
                 return -1;
-            string fstr = args[0].ToString();
-            int pos = 0;
-            while (args.Length > 1)
-            {
-                JSValue value = null;
-                switch (args[1]._valueType)
-                {
-                    case JSValueType.Integer:
-                    case JSValueType.Boolean:
-                        {
-                            pos = args[1]._iValue;
-                            break;
-                        }
-                    case JSValueType.Double:
-                        {
-                            pos = (int)args[1]._dValue;
-                            break;
-                        }
-                    case JSValueType.Object:
-                    case JSValueType.Date:
-                    case JSValueType.Function:
-                        {
-                            value = args[1].ToPrimitiveValue_Value_String();
-                            if (value._valueType < JSValueType.String)
-                            {
-                                args[1] = value;
-                                continue;
-                            }
-                            goto case JSValueType.String;
-                        }
-                    case JSValueType.String:
-                        {
-                            double d = 0;
-                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, ParseNumberOptions.Default);
-                            pos = (int)d;
-                            break;
-                        }
-                }
-                break;
-            }
+
             var strValue = self.ToString();
-            return strValue.IndexOf(fstr, System.Math.Max(0, System.Math.Min(pos, strValue.Length)), StringComparison.CurrentCulture);
+            string fstr = args[0].ToString();
+
+            var pos = 0;
+            if (args.length > 1)
+            {
+                pos = Tools.JSObjectToInt32(args[1], 0, 0, true);
+
+                if (pos < 0)
+                    pos = 0;
+
+                if (pos > strValue.Length)
+                    pos = strValue.Length - 1;
+            }
+
+            return strValue.IndexOf(fstr, pos, StringComparison.Ordinal);
         }
 
         [DoNotEnumerate]
@@ -168,51 +167,25 @@ namespace NiL.JS.BaseLibrary
         {
             if (args.Length == 0)
                 return -1;
-            string fstr = args[0].ToString();
-            int pos = int.MaxValue >> 1;
-            while (args.Length > 1)
-            {
-                JSValue value = null;
-                switch (args[1]._valueType)
-                {
-                    case JSValueType.Integer:
-                    case JSValueType.Boolean:
-                        {
-                            pos = args[1]._iValue;
-                            break;
-                        }
-                    case JSValueType.Double:
-                        {
-                            if (!double.IsNaN(args[1]._dValue))
-                                pos = (int)args[1]._dValue;
-                            break;
-                        }
-                    case JSValueType.Object:
-                    case JSValueType.Date:
-                    case JSValueType.Function:
-                        {
-                            value = args[1].ToPrimitiveValue_Value_String();
-                            if (value._valueType < JSValueType.String)
-                            {
-                                args[1] = value;
-                                continue;
-                            }
-                            goto case JSValueType.String;
-                        }
-                    case JSValueType.String:
-                        {
-                            double d = 0;
-                            Tools.ParseNumber((value ?? args[1]).ToString(), pos, out d, ParseNumberOptions.Default);
-                            pos = (int)d;
-                            break;
-                        }
-                }
-                break;
-            }
+
             var strValue = self.ToString();
-            return strValue.LastIndexOf(fstr, StringComparison.CurrentCulture) == 0
-                    ? 0
-                    : strValue.LastIndexOf(fstr, System.Math.Max(0, System.Math.Min(pos, strValue.Length - 1)), StringComparison.CurrentCulture);
+            string fstr = args[0].ToString();
+
+            var pos = strValue.Length;
+            if (args.length > 1)
+            {
+                pos = Tools.JSObjectToInt32(args[1], pos, pos, true);
+
+                if (pos < 0)
+                    pos = 0;
+
+                pos += fstr.Length;
+
+                if (pos > strValue.Length)
+                    pos = strValue.Length;
+            }
+
+            return strValue.LastIndexOf(fstr, pos, StringComparison.Ordinal);
         }
 
         [DoNotEnumerate]
@@ -232,9 +205,10 @@ namespace NiL.JS.BaseLibrary
         {
             if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
+
             var a0 = args[0];
-            var regex = a0._oValue as RegExp;
-            if (a0._valueType == JSValueType.Object && regex != null)
+            var regex = a0.Value as RegExp;
+            if (regex != null)
             {
                 if (!regex._global)
                 {
@@ -244,58 +218,31 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    var match = regex.regEx.Match(self.ToString());
+                    var match = regex._Regex.Match(self.ToString());
                     int index = 0;
+
+                    // Result should be w/o 'index' and 'input'
                     var res = new Array();
                     while (match.Success)
                     {
-                        res.data[index++] = match.Value;
+                        res._data[index++] = match.Value;
                         match = match.NextMatch();
                     }
+
                     return res;
                 }
             }
             else
             {
                 var match = new Regex((a0._valueType > JSValueType.Undefined ? (object)a0 : "").ToString(), RegexOptions.ECMAScript).Match(self.ToString());
+
                 var res = new Array(match.Groups.Count);
                 for (int i = 0; i < match.Groups.Count; i++)
-                    res.data[i] = match.Groups[i].Value;
+                    res._data[i] = match.Groups[i].Value;
+
                 res.SetProperty("index", match.Index, false);
                 res.SetProperty("input", self, true);
                 return res;
-            }
-        }
-
-        [DoNotEnumerate]
-        [InstanceMember]
-        [ArgumentsLength(1)]
-        public static JSValue search(JSValue self, Arguments args)
-        {
-            if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
-                ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
-            if (args.length == 0)
-                return 0;
-            var a0 = args[0];
-            if (a0._valueType == JSValueType.Object
-                && a0._oValue is RegExp)
-            {
-                var regex = a0._oValue as RegExp;
-                if (!regex._global)
-                {
-                    var res = regex.exec(self);
-                    if ((res ?? @null) != @null)
-                        return res["index"];
-                    return -1;
-                }
-                else
-                {
-                    return regex.regEx.Match(self.ToString()).Index;
-                }
-            }
-            else
-            {
-                return self.ToString().IndexOf(a0.ToString());
             }
         }
 
@@ -317,7 +264,7 @@ namespace NiL.JS.BaseLibrary
                     string temp = self._oValue.ToString();
                     var match = new String();
                     var margs = new Arguments();
-                    match._oValue = (args[0]._oValue as RegExp).regEx.Replace(self.ToString(),
+                    match._oValue = (args[0]._oValue as RegExp)._Regex.Replace(self.ToString(),
                         (m) =>
                         {
                             self._oValue = temp;
@@ -345,7 +292,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    return (args[0].Value as RegExp).regEx.Replace(self.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].Value as RegExp)._global ? int.MaxValue : 1);
+                    return (args[0].Value as RegExp)._Regex.Replace(self.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].Value as RegExp)._global ? int.MaxValue : 1);
                 }
             }
             else
@@ -379,6 +326,38 @@ namespace NiL.JS.BaseLibrary
                         return self;
                     return str.Substring(0, index) + replace + str.Substring(index + pattern.Length);
                 }
+            }
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
+        public static JSValue search(JSValue self, Arguments args)
+        {
+            if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
+            if (args.length == 0)
+                return 0;
+            var a0 = args[0];
+            if (a0._valueType == JSValueType.Object
+                && a0._oValue is RegExp)
+            {
+                var regex = a0._oValue as RegExp;
+                if (!regex._global)
+                {
+                    var res = regex.exec(self);
+                    if ((res ?? @null) != @null)
+                        return res["index"];
+                    return -1;
+                }
+                else
+                {
+                    return regex._Regex.Match(self.ToString()).Index;
+                }
+            }
+            else
+            {
+                return self.ToString().IndexOf(a0.ToString());
             }
         }
 
@@ -476,103 +455,90 @@ namespace NiL.JS.BaseLibrary
         {
             if (args.Length == 0 || !args[0].Defined)
                 return new Array(new object[] { self.ToString() });
-            uint limit = uint.MaxValue;
-            if (args.Length > 1)
-            {
-                var limO = args[1];
-                if (limO._valueType >= JSValueType.Object)
-                    limO = limO.ToPrimitiveValue_Value_String();
-                switch (limO._valueType)
-                {
-                    case JSValueType.Integer:
-                    case JSValueType.Boolean:
-                        {
-                            limit = (uint)limO._iValue;
-                            break;
-                        }
-                    case JSValueType.Double:
-                        {
-                            limit = (uint)limO._dValue;
-                            break;
-                        }
-                    case JSValueType.Object:
-                    case JSValueType.Date:
-                    case JSValueType.Function:
-                    case JSValueType.String:
-                        {
-                            double d;
-                            Tools.ParseNumber(limO.ToString(), 0, out d, ParseNumberOptions.Default);
-                            limit = (uint)d;
-                            break;
-                        }
-                }
-            }
+
+            var selfString = self.ToString();
+            var limit = (uint)Tools.JSObjectToInt64(args[1], long.MaxValue, true);
+
             if (args[0]._valueType == JSValueType.Object && args[0]._oValue is RegExp)
             {
-                string selfString = self.ToPrimitiveValue_Value_String().ToString();
-                var match = (args[0]._oValue as RegExp).regEx.Match(selfString);
-                if ((args[0]._oValue as RegExp).regEx.ToString().Length == 0)
+                var match = (args[0]._oValue as RegExp)._Regex.Match(selfString);
+                if ((args[0]._oValue as RegExp)._Regex.ToString().Length == 0)
                 {
                     match = match.NextMatch();
                     if (limit == uint.MaxValue)
                         limit = (uint)selfString.Length;
                 }
+
                 Array res = new Array();
                 int index = 0;
-                while (res.data.Length < limit)
+                while (res._data.Length < limit)
                 {
                     if (!match.Success)
                     {
-                        res.data.Add(selfString.Substring(index, selfString.Length - index));
+                        res._data.Add(selfString.Substring(index, selfString.Length - index));
                         break;
                     }
+
                     int nindex = match.Index;
                     if (nindex == -1)
                     {
-                        res.data.Add(selfString.Substring(index, selfString.Length - index));
+                        res._data.Add(selfString.Substring(index, selfString.Length - index));
                         break;
                     }
                     else
                     {
                         var item = selfString.Substring(index, nindex - index);
-                        res.data.Add(item);
+                        res._data.Add(item);
                         index = nindex + match.Length;
                     }
+
                     match = match.NextMatch();
                 }
+
                 return res;
             }
             else
             {
                 string fstr = args[0].ToString();
-                string selfString = self.ToPrimitiveValue_Value_String().ToString();
                 Array res = new Array();
                 if (string.IsNullOrEmpty(fstr))
                 {
                     for (var i = 0; i < System.Math.Min(selfString.Length, limit); i++)
-                        res.data.Add(selfString[i]);
+                        res._data.Add(selfString[i]);
                 }
                 else
                 {
                     int index = 0;
-                    while (res.data.Length < limit)
+                    while (res._data.Length < limit)
                     {
-                        int nindex = selfString.IndexOf(fstr, index);
+                        int nindex = selfString.IndexOf(fstr, index, StringComparison.Ordinal);
                         if (nindex == -1)
                         {
-                            res.data.Add(selfString.Substring(index, selfString.Length - index));
+                            res._data.Add(selfString.Substring(index, selfString.Length - index));
                             break;
                         }
                         else
                         {
                             var item = selfString.Substring(index, nindex - index);
-                            res.data.Add(item);
+                            res._data.Add(item);
                             index = nindex + fstr.Length;
                         }
                     }
                 }
+
                 return res;
             }
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(1)]
+        public static JSValue startsWith(JSValue self, Arguments args)
+        {
+            var selfAsString = (self ?? undefinedString).ToString();
+            var value = (args?[0] ?? undefinedString).ToString();
+
+            return selfAsString.StartsWith(value) ? Boolean.True : Boolean.False;
         }
 
         [DoNotEnumerate]
@@ -580,85 +546,23 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsLength(2)]
         public static JSValue substring(JSValue self, Arguments args)
         {
-            string selfString = self.ToPrimitiveValue_Value_String().ToString();
+            string selfString = self.ToString();
             if (args.Length == 0)
                 return selfString;
-            int pos0 = 0;
-            switch (args[0]._valueType)
-            {
-                case JSValueType.Integer:
-                case JSValueType.Boolean:
-                    {
-                        pos0 = args[0]._iValue;
-                        break;
-                    }
-                case JSValueType.Double:
-                    {
-                        if (double.IsNaN(args[0]._dValue) || double.IsNegativeInfinity(args[0]._dValue))
-                            pos0 = 0;
-                        else if (double.IsPositiveInfinity(args[0]._dValue))
-                            pos0 = selfString.Length;
-                        else
-                            pos0 = (int)args[0]._dValue;
-                        break;
-                    }
-                case JSValueType.Object:
-                case JSValueType.Date:
-                case JSValueType.Function:
-                case JSValueType.String:
-                    {
-                        pos0 = Tools.JSObjectToInt32(args[0], 0, true);
-                        break;
-                    }
-            }
-            int pos1 = 0;
-            if (args.Length > 1)
-            {
-                switch (args[1]._valueType)
-                {
-                    case JSValueType.Integer:
-                    case JSValueType.Boolean:
-                        {
-                            pos1 = args[1]._iValue;
-                            break;
-                        }
-                    case JSValueType.Double:
-                        {
-                            if (double.IsNaN(args[1]._dValue) || double.IsNegativeInfinity(args[0]._dValue))
-                                pos1 = 0;
-                            else if (double.IsPositiveInfinity(args[1]._dValue))
-                                pos1 = selfString.Length;
-                            else
-                                pos1 = (int)args[1]._dValue;
-                            break;
-                        }
-                    case JSValueType.Object:
-                    case JSValueType.Date:
-                    case JSValueType.Function:
-                    case JSValueType.String:
-                        {
-                            pos1 = Tools.JSObjectToInt32(args[1], 0, true);
-                            break;
-                        }
-                    case JSValueType.NotExists:
-                    case JSValueType.NotExistsInObject:
-                    case JSValueType.Undefined:
-                        {
-                            pos1 = selfString.Length;
-                            break;
-                        }
-                }
-            }
-            else
-                pos1 = selfString.Length;
+
+            int pos0 = Tools.JSObjectToInt32(args[0], 0, 0, 0, true);
+            int pos1 = Tools.JSObjectToInt32(args[1], 0, selfString.Length, 0, true);
+
             if (pos0 > pos1)
             {
                 pos0 ^= pos1;
                 pos1 ^= pos0;
                 pos0 ^= pos1;
             }
+
             pos0 = System.Math.Max(0, System.Math.Min(pos0, selfString.Length));
             pos1 = System.Math.Max(0, System.Math.Min(pos1, selfString.Length));
+
             return selfString.Substring(pos0, System.Math.Min(selfString.Length, System.Math.Max(0, pos1 - pos0)));
         }
 
@@ -669,72 +573,23 @@ namespace NiL.JS.BaseLibrary
         {
             if (args.Length == 0)
                 return self;
-            int pos0 = 0;
-            if (args.Length > 0)
-            {
-                switch (args[0]._valueType)
-                {
-                    case JSValueType.Integer:
-                    case JSValueType.Boolean:
-                        {
-                            pos0 = args[0]._iValue;
-                            break;
-                        }
-                    case JSValueType.Double:
-                        {
-                            pos0 = (int)args[0]._dValue;
-                            break;
-                        }
-                    case JSValueType.Object:
-                    case JSValueType.Date:
-                    case JSValueType.Function:
-                    case JSValueType.String:
-                        {
-                            double d;
-                            Tools.ParseNumber(args[0].ToString(), pos0, out d, ParseNumberOptions.Default);
-                            pos0 = (int)d;
-                            break;
-                        }
-                }
-            }
-            var selfs = self.ToString();
-            int len = selfs.Length - pos0;
-            if (args.Length > 1)
-            {
-                switch (args[1]._valueType)
-                {
-                    case JSValueType.Integer:
-                    case JSValueType.Boolean:
-                        {
-                            len = args[1]._iValue;
-                            break;
-                        }
-                    case JSValueType.Double:
-                        {
-                            len = (int)args[1]._dValue;
-                            break;
-                        }
-                    case JSValueType.Object:
-                    case JSValueType.Date:
-                    case JSValueType.Function:
-                    case JSValueType.String:
-                        {
-                            double d;
-                            Tools.ParseNumber(args[1].ToString(), len, out d, ParseNumberOptions.Default);
-                            len = (int)d;
-                            break;
-                        }
-                }
-            }
-            if (pos0 < 0)
-                pos0 += selfs.Length;
-            if (pos0 < 0)
-                pos0 = 0;
-            if (pos0 >= selfs.Length || len <= 0)
+
+            var selfString = self.ToString();
+
+            int start = Tools.JSObjectToInt32(args[0], 0, 0, 0, true);
+            int length = Tools.JSObjectToInt32(args[1], 0, selfString.Length, 0, true);
+
+            if (start < 0)
+                start += selfString.Length;
+            if (start < 0)
+                start = 0;
+            if (start >= selfString.Length || length <= 0)
                 return "";
-            if (selfs.Length < pos0 + len)
-                len = selfs.Length - pos0;
-            return selfs.Substring(pos0, len);
+
+            if (selfString.Length < start + length)
+                length = selfString.Length - start;
+
+            return selfString.Substring(start, length);
         }
 
         [DoNotEnumerate]
@@ -961,14 +816,14 @@ namespace NiL.JS.BaseLibrary
             var result = new StringBuilder();
             var strings = args[0].Value as Array ?? Tools.arraylikeToArray(args[0], true, false, false, -1);
 
-            for (var i = 0; i < strings.data.Length; i++)
+            for (var i = 0; i < strings._data.Length; i++)
             {
                 if (i > 0)
                 {
                     result.Append(args[i]);
                 }
 
-                result.Append(strings.data[i]);
+                result.Append(strings._data[i]);
             }
 
             return result.ToString();

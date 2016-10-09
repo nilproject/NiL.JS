@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
@@ -85,9 +86,11 @@ namespace NiL.JS.BaseLibrary
         {
             if (end < begin || begin >= data.Length || end >= data.Length)
                 ExceptionHelper.Throw((new RangeError("Invalid begin or end index")));
+
             var res = new ArrayBuffer(end - begin + 1);
             for (int i = 0, j = begin; j <= end; j++, i++)
                 res.data[i] = data[j];
+
             return res;
         }
 
@@ -97,6 +100,7 @@ namespace NiL.JS.BaseLibrary
             return slice(begin, data.Length - 1);
         }
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public ArrayBuffer slice(Arguments args)
         {
             if (args == null)
@@ -138,9 +142,10 @@ namespace NiL.JS.BaseLibrary
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
-            var be = GetEnumerator();
+            var be = base.GetEnumerator(hideNonEnumerable, enumerationMode);
             while (be.MoveNext())
                 yield return be.Current;
+
             for (var i = 0; i < data.Length; i++)
                 yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumerationMode > 0 ? getElement(i) : null);
         }

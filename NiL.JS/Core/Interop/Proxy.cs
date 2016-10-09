@@ -45,14 +45,14 @@ namespace NiL.JS.Core.Interop
                             if (_hostedType == typeof(JSObject))
                             {
                                 _prototypeInstance = CreateObject();
-                                _prototypeInstance.__prototype = @null;
+                                _prototypeInstance._objectPrototype = @null;
                                 _prototypeInstance._fields = _fields;
                                 _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
                             }
                             else if (typeof(JSObject).IsAssignableFrom(_hostedType))
                             {
                                 _prototypeInstance = instanceCtor.Invoke(null) as JSObject;
-                                _prototypeInstance.__prototype = __proto__;
+                                _prototypeInstance._objectPrototype = __proto__;
                                 _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
                                 _prototypeInstance._fields = _fields;
                                 //_prototypeInstance.valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
@@ -65,7 +65,7 @@ namespace NiL.JS.Core.Interop
                                 {
                                     _attributes = _attributes | JSValueAttributesInternal.ProxyPrototype,
                                     _fields = _fields,
-                                    __prototype = _context.GlobalContext._GlobalPrototype
+                                    _objectPrototype = _context.GlobalContext._GlobalPrototype
                                 };
                             }
                         }
@@ -99,18 +99,6 @@ namespace NiL.JS.Core.Interop
 #else
             instanceCtor = _hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
 #endif
-        }
-
-        internal override JSObject GetDefaultPrototype()
-        {
-#if (PORTABLE || NETCORE)
-            if (Context.currentContextStack == null)
-                throw new Exception();
-#else
-            if (Context.RunningContexts.Length == 0) // always false, but it protects from uninitialized global context
-                throw new Exception();
-#endif
-            return _context.GlobalContext._GlobalPrototype;
         }
 
         private void fillMembers()
@@ -331,6 +319,7 @@ namespace NiL.JS.Core.Interop
                                         }) : null
                                     )
                                 };
+
                                 r._attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
                                 if ((r._oValue as GsPropertyPair).set == null)
                                     r._attributes |= JSValueAttributesInternal.ReadOnly;
@@ -357,10 +346,13 @@ namespace NiL.JS.Core.Interop
                             };
 
                             r._attributes = JSValueAttributesInternal.Immutable;
+
                             if ((r._oValue as GsPropertyPair).set == null)
                                 r._attributes |= JSValueAttributesInternal.ReadOnly;
+
                             if (pinfo.IsDefined(typeof(FieldAttribute), false))
                                 r._attributes |= JSValueAttributesInternal.Field;
+
                             break;
                         }
                     case MemberTypes.Event:
@@ -452,7 +444,7 @@ namespace NiL.JS.Core.Interop
 
             return true;
         }
-
+        
         public override JSValue propertyIsEnumerable(Arguments args)
         {
             if (args == null)

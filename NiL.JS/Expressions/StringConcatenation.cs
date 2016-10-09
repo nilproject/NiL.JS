@@ -79,11 +79,12 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            object res = prep(_parts[0].Evaluate(context));
+            var result = prep(_parts[0].Evaluate(context));
             for (var i = 1; i < _parts.Count; i++)
-                res = new RopeString(res, prep(_parts[i].Evaluate(context)));
+                result = new RopeString(result, prep(_parts[i].Evaluate(context)));
+
             tempContainer._valueType = JSValueType.String;
-            tempContainer._oValue = res;
+            tempContainer._oValue = result;
             return tempContainer;
         }
 

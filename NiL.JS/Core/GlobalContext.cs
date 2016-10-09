@@ -56,7 +56,7 @@ namespace NiL.JS.Core
             objectConstructor._attributes |= JSValueAttributesInternal.DoNotDelete;
 
             _GlobalPrototype = objectConstructor.prototype as JSObject;
-            _GlobalPrototype.__prototype = JSValue.@null;
+            _GlobalPrototype._objectPrototype = JSValue.@null;
 
             DefineConstructor(typeof(BaseLibrary.Math));
             DefineConstructor(typeof(BaseLibrary.Array));
@@ -89,6 +89,8 @@ namespace NiL.JS.Core
             DefineConstructor(typeof(Float32Array));
             DefineConstructor(typeof(Float64Array));
             DefineConstructor(typeof(Promise));
+            DefineConstructor(typeof(Map));
+            DefineConstructor(typeof(Set));
 
             DefineConstructor(typeof(Debug));
 
@@ -150,6 +152,8 @@ namespace NiL.JS.Core
             {
                 lock (_proxies)
                 {
+                    JSObject dynamicProxy = null;
+
                     if (type.GetTypeInfo().ContainsGenericParameters)
                     {
                         constructor = GetGenericTypeSelector(new[] { type });
@@ -164,16 +168,28 @@ namespace NiL.JS.Core
                         }
 
                         JSObject parentPrototype = null;
-                        var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), false).ToArray();
+                        var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), true).ToArray();
                         if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
                         {
-                            if ((pa[0] as PrototypeAttribute).Replace && (pa[0] as PrototypeAttribute).PrototypeType.IsAssignableFrom(type))
-                                return (GetConstructor((pa[0] as PrototypeAttribute).PrototypeType) as Function).prototype as JSObject;
+                            var parentType = (pa[0] as PrototypeAttribute).PrototypeType;
+                            parentPrototype = (GetConstructor(parentType) as Function).prototype as JSObject;
 
-                            parentPrototype = (GetConstructor((pa[0] as PrototypeAttribute).PrototypeType) as Function).prototype as JSObject;
+                            if ((pa[0] as PrototypeAttribute).Replace && parentType.IsAssignableFrom(type))
+                            {
+                                dynamicProxy = parentPrototype;
+                            }
+                            else
+                            {
+                                dynamicProxy = new PrototypeProxy(this, type)
+                                {
+                                    _objectPrototype = parentPrototype
+                                };
+                            }
                         }
-
-                        var dynamicProxy = new PrototypeProxy(this, type, parentPrototype);
+                        else
+                        {
+                            dynamicProxy = new PrototypeProxy(this, type);
+                        }
 
                         if (type == typeof(JSObject))
                             constructor = new ObjectConstructor(this, staticProxy, dynamicProxy);
@@ -185,18 +201,20 @@ namespace NiL.JS.Core
                         constructor._attributes = dynamicProxy._attributes;
                         dynamicProxy._attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly;
 
-                        if (type != typeof(ProxyConstructor))
+                        if (dynamicProxy != parentPrototype && type != typeof(ProxyConstructor))
                         {
                             dynamicProxy._fields["constructor"] = constructor;
-                        }
-
-                        if (typeof(JSValue).IsAssignableFrom(type))
-                        {
-                            var fake = dynamicProxy.prototypeInstance;
                         }
                     }
 
                     _proxies[type] = constructor;
+
+                    if (dynamicProxy != null && typeof(JSValue).IsAssignableFrom(type))
+                    {
+                        if (dynamicProxy._objectPrototype == null)
+                            dynamicProxy._objectPrototype = _GlobalPrototype ?? JSValue.@null;
+                        var fake = (dynamicProxy as PrototypeProxy).prototypeInstance;
+                    }
                 }
             }
 

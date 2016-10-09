@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
                 var array = source._oValue as BaseLibrary.Array;
                 if (array != null)
                 {
-                    res = temp._iValue >= 0 && temp._iValue < array.data.Length && (array.data[temp._iValue] ?? JSValue.notExists).Exists;
+                    res = temp._iValue >= 0 && temp._iValue < array._data.Length && (array._data[temp._iValue] ?? JSValue.notExists).Exists;
                     tempContainer = temp;
                     return res;
                 }

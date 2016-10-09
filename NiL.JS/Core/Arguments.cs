@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Core
 {
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
+    [Prototype(typeof(JSObject), true)]
     public sealed class Arguments : JSObject, IEnumerable
     {
         private sealed class _LengthContainer : JSValue
@@ -26,17 +28,15 @@ namespace NiL.JS.Core
             }
         }
 
-        internal JSValue a0;
-        internal JSValue a1;
-        internal JSValue a2;
-        internal JSValue a3;
-        internal JSValue a4;
-        //internal JSObject a5;
-        //internal JSObject a6;
-        //internal JSObject a7;
+        private JSValue a0;
+        private JSValue a1;
+        private JSValue a2;
+        private JSValue a3;
+        private JSValue a4;
         internal JSValue callee;
         internal JSValue caller;
-        private _LengthContainer _length;
+
+        private _LengthContainer _lengthContainer;
         internal int length;
 
         public int Length
@@ -90,8 +90,10 @@ namespace NiL.JS.Core
                     default:
                         return base[index.ToString()];
                 }
+
                 if (res == null)
                     return notExists;
+
                 return res;
             }
             set
@@ -127,16 +129,22 @@ namespace NiL.JS.Core
             : this()
         {
             if (context != null)
-                caller = context._strict && context._owner != null && context._owner._creator.body._strict ? Function.propertiesDummySM : context._owner;
+            {
+                caller = context._strict
+                    && context._owner != null
+                    && context._owner._functionDefinition._body._strict ? Function.propertiesDummySM : context._owner;
 
-            __prototype = context.GlobalContext._GlobalPrototype;
+                _objectPrototype = context.GlobalContext._GlobalPrototype;
+            }
         }
 
         public Arguments()
         {
             _valueType = JSValueType.Object;
             _oValue = this;
-            _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
+            _attributes = JSValueAttributesInternal.DoNotDelete 
+                | JSValueAttributesInternal.DoNotEnumerate 
+                | JSValueAttributesInternal.SystemObject;
         }
 
         public void Add(JSValue arg)
@@ -144,9 +152,9 @@ namespace NiL.JS.Core
             this[length++] = arg;
         }
 
-        internal override JSObject GetDefaultPrototype()
+        public void Add(object value)
         {
-            return Context.CurrentBaseContext._GlobalPrototype ?? @null;
+            this[length++] = JSValue.Marshal(value);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool createMember, PropertyScope memberScope)
@@ -196,14 +204,14 @@ namespace NiL.JS.Core
                     //    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                     case "length":
                         {
-                            if (_length == null)
-                                _length = new _LengthContainer(this)
+                            if (_lengthContainer == null)
+                                _lengthContainer = new _LengthContainer(this)
                                 {
                                     _valueType = JSValueType.Integer,
                                     _iValue = length,
                                     _attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.Reassign
                                 };
-                            return _length;
+                            return _lengthContainer;
                         }
                     case "callee":
                         {
@@ -248,8 +256,8 @@ namespace NiL.JS.Core
                 yield return new KeyValuePair<string, JSValue>("callee", callee);
             if (caller != null && callee.Exists && (!hideNonEnum || (caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("caller", caller);
-            if (_length != null && _length.Exists && (!hideNonEnum || (_length._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                yield return new KeyValuePair<string, JSValue>("length", _length);
+            if (_lengthContainer != null && _lengthContainer.Exists && (!hideNonEnum || (_lengthContainer._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("length", _lengthContainer);
             var be = base.GetEnumerator(hideNonEnum, enumeratorMode);
             while (be.MoveNext())
                 yield return be.Current;
@@ -315,8 +323,8 @@ namespace NiL.JS.Core
             //a7 = null;
             callee = null;
             caller = null;
-            __prototype = null;
-            _length = null;
+            _objectPrototype = null;
+            _lengthContainer = null;
             _valueType = JSValueType.Object;
             _oValue = this;
             _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;

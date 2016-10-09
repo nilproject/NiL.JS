@@ -262,10 +262,3 @@ function makeTagCloud(tagInfo)
 }
 
 var tagcloud = makeTagCloud(tagInfo);
-
-var expectedMinLength = 315000;
-
-if (tagcloud.length < expectedMinLength)
-    throw "ERROR: bad result: expected length at least " + expectedMinLength + " but got " + tagcloud.length;
-
-tagInfo = null;

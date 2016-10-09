@@ -23,7 +23,7 @@ namespace NiL.JS.Core
         Сommon = 0,
         Own = 1,
         Super = 2,
-        SuperProto = 3
+        PrototypeOfSuperclass = 3
     }
 
 #if !(PORTABLE || NETCORE)
@@ -116,13 +116,17 @@ namespace NiL.JS.Core
          * новый объект, которым следует заменить значение свойства в объекте. 
          */
 
-        [Hidden]
+        internal static readonly JSValue numberString = "number";
+        internal static readonly JSValue undefinedString = "undefined";
+        internal static readonly JSValue stringString = "string";
+        internal static readonly JSValue symbolString = "symbol";
+        internal static readonly JSValue booleanString = "boolean";
+        internal static readonly JSValue functionString = "function";
+        internal static readonly JSValue objectString = "object";
+        
         internal static readonly JSValue undefined = new JSValue() { _valueType = JSValueType.Undefined, _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject };
-        [Hidden]
         internal static readonly JSValue notExists = new JSValue() { _valueType = JSValueType.NotExists, _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject };
-        [Hidden]
         internal static readonly JSObject @null = new JSObject() { _valueType = JSValueType.Object, _oValue = null, _attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
-        [Hidden]
         internal static readonly JSValue nullString = new JSValue() { _valueType = JSValueType.String, _oValue = "null", _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
         [Hidden]
@@ -161,7 +165,7 @@ namespace NiL.JS.Core
             [Hidden]
             set
             {
-                SetProperty(name, value ?? JSValue.undefined, true);
+                SetProperty(name, value ?? undefined, true);
             }
         }
 
@@ -365,7 +369,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal virtual JSObject GetDefaultPrototype()
+        internal JSObject GetDefaultPrototype()
         {
             switch (_valueType)
             {
@@ -736,6 +740,7 @@ namespace NiL.JS.Core
                 return _oValue.ToString();
             if (_valueType <= JSValueType.Undefined)
                 return "undefined";
+
             if (_valueType == JSValueType.Property)
             {
                 var tempStr = "[";
@@ -748,6 +753,7 @@ namespace NiL.JS.Core
                 tempStr += "]";
                 return tempStr;
             }
+
             var res = this._valueType >= JSValueType.Object ? ToPrimitiveValue_String_Value() : this;
             switch (res._valueType)
             {
@@ -884,6 +890,7 @@ namespace NiL.JS.Core
                 if (innerObject != null)
                     return innerObject.GetEnumerator(hideNonEnumerable, enumeratorMode);
             }
+
             return GetEnumeratorImpl(hideNonEnumerable);
         }
 

@@ -12,14 +12,14 @@ namespace NiL.JS.BaseLibrary
     {
         private string _source;
         private JSValue lIndex;
-        internal Regex regEx;
+        internal Regex _Regex;
 
         [DoNotEnumerate]
         public RegExp()
         {
             _source = "";
             _global = false;
-            regEx = new Regex("");
+            _Regex = new Regex("");
         }
 
         private void makeRegex(Arguments args)
@@ -30,7 +30,7 @@ namespace NiL.JS.BaseLibrary
                 if (args.GetProperty("length")._iValue > 1 && args[1]._valueType > JSValueType.Undefined)
                     ExceptionHelper.Throw(new TypeError("Cannot supply flags when constructing one RegExp from another"));
                 _oValue = ptrn._oValue;
-                regEx = (ptrn.Value as RegExp).regEx;
+                _Regex = (ptrn.Value as RegExp)._Regex;
                 _global = (ptrn.Value as RegExp).global;
                 _source = (ptrn.Value as RegExp)._source;
                 return;
@@ -47,7 +47,7 @@ namespace NiL.JS.BaseLibrary
             _global = false;
             try
             {
-                System.Text.RegularExpressions.RegexOptions options = System.Text.RegularExpressions.RegexOptions.ECMAScript | RegexOptions.CultureInvariant;
+                var options = RegexOptions.ECMAScript | RegexOptions.CultureInvariant;
                 for (int i = 0; i < flags.Length; i++)
                 {
                     char c = flags[i];
@@ -65,16 +65,16 @@ namespace NiL.JS.BaseLibrary
                     {
                         case 'i':
                             {
-                                if ((options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0)
+                                if ((options & RegexOptions.IgnoreCase) != 0)
                                     ExceptionHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
-                                options |= System.Text.RegularExpressions.RegexOptions.IgnoreCase;
+                                options |= RegexOptions.IgnoreCase;
                                 break;
                             }
                         case 'm':
                             {
-                                if ((options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0)
+                                if ((options & RegexOptions.Multiline) != 0)
                                     ExceptionHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
-                                options |= System.Text.RegularExpressions.RegexOptions.Multiline;
+                                options |= RegexOptions.Multiline;
                                 break;
                             }
                         case 'g':
@@ -92,7 +92,7 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 _source = pattern;
-                regEx = new System.Text.RegularExpressions.Regex(Tools.Unescape(pattern, false, false, true), options);
+                _Regex = new Regex(Tools.Unescape(pattern, false, false, true), options);
             }
             catch (ArgumentException e)
             {
@@ -121,7 +121,7 @@ namespace NiL.JS.BaseLibrary
         {
             get
             {
-                return (regEx.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0;
+                return (_Regex.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0;
             }
         }
 
@@ -134,7 +134,7 @@ namespace NiL.JS.BaseLibrary
         {
             get
             {
-                return (regEx.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0;
+                return (_Regex.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0;
             }
         }
 
@@ -208,7 +208,7 @@ namespace NiL.JS.BaseLibrary
                 lIndex._iValue = 0;
                 return JSValue.@null;
             }
-            var m = regEx.Match(input, lIndex._iValue);
+            var m = _Regex.Match(input, lIndex._iValue);
             if (!m.Success)
             {
                 lIndex._iValue = 0;
@@ -216,7 +216,7 @@ namespace NiL.JS.BaseLibrary
             }
             var res = new Array(m.Groups.Count);
             for (int i = 0; i < m.Groups.Count; i++)
-                res.data[i] = m.Groups[i].Success ? (JSValue)m.Groups[i].Value : null;
+                res._data[i] = m.Groups[i].Success ? (JSValue)m.Groups[i].Value : null;
             if (_global)
                 lIndex._iValue = m.Index + m.Length;
             res.DefineProperty("index").Assign(m.Index);
@@ -239,7 +239,7 @@ namespace NiL.JS.BaseLibrary
                 lIndex._iValue = 0;
                 return false;
             }
-            var m = regEx.Match(input, lIndex._iValue);
+            var m = _Regex.Match(input, lIndex._iValue);
             if (!m.Success)
             {
                 lIndex._iValue = 0;
@@ -263,8 +263,8 @@ namespace NiL.JS.BaseLibrary
         public override string ToString()
         {
             return "/" + _source + "/"
-                + ((regEx.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0 ? "i" : "")
-                + ((regEx.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? "m" : "")
+                + ((_Regex.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0 ? "i" : "")
+                + ((_Regex.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? "m" : "")
                 + (_global ? "g" : "");
         }
     }

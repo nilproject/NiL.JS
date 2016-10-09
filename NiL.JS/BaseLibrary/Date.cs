@@ -514,6 +514,7 @@ namespace NiL.JS.BaseLibrary
                 var arg = args[0];
                 if (arg._valueType >= JSValueType.Object)
                     arg = arg.ToPrimitiveValue_Value_String();
+
                 switch (arg._valueType)
                 {
                     case JSValueType.Integer:
@@ -533,7 +534,7 @@ namespace NiL.JS.BaseLibrary
                         }
                     case JSValueType.String:
                         {
-                            _error = !tryParse(args.a0.ToString(), out _time, out _timeZoneOffset);
+                            _error = !tryParse(arg.ToString(), out _time, out _timeZoneOffset);
                             break;
                         }
                 }

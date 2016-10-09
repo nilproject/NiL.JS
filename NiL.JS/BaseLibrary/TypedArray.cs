@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
@@ -7,6 +8,7 @@ namespace NiL.JS.BaseLibrary
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
+    [Prototype(typeof(Array))]
     public abstract class TypedArray : JSObject
     {
         protected sealed class Element : JSValue
@@ -34,34 +36,43 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Field]
+        [DoNotEnumerate]
         public ArrayBuffer buffer
         {
             [Hidden]
             get;
             private set;
         }
+
         [Field]
+        [DoNotEnumerate]
         public int byteLength
         {
             [Hidden]
             get;
             private set;
         }
+
         [Field]
+        [DoNotEnumerate]
         public int byteOffset
         {
             [Hidden]
             get;
             private set;
         }
+
         [Field]
+        [DoNotEnumerate]
         public Number length
         {
             [Hidden]
             get;
             private set;
         }
+
         [Field]
+        [DoNotEnumerate]
         public abstract int BYTES_PER_ELEMENT
         {
             [Hidden]
@@ -78,8 +89,10 @@ namespace NiL.JS.BaseLibrary
         protected TypedArray()
         {
             buffer = new ArrayBuffer();
+
             _valueType = JSValueType.Object;
             _oValue = this;
+            length = 0;
         }
 
         [DoNotEnumerate]
@@ -114,15 +127,15 @@ namespace NiL.JS.BaseLibrary
         protected TypedArray(JSValue iterablyObject)
         {
             var src = Tools.arraylikeToArray(iterablyObject, true, false, false, -1);
-            if (src.data.Length > int.MaxValue)
+            if (src._data.Length > int.MaxValue)
                 throw new System.OutOfMemoryException();
-            var length = (int)src.data.Length;
+            var length = (int)src._data.Length;
             this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
             this.length = new Number(length);
             this.byteLength = length * BYTES_PER_ELEMENT;
             this._valueType = JSValueType.Object;
             this._oValue = this;
-            foreach (var item in src.data.ReversOrder)
+            foreach (var item in src._data.ReversOrder)
                 this[item.Key] = item.Value;
         }
 
@@ -132,10 +145,12 @@ namespace NiL.JS.BaseLibrary
         {
             if (args == null)
                 return;
-            var offset = Tools.JSObjectToInt64(args.a1 ?? undefined, 0, false);
-            var src = args.a0 ?? undefined;
+
+            var offset = Tools.JSObjectToInt64(args[1], 0, false);
+            var src = args[0] ?? undefined;
             if (src._valueType < JSValueType.String)
                 return;
+
             var length = Tools.JSObjectToInt64(src["length"], 0, false);
             if (this.length._iValue - offset < length)
                 ExceptionHelper.Throw(new RangeError("Invalid source length or offset argument"));
@@ -299,5 +314,14 @@ namespace NiL.JS.BaseLibrary
 
         protected internal abstract System.Array ToNativeArray();
 
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
+        {
+            var baseEnum = base.GetEnumerator(hideNonEnum, enumeratorMode);
+            while(baseEnum.MoveNext())
+                yield return baseEnum.Current;
+
+            for (int i = 0, len = Tools.JSObjectToInt32(length); i < len; i++)
+                yield return new KeyValuePair<string, JSValue>(i.ToString(), this[i]);
+        }
     }
 }

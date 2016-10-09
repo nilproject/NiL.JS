@@ -136,9 +136,9 @@ namespace NiL.JS.Expressions
 
                 if (allowTCO
                     && _callMode == 0
-                    && (func._creator.kind != FunctionKind.Generator)
-                    && (func._creator.kind != FunctionKind.MethodGenerator)
-                    && (func._creator.kind != FunctionKind.AnonymousGenerator)
+                    && (func._functionDefinition.kind != FunctionKind.Generator)
+                    && (func._functionDefinition.kind != FunctionKind.MethodGenerator)
+                    && (func._functionDefinition.kind != FunctionKind.AnonymousGenerator)
                     && context._owner != null
                     && func == context._owner._oValue)
                 {

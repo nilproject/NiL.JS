@@ -53,26 +53,35 @@ namespace NiL.JS.Expressions
         {
             JSValue res = null;
             JSValue source = null;
+
             source = first.Evaluate(context);
             if (source._valueType < JSValueType.Object)
+            {
                 source = source.CloneImpl(false);
+            }
             else if (source != source._oValue)
             {
                 res = source._oValue as JSValue;
                 if (res != null)
                 {
                     source = res;
-                    res = null;
                 }
             }
 
             res = source.GetProperty(cachedMemberName ?? second.Evaluate(context), false, memberScope);
             context._objectSource = source;
 
+            if (res == null)
+                res = JSValue.undefined;
+
             if (res._valueType == JSValueType.NotExists)
+            {
                 res._valueType = JSValueType.NotExistsInObject;
+            }
             else if (res._valueType == JSValueType.Property)
+            {
                 res = Tools.InvokeGetter(res, source);
+            }
 
             return res;
         }
@@ -88,8 +97,10 @@ namespace NiL.JS.Expressions
                 if (stats != null && cachedMemberName.ToString() == "arguments")
                     stats.ContainsArguments = true;
             }
+
             if (first is Super)
-                memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.SuperProto;
+                memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.PrototypeOfSuperclass;
+
             return false;
         }
 

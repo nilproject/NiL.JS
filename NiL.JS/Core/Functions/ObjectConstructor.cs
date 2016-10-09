@@ -8,6 +8,7 @@ namespace NiL.JS.Core.Functions
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
+    [Prototype(typeof(Function), true)]
     internal class ObjectConstructor : ProxyConstructor
     {
         public override string name
@@ -18,8 +19,8 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        public ObjectConstructor(Context context, StaticProxy staticProxy, PrototypeProxy dynamicProxy)
-            : base(context, staticProxy, dynamicProxy)
+        public ObjectConstructor(Context context, StaticProxy staticProxy, JSObject prototype)
+            : base(context, staticProxy, prototype)
         {
             _length = new Number(1);
         }
@@ -27,6 +28,8 @@ namespace NiL.JS.Core.Functions
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
             JSValue nestedValue = targetObject;
+            if (nestedValue != null && (nestedValue._attributes & JSValueAttributesInternal.ConstructingObject) == 0)
+                nestedValue = null;
 
             if (arguments != null && arguments.length > 0)
                 nestedValue = arguments[0];

@@ -91,11 +91,7 @@ namespace NiL.JS.Expressions
                     Length = index - pos
                 };
         }
-
-#if INLINE
-        [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
-        private static JSValue impl(Context context, Expression[] elements)
+        public override JSValue Evaluate(Context context)
         {
             var length = elements.Length;
             var res = new BaseLibrary.Array(length);
@@ -111,7 +107,7 @@ namespace NiL.JS.Expressions
                             var spreadArray = e._oValue as IList<JSValue>;
                             for (var i = 0; i < spreadArray.Count; i++, targetIndex++)
                             {
-                                res.data[targetIndex] = spreadArray[i].CloneImpl(false);
+                                res._data[targetIndex] = spreadArray[i].CloneImpl(false);
                             }
                             targetIndex--;
                         }
@@ -119,23 +115,18 @@ namespace NiL.JS.Expressions
                         {
                             e = e.CloneImpl(true);
                             e._attributes = 0;
-                            res.data[targetIndex] = e;
+                            res._data[targetIndex] = e;
                         }
                     }
                     else
                     {
                         if (writableNotExists == null)
                             writableNotExists = new JSValue() { _valueType = JSValueType.NotExistsInObject, _attributes = JSValueAttributesInternal.SystemObject };
-                        res.data[targetIndex] = writableNotExists;
+                        res._data[targetIndex] = writableNotExists;
                     }
                 }
             }
             return res;
-        }
-
-        public override JSValue Evaluate(Context context)
-        {
-            return impl(context, elements);
         }
 
         protected internal override CodeNode[] getChildsImpl()

@@ -8,21 +8,21 @@ namespace NiL.JS.Core.Interop
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum | AttributeTargets.Struct, AllowMultiple = false, Inherited = true)]
     public sealed class PrototypeAttribute : Attribute
     {
         public Type PrototypeType { get; private set; }
         public bool Replace { get; private set; }
 
-        public PrototypeAttribute(Type prototypeType)
+        public PrototypeAttribute(Type type)
+            : this(type, false)
         {
-            PrototypeType = prototypeType;
         }
 
         internal PrototypeAttribute(Type type, bool replace)
-            : this(type)
         {
             Replace = replace;
+            PrototypeType = type;
         }
     }
 }

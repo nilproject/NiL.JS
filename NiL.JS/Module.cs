@@ -21,7 +21,7 @@ namespace NiL.JS
 #if !PORTABLE
     [Serializable]
 #endif
-    public sealed class Module
+    public class Module
     {
         private static readonly char[] __pathSplitChars = new[] { '\\', '/' };
         private static readonly StringMap<Module> __modulesCache = new StringMap<Module>();

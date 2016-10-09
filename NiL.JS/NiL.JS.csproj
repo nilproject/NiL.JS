@@ -219,6 +219,8 @@
   <ItemGroup>
     <Compile Include="BaseLibrary\GeneratorFunction.cs" />
     <Compile Include="BaseLibrary\GlobalFunctions.cs" />
+    <Compile Include="BaseLibrary\Set.cs" />
+    <Compile Include="BaseLibrary\Map.cs" />
     <Compile Include="BaseLibrary\Promise.cs" />
     <Compile Include="BaseLibrary\Symbol.cs" />
     <Compile Include="CompilerNotification.cs" />
@@ -244,6 +246,7 @@
     <Compile Include="Core\CompiledNode.cs" />
     <Compile Include="Core\Functions\MethodGroup.cs" />
     <Compile Include="Core\Functions\MethodProxy.cs" />
+    <Compile Include="Core\Functions\SimpleFunction.cs" />
     <Compile Include="Core\ICallable.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />

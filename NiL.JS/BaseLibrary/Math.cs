@@ -168,7 +168,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public static JSValue floor(Arguments args)
         {
-            var arg = args.a0 ?? JSValue.notExists;
+            var arg = args[0];
             if (arg._valueType == JSValueType.Integer)
                 return arg;
             var a = Tools.JSObjectToDouble(arg);

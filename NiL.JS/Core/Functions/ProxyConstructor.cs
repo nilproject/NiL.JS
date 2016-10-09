@@ -13,7 +13,7 @@ namespace NiL.JS.Core.Functions
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    [Prototype(typeof(Function))]
+    [Prototype(typeof(Function), true)]
     internal class ProxyConstructor : Function
     {
         /// <summary>
@@ -34,47 +34,37 @@ namespace NiL.JS.Core.Functions
         internal readonly StaticProxy _staticProxy;
         private MethodProxy[] constructors;
 
-        [Hidden]
         public override string name
         {
-            [Hidden]
             get
             {
                 return _staticProxy._hostedType.Name;
             }
         }
 
-        [Field]
-        [ReadOnly]
-        [DoNotDelete]
-        [DoNotEnumerate]
-        [NotConfigurable]
         public override JSValue prototype
         {
-            [Hidden]
             get
             {
                 return _prototype;
             }
-            [Hidden]
             set
             {
                 _prototype = value;
             }
         }
 
-        [Hidden]
-        public ProxyConstructor(Context context, StaticProxy staticProxy, PrototypeProxy dynamicProxy)
+        public ProxyConstructor(Context context, StaticProxy staticProxy, JSObject prototype)
             : base(context)
         {
             if (staticProxy == null)
                 throw new ArgumentNullException(nameof(staticProxy));
-            if (dynamicProxy == null)
-                throw new ArgumentNullException(nameof(dynamicProxy));
+            if (prototype == null)
+                throw new ArgumentNullException(nameof(prototype));
 
             _fields = staticProxy._fields;
             _staticProxy = staticProxy;
-            _prototype = dynamicProxy;
+            _prototype = prototype;
 
 #if (PORTABLE || NETCORE)
             if (_staticProxy._hostedType.GetTypeInfo().ContainsGenericParameters)
@@ -124,17 +114,20 @@ namespace NiL.JS.Core.Functions
             constructors = ctorsL.ToArray();
         }
 
-        [Hidden]
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
                 var keyString = key.ToString();
+                
                 if (keyString == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
 
+                if (key._valueType != JSValueType.String)
+                    key = keyString;
+
                 JSValue res;
-                if (forWrite || keyString != "toString")
+                if (forWrite || (keyString != "toString" && keyString != "constructor"))
                 {
                     res = _staticProxy.GetProperty(key, forWrite && memberScope == PropertyScope.Own, memberScope);
                     if (res.Exists || (memberScope == PropertyScope.Own && forWrite))
@@ -180,8 +173,11 @@ namespace NiL.JS.Core.Functions
                 if (_staticProxy._hostedType == typeof(NiL.JS.BaseLibrary.Array))
                 {
                     if (arguments == null)
-                        obj = new NiL.JS.BaseLibrary.Array();
+                    {
+                        obj = new BaseLibrary.Array();
+                    }
                     else
+                    {
                         switch (arguments.length)
                         {
                             case 0:
@@ -189,16 +185,17 @@ namespace NiL.JS.Core.Functions
                                 break;
                             case 1:
                                 {
-                                    switch (arguments.a0._valueType)
+                                    var a0 = arguments[0];
+                                    switch (a0._valueType)
                                     {
                                         case JSValueType.Integer:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0._iValue);
+                                            obj = new BaseLibrary.Array(a0._iValue);
                                             break;
                                         case JSValueType.Double:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments.a0._dValue);
+                                            obj = new BaseLibrary.Array(a0._dValue);
                                             break;
                                         default:
-                                            obj = new NiL.JS.BaseLibrary.Array(arguments);
+                                            obj = new BaseLibrary.Array(arguments);
                                             break;
                                     }
                                     break;
@@ -207,6 +204,7 @@ namespace NiL.JS.Core.Functions
                                 obj = new NiL.JS.BaseLibrary.Array(arguments);
                                 break;
                         }
+                    }
                 }
                 else
                 {
@@ -242,8 +240,8 @@ namespace NiL.JS.Core.Functions
                         if (res._valueType < JSValueType.Object)
                         {
                             objc.instance = obj;
-                            if (objc.__prototype == null)
-                                objc.__prototype = res.__proto__;
+                            if (objc._objectPrototype == null)
+                                objc._objectPrototype = res.__proto__;
                             res = objc;
                         }
                         else if (res._oValue is JSValue)
@@ -297,11 +295,10 @@ namespace NiL.JS.Core.Functions
         {
             return new ObjectWrapper(null)
             {
-                __prototype = Context.GlobalContext.GetPrototype(_staticProxy._hostedType)
+                _objectPrototype = Context.GlobalContext.GetPrototype(_staticProxy._hostedType)
             };
         }
 
-        [Hidden]
         private MethodProxy findConstructor(Arguments arguments, ref object[] args)
         {
             args = null;
@@ -354,12 +351,6 @@ namespace NiL.JS.Core.Functions
             return null;
         }
 
-        internal override JSObject GetDefaultPrototype()
-        {
-            return Context.GlobalContext.GetPrototype(typeof(Function));
-        }
-
-        [Hidden]
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
             var e = __proto__.GetEnumerator(hideNonEnumerable, enumerationMode);
@@ -370,7 +361,6 @@ namespace NiL.JS.Core.Functions
                 yield return e.Current;
         }
 
-        [Hidden]
         public override string ToString(bool headerOnly)
         {
             var result = "function " + name + "()";

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace NiL.JS.Core.Interop
 {
+    [Prototype(typeof(JSObject), true)]
     internal sealed class StaticProxy : Proxy
     {
         internal override JSObject prototypeInstance
@@ -26,6 +27,7 @@ namespace NiL.JS.Core.Interop
             }
         }
 
+        [Hidden]
         public StaticProxy(GlobalContext context, Type type)
             : base(context, type)
         {

@@ -9,14 +9,6 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class TypeOf : Expression
     {
-        private static readonly JSValue numberString = "number";
-        private static readonly JSValue undefinedString = "undefined";
-        private static readonly JSValue stringString = "string";
-        private static readonly JSValue symbolString = "symbol";
-        private static readonly JSValue booleanString = "boolean";
-        private static readonly JSValue functionString = "function";
-        private static readonly JSValue objectString = "object";
-
         protected internal override PredictedType ResultType
         {
             get
@@ -45,33 +37,33 @@ namespace NiL.JS.Expressions
                 case JSValueType.Integer:
                 case JSValueType.Double:
                     {
-                        return numberString;
+                        return JSValue.numberString;
                     }
                 case JSValueType.NotExists:
                 case JSValueType.NotExistsInObject:
                 case JSValueType.Undefined:
                     {
-                        return undefinedString;
+                        return JSValue.undefinedString;
                     }
                 case JSValueType.String:
                     {
-                        return stringString;
+                        return JSValue.stringString;
                     }
                 case JSValueType.Symbol:
                     {
-                        return symbolString;
+                        return JSValue.symbolString;
                     }
                 case JSValueType.Boolean:
                     {
-                        return booleanString;
+                        return JSValue.booleanString;
                     }
                 case JSValueType.Function:
                     {
-                        return functionString;
+                        return JSValue.functionString;
                     }
                 default:
                     {
-                        return objectString;
+                        return JSValue.objectString;
                     }
             }
         }
@@ -80,7 +72,7 @@ namespace NiL.JS.Expressions
         {
             base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (first is GetVariable)
-                (first as GetVariable).suspendThrow = true;
+                (first as GetVariable)._SuspendThrow = true;
             return false;
         }
 

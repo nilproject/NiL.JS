@@ -88,6 +88,9 @@
     <Compile Include="..\NiL.JS\BaseLibrary\JSON.cs">
       <Link>BaseLibrary\JSON.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Map.cs">
+      <Link>BaseLibrary\Map.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\Math.cs">
       <Link>BaseLibrary\Math.cs</Link>
     </Compile>
@@ -105,6 +108,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\RegExp.cs">
       <Link>BaseLibrary\RegExp.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\BaseLibrary\Set.cs">
+      <Link>BaseLibrary\Set.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\String.cs">
       <Link>BaseLibrary\String.cs</Link>

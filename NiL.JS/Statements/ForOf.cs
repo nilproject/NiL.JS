@@ -226,6 +226,7 @@ namespace NiL.JS.Statements
             {
                 if (context._executionMode != AbortReason.Resume)
                     variable.Assign(iteratorResult.value);
+
                 _body.Evaluate(context);
 
                 if (context._executionMode != AbortReason.None)

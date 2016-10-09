@@ -218,6 +218,8 @@ namespace NiL.JS.Core
             {
                 if (owner == prototype._owner)
                     _arguments = prototype._arguments;
+
+                _definedVariables = _owner?.Body?._variables;
                 _parent = prototype;
                 _thisBind = prototype._thisBind;
                 _debugging = prototype._debugging;
@@ -723,68 +725,5 @@ namespace NiL.JS.Core
         {
             return "Context of " + _owner.name;
         }
-
-        /*
-        internal Proxy GetPrototype(Type type, bool create)
-        {
-            Proxy prototype = null;
-            lock (prototypeProxies)
-            {
-                if (!prototypeProxies.TryGetValue(type, out prototype))
-                {
-                    if (!create)
-                        return null;
-
-                    JSObject parentPrototype = null;
-                    var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), false).ToArray();
-                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
-                    {
-                        if ((pa[0] as PrototypeAttribute).Replace && (pa[0] as PrototypeAttribute).PrototypeType.IsAssignableFrom(type))
-                            return GetPrototype((pa[0] as PrototypeAttribute).PrototypeType, create);
-
-                        parentPrototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType, true);
-                    }
-
-                    prototype = new PrototypeProxy(type, parentPrototype);
-                    prototypeProxies[type] = prototype;
-
-                }
-            }
-
-            return prototype;
-        }
-
-        internal JSValue GetConstructor(Type type)
-        {
-            JSValue constructor = null;
-            if (!staticProxies.TryGetValue(type, out constructor))
-            {
-                lock (staticProxies)
-                {
-#if (PORTABLE || NETCORE)
-                    if (type.GetTypeInfo().ContainsGenericParameters)
-#else
-                    if (type.ContainsGenericParameters)
-#endif
-                        return staticProxies[type] = GetGenericTypeSelector(new[] { type });
-
-                    JSObject prototype = null;
-                    var pa = type.GetTypeInfo().GetCustomAttributes(typeof(PrototypeAttribute), false).ToArray();
-                    if (pa.Length != 0 && (pa[0] as PrototypeAttribute).PrototypeType != type)
-                    {
-                        if ((pa[0] as PrototypeAttribute).Replace && (pa[0] as PrototypeAttribute).PrototypeType.IsAssignableFrom(type))
-                            return GetConstructor((pa[0] as PrototypeAttribute).PrototypeType);
-
-                        prototype = GetPrototype((pa[0] as PrototypeAttribute).PrototypeType);
-                    }
-
-                    new Proxy(type, prototype); // It's ok. This instance will be registered and saved
-                    constructor = staticProxies[type];
-                }
-            }
-
-            return constructor;
-        }
-        */
     }
 }

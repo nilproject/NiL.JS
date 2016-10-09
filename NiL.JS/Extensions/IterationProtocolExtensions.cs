@@ -70,7 +70,10 @@ namespace NiL.JS.Extensions
 
         public IIteratorResult next(Arguments arguments = null)
         {
-            return new EnumeratorResult(!_enumerator.MoveNext(), _context.ProxyValue(_enumerator.Current));
+            var read = _enumerator.MoveNext();
+            return new EnumeratorResult(
+                !read,
+                _context.ProxyValue(read ? _enumerator.Current : null));
         }
 
         public IIteratorResult @return()
@@ -176,9 +179,11 @@ namespace NiL.JS.Extensions
             var iteratorFunction = source.GetProperty(Symbol.iterator, false, PropertyScope.Сommon);
             if (iteratorFunction._valueType != JSValueType.Function)
                 return null;
+
             var iterator = iteratorFunction.As<Function>().Call(source, null);
             if (iterator == null)
                 return null;
+
             return new IteratorAdapter(iterator);
         }
     }
@@ -188,6 +193,9 @@ namespace NiL.JS.Extensions
         public static IEnumerable<JSValue> AsEnumerable(this IIterable iterableObject)
         {
             var iterator = iterableObject.iterator();
+            if (iterator == null)
+                yield break;
+
             var item = iterator.next();
             while (!item.done)
             {

@@ -19,14 +19,14 @@ namespace NiL.JS.BaseLibrary
     {
         private static readonly SparseArray<JSValue> emptyData = new SparseArray<JSValue>();
         [Hidden]
-        internal SparseArray<JSValue> data;
+        internal SparseArray<JSValue> _data;
 
         [DoNotEnumerate]
         public Array()
         {
             _oValue = this;
             _valueType = JSValueType.Object;
-            data = new SparseArray<JSValue>();
+            _data = new SparseArray<JSValue>();
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
@@ -37,10 +37,10 @@ namespace NiL.JS.BaseLibrary
             _valueType = JSValueType.Object;
             if (length < 0)
                 ExceptionHelper.Throw((new RangeError("Invalid array length.")));
-            data = new SparseArray<JSValue>((int)System.Math.Min(100000, (uint)length));
+            _data = new SparseArray<JSValue>((int)System.Math.Min(100000, (uint)length));
 
             if (length > 0)
-                data[length - 1] = null;
+                _data[length - 1] = null;
 
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -51,7 +51,7 @@ namespace NiL.JS.BaseLibrary
             _valueType = JSValueType.Object;
             if (length < 0 || length > uint.MaxValue)
                 ExceptionHelper.Throw((new RangeError("Invalid array length.")));
-            data = new SparseArray<JSValue>((int)System.Math.Min(100000, length));
+            _data = new SparseArray<JSValue>((int)System.Math.Min(100000, length));
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
@@ -62,10 +62,10 @@ namespace NiL.JS.BaseLibrary
             _valueType = JSValueType.Object;
             if (((long)length != length) || (length < 0) || (length > 0xffffffff))
                 ExceptionHelper.Throw((new RangeError("Invalid array length.")));
-            data = new SparseArray<JSValue>();
+            _data = new SparseArray<JSValue>();
 
             if (length > 0)
-                data[(int)((uint)length - 1)] = null;
+                _data[(int)((uint)length - 1)] = null;
 
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -77,9 +77,9 @@ namespace NiL.JS.BaseLibrary
                 throw new ArgumentNullException("args");
             _oValue = this;
             _valueType = JSValueType.Object;
-            data = new SparseArray<JSValue>();
+            _data = new SparseArray<JSValue>();
             for (var i = 0; i < args.length; i++)
-                data[i] = args[i].CloneImpl(false);
+                _data[i] = args[i].CloneImpl(false);
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
@@ -104,12 +104,12 @@ namespace NiL.JS.BaseLibrary
             _valueType = JSValueType.Object;
             if (source == null)
                 throw new ArgumentNullException("enumerator");
-            data = new SparseArray<JSValue>();
+            _data = new SparseArray<JSValue>();
             var index = 0;
             while (source.MoveNext())
             {
                 var e = source.Current;
-                data[index++] = (e as JSValue ?? Context.CurrentBaseContext.ProxyValue(e)).CloneImpl(false);
+                _data[index++] = (e as JSValue ?? Context.CurrentBaseContext.ProxyValue(e)).CloneImpl(false);
             }
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -117,7 +117,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public void Add(JSValue obj)
         {
-            data.Add(obj);
+            _data.Add(obj);
         }
 
         private LengthField _lengthObj;
@@ -129,14 +129,15 @@ namespace NiL.JS.BaseLibrary
             {
                 if (_lengthObj == null)
                     _lengthObj = new LengthField(this);
-                if (data.Length <= int.MaxValue)
+
+                if (_data.Length <= int.MaxValue)
                 {
-                    _lengthObj._iValue = (int)data.Length;
+                    _lengthObj._iValue = (int)_data.Length;
                     _lengthObj._valueType = JSValueType.Integer;
                 }
                 else
                 {
-                    _lengthObj._dValue = data.Length;
+                    _lengthObj._dValue = _data.Length;
                     _lengthObj._valueType = JSValueType.Double;
                 }
                 return _lengthObj;
@@ -146,14 +147,14 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal bool SetLenght(long nlen)
         {
-            if (data.Length == nlen)
+            if (_data.Length == nlen)
                 return true;
             if (nlen < 0)
                 ExceptionHelper.Throw(new RangeError("Invalid array length"));
-            if (data.Length > nlen)
+            if (_data.Length > nlen)
             {
                 var res = true;
-                foreach (var element in data.ReversOrder)
+                foreach (var element in _data.ReversOrder)
                 {
                     if ((uint)element.Key < nlen)
                         break;
@@ -171,13 +172,13 @@ namespace NiL.JS.BaseLibrary
                     return false;
                 }
             }
-            while (data.Length > nlen)
+            while (_data.Length > nlen)
             {
-                data.RemoveAt((int)(data.Length - 1));
-                data.Trim();
+                _data.RemoveAt((int)(_data.Length - 1));
+                _data.Trim();
             }
-            if (data.Length != nlen)
-                data[(int)nlen - 1] = data[(int)nlen - 1];
+            if (_data.Length != nlen)
+                _data[(int)nlen - 1] = _data[(int)nlen - 1];
             return true;
         }
 
@@ -203,19 +204,174 @@ namespace NiL.JS.BaseLibrary
                 if (varr != null)
                 {
                     varr = Tools.arraylikeToArray(varr, true, false, false, -1);
-                    for (var ai = 0; ai < varr.data.Length; ai++)
+                    for (var ai = 0; ai < varr._data.Length; ai++)
                     {
-                        var item = varr.data[ai];
-                        res.data.Add(item);
+                        var item = varr._data[ai];
+                        res._data.Add(item);
                     }
                 }
                 else
                 {
-                    res.data.Add(v.CloneImpl(false));
+                    res._data.Add(v.CloneImpl(false));
                 }
             }
+
             return res;
         }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(2)]
+        public static JSValue copyWithin(JSValue self, Arguments args)
+        {
+            if (self == null
+             || self.IsNull
+             || self.IsUndefined())
+                ExceptionHelper.ThrowTypeError("this is null or undefined");
+
+            var length = Tools._GetLengthOfArraylike(self, false);
+
+            var target = Tools.JSObjectToInt64(args[0], 0, true);
+            if (target < 0)
+                target += length;
+            if (target < 0)
+                target = 0;
+            if (target > length)
+                target = length;
+
+            var start = Tools.JSObjectToInt64(args[1], 0, true);
+            if (start < 0)
+                start += length;
+            if (start < 0)
+                start = 0;
+            if (start > length)
+                start = length;
+
+            var end = Tools.JSObjectToInt64(args[2], length, true);
+            if (end < 0)
+                end += length;
+            if (end < 0)
+                end = 0;
+            if (end > length)
+                end = length;
+
+            if (start == target
+                || self._valueType < JSValueType.Object)
+                return self.ToObject();
+
+            var direction = System.Math.Sign(start - target);
+            var fromIndex = System.Math.Min(start * direction, target * direction) * direction;
+            var count = System.Math.Min(end - start, length - target);
+            var modifier = (count - 1) * (-(direction - 1) / 2);
+
+            var array = self.Value as Array;
+            if (array != null)
+            {
+                for (long from = start + modifier, to = target + modifier; count != 0; from += direction, to += direction, count--)
+                {
+                    array._data[(int)to] = array._data[(int)from];
+                }
+            }
+            else
+            {
+                var key = new JSValue();
+                for (long from = start + modifier, to = target + modifier; count != 0; from += direction, to += direction, count--)
+                {
+                    if ((int)from == from)
+                    {
+                        key._iValue = (int)from;
+                        key._valueType = JSValueType.Integer;
+                    }
+                    else
+                    {
+                        key._dValue = (int)from;
+                        key._valueType = JSValueType.Double;
+                    }
+
+                    var value = Tools.InvokeGetter(self.GetProperty(key, false, PropertyScope.Own), self);
+
+                    if ((int)to == to)
+                    {
+                        key._iValue = (int)to;
+                        key._valueType = JSValueType.Integer;
+                    }
+                    else
+                    {
+                        key._dValue = to;
+                        key._valueType = JSValueType.Double;
+                    }
+
+                    if (value.Exists)
+                        self.SetProperty(key, value, true);
+                    else
+                        self.DeleteProperty(key);
+                }
+            }
+
+            return self;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsLength(2)]
+        public static JSValue fill(JSValue self, Arguments args)
+        {
+            if (self == null
+             || self.IsNull
+             || self.IsUndefined())
+                ExceptionHelper.ThrowTypeError("this is null or undefined");
+
+            var length = Tools._GetLengthOfArraylike(self, false);
+
+            var value = args[0];
+
+            var start = Tools.JSObjectToInt64(args[1], 0, true);
+            if (start < 0)
+                start += length;
+            if (start < 0)
+                start = 0;
+            if (start > length)
+                start = length;
+
+            var end = Tools.JSObjectToInt64(args[2], length, true);
+            if (end < 0)
+                end += length;
+            if (end < 0)
+                end = 0;
+            if (end > length)
+                end = length;
+
+            var array = self.Value as Array;
+            if (array != null)
+            {
+                for (var i = start; i < end; i++)
+                {
+                    array._data[(int)i] = value;
+                }
+            }
+            else
+            {
+                var key = new JSValue();
+                for (var i = start; i < end; i++)
+                {
+                    if ((int)i == i)
+                    {
+                        key._iValue = (int)i;
+                        key._valueType = JSValueType.Integer;
+                    }
+                    else
+                    {
+                        key._dValue = i;
+                        key._valueType = JSValueType.Double;
+                    }
+
+                    self.SetProperty(key, value, true);
+                }
+            }
+
+            return self;
+        }
+
 
         [DoNotEnumerate]
         [InstanceMember]
@@ -227,7 +383,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = undefined;
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -253,7 +409,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = -1L;
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -279,7 +435,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = true;
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -298,7 +454,7 @@ namespace NiL.JS.BaseLibrary
                 self = self.ToObject();
 
             var result = true;
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -318,7 +474,7 @@ namespace NiL.JS.BaseLibrary
 
             Array result = new Array();
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -341,7 +497,7 @@ namespace NiL.JS.BaseLibrary
 
             Array result = new Array();
 
-            var len = iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            var len = iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -363,7 +519,7 @@ namespace NiL.JS.BaseLibrary
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
-            iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -382,7 +538,7 @@ namespace NiL.JS.BaseLibrary
         {
             var result = -1L;
 
-            iterateImpl(self, null, args[1], (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, args[1], undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 if (Expressions.StrictEqual.Check(args[0], value))
                 {
@@ -403,7 +559,7 @@ namespace NiL.JS.BaseLibrary
         {
             var result = -1L;
 
-            iterateImpl(self, null, args[1], (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, args[1], undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 if (args[0].IsNaN() ?
                         value.IsNaN()
@@ -420,7 +576,7 @@ namespace NiL.JS.BaseLibrary
             return result != -1L;
         }
 
-        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, Func<JSValue, long, JSValue, Function, bool> callback)
+        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, JSValue endIndexSrc, bool processMissing, Func<JSValue, long, JSValue, Function, bool> callback)
         {
             Array arraySrc = self._oValue as Array;
             bool nativeMode = arraySrc != null;
@@ -434,8 +590,9 @@ namespace NiL.JS.BaseLibrary
 #endif
             }
 
-            var length = nativeMode ? arraySrc.data.Length : Tools.getLengthOfArraylike(self, false);
+            var length = nativeMode ? arraySrc._data.Length : Tools._GetLengthOfArraylike(self, false);
             long startIndex = 0;
+            long endIndex = 0;
             Function jsCallback = null;
             JSValue thisBind = null;
 
@@ -450,7 +607,7 @@ namespace NiL.JS.BaseLibrary
             }
             else if (startIndexSrc.Exists)
             {
-                // indexOf
+                // indexOf, slice
                 startIndex = Tools.JSObjectToInt64(startIndexSrc, 0, true);
                 if (startIndex > length)
                     startIndex = length;
@@ -458,6 +615,17 @@ namespace NiL.JS.BaseLibrary
                     startIndex += length;
                 if (startIndex < 0)
                     startIndex = 0;
+
+                endIndex = Tools.JSObjectToInt64(endIndexSrc, long.MaxValue, true);
+                if (endIndex > length)
+                    endIndex = length;
+                if (endIndex < 0)
+                    endIndex += length;
+                if (endIndex < 0)
+                    endIndex = 0;
+
+                if (length > endIndex)
+                    length = endIndex;
             }
 
             if (length > 0)
@@ -496,7 +664,7 @@ namespace NiL.JS.BaseLibrary
                                             tempKey._valueType = JSValueType.Double;
                                         }
                                         var value = source.GetProperty(tempKey, false, PropertyScope.Сommon);
-                                        if (value.Exists)
+                                        if (processMissing || value.Exists)
                                         {
                                             if (!callback(Tools.InvokeGetter(value, self), i, thisBind, jsCallback))
                                                 return length;
@@ -525,9 +693,10 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    long prevKey = startIndex - 1;
-                    var mainEnum = arraySrc.data.DirectOrder.GetEnumerator();
-                    bool moved = true;
+                    var tempKey = new JSValue();
+                    var prevKey = startIndex - 1;
+                    var mainEnum = arraySrc._data.DirectOrder.GetEnumerator();
+                    var moved = true;
                     while (moved)
                     {
                         moved = mainEnum.MoveNext();
@@ -548,7 +717,6 @@ namespace NiL.JS.BaseLibrary
 
                             for (var i = prevKey + 1; i < index; i++)
                             {
-                                var tempKey = new JSValue();
                                 if (i <= int.MaxValue)
                                 {
                                     tempKey._iValue = (int)i;
@@ -559,8 +727,9 @@ namespace NiL.JS.BaseLibrary
                                     tempKey._dValue = i;
                                     tempKey._valueType = JSValueType.Double;
                                 }
+
                                 value = self.GetProperty(tempKey, false, PropertyScope.Сommon);
-                                if (value.Exists)
+                                if (processMissing || value.Exists)
                                 {
                                     if (!callback(Tools.InvokeGetter(value, self), i, thisBind, jsCallback))
                                         return length;
@@ -606,7 +775,7 @@ namespace NiL.JS.BaseLibrary
 #endif
             }
 
-            var length = nativeMode ? arraySrc.data.Length : Tools.getLengthOfArraylike(self, false);
+            var length = nativeMode ? arraySrc._data.Length : Tools._GetLengthOfArraylike(self, false);
             long startIndex = length - 1;
             Function jsCallback = null;
             JSValue thisBind = null;
@@ -659,7 +828,7 @@ namespace NiL.JS.BaseLibrary
             else
             {
                 long prevKey = startIndex + 1;
-                var mainEnum = arraySrc.data.ReversOrder.GetEnumerator();
+                var mainEnum = arraySrc._data.ReversOrder.GetEnumerator();
                 bool moved = true;
                 while (moved)
                 {
@@ -748,12 +917,12 @@ namespace NiL.JS.BaseLibrary
             if (self._valueType >= JSValueType.Object && self._oValue.GetType() == typeof(Array))
             {
                 var selfa = self as Array;
-                if (selfa.data.Length == 0)
+                if (selfa._data.Length == 0)
                     return "";
-                var _data = selfa.data;
+                var _data = selfa._data;
                 try
                 {
-                    selfa.data = emptyData;
+                    selfa._data = emptyData;
                     System.Text.StringBuilder sb = new System.Text.StringBuilder();
                     JSValue t;
                     JSValue temp = 0;
@@ -780,7 +949,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 finally
                 {
-                    selfa.data = _data;
+                    selfa._data = _data;
                 }
             }
             else
@@ -819,19 +988,19 @@ namespace NiL.JS.BaseLibrary
             var selfa = self as Array;
             if (selfa != null)
             {
-                if (selfa.data.Length == 0)
+                if (selfa._data.Length == 0)
                     return notExists;
-                int newLen = (int)(selfa.data.Length - 1);
-                var res = selfa.data[newLen] ?? self[newLen.ToString()];
+                int newLen = (int)(selfa._data.Length - 1);
+                var res = selfa._data[newLen] ?? self[newLen.ToString()];
                 if (res._valueType == JSValueType.Property)
                     res = ((res._oValue as GsPropertyPair).get ?? Function.Empty).Call(self, null);
-                selfa.data.RemoveAt(newLen);
-                selfa.data[newLen - 1] = selfa.data[newLen - 1];
+                selfa._data.RemoveAt(newLen);
+                selfa._data[newLen - 1] = selfa._data[newLen - 1];
                 return res;
             }
             else
             {
-                var length = Tools.getLengthOfArraylike(self, true);
+                var length = Tools._GetLengthOfArraylike(self, true);
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
                 length--;
@@ -862,20 +1031,20 @@ namespace NiL.JS.BaseLibrary
             {
                 for (var i = 0; i < args.length; i++)
                 {
-                    if (selfa.data.Length == uint.MaxValue)
+                    if (selfa._data.Length == uint.MaxValue)
                     {
                         if (selfa._fields == null)
                             selfa._fields = getFieldsContainer();
-                        selfa._fields[uint.MaxValue.ToString()] = args.a0.CloneImpl(false);
+                        selfa._fields[uint.MaxValue.ToString()] = args[0].CloneImpl(false);
                         ExceptionHelper.Throw(new RangeError("Invalid length of array"));
                     }
-                    selfa.data.Add(args[i].CloneImpl(false));
+                    selfa._data.Add(args[i].CloneImpl(false));
                 }
                 return selfa.length;
             }
             else
             {
-                var length = (long)Tools.getLengthOfArraylike(self, false);
+                var length = (long)Tools._GetLengthOfArraylike(self, false);
                 var i = length;
                 length += args.length;
                 self["length"] = length;
@@ -894,13 +1063,13 @@ namespace NiL.JS.BaseLibrary
             var selfa = self as Array;
             if (selfa != null)
             {
-                for (var i = selfa.data.Length >> 1; i-- > 0;)
+                for (var i = selfa._data.Length >> 1; i-- > 0;)
                 {
-                    var item0 = selfa.data[(int)(selfa.data.Length - 1 - i)];
-                    var item1 = selfa.data[(int)(i)];
+                    var item0 = selfa._data[(int)(selfa._data.Length - 1 - i)];
+                    var item1 = selfa._data[(int)(i)];
                     JSValue value0, value1;
                     if (item0 == null || !item0.Exists)
-                        item0 = selfa.__proto__[(selfa.data.Length - 1 - i).ToString()];
+                        item0 = selfa.__proto__[(selfa._data.Length - 1 - i).ToString()];
                     if (item0._valueType == JSValueType.Property)
                         value0 = ((item0._oValue as GsPropertyPair).get ?? Function.Empty).Call(self, null).CloneImpl(false);
                     else
@@ -916,32 +1085,32 @@ namespace NiL.JS.BaseLibrary
                         if (args == null)
                             args = new Arguments();
                         args.length = 1;
-                        args.a0 = item1;
+                        args[0] = item1;
                         ((item0._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, args);
                     }
                     else if (value1.Exists)
-                        selfa.data[(int)(selfa.data.Length - 1 - i)] = value1;
+                        selfa._data[(int)(selfa._data.Length - 1 - i)] = value1;
                     else
-                        selfa.data[(int)(selfa.data.Length - 1 - i)] = null;
+                        selfa._data[(int)(selfa._data.Length - 1 - i)] = null;
 
                     if (item1._valueType == JSValueType.Property)
                     {
                         if (args == null)
                             args = new Arguments();
                         args.length = 1;
-                        args.a0 = item0;
+                        args[0] = item0;
                         ((item1._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, args);
                     }
                     else if (value0.Exists)
-                        selfa.data[(int)i] = value0;
+                        selfa._data[(int)i] = value0;
                     else
-                        selfa.data[(int)i] = null;
+                        selfa._data[(int)i] = null;
                 }
                 return self;
             }
             else
             {
-                var length = Tools.getLengthOfArraylike(self, false);
+                var length = Tools._GetLengthOfArraylike(self, false);
                 for (var i = 0; i < length >> 1; i++)
                 {
                     JSValue i0 = i.ToString();
@@ -964,7 +1133,7 @@ namespace NiL.JS.BaseLibrary
                         if (args == null)
                             args = new Arguments();
                         args.length = 1;
-                        args.a0 = value1;
+                        args[0] = value1;
                         ((item0._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, args);
                     }
                     else if (value1.Exists)
@@ -983,7 +1152,7 @@ namespace NiL.JS.BaseLibrary
                         if (args == null)
                             args = new Arguments();
                         args.length = 1;
-                        args.a0 = value0;
+                        args[0] = value0;
                         ((item1._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, args);
                     }
                     else if (value0.Exists)
@@ -1021,7 +1190,7 @@ namespace NiL.JS.BaseLibrary
                 args.length = 1;
             }
 
-            var len = (skip ? 0 : 1) + iterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
+            var len = (skip ? 0 : 1) + iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -1100,20 +1269,22 @@ namespace NiL.JS.BaseLibrary
             var src = self._oValue as Array;
             if (src != null)
             {
-                var res = src.data[0];
+                var res = src._data[0];
                 if (res == null || !res.Exists)
                     res = src.__proto__["0"];
                 if (res._valueType == JSValueType.Property)
                     res = Tools.InvokeGetter(res, self);
 
                 JSValue prw = res;
-                var length = src.data.Length;
+                var length = src._data.Length;
                 long prewIndex = 0;
-                for (var e = src.data.DirectOrder.GetEnumerator(); ;)
+                for (var e = src._data.DirectOrder.GetEnumerator(); ;)
                 {
                     KeyValuePair<int, JSValue> element;
                     if (e.MoveNext())
+                    {
                         element = e.Current;
+                    }
                     else
                     {
                         if (length == 0)
@@ -1124,10 +1295,11 @@ namespace NiL.JS.BaseLibrary
                     if (element.Key == 0)
                         continue;
 
-                    JSValue value = null;
-                    int key = 0;
                     if ((uint)element.Key < length - 1 && (element.Value == null || !element.Value.Exists))
                         continue;
+
+                    JSValue value = null;
+                    int key = 0;
                     for (; prewIndex < length && prewIndex <= (uint)element.Key; prewIndex++)
                     {
                         if (prewIndex == (uint)element.Key && element.Value != null && element.Value.Exists)
@@ -1139,40 +1311,40 @@ namespace NiL.JS.BaseLibrary
                         {
                             key = (int)prewIndex;
                             value = src.__proto__[prewIndex.ToString()];
-                            //if (value == null || !value.IsExists)
-                            //    continue;
                         }
                         if (value != null && value._valueType == JSValueType.Property)
                             value = Tools.InvokeGetter(value, self);
 
                         if (prw != null && prw._valueType == JSValueType.Property)
                         {
-                            ((prw._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments() { a0 = value, length = 1 });
+                            ((prw._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments { value });
                         }
                         else
                         {
                             if (value != null)
                             {
                                 if (value.Exists)
-                                    src.data[key - 1] = value;
+                                    src._data[key - 1] = value;
                                 if (value._valueType != JSValueType.Property)
-                                    src.data[key] = null;
+                                    src._data[key] = null;
                             }
                         }
                         prw = value;
                     }
+
                     if (prewIndex >= length || prewIndex < 0)
                         break;
                 }
+
                 if (length == 1)
-                    src.data.Clear();
+                {
+                    src._data.Clear();
+                }
                 else if (length > 0)
                 {
-                    src.data.RemoveAt((int)length - 1);
-                    //selfa.data.Trim();
-                    //if (len - 1 > selfa.data.Length)
-                    //    selfa.data[(int)len - 2] = selfa.data[(int)len - 2];
+                    src._data.RemoveAt((int)length - 1);
                 }
+
                 return res;
             }
             else
@@ -1239,7 +1411,7 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 tjo._valueType = JSValueType.Integer;
-                foreach (var item in protoSource.data.DirectOrder)
+                foreach (var item in protoSource._data.DirectOrder)
                 {
                     if ((uint)item.Key > int.MaxValue)
                     {
@@ -1270,102 +1442,26 @@ namespace NiL.JS.BaseLibrary
                 throw new ArgumentNullException("args");
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
                 ExceptionHelper.Throw(new TypeError("Can not call Array.prototype.slice for null or undefined"));
-            HashSet<string> processedKeys = new HashSet<string>();
-            Array res = new Array();
-            for (;;)
+
+            var result = new Array();
+            var index = 0L;
+            iterateImpl(self, null, args[0], args[1], true, (value, itemIndex, thisBind, jsCallback) =>
             {
-                var selfa = self as Array;
-                if (selfa != null)
+                if (value.Exists)
                 {
-                    var startIndex = Tools.JSObjectToInt64(args[0], 0, true);
-                    if (startIndex < 0)
-                        startIndex += selfa.data.Length;
-                    if (startIndex < 0)
-                        startIndex = 0;
-                    var endIndex = Tools.JSObjectToInt64(args[1], selfa.data.Length, true);
-                    if (endIndex < 0)
-                        endIndex += selfa.data.Length;
-                    var len = selfa.data.Length;
-                    foreach (var element in selfa.data.DirectOrder)
-                    {
-                        if (element.Key >= len) // ýýý...
-                            break;
-                        var value = element.Value;
-                        if (value == null || !value.Exists)
-                            continue;
-                        if (value._valueType == JSValueType.Property)
-                            value = Tools.InvokeGetter(value, self);
+                    value = value.CloneImpl(false);
 
-                        if (processedKeys != null)
-                        {
-                            var sk = element.Key.ToString();
-                            if (processedKeys.Contains(sk))
-                                continue;
-                            processedKeys.Add(sk);
-                        }
-                        if (element.Key >= startIndex && element.Key < endIndex)
-                            res.data[element.Key - (int)startIndex] = element.Value.CloneImpl(false);
-                    }
+                    if (index < uint.MaxValue - 1)
+                        result._data[(int)index] = value;
+                    else
+                        result[index.ToString()] = value;
                 }
-                else
-                {
-                    var lenObj = self["length"]; // проверка на null/undefined с бросанием исключения
-                    if (!lenObj.Defined)
-                        return res;
-                    if (lenObj._valueType == JSValueType.Property)
-                        lenObj = Tools.InvokeGetter(lenObj, self);
 
-                    if (lenObj._valueType >= JSValueType.Object)
-                        lenObj = lenObj.ToPrimitiveValue_Value_String();
-                    if (!lenObj.Defined)
-                        return new Array();
-                    long _length = (uint)Tools.JSObjectToInt64(lenObj);
-                    var startIndex = Tools.JSObjectToInt64(args[0], 0, true);
-                    if (startIndex < 0)
-                        startIndex += _length;
-                    if (startIndex < 0)
-                        startIndex = 0;
-                    var endIndex = Tools.JSObjectToInt64(args[1], _length, true);
-                    if (endIndex < 0)
-                        endIndex += _length;
-                    var @enum = self.GetEnumerator(false, EnumerationMode.RequireValues);
-                    while (@enum.MoveNext())
-                    {
-                        var i = @enum.Current.Key;
-                        var pindex = 0;
-                        var dindex = 0.0;
-                        long lindex = 0;
-                        if (Tools.ParseNumber(i, ref pindex, out dindex)
-                            && (pindex == i.Length)
-                            && dindex < _length
-                            && (lindex = (long)dindex) == dindex)
-                        {
-                            var temp = @enum.Current.Value;
-                            if (temp._valueType == JSValueType.Property)
-                                temp = Tools.InvokeGetter(temp, self);
+                index++;
+                return true;
+            });
 
-                            if (!temp.Exists)
-                                continue;
-                            if (processedKeys != null)
-                            {
-                                var sk = lindex.ToString();
-                                if (processedKeys.Contains(sk))
-                                    continue;
-                                processedKeys.Add(sk);
-                            }
-                            if (lindex >= startIndex && lindex < endIndex)
-                                res.data[(int)lindex - (int)startIndex] = temp.CloneImpl(false);
-                        }
-                    }
-                }
-                var crnt = self;
-                if (self.__proto__ == @null)
-                    break;
-                self = self.__proto__;
-                if (self == null || (self._valueType >= JSValueType.String && self._oValue == null))
-                    break;
-            }
-            return res;
+            return result;
         }
 
         [DoNotEnumerate]
@@ -1385,7 +1481,7 @@ namespace NiL.JS.BaseLibrary
             var selfa = self as Array;
             if (selfa != null)
             {
-                var _length = selfa.data.Length;
+                var _length = selfa._data.Length;
                 long pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length); // double потому, что нужно "с заполнением", а не "с переполнением"
                 long pos1 = 0;
                 if (args.Length > 1)
@@ -1410,7 +1506,7 @@ namespace NiL.JS.BaseLibrary
                 pos1 = (uint)System.Math.Min(pos1, _length);
                 var res = needResult ? new Array((int)(pos1 - pos0)) : null;
                 var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
-                foreach (var node in (delta > 0 ? selfa.data.ReversOrder : selfa.data.DirectOrder))
+                foreach (var node in (delta > 0 ? selfa._data.ReversOrder : selfa._data.DirectOrder))
                 {
                     if (node.Key < pos0)
                         continue;
@@ -1431,40 +1527,49 @@ namespace NiL.JS.BaseLibrary
                     if (key < pos1)
                     {
                         if (needResult)
-                            res.data[(int)(key - pos0)] = value;
+                            res._data[(int)(key - pos0)] = value;
                     }
                     else
                     {
-                        var t = selfa.data[(int)(key + delta)];
+                        var t = selfa._data[(int)(key + delta)];
                         if (t != null && t._valueType == JSValueType.Property)
-                            ((t._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments() { a0 = value, length = 1 });
+                        {
+                            ((t._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments { value });
+                        }
                         else
-                            selfa.data[(int)(key + delta)] = value;
-                        selfa.data[(int)(key)] = null;
+                        {
+                            selfa._data[(int)(key + delta)] = value;
+                        }
+
+                        selfa._data[key] = null;
                     }
                 }
                 if (delta < 0)
                 {
                     do
-                        selfa.data.RemoveAt((int)(selfa.data.Length - 1));
+                        selfa._data.RemoveAt((int)(selfa._data.Length - 1));
                     while (++delta < 0);
                 }
                 for (var i = 2; i < args.length; i++)
                 {
                     if (args[i].Exists)
                     {
-                        var t = selfa.data[(int)(pos0 + i - 2)];
+                        var t = selfa._data[(int)(pos0 + i - 2)];
                         if (t != null && t._valueType == JSValueType.Property)
-                            ((t._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments() { a0 = args[i], length = 1 });
+                        {
+                            ((t._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments { args[i] });
+                        }
                         else
-                            selfa.data[(int)(pos0 + i - 2)] = args[i].CloneImpl(false);
+                        {
+                            selfa._data[(int)(pos0 + i - 2)] = args[i].CloneImpl(false);
+                        }
                     }
                 }
                 return res;
             }
             else // êòî-òî îòïðàâèë îáúåêò ñ ïîëåì length
             {
-                long _length = Tools.getLengthOfArraylike(self, false);
+                long _length = Tools._GetLengthOfArraylike(self, false);
                 var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
                 long pos1 = 0;
                 if (args.Length > 1)
@@ -1482,15 +1587,22 @@ namespace NiL.JS.BaseLibrary
                     pos0 = 0;
                 if (pos1 < 0)
                     pos1 = 0;
+
                 if (pos1 == 0 && args.length <= 2)
                 {
                     var lenobj = self.GetProperty("length", true, PropertyScope.Сommon);
                     if (lenobj._valueType == JSValueType.Property)
-                        ((lenobj._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments() { a0 = _length, length = 1 });
+                    {
+                        ((lenobj._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments { _length });
+                    }
                     else
+                    {
                         lenobj.Assign(_length);
+                    }
+
                     return new Array();
                 }
+
                 pos0 = (uint)System.Math.Min(pos0, _length);
                 pos1 += pos0;
                 pos1 = (uint)System.Math.Min(pos1, _length);
@@ -1511,7 +1623,7 @@ namespace NiL.JS.BaseLibrary
                             else
                                 value = value.CloneImpl(false);
                             if (needResult)
-                                res.data[(int)i] = value.CloneImpl(false);
+                                res._data[(int)i] = value.CloneImpl(false);
                         }
                     }
                     if (keyS.Key >= pos1)
@@ -1524,7 +1636,7 @@ namespace NiL.JS.BaseLibrary
                         else
                             value = value.CloneImpl(false);
                         if (needResult)
-                            res.data[(int)(keyS.Key - pos0)] = value;
+                            res._data[(int)(keyS.Key - pos0)] = value;
                     }
                     prewKey = keyS.Key;
                 }
@@ -1564,9 +1676,13 @@ namespace NiL.JS.BaseLibrary
                             src = Tools.InvokeGetter(src, self);
 
                         if (dst._valueType == JSValueType.Property)
-                            ((dst._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments() { a0 = src, length = 1 });
+                        {
+                            ((dst._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments { src });
+                        }
                         else
+                        {
                             dst.Assign(src);
+                        }
                     }
                 }
                 else if (delta < 0)
@@ -1623,9 +1739,14 @@ namespace NiL.JS.BaseLibrary
                             src = Tools.InvokeGetter(src, self);
 
                         if (dst._valueType == JSValueType.Property)
-                            ((dst._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments() { a0 = src, length = 1 });
+                        {
+                            ((dst._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments { src });
+                        }
                         else
+                        {
                             dst.Assign(src);
+                        }
+
                         if (i >= _length + delta)
                         {
                             if ((srcItem._attributes & JSValueAttributesInternal.DoNotDelete) == 0)
@@ -1650,17 +1771,26 @@ namespace NiL.JS.BaseLibrary
                     }
                     var dst = self.GetProperty(tjo, true, PropertyScope.Сommon);
                     if (dst._valueType == JSValueType.Property)
-                        ((dst._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments() { a0 = args[i], length = 1 });
+                    {
+                        ((dst._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments { args[i] });
+                    }
                     else
+                    {
                         dst.Assign(args[i]);
+                    }
                 }
 
                 _length += delta;
                 var lenObj = self.GetProperty("length", true, PropertyScope.Сommon);
                 if (lenObj._valueType == JSValueType.Property)
-                    ((lenObj._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments() { a0 = _length, length = 1 });
+                {
+                    ((lenObj._oValue as GsPropertyPair).set ?? Function.Empty).Call(self, new Arguments { _length });
+                }
                 else
+                {
                     lenObj.Assign(_length);
+                }
+
                 return res;
             }
         }
@@ -1685,8 +1815,8 @@ namespace NiL.JS.BaseLibrary
                     args[1] = second;
 
                     var tt = new BinaryTree<JSValue, List<JSValue>>(new JSComparer(args, first, second, comparer));
-                    uint length = selfa.data.Length;
-                    foreach (var item in selfa.data.DirectOrder)
+                    uint length = selfa._data.Length;
+                    foreach (var item in selfa._data.DirectOrder)
                     {
                         if (item.Value == null || !item.Value.Defined)
                             continue;
@@ -1698,19 +1828,19 @@ namespace NiL.JS.BaseLibrary
                             tt[v] = list = new List<JSValue>();
                         list.Add(item.Value);
                     }
-                    selfa.data.Clear();
+                    selfa._data.Clear();
                     foreach (var node in tt.Nodes)
                     {
                         for (var i = 0; i < node.value.Count; i++)
-                            selfa.data.Add(node.value[i]);
+                            selfa._data.Add(node.value[i]);
                     }
-                    selfa.data[(int)length - 1] = selfa.data[(int)length - 1];
+                    selfa._data[(int)length - 1] = selfa._data[(int)length - 1];
                 }
                 else
                 {
                     var tt = new BinaryTree<string, List<JSValue>>(StringComparer.Ordinal);
-                    uint length = selfa.data.Length;
-                    foreach (var item in selfa.data.DirectOrder)
+                    uint length = selfa._data.Length;
+                    foreach (var item in selfa._data.DirectOrder)
                     {
                         if (item.Value == null || !item.Value.Exists)
                             continue;
@@ -1723,18 +1853,18 @@ namespace NiL.JS.BaseLibrary
                             tt[key] = list = new List<JSValue>();
                         list.Add(item.Value);
                     }
-                    selfa.data.Clear();
+                    selfa._data.Clear();
                     foreach (var node in tt.Nodes)
                     {
                         for (var i = 0; i < node.value.Count; i++)
-                            selfa.data.Add(node.value[i]);
+                            selfa._data.Add(node.value[i]);
                     }
-                    selfa.data[(int)length - 1] = selfa.data[(int)length - 1];
+                    selfa._data[(int)length - 1] = selfa._data[(int)length - 1];
                 }
             }
             else
             {
-                var len = Tools.getLengthOfArraylike(self, false);
+                var len = Tools._GetLengthOfArraylike(self, false);
                 if (comparer != null)
                 {
                     var second = new JSValue();
@@ -1826,10 +1956,10 @@ namespace NiL.JS.BaseLibrary
             for (var i = args.length; i-- > 0;)
                 args[i + 2] = args[i];
             args.length += 2;
-            args.a0 = 0;
-            args.a1 = args.a0;
+            args[0] = 0;
+            args[1] = args[0];
             spliceImpl(self, args, false);
-            return Tools.getLengthOfArraylike(self, false);
+            return Tools._GetLengthOfArraylike(self, false);
         }
 
         [Hidden]
@@ -1855,7 +1985,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
-            foreach (var item in data.DirectOrder)
+            foreach (var item in _data.DirectOrder)
             {
                 if (item.Value != null
                     && item.Value.Exists
@@ -1863,7 +1993,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     var value = item.Value;
                     if (enumeratorMode == EnumerationMode.RequireValuesForWrite && (value._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
-                        data[item.Key] = value = value.CloneImpl(true);
+                        _data[item.Key] = value = value.CloneImpl(true);
 
                     yield return new KeyValuePair<string, JSValue>(((uint)item.Key).ToString(), value);
                 }
@@ -1895,7 +2025,7 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 notExists._valueType = JSValueType.NotExistsInObject;
-                var res = data[(int)index] ?? notExists;
+                var res = _data[(int)index] ?? notExists;
                 if (res._valueType < JSValueType.Undefined)
                     return __proto__.GetProperty(index, false, PropertyScope.Сommon);
                 return res;
@@ -1903,19 +2033,19 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             set
             {
-                if (index >= data.Length
+                if (index >= _data.Length
                     && _lengthObj != null
                     && (_lengthObj._attributes & JSValueAttributesInternal.ReadOnly) != 0)
                     return; // fixed size array. Item could not be added
 
-                var res = data[index];
+                var res = _data[index];
                 if (res == null)
                 {
                     res = new JSValue() { _valueType = JSValueType.NotExistsInObject };
-                    data[index] = res;
+                    _data[index] = res;
                 }
                 else if ((res._attributes & JSValueAttributesInternal.SystemObject) != 0)
-                    data[index] = res = res.CloneImpl(false);
+                    _data[index] = res = res.CloneImpl(false);
                 if (res._valueType == JSValueType.Property)
                 {
                     var setter = (res._oValue as GsPropertyPair).set;
@@ -1932,12 +2062,18 @@ namespace NiL.JS.BaseLibrary
         {
             if (key._valueType != JSValueType.Symbol && memberScope < PropertyScope.Super)
             {
-                if (key._valueType == JSValueType.String && string.CompareOrdinal("length", (string)key._oValue.ToString()) == 0)
-                    return this.length;
+                if (key._valueType == JSValueType.String && string.CompareOrdinal("length", key._oValue.ToString()) == 0)
+                    return length;
+
                 bool isIndex = false;
                 int index = 0;
                 if (key._valueType >= JSValueType.Object)
+                {
                     key = key.ToPrimitiveValue_String_Value();
+                    var keyValue = key.Value;
+                    if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
+                        return length;
+                }
 
                 switch (key._valueType)
                 {
@@ -1979,26 +2115,26 @@ namespace NiL.JS.BaseLibrary
                     forWrite &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
                     if (forWrite)
                     {
-                        if (_lengthObj != null && (_lengthObj._attributes & JSValueAttributesInternal.ReadOnly) != 0 && index >= data.Length)
+                        if (_lengthObj != null && (_lengthObj._attributes & JSValueAttributesInternal.ReadOnly) != 0 && index >= _data.Length)
                         {
                             if (memberScope == PropertyScope.Own)
                                 ExceptionHelper.Throw(new TypeError("Can not add item to fixed size array"));
                             return notExists;
                         }
-                        var res = data[index];
+                        var res = _data[index];
                         if (res == null)
                         {
                             res = new JSValue() { _valueType = JSValueType.NotExistsInObject };
-                            data[index] = res;
+                            _data[index] = res;
                         }
                         else if ((res._attributes & JSValueAttributesInternal.SystemObject) != 0)
-                            data[index] = res = res.CloneImpl(false);
+                            _data[index] = res = res.CloneImpl(false);
                         return res;
                     }
                     else
                     {
                         notExists._valueType = JSValueType.NotExistsInObject;
-                        var res = data[index] ?? notExists;
+                        var res = _data[index] ?? notExists;
                         if (res._valueType < JSValueType.Undefined && memberScope != PropertyScope.Own)
                             return __proto__.GetProperty(key, false, memberScope);
                         return res;
@@ -2112,14 +2248,14 @@ namespace NiL.JS.BaseLibrary
             {
                 _attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.Reassign;
                 array = owner;
-                if ((int)array.data.Length == array.data.Length)
+                if ((int)array._data.Length == array._data.Length)
                 {
-                    this._iValue = (int)array.data.Length;
+                    this._iValue = (int)array._data.Length;
                     this._valueType = JSValueType.Integer;
                 }
                 else
                 {
-                    this._dValue = array.data.Length;
+                    this._dValue = array._data.Length;
                     this._valueType = JSValueType.Double;
                 }
             }
@@ -2133,14 +2269,14 @@ namespace NiL.JS.BaseLibrary
                 if ((_attributes & JSValueAttributesInternal.ReadOnly) != 0)
                     return;
                 array.SetLenght(nlen);
-                if ((int)array.data.Length == array.data.Length)
+                if ((int)array._data.Length == array._data.Length)
                 {
-                    this._iValue = (int)array.data.Length;
+                    this._iValue = (int)array._data.Length;
                     this._valueType = JSValueType.Integer;
                 }
                 else
                 {
-                    this._dValue = array.data.Length;
+                    this._dValue = array._data.Length;
                     this._valueType = JSValueType.Double;
                 }
             }
@@ -2148,7 +2284,7 @@ namespace NiL.JS.BaseLibrary
 
         public IIterator iterator()
         {
-            return data.GetEnumerator().AsIterator();
+            return _data.GetEnumerator().AsIterator();
         }
 
         [DoNotEnumerate]
@@ -2171,7 +2307,7 @@ namespace NiL.JS.BaseLibrary
 
         private static IEnumerable getGenericEntriesEnumerator(JSValue self)
         {
-            var length = Tools.getLengthOfArraylike(self, false);
+            var length = Tools._GetLengthOfArraylike(self, false);
             for (var i = 0U; i < length; i++)
             {
                 JSValue value;
@@ -2186,7 +2322,7 @@ namespace NiL.JS.BaseLibrary
         private IEnumerable<Array> getEntriesEnumerator()
         {
             var prev = -1;
-            foreach (var item in data.DirectOrder)
+            foreach (var item in _data.DirectOrder)
             {
                 if (item.Key - prev > 1)
                 {

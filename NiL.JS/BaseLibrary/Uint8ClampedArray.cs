@@ -33,7 +33,7 @@ namespace NiL.JS.BaseLibrary
 
         public override int BYTES_PER_ELEMENT
         {
-            get { return 1; }
+            get { return sizeof(byte); }
         }
 
         public Uint8ClampedArray()
