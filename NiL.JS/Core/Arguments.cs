@@ -132,7 +132,7 @@ namespace NiL.JS.Core
             {
                 caller = context._strict
                     && context._owner != null
-                    && context._owner._creator.body._strict ? Function.propertiesDummySM : context._owner;
+                    && context._owner._functionDefinition._body._strict ? Function.propertiesDummySM : context._owner;
 
                 _objectPrototype = context.GlobalContext._GlobalPrototype;
             }

@@ -1827,11 +1827,13 @@ namespace NiL.JS.Core
             var a = source.Evaluate(context);
             if (a == null)
                 return JSValue.undefined;
+
             if (a._valueType != JSValueType.SpreadOperatorResult)
             {
                 a = a.CloneImpl(false);
                 a._attributes |= JSValueAttributesInternal.Cloned;
             }
+
             return a;
         }
 

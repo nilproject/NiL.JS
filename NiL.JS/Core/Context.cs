@@ -218,6 +218,8 @@ namespace NiL.JS.Core
             {
                 if (owner == prototype._owner)
                     _arguments = prototype._arguments;
+
+                _definedVariables = _owner?.Body?._variables;
                 _parent = prototype;
                 _thisBind = prototype._thisBind;
                 _debugging = prototype._debugging;

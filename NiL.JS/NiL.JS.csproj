@@ -246,6 +246,7 @@
     <Compile Include="Core\CompiledNode.cs" />
     <Compile Include="Core\Functions\MethodGroup.cs" />
     <Compile Include="Core\Functions\MethodProxy.cs" />
+    <Compile Include="Core\Functions\SimpleFunction.cs" />
     <Compile Include="Core\ICallable.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />

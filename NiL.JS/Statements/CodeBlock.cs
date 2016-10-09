@@ -408,7 +408,7 @@ namespace NiL.JS.Statements
                 res.Add(node);
             }
             if (_variables != null)
-                res.AddRange(from v in _variables where v.initializer != null && (!(v.initializer is FunctionDefinition) || (v.initializer as FunctionDefinition).body != this) select v.initializer);
+                res.AddRange(from v in _variables where v.initializer != null && (!(v.initializer is FunctionDefinition) || (v.initializer as FunctionDefinition)._body != this) select v.initializer);
             return res.ToArray();
         }
 
@@ -673,7 +673,7 @@ namespace NiL.JS.Statements
 
         internal void initVariables(Context context)
         {
-            var stats = context._owner?._creator?._functionInfo;
+            var stats = context._owner?._functionDefinition?._functionInfo;
             var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.ContainsYield;
             for (var i = 0; i < _variables.Length; i++)
             {

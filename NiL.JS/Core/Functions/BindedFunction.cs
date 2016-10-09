@@ -57,7 +57,7 @@ namespace NiL.JS.Core.Functions
         }
 
         public BindedFunction(Function proto, Arguments args)
-            : base(proto.Context, proto._creator)
+            : base(proto.Context, proto._functionDefinition)
         {
             if (_length == null)
                 _length = new Number(0);

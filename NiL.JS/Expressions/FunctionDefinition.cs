@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
+using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Statements;
 
@@ -76,13 +77,13 @@ namespace NiL.JS.Expressions
 
         internal readonly FunctionInfo _functionInfo;
         internal ParameterDescriptor[] parameters;
-        internal CodeBlock body;
+        internal CodeBlock _body;
         internal FunctionKind kind;
 #if DEBUG
         internal bool trace;
 #endif
 
-        public CodeBlock Body { get { return body; } }
+        public CodeBlock Body { get { return _body; } }
         public ReadOnlyCollection<ParameterDescriptor> Parameters { get { return new ReadOnlyCollection<ParameterDescriptor>(parameters); } }
 
         protected internal override bool NeedDecompose
@@ -134,12 +135,12 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return body?.Strict ?? false;
+                return _body?.Strict ?? false;
             }
             internal set
             {
-                if (body != null)
-                    body._strict = value;
+                if (_body != null)
+                    _body._strict = value;
             }
         }
 
@@ -153,7 +154,7 @@ namespace NiL.JS.Expressions
             : this("anonymous")
         {
             parameters = new ParameterDescriptor[0];
-            body = new CodeBlock(new CodeNode[0])
+            _body = new CodeBlock(new CodeNode[0])
             {
                 _strict = true,
                 _variables = new VariableDescriptor[0]
@@ -417,7 +418,7 @@ namespace NiL.JS.Expressions
             var func = new FunctionDefinition(name)
             {
                 parameters = parameters.ToArray(),
-                body = body,
+                _body = body,
                 kind = kind,
                 Position = index,
                 Length = i - index,
@@ -548,7 +549,7 @@ namespace NiL.JS.Expressions
             var res = new CodeNode[1 + parameters.Length + (Reference != null ? 1 : 0)];
             for (var i = 0; i < parameters.Length; i++)
                 res[i] = parameters[i].references[0];
-            res[parameters.Length] = body;
+            res[parameters.Length] = _body;
             if (Reference != null)
                 res[res.Length - 1] = Reference;
             return res;
@@ -574,12 +575,38 @@ namespace NiL.JS.Expressions
             if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
                 return new GeneratorFunction(context, this);
 
+            if (_body != null)
+            {
+                if (_body._lines.Length == 0)
+                {
+                    return new SimpleFunction(context, this);
+                }
+
+                if (_body._lines.Length == 1)
+                {
+                    var @return = _body._lines[0] as Return;
+                    if (@return != null
+                        && (@return.Value == null || @return.Value.ContextIndependent))
+                    {
+                        return new SimpleFunction(context, this);
+                    }
+                }
+            }
+
+            if (!_functionInfo.ContainsArguments
+                && !_functionInfo.ContainsRestParameters
+                && !_functionInfo.ContainsEval
+                && !_functionInfo.ContainsWith)
+            {
+                return new SimpleFunction(context, this);
+            }
+
             return new Function(context, this);
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (body.built)
+            if (_body.built)
                 return false;
 
             if (stats != null)
@@ -610,9 +637,9 @@ namespace NiL.JS.Expressions
 
             _functionInfo.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
 
-            var bodyCode = body as CodeNode;
+            var bodyCode = _body as CodeNode;
             bodyCode.Build(ref bodyCode, 0, variables, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval | CodeContext.InWith) | CodeContext.InFunction, message, _functionInfo, opts);
-            body = bodyCode as CodeBlock;
+            _body = bodyCode as CodeBlock;
 
             if (message != null)
             {
@@ -625,8 +652,8 @@ namespace NiL.JS.Expressions
                 }
             }
 
-            
-            body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+
+            _body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             checkUsings();
             if (stats != null)
             {
@@ -669,8 +696,8 @@ namespace NiL.JS.Expressions
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            var bd = body as CodeNode;
-            body.Optimize(ref bd, this, message, opts, this._functionInfo);
+            var bd = _body as CodeNode;
+            _body.Optimize(ref bd, this, message, opts, this._functionInfo);
             if (this._functionInfo.Returns.Count > 0)
             {
                 this._functionInfo.ResultType = this._functionInfo.Returns[0].ResultType;
@@ -693,29 +720,29 @@ namespace NiL.JS.Expressions
 
         private void checkUsings()
         {
-            if (body == null
-                || body._lines == null
-                || body._lines.Length == 0)
+            if (_body == null
+                || _body._lines == null
+                || _body._lines.Length == 0)
                 return;
-            if (body._variables != null)
+            if (_body._variables != null)
             {
                 var containsEntities = _functionInfo.ContainsInnerEntities;
                 if (!containsEntities)
                 {
-                    for (var i = 0; !containsEntities && i < body._variables.Length; i++)
-                        containsEntities |= body._variables[i].initializer != null;
+                    for (var i = 0; !containsEntities && i < _body._variables.Length; i++)
+                        containsEntities |= _body._variables[i].initializer != null;
                     _functionInfo.ContainsInnerEntities = containsEntities;
                 }
-                for (var i = 0; i < body._variables.Length; i++)
+                for (var i = 0; i < _body._variables.Length; i++)
                 {
-                    _functionInfo.ContainsArguments |= body._variables[i].name == "arguments";
+                    _functionInfo.ContainsArguments |= _body._variables[i].name == "arguments";
                 }
             }
         }
 #if !(PORTABLE || NETCORE)
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
-            body.TryCompile(true, false, null, new List<CodeNode>());
+            _body.TryCompile(true, false, null, new List<CodeNode>());
             return null;
         }
 #endif
@@ -726,9 +753,9 @@ namespace NiL.JS.Expressions
 
         public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
-            CodeNode cn = body;
+            CodeNode cn = _body;
             cn.Decompose(ref cn);
-            body = (CodeBlock)cn;
+            _body = (CodeBlock)cn;
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
@@ -736,12 +763,12 @@ namespace NiL.JS.Expressions
             base.RebuildScope(functionInfo, null, scopeBias);
 
             var tv = _functionInfo.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
-            body.RebuildScope(_functionInfo, tv, scopeBias + (body._variables == null || body._variables.Length == 0 || !_functionInfo.WithLexicalEnvironment ? 1 : 0));
+            _body.RebuildScope(_functionInfo, tv, scopeBias + (_body._variables == null || _body._variables.Length == 0 || !_functionInfo.WithLexicalEnvironment ? 1 : 0));
             if (tv != null)
             {
                 var vars = new List<VariableDescriptor>(tv.Values);
                 vars.RemoveAll(x => x is ParameterDescriptor);
-                body._variables = vars.ToArray();
+                _body._variables = vars.ToArray();
             }
         }
 
@@ -801,11 +828,11 @@ namespace NiL.JS.Expressions
                     code.Append("=> ");
 
                 if (kind == FunctionKind.Arrow
-                    && body._lines.Length == 1
-                    && body.Position == body._lines[0].Position)
-                    code.Append(body._lines[0].Childs[0].ToString());
+                    && _body._lines.Length == 1
+                    && _body.Position == _body._lines[0].Position)
+                    code.Append(_body._lines[0].Childs[0].ToString());
                 else
-                    code.Append((object)body ?? "{ [native code] }");
+                    code.Append((object)_body ?? "{ [native code] }");
             }
 
             return code.ToString();
