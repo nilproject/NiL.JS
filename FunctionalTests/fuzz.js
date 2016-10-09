@@ -183,15 +183,15 @@ a = console ? 1 : 2, { test: 1 };
 var undefined;
 
 try {
-	undefined.test = 1;
-	console.log("'undefined.test = 1' did not thrown exception")
+    undefined.test = 1;
+    console.log("'undefined.test = 1' did not thrown exception")
 }
 catch (e) {
 }
 
 try {
-	delete undefined.test;
-	console.log("'delete undefined.test' did not thrown exception")
+    delete undefined.test;
+    console.log("'delete undefined.test' did not thrown exception")
 }
 catch (e) {
 }

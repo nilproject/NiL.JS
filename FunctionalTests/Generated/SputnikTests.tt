@@ -9,7 +9,7 @@
 	var testsRoot = Directory.GetParent(Host.TemplateFile).Parent.Parent.FullName.ToString().Replace("\\","/") + "/Tests/"; 
 	var sputnikTests = testsRoot + "tests/sputnik/";
 	var staPath = testsRoot + "sta.js";
-	var chapters = Directory.EnumerateDirectories(sputnikTests).ToArray();
+	var chapters = Directory.EnumerateDirectories(sputnikTests);
 #>
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -17,7 +17,7 @@ namespace NiL.JS.Test.Generated
 {
 <#  foreach (var chapter in chapters)
 	{
-		var files = Directory.EnumerateFiles(chapter, "*.js", SearchOption.AllDirectories).ToArray();
+		var files = Directory.EnumerateFiles(chapter, "*.js", SearchOption.AllDirectories);
 
 		#>	[TestClass]
 	public sealed class SputnikTests_<#= chapter.Split('/').Last() #> : FileTestBase

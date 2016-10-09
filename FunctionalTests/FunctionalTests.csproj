@@ -76,11 +76,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Generated\FileTestBase.cs" />
-    <Compile Include="Generated\Custom.cs">
-      <DependentUpon>Custom.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Generated\SputnikTests.cs">
       <DependentUpon>SputnikTests.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -95,19 +90,23 @@
     <Content Include="Array\entries.js" />
     <Content Include="Array\includes.js" />
     <Content Include="Array\findIndex.js" />
+    <Content Include="flow control tests.js" />
+    <Content Include="fuzz.js" />
     <Content Include="Generated\Embedded.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Embedded.cs</LastGenOutput>
-    </Content>
-    <Content Include="Generated\Custom.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Custom.cs</LastGenOutput>
     </Content>
     <Content Include="Generated\SputnikTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SputnikTests.cs</LastGenOutput>
     </Content>
     <Content Include="Array\find.js" />
+    <Content Include="infinity test.js" />
+    <Content Include="Int16Array.js" />
+    <Content Include="Int8Array.js" />
+    <Content Include="md5.js" />
+    <Content Include="new functions of Object.js" />
+    <Content Include="this linking test.js" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

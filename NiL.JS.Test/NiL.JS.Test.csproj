@@ -170,9 +170,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Tests\custom\regression.js">
-      <Link>regression.js</Link>
-    </Content>
     <Content Include="..\Tests\Modules\ftest.js">
       <Link>ftest.js</Link>
     </Content>

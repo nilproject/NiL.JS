@@ -19,7 +19,8 @@ namespace NiL.JS.Test.Generated
         foreach (var testName in tests)
         {
 			var resourceName = testName.Substring(testsRoot.Length + 1).Replace('\\', '.').Replace('/', '.');
-		#>			
+#>
+
 		[TestMethod]
 #line 1 "<#= testName #>"
 		public void <#= resourceName.Replace("\\","/").Split('/').Last().Replace(' ', '_').Replace('.', '_').Replace('(', '_').Replace(')', '_') #>() => RunFile(@"<#= testName #>");
