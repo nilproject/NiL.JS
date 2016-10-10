@@ -49,8 +49,8 @@ namespace NiL.JS.BaseLibrary
 #endif
     public partial class Function : JSObject, ICallable
     {
-        internal static readonly Function Empty = new Function();
         private static readonly FunctionDefinition creatorDummy = new FunctionDefinition();
+        internal static readonly Function Empty = new Function();
         private static readonly Function TTEProxy = new MethodProxy(new Context(null, false, Empty), typeof(Function)
 #if (PORTABLE || NETCORE)
             .GetTypeInfo().GetDeclaredMethod("ThrowTypeError"))

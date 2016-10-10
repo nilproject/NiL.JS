@@ -16,7 +16,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 [assembly: CLSCompliant(true)]
 
-#if !PORTABLE
+#if !PORTABLE && !NETCORE
 [assembly: Guid("a70afe5a-2b29-49fd-afbf-28794042ea21")]
 #endif
 

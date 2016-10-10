@@ -8,7 +8,7 @@ using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 
-#if NET40
+#if NET40 || NETCORE
 using NiL.JS.Backward;
 #endif
 
@@ -274,7 +274,7 @@ namespace NiL.JS.Core
                 if (res != null)
                     return res;
             }
-#if PORTABLE
+#if PORTABLE || NETCORE
             switch (value.GetType().GetTypeCode())
 #else
             switch (Type.GetTypeCode(value.GetType()))

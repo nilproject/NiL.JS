@@ -2,6 +2,10 @@
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
+#if NET40 || NETCORE
+using NiL.JS.Backward;
+#endif
+
 namespace NiL.JS.Extensions
 {
     public static class JSValueExtensions
@@ -15,7 +19,7 @@ namespace NiL.JS.Extensions
         {
             if (self == null)
                 return false;
-#if PORTABLE
+#if PORTABLE || NETCORE
             switch (typeof(T).GetTypeCode())
 #else
             switch (Type.GetTypeCode(typeof(T)))
@@ -92,7 +96,7 @@ namespace NiL.JS.Extensions
 
         public static T As<T>(this JSValue self)
         {
-#if PORTABLE
+#if PORTABLE || NETCORE
             switch (typeof(T).GetTypeCode())
 #else
             switch (Type.GetTypeCode(typeof(T)))

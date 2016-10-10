@@ -43,6 +43,9 @@ namespace NiL.JS.Core
 
         internal static List<Context> GetCurrectContextStack()
         {
+            if (currentContextStack == null)
+                currentContextStack = new List<Context> { DefaultGlobalContext };
+
             return currentContextStack;
         }
 #else
@@ -70,15 +73,11 @@ namespace NiL.JS.Core
         {
             get
             {
-#if (PORTABLE || NETCORE)
-                return currentContextStack.Count > 0 ? currentContextStack[currentContextStack.Count - 1] : null;
-#else
                 var stack = GetCurrectContextStack();
                 if (stack == null || stack.Count == 0)
                     return null;
 
                 return stack[stack.Count - 1];
-#endif
             }
         }
 
