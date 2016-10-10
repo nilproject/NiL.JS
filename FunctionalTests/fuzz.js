@@ -240,4 +240,6 @@ if ("1234".substring(0, null) !== "")
 if ("1234".substring(0, undefined) !== "1234")
     throw "undefined should be used as string.length";
 
+[][""];
+
 console.asserta(() => (new class {}).toString(), {}.toString());

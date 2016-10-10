@@ -2093,7 +2093,7 @@ namespace NiL.JS.BaseLibrary
                     case JSValueType.String:
                         {
                             var skey = key._oValue.ToString();
-                            if ('0' <= skey[0] && '9' >= skey[0])
+                            if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
                             {
                                 var dindex = 0.0;
                                 int si = 0;
@@ -2107,9 +2107,11 @@ namespace NiL.JS.BaseLibrary
                                     index = (int)(uint)dindex;
                                 }
                             }
+
                             break;
                         }
                 }
+
                 if (isIndex)
                 {
                     forWrite &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
