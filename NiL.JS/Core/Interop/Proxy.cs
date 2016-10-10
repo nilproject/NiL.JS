@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 
-#if NET40
+#if NET40 || NETCORE
 using NiL.JS.Backward;
 #endif
 
@@ -282,7 +282,7 @@ namespace NiL.JS.Core.Interop
             }
             else
             {
-#if PORTABLE
+#if PORTABLE || NETCORE
                 switch (m[0].GetMemberType())
 #else
                 switch (m[0].MemberType)
