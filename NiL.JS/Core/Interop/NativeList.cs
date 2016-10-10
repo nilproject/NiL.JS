@@ -6,7 +6,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 
-#if NET40
+#if NET40 || NETCORE
 using NiL.JS.Backward;
 #endif
 
@@ -33,7 +33,7 @@ namespace NiL.JS.Core.Interop
                         base.Assign(value as JSValue);
                     else
                     {
-#if PORTABLE
+#if PORTABLE || NETCORE
                         switch (value.GetType().GetTypeCode())
 #else
                         switch (Type.GetTypeCode(value.GetType()))
@@ -214,7 +214,7 @@ namespace NiL.JS.Core.Interop
             this.elementType = data.GetType().GetElementType();
             if (elementType == null)
             {
-#if PORTABLE
+#if PORTABLE || NETCORE
                 var @interface = data.GetType().GetInterface(typeof(IList<>).Name);
 #else
                 var @interface = data.GetType().GetTypeInfo().GetInterface(typeof(IList<>).Name);

@@ -11,7 +11,7 @@ using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 
-#if NET40
+#if NET40 || NETCORE
 using NiL.JS.Backward;
 #endif
 
@@ -736,20 +736,15 @@ namespace NiL.JS.Core
                 Type elementType = null;
 
                 if ((targetType.IsArray && (elementType = targetType.GetElementType()) != null)
-#if PORTABLE
+#if PORTABLE || NETCORE
                 || ((@interface = targetType.GetInterface(typeof(IEnumerable<>).Name)) != null
 #else
                 || ((@interface = targetType.GetTypeInfo().GetInterface(typeof(IEnumerable<>).Name)) != null
 #endif
                      && targetType.IsAssignableFrom((elementType = @interface.GetGenericArguments()[0]).MakeArrayType())))
                 {
-#if (PORTABLE || NETCORE)
                     if (elementType.GetTypeInfo().IsPrimitive)
                     {
-#else
-                    if (elementType.IsPrimitive)
-                    {
-#endif
                         if (elementType == typeof(byte) && value is ArrayBuffer)
                             return (value as ArrayBuffer).GetData();
 
