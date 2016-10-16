@@ -286,8 +286,10 @@ namespace NiL.JS.Core
                     && _oValue != this
                     && (_oValue as JSObject) != null)
                     return (_oValue as JSObject).__proto__;
-                if (!this.Defined || this.IsNull)
+
+                if (!Defined || IsNull)
                     ExceptionHelper.Throw(new TypeError("Can not get prototype of null or undefined"));
+
                 return GetDefaultPrototype();
             }
             [Hidden]

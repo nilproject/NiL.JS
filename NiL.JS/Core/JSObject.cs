@@ -87,7 +87,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public JSObject()
+        protected internal JSObject()
         {
             /// На будущее. Наверное, нужно будет сделать переходную версию, 
             /// но я пока не знаю как это сделать получше.

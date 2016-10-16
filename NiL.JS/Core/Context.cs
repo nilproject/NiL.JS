@@ -210,6 +210,18 @@ namespace NiL.JS.Core
         {
         }
 
+        public Context(Context prototype, bool strict)
+            : this(prototype, true, Function.Empty)
+        {
+            _strict = strict;
+        }
+
+
+        public Context(bool strict)
+            : this(CurrentBaseContext, strict)
+        {
+        }
+
         internal Context(Context prototype, bool createFields, Function owner)
         {
             _owner = owner;
@@ -461,7 +473,7 @@ namespace NiL.JS.Core
             return GetVariable(name, false);
         }
 
-        internal protected virtual JSValue GetVariable(string name, bool forWrite)
+        protected internal virtual JSValue GetVariable(string name, bool forWrite)
         {
             JSValue res = null;
 
@@ -539,14 +551,15 @@ namespace NiL.JS.Core
 
         public void DefineConstructor(Type type, string name)
         {
-            _variables.Add(name, GlobalContext.GetConstructor(type));
-            _variables[name]._attributes |= JSValueAttributesInternal.DoNotEnumerate;
+            var ctor = GlobalContext.GetConstructor(type);
+            _variables.Add(name, ctor);
+            ctor._attributes |= JSValueAttributesInternal.DoNotEnumerate;
         }
 
-        public void SetAbortState(AbortReason abortReason, JSValue abortInfo)
+        internal void SetAbortState(AbortReason abortReason, JSValue abortInfo)
         {
-            this._executionMode = abortReason;
-            this._executionInfo = abortInfo;
+            _executionMode = abortReason;
+            _executionInfo = abortInfo;
         }
 
         /// <summary>
@@ -559,13 +572,23 @@ namespace NiL.JS.Core
             return Eval(code, false);
         }
 
+        public JSValue Eval(string code, bool suppressScopeCreation)
+        {
+            return Eval(code, ThisBind, suppressScopeCreation);
+        }
+
+        public JSValue Eval(string code, JSValue thisBind)
+        {
+            return Eval(code, thisBind, false);
+        }
+
         /// <summary>
         /// Evaluate script
         /// </summary>
         /// <param name="code">Code in JavaScript</param>
         /// <param name="suppressScopeCreation">If true, scope will not be created. All variables, which will be defined via let, const or class will not be destructed after evalution</param>
         /// <returns>Result of last evaluated operation</returns>
-        public JSValue Eval(string code, bool suppressScopeCreation)
+        public JSValue Eval(string code, JSValue thisBind, bool suppressScopeCreation)
         {
             if (_parent == null)
                 throw new InvalidOperationException("Cannot execute script in global context");
@@ -636,8 +659,8 @@ namespace NiL.JS.Core
 
             body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
-            var debugging = this._debugging;
-            this._debugging = false;
+            var debugging = _debugging;
+            _debugging = false;
             var runned = this.Activate();
 
             try
@@ -691,13 +714,16 @@ namespace NiL.JS.Core
                 if (body._lines.Length == 0)
                     return JSValue.undefined;
 
+                var oldThisBind = ThisBind;
                 var runContextOfEval = context.Activate();
+                context._thisBind = thisBind;
                 try
                 {
                     return body.Evaluate(context) ?? context._lastResult ?? JSValue.notExists;
                 }
                 finally
                 {
+                    context._thisBind = oldThisBind;
                     if (runContextOfEval)
                         context.Deactivate();
                 }

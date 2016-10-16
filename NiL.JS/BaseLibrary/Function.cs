@@ -74,7 +74,7 @@ namespace NiL.JS.BaseLibrary
             _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
 
-        private Dictionary<Type, Delegate> delegateCache;
+        private Dictionary<Type, Delegate> _delegateCache;
 
         internal readonly FunctionDefinition _functionDefinition;
         [Hidden]
@@ -844,10 +844,10 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public virtual Delegate MakeDelegate(Type delegateType)
         {
-            if (delegateCache != null)
+            if (_delegateCache != null)
             {
                 Delegate cachedDelegate;
-                if (delegateCache.TryGetValue(delegateType, out cachedDelegate))
+                if (_delegateCache.TryGetValue(delegateType, out cachedDelegate))
                     return cachedDelegate;
             }
 
@@ -859,9 +859,9 @@ namespace NiL.JS.BaseLibrary
 #endif
             var @delegate = Tools.BuildJsCallTree("<delegate>" + name, linqEx.Expression.Constant(this), null, invokeMethod, delegateType).Compile();
 
-            if (delegateCache == null)
-                delegateCache = new Dictionary<Type, Delegate>();
-            delegateCache.Add(delegateType, @delegate);
+            if (_delegateCache == null)
+                _delegateCache = new Dictionary<Type, Delegate>();
+            _delegateCache.Add(delegateType, @delegate);
 
             return @delegate;
         }

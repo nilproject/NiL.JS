@@ -921,11 +921,17 @@ namespace NiL.JS.BaseLibrary
             return "<sup>" + self + "</sup>";
         }
         #endregion
-
+        
         [Hidden]
         public static implicit operator String(string val)
         {
             return new String(val);
+        }
+
+        [Hidden]
+        public static implicit operator string(String val)
+        {
+            return val._oValue.ToString();
         }
     }
 }

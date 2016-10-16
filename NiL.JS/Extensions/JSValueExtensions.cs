@@ -193,6 +193,16 @@ namespace NiL.JS.Extensions
             return self != null && self._valueType <= JSValueType.Undefined;
         }
 
+        public static bool IsNumber(this JSValue self)
+        {
+            return self._valueType == JSValueType.Integer || self._valueType == JSValueType.Double;
+        }
+
+        public static object ConvertToType(this JSValue value, Type targetType)
+        {
+            return Tools.convertJStoObj(value, targetType, true);
+        }
+
 #if DEBUG && !(PORTABLE || NETCORE) // TODO
         //private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
 

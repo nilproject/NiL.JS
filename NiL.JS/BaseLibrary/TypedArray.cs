@@ -99,11 +99,11 @@ namespace NiL.JS.BaseLibrary
         protected TypedArray(int length)
         {
             this.length = new Number(length);
-            this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
-            this.byteLength = length * BYTES_PER_ELEMENT;
-            this.byteOffset = 0;
-            this._valueType = JSValueType.Object;
-            this._oValue = this;
+            buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
+            byteLength = length * BYTES_PER_ELEMENT;
+            byteOffset = 0;
+            _valueType = JSValueType.Object;
+            _oValue = this;
         }
 
         [DoNotEnumerate]

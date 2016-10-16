@@ -202,6 +202,7 @@ namespace NiL.JS.Core
             {
                 if (arg == null)
                     return double.NaN;
+
                 switch (arg._valueType)
                 {
                     case JSValueType.Boolean:
@@ -1794,12 +1795,12 @@ namespace NiL.JS.Core
             }
         }
 
-        public static int CompareWithMask(Enum x, Enum y, Enum mask)
+        internal static int CompareWithMask(Enum x, Enum y, Enum mask)
         {
             return ((int)(ValueType)x & (int)(ValueType)mask) - ((int)(ValueType)y & (int)(ValueType)mask);
         }
 
-        public static bool IsEqual(Enum x, Enum y, Enum mask)
+        internal static bool IsEqual(Enum x, Enum y, Enum mask)
         {
             return ((int)(ValueType)x & (int)(ValueType)mask) == ((int)(ValueType)y & (int)(ValueType)mask);
         }

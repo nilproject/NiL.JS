@@ -425,6 +425,7 @@ namespace NiL.JS.Core.Functions
                     ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
                 }
             }
+
             if (_parameters.Length == 0 || (forceInstance && _parameters.Length == 1))
                 return Invoke(withNew, correctTargetObject(targetObject, _functionDefinition._body._strict), null);
 

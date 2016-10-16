@@ -43,83 +43,91 @@ namespace NiL.JS.Core
             if (_parent != null)
                 throw new InvalidOperationException("Try to reset non-global context");
 
-            if (_variables != null)
-                _variables.Clear();
-            else
-                _variables = new StringMap<JSValue>();
+            ActivateInCurrentThread();
+            try
+            {
+                if (_variables != null)
+                    _variables.Clear();
+                else
+                    _variables = new StringMap<JSValue>();
 
-            _proxies.Clear();
-            _GlobalPrototype = null;
+                _proxies.Clear();
+                _GlobalPrototype = null;
 
-            var objectConstructor = GetConstructor(typeof(JSObject)) as Function;
-            _variables.Add("Object", objectConstructor);
-            objectConstructor._attributes |= JSValueAttributesInternal.DoNotDelete;
+                var objectConstructor = GetConstructor(typeof(JSObject)) as Function;
+                _variables.Add("Object", objectConstructor);
+                objectConstructor._attributes |= JSValueAttributesInternal.DoNotDelete;
 
-            _GlobalPrototype = objectConstructor.prototype as JSObject;
-            _GlobalPrototype._objectPrototype = JSValue.@null;
+                _GlobalPrototype = objectConstructor.prototype as JSObject;
+                _GlobalPrototype._objectPrototype = JSValue.@null;
 
-            DefineConstructor(typeof(BaseLibrary.Math));
-            DefineConstructor(typeof(BaseLibrary.Array));
-            DefineConstructor(typeof(JSON));
-            DefineConstructor(typeof(BaseLibrary.String));
-            DefineConstructor(typeof(Function));
-            DefineConstructor(typeof(Date));
-            DefineConstructor(typeof(Number));
-            DefineConstructor(typeof(Symbol));
-            DefineConstructor(typeof(BaseLibrary.Boolean));
-            DefineConstructor(typeof(Error));
-            DefineConstructor(typeof(TypeError));
-            DefineConstructor(typeof(ReferenceError));
-            DefineConstructor(typeof(EvalError));
-            DefineConstructor(typeof(RangeError));
-            DefineConstructor(typeof(URIError));
-            DefineConstructor(typeof(SyntaxError));
-            DefineConstructor(typeof(RegExp));
+                DefineConstructor(typeof(BaseLibrary.Math));
+                DefineConstructor(typeof(BaseLibrary.Array));
+                DefineConstructor(typeof(JSON));
+                DefineConstructor(typeof(BaseLibrary.String));
+                DefineConstructor(typeof(Function));
+                DefineConstructor(typeof(Date));
+                DefineConstructor(typeof(Number));
+                DefineConstructor(typeof(Symbol));
+                DefineConstructor(typeof(BaseLibrary.Boolean));
+                DefineConstructor(typeof(Error));
+                DefineConstructor(typeof(TypeError));
+                DefineConstructor(typeof(ReferenceError));
+                DefineConstructor(typeof(EvalError));
+                DefineConstructor(typeof(RangeError));
+                DefineConstructor(typeof(URIError));
+                DefineConstructor(typeof(SyntaxError));
+                DefineConstructor(typeof(RegExp));
 #if !(PORTABLE || NETCORE)
-            DefineConstructor(typeof(console));
+                DefineConstructor(typeof(console));
 #endif
-            DefineConstructor(typeof(ArrayBuffer));
-            DefineConstructor(typeof(Int8Array));
-            DefineConstructor(typeof(Uint8Array));
-            DefineConstructor(typeof(Uint8ClampedArray));
-            DefineConstructor(typeof(Int16Array));
-            DefineConstructor(typeof(Uint16Array));
-            DefineConstructor(typeof(Int32Array));
-            DefineConstructor(typeof(Uint32Array));
-            DefineConstructor(typeof(Float32Array));
-            DefineConstructor(typeof(Float64Array));
-            DefineConstructor(typeof(Promise));
-            DefineConstructor(typeof(Map));
-            DefineConstructor(typeof(Set));
+                DefineConstructor(typeof(ArrayBuffer));
+                DefineConstructor(typeof(Int8Array));
+                DefineConstructor(typeof(Uint8Array));
+                DefineConstructor(typeof(Uint8ClampedArray));
+                DefineConstructor(typeof(Int16Array));
+                DefineConstructor(typeof(Uint16Array));
+                DefineConstructor(typeof(Int32Array));
+                DefineConstructor(typeof(Uint32Array));
+                DefineConstructor(typeof(Float32Array));
+                DefineConstructor(typeof(Float64Array));
+                DefineConstructor(typeof(Promise));
+                DefineConstructor(typeof(Map));
+                DefineConstructor(typeof(Set));
 
-            DefineConstructor(typeof(Debug));
+                DefineConstructor(typeof(Debug));
 
-            #region Base Functions
-            DefineVariable("eval").Assign(new EvalFunction());
-            _variables["eval"]._attributes |= JSValueAttributesInternal.Eval;
-            DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
-            DefineVariable("unescape").Assign(new ExternalFunction(GlobalFunctions.unescape));
-            DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
-            DefineVariable("encodeURI").Assign(new ExternalFunction(GlobalFunctions.encodeURI));
-            DefineVariable("encodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.encodeURIComponent));
-            DefineVariable("decodeURI").Assign(new ExternalFunction(GlobalFunctions.decodeURI));
-            DefineVariable("decodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.decodeURIComponent));
-            DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
-            DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
-            DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));
-            #endregion
+                #region Base Functions
+                DefineVariable("eval").Assign(new EvalFunction());
+                _variables["eval"]._attributes |= JSValueAttributesInternal.Eval;
+                DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
+                DefineVariable("unescape").Assign(new ExternalFunction(GlobalFunctions.unescape));
+                DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
+                DefineVariable("encodeURI").Assign(new ExternalFunction(GlobalFunctions.encodeURI));
+                DefineVariable("encodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.encodeURIComponent));
+                DefineVariable("decodeURI").Assign(new ExternalFunction(GlobalFunctions.decodeURI));
+                DefineVariable("decodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.decodeURIComponent));
+                DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
+                DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
+                DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));
+                #endregion
 #if DEV
-            DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
+                DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
 #endif
-            #region Consts
-            _variables["undefined"] = JSValue.undefined;
-            _variables["Infinity"] = Number.POSITIVE_INFINITY;
-            _variables["NaN"] = Number.NaN;
-            _variables["null"] = JSValue.@null;
-            #endregion
+                #region Consts
+                _variables["undefined"] = JSValue.undefined;
+                _variables["Infinity"] = Number.POSITIVE_INFINITY;
+                _variables["NaN"] = Number.NaN;
+                _variables["null"] = JSValue.@null;
+                #endregion
 
-            foreach (var v in _variables.Values)
-                v._attributes |= JSValueAttributesInternal.DoNotEnumerate;
+                foreach (var v in _variables.Values)
+                    v._attributes |= JSValueAttributesInternal.DoNotEnumerate;
+            }
+            finally
+            {
+                Deactivate();
+            }
         }
 
         public void ActivateInCurrentThread()
@@ -263,7 +271,7 @@ namespace NiL.JS.Core
             });
         }
 
-        internal JSValue ProxyValue(object value)
+        public JSValue ProxyValue(object value)
         {
             JSValue res;
             if (value == null)

@@ -404,12 +404,12 @@ namespace NiL.JS.BaseLibrary
         }
 #endif
         [DoNotEnumerate]
-        public static JSValue isNaN(Arguments a)
+        public static JSValue isNaN(JSValue x)
         {
-            switch (a[0]._valueType)
+            switch (x._valueType)
             {
                 case JSValueType.Double:
-                    return double.IsNaN(a[0]._dValue);
+                    return double.IsNaN(x._dValue);
                 default:
                     return Boolean.False;
             }

@@ -29,11 +29,12 @@ namespace NiL.JS.Core
             return prototype.DefineVariable(name);
         }
 
-        protected internal override JSValue GetVariable(string name, bool create)
+        protected internal override JSValue GetVariable(string name, bool forWrite)
         {
             if (name == errorVariableName && errorContainer.Exists)
                 return errorContainer;
-            return base.GetVariable(name, create);
+
+            return base.GetVariable(name, forWrite);
         }
     }
 }
