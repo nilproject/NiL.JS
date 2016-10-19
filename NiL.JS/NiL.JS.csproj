@@ -323,7 +323,7 @@
     <Compile Include="Core\Tools.cs" />
     <Compile Include="Core\Interop\Proxy.cs" />
     <Compile Include="Core\Interop\ReadOnlyAttribute.cs" />
-    <Compile Include="Core\Functions\ProxyConstructor.cs" />
+    <Compile Include="Core\Functions\ConstructorProxy.cs" />
     <Compile Include="Core\Visitor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="Expressions\ClassDefinition.cs" />

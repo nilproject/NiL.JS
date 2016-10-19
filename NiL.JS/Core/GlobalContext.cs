@@ -135,7 +135,7 @@ namespace NiL.JS.Core
             if (CurrentContext != null)
                 throw new InvalidOperationException();
 
-            if (!base.Activate())
+            if (!Activate())
                 throw new Exception("Unable to activate base context");
         }
 
@@ -202,14 +202,14 @@ namespace NiL.JS.Core
                         if (type == typeof(JSObject))
                             constructor = new ObjectConstructor(this, staticProxy, dynamicProxy);
                         else
-                            constructor = new ProxyConstructor(this, staticProxy, dynamicProxy);
+                            constructor = new ConstructorProxy(this, staticProxy, dynamicProxy);
 
                         if (type.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false))
                             dynamicProxy._attributes |= JSValueAttributesInternal.Immutable;
                         constructor._attributes = dynamicProxy._attributes;
                         dynamicProxy._attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly;
 
-                        if (dynamicProxy != parentPrototype && type != typeof(ProxyConstructor))
+                        if (dynamicProxy != parentPrototype && type != typeof(ConstructorProxy))
                         {
                             dynamicProxy._fields["constructor"] = constructor;
                         }

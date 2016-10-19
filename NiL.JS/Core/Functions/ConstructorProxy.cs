@@ -14,7 +14,7 @@ namespace NiL.JS.Core.Functions
     [Serializable]
 #endif
     [Prototype(typeof(Function), true)]
-    internal class ProxyConstructor : Function
+    internal class ConstructorProxy : Function
     {
         /// <summary>
         /// На первом проходе будут выбираться методы со строгим соответствием типов
@@ -54,7 +54,7 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        public ProxyConstructor(Context context, StaticProxy staticProxy, JSObject prototype)
+        public ConstructorProxy(Context context, StaticProxy staticProxy, JSObject prototype)
             : base(context)
         {
             if (staticProxy == null)
@@ -119,7 +119,7 @@ namespace NiL.JS.Core.Functions
             if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
                 var keyString = key.ToString();
-                
+
                 if (keyString == "prototype") // Все прокси-прототипы read-only и non-configurable. Это и оптимизация, и устранение необходимости навешивания атрибутов
                     return prototype;
 
@@ -170,7 +170,7 @@ namespace NiL.JS.Core.Functions
             try
             {
                 object obj;
-                if (_staticProxy._hostedType == typeof(NiL.JS.BaseLibrary.Array))
+                if (_staticProxy._hostedType == typeof(BaseLibrary.Array))
                 {
                     if (arguments == null)
                     {
@@ -181,7 +181,7 @@ namespace NiL.JS.Core.Functions
                         switch (arguments.length)
                         {
                             case 0:
-                                obj = new NiL.JS.BaseLibrary.Array();
+                                obj = new BaseLibrary.Array();
                                 break;
                             case 1:
                                 {
@@ -201,7 +201,7 @@ namespace NiL.JS.Core.Functions
                                     break;
                                 }
                             default:
-                                obj = new NiL.JS.BaseLibrary.Array(arguments);
+                                obj = new BaseLibrary.Array(arguments);
                                 break;
                         }
                     }
@@ -214,19 +214,25 @@ namespace NiL.JS.Core.Functions
 #else
  && _staticProxy._hostedType.IsValueType)
 #endif
+                    {
                         obj = Activator.CreateInstance(_staticProxy._hostedType);
+                    }
                     else
                     {
                         object[] args = null;
-                        MethodProxy constructor = findConstructor(arguments, ref args);
+                        var constructor = findConstructor(arguments, ref args);
+
                         if (constructor == null)
-                            ExceptionHelper.Throw((new TypeError(_staticProxy._hostedType.Name + " can't be created.")));
-                        obj = constructor.InvokeImpl(
-                            null,
-                            args,
-                            arguments == null ? constructor._parameters.Length != 0 ? new Arguments()
-                                                                                   : null
-                                              : arguments);
+                            ExceptionHelper.ThrowTypeError(_staticProxy._hostedType.Name + " can't be created.");
+
+                        if (args == null)
+                            args = new object[] { arguments };
+
+                        var target = constructor.GetTargetObject(targetObject, null);
+                        if (target != null)
+                            obj = constructor._method.Invoke(target, args);
+                        else
+                            obj = (constructor._method as ConstructorInfo).Invoke(args);
                     }
                 }
 
@@ -247,7 +253,7 @@ namespace NiL.JS.Core.Functions
                         else if (res._oValue is JSValue)
                         {
                             res._oValue = res;
-                            // На той стороне понять, по new или нет вызван конструктор не удастся,
+                            // На той стороне понять, по new или нет вызван конструктор не получится,
                             // поэтому по соглашению такие типы себя настраивают так, как будто они по new,
                             // а в oValue пишут экземпляр аргумента на тот случай, если вызван конструктор типа как функция
                             // с передачей в качестве аргумента существующего экземпляра
@@ -279,6 +285,7 @@ namespace NiL.JS.Core.Functions
                         _attributes = JSValueAttributesInternal.SystemObject | (_staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
                     };
                 }
+
                 return res;
             }
             catch (TargetInvocationException e)
@@ -307,7 +314,7 @@ namespace NiL.JS.Core.Functions
             {
                 for (int i = 0; i < constructors.Length; i++)
                 {
-                    if (constructors[i]._parameters.Length == 1 && constructors[i].raw)
+                    if (constructors[i]._parameters.Length == 1 && constructors[i]._raw)
                         return constructors[i];
 
                     if (pass == 1 || constructors[i]._parameters.Length == len)
@@ -316,9 +323,10 @@ namespace NiL.JS.Core.Functions
                             args = _objectA;
                         else
                         {
-                            args = constructors[i].ConvertArgs(
+                            args = constructors[i].ConvertArguments(
                                 arguments,
-                                (pass >= 1 ? ConvertArgsOptions.None : ConvertArgsOptions.StrictConversion) | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.None));
+                                (pass >= 1 ? 0 : ConvertArgsOptions.StrictConversion)
+                                | (pass >= 2 ? ConvertArgsOptions.DummyValues : 0));
 
                             if (args == null)
                                 continue;

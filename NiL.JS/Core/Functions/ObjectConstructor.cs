@@ -9,7 +9,7 @@ namespace NiL.JS.Core.Functions
     [Serializable]
 #endif
     [Prototype(typeof(Function), true)]
-    internal class ObjectConstructor : ProxyConstructor
+    internal class ObjectConstructor : ConstructorProxy
     {
         public override string name
         {

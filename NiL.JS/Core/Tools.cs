@@ -725,9 +725,9 @@ namespace NiL.JS.Core
                 return jsobj;
             }
 
-            if (value is ProxyConstructor && typeof(Type).IsAssignableFrom(targetType))
+            if (value is ConstructorProxy && typeof(Type).IsAssignableFrom(targetType))
             {
-                return (value as ProxyConstructor)._staticProxy._hostedType;
+                return (value as ConstructorProxy)._staticProxy._hostedType;
             }
 
             if ((value is BaseLibrary.Array || value is TypedArray || value is ArrayBuffer)
@@ -1818,7 +1818,7 @@ namespace NiL.JS.Core
             return property;
         }
 
-        internal static JSValue PrepareArg(Context context, CodeNode source)
+        internal static JSValue EvalExpressionSafe(Context context, Expressions.Expression source)
         {
             var a = source.Evaluate(context);
             if (a == null)
@@ -1870,7 +1870,7 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    var value = Tools.PrepareArg(initiator, arguments[sourceIndex]);
+                    var value = Tools.EvalExpressionSafe(initiator, arguments[sourceIndex]);
                     if (value._valueType == JSValueType.SpreadOperatorResult)
                     {
                         spreadIndex = 0;

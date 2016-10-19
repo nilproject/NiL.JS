@@ -186,12 +186,10 @@ namespace NiL.JS.Expressions
         {
             context._executionMode = AbortReason.TailRecursion;
 
-            var arguments = new Arguments(context)
-            {
-                length = this._arguments.Length
-            };
+            var arguments = new Arguments(context);
+
             for (int i = 0; i < this._arguments.Length; i++)
-                arguments[i] = Tools.PrepareArg(context, this._arguments[i]);
+                arguments.Add(Tools.EvalExpressionSafe(context, this._arguments[i]));
             context._objectSource = null;
 
             arguments.callee = func;

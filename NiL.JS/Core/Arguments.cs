@@ -44,27 +44,6 @@ namespace NiL.JS.Core
             get { return length; }
         }
 
-        public override JSValue this[string name]
-        {
-            get
-            {
-                return base[name];
-            }
-            set
-            {
-                switch (name)
-                {
-                    case "callee":
-                        callee = value;
-                        return;
-                    case "caller":
-                        caller = value;
-                        return;
-                }
-                base[name] = value;
-            }
-        }
-
         public JSValue this[int index]
         {
             get
@@ -142,8 +121,8 @@ namespace NiL.JS.Core
         {
             _valueType = JSValueType.Object;
             _oValue = this;
-            _attributes = JSValueAttributesInternal.DoNotDelete 
-                | JSValueAttributesInternal.DoNotEnumerate 
+            _attributes = JSValueAttributesInternal.DoNotDelete
+                | JSValueAttributesInternal.DoNotEnumerate
                 | JSValueAttributesInternal.SystemObject;
         }
 
@@ -176,12 +155,6 @@ namespace NiL.JS.Core
                             return (a3 ?? (!createMember ? notExists : (a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                         case 4:
                             return (a4 ?? (!createMember ? notExists : (a4 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
-                        //case 5:
-                        //    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                        //case 6:
-                        //    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                        //case 7:
-                        //    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                     }
                 }
                 switch (key.ToString())
@@ -196,12 +169,6 @@ namespace NiL.JS.Core
                         return (a3 ?? (!createMember ? notExists : (a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                     case "4":
                         return (a4 ?? (!createMember ? notExists : (a4 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
-                    //case "5":
-                    //    return (a5 ?? (!createMember ? notExists : (a5 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                    //case "6":
-                    //    return (a6 ?? (!createMember ? notExists : (a6 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
-                    //case "7":
-                    //    return (a7 ?? (!createMember ? notExists : (a7 = new JSObject() { valueType = JSObjectType.NotExistsInObject })));
                     case "length":
                         {
                             if (_lengthContainer == null)
@@ -217,6 +184,7 @@ namespace NiL.JS.Core
                         {
                             if (callee == null)
                                 callee = NotExistsInObject;
+
                             if (createMember && (callee._attributes & JSValueAttributesInternal.SystemObject) != 0)
                             {
                                 callee = callee.CloneImpl(false);
@@ -228,6 +196,7 @@ namespace NiL.JS.Core
                         {
                             if (caller == null)
                                 caller = NotExistsInObject;
+
                             if (createMember && (caller._attributes & JSValueAttributesInternal.SystemObject) != 0)
                             {
                                 caller = caller.CloneImpl(false);
@@ -237,6 +206,7 @@ namespace NiL.JS.Core
                         }
                 }
             }
+
             return base.GetProperty(key, createMember, memberScope);
         }
 
@@ -279,12 +249,12 @@ namespace NiL.JS.Core
                         return a3 == null || ((a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
                     case 4:
                         return a4 == null || ((a4._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
-                    //case 5:
-                    //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
-                    //case 6:
-                    //    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
-                    //case 7:
-                    //    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
+                        //case 5:
+                        //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
+                        //case 6:
+                        //    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
+                        //case 7:
+                        //    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
                 }
             }
             switch (name.ToString())
@@ -299,12 +269,12 @@ namespace NiL.JS.Core
                     return a3 == null || ((a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a3 = null) == null;
                 case "4":
                     return a4 == null || ((a4._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (a4 = null) == null;
-                //case "5":
-                //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
-                //case "6":
-                //    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
-                //case "7":
-                //    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
+                    //case "5":
+                    //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
+                    //case "6":
+                    //    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
+                    //case "7":
+                    //    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
             }
             return base.DeleteProperty(name);
         }

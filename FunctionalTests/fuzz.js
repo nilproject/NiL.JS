@@ -242,4 +242,10 @@ if ("1234".substring(0, undefined) !== "1234")
 
 [][""];
 
+var _should_be_changed_ = 'initial';
+Math.abs(0, _should_be_changed_ = '1');
+Math.random(_should_be_changed_ += '2');
+if (_should_be_changed_ !== '12')
+    throw "Incorrect arguments processing in MethodProxy";
+
 console.asserta(() => (new class {}).toString(), {}.toString());

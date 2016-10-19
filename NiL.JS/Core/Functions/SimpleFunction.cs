@@ -192,28 +192,28 @@ namespace NiL.JS.Core.Functions
              * Поэтому заменять значения можно только после полного расчёта новых значений
              */
 
-            a0 = Tools.PrepareArg(initiator, arguments[0]);
+            a0 = Tools.EvalExpressionSafe(initiator, arguments[0]);
             if (argumentsCount > 1)
             {
-                a1 = Tools.PrepareArg(initiator, arguments[1]);
+                a1 = Tools.EvalExpressionSafe(initiator, arguments[1]);
                 if (argumentsCount > 2)
                 {
-                    a2 = Tools.PrepareArg(initiator, arguments[2]);
+                    a2 = Tools.EvalExpressionSafe(initiator, arguments[2]);
                     if (argumentsCount > 3)
                     {
-                        a3 = Tools.PrepareArg(initiator, arguments[3]);
+                        a3 = Tools.EvalExpressionSafe(initiator, arguments[3]);
                         if (argumentsCount > 4)
                         {
-                            a4 = Tools.PrepareArg(initiator, arguments[4]);
+                            a4 = Tools.EvalExpressionSafe(initiator, arguments[4]);
                             if (argumentsCount > 5)
                             {
-                                a5 = Tools.PrepareArg(initiator, arguments[5]);
+                                a5 = Tools.EvalExpressionSafe(initiator, arguments[5]);
                                 if (argumentsCount > 6)
                                 {
-                                    a6 = Tools.PrepareArg(initiator, arguments[6]);
+                                    a6 = Tools.EvalExpressionSafe(initiator, arguments[6]);
                                     if (argumentsCount > 7)
                                     {
-                                        a7 = Tools.PrepareArg(initiator, arguments[7]);
+                                        a7 = Tools.EvalExpressionSafe(initiator, arguments[7]);
                                     }
                                 }
                             }

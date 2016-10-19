@@ -119,7 +119,7 @@ namespace NiL.JS.Core
             return t;
         }
 
-        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
+        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
         {
 #if DEBUG
             System.Diagnostics.Debug.Assert(_oValue == this || !(_oValue is JSValue), "АХТУНГ!");
@@ -130,19 +130,19 @@ namespace NiL.JS.Core
             string name = null;
             if (key._valueType == JSValueType.Symbol)
             {
-                res = getSymbol(key, forWrite, memberScope);
+                res = getSymbol(key, forWrite, propertyScope);
             }
             else
             {
                 if (forWrite || _fields != null)
                     name = key.ToString();
 
-                fromProto = (memberScope >= PropertyScope.Super || _fields == null || !_fields.TryGetValue(name, out res) || res._valueType < JSValueType.Undefined) && ((proto = __proto__)._oValue != null);
+                fromProto = (propertyScope >= PropertyScope.Super || _fields == null || !_fields.TryGetValue(name, out res) || res._valueType < JSValueType.Undefined) && ((proto = __proto__)._oValue != null);
 
                 if (fromProto)
                 {
-                    res = proto.GetProperty(key, false, memberScope > 0 ? memberScope - 1 : 0);
-                    if (((memberScope == PropertyScope.Own && ((res._attributes & JSValueAttributesInternal.Field) == 0 || res._valueType != JSValueType.Property)))
+                    res = proto.GetProperty(key, false, propertyScope > 0 ? propertyScope - 1 : 0);
+                    if (((propertyScope == PropertyScope.Own && ((res._attributes & JSValueAttributesInternal.Field) == 0 || res._valueType != JSValueType.Property)))
                         || res._valueType < JSValueType.Undefined)
                         res = null;
                 }
@@ -151,7 +151,7 @@ namespace NiL.JS.Core
                 {
                     if (!forWrite || (_attributes & JSValueAttributesInternal.Immutable) != 0)
                     {
-                        if (memberScope != PropertyScope.Own && string.CompareOrdinal(name, "__proto__") == 0)
+                        if (propertyScope != PropertyScope.Own && string.CompareOrdinal(name, "__proto__") == 0)
                             return proto;
                         return notExists;
                     }
@@ -165,7 +165,7 @@ namespace NiL.JS.Core
                     if (((res._attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto))
                     {
                         if ((res._attributes & JSValueAttributesInternal.ReadOnly) == 0
-                            && (res._valueType != JSValueType.Property || memberScope == PropertyScope.Own))
+                            && (res._valueType != JSValueType.Property || propertyScope == PropertyScope.Own))
                         {
                             res = res.CloneImpl(false);
                             if (_fields == null)

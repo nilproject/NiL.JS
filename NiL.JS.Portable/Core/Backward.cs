@@ -173,5 +173,10 @@ namespace System
         {
             return type.GenericTypeArguments;
         }
+
+        internal static MethodInfo GetMethod(this Type type, string name, Type[] parameters)
+        {
+            return type.GetRuntimeMethod(name, parameters);
+        }
     }
 }

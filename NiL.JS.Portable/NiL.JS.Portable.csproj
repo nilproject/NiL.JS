@@ -169,6 +169,9 @@
     <Compile Include="..\NiL.JS\Core\Functions\BindedFunction.cs">
       <Link>Core\Functions\BindedFunction.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Functions\ConstructorProxy.cs">
+      <Link>Core\Functions\ConstructorProxy.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Functions\EvalFunction.cs">
       <Link>Core\Functions\EvalFunction.cs</Link>
     </Compile>
@@ -184,8 +187,8 @@
     <Compile Include="..\NiL.JS\Core\Functions\ObjectConstructor.cs">
       <Link>Core\Functions\ObjectConstructor.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Functions\ProxyConstructor.cs">
-      <Link>Core\Functions\ProxyConstructor.cs</Link>
+    <Compile Include="..\NiL.JS\Core\Functions\SimpleFunction.cs">
+      <Link>Core\Functions\SimpleFunction.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\GlobalContext.cs">
       <Link>Core\GlobalContext.cs</Link>
