@@ -746,7 +746,7 @@ namespace NiL.JS.BaseLibrary
 
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public new JSValue toString(Arguments args)
         {
             return ToString();
@@ -790,7 +790,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         [AllowNullArguments]
         public JSValue apply(Arguments args)
         {

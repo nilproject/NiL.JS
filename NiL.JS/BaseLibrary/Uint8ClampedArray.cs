@@ -54,7 +54,7 @@ namespace NiL.JS.BaseLibrary
         public Uint8ClampedArray(JSValue src)
             : base(src) { }
 
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public override TypedArray subarray(Arguments args)
         {
             return subarrayImpl<Uint8ClampedArray>(args[0], args[1]);

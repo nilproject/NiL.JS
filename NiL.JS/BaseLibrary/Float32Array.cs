@@ -73,7 +73,7 @@ namespace NiL.JS.BaseLibrary
         public Float32Array(JSValue src)
             : base(src) { }
 
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public override TypedArray subarray(Arguments args)
         {
             return subarrayImpl<Float32Array>(args[0], args[1]);

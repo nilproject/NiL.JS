@@ -187,7 +187,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue toFixed(JSValue self, Arguments digits)
         {
             double res = 0;
@@ -225,7 +225,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue toLocaleString(JSValue self)
         {
             return self._valueType == JSValueType.Integer ? self._iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : self._dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);

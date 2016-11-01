@@ -33,6 +33,7 @@ namespace NiL.JS.Core.Functions
         private readonly bool _forceInstance;
         private readonly bool _strictConversion;
         private readonly ConvertValueAttribute[] _paramsConverters;
+        private readonly string _name;
 
         internal readonly ParameterInfo[] _parameters;
         internal readonly bool _raw;
@@ -52,7 +53,7 @@ namespace NiL.JS.Core.Functions
         {
             get
             {
-                return _method.Name;
+                return _name;
             }
         }
 
@@ -80,24 +81,36 @@ namespace NiL.JS.Core.Functions
             _hardTarget = hardTarget;
             _parameters = methodBase.GetParameters();
             _strictConversion = methodBase.IsDefined(typeof(StrictConversionAttribute), true);
+            _name = methodBase.Name;
+
+            if (methodBase.IsDefined(typeof(JavaScriptNameAttribute), false))
+            {
+                _name = (methodBase.GetCustomAttributes(typeof(JavaScriptNameAttribute), false).First() as JavaScriptNameAttribute).Name;
+                if (_name.StartsWith("@"))
+                    _name = _name.Substring(1);
+            }
 
             if (_length == null)
                 _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
-            var pc = methodBase.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
-            if (pc.Length != 0)
-                _length._iValue = (pc[0] as ArgumentsLengthAttribute).Count;
+            if (methodBase.IsDefined(typeof(ArgumentsCountAttribute), false))
+            {
+                var argsCountAttribute = methodBase.GetCustomAttributes(typeof(ArgumentsCountAttribute), false).First() as ArgumentsCountAttribute;
+                _length._iValue = argsCountAttribute.Count;
+            }
             else
+            {
                 _length._iValue = _parameters.Length;
+            }
 
             for (int i = 0; i < _parameters.Length; i++)
             {
-                var t = _parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false).ToArray();
-                if (t != null && t.Length != 0)
+                if (_parameters[i].IsDefined(typeof(ConvertValueAttribute), false))
                 {
+                    var t = _parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false).First();
                     if (_paramsConverters == null)
                         _paramsConverters = new ConvertValueAttribute[_parameters.Length];
-                    _paramsConverters[i] = t[0] as ConvertValueAttribute;
+                    _paramsConverters[i] = t as ConvertValueAttribute;
                 }
             }
 

@@ -250,6 +250,7 @@
     <Compile Include="Core\ICallable.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
+    <Compile Include="Core\Interop\JavaScriptAliasAttribute.cs" />
     <Compile Include="Core\Interop\StaticProxy.cs" />
     <Compile Include="Core\Interop\PrototypeProxy.cs" />
     <Compile Include="Core\Interop\StrictConversionAttribute.cs" />
@@ -308,7 +309,7 @@
     <Compile Include="Core\Interop\DoNotEnumerateAttribute.cs" />
     <Compile Include="Core\Interop\DontDeleteAttribute.cs" />
     <Compile Include="BaseLibrary\JSON.cs" />
-    <Compile Include="Core\Interop\ArgumentsLengthAttribute.cs" />
+    <Compile Include="Core\Interop\ArgumentsCountAttribute.cs" />
     <Compile Include="Core\Interop\PrototypeAttribute.cs" />
     <Compile Include="Core\Functions\ObjectConstructor.cs" />
     <Compile Include="Core\ParseInfo.cs" />

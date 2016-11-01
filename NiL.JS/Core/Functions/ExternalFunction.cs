@@ -50,9 +50,9 @@ namespace NiL.JS.Core.Functions
 #if (PORTABLE || NETCORE)
             var paramCountAttrbt = @delegate.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
 #else
-            var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false);
+            var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsCountAttribute), false);
 #endif
-            _length._iValue = paramCountAttrbt.Length > 0 ? ((ArgumentsLengthAttribute)paramCountAttrbt[0]).Count : 1;
+            _length._iValue = paramCountAttrbt.Length > 0 ? ((ArgumentsCountAttribute)paramCountAttrbt[0]).Count : 1;
             
             if (@delegate == null)
                 throw new ArgumentNullException();

@@ -184,7 +184,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue concat(JSValue self, Arguments args)
         {
             Array res = null;
@@ -221,7 +221,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue copyWithin(JSValue self, Arguments args)
         {
             if (self == null
@@ -313,7 +313,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue fill(JSValue self, Arguments args)
         {
             if (self == null
@@ -375,7 +375,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue find(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -401,7 +401,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue findIndex(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -427,7 +427,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue every(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -447,7 +447,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue some(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -466,7 +466,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue filter(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -489,7 +489,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue map(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -513,7 +513,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue forEach(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -533,7 +533,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue indexOf(JSValue self, Arguments args)
         {
             var result = -1L;
@@ -554,7 +554,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue includes(JSValue self, Arguments args)
         {
             var result = -1L;
@@ -903,7 +903,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue join(JSValue self, Arguments separator)
         {
             return joinImpl(self, separator == null || separator.length == 0 || !separator[0].Defined ? "," : separator[0].ToString(), false);
@@ -960,7 +960,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue lastIndexOf(JSValue self, Arguments args)
         {
             var result = -1L;
@@ -981,7 +981,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue pop(JSValue self)
         {
             notExists._valueType = JSValueType.NotExistsInObject;
@@ -1022,7 +1022,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue push(JSValue self, Arguments args)
         {
             notExists._valueType = JSValueType.NotExistsInObject;
@@ -1056,7 +1056,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue reverse(JSValue self)
         {
             Arguments args = null;
@@ -1173,7 +1173,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue reduce(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -1218,7 +1218,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue reduceRight(JSValue self, Arguments args)
         {
             if (self._valueType < JSValueType.Object)
@@ -1263,7 +1263,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue shift(JSValue self)
         {
             var src = self._oValue as Array;
@@ -1434,7 +1434,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         [InstanceMember]
         public static JSValue slice(JSValue self, Arguments args)
         {
@@ -1465,7 +1465,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         [InstanceMember]
         public static JSValue splice(JSValue self, Arguments args)
         {
@@ -1797,7 +1797,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue sort(JSValue self, Arguments args)
         {
             if (args == null)
@@ -1950,7 +1950,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue unshift(JSValue self, Arguments args)
         {
             for (var i = args.length; i-- > 0;)
@@ -1970,7 +1970,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [CLSCompliant(false)]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public new JSValue toString(Arguments args)
         {
             return this.ToString();

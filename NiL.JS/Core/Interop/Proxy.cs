@@ -22,7 +22,7 @@ namespace NiL.JS.Core.Interop
 #if !(PORTABLE || NETCORE)
         [NonSerialized]
 #endif
-        internal Dictionary<string, IList<MemberInfo>> members;
+        internal StringMap<IList<MemberInfo>> members;
         internal GlobalContext _context;
 
         private ConstructorInfo instanceCtor;
@@ -107,7 +107,8 @@ namespace NiL.JS.Core.Interop
             {
                 if (members != null)
                     return;
-                var tempMembers = new Dictionary<string, IList<MemberInfo>>();
+
+                var tempMembers = new StringMap<IList<MemberInfo>>();
                 string prewName = null;
                 IList<MemberInfo> temp = null;
                 bool instanceAttribute = false;
@@ -162,15 +163,27 @@ namespace NiL.JS.Core.Interop
                         if (mmbrs[i] is ConstructorInfo)
                             continue;
                     }
-
+                    
                     var membername = mmbrs[i].Name;
-                    membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
+
+                    if (mmbrs[i].IsDefined(typeof(JavaScriptNameAttribute), false))
+                    {
+                        var nameOverrideAttribute = mmbrs[i].GetCustomAttributes(typeof(JavaScriptNameAttribute), false).ToArray();
+                        membername = (nameOverrideAttribute[0] as JavaScriptNameAttribute).Name;
+                    }
+                    else
+                    {
+                        membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
+
 #if (PORTABLE || NETCORE)
-                    if (mmbrs[i] is TypeInfo && membername.Contains("`"))
+                        if (mmbrs[i] is TypeInfo && membername.Contains("`"))
 #else
-                    if (mmbrs[i] is Type && membername.Contains('`'))
+                        if (mmbrs[i] is Type && membername.Contains('`'))
 #endif
-                        membername = membername.Substring(0, membername.IndexOf('`'));
+                        {
+                            membername = membername.Substring(0, membername.IndexOf('`'));
+                        }
+                    }
 
                     if (prewName != membername)
                     {
@@ -198,12 +211,25 @@ namespace NiL.JS.Core.Interop
                             tempMembers[membername] = temp = new List<MemberInfo>();
                         prewName = membername;
                     }
-                    if (temp.Count == 1)
-                        tempMembers.Add(membername + "$0", new[] { temp[0] });
-                    temp.Add(mmbrs[i]);
-                    if (temp.Count != 1)
-                        tempMembers.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+
+                    if (membername.StartsWith("@"))
+                    {
+                        if (_symbols == null)
+                            _symbols = new Dictionary<Symbol, JSValue>();
+                        _symbols.Add(Symbol.@for(membername.Substring(1)), proxyMember(false, new[] { mmbrs[i] }));
+                    }
+                    else
+                    {
+                        if (temp.Count == 1)
+                            tempMembers.Add(membername + "$0", new[] { temp[0] });
+
+                        temp.Add(mmbrs[i]);
+
+                        if (temp.Count != 1)
+                            tempMembers.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+                    }
                 }
+
                 members = tempMembers;
 
                 if (IsInstancePrototype && typeof(IIterable).IsAssignableFrom(_hostedType))
@@ -211,7 +237,9 @@ namespace NiL.JS.Core.Interop
                     IList<MemberInfo> iterator = null;
                     if (members.TryGetValue("iterator", out iterator))
                     {
-                        this.SetProperty(Symbol.iterator, proxyMember(false, iterator), false);
+                        if (_symbols == null)
+                            _symbols = new Dictionary<Symbol, JSValue>();
+                        _symbols.Add(Symbol.iterator, proxyMember(false, iterator));
                         members.Remove("iterator");
                     }
                 }
@@ -220,6 +248,9 @@ namespace NiL.JS.Core.Interop
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
+            if (members == null)
+                fillMembers();
+
             if (memberScope == PropertyScope.Super || key._valueType == JSValueType.Symbol)
                 return base.GetProperty(key, forWrite, memberScope);
 
@@ -244,9 +275,6 @@ namespace NiL.JS.Core.Interop
 
                 return r;
             }
-
-            if (members == null)
-                fillMembers();
 
             IList<MemberInfo> m = null;
             members.TryGetValue(name, out m);

@@ -9,11 +9,11 @@ namespace NiL.JS.Core.Interop
     [Serializable]
 #endif
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
-    internal sealed class ArgumentsLengthAttribute : Attribute
+    internal sealed class ArgumentsCountAttribute : Attribute
     {
         public int Count { get; private set; }
 
-        public ArgumentsLengthAttribute(int count)
+        public ArgumentsCountAttribute(int count)
         {
             Count = count;
         }

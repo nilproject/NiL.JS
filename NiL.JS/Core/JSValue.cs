@@ -561,8 +561,6 @@ namespace NiL.JS.Core
 
                 if (_oValue == this)
                 {
-                    System.Diagnostics.Debug.WriteLine(typeof(JSValue).Name + "." + nameof(SetProperty) + " must be overridden for objects");
-
                     GetProperty(name, true, propertyScope).Assign(value);
                 }
 
@@ -916,7 +914,7 @@ namespace NiL.JS.Core
 
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         [AllowNullArguments]
         public virtual JSValue toString(Arguments args)
         {

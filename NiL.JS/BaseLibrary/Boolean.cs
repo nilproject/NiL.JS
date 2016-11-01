@@ -98,7 +98,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue toLocaleString(JSValue self)
         {
             if (self.GetType() != typeof(Boolean) && self._valueType != JSValueType.Boolean)
@@ -108,7 +108,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue valueOf(JSValue self)
         {
             if (self.GetType() == typeof(Boolean))
@@ -120,7 +120,7 @@ namespace NiL.JS.BaseLibrary
 
         [CLSCompliant(false)]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         [DoNotEnumerate]
         public static JSValue toString(JSValue self, Arguments args)
         {

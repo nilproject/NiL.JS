@@ -140,7 +140,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [AllowNullArguments]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public void set(Arguments args)
         {
             if (args == null)
@@ -175,7 +175,7 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public abstract TypedArray subarray(Arguments args);
 
         protected T subarrayImpl<T>(JSValue begin, JSValue end) where T : TypedArray, new()

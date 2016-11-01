@@ -31,7 +31,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue parse(Arguments args)
         {
             var length = Tools.JSObjectToInt32(args.length);
@@ -246,7 +246,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(3)]
+        [ArgumentsCount(3)]
         public static JSValue stringify(Arguments args)
         {
             var length = args.length;

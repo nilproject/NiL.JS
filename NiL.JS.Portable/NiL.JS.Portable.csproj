@@ -37,6 +37,9 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
+    <DefineConstants>$(DefineConstants);VERSION21</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup>
     <AssemblyOriginatorKeyFile>NiL.JS.Keys.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>

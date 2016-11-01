@@ -231,6 +231,7 @@ namespace NiL.JS.Core
             {
                 if (_oValue == null)
                     ExceptionHelper.Throw(new TypeError("Can not get property \"" + key + "\" of \"null\""));
+
                 field = _oValue as JSObject;
                 if (field != null)
                 {
@@ -238,6 +239,7 @@ namespace NiL.JS.Core
                     return;
                 }
             }
+
             field = GetProperty(key, true, PropertyScope.Сommon);
             if (field._valueType == JSValueType.Property)
             {
@@ -254,7 +256,9 @@ namespace NiL.JS.Core
                     ExceptionHelper.Throw(new TypeError("Can not assign to readonly property \"" + key + "\""));
             }
             else
+            {
                 field.Assign(value);
+            }
         }
 
         protected internal override bool DeleteProperty(JSValue name)
@@ -343,7 +347,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static JSValue create(Arguments args)
         {
@@ -445,7 +449,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue defineProperties(Arguments args)
         {
             if (args[0]._valueType < JSValueType.Object)
@@ -485,7 +489,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(3)]
+        [ArgumentsCount(3)]
         [CLSCompliant(false)]
         public static JSValue defineProperty(Arguments args)
         {
@@ -916,7 +920,7 @@ namespace NiL.JS.Core
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue getOwnPropertyDescriptor(Arguments args)
         {
             if (args[0]._valueType <= JSValueType.Undefined)

@@ -109,7 +109,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue atan2(JSValue x, JSValue y)
         {
             if (!x.Defined || !y.Defined)
@@ -237,7 +237,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotDelete]
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue max(Arguments args)
         {
             JSValue reso = null;
@@ -266,7 +266,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue min(Arguments args)
         {
             JSValue reso = null;
@@ -295,7 +295,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue pow(JSValue a, JSValue b)
         {
             if (!a.Defined || !b.Defined)
@@ -441,7 +441,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [DoNotDelete]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue IEEERemainder(JSValue a, JSValue b)
         {
             return System.Math.IEEERemainder(Tools.JSObjectToDouble(a), Tools.JSObjectToDouble(b));
