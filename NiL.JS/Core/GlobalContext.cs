@@ -7,6 +7,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
+using System.Dynamic;
 
 #if NET40 || NETCORE
 using NiL.JS.Backward;
@@ -434,19 +435,15 @@ namespace NiL.JS.Core
                     {
                         if (value is Delegate)
                         {
-                            return new JSValue
-                            {
-                                _oValue = new MethodProxy(this, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target),
-                                _valueType = JSValueType.Function
-                            };
+                            return new MethodProxy(this, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
                         }
                         else if (value is IList)
                         {
-                            return new JSValue
-                            {
-                                _oValue = new NativeList(value as IList),
-                                _valueType = JSValueType.Object
-                            };
+                            return new NativeList(value as IList);
+                        }
+                        else if (value is ExpandoObject)
+                        {
+                            return new ExpandoObjectWrapper(value as ExpandoObject);
                         }
                         else
                         {

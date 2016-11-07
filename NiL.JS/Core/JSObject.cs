@@ -224,7 +224,7 @@ namespace NiL.JS.Core
             return res;
         }
 
-        protected internal override void SetProperty(JSValue key, JSValue value, PropertyScope memberScope, bool throwOnError)
+        protected internal override void SetProperty(JSValue key, JSValue value, PropertyScope propertyScope, bool throwOnError)
         {
             JSValue field;
             if (_valueType >= JSValueType.Object && _oValue != this)
@@ -235,7 +235,7 @@ namespace NiL.JS.Core
                 field = _oValue as JSObject;
                 if (field != null)
                 {
-                    field.SetProperty(key, value, memberScope, throwOnError);
+                    field.SetProperty(key, value, propertyScope, throwOnError);
                     return;
                 }
             }
@@ -261,22 +261,22 @@ namespace NiL.JS.Core
             }
         }
 
-        protected internal override bool DeleteProperty(JSValue name)
+        protected internal override bool DeleteProperty(JSValue key)
         {
             JSValue field;
             if (_valueType >= JSValueType.Object && _oValue != this)
             {
                 if (_oValue == null)
-                    ExceptionHelper.Throw(new TypeError("Can't get property \"" + name + "\" of \"null\""));
+                    ExceptionHelper.Throw(new TypeError("Can't get property \"" + key + "\" of \"null\""));
 
                 field = _oValue as JSObject;
                 if (field != null)
-                    return field.DeleteProperty(name);
+                    return field.DeleteProperty(key);
             }
 
             string tname = null;
             if (_fields != null
-                && _fields.TryGetValue(tname = name.ToString(), out field)
+                && _fields.TryGetValue(tname = key.ToString(), out field)
                 && (!field.Exists || (field._attributes & JSValueAttributesInternal.DoNotDelete) == 0))
             {
                 if ((field._attributes & JSValueAttributesInternal.SystemObject) == 0)
@@ -285,12 +285,12 @@ namespace NiL.JS.Core
                 return _fields.Remove(tname);
             }
 
-            field = GetProperty(name, true, PropertyScope.Own);
+            field = GetProperty(key, true, PropertyScope.Own);
             if (!field.Exists)
                 return true;
 
             if ((field._attributes & JSValueAttributesInternal.SystemObject) != 0)
-                field = GetProperty(name, true, PropertyScope.Own);
+                field = GetProperty(key, true, PropertyScope.Own);
 
             if ((field._attributes & JSValueAttributesInternal.DoNotDelete) == 0)
             {

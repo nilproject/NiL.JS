@@ -26,12 +26,13 @@ namespace NiL.JS.Test.Generated
             using (var f = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             using (var sr = new StreamReader(f))
                 code = sr.ReadToEnd();
-
+            
             var globalContext = new GlobalContext();
-            globalContext.ActivateInCurrentThread();
 
             try
             {
+                globalContext.ActivateInCurrentThread();
+
                 var negative = false;
                 var output = new StringBuilder();
                 var oldOutput = Console.Out;

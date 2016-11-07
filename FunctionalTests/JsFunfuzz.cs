@@ -16,15 +16,25 @@ namespace FunctionalTests
         private StringBuilder _output;
         private TextWriter _oldOutput;
         private TextWriter _oldErrOutput;
+        private GlobalContext _context;
 
         [TestInitialize]
         public void Initialize()
         {
-            new GlobalContext().ActivateInCurrentThread();
+            _context = new GlobalContext();
+            _context.ActivateInCurrentThread();
 
-            using (var file = new FileStream(JsFunfuzzScriptPath, FileMode.Open))
-            using (var fileReader = new StreamReader(file))
-                _module = new Module(fileReader.ReadToEnd());
+            try
+            {
+                using (var file = new FileStream(JsFunfuzzScriptPath, FileMode.Open))
+                using (var fileReader = new StreamReader(file))
+                    _module = new Module(fileReader.ReadToEnd());
+            }
+            catch
+            {
+                _context.Deactivate();
+                throw;
+            }
 
             _output = new StringBuilder();
             _oldErrOutput = Console.Error;
@@ -36,10 +46,10 @@ namespace FunctionalTests
         [TestCleanup]
         public void Cleanup()
         {
+            _context.Deactivate();
+
             Console.SetOut(_oldOutput);
             Console.SetError(_oldErrOutput);
-
-            Context.CurrentContext.GlobalContext.Deactivate();
         }
 
         [TestMethod]

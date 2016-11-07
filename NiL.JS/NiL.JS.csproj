@@ -250,6 +250,7 @@
     <Compile Include="Core\ICallable.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
+    <Compile Include="Core\Interop\ExpandoObjectWrapper.cs" />
     <Compile Include="Core\Interop\JavaScriptAliasAttribute.cs" />
     <Compile Include="Core\Interop\StaticProxy.cs" />
     <Compile Include="Core\Interop\PrototypeProxy.cs" />
@@ -344,7 +345,6 @@
     <Compile Include="Expressions\ConvertToUnsignedInteger.cs" />
     <Compile Include="Expressions\ConvertToNumber.cs" />
     <Compile Include="Expressions\ConvertToInteger.cs" />
-    <Compile Include="Expressions\AssignmentOverReplace.cs" />
     <Compile Include="Expressions\Yield.cs" />
     <Compile Include="Extensions\JSValueExtensions.cs" />
     <Compile Include="NamespaceProvider.cs" />

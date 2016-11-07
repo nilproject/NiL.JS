@@ -54,6 +54,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -69,6 +70,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ExpandoObjectTests.cs" />
     <Compile Include="FunctionsToDelegateWrapping.cs" />
     <Compile Include="Generated\Embedded.cs">
       <DependentUpon>Embedded.tt</DependentUpon>
