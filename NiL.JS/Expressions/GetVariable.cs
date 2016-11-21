@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
-#if !(PORTABLE || NETCORE)
+#if !PORTABLE
 using NiL.JS.Core.JIT;
 #endif
 
@@ -118,7 +118,7 @@ namespace NiL.JS.Expressions
             return _variableName;
         }
 
-#if !NET35 && !(PORTABLE || NETCORE)
+#if !NET35 && !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             dynamicValues.Add(this);

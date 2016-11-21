@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using NiL.JS.Statements;
+using NiL.JS.Backward;
 
 namespace NiL.JS.Core.JIT
 {
-#if !(NET35 || NETCORE)
+#if !NET35
     internal static class JITHelpers
     {
         public static readonly FieldInfo _items = typeof(List<CodeNode>).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -16,10 +17,10 @@ namespace NiL.JS.Core.JIT
         public static readonly Expression NotExistsConstant = Expression.Field(null, typeof(JSValue).GetField("notExists", BindingFlags.Static | BindingFlags.NonPublic));
 
         public static readonly MethodInfo JSObjectToBooleanMethod = null;
-        public static readonly MethodInfo JSObjectToInt32Method = typeof(Tools).GetMethod("JSObjectToInt32", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(JSValue) }, null);
+        public static readonly MethodInfo JSObjectToInt32Method = typeof(Tools).GetMethod("JSObjectToInt32", new[] { typeof(JSValue) });
 
-        internal static readonly MethodInfo EvaluateForWriteMethod = typeof(CodeNode).GetMethod("EvaluateForWrite", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
-        internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null);
+        internal static readonly MethodInfo EvaluateForWriteMethod = typeof(CodeNode).GetMethod("EvaluateForWrite", new[] { typeof(Context) });
+        internal static readonly MethodInfo EvaluateMethod = typeof(CodeNode).GetMethod("Evaluate", new[] { typeof(Context) });
 
         static JITHelpers()
         {
@@ -41,7 +42,11 @@ namespace NiL.JS.Core.JIT
 
         internal static JSValue wrap<T>(T source, JSValue dest)
         {
+#if NETCORE || PORTABLE
+            switch (typeof(T).GetTypeCode())
+#else
             switch (Type.GetTypeCode(typeof(T)))
+#endif
             {
                 case TypeCode.Boolean:
                     {
@@ -165,4 +170,4 @@ namespace NiL.JS.Core.JIT
         }
     }
 #endif
-}
+        }

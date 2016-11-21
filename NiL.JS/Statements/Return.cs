@@ -4,7 +4,7 @@ using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 
-#if !(PORTABLE || NETCORE)
+#if !PORTABLE
 using NiL.JS.Core.JIT;
 #endif
 
@@ -113,7 +113,7 @@ namespace NiL.JS.Statements
             value?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
-#if !(PORTABLE || NETCORE) && !NET35
+#if !PORTABLE && !NET35
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var b = value.TryCompile(false, false, null, dynamicValues);

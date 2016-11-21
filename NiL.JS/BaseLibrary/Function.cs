@@ -816,11 +816,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-#if DEVELOPBRANCH || VERSION21
         public virtual JSValue bind(Arguments args)
-#else
-        public JSValue bind(Arguments args)
-#endif
         {
             if (args.Length == 0)
                 return this;
@@ -832,14 +828,12 @@ namespace NiL.JS.BaseLibrary
 
             return this;
         }
-
-#if DEVELOPBRANCH || VERSION21
+        
         [Hidden]
         public T MakeDelegate<T>()
         {
             return (T)(object)MakeDelegate(typeof(T));
         }
-#endif
 
         [Hidden]
         public virtual Delegate MakeDelegate(Type delegateType)

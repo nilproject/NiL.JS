@@ -712,14 +712,16 @@ namespace NiL.JS.Statements
             }
         }
 
-#if !(PORTABLE || NETCORE)
+#if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
-            for (int i = 0; i < _lines.Length; i++)
-                _lines[i].TryCompile(true, false, null, dynamicValues);
             for (int i = _variables.Length; i-- > 0;)
                 if (_variables[i].initializer != null)
                     _variables[i].initializer.TryCompile(true, false, null, dynamicValues);
+
+            for (int i = 0; i < _lines.Length; i++)
+                _lines[i].TryCompile(true, false, null, dynamicValues);
+
             return null;
         }
 #endif
