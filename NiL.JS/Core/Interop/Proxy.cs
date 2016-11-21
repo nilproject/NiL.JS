@@ -232,15 +232,26 @@ namespace NiL.JS.Core.Interop
 
                 members = tempMembers;
 
-                if (IsInstancePrototype && typeof(IIterable).IsAssignableFrom(_hostedType))
+                if (IsInstancePrototype)
                 {
-                    IList<MemberInfo> iterator = null;
-                    if (members.TryGetValue("iterator", out iterator))
+                    if (typeof(IIterable).IsAssignableFrom(_hostedType))
+                    {
+                        IList<MemberInfo> iterator = null;
+                        if (members.TryGetValue("iterator", out iterator))
+                        {
+                            if (_symbols == null)
+                                _symbols = new Dictionary<Symbol, JSValue>();
+                            _symbols.Add(Symbol.iterator, proxyMember(false, iterator));
+                            members.Remove("iterator");
+                        }
+                    }
+
+                    var toStringTag = _hostedType.GetCustomAttribute<ToStringTagAttribute>();
+                    if (toStringTag != null)
                     {
                         if (_symbols == null)
                             _symbols = new Dictionary<Symbol, JSValue>();
-                        _symbols.Add(Symbol.iterator, proxyMember(false, iterator));
-                        members.Remove("iterator");
+                        _symbols.Add(Symbol.toStringTag, toStringTag.Tag);
                     }
                 }
             }

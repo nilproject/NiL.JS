@@ -123,7 +123,7 @@ namespace NiL.JS.Core
         internal static readonly JSValue booleanString = "boolean";
         internal static readonly JSValue functionString = "function";
         internal static readonly JSValue objectString = "object";
-        
+
         internal static readonly JSValue undefined = new JSValue() { _valueType = JSValueType.Undefined, _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject };
         internal static readonly JSValue notExists = new JSValue() { _valueType = JSValueType.NotExists, _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject };
         internal static readonly JSObject @null = new JSObject() { _valueType = JSValueType.Object, _oValue = null, _attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
@@ -951,13 +951,53 @@ namespace NiL.JS.Core
                         if (self._oValue is GlobalObject)
                             return self._oValue.ToString();
 
-                        if (self._oValue is Proxy)
+                        var tag = self.GetProperty(Symbol.toStringTag, false, PropertyScope.Сommon);
+                        if (tag.Defined)
                         {
-                            var ht = (self._oValue as Proxy)._hostedType;
-                            return "[object " + (ht == typeof(JSObject) ? typeof(System.Object) : ht).Name + "]";
+                            return $"[object {Tools.InvokeGetter(tag, self)}]";
                         }
 
-                        return "[object " + (self.Value.GetType() == typeof(JSObject) ? typeof(System.Object) : self.Value.GetType()).Name + "]";
+                        if (self._oValue is Proxy)
+                        {
+                            var hostedType = (self._oValue as Proxy)._hostedType;
+
+                            if (hostedType == typeof(JSObject))
+                            {
+                                return "[object Object]";
+                            }
+
+                            return $"[object {hostedType.Name}]";
+                        }
+
+                        if (self.Value.GetType() == typeof(JSObject))
+                        {
+                            return "[object Object]";
+                        }
+
+                        return $"[object {self.Value.GetType().Name}]";
+
+                        //if (self._oValue is Proxy)
+                        //{
+                        //    var hostedType = (self._oValue as Proxy)._hostedType;
+                        //    var tag = hostedType.GetCustomAttribute<ToStringTagAttribute>();
+                        //    if (tag != null)
+                        //    {
+                        //        return $"[object {tag.Tag}]";
+                        //    }
+
+                        //    return $"[object {hostedType.Name}]";
+                        //}
+                        //else
+                        //{
+                        //    var type = self.Value.GetType();
+                        //    var tag = type.GetCustomAttribute<ToStringTagAttribute>();
+                        //    if (tag != null)
+                        //    {
+                        //        return $"[object {tag.Tag}]";
+                        //    }
+
+                        //    return "[object " + type.Name + "]";
+                        //}
                     }
                 default:
                     throw new NotImplementedException();

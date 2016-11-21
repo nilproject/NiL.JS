@@ -14,6 +14,7 @@ namespace NiL.JS.BaseLibrary
         private static readonly Dictionary<string, Symbol> symbolsCache = new Dictionary<string, Symbol>();
 
         public static readonly Symbol iterator = new Symbol("iterator");
+        public static readonly Symbol toStringTag = new Symbol("toStringTag");
 
         [Hidden]
         public string Description { get; private set; }
