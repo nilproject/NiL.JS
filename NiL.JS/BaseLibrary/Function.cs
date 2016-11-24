@@ -823,10 +823,7 @@ namespace NiL.JS.BaseLibrary
 
             var newThis = args[0];
             var strict = (_functionDefinition._body != null && _functionDefinition._body._strict) || Context.CurrentContext._strict;
-            if ((newThis != null && newThis._valueType > JSValueType.Undefined) || strict)
-                return new BindedFunction(this, args);
-
-            return this;
+            return new BindedFunction(this, args);
         }
 
         [Hidden]
