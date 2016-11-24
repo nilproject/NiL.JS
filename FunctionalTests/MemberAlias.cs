@@ -11,7 +11,7 @@ using NiL.JS.Core.Interop;
 namespace FunctionalTests
 {
     [TestClass]
-    public class Interop
+    public class MemberAlias
     {
         [TestMethod]
         public void CreateInstanceOfGenericType()
@@ -32,7 +32,7 @@ namespace FunctionalTests
                 return new StackFrame().GetMethod().Name;
             }
 
-            [JavaScriptName("@MySymbol")]
+            [JavaScriptName("@@MySymbol")]
             public static string MethodBySymbol()
             {
                 return new StackFrame().GetMethod().Name;

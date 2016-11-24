@@ -216,11 +216,11 @@ namespace NiL.JS.Core.Interop
                         prewName = membername;
                     }
 
-                    if (membername.StartsWith("@"))
+                    if (membername.StartsWith("@@"))
                     {
                         if (_symbols == null)
                             _symbols = new Dictionary<Symbol, JSValue>();
-                        _symbols.Add(Symbol.@for(membername.Substring(1)), proxyMember(false, new[] { mmbrs[i] }));
+                        _symbols.Add(Symbol.@for(membername.Substring(2)), proxyMember(false, new[] { mmbrs[i] }));
                     }
                     else
                     {

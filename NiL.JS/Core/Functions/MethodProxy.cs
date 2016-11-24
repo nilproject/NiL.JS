@@ -86,8 +86,8 @@ namespace NiL.JS.Core.Functions
             if (methodBase.IsDefined(typeof(JavaScriptNameAttribute), false))
             {
                 _name = (methodBase.GetCustomAttributes(typeof(JavaScriptNameAttribute), false).First() as JavaScriptNameAttribute).Name;
-                if (_name.StartsWith("@"))
-                    _name = _name.Substring(1);
+                if (_name.StartsWith("@@"))
+                    _name = _name.Substring(2);
             }
 
             if (_length == null)
