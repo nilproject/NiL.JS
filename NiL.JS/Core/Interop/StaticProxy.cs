@@ -11,7 +11,7 @@ namespace NiL.JS.Core.Interop
     [Prototype(typeof(JSObject), true)]
     internal sealed class StaticProxy : Proxy
     {
-        internal override JSObject prototypeInstance
+        internal override JSObject PrototypeInstance
         {
             get
             {
@@ -28,8 +28,8 @@ namespace NiL.JS.Core.Interop
         }
 
         [Hidden]
-        public StaticProxy(GlobalContext context, Type type)
-            : base(context, type)
+        public StaticProxy(GlobalContext context, Type type, bool indexersSupport)
+            : base(context, type, indexersSupport)
         {
 
         }

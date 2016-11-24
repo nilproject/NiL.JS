@@ -30,7 +30,7 @@ namespace NiL.JS.Core.Functions
         /// </summary>
         private const int passesCount = 3;
 
-        private static readonly object[] _objectA = new object[0];
+        private static readonly object[] _emptyObjectArray = new object[0];
         internal readonly StaticProxy _staticProxy;
         private MethodProxy[] constructors;
 
@@ -320,7 +320,9 @@ namespace NiL.JS.Core.Functions
                     if (pass == 1 || constructors[i]._parameters.Length == len)
                     {
                         if (len == 0)
-                            args = _objectA;
+                        {
+                            args = _emptyObjectArray;
+                        }
                         else
                         {
                             args = constructors[i].ConvertArguments(

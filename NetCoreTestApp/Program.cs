@@ -11,7 +11,18 @@ namespace NetCoreTestApp
     {
         public static void Main(string[] args)
         {
-            sputnikTests();
+            testCompilation();
+        }
+
+        private static void testCompilation()
+        {
+            var module = new Module(@"
+var a = 1;
+for (var i = 0; i < 100; i++)
+    a = a + a;
+",
+null,
+Options.Compile);
         }
 
         private static void sunspider()

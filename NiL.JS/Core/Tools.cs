@@ -560,6 +560,9 @@ namespace NiL.JS.Core
                                 return (ulong)jsobj._iValue;
                             if (targetType == typeof(string))
                                 return DoubleToString(jsobj._dValue);
+
+                            if (targetType.GetTypeInfo().IsEnum)
+                                return Enum.ToObject(targetType, (long)jsobj._dValue);
                         }
 
                         if (targetType == typeof(double))
@@ -569,9 +572,6 @@ namespace NiL.JS.Core
 
                         if (targetType == typeof(Number))
                             return new Number(jsobj._dValue);
-
-                        if (targetType.GetTypeInfo().IsEnum)
-                            return Enum.ToObject(targetType, jsobj._dValue);
 
                         return null;
                     }
@@ -629,23 +629,35 @@ namespace NiL.JS.Core
                                 return (ulong)JSObjectToInt64(jsobj);
                             if (targetType == typeof(double))
                             {
+                                if (jsobj.Value.ToString() == "NaN")
+                                    return double.NaN;
+
                                 var r = JSObjectToDouble(jsobj);
-                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                if (!double.IsNaN(r))
                                     return r;
+
                                 return null;
                             }
                             if (targetType == typeof(float))
                             {
+                                if (jsobj.Value.ToString() == "NaN")
+                                    return float.NaN;
+
                                 var r = JSObjectToDouble(jsobj);
-                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                if (!double.IsNaN(r))
                                     return (float)r;
+
                                 return null;
                             }
                             if (targetType == typeof(decimal))
                             {
+                                if (jsobj.Value.ToString() == "NaN")
+                                    return float.NaN;
+
                                 var r = JSObjectToDouble(jsobj);
-                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                if (!double.IsNaN(r))
                                     return (decimal)r;
+
                                 return null;
                             }
                             if (targetType.GetTypeInfo().IsEnum)
@@ -718,7 +730,7 @@ namespace NiL.JS.Core
             var tpres = value as Proxy;
             if (tpres != null && targetType.IsAssignableFrom(tpres._hostedType))
             {
-                jsobj = tpres.prototypeInstance;
+                jsobj = tpres.PrototypeInstance;
                 if (jsobj is ObjectWrapper)
                     return jsobj.Value;
 
@@ -1691,7 +1703,7 @@ namespace NiL.JS.Core
             if (reassignLen)
             {
                 if (length._valueType == JSValueType.Property)
-                    ((length._oValue as GsPropertyPair).set ?? Function.Empty).Call(src, new Arguments() { result });
+                    ((length._oValue as GsPropertyPair).setter ?? Function.Empty).Call(src, new Arguments() { result });
                 else
                     length.Assign(result);
             }
@@ -1724,7 +1736,7 @@ namespace NiL.JS.Core
                             goDeep = true;
                         }
                         if (evalProps && value._valueType == JSValueType.Property)
-                            value = (value._oValue as GsPropertyPair).get == null ? JSValue.undefined : (value._oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
+                            value = (value._oValue as GsPropertyPair).getter == null ? JSValue.undefined : (value._oValue as GsPropertyPair).getter.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (temp._data[element.Key] == null)
@@ -1747,7 +1759,7 @@ namespace NiL.JS.Core
                         if (!value.Exists)
                             continue;
                         if (evalProps && value._valueType == JSValueType.Property)
-                            value = (value._oValue as GsPropertyPair).get == null ? JSValue.undefined : (value._oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
+                            value = (value._oValue as GsPropertyPair).getter == null ? JSValue.undefined : (value._oValue as GsPropertyPair).getter.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
@@ -1810,9 +1822,9 @@ namespace NiL.JS.Core
             if (property._valueType != JSValueType.Property)
                 return property;
             var getter = property._oValue as GsPropertyPair;
-            if (getter == null || getter.get == null)
+            if (getter == null || getter.getter == null)
                 return JSValue.undefined;
-            property = getter.get.Call(target, null);
+            property = getter.getter.Call(target, null);
             if (property._valueType < JSValueType.Undefined)
                 property = JSValue.undefined;
             return property;

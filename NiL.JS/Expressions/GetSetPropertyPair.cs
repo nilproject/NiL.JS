@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
         
         public override JSValue Evaluate(Context context)
         {
-            tempContainer._oValue = new GsPropertyPair
+            tempContainer._oValue = new Core.GsPropertyPair
             (
                 Getter == null ? null : (Function)Getter.Evaluate(context),
                 Setter == null ? null : (Function)Setter.Evaluate(context)

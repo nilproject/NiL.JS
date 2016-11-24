@@ -70,7 +70,7 @@ namespace NiL.JS.BaseLibrary
         internal static readonly JSValue propertiesDummySM = new JSValue()
         {
             _valueType = JSValueType.Property,
-            _oValue = new GsPropertyPair() { get = TTEProxy, set = TTEProxy },
+            _oValue = new Core.GsPropertyPair() { getter = TTEProxy, setter = TTEProxy },
             _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
 
@@ -115,9 +115,9 @@ namespace NiL.JS.BaseLibrary
                 {
                     _length = new Number(0)
                     {
-                        _attributes = 
-                        JSValueAttributesInternal.ReadOnly 
-                        | JSValueAttributesInternal.DoNotDelete 
+                        _attributes =
+                        JSValueAttributesInternal.ReadOnly
+                        | JSValueAttributesInternal.DoNotDelete
                         | JSValueAttributesInternal.DoNotEnumerate
                         | JSValueAttributesInternal.NonConfigurable
                     };
@@ -243,7 +243,7 @@ namespace NiL.JS.BaseLibrary
 
                 if (_functionDefinition._body._strict)
                     ExceptionHelper.Throw(new TypeError("Property \"arguments\" may not be accessed in strict mode."));
-                
+
                 if (context._arguments == null && _functionDefinition.recursionDepth > 0)
                     BuildArgumentsObject();
 
@@ -805,7 +805,7 @@ namespace NiL.JS.BaseLibrary
                     ExceptionHelper.Throw(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
                 if (len._valueType == JSValueType.Property)
-                    len = (len._oValue as GsPropertyPair).get.Call(argsSource, null);
+                    len = (len._oValue as Core.GsPropertyPair).getter.Call(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
                 if (nargs.length >= 50000)
                     ExceptionHelper.Throw(new RangeError("Too many arguments."));
@@ -816,7 +816,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public virtual JSValue bind(Arguments args)
+        public virtual Function bind(Arguments args)
         {
             if (args.Length == 0)
                 return this;
@@ -828,7 +828,7 @@ namespace NiL.JS.BaseLibrary
 
             return this;
         }
-        
+
         [Hidden]
         public T MakeDelegate<T>()
         {

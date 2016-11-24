@@ -63,8 +63,8 @@ namespace NiL.JS.Core
             var t = instance as JSValue;
             if (t != null)
                 t.SetProperty(name, value, memberScope, strict);
-
-            base.SetProperty(name, value, memberScope, strict);
+            else
+                base.SetProperty(name, value, memberScope, strict);
         }
 
         protected internal override bool DeleteProperty(JSValue name)
@@ -81,6 +81,7 @@ namespace NiL.JS.Core
             var t = instance as JSValue;
             if (t != null)
                 return t.GetEnumerator(hideNonEnum, enumerationMode);
+
             return base.GetEnumerator(hideNonEnum, enumerationMode);
         }
     }

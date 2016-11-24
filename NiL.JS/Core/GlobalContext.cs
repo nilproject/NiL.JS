@@ -15,12 +15,20 @@ using NiL.JS.Backward;
 
 namespace NiL.JS.Core
 {
+    public enum IndexersSupportMode
+    {
+        WithAttributeOnly = 0,
+        ForceEnable,
+        ForceDisable
+    }
+
     public sealed class GlobalContext : Context
     {
         internal JSObject _GlobalPrototype;
         private readonly Dictionary<Type, JSObject> _proxies;
 
         public string Name { get; private set; }
+        public IndexersSupportMode IndexersSupportMode { get; set; }
 
         public GlobalContext()
             : this("")
@@ -169,7 +177,10 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        var staticProxy = new StaticProxy(this, type);
+                        var indexerSupport = IndexersSupportMode == IndexersSupportMode.ForceEnable
+                            || (IndexersSupportMode == IndexersSupportMode.WithAttributeOnly && type.GetTypeInfo().IsDefined(typeof(UseIndexersAttribute)));
+
+                        var staticProxy = new StaticProxy(this, type, indexerSupport);
                         if (type.GetTypeInfo().IsAbstract)
                         {
                             _proxies[type] = staticProxy;
@@ -189,7 +200,7 @@ namespace NiL.JS.Core
                             }
                             else
                             {
-                                dynamicProxy = new PrototypeProxy(this, type)
+                                dynamicProxy = new PrototypeProxy(this, type, indexerSupport)
                                 {
                                     _objectPrototype = parentPrototype
                                 };
@@ -197,7 +208,7 @@ namespace NiL.JS.Core
                         }
                         else
                         {
-                            dynamicProxy = new PrototypeProxy(this, type);
+                            dynamicProxy = new PrototypeProxy(this, type, indexerSupport);
                         }
 
                         if (type == typeof(JSObject))
@@ -222,7 +233,7 @@ namespace NiL.JS.Core
                     {
                         if (dynamicProxy._objectPrototype == null)
                             dynamicProxy._objectPrototype = _GlobalPrototype ?? JSValue.@null;
-                        var fake = (dynamicProxy as PrototypeProxy).prototypeInstance;
+                        var fake = (dynamicProxy as PrototypeProxy).PrototypeInstance;
                     }
                 }
             }

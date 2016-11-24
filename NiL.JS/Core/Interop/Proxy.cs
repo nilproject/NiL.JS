@@ -22,12 +22,15 @@ namespace NiL.JS.Core.Interop
 #if !(PORTABLE || NETCORE)
         [NonSerialized]
 #endif
-        internal StringMap<IList<MemberInfo>> members;
+        internal StringMap<IList<MemberInfo>> _members;
         internal GlobalContext _context;
 
-        private ConstructorInfo instanceCtor;
+        private GsPropertyPair _indexerProperty;
+        private bool _indexersSupported;
+        private ConstructorInfo _instanceCtor;
         private JSObject _prototypeInstance;
-        internal virtual JSObject prototypeInstance
+
+        internal virtual JSObject PrototypeInstance
         {
             get
             {
@@ -40,7 +43,7 @@ namespace NiL.JS.Core.Interop
                     try
                     {
 #endif
-                        if (instanceCtor != null)
+                        if (_instanceCtor != null)
                         {
                             if (_hostedType == typeof(JSObject))
                             {
@@ -51,7 +54,7 @@ namespace NiL.JS.Core.Interop
                             }
                             else if (typeof(JSObject).IsAssignableFrom(_hostedType))
                             {
-                                _prototypeInstance = instanceCtor.Invoke(null) as JSObject;
+                                _prototypeInstance = _instanceCtor.Invoke(null) as JSObject;
                                 _prototypeInstance._objectPrototype = __proto__;
                                 _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
                                 _prototypeInstance._fields = _fields;
@@ -60,7 +63,7 @@ namespace NiL.JS.Core.Interop
                             }
                             else
                             {
-                                var instance = instanceCtor.Invoke(null);
+                                var instance = _instanceCtor.Invoke(null);
                                 _prototypeInstance = new ObjectWrapper(instance, this)
                                 {
                                     _attributes = _attributes | JSValueAttributesInternal.ProxyPrototype,
@@ -84,8 +87,9 @@ namespace NiL.JS.Core.Interop
 
         internal abstract bool IsInstancePrototype { get; }
 
-        internal Proxy(GlobalContext context, Type type)
+        internal Proxy(GlobalContext context, Type type, bool indexersSupport)
         {
+            _indexersSupported = indexersSupport;
             _valueType = JSValueType.Object;
             _oValue = this;
             _attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.DoNotEnumerate;
@@ -93,11 +97,11 @@ namespace NiL.JS.Core.Interop
 
             _context = context;
             _hostedType = type;
-            
+
 #if (PORTABLE || NETCORE)
-            instanceCtor = _hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
+            _instanceCtor = _hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
 #else
-            instanceCtor = _hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, System.Type.EmptyTypes, null);
+            _instanceCtor = _hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
 #endif
         }
 
@@ -105,7 +109,7 @@ namespace NiL.JS.Core.Interop
         {
             lock (this)
             {
-                if (members != null)
+                if (_members != null)
                     return;
 
                 var tempMembers = new StringMap<IList<MemberInfo>>();
@@ -163,7 +167,7 @@ namespace NiL.JS.Core.Interop
                         if (mmbrs[i] is ConstructorInfo)
                             continue;
                     }
-                    
+
                     var membername = mmbrs[i].Name;
 
                     if (mmbrs[i].IsDefined(typeof(JavaScriptNameAttribute), false))
@@ -230,23 +234,23 @@ namespace NiL.JS.Core.Interop
                     }
                 }
 
-                members = tempMembers;
+                _members = tempMembers;
 
                 if (IsInstancePrototype)
                 {
                     if (typeof(IIterable).IsAssignableFrom(_hostedType))
                     {
                         IList<MemberInfo> iterator = null;
-                        if (members.TryGetValue("iterator", out iterator))
+                        if (_members.TryGetValue("iterator", out iterator))
                         {
                             if (_symbols == null)
                                 _symbols = new Dictionary<Symbol, JSValue>();
                             _symbols.Add(Symbol.iterator, proxyMember(false, iterator));
-                            members.Remove("iterator");
+                            _members.Remove("iterator");
                         }
                     }
 
-                    var toStringTag = _hostedType.GetCustomAttribute<ToStringTagAttribute>();
+                    var toStringTag = _hostedType.GetTypeInfo().GetCustomAttribute<ToStringTagAttribute>();
                     if (toStringTag != null)
                     {
                         if (_symbols == null)
@@ -254,12 +258,41 @@ namespace NiL.JS.Core.Interop
                         _symbols.Add(Symbol.toStringTag, toStringTag.Tag);
                     }
                 }
+
+                if (_indexersSupported)
+                {
+                    IList<MemberInfo> getter = null;
+                    IList<MemberInfo> setter = null;
+                    _members.TryGetValue("get_Item", out getter);
+                    _members.TryGetValue("set_Item", out setter);
+
+                    if (getter != null || setter != null)
+                    {
+                        _indexerProperty = new GsPropertyPair();
+
+                        if (getter != null)
+                        {
+                            _indexerProperty.getter = (Function)proxyMember(false, getter);
+                            _fields["get_Item"] = _indexerProperty.getter;
+                        }
+
+                        if (setter != null)
+                        {
+                            _indexerProperty.setter = (Function)proxyMember(false, setter);
+                            _fields["set_Item"] = _indexerProperty.setter;
+                        }
+                    }
+                    else
+                    {
+                        _indexersSupported = false;
+                    }
+                }
             }
         }
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (members == null)
+            if (_members == null)
                 fillMembers();
 
             if (memberScope == PropertyScope.Super || key._valueType == JSValueType.Symbol)
@@ -288,15 +321,52 @@ namespace NiL.JS.Core.Interop
             }
 
             IList<MemberInfo> m = null;
-            members.TryGetValue(name, out m);
+            _members.TryGetValue(name, out m);
 
             if (m == null || m.Count == 0)
             {
-                var protoInstanceAsJs = prototypeInstance as JSValue;
+                JSValue property;
+                var protoInstanceAsJs = PrototypeInstance as JSValue;
                 if (protoInstanceAsJs != null)
-                    return protoInstanceAsJs.GetProperty(key, forWrite, memberScope);
+                    property = protoInstanceAsJs.GetProperty(key, forWrite && !_indexersSupported, memberScope);
                 else
-                    return base.GetProperty(key, forWrite, memberScope);
+                    property = base.GetProperty(key, forWrite && !_indexersSupported, memberScope);
+
+                if (!_indexersSupported)
+                    return property;
+
+                if (property.Exists)
+                {
+                    if (forWrite)
+                    {
+                        if ((property._attributes & (JSValueAttributesInternal.SystemObject & JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
+                        {
+                            if (protoInstanceAsJs != null)
+                                property = protoInstanceAsJs.GetProperty(key, true, memberScope);
+                            else
+                                property = base.GetProperty(key, true, memberScope);
+                        }
+                    }
+
+                    return property;
+                }
+
+                if (forWrite)
+                {
+                    return new JSValue
+                    {
+                        _valueType = JSValueType.Property,
+                        _oValue = new GsPropertyPair(null, _indexerProperty.setter.bind(new Arguments { null, key }))
+                    };
+                }
+                else
+                {
+                    return new JSValue
+                    {
+                        _valueType = JSValueType.Property,
+                        _oValue = new GsPropertyPair(_indexerProperty.getter.bind(new Arguments { null, key }), null)
+                    };
+                }
             }
 
             var result = proxyMember(forWrite, m);
@@ -351,7 +421,7 @@ namespace NiL.JS.Core.Interop
                                     _oValue = new GsPropertyPair
                                     (
                                         new ExternalFunction((thisBind, a) => _context.ProxyValue(field.GetValue(field.IsStatic ? null : thisBind.Value))),
-                                        !m[0].IsDefined(typeof(Interop.ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
+                                        !m[0].IsDefined(typeof(ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
                                         {
                                             field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);
                                             return null;
@@ -360,7 +430,7 @@ namespace NiL.JS.Core.Interop
                                 };
 
                                 r._attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
-                                if ((r._oValue as GsPropertyPair).set == null)
+                                if ((r._oValue as GsPropertyPair).setter == null)
                                     r._attributes |= JSValueAttributesInternal.ReadOnly;
 
                             }
@@ -386,7 +456,7 @@ namespace NiL.JS.Core.Interop
 
                             r._attributes = JSValueAttributesInternal.Immutable;
 
-                            if ((r._oValue as GsPropertyPair).set == null)
+                            if ((r._oValue as GsPropertyPair).setter == null)
                                 r._attributes |= JSValueAttributesInternal.ReadOnly;
 
                             if (pinfo.IsDefined(typeof(FieldAttribute), false))
@@ -453,7 +523,7 @@ namespace NiL.JS.Core.Interop
 
         protected internal override bool DeleteProperty(JSValue name)
         {
-            if (members == null)
+            if (_members == null)
                 fillMembers();
             string stringName = null;
             JSValue field = null;
@@ -463,12 +533,12 @@ namespace NiL.JS.Core.Interop
             {
                 if ((field._attributes & JSValueAttributesInternal.SystemObject) == 0)
                     field._valueType = JSValueType.NotExistsInObject;
-                return _fields.Remove(stringName) | members.Remove(stringName); // it's not mistake
+                return _fields.Remove(stringName) | _members.Remove(stringName); // it's not mistake
             }
             else
             {
                 IList<MemberInfo> m = null;
-                if (members.TryGetValue(stringName.ToString(), out m))
+                if (_members.TryGetValue(stringName.ToString(), out m))
                 {
                     for (var i = m.Count; i-- > 0;)
                     {
@@ -477,13 +547,13 @@ namespace NiL.JS.Core.Interop
                     }
                 }
 
-                if (!members.Remove(stringName) && prototypeInstance != null)
+                if (!_members.Remove(stringName) && PrototypeInstance != null)
                     return _prototypeInstance.DeleteProperty(stringName);
             }
 
             return true;
         }
-        
+
         public override JSValue propertyIsEnumerable(Arguments args)
         {
             if (args == null)
@@ -493,7 +563,7 @@ namespace NiL.JS.Core.Interop
             if (_fields != null && _fields.TryGetValue(name, out temp))
                 return temp.Exists && (temp._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0;
             IList<MemberInfo> m = null;
-            if (members.TryGetValue(name, out m))
+            if (_members.TryGetValue(name, out m))
             {
                 for (var i = m.Count; i-- > 0;)
                     if (!m[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
@@ -505,12 +575,12 @@ namespace NiL.JS.Core.Interop
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
-            if (members == null)
+            if (_members == null)
                 fillMembers();
 
-            if (prototypeInstance != null)
+            if (PrototypeInstance != null)
             {
-                var @enum = prototypeInstance.GetEnumerator(hideNonEnumerable, enumerationMode);
+                var @enum = PrototypeInstance.GetEnumerator(hideNonEnumerable, enumerationMode);
                 while (@enum.MoveNext())
                     yield return @enum.Current;
             }
@@ -523,7 +593,7 @@ namespace NiL.JS.Core.Interop
                 }
             }
 
-            foreach (var item in members)
+            foreach (var item in _members)
             {
                 if (_fields.ContainsKey(item.Key))
                     continue;

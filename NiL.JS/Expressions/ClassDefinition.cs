@@ -543,10 +543,10 @@ namespace NiL.JS.Expressions
                 {
                     if (existedValue.Is(JSValueType.Property) && value.Is(JSValueType.Property))
                     {
-                        var egs = existedValue.As<GsPropertyPair>();
-                        var ngs = value.As<GsPropertyPair>();
-                        egs.get = ngs.get ?? egs.get;
-                        egs.set = ngs.set ?? egs.set;
+                        var egs = existedValue.As<Core.GsPropertyPair>();
+                        var ngs = value.As<Core.GsPropertyPair>();
+                        egs.getter = ngs.getter ?? egs.getter;
+                        egs.setter = ngs.setter ?? egs.setter;
                     }
                     else
                     {

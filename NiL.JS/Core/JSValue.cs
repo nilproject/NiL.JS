@@ -744,9 +744,9 @@ namespace NiL.JS.Core
             if (_valueType == JSValueType.Property)
             {
                 var tempStr = "[";
-                if ((_oValue as GsPropertyPair).get != null)
+                if ((_oValue as GsPropertyPair).getter != null)
                     tempStr += "Getter";
-                if ((_oValue as GsPropertyPair).set != null)
+                if ((_oValue as GsPropertyPair).setter != null)
                     tempStr += (tempStr.Length != 1 ? "/Setter" : "Setter");
                 if (tempStr.Length == 1)
                     return "[Invalid Property]";
@@ -1061,7 +1061,7 @@ namespace NiL.JS.Core
                     {
                         if (a._oValue == this._oValue)
                             return true;
-                        var pi = (a._oValue as StaticProxy)?.prototypeInstance;
+                        var pi = (a._oValue as StaticProxy)?.PrototypeInstance;
                         if (pi != null && (this == pi || this == pi._oValue))
                             return true;
                         a = a.__proto__;
@@ -1072,7 +1072,7 @@ namespace NiL.JS.Core
             {
                 if (a._oValue == this._oValue)
                     return true;
-                var pi = (a._oValue as StaticProxy)?.prototypeInstance;
+                var pi = (a._oValue as StaticProxy)?.PrototypeInstance;
                 if (pi != null && (this == pi || this == pi._oValue))
                     return true;
             }

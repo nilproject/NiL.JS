@@ -214,8 +214,8 @@
     <Compile Include="..\NiL.JS\Core\Interop\AllowNullArgumentsAttribute.cs">
       <Link>Core\Interop\AllowNullArgumentsAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Interop\ArgumentsLengthAttribute.cs">
-      <Link>Core\Interop\ArgumentsLengthAttribute.cs</Link>
+    <Compile Include="..\NiL.JS\Core\Interop\ArgumentsCountAttribute.cs">
+      <Link>Core\Interop\ArgumentsCountAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\ConvertValueAttribute.cs">
       <Link>Core\Interop\ConvertValueAttribute.cs</Link>
@@ -232,6 +232,9 @@
     <Compile Include="..\NiL.JS\Core\Interop\DontDeleteAttribute.cs">
       <Link>Core\Interop\DontDeleteAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\ExpandoObjectWrapper.cs">
+      <Link>Core\Interop\ExpandoObjectWrapper.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\FieldAttribute.cs">
       <Link>Core\Interop\FieldAttribute.cs</Link>
     </Compile>
@@ -246,6 +249,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\InstanceMemberAttribute.cs">
       <Link>Core\Interop\InstanceMemberAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\JavaScriptAliasAttribute.cs">
+      <Link>Core\Interop\JavaScriptAliasAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\NativeList.cs">
       <Link>Core\Interop\NativeList.cs</Link>
@@ -273,6 +279,12 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\StrictConversionAttribute.cs">
       <Link>Core\Interop\StrictConversionAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\ToStringTagAttribute.cs">
+      <Link>Core\Interop\ToStringTagAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\UseIndexersAttribute.cs">
+      <Link>Core\Interop\UseIndexersAttribute.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\JSException.cs">
       <Link>Core\JSException.cs</Link>
@@ -336,9 +348,6 @@
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\AssignmentOperatorCache.cs">
       <Link>Expressions\AssignmentOperatorCache.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Expressions\AssignmentOverReplace.cs">
-      <Link>Expressions\AssignmentOverReplace.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\BitwiseConjunction.cs">
       <Link>Expressions\BitwiseConjunction.cs</Link>

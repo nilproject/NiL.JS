@@ -451,7 +451,7 @@ namespace NiL.JS.Core.Functions
 
                         var proxy = target as Proxy;
                         if (proxy != null)
-                            target = proxy.prototypeInstance ?? targetValue.Value;
+                            target = proxy.PrototypeInstance ?? targetValue.Value;
 
                         // ForceInstance работает только если первый аргумент типа JSValue
                         if (!(target is JSValue))
@@ -603,7 +603,7 @@ namespace NiL.JS.Core.Functions
             return result as JSValue ?? Context.GlobalContext.ProxyValue(result);
         }
 
-        public sealed override JSValue bind(Arguments args)
+        public sealed override Function bind(Arguments args)
         {
             if (_hardTarget != null || args.Length == 0)
                 return this;

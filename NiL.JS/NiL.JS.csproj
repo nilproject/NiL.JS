@@ -257,7 +257,7 @@
     <Compile Include="Core\Interop\StrictConversionAttribute.cs" />
     <Compile Include="Core\GlobalContext.cs" />
     <Compile Include="Core\Interop\ToStringTagAttribute.cs" />
-    <Compile Include="Core\Scope.cs" />
+    <Compile Include="Core\Interop\UseIndexersAttribute.cs" />
     <Compile Include="ExportTable.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />
     <Compile Include="Expressions\GetSetPropertyPair.cs" />

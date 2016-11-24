@@ -95,7 +95,7 @@ namespace NiL.JS.Expressions
                     {
                         var typeProxy = temp.Value as Proxy;
                         if (typeProxy != null)
-                            callable = typeProxy.prototypeInstance as ICallable;
+                            callable = typeProxy.PrototypeInstance as ICallable;
                     }
                 }
             }

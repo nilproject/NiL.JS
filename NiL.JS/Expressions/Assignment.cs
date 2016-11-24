@@ -118,7 +118,7 @@ namespace NiL.JS.Expressions
                 setterArgs.Reset();
                 setterArgs.length = 1;
                 setterArgs[0] = temp;
-                var setter = (field._oValue as GsPropertyPair).set;
+                var setter = (field._oValue as Core.GsPropertyPair).setter;
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (context._strict)

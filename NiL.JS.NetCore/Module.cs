@@ -13,13 +13,12 @@ namespace NiL.JS
         SuppressUselessExpressionsElimination = 1,
         SuppressUselessStatementsElimination = 2,
         SuppressConstantPropogation = 4,
-        // Compile = 8 // TODO
     }
 
     /// <summary>
     /// Represents and manages JavaScript module
     /// </summary>
-    public sealed class Module
+    public class Module
     {
         private static readonly char[] __pathSplitChars = new[] { '\\', '/' };
         private static readonly StringMap<Module> __modulesCache = new StringMap<Module>();
@@ -167,9 +166,6 @@ namespace NiL.JS
 
             if (stat.ContainsYield)
                 body.Decompose(ref bd);
-
-            if ((options & Options.Compile) != 0)
-                body.TryCompile(false, false, null, new List<CodeNode>());
         }
 
         public Module()
@@ -184,7 +180,7 @@ namespace NiL.JS
         {
             if (Code == "")
                 return;
-
+            
             try
             {
                 Context.Activate();

@@ -29,7 +29,7 @@ namespace NiL.JS.Core.Functions
         /// Если нужен более строгий подбор, то количество проходов нужно
         /// уменьшить до одного
         /// </summary>
-        private const int passCount = 3;
+        private const int PassesCount = 3;
 
         private readonly MethodProxy[] _methods;
 
@@ -73,23 +73,24 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            int l = arguments == null ? 0 : arguments.length;
+            int len = arguments == null ? 0 : arguments.length;
             object[] args = null;
 
-            for (int pass = 0; pass < passCount; pass++)
+            for (int pass = 0; pass < PassesCount; pass++)
             {
                 for (var i = 0; i < _methods.Length; i++)
                 {
-                    if (_methods[i].Parameters.Length == 1 && _methods[i]._raw)
+                    if (_methods[i]._parameters.Length == 1 && _methods[i]._raw)
                         return Context.GlobalContext.ProxyValue(_methods[i].Call(targetObject, arguments));
 
-                    if (pass == 1 || _methods[i].Parameters.Length == l)
+                    if (pass == 1 || _methods[i]._parameters.Length == len)
                     {
-                        if (l != 0)
+                        if (len != 0)
                         {
                             args = _methods[i].ConvertArguments(
                                 arguments,
-                                (pass >= 1 ? ConvertArgsOptions.Default : ConvertArgsOptions.StrictConversion) | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.Default));
+                                (pass >= 1 ? ConvertArgsOptions.Default : ConvertArgsOptions.StrictConversion) 
+                                | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.Default));
 
                             if (args == null)
                                 continue;

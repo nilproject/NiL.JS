@@ -88,15 +88,15 @@ namespace NiL.JS.Expressions
             Arguments args = null;
             if (val._valueType == JSValueType.Property)
             {
-                var ppair = val._oValue as GsPropertyPair;
-                setter = ppair.set;
+                var ppair = val._oValue as Core.GsPropertyPair;
+                setter = ppair.setter;
                 if (context._strict && setter == null)
                     ExceptionHelper.ThrowIncrementPropertyWOSetter(first);
                 args = new Arguments();
-                if (ppair.get == null)
+                if (ppair.getter == null)
                     val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
                 else
-                    val = ppair.get.Call(context._objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
+                    val = ppair.getter.Call(context._objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
             }
             else if ((val._attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
