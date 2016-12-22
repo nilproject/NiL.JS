@@ -249,3 +249,7 @@ if (_should_be_changed_ !== '12')
     throw "Incorrect arguments processing in MethodProxy";
 
 console.asserta(() => (new class {}).toString(), {}.toString());
+    
+console.asserta(() => 0b11, 3);
+console.asserta(() => 0o11, 9);
+console.asserta(() => 0x11, 17);

@@ -170,4 +170,4 @@ namespace NiL.JS.Core.JIT
         }
     }
 #endif
-        }
+}
