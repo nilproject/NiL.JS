@@ -249,8 +249,11 @@ namespace NiL.JS.Core.Interop
                             _members.Remove("iterator");
                         }
                     }
-
+#if NET40
+                    var toStringTag = _hostedType.GetCustomAttribute<ToStringTagAttribute>();
+#else
                     var toStringTag = _hostedType.GetTypeInfo().GetCustomAttribute<ToStringTagAttribute>();
+#endif
                     if (toStringTag != null)
                     {
                         if (_symbols == null)

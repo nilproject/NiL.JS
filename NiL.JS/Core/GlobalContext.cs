@@ -178,7 +178,7 @@ namespace NiL.JS.Core
                     else
                     {
                         var indexerSupport = IndexersSupportMode == IndexersSupportMode.ForceEnable
-                            || (IndexersSupportMode == IndexersSupportMode.WithAttributeOnly && type.GetTypeInfo().IsDefined(typeof(UseIndexersAttribute)));
+                            || (IndexersSupportMode == IndexersSupportMode.WithAttributeOnly && type.GetTypeInfo().IsDefined(typeof(UseIndexersAttribute), false));
 
                         var staticProxy = new StaticProxy(this, type, indexerSupport);
                         if (type.GetTypeInfo().IsAbstract)

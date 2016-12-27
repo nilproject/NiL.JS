@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 using System.Reflection;
+using NiL.JS.Backward;
 
 namespace NiL.JS.Expressions
 {
