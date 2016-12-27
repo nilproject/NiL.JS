@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
+using System.Reflection;
 
 namespace NiL.JS.Expressions
 {
@@ -38,7 +39,7 @@ namespace NiL.JS.Expressions
             tempContainer._valueType = JSValueType.Integer;
             return tempContainer;
         }
-#if !(PORTABLE || NETCORE)
+#if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var st = first.TryCompile(false, false, typeof(int), dynamicValues);
@@ -50,7 +51,7 @@ namespace NiL.JS.Expressions
                 return System.Linq.Expressions.Expression.Condition(st, System.Linq.Expressions.Expression.Constant(1), System.Linq.Expressions.Expression.Constant(0));
             if (st.Type == typeof(double))
                 return System.Linq.Expressions.Expression.Convert(st, typeof(double));
-            return System.Linq.Expressions.Expression.Call(new Func<object, int>(Convert.ToInt32).Method, st);
+            return System.Linq.Expressions.Expression.Call(new Func<object, int>(Convert.ToInt32).GetMethodInfo(), st);
         }
 #endif
         public override T Visit<T>(Visitor<T> visitor)

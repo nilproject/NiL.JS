@@ -739,7 +739,7 @@ namespace NiL.JS.Expressions
                 }
             }
         }
-#if !(PORTABLE || NETCORE)
+#if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             _body.TryCompile(true, false, null, new List<CodeNode>());

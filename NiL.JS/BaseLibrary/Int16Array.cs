@@ -66,7 +66,7 @@ namespace NiL.JS.BaseLibrary
         public Int16Array(JSValue src)
             : base(src) { }
 
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public override TypedArray subarray(Arguments args)
         {
             return subarrayImpl<Int16Array>(args[0], args[1]);

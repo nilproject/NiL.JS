@@ -77,7 +77,7 @@ namespace NiL.JS.Core
         {
 
         }
-#if !(PORTABLE || NETCORE)
+#if !PORTABLE
         internal virtual System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             return null;

@@ -4,26 +4,26 @@ namespace NiL.JS.Core
 {
     public sealed class GsPropertyPair
     {
-        internal Function get;
-        internal Function set;
+        internal Function getter;
+        internal Function setter;
 
-        public Function Getter { get { return get; } }
-        public Function Setter { get { return set; } }
+        public Function Getter { get { return getter; } }
+        public Function Setter { get { return setter; } }
 
         internal GsPropertyPair() { }
 
         public GsPropertyPair(Function getter, Function setter)
         {
-            get = getter;
-            set = setter;
+            this.getter = getter;
+            this.setter = setter;
         }
 
         public override string ToString()
         {
             var tempStr = "[";
-            if (get != null)
+            if (getter != null)
                 tempStr += "Getter";
-            if (set != null)
+            if (setter != null)
                 tempStr += (tempStr.Length != 1 ? "/Setter" : "Setter");
             if (tempStr.Length == 1)
                 return "[Invalid Property]";

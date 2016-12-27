@@ -63,7 +63,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static String charAt(JSValue self, Arguments pos)
         {
             var strValue = self.ToString();
@@ -75,7 +75,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue charCodeAt(JSValue self, Arguments pos)
         {
             int p = Tools.JSObjectToInt32(pos[0], true);
@@ -92,7 +92,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue concat(JSValue self, Arguments args)
         {
             if (args.length == 0)
@@ -113,7 +113,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue endsWith(JSValue self, Arguments args)
         {
             var selfAsString = (self ?? undefinedString).ToString();
@@ -125,7 +125,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue includes(JSValue self, Arguments args)
         {
             var selfAsString = (self ?? undefinedString).ToString();
@@ -136,7 +136,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue indexOf(JSValue self, Arguments args)
         {
             if (args.Length == 0)
@@ -162,7 +162,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue lastIndexOf(JSValue self, Arguments args)
         {
             if (args.Length == 0)
@@ -190,7 +190,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue localeCompare(JSValue self, Arguments args)
         {
             string str0 = self.ToString();
@@ -200,7 +200,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue match(JSValue self, Arguments args)
         {
             if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
@@ -248,7 +248,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         [AllowNullArguments]
         public static JSValue replace(JSValue self, Arguments args)
         {
@@ -331,7 +331,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue search(JSValue self, Arguments args)
         {
             if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
@@ -363,7 +363,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue slice(JSValue self, Arguments args)
         {
             string selfString = self.ToPrimitiveValue_Value_String().ToString();
@@ -450,7 +450,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue split(JSValue self, Arguments args)
         {
             if (args.Length == 0 || !args[0].Defined)
@@ -532,7 +532,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue startsWith(JSValue self, Arguments args)
         {
             var selfAsString = (self ?? undefinedString).ToString();
@@ -543,7 +543,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue substring(JSValue self, Arguments args)
         {
             string selfString = self.ToString();
@@ -568,7 +568,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue substr(JSValue self, Arguments args)
         {
             if (args.Length == 0)
@@ -594,7 +594,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue toLocaleLowerCase(JSValue self)
         {
             var sstr = self.ToString();
@@ -606,7 +606,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue toLocaleUpperCase(JSValue self)
         {
             var sstr = self.ToString();
@@ -618,7 +618,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue toLowerCase(JSValue self)
         {
             var sstr = self.ToString();
@@ -630,7 +630,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue toUpperCase(JSValue self)
         {
             var sstr = self.ToString();
@@ -642,7 +642,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue trim(JSValue self)
         {
             switch (self._valueType)
@@ -703,7 +703,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         [CLSCompliant(false)]
         public static JSValue toString(JSValue self)
         {
@@ -716,7 +716,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue valueOf(JSValue self)
         {
             if ((self as object) is String && self._valueType == JSValueType.Object) // prototype instance
@@ -921,11 +921,17 @@ namespace NiL.JS.BaseLibrary
             return "<sup>" + self + "</sup>";
         }
         #endregion
-
+        
         [Hidden]
         public static implicit operator String(string val)
         {
             return new String(val);
+        }
+
+        [Hidden]
+        public static implicit operator string(String val)
+        {
+            return val._oValue.ToString();
         }
     }
 }

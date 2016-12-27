@@ -18,7 +18,7 @@ namespace NiL.JS
     /// <summary>
     /// Represents and manages JavaScript module
     /// </summary>
-    public sealed class Module
+    public class Module
     {
         private static readonly char[] __pathSplitChars = new[] { '\\', '/' };
         private static readonly StringMap<Module> __modulesCache = new StringMap<Module>();
@@ -297,6 +297,6 @@ namespace NiL.JS
             {
                 return __modulesCache.Remove(path);
             }
-        }        
+        }
     }
 }

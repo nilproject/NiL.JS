@@ -506,7 +506,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(7)]
+        [ArgumentsCount(7)]
         public Date(Arguments args)
         {
             if (args.length == 1)
@@ -1210,7 +1210,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(7)]
+        [ArgumentsCount(7)]
         public static JSValue UTC(Arguments dateTime)
         {
             try

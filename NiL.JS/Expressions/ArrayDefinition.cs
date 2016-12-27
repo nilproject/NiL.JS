@@ -91,6 +91,7 @@ namespace NiL.JS.Expressions
                     Length = index - pos
                 };
         }
+
         public override JSValue Evaluate(Context context)
         {
             var length = elements.Length;

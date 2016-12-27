@@ -29,7 +29,7 @@ namespace NiL.JS.Core.Functions
         /// Если нужен более строгий подбор, то количество проходов нужно
         /// уменьшить до одного
         /// </summary>
-        private const int passCount = 3;
+        private const int PassesCount = 3;
 
         private readonly MethodProxy[] _methods;
 
@@ -73,23 +73,24 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            int l = arguments == null ? 0 : arguments.length;
+            int len = arguments == null ? 0 : arguments.length;
             object[] args = null;
 
-            for (int pass = 0; pass < passCount; pass++)
+            for (int pass = 0; pass < PassesCount; pass++)
             {
                 for (var i = 0; i < _methods.Length; i++)
                 {
-                    if (_methods[i].Parameters.Length == 1 && _methods[i].raw)
-                        return Context.GlobalContext.ProxyValue(_methods[i].InvokeImpl(targetObject, null, arguments));
+                    if (_methods[i]._parameters.Length == 1 && _methods[i]._raw)
+                        return Context.GlobalContext.ProxyValue(_methods[i].Call(targetObject, arguments));
 
-                    if (pass == 1 || _methods[i].Parameters.Length == l)
+                    if (pass == 1 || _methods[i]._parameters.Length == len)
                     {
-                        if (l != 0)
+                        if (len != 0)
                         {
-                            args = _methods[i].ConvertArgs(
+                            args = _methods[i].ConvertArguments(
                                 arguments,
-                                (pass >= 1 ? ConvertArgsOptions.None : ConvertArgsOptions.StrictConversion) | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.None));
+                                (pass >= 1 ? ConvertArgsOptions.Default : ConvertArgsOptions.StrictConversion) 
+                                | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.Default));
 
                             if (args == null)
                                 continue;
@@ -114,7 +115,31 @@ namespace NiL.JS.Core.Functions
                                 continue;
                         }
 
-                        return Context.GlobalContext.ProxyValue(_methods[i].InvokeImpl(targetObject, args, arguments));
+                        object value;
+                        var target = _methods[i].GetTargetObject(targetObject, _methods[i]._hardTarget);
+                        try
+                        {
+                            if (args == null)
+                                args = new object[] { arguments };
+
+                            value = _methods[i]._method.Invoke(target, args);
+
+                            if (_methods[i]._returnConverter != null)
+                                value = _methods[i]._returnConverter.From(value);
+                        }
+                        catch (Exception e)
+                        {
+                            while (e.InnerException != null)
+                                e = e.InnerException;
+
+                            if (e is JSException)
+                                throw e;
+
+                            ExceptionHelper.Throw(new TypeError(e.Message), e);
+                            throw;
+                        }
+
+                        return Context.GlobalContext.ProxyValue(value);
                     }
                 }
             }

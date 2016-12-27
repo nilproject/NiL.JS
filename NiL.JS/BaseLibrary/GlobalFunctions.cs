@@ -40,7 +40,7 @@ namespace NiL.JS.BaseLibrary
             return res;
         }
 
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         internal static JSValue parseInt(JSValue thisBind, Arguments args)
         {
             double result = double.NaN;

@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    internal sealed class ForceAssignmentOperator:Assignment
+    internal sealed class ForceAssignmentOperator : Assignment
     {
         public ForceAssignmentOperator(Expression first, Expression second)
             : base(first, second)
@@ -75,6 +75,7 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             JSValue temp;
+
             JSValue field = first.EvaluateForWrite(context);
             if (field._valueType == JSValueType.Property)
             {
@@ -85,8 +86,10 @@ namespace NiL.JS.Expressions
                 if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
                     throwRoError();
             }
+
             temp = second.Evaluate(context);
             field.Assign(temp);
+
             return temp;
         }
 
@@ -115,7 +118,7 @@ namespace NiL.JS.Expressions
                 setterArgs.Reset();
                 setterArgs.length = 1;
                 setterArgs[0] = temp;
-                var setter = (field._oValue as GsPropertyPair).set;
+                var setter = (field._oValue as Core.GsPropertyPair).setter;
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (context._strict)
@@ -126,7 +129,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -136,7 +139,7 @@ namespace NiL.JS.Expressions
                     fs.name = (first as VariableReference).Name;
             }
 #endif
-            var repeat = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
+            base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
 
             var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
@@ -151,10 +154,7 @@ namespace NiL.JS.Expressions
                         f._descriptor.lastPredictedType = pt;
                 }
             }
-#if DEBUG
-            if (repeat)
-                System.Diagnostics.Debugger.Break();
-#endif
+
             var gme = first as Property;
             if (gme != null)
                 _this = new SetProperty(gme.first, gme.second, second) { Position = Position, Length = Length };
@@ -162,7 +162,7 @@ namespace NiL.JS.Expressions
             if ((codeContext & (CodeContext.InExpression | CodeContext.InEval)) != 0)
                 saveResult = true;
 
-            return repeat;
+            return false;
         }
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
@@ -226,7 +226,7 @@ namespace NiL.JS.Expressions
                         }
                     }
                 }
-                
+
                 /*if (_this == this && second.ResultInTempContainer) // это присваивание, не последнее, без with
                 {
                     _this = new AssignmentOverReplace(first, second)

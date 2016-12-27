@@ -123,7 +123,7 @@ namespace NiL.JS.Core
         internal static readonly JSValue booleanString = "boolean";
         internal static readonly JSValue functionString = "function";
         internal static readonly JSValue objectString = "object";
-        
+
         internal static readonly JSValue undefined = new JSValue() { _valueType = JSValueType.Undefined, _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject };
         internal static readonly JSValue notExists = new JSValue() { _valueType = JSValueType.NotExists, _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.SystemObject };
         internal static readonly JSObject @null = new JSObject() { _valueType = JSValueType.Object, _oValue = null, _attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
@@ -286,8 +286,10 @@ namespace NiL.JS.Core
                     && _oValue != this
                     && (_oValue as JSObject) != null)
                     return (_oValue as JSObject).__proto__;
-                if (!this.Defined || this.IsNull)
+
+                if (!Defined || IsNull)
                     ExceptionHelper.Throw(new TypeError("Can not get prototype of null or undefined"));
+
                 return GetDefaultPrototype();
             }
             [Hidden]
@@ -559,8 +561,6 @@ namespace NiL.JS.Core
 
                 if (_oValue == this)
                 {
-                    System.Diagnostics.Debug.WriteLine(typeof(JSValue).Name + "." + nameof(SetProperty) + " must be overridden for objects");
-
                     GetProperty(name, true, propertyScope).Assign(value);
                 }
 
@@ -744,9 +744,9 @@ namespace NiL.JS.Core
             if (_valueType == JSValueType.Property)
             {
                 var tempStr = "[";
-                if ((_oValue as GsPropertyPair).get != null)
+                if ((_oValue as GsPropertyPair).getter != null)
                     tempStr += "Getter";
-                if ((_oValue as GsPropertyPair).set != null)
+                if ((_oValue as GsPropertyPair).setter != null)
                     tempStr += (tempStr.Length != 1 ? "/Setter" : "Setter");
                 if (tempStr.Length == 1)
                     return "[Invalid Property]";
@@ -914,7 +914,7 @@ namespace NiL.JS.Core
 
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         [AllowNullArguments]
         public virtual JSValue toString(Arguments args)
         {
@@ -951,13 +951,53 @@ namespace NiL.JS.Core
                         if (self._oValue is GlobalObject)
                             return self._oValue.ToString();
 
-                        if (self._oValue is Proxy)
+                        var tag = self.GetProperty(Symbol.toStringTag, false, PropertyScope.Сommon);
+                        if (tag.Defined)
                         {
-                            var ht = (self._oValue as Proxy)._hostedType;
-                            return "[object " + (ht == typeof(JSObject) ? typeof(System.Object) : ht).Name + "]";
+                            return $"[object {Tools.InvokeGetter(tag, self)}]";
                         }
 
-                        return "[object " + (self.Value.GetType() == typeof(JSObject) ? typeof(System.Object) : self.Value.GetType()).Name + "]";
+                        if (self._oValue is Proxy)
+                        {
+                            var hostedType = (self._oValue as Proxy)._hostedType;
+
+                            if (hostedType == typeof(JSObject))
+                            {
+                                return "[object Object]";
+                            }
+
+                            return $"[object {hostedType.Name}]";
+                        }
+
+                        if (self.Value.GetType() == typeof(JSObject))
+                        {
+                            return "[object Object]";
+                        }
+
+                        return $"[object {self.Value.GetType().Name}]";
+
+                        //if (self._oValue is Proxy)
+                        //{
+                        //    var hostedType = (self._oValue as Proxy)._hostedType;
+                        //    var tag = hostedType.GetCustomAttribute<ToStringTagAttribute>();
+                        //    if (tag != null)
+                        //    {
+                        //        return $"[object {tag.Tag}]";
+                        //    }
+
+                        //    return $"[object {hostedType.Name}]";
+                        //}
+                        //else
+                        //{
+                        //    var type = self.Value.GetType();
+                        //    var tag = type.GetCustomAttribute<ToStringTagAttribute>();
+                        //    if (tag != null)
+                        //    {
+                        //        return $"[object {tag.Tag}]";
+                        //    }
+
+                        //    return "[object " + type.Name + "]";
+                        //}
                     }
                 default:
                     throw new NotImplementedException();
@@ -1021,7 +1061,7 @@ namespace NiL.JS.Core
                     {
                         if (a._oValue == this._oValue)
                             return true;
-                        var pi = (a._oValue as StaticProxy)?.prototypeInstance;
+                        var pi = (a._oValue as StaticProxy)?.PrototypeInstance;
                         if (pi != null && (this == pi || this == pi._oValue))
                             return true;
                         a = a.__proto__;
@@ -1032,7 +1072,7 @@ namespace NiL.JS.Core
             {
                 if (a._oValue == this._oValue)
                     return true;
-                var pi = (a._oValue as StaticProxy)?.prototypeInstance;
+                var pi = (a._oValue as StaticProxy)?.PrototypeInstance;
                 if (pi != null && (this == pi || this == pi._oValue))
                     return true;
             }

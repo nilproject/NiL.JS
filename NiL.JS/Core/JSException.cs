@@ -44,11 +44,11 @@ namespace NiL.JS.Core
                 {
                     var n = Error.GetProperty("name");
                     if (n._valueType == JSValueType.Property)
-                        n = (n._oValue as GsPropertyPair).get.Call(Error, null).ToString();
+                        n = (n._oValue as GsPropertyPair).getter.Call(Error, null).ToString();
 
                     var m = Error.GetProperty("message");
                     if (m._valueType == JSValueType.Property)
-                        return n + ": " + (m._oValue as GsPropertyPair).get.Call(Error, null);
+                        return n + ": " + (m._oValue as GsPropertyPair).getter.Call(Error, null);
                     else
                         return n + ": " + m;
                 }

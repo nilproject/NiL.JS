@@ -48,11 +48,11 @@ namespace NiL.JS.Core.Functions
                 _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 #if (PORTABLE || NETCORE)
-            var paramCountAttrbt = @delegate.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
+            var paramCountAttrbt = @delegate.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsCountAttribute), false).ToArray();
 #else
-            var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false);
+            var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsCountAttribute), false);
 #endif
-            _length._iValue = paramCountAttrbt.Length > 0 ? ((ArgumentsLengthAttribute)paramCountAttrbt[0]).Count : 1;
+            _length._iValue = paramCountAttrbt.Length > 0 ? ((ArgumentsCountAttribute)paramCountAttrbt[0]).Count : 1;
             
             if (@delegate == null)
                 throw new ArgumentNullException();

@@ -5,7 +5,7 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core.Functions
 {
-    public sealed class EvalFunction : Function
+    internal sealed class EvalFunction : Function
     {
         [Hidden]
         public override string name

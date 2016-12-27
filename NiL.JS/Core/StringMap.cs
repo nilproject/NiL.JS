@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -49,8 +50,11 @@ namespace NiL.JS.Core
 #endif
         }
 
+        private const int InitialSize = 2;
+        private const int MaxAsListSize = 2;
+
         private static readonly Record[] emptyRecords = new Record[0];
-        
+
         private int _count;
         private int _eicount;
         private int _previousIndex;
@@ -60,8 +64,6 @@ namespace NiL.JS.Core
 
         private bool _emptyKeyValueExists = false;
         private TValue _emptyKeyValue;
-
-        private LinkedList<KeyValuePair<uint, int>> _numberKeysIndexes = null;
 
         public StringMap()
         {
@@ -82,32 +84,80 @@ namespace NiL.JS.Core
                 return;
             }
 
+            int index;
+            int colisionCount = 0;
             var mask = _records.Length - 1;
             if (_records.Length == 0)
                 mask = increaseSize() - 1;
 
-            int index;
-            int colisionCount = 0;
-            index = hash & mask;
-
-            do
+            if (_records.Length <= MaxAsListSize)
             {
-                if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
+                for (var i = 0; i < _records.Length; i++)
                 {
-                    if (@throw)
-                        ExceptionHelper.Throw(new InvalidOperationException("Item already Exists"));
-                    _records[index].value = value;
-                    return;
+                    if (_records[i].key == null)
+                    {
+                        _records[i].hash = -1;
+                        _records[i].key = key;
+                        _records[i].value = value;
+
+                        ensureExistedIndexCapacity();
+                        _existsedIndexes[_eicount] = i;
+
+                        _count++;
+                        _eicount++;
+                        return;
+                    }
+
+                    if (string.CompareOrdinal(_records[i].key, key) == 0)
+                    {
+                        if (@throw)
+                            ExceptionHelper.Throw(new InvalidOperationException("Item already Exists"));
+
+                        _records[i].value = value;
+                        return;
+                    }
                 }
 
-                index = _records[index].next - 1;
+                mask = increaseSize() - 1;
+
+                if (_records.Length <= MaxAsListSize)
+                {
+                    _records[mask].key = key;
+                    _records[mask].value = value;
+
+                    ensureExistedIndexCapacity();
+                    _existsedIndexes[_eicount] = mask;
+
+                    _count++;
+                    return;
+                }
             }
-            while (index >= 0);
+            else
+            {
+                index = hash & mask;
+                do
+                {
+                    if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
+                    {
+                        if (@throw)
+                            ExceptionHelper.Throw(new InvalidOperationException("Item already Exists"));
+
+                        _records[index].value = value;
+                        return;
+                    }
+
+                    index = _records[index].next - 1;
+                }
+                while (index >= 0);
+            }
 
             // не нашли
 
-            if ((_count > 50 && _count * 8 / 5 >= mask) || _count == mask + 1)
+            if ((_count == mask + 1)
+                || (_count > 50 && _count * 8 / 5 >= mask))
+            {
                 mask = increaseSize() - 1;
+            }
 
             int prewIndex = -1;
             index = hash & mask;
@@ -131,6 +181,18 @@ namespace NiL.JS.Core
             if (prewIndex >= 0)
                 _records[prewIndex].next = index + 1;
 
+            ensureExistedIndexCapacity();
+
+            _existsedIndexes[_eicount] = index;
+            _eicount++;
+            _count++;
+
+            if (colisionCount > 17)
+                increaseSize();
+        }
+
+        private void ensureExistedIndexCapacity()
+        {
             if (_eicount == _existsedIndexes.Length)
             {
                 // Увеличиваем размер массива с занятыми номерами
@@ -138,17 +200,6 @@ namespace NiL.JS.Core
                 Array.Copy(_existsedIndexes, newEI, _existsedIndexes.Length);
                 _existsedIndexes = newEI;
             }
-
-            _existsedIndexes[_eicount++] = index;
-            _count++;
-
-            if (_numberKeysIndexes != null)
-            {
-                tryAddNumberKeyItem(_eicount - 1);
-            }
-
-            if (colisionCount > 17)
-                increaseSize();
         }
 
 #if INLINE
@@ -160,9 +211,21 @@ namespace NiL.JS.Core
             {
                 int hash;
                 var keyLen = key.Length;
-                hash = keyLen * 0x55 ^ 0xe5b5e5;
+                int isNumber = int.MinValue & (-keyLen);
+                char c;
+                hash = (int)((uint)keyLen * 0x55) ^ 0xe5b5e5;
+
                 for (var i = 0; i < keyLen; i++)
-                    hash += (hash >> 28) + (hash << 4) + key[i];
+                {
+                    c = key[i];
+                    c -= (char)((uint)((i - 1) & ~(keyLen - 2)) >> (sizeof(int) * 8 - 1));
+                    hash += (hash >> 28) + (hash << 4) + c;
+                    isNumber &= ('0' - c - 1) & (c - '9' - 1);
+                }
+
+                hash &= int.MaxValue;
+                hash |= isNumber;
+
                 return hash;
             }
         }
@@ -182,6 +245,24 @@ namespace NiL.JS.Core
 
                 value = _emptyKeyValue;
                 return true;
+            }
+
+            if (_records.Length <= MaxAsListSize)
+            {
+                for (var i = 0; i < _records.Length; i++)
+                {
+                    if (_records[i].key == null)
+                        break;
+
+                    if (string.CompareOrdinal(_records[i].key, key) == 0)
+                    {
+                        value = _records[i].value;
+                        return true;
+                    }
+                }
+
+                value = default(TValue);
+                return false;
             }
 
             if (_previousIndex != -1 && string.CompareOrdinal(_records[_previousIndex].key, key) == 0)
@@ -239,16 +320,40 @@ namespace NiL.JS.Core
                 return true;
             }
 
+            if (_records.Length <= MaxAsListSize)
+            {
+                var found = false;
+                for (var i = 0; i < _records.Length; i++)
+                {
+                    if (found)
+                    {
+                        _records[i - 1].key = _records[i].key;
+                        _records[i - 1].value = _records[i].value;
+                        _records[i].key = null;
+                        _records[i].value = default(TValue);
+                    }
+                    else if (string.CompareOrdinal(_records[i].key, key) == 0)
+                    {
+                        _count--;
+                        found = true;
+                        _records[i].key = null;
+                        _records[i].value = default(TValue);
+                    }
+                }
+
+                return found;
+            }
+
             if (_records.Length == 0)
                 return false;
 
-            var elen = _records.Length - 1;
+            var mask = _records.Length - 1;
             int hash = computeHash(key);
             int index;
             int targetIndex = -1;
             int prewIndex;
 
-            for (index = hash & elen; index >= 0; index = _records[index].next - 1)
+            for (index = hash & mask; index >= 0; index = _records[index].next - 1)
             {
                 if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
                 {
@@ -257,23 +362,28 @@ namespace NiL.JS.Core
                         prewIndex = targetIndex;
                         targetIndex = index;
                         index = _records[index].next - 1;
+
                         do
                         {
-                            if ((_records[index].hash & elen) >= targetIndex)
+                            if ((_records[index].hash & mask) != targetIndex)
                             {
                                 _records[targetIndex] = _records[index];
                                 _records[targetIndex].next = index + 1;
                                 prewIndex = targetIndex;
                                 targetIndex = index;
                             }
+
                             index = _records[index].next - 1;
                         }
                         while (index >= 0);
+
                         _records[targetIndex].key = null;
                         _records[targetIndex].value = default(TValue);
                         _records[targetIndex].hash = 0;
+
                         if (targetIndex == _previousIndex)
                             _previousIndex = -1;
+
                         if (prewIndex >= 0)
                             _records[prewIndex].next = 0;
                     }
@@ -281,12 +391,15 @@ namespace NiL.JS.Core
                     {
                         if (index == _previousIndex)
                             _previousIndex = -1;
+
                         _records[index].key = null;
                         _records[index].value = default(TValue);
                         _records[index].hash = 0;
+
                         if (targetIndex >= 0)
                             _records[targetIndex].next = 0;
                     }
+
                     return true;
                 }
 
@@ -301,24 +414,32 @@ namespace NiL.JS.Core
         {
             if (_records.Length == 0)
             {
-                _records = new Record[4];
-                _existsedIndexes = new int[4];
+                _records = new Record[InitialSize];
+                _existsedIndexes = new int[InitialSize];
             }
             else
             {
-                _numberKeysIndexes = null;
                 var oldRecords = _records;
-                _records = new Record[_records.Length << 1];
-                int i = 0, c = _eicount;
+                var newLength = _records.Length << 1;
+                _records = new Record[newLength];
+
+                var i = 0;
+                var c = _eicount;
                 _count = 0;
                 _eicount = 0;
                 for (; i < c; i++)
                 {
                     var index = _existsedIndexes[i];
                     if (oldRecords[index].key != null)
-                        insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false);
+                    {
+                        if (newLength == MaxAsListSize << 1)
+                            Add(oldRecords[index].key, oldRecords[index].value);
+                        else
+                            insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false);
+                    }
                 }
             }
+
             _previousIndex = -1;
             return _records.Length;
         }
@@ -407,77 +528,51 @@ namespace NiL.JS.Core
             if (_emptyKeyValueExists)
                 yield return new KeyValuePair<string, TValue>("", _emptyKeyValue);
 
-            if (_numberKeysIndexes == null)
-                buildNumberKeysList();
+            uint number;
 
-            if (_numberKeysIndexes != null)
+            uint foundNumber;
+            uint exprected = 0;
+
+            do
             {
-                for (var node = _numberKeysIndexes.First; node != null; node = node.Next)
+                foundNumber = uint.MaxValue;
+                int index = -1;
+                for (int i = 0; i < _records.Length; i++)
                 {
-                    if (_records[_existsedIndexes[node.Value.Value]].key != null)
+                    if (_records[i].key != null
+                        && _records[i].hash < 0
+                        && uint.TryParse(_records[i].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out number)
+                        && number >= exprected
+                        && (number < foundNumber || number == uint.MaxValue))
                     {
-                        yield return new KeyValuePair<string, TValue>(
-                            _records[_existsedIndexes[node.Value.Value]].key,
-                            _records[_existsedIndexes[node.Value.Value]].value);
+                        foundNumber = number;
+                        index = i;
+                        if (number == exprected)
+                            break;
                     }
                 }
-            }
 
-            uint fake;
+                if (index != -1)
+                {
+                    yield return new KeyValuePair<string, TValue>(
+                        _records[index].key,
+                        _records[index].value);
+
+                    exprected = foundNumber + 1;
+                }
+            }
+            while (foundNumber < exprected);
 
             for (int i = 0; i < _eicount; i++)
             {
-                if (_records[_existsedIndexes[i]].key != null && (_numberKeysIndexes == null || !uint.TryParse(_records[_existsedIndexes[i]].key, out fake)))
+                if (_records[_existsedIndexes[i]].key != null 
+                    && !uint.TryParse(_records[_existsedIndexes[i]].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out number))
                 {
                     yield return new KeyValuePair<string, TValue>(
                         _records[_existsedIndexes[i]].key,
                         _records[_existsedIndexes[i]].value);
                 }
             }
-        }
-
-        private void buildNumberKeysList()
-        {
-            for (var i = 0; i < _eicount; i++)
-            {
-                tryAddNumberKeyItem(i);
-            }
-        }
-
-        private void tryAddNumberKeyItem(int existsedIndex)
-        {
-            uint key;
-            var skey = _records[_existsedIndexes[existsedIndex]].key;
-            if (skey != null && Tools.IsDigit(skey[0]) && uint.TryParse(skey, out key))
-            {
-                if (_numberKeysIndexes == null)
-                    _numberKeysIndexes = new LinkedList<KeyValuePair<uint, int>>();
-
-                var node = findNumberListNode_LessOrEqual(key);
-
-                if (node == null)
-                    _numberKeysIndexes.AddFirst(new KeyValuePair<uint, int>(key, existsedIndex));
-                else
-                    _numberKeysIndexes.AddAfter(node, new KeyValuePair<uint, int>(key, existsedIndex));
-            }
-        }
-
-        private LinkedListNode<KeyValuePair<uint, int>> findNumberListNode_LessOrEqual(uint key)
-        {
-            var node = _numberKeysIndexes.First;
-
-            if (node == null || node.Value.Key > key)
-                return null;
-
-            while (node != null)
-            {
-                if (node.Next != null && node.Next.Value.Key <= key)
-                    node = node.Next;
-                else
-                    break;
-            }
-
-            return node;
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

@@ -250,11 +250,14 @@
     <Compile Include="Core\ICallable.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
+    <Compile Include="Core\Interop\ExpandoObjectWrapper.cs" />
+    <Compile Include="Core\Interop\JavaScriptAliasAttribute.cs" />
     <Compile Include="Core\Interop\StaticProxy.cs" />
     <Compile Include="Core\Interop\PrototypeProxy.cs" />
     <Compile Include="Core\Interop\StrictConversionAttribute.cs" />
     <Compile Include="Core\GlobalContext.cs" />
-    <Compile Include="Core\Scope.cs" />
+    <Compile Include="Core\Interop\ToStringTagAttribute.cs" />
+    <Compile Include="Core\Interop\UseIndexersAttribute.cs" />
     <Compile Include="ExportTable.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />
     <Compile Include="Expressions\GetSetPropertyPair.cs" />
@@ -308,7 +311,7 @@
     <Compile Include="Core\Interop\DoNotEnumerateAttribute.cs" />
     <Compile Include="Core\Interop\DontDeleteAttribute.cs" />
     <Compile Include="BaseLibrary\JSON.cs" />
-    <Compile Include="Core\Interop\ArgumentsLengthAttribute.cs" />
+    <Compile Include="Core\Interop\ArgumentsCountAttribute.cs" />
     <Compile Include="Core\Interop\PrototypeAttribute.cs" />
     <Compile Include="Core\Functions\ObjectConstructor.cs" />
     <Compile Include="Core\ParseInfo.cs" />
@@ -323,7 +326,7 @@
     <Compile Include="Core\Tools.cs" />
     <Compile Include="Core\Interop\Proxy.cs" />
     <Compile Include="Core\Interop\ReadOnlyAttribute.cs" />
-    <Compile Include="Core\Functions\ProxyConstructor.cs" />
+    <Compile Include="Core\Functions\ConstructorProxy.cs" />
     <Compile Include="Core\Visitor.cs" />
     <Compile Include="Core\WithContext.cs" />
     <Compile Include="Expressions\ClassDefinition.cs" />
@@ -343,7 +346,6 @@
     <Compile Include="Expressions\ConvertToUnsignedInteger.cs" />
     <Compile Include="Expressions\ConvertToNumber.cs" />
     <Compile Include="Expressions\ConvertToInteger.cs" />
-    <Compile Include="Expressions\AssignmentOverReplace.cs" />
     <Compile Include="Expressions\Yield.cs" />
     <Compile Include="Extensions\JSValueExtensions.cs" />
     <Compile Include="NamespaceProvider.cs" />

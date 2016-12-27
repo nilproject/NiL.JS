@@ -99,11 +99,11 @@ namespace NiL.JS.BaseLibrary
         protected TypedArray(int length)
         {
             this.length = new Number(length);
-            this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
-            this.byteLength = length * BYTES_PER_ELEMENT;
-            this.byteOffset = 0;
-            this._valueType = JSValueType.Object;
-            this._oValue = this;
+            buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
+            byteLength = length * BYTES_PER_ELEMENT;
+            byteOffset = 0;
+            _valueType = JSValueType.Object;
+            _oValue = this;
         }
 
         [DoNotEnumerate]
@@ -140,7 +140,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [AllowNullArguments]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public void set(Arguments args)
         {
             if (args == null)
@@ -168,14 +168,14 @@ namespace NiL.JS.BaseLibrary
                 var value = src.GetProperty(index, false, PropertyScope.Сommon);
                 if (value._valueType == JSValueType.Property)
                 {
-                    value = ((value._oValue as GsPropertyPair).get ?? Function.Empty).Call(src, dummyArgs);
+                    value = ((value._oValue as GsPropertyPair).getter ?? Function.Empty).Call(src, dummyArgs);
                     dummyArgs.Reset();
                 }
                 this[(int)(i + offset)] = value;
             }
         }
 
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public abstract TypedArray subarray(Arguments args);
 
         protected T subarrayImpl<T>(JSValue begin, JSValue end) where T : TypedArray, new()

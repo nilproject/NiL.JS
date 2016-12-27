@@ -17,8 +17,8 @@ namespace NiL.JS.Core.Interop
             }
         }
 
-        public PrototypeProxy(GlobalContext context, Type type)
-            : base(context, type)
+        public PrototypeProxy(GlobalContext context, Type type, bool indexersSupport)
+            : base(context, type, indexersSupport)
         {
         }
     }

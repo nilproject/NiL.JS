@@ -24,7 +24,7 @@ namespace NiL.JS.Core
     {
         None = 0,
         RaiseIfOctal = 1,
-        ProcessOctal = 2,
+        ProcessOctalLiteralsOldSyntax = 2,
         AllowFloat = 4,
         AllowAutoRadix = 8,
         Default = 2 + 4 + 8
@@ -74,10 +74,10 @@ namespace NiL.JS.Core
                     if (text.Length > i + 1 && text[i + 1] == '\n')
                         i++;
                 }
-                
+
                 column++;
             }
-            
+
             return new CodeCoordinates(line, column, length);
         }
     }
@@ -202,6 +202,7 @@ namespace NiL.JS.Core
             {
                 if (arg == null)
                     return double.NaN;
+
                 switch (arg._valueType)
                 {
                     case JSValueType.Boolean:
@@ -559,6 +560,9 @@ namespace NiL.JS.Core
                                 return (ulong)jsobj._iValue;
                             if (targetType == typeof(string))
                                 return DoubleToString(jsobj._dValue);
+
+                            if (targetType.GetTypeInfo().IsEnum)
+                                return Enum.ToObject(targetType, (long)jsobj._dValue);
                         }
 
                         if (targetType == typeof(double))
@@ -568,9 +572,6 @@ namespace NiL.JS.Core
 
                         if (targetType == typeof(Number))
                             return new Number(jsobj._dValue);
-
-                        if (targetType.GetTypeInfo().IsEnum)
-                            return Enum.ToObject(targetType, jsobj._dValue);
 
                         return null;
                     }
@@ -628,23 +629,35 @@ namespace NiL.JS.Core
                                 return (ulong)JSObjectToInt64(jsobj);
                             if (targetType == typeof(double))
                             {
+                                if (jsobj.Value.ToString() == "NaN")
+                                    return double.NaN;
+
                                 var r = JSObjectToDouble(jsobj);
-                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                if (!double.IsNaN(r))
                                     return r;
+
                                 return null;
                             }
                             if (targetType == typeof(float))
                             {
+                                if (jsobj.Value.ToString() == "NaN")
+                                    return float.NaN;
+
                                 var r = JSObjectToDouble(jsobj);
-                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                if (!double.IsNaN(r))
                                     return (float)r;
+
                                 return null;
                             }
                             if (targetType == typeof(decimal))
                             {
+                                if (jsobj.Value.ToString() == "NaN")
+                                    return float.NaN;
+
                                 var r = JSObjectToDouble(jsobj);
-                                if (!double.IsNaN(r) || jsobj.Value.ToString() == "NaN")
+                                if (!double.IsNaN(r))
                                     return (decimal)r;
+
                                 return null;
                             }
                             if (targetType.GetTypeInfo().IsEnum)
@@ -717,16 +730,16 @@ namespace NiL.JS.Core
             var tpres = value as Proxy;
             if (tpres != null && targetType.IsAssignableFrom(tpres._hostedType))
             {
-                jsobj = tpres.prototypeInstance;
+                jsobj = tpres.PrototypeInstance;
                 if (jsobj is ObjectWrapper)
                     return jsobj.Value;
 
                 return jsobj;
             }
 
-            if (value is ProxyConstructor && typeof(Type).IsAssignableFrom(targetType))
+            if (value is ConstructorProxy && typeof(Type).IsAssignableFrom(targetType))
             {
-                return (value as ProxyConstructor)._staticProxy._hostedType;
+                return (value as ConstructorProxy)._staticProxy._hostedType;
             }
 
             if ((value is BaseLibrary.Array || value is TypedArray || value is ArrayBuffer)
@@ -1044,20 +1057,22 @@ namespace NiL.JS.Core
         {
             if (code == null)
                 throw new ArgumentNullException("code");
+
             if (code.Length == 0)
             {
                 value = 0;
                 return true;
             }
+
             if (radix != 0 && (radix < 2 || radix > 36))
             {
                 value = double.NaN;
                 return false;
             }
 
-            bool raiseOctal = (options & ParseNumberOptions.RaiseIfOctal) != 0;
-            bool processOctal = (options & ParseNumberOptions.ProcessOctal) != 0;
-            bool allowAutoRadix = (options & ParseNumberOptions.AllowAutoRadix) != 0;
+            bool raiseOldOctalLiterals = (options & ParseNumberOptions.RaiseIfOctal) != 0;
+            bool processOldOctals = (options & ParseNumberOptions.ProcessOctalLiteralsOldSyntax) != 0;
+            bool allowRadixDetection = (options & ParseNumberOptions.AllowAutoRadix) != 0;
             bool allowFloat = (options & ParseNumberOptions.AllowFloat) != 0;
 
             int i = index;
@@ -1090,35 +1105,43 @@ namespace NiL.JS.Core
                 return true;
             }
 
-            bool res = false;
-            bool skiped = false;
-            if (allowAutoRadix && i + 1 < code.Length)
+            bool result = false;
+            if (allowRadixDetection
+                && (code[i] == '0')
+                && (i + 1 < code.Length))
             {
-                while ((code[i] == '0') && (i + 1 < code.Length) && (code[i + 1] == '0'))
+                if (IsDigit(code[i + 1]))
                 {
-                    skiped = true;
-                    i++;
-                }
+                    if (raiseOldOctalLiterals)
+                        ExceptionHelper.ThrowSyntaxError("Octal literals not allowed in strict mode", code, i);
+                    
+                    while ((i + 1 < code.Length) && (code[i + 1] == '0'))
+                    {
+                        i++;
+                    }
 
-                if ((i + 1 < code.Length) && (code[i] == '0'))
+                    if (processOldOctals && (i + 1 < code.Length) && IsDigit(code[i + 1]))
+                        radix = 8;
+                }
+                else
                 {
                     if ((radix == 0 || radix == 16)
-                        && !skiped
-                        && (code[i + 1] == 'x' || code[i + 1] == 'X'))
+                     && (code[i + 1] == 'x' || code[i + 1] == 'X'))
                     {
                         i += 2;
                         radix = 16;
                     }
-                    else if (radix == 0 && IsDigit(code[i + 1]))
+                    else if ((radix == 0 || radix == 8)
+                     && (code[i + 1] == 'o' || code[i + 1] == 'O'))
                     {
-                        if (raiseOctal)
-                            ExceptionHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
-
-                        i += 1;
-                        if (processOctal)
-                            radix = 8;
-
-                        res = true;
+                        i += 2;
+                        radix = 8;
+                    }
+                    else if ((radix == 0 || radix == 8)
+                     && (code[i + 1] == 'b' || code[i + 1] == 'B'))
+                    {
+                        i += 2;
+                        radix = 2;
                     }
                 }
             }
@@ -1145,11 +1168,11 @@ namespace NiL.JS.Core
                         }
 
                         scount++;
-                        res = true;
+                        result = true;
                     }
                 }
 
-                if (!res && (i >= code.Length || code[i] != '.'))
+                if (!result && (i >= code.Length || code[i] != '.'))
                 {
                     value = double.NaN;
                     return false;
@@ -1175,12 +1198,12 @@ namespace NiL.JS.Core
                             }
 
                             scount++;
-                            res = true;
+                            result = true;
                         }
                     }
                 }
 
-                if (!res)
+                if (!result)
                 {
                     value = double.NaN;
                     return false;
@@ -1290,7 +1313,7 @@ namespace NiL.JS.Core
                             e = 1023 - e + 52;
                             temp |= ((ulong)e << 52);
                             value = BitConverter.Int64BitsToDouble((long)temp);
-                            
+
                             deg = 0;
                         }
                     }
@@ -1329,9 +1352,6 @@ namespace NiL.JS.Core
                 else
                     value = temp;
 
-                if (value == 0 && skiped && raiseOctal)
-                    ExceptionHelper.Throw((new SyntaxError("Octal literals not allowed in strict mode")));
-
                 value *= sign;
                 index = i;
                 return true;
@@ -1366,11 +1386,11 @@ namespace NiL.JS.Core
                                 doubleTemp = temp;
                             }
                         }
-                        res = true;
+                        result = true;
                     }
                     i++;
                 }
-                if (!res)
+                if (!result)
                 {
                     value = double.NaN;
                     return false;
@@ -1690,7 +1710,7 @@ namespace NiL.JS.Core
             if (reassignLen)
             {
                 if (length._valueType == JSValueType.Property)
-                    ((length._oValue as GsPropertyPair).set ?? Function.Empty).Call(src, new Arguments() { result });
+                    ((length._oValue as GsPropertyPair).setter ?? Function.Empty).Call(src, new Arguments() { result });
                 else
                     length.Assign(result);
             }
@@ -1723,7 +1743,7 @@ namespace NiL.JS.Core
                             goDeep = true;
                         }
                         if (evalProps && value._valueType == JSValueType.Property)
-                            value = (value._oValue as GsPropertyPair).get == null ? JSValue.undefined : (value._oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
+                            value = (value._oValue as GsPropertyPair).getter == null ? JSValue.undefined : (value._oValue as GsPropertyPair).getter.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (temp._data[element.Key] == null)
@@ -1746,7 +1766,7 @@ namespace NiL.JS.Core
                         if (!value.Exists)
                             continue;
                         if (evalProps && value._valueType == JSValueType.Property)
-                            value = (value._oValue as GsPropertyPair).get == null ? JSValue.undefined : (value._oValue as GsPropertyPair).get.Call(src, null).CloneImpl(false);
+                            value = (value._oValue as GsPropertyPair).getter == null ? JSValue.undefined : (value._oValue as GsPropertyPair).getter.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
@@ -1794,12 +1814,12 @@ namespace NiL.JS.Core
             }
         }
 
-        public static int CompareWithMask(Enum x, Enum y, Enum mask)
+        internal static int CompareWithMask(Enum x, Enum y, Enum mask)
         {
             return ((int)(ValueType)x & (int)(ValueType)mask) - ((int)(ValueType)y & (int)(ValueType)mask);
         }
 
-        public static bool IsEqual(Enum x, Enum y, Enum mask)
+        internal static bool IsEqual(Enum x, Enum y, Enum mask)
         {
             return ((int)(ValueType)x & (int)(ValueType)mask) == ((int)(ValueType)y & (int)(ValueType)mask);
         }
@@ -1809,15 +1829,15 @@ namespace NiL.JS.Core
             if (property._valueType != JSValueType.Property)
                 return property;
             var getter = property._oValue as GsPropertyPair;
-            if (getter == null || getter.get == null)
+            if (getter == null || getter.getter == null)
                 return JSValue.undefined;
-            property = getter.get.Call(target, null);
+            property = getter.getter.Call(target, null);
             if (property._valueType < JSValueType.Undefined)
                 property = JSValue.undefined;
             return property;
         }
 
-        internal static JSValue PrepareArg(Context context, CodeNode source)
+        internal static JSValue EvalExpressionSafe(Context context, Expressions.Expression source)
         {
             var a = source.Evaluate(context);
             if (a == null)
@@ -1869,7 +1889,7 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    var value = Tools.PrepareArg(initiator, arguments[sourceIndex]);
+                    var value = Tools.EvalExpressionSafe(initiator, arguments[sourceIndex]);
                     if (value._valueType == JSValueType.SpreadOperatorResult)
                     {
                         spreadIndex = 0;
@@ -1930,8 +1950,8 @@ namespace NiL.JS.Core
                         argumentsParameter,
                         typeof(Arguments).GetRuntimeMethod("Add", new[] { typeof(JSValue) }),
                         Expression.Call(
-                            Expression.Constant(currentBaseContext), 
-                            methodof<object, JSValue>(currentBaseContext.ProxyValue), 
+                            Expression.Constant(currentBaseContext),
+                            methodof<object, JSValue>(currentBaseContext.ProxyValue),
                             argument)));
                 }
             }

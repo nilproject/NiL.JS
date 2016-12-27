@@ -16,7 +16,7 @@ namespace NiL.JS.Core.Functions
     [Flags]
     internal enum ConvertArgsOptions
     {
-        None = 0,
+        Default = 0,
         ThrowOnError = 1,
         StrictConversion = 2,
         DummyValues = 4
@@ -25,18 +25,21 @@ namespace NiL.JS.Core.Functions
     [Prototype(typeof(Function), true)]
     internal sealed class MethodProxy : Function
     {
-        private static readonly Dictionary<MethodBase, Func<object, object[], Arguments, object>> _wrapperCache = new Dictionary<MethodBase, Func<object, object[], Arguments, object>>();
-        private Func<object, object[], Arguments, object> wrapper;
-        private bool forceInstance;
-        private bool _strictConversion;
+        private delegate object WrapperDelegate(object target, Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject);
 
-        private object _hardTarget;
-        private MethodBase _method;
-        private ConvertValueAttribute returnConverter;
-        private ConvertValueAttribute[] paramsConverters;
+        private static readonly Dictionary<MethodBase, WrapperDelegate> WrapperCache = new Dictionary<MethodBase, WrapperDelegate>();
 
-        internal ParameterInfo[] _parameters;
-        internal bool raw;
+        private readonly WrapperDelegate _fastWrapper;
+        private readonly bool _forceInstance;
+        private readonly bool _strictConversion;
+        private readonly ConvertValueAttribute[] _paramsConverters;
+        private readonly string _name;
+
+        internal readonly ParameterInfo[] _parameters;
+        internal readonly bool _raw;
+        internal readonly MethodBase _method;
+        internal readonly object _hardTarget;
+        internal readonly ConvertValueAttribute _returnConverter;
 
         public ParameterInfo[] Parameters
         {
@@ -50,7 +53,7 @@ namespace NiL.JS.Core.Functions
         {
             get
             {
-                return _method.Name;
+                return _name;
             }
         }
 
@@ -66,12 +69,9 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        private MethodProxy(Context context)
-            : base(context)
+        public MethodProxy(Context context, MethodBase methodBase)
+            : this(context, methodBase, null)
         {
-            _parameters = new ParameterInfo[0];
-            wrapper = delegate { return null; };
-            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
         }
 
         public MethodProxy(Context context, MethodBase methodBase, object hardTarget)
@@ -81,35 +81,47 @@ namespace NiL.JS.Core.Functions
             _hardTarget = hardTarget;
             _parameters = methodBase.GetParameters();
             _strictConversion = methodBase.IsDefined(typeof(StrictConversionAttribute), true);
+            _name = methodBase.Name;
+
+            if (methodBase.IsDefined(typeof(JavaScriptNameAttribute), false))
+            {
+                _name = (methodBase.GetCustomAttributes(typeof(JavaScriptNameAttribute), false).First() as JavaScriptNameAttribute).Name;
+                if (_name.StartsWith("@@"))
+                    _name = _name.Substring(2);
+            }
 
             if (_length == null)
                 _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
-            var pc = methodBase.GetCustomAttributes(typeof(ArgumentsLengthAttribute), false).ToArray();
-            if (pc.Length != 0)
-                _length._iValue = (pc[0] as ArgumentsLengthAttribute).Count;
+            if (methodBase.IsDefined(typeof(ArgumentsCountAttribute), false))
+            {
+                var argsCountAttribute = methodBase.GetCustomAttributes(typeof(ArgumentsCountAttribute), false).First() as ArgumentsCountAttribute;
+                _length._iValue = argsCountAttribute.Count;
+            }
             else
+            {
                 _length._iValue = _parameters.Length;
+            }
 
             for (int i = 0; i < _parameters.Length; i++)
             {
-                var t = _parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false).ToArray();
-                if (t != null && t.Length != 0)
+                if (_parameters[i].IsDefined(typeof(ConvertValueAttribute), false))
                 {
-                    if (paramsConverters == null)
-                        paramsConverters = new ConvertValueAttribute[_parameters.Length];
-                    paramsConverters[i] = t[0] as ConvertValueAttribute;
+                    var t = _parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false).First();
+                    if (_paramsConverters == null)
+                        _paramsConverters = new ConvertValueAttribute[_parameters.Length];
+                    _paramsConverters[i] = t as ConvertValueAttribute;
                 }
             }
 
             var methodInfo = methodBase as MethodInfo;
             if (methodInfo != null)
             {
-                returnConverter = methodInfo.ReturnParameter.GetCustomAttribute(typeof(ConvertValueAttribute), false) as ConvertValueAttribute;
+                _returnConverter = methodInfo.ReturnParameter.GetCustomAttribute(typeof(ConvertValueAttribute), false) as ConvertValueAttribute;
 
-                forceInstance = methodBase.IsDefined(typeof(InstanceMemberAttribute), false);
+                _forceInstance = methodBase.IsDefined(typeof(InstanceMemberAttribute), false);
 
-                if (forceInstance)
+                if (_forceInstance)
                 {
                     if (!methodInfo.IsStatic
                         || (_parameters.Length == 0)
@@ -117,197 +129,57 @@ namespace NiL.JS.Core.Functions
                         || (_parameters[0].ParameterType != typeof(JSValue))
                         || (_parameters.Length > 1 && _parameters[1].ParameterType != typeof(Arguments)))
                         throw new ArgumentException("Force-instance method \"" + methodBase + "\" has invalid signature");
-                    raw = true;
+
+                    _raw = true;
                 }
 
-                if (!_wrapperCache.TryGetValue(_method, out wrapper))
-                {
-#if !(PORTABLE || NETCORE)
-                    wrapper = makeMethodOverEmit(methodInfo, _parameters, forceInstance);
-#else
-                    wrapper = makeMethodOverExpression(methodInfo);
-#endif
-                    _wrapperCache[_method] = wrapper;
-                }
-                else
-                {
-                    raw |= _parameters.Length == 0 || (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments));
-                }
+                if (!WrapperCache.TryGetValue(methodBase, out _fastWrapper))
+                    WrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodInfo);
 
-                RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
+                _raw |= _parameters.Length == 0
+                    || (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments));
+
+                RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
             }
             else if (methodBase is ConstructorInfo)
             {
-                if (!_wrapperCache.TryGetValue(_method, out wrapper))
-                {
-                    wrapper = makeConstructorOverExpression(methodBase as ConstructorInfo, _parameters);
-                    _wrapperCache[_method] = wrapper;
-                }
-                else
-                {
-                    raw |= _parameters.Length == 0 || (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments));
-                }
+                if (!WrapperCache.TryGetValue(methodBase, out _fastWrapper))
+                    WrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodBase as ConstructorInfo);
+
+                _raw |= _parameters.Length == 0
+                    || (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments));
             }
             else
                 throw new NotImplementedException();
         }
-#if !(PORTABLE || NETCORE)
-        private Func<object, object[], Arguments, object> makeMethodOverEmit(MethodInfo methodInfo, ParameterInfo[] parameters, bool forceInstance)
+
+        private MethodProxy(Context context, bool raw, object hardTarget, MethodBase method, ParameterInfo[] Parameters, WrapperDelegate fastWrapper, bool forceInstance)
+            : base(context)
         {
-            var impl = new DynamicMethod(
-                "<nil.js@wrapper>" + methodInfo.Name,
-                typeof(object),
-                new[]
-                {
-                    typeof(object), // target
-                    typeof(object[]), // argsArray
-                    typeof(Arguments) // argsSource
-                },
-                typeof(MethodProxy),
-                true);
+            _raw = raw;
+            _hardTarget = hardTarget;
+            _method = method;
+            _parameters = Parameters;
+            _fastWrapper = fastWrapper;
+            _forceInstance = forceInstance;
+            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
+        }
 
-            var generator = impl.GetILGenerator();
+        private WrapperDelegate makeFastWrapper(MethodInfo methodInfo)
+        {
+            Expression tree = null;
+            var target = Expression.Parameter(typeof(object), "target");
+            var context = Expression.Parameter(typeof(Context), "context");
+            var arguments = Expression.Parameter(typeof(Expressions.Expression[]), "arguments");
+            var argumentsObjectPrm = Expression.Parameter(typeof(Arguments), "argumentsObject");
+            var argumentsObject = Expression.Condition(
+                Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
+                argumentsObjectPrm,
+                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.EvaluateArgs).GetMethodInfo(), arguments, context)));
 
-            if (!methodInfo.IsStatic)
-            {
-                generator.Emit(OpCodes.Ldarg_0);
-                if (methodInfo.DeclaringType.IsValueType)
-                {
-                    generator.Emit(OpCodes.Ldc_I4, IntPtr.Size);
-                    generator.Emit(OpCodes.Add);
-                }
-            }
-
-            if (forceInstance)
+            if (_forceInstance)
             {
                 for (;;)
-                {
-                    if (methodInfo.IsStatic && parameters[0].ParameterType == typeof(JSValue))
-                    {
-                        generator.Emit(OpCodes.Ldarg_0);
-                        if (parameters.Length == 1)
-                        {
-                            break;
-                        }
-                        else if (parameters.Length == 2 && parameters[1].ParameterType == typeof(Arguments))
-                        {
-                            generator.Emit(OpCodes.Ldarg_2);
-                            break;
-                        }
-                    }
-                    throw new ArgumentException("Invalid method signature");
-                }
-                raw = true;
-            }
-            else if (parameters.Length == 0)
-            {
-                raw = true;
-            }
-            else
-            {
-                if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
-                {
-                    raw = true;
-                    generator.Emit(OpCodes.Ldarg_2);
-                }
-                else
-                {
-                    for (var i = 0; i < parameters.Length; i++)
-                    {
-                        generator.Emit(OpCodes.Ldarg_1);
-                        switch (i)
-                        {
-                            case 0:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4_0);
-                                    break;
-                                }
-                            case 1:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4_1);
-                                    break;
-                                }
-                            case 2:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4_2);
-                                    break;
-                                }
-                            case 3:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4_3);
-                                    break;
-                                }
-                            case 4:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4_4);
-                                    break;
-                                }
-                            case 5:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4_5);
-                                    break;
-                                }
-                            case 6:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4_6);
-                                    break;
-                                }
-                            case 7:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4_7);
-                                    break;
-                                }
-                            case 8:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4_8);
-                                    break;
-                                }
-                            default:
-                                {
-                                    generator.Emit(OpCodes.Ldc_I4, i);
-                                    break;
-                                }
-                        }
-                        generator.Emit(OpCodes.Ldelem_Ref);
-                        if (parameters[i].ParameterType.IsValueType)
-                            generator.Emit(OpCodes.Unbox_Any, parameters[i].ParameterType);
-                    }
-                }
-            }
-            if (methodInfo.IsStatic || methodInfo.DeclaringType.IsValueType)
-            {
-                generator.Emit(OpCodes.Call, methodInfo);
-            }
-            else
-            {
-                generator.Emit(OpCodes.Callvirt, methodInfo);
-            }
-
-            if (methodInfo.ReturnType == typeof(void))
-            {
-                generator.Emit(OpCodes.Ldnull);
-            }
-            else if (methodInfo.ReturnType.IsValueType)
-            {
-                generator.Emit(OpCodes.Box, methodInfo.ReturnType);
-            }
-
-            generator.Emit(OpCodes.Ret);
-            return (Func<object, object[], Arguments, object>)impl.CreateDelegate(typeof(Func<object, object[], Arguments, object>));
-        }
-#else
-        private Func<object, object[], Arguments, object> makeMethodOverExpression(MethodInfo methodInfo)
-        {
-            Expression[] prms = null;
-            ParameterExpression target = Expression.Parameter(typeof(object), "target");
-            ParameterExpression argsArray = Expression.Parameter(typeof(object[]), "argsArray");
-            ParameterExpression argsSource = Expression.Parameter(typeof(Arguments), "arguments");
-
-            Expression tree = null;
-
-            if (forceInstance)
-            {
-                for (; ; )
                 {
                     if (methodInfo.IsStatic && _parameters[0].ParameterType == typeof(JSValue))
                     {
@@ -318,90 +190,183 @@ namespace NiL.JS.Core.Functions
                         }
                         else if (_parameters.Length == 2 && _parameters[1].ParameterType == typeof(Arguments))
                         {
-                            tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSValue)), argsSource);
+                            tree = Expression.Call(
+                                methodInfo,
+                                Expression.Convert(target, typeof(JSValue)),
+                                argumentsObject);
                             break;
                         }
                     }
+
                     throw new ArgumentException("Invalid method signature");
                 }
             }
             else if (_parameters.Length == 0)
             {
-                raw = true;
-                tree = methodInfo.IsStatic ?
-                    Expression.Call(methodInfo)
-                    :
-                    Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo);
+                if (methodInfo.IsStatic)
+                    tree = Expression.Call(methodInfo);
+                else
+                    tree = Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo);
             }
             else
             {
-                prms = new Expression[_parameters.Length];
                 if (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments))
                 {
-                    raw = true;
-                    tree = methodInfo.IsStatic ?
-                        Expression.Call(methodInfo, argsSource)
-                        :
-                        Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, argsSource);
+                    if (methodInfo.IsStatic)
+                        tree = Expression.Call(methodInfo, argumentsObject);
+                    else
+                        tree = Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, argumentsObject);
                 }
                 else
                 {
+                    Func<Expressions.Expression[], Context, int, object> processArg = processArgument;
+                    Func<Expressions.Expression[], Context, int, object> processArgTail = processArgumentsTail;
+                    Func<int, JSValue, object> convertArg = convertArgument;
+                    var argumentsGetItemMethod = typeof(Arguments).GetMethod("get_Item", new[] { typeof(int) });
+
+                    var prms = new Expression[_parameters.Length];
                     for (var i = 0; i < prms.Length; i++)
-                        prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), _parameters[i].ParameterType);
-                    tree = methodInfo.IsStatic ?
-                        Expression.Call(methodInfo, prms)
-                        :
-                        Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, prms);
+                    {
+                        prms[i] = Expression.Convert(
+                            Expression.Call(
+                                Expression.Constant(this),
+                                i + 1 < prms.Length ? processArg.GetMethodInfo() : processArgTail.GetMethodInfo(),
+                                arguments,
+                                context,
+                                Expression.Constant(i)),
+                            _parameters[i].ParameterType);
+                    }
+
+                    if (methodInfo.IsStatic)
+                        tree = Expression.Call(methodInfo, prms);
+                    else
+                        tree = Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, prms);
+
+                    for (var i = 0; i < prms.Length; i++)
+                    {
+                        prms[i] = Expression.Convert(
+                            Expression.Call(
+                                Expression.Constant(this),
+                                convertArg.GetMethodInfo(),
+                                Expression.Constant(i),
+                                Expression.Call(argumentsObject, argumentsGetItemMethod, Expression.Constant(i))),
+                            _parameters[i].ParameterType);
+                    }
+
+                    Expression treeWithObjectAsSource;
+                    if (methodInfo.IsStatic)
+                        treeWithObjectAsSource = Expression.Call(methodInfo, prms);
+                    else
+                        treeWithObjectAsSource = Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, prms);
+
+                    tree = Expression.Condition(Expression.Equal(argumentsObjectPrm, Expression.Constant(null)),
+                                                 tree,
+                                                 treeWithObjectAsSource);
                 }
             }
+
             if (methodInfo.ReturnType == typeof(void))
                 tree = Expression.Block(tree, Expression.Constant(null));
+
             try
             {
-                return Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
+                return Expression
+                    .Lambda<WrapperDelegate>(
+                        Expression.Convert(tree, typeof(object)),
+                        methodInfo.Name,
+                        new[]
+                        {
+                            target,
+                            context,
+                            arguments,
+                            argumentsObjectPrm
+                        })
+                    .Compile();
             }
             catch
             {
                 throw;
             }
         }
-#endif
-        private Func<object, object[], Arguments, object> makeConstructorOverExpression(ConstructorInfo constructorInfo, ParameterInfo[] parameters)
+
+        private WrapperDelegate makeFastWrapper(ConstructorInfo constructorInfo)
         {
-            Expression[] prms = null;
-            ParameterExpression target = Expression.Parameter(typeof(object), "target");
-            ParameterExpression argsArray = Expression.Parameter(typeof(object[]), "argsArray");
-            ParameterExpression argsSource = Expression.Parameter(typeof(Arguments), "arguments");
-
             Expression tree = null;
+            var target = Expression.Parameter(typeof(object), "target");
+            var context = Expression.Parameter(typeof(Context), "context");
+            var arguments = Expression.Parameter(typeof(Expressions.Expression[]), "arguments");
+            var argumentsObjectPrm = Expression.Parameter(typeof(Arguments), "argumentsObject");
+            var argumentsObject = Expression.Condition(
+                Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
+                argumentsObjectPrm,
+                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.EvaluateArgs).GetMethodInfo(), arguments, context)));
 
-            if (parameters.Length == 0)
+            if (_parameters.Length == 0)
             {
-                raw = true;
-                tree = Expression.New(constructorInfo.DeclaringType);
+                tree = Expression.New(constructorInfo);
             }
             else
             {
-                prms = new Expression[parameters.Length];
-                if (parameters.Length == 1 && parameters[0].ParameterType == typeof(Arguments))
+                if (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments))
                 {
-                    raw = true;
-                    tree = Expression.New(constructorInfo, argsSource);
+                    tree = Expression.New(constructorInfo, argumentsObject);
                 }
                 else
                 {
+                    Func<Expressions.Expression[], Context, int, object> processArg = processArgument;
+                    Func<Expressions.Expression[], Context, int, object> processArgTail = processArgumentsTail;
+                    Func<int, JSValue, object> convertArg = convertArgument;
+                    var argumentsGetItemMethod = typeof(Arguments).GetMethod("get_Item", new[] { typeof(int) });
+
+                    var prms = new Expression[_parameters.Length];
                     for (var i = 0; i < prms.Length; i++)
-#if NET35
-                        prms[i] = Expression.Convert(Expression.ArrayIndex(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
-#else
-                        prms[i] = Expression.Convert(Expression.ArrayAccess(argsArray, Expression.Constant(i)), parameters[i].ParameterType);
-#endif
+                    {
+                        prms[i] = Expression.Convert(
+                            Expression.Call(
+                                Expression.Constant(this),
+                                i + 1 < prms.Length ? processArg.GetMethodInfo() : processArgTail.GetMethodInfo(),
+                                arguments,
+                                context,
+                                Expression.Constant(i)),
+                            _parameters[i].ParameterType);
+                    }
+
                     tree = Expression.New(constructorInfo, prms);
+
+                    for (var i = 0; i < prms.Length; i++)
+                    {
+                        prms[i] = Expression.Convert(
+                            Expression.Call(
+                                Expression.Constant(this),
+                                convertArg.GetMethodInfo(),
+                                Expression.Constant(i),
+                                Expression.Call(argumentsObject, argumentsGetItemMethod, Expression.Constant(i))),
+                            _parameters[i].ParameterType);
+                    }
+
+                    Expression treeWithObjectAsSource;
+                    treeWithObjectAsSource = Expression.New(constructorInfo, prms);
+
+                    tree = Expression.Condition(Expression.Equal(argumentsObjectPrm, Expression.Constant(null)),
+                                                 tree,
+                                                 treeWithObjectAsSource);
                 }
             }
+
             try
             {
-                return Expression.Lambda<Func<object, object[], Arguments, object>>(Expression.Convert(tree, typeof(object)), target, argsArray, argsSource).Compile();
+                return Expression
+                    .Lambda<WrapperDelegate>(
+                        Expression.Convert(tree, typeof(object)),
+                        constructorInfo.DeclaringType.Name,
+                        new[]
+                        {
+                            target,
+                            context,
+                            arguments,
+                            argumentsObjectPrm
+                        })
+                    .Compile();
             }
             catch
             {
@@ -409,71 +374,95 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        internal override JSValue InternalInvoke(JSValue targetObject, Expressions.Expression[] arguments, Context initiator, bool withSpread, bool withNew)
+        internal override JSValue InternalInvoke(JSValue targetValue, Expressions.Expression[] argumentsSource, Context initiator, bool withSpread, bool withNew)
         {
             if (withNew)
             {
-                if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly)
+                if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
                 {
                     ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
                 }
             }
             else
             {
-                if (RequireNewKeywordLevel == BaseLibrary.RequireNewKeywordLevel.WithNewOnly)
+                if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithNewOnly)
                 {
                     ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
                 }
             }
-            if (_parameters.Length == 0 || (forceInstance && _parameters.Length == 1))
-                return Invoke(withNew, correctTargetObject(targetObject, _functionDefinition._body._strict), null);
 
-            if (raw || withSpread)
-            {
-                return base.InternalInvoke(targetObject, arguments, initiator, true, withNew);
-            }
-            else
-            {
-                object[] args = null;
-                int targetCount = _parameters.Length;
-                args = new object[targetCount];
-                for (int i = 0; i < targetCount; i++)
-                {
-                    var obj = arguments.Length > i ? Tools.PrepareArg(initiator, arguments[i]) : notExists;
-
-                    args[i] = convertArg(i, obj, ConvertArgsOptions.ThrowOnError | ConvertArgsOptions.DummyValues);
-                }
-
-                return Context.GlobalContext.ProxyValue(InvokeImpl(targetObject, args, null));
-            }
+            object value = invokeMethod(targetValue, argumentsSource, null, initiator);
+            return Context.GlobalContext.ProxyValue(value);
         }
 
-        internal object InvokeImpl(JSValue thisBind, object[] args, Arguments argsSource)
+        private object invokeMethod(JSValue targetValue, Expressions.Expression[] argumentsSource, Arguments argumentsObject, Context initiator)
         {
-            object target = _hardTarget;
+            object value;
+            var target = GetTargetObject(targetValue, _hardTarget);
+            try
+            {
+                if (_parameters.Length == 0 && argumentsSource != null)
+                {
+                    for (var i = 0; i < argumentsSource.Length; i++)
+                        argumentsSource[i].Evaluate(initiator);
+                }
+
+                value = _fastWrapper(target, initiator, argumentsSource, argumentsObject);
+
+                if (_returnConverter != null)
+                    value = _returnConverter.From(value);
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null)
+                    e = e.InnerException;
+
+                if (e is JSException)
+                    throw e;
+
+                ExceptionHelper.Throw(new TypeError(e.Message), e);
+                throw;
+            }
+
+            return value;
+        }
+
+        private object processArgumentsTail(Expressions.Expression[] arguments, Context context, int index)
+        {
+            var result = processArgument(arguments, context, index);
+
+            while (++index < arguments.Length)
+                arguments[index].Evaluate(context);
+
+            return result;
+        }
+
+        internal object GetTargetObject(JSValue targetValue, object hardTarget)
+        {
+            var target = hardTarget;
             if (target == null)
             {
-                if (forceInstance)
+                if (_forceInstance)
                 {
-                    if (thisBind != null && thisBind._valueType >= JSValueType.Object)
+                    if (targetValue != null && targetValue._valueType >= JSValueType.Object)
                     {
                         // Объект нужно развернуть до основного значения. Даже если это обёртка над примитивным значением
-                        target = thisBind.Value;
+                        target = targetValue.Value;
 
                         var proxy = target as Proxy;
                         if (proxy != null)
-                            target = proxy.prototypeInstance ?? thisBind.Value;
+                            target = proxy.PrototypeInstance ?? targetValue.Value;
 
                         // ForceInstance работает только если первый аргумент типа JSValue
                         if (!(target is JSValue))
-                            target = thisBind;
+                            target = targetValue;
                     }
                     else
-                        target = thisBind ?? undefined;
+                        target = targetValue ?? undefined;
                 }
                 else if (!_method.IsStatic && !_method.IsConstructor)
                 {
-                    target = getTargetObject(thisBind ?? undefined, _method.DeclaringType);
+                    target = convertTargetObject(targetValue ?? undefined, _method.DeclaringType);
                     if (target == null
 #if !(PORTABLE || NETCORE)
                         || !_method.DeclaringType.IsAssignableFrom(target.GetType())
@@ -482,55 +471,17 @@ namespace NiL.JS.Core.Functions
                     {
                         // Исключительная ситуация. Я не знаю почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
                         if (_method.Name == "get_length" && typeof(Function).IsAssignableFrom(_method.DeclaringType))
-                            return 0;
+                            return Function.Empty;
 
                         ExceptionHelper.Throw(new TypeError("Can not call function \"" + name + "\" for object of another type."));
                     }
                 }
             }
 
-            try
-            {
-                object res = wrapper(
-                    target,
-                    raw ? null : (args ?? ConvertArgs(argsSource, ConvertArgsOptions.ThrowOnError | ConvertArgsOptions.DummyValues)),
-                    argsSource);
-
-                if (returnConverter != null)
-                    res = returnConverter.From(res);
-                return res;
-            }
-            catch (Exception e)
-            {
-                while (e.InnerException != null)
-                    e = e.InnerException;
-                if (e is JSException)
-                    throw e;
-                ExceptionHelper.Throw(new TypeError(e.Message), e);
-            }
-            return null;
+            return target;
         }
 
-        private object getDummy()
-        {
-            if (typeof(JSValue).IsAssignableFrom(_method.DeclaringType))
-                if (typeof(Function).IsAssignableFrom(_method.DeclaringType))
-                    return this;
-                else if (typeof(TypedArray).IsAssignableFrom(_method.DeclaringType))
-                    return new Int8Array();
-                else
-                    return new JSValue();
-            if (typeof(Error).IsAssignableFrom(_method.DeclaringType))
-                return new Error();
-            return null;
-        }
-
-        public MethodProxy(Context context, MethodBase methodBase)
-            : this(context, methodBase, null)
-        {
-        }
-
-        private static object getTargetObject(JSValue target, Type targetType)
+        private static object convertTargetObject(JSValue target, Type targetType)
         {
             if (target == null)
                 return null;
@@ -540,84 +491,69 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-        internal object[] ConvertArgs(Arguments source, ConvertArgsOptions options)
+        private object processArgument(Expressions.Expression[] arguments, Context initiator, int index)
         {
-            if (_parameters.Length == 0)
-                return null;
+            var value = arguments.Length > index ? Tools.EvalExpressionSafe(initiator, arguments[index]) : notExists;
 
-            if (forceInstance)
-                ExceptionHelper.Throw(new InvalidOperationException());
-
-            object[] res = null;
-            int targetCount = _parameters.Length;
-            for (int i = targetCount; i-- > 0;)
-            {
-                var obj = source?[i] ?? undefined;
-
-                var trueNull = (options & ConvertArgsOptions.DummyValues) != 0 
-                    || (obj._valueType >= JSValueType.Object && obj._oValue == null);
-
-                var t = convertArg(i, obj, options);
-
-                if (t == null && !trueNull)
-                    return null;
-
-                if (res == null)
-                    res = new object[targetCount];
-
-                res[i] = t;
-            }
-
-            return res;
+            return convertArgument(index, value);
         }
 
-        private object convertArg(int i, JSValue obj, ConvertArgsOptions options)
+        private object convertArgument(int index, JSValue value)
         {
-            object result = null;
-            var strictConv = _strictConversion || (options & ConvertArgsOptions.StrictConversion) != 0;
+            return convertArgument(
+                index,
+                value,
+                ConvertArgsOptions.ThrowOnError | (_strictConversion ? ConvertArgsOptions.StrictConversion : 0));
+        }
 
-            if (paramsConverters != null && paramsConverters[i] != null)
+        private object convertArgument(int index, JSValue value, ConvertArgsOptions options)
+        {
+            if (_paramsConverters?[index] != null)
+                return _paramsConverters[index].To(value);
+
+            var strictConversion = options.HasFlag(ConvertArgsOptions.StrictConversion);
+            var parameterInfo = _parameters[index];
+            object result = null;
+
+            if (value.IsNull && parameterInfo.ParameterType.GetTypeInfo().IsClass)
             {
-                return paramsConverters[i].To(obj);
+                return null;
+            }
+            else if (value.Defined)
+            {
+                result = Tools.convertJStoObj(value, parameterInfo.ParameterType, !strictConversion);
+                if (strictConversion && result == null)
+                {
+                    if (options.HasFlag(ConvertArgsOptions.ThrowOnError))
+                        ExceptionHelper.ThrowTypeError("Unable to convert " + value + " to type " + parameterInfo.ParameterType);
+
+                    if (!options.HasFlag(ConvertArgsOptions.DummyValues))
+                        return null;
+                }
             }
             else
             {
-                var trueNull = obj._valueType >= JSValueType.Object && obj._oValue == null;
-
-                if (!trueNull)
-                    result = Tools.convertJStoObj(obj, _parameters[i].ParameterType, !strictConv);
-
-                if (strictConv && (trueNull ? _parameters[i].ParameterType.GetTypeInfo().IsValueType : result == null))
-                {
-                    if ((options & ConvertArgsOptions.ThrowOnError) != 0)
-                        ExceptionHelper.ThrowTypeError("Cannot convert " + obj + " to type " + _parameters[i].ParameterType);
-                    return null;
-                }
-
-                if (trueNull && _parameters[i].ParameterType.GetTypeInfo().IsClass)
-                    return null;
+                if (parameterInfo.ParameterType.IsAssignableFrom(value.GetType()))
+                    return value;
             }
 
-            if (result == null)
+            if (result == null
+                && (options.HasFlag(ConvertArgsOptions.DummyValues) || parameterInfo.Attributes.HasFlag(ParameterAttributes.HasDefault)))
             {
-                result = _parameters[i].DefaultValue;
+                result = parameterInfo.DefaultValue;
+
 #if (PORTABLE || NETCORE)
                 if (result != null && result.GetType().FullName == "System.DBNull")
                 {
-                    if (_parameters[i].ParameterType.GetTypeInfo().IsValueType)
 #else
                 if (result is DBNull)
                 {
 #endif
-                    if (strictConv)
-                    {
-                        if ((options & ConvertArgsOptions.ThrowOnError) != 0)
-                            ExceptionHelper.ThrowTypeError("Cannot convert " + obj + " to type " + _parameters[i].ParameterType);
-                        return null;
-                    }
+                    if (strictConversion && options.HasFlag(ConvertArgsOptions.ThrowOnError))
+                        ExceptionHelper.ThrowTypeError("Unable to convert " + value + " to type " + parameterInfo.ParameterType);
 
-                    if ((options & ConvertArgsOptions.DummyValues) != 0 && _parameters[i].ParameterType.GetTypeInfo().IsValueType)
-                        result = Activator.CreateInstance(_parameters[i].ParameterType);
+                    if (parameterInfo.ParameterType.GetTypeInfo().IsValueType)
+                        result = Activator.CreateInstance(parameterInfo.ParameterType);
                     else
                         result = null;
                 }
@@ -626,40 +562,60 @@ namespace NiL.JS.Core.Functions
             return result;
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        internal object[] ConvertArguments(Arguments arguments, ConvertArgsOptions options)
         {
-            var result = InvokeImpl(targetObject, null, arguments);
+            if (_parameters.Length == 0)
+                return null;
 
-            if (result == null)
-                return undefined;
-            
-            return result as JSValue ?? Context.GlobalContext.ProxyValue(result);
-        }
+            if (_forceInstance)
+                ExceptionHelper.Throw(new InvalidOperationException());
 
-        internal static object[] argumentsToArray(Arguments source)
-        {
-            var len = source.length;
-            var res = new object[len];
-            for (int i = 0; i < len; i++)
-                res[i] = source[i] as object;
+            object[] res = null;
+            int targetCount = _parameters.Length;
+            for (int i = targetCount; i-- > 0;)
+            {
+                var jsValue = arguments?[i] ?? undefined;
+
+                var value = convertArgument(i, jsValue, options);
+
+                if (value == null && !jsValue.IsNull)
+                    return null;
+
+                if (res == null)
+                    res = new object[targetCount];
+
+                res[i] = value;
+            }
+
             return res;
         }
 
-#if DEVELOPBRANCH || VERSION21
-        public sealed override JSValue bind(Arguments args)
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        {
+            if (arguments == null)
+                arguments = new Arguments();
+
+            var result = invokeMethod(targetObject, null, arguments, Context);
+
+            if (result == null)
+                return undefined;
+
+            return result as JSValue ?? Context.GlobalContext.ProxyValue(result);
+        }
+
+        public sealed override Function bind(Arguments args)
         {
             if (_hardTarget != null || args.Length == 0)
                 return this;
 
-            return new MethodProxy(Context)
-            {
-                _hardTarget = getTargetObject(args[0], _method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
-                _method = _method,
-                _parameters = _parameters,
-                wrapper = wrapper,
-                forceInstance = forceInstance,
-                raw = raw
-            };
+            return new MethodProxy(
+                context: Context,
+                raw: _raw,
+                hardTarget: convertTargetObject(args[0], _method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
+                method: _method,
+                Parameters: _parameters,
+                fastWrapper: _fastWrapper,
+                forceInstance: _forceInstance);
         }
 #if !NET40
         public override Delegate MakeDelegate(Type delegateType)
@@ -675,7 +631,6 @@ namespace NiL.JS.Core.Functions
 
             return base.MakeDelegate(delegateType);
         }
-#endif
 #endif
 
         public override string ToString(bool headerOnly)

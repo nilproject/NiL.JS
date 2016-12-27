@@ -14,6 +14,7 @@ using NiL.JS.Extensions;
 using System.Collections.Generic;
 using System.Collections;
 using System.Threading.Tasks;
+using System.Dynamic;
 
 namespace NiL.JS.Test
 {
@@ -49,20 +50,90 @@ namespace NiL.JS.Test
         }
     }
 
+    public sealed class ExpandoObjectWrapper : JSObject
+    {
+        private readonly IDictionary<string, object> _expandoObject;
+
+        public ExpandoObjectWrapper(ExpandoObject expandoObject)
+        {
+            _expandoObject = expandoObject;
+            ValueType = JSValueType.Object;
+            Value = this;
+        }
+
+        protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
+        {
+            if (propertyScope <= PropertyScope.Own && key.ValueType != JSValueType.Symbol)
+            {
+                var keyString = key.ToString();
+                key = keyString;
+
+                object value;
+                if (_expandoObject.TryGetValue(keyString, out value))
+                    return Marshal(value);
+            }
+
+            return base.GetProperty(key, forWrite, propertyScope);
+        }
+
+        protected override bool DeleteProperty(JSValue name)
+        {
+            return _expandoObject.Remove(name.ToString());
+        }
+
+        protected override void SetProperty(JSValue key, JSValue value, PropertyScope memberScope, bool throwOnError)
+        {
+            if (memberScope <= PropertyScope.Own && key.ValueType != JSValueType.Symbol)
+            {
+                var keyString = key.ToString();
+                key = keyString;
+
+                _expandoObject[keyString] = value.Value;
+            }
+
+            base.SetProperty(key, value, memberScope, throwOnError);
+        }
+    }
+
     public class Program
     {
-        public class A
+        public class A : IDynamicMetaObjectProvider
         {
-            public void F(int i)
+            public DynamicMetaObject GetMetaObject(Expression parameter)
             {
-                Console.WriteLine(i);
+                return null;
+            }
+        }
+
+        public class B : DynamicObject
+        {
+            
+        }
+
+        [UseIndexers]
+        [ToStringTag("It is tag")]
+        public class TestIndexer
+        {
+            public string Prop
+            {
+                get { return "prop"; }
+            }
+            public string this[int key]
+            {
+                get { return "integer: " + key; }
+            }
+            public string this[object key]
+            {
+                get { return "object: [" + (key == null ? "null" : key.GetType().Name) + "] " + key; }
             }
         }
 
         private static void testEx()
         {
-            var tsc = new Module(File.ReadAllText("tsc.js"));
-            tsc.Run();
+            var context = new Context();
+            context.GlobalContext.IndexersSupportMode = IndexersSupportMode.ForceDisable;
+            context.DefineVariable("test").Assign(new TestIndexer());
+            context.Eval("console.log(test['0'])");
         }
 
         static void Main(string[] args)
@@ -109,8 +180,8 @@ namespace NiL.JS.Test
                 })
             }));
 #endif
-            
-            int mode = 101
+
+            int mode = 3
                     ;
             switch (mode)
             {
@@ -129,7 +200,7 @@ namespace NiL.JS.Test
                         //var currentTimeZone = TimeZone.CurrentTimeZone;
                         //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                         //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
-                        runFiles("custom/");
+                        //runFiles("custom/");
                         sputnikTests(@"tests\sputnik\ch15\15.1\");
                         sputnikTests(@"tests\sputnik\ch15\15.2\");
                         sputnikTests(@"tests\sputnik\ch15\15.3\");
@@ -433,7 +504,7 @@ namespace NiL.JS.Test
             _("Load sta.js...");
             using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
                 staCode = new StreamReader(staFile).ReadToEnd();
-            
+
             _("Directory: \"" + Directory.GetParent(folderPath) + "\"");
             _("Scaning directory...");
             var fls = Directory.EnumerateFiles(folderPath, "*.js", SearchOption.AllDirectories).ToArray();

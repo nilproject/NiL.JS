@@ -137,10 +137,9 @@ namespace NiL.JS.Extensions
                     }
                 case TypeCode.Object:
                     {
-#if DEVELOPBRANCH || VERSION21
                         if (self.Value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
                             return ((Function)self.Value).MakeDelegate<T>();
-#endif
+
                         try
                         {
                             return (T)(Tools.convertJStoObj(self, typeof(T), true) ?? self.Value);
@@ -187,6 +186,21 @@ namespace NiL.JS.Extensions
         public static bool IsUndefined(this JSValue self)
         {
             return self != null && self._valueType <= JSValueType.Undefined;
+        }
+
+        public static bool IsNumber(this JSValue self)
+        {
+            return self._valueType == JSValueType.Integer || self._valueType == JSValueType.Double;
+        }
+
+        public static object ConvertToType(this JSValue value, Type targetType)
+        {
+            return Tools.convertJStoObj(value, targetType, true);
+        }
+
+        public static void Assign(this JSValue target, object value)
+        {
+            target.Assign(JSValue.Marshal(value));
         }
     }
 }

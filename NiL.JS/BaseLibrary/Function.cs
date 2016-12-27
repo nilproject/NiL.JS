@@ -70,11 +70,11 @@ namespace NiL.JS.BaseLibrary
         internal static readonly JSValue propertiesDummySM = new JSValue()
         {
             _valueType = JSValueType.Property,
-            _oValue = new GsPropertyPair() { get = TTEProxy, set = TTEProxy },
+            _oValue = new Core.GsPropertyPair() { getter = TTEProxy, setter = TTEProxy },
             _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
 
-        private Dictionary<Type, Delegate> delegateCache;
+        private Dictionary<Type, Delegate> _delegateCache;
 
         internal readonly FunctionDefinition _functionDefinition;
         [Hidden]
@@ -115,9 +115,9 @@ namespace NiL.JS.BaseLibrary
                 {
                     _length = new Number(0)
                     {
-                        _attributes = 
-                        JSValueAttributesInternal.ReadOnly 
-                        | JSValueAttributesInternal.DoNotDelete 
+                        _attributes =
+                        JSValueAttributesInternal.ReadOnly
+                        | JSValueAttributesInternal.DoNotDelete
                         | JSValueAttributesInternal.DoNotEnumerate
                         | JSValueAttributesInternal.NonConfigurable
                     };
@@ -243,7 +243,7 @@ namespace NiL.JS.BaseLibrary
 
                 if (_functionDefinition._body._strict)
                     ExceptionHelper.Throw(new TypeError("Property \"arguments\" may not be accessed in strict mode."));
-                
+
                 if (context._arguments == null && _functionDefinition.recursionDepth > 0)
                     BuildArgumentsObject();
 
@@ -746,7 +746,7 @@ namespace NiL.JS.BaseLibrary
 
         [CLSCompliant(false)]
         [DoNotEnumerate]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public new JSValue toString(Arguments args)
         {
             return ToString();
@@ -790,7 +790,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         [AllowNullArguments]
         public JSValue apply(Arguments args)
         {
@@ -805,7 +805,7 @@ namespace NiL.JS.BaseLibrary
                     ExceptionHelper.Throw(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
                 if (len._valueType == JSValueType.Property)
-                    len = (len._oValue as GsPropertyPair).get.Call(argsSource, null);
+                    len = (len._oValue as Core.GsPropertyPair).getter.Call(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
                 if (nargs.length >= 50000)
                     ExceptionHelper.Throw(new RangeError("Too many arguments."));
@@ -816,38 +816,29 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-#if DEVELOPBRANCH || VERSION21
-        public virtual JSValue bind(Arguments args)
-#else
-        public JSValue bind(Arguments args)
-#endif
+        public virtual Function bind(Arguments args)
         {
             if (args.Length == 0)
                 return this;
 
             var newThis = args[0];
             var strict = (_functionDefinition._body != null && _functionDefinition._body._strict) || Context.CurrentContext._strict;
-            if ((newThis != null && newThis._valueType > JSValueType.Undefined) || strict)
-                return new BindedFunction(this, args);
-
-            return this;
+            return new BindedFunction(this, args);
         }
 
-#if DEVELOPBRANCH || VERSION21
         [Hidden]
         public T MakeDelegate<T>()
         {
             return (T)(object)MakeDelegate(typeof(T));
         }
-#endif
 
         [Hidden]
         public virtual Delegate MakeDelegate(Type delegateType)
         {
-            if (delegateCache != null)
+            if (_delegateCache != null)
             {
                 Delegate cachedDelegate;
-                if (delegateCache.TryGetValue(delegateType, out cachedDelegate))
+                if (_delegateCache.TryGetValue(delegateType, out cachedDelegate))
                     return cachedDelegate;
             }
 
@@ -859,9 +850,9 @@ namespace NiL.JS.BaseLibrary
 #endif
             var @delegate = Tools.BuildJsCallTree("<delegate>" + name, linqEx.Expression.Constant(this), null, invokeMethod, delegateType).Compile();
 
-            if (delegateCache == null)
-                delegateCache = new Dictionary<Type, Delegate>();
-            delegateCache.Add(delegateType, @delegate);
+            if (_delegateCache == null)
+                _delegateCache = new Dictionary<Type, Delegate>();
+            _delegateCache.Add(delegateType, @delegate);
 
             return @delegate;
         }

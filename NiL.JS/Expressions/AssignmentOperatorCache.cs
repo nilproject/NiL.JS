@@ -103,6 +103,7 @@ namespace NiL.JS.Expressions
             // second будем использовать как флаг isVisited
             if (second != null)
                 return false;
+
             second = first;
 
             _codeContext = codeContext;

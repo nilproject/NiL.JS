@@ -31,7 +31,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public static JSValue parse(Arguments args)
         {
             var length = Tools.JSObjectToInt32(args.length);
@@ -246,7 +246,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        [ArgumentsLength(3)]
+        [ArgumentsCount(3)]
         public static JSValue stringify(Arguments args)
         {
             var length = args.length;
@@ -364,9 +364,12 @@ namespace NiL.JS.BaseLibrary
                     return null;
                 obj = t;
             }
+
             obj = obj.Value as JSValue ?? obj;
+
             if (processed.IndexOf(obj) != -1)
-                ExceptionHelper.Throw(new TypeError("Can not convert circular structure to JSON."));
+                ExceptionHelper.Throw(new TypeError("Unable to convert circular structure to JSON."));
+
             processed.Add(obj);
             try
             {
@@ -407,7 +410,7 @@ namespace NiL.JS.BaseLibrary
                         continue;
 
                     if (value._valueType == JSValueType.Property)
-                        value = ((value._oValue as GsPropertyPair).get ?? Function.Empty).Call(obj, null);
+                        value = ((value._oValue as GsPropertyPair).getter ?? Function.Empty).Call(obj, null);
                     strval = stringifyImpl(member.Key, value, replacer, space, processed, args);
 
                     if (strval == null)

@@ -63,7 +63,7 @@ namespace NiL.JS.BaseLibrary
         public Int8Array(JSValue src)
             : base(src) { }
 
-        [ArgumentsLength(2)]
+        [ArgumentsCount(2)]
         public override TypedArray subarray(Arguments args)
         {
             return subarrayImpl<Int8Array>(args[0], args[1]);

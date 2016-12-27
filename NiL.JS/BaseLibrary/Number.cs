@@ -187,7 +187,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(1)]
+        [ArgumentsCount(1)]
         public static JSValue toFixed(JSValue self, Arguments digits)
         {
             double res = 0;
@@ -225,7 +225,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
-        [ArgumentsLength(0)]
+        [ArgumentsCount(0)]
         public static JSValue toLocaleString(JSValue self)
         {
             return self._valueType == JSValueType.Integer ? self._iValue.ToString(System.Globalization.CultureInfo.CurrentCulture) : self._dValue.ToString(System.Globalization.CultureInfo.CurrentCulture);
@@ -404,12 +404,12 @@ namespace NiL.JS.BaseLibrary
         }
 #endif
         [DoNotEnumerate]
-        public static JSValue isNaN(Arguments a)
+        public static JSValue isNaN(JSValue x)
         {
-            switch (a[0]._valueType)
+            switch (x._valueType)
             {
                 case JSValueType.Double:
-                    return double.IsNaN(a[0]._dValue);
+                    return double.IsNaN(x._dValue);
                 default:
                     return Boolean.False;
             }

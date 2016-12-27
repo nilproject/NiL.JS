@@ -7,6 +7,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
+using System.Dynamic;
 
 #if NET40 || NETCORE
 using NiL.JS.Backward;
@@ -14,12 +15,20 @@ using NiL.JS.Backward;
 
 namespace NiL.JS.Core
 {
+    public enum IndexersSupportMode
+    {
+        WithAttributeOnly = 0,
+        ForceEnable,
+        ForceDisable
+    }
+
     public sealed class GlobalContext : Context
     {
         internal JSObject _GlobalPrototype;
         private readonly Dictionary<Type, JSObject> _proxies;
 
         public string Name { get; private set; }
+        public IndexersSupportMode IndexersSupportMode { get; set; }
 
         public GlobalContext()
             : this("")
@@ -43,83 +52,91 @@ namespace NiL.JS.Core
             if (_parent != null)
                 throw new InvalidOperationException("Try to reset non-global context");
 
-            if (_variables != null)
-                _variables.Clear();
-            else
-                _variables = new StringMap<JSValue>();
+            ActivateInCurrentThread();
+            try
+            {
+                if (_variables != null)
+                    _variables.Clear();
+                else
+                    _variables = new StringMap<JSValue>();
 
-            _proxies.Clear();
-            _GlobalPrototype = null;
+                _proxies.Clear();
+                _GlobalPrototype = null;
 
-            var objectConstructor = GetConstructor(typeof(JSObject)) as Function;
-            _variables.Add("Object", objectConstructor);
-            objectConstructor._attributes |= JSValueAttributesInternal.DoNotDelete;
+                var objectConstructor = GetConstructor(typeof(JSObject)) as Function;
+                _variables.Add("Object", objectConstructor);
+                objectConstructor._attributes |= JSValueAttributesInternal.DoNotDelete;
 
-            _GlobalPrototype = objectConstructor.prototype as JSObject;
-            _GlobalPrototype._objectPrototype = JSValue.@null;
+                _GlobalPrototype = objectConstructor.prototype as JSObject;
+                _GlobalPrototype._objectPrototype = JSValue.@null;
 
-            DefineConstructor(typeof(BaseLibrary.Math));
-            DefineConstructor(typeof(BaseLibrary.Array));
-            DefineConstructor(typeof(JSON));
-            DefineConstructor(typeof(BaseLibrary.String));
-            DefineConstructor(typeof(Function));
-            DefineConstructor(typeof(Date));
-            DefineConstructor(typeof(Number));
-            DefineConstructor(typeof(Symbol));
-            DefineConstructor(typeof(BaseLibrary.Boolean));
-            DefineConstructor(typeof(Error));
-            DefineConstructor(typeof(TypeError));
-            DefineConstructor(typeof(ReferenceError));
-            DefineConstructor(typeof(EvalError));
-            DefineConstructor(typeof(RangeError));
-            DefineConstructor(typeof(URIError));
-            DefineConstructor(typeof(SyntaxError));
-            DefineConstructor(typeof(RegExp));
+                DefineConstructor(typeof(BaseLibrary.Math));
+                DefineConstructor(typeof(BaseLibrary.Array));
+                DefineConstructor(typeof(JSON));
+                DefineConstructor(typeof(BaseLibrary.String));
+                DefineConstructor(typeof(Function));
+                DefineConstructor(typeof(Date));
+                DefineConstructor(typeof(Number));
+                DefineConstructor(typeof(Symbol));
+                DefineConstructor(typeof(BaseLibrary.Boolean));
+                DefineConstructor(typeof(Error));
+                DefineConstructor(typeof(TypeError));
+                DefineConstructor(typeof(ReferenceError));
+                DefineConstructor(typeof(EvalError));
+                DefineConstructor(typeof(RangeError));
+                DefineConstructor(typeof(URIError));
+                DefineConstructor(typeof(SyntaxError));
+                DefineConstructor(typeof(RegExp));
 #if !(PORTABLE || NETCORE)
-            DefineConstructor(typeof(console));
+                DefineConstructor(typeof(console));
 #endif
-            DefineConstructor(typeof(ArrayBuffer));
-            DefineConstructor(typeof(Int8Array));
-            DefineConstructor(typeof(Uint8Array));
-            DefineConstructor(typeof(Uint8ClampedArray));
-            DefineConstructor(typeof(Int16Array));
-            DefineConstructor(typeof(Uint16Array));
-            DefineConstructor(typeof(Int32Array));
-            DefineConstructor(typeof(Uint32Array));
-            DefineConstructor(typeof(Float32Array));
-            DefineConstructor(typeof(Float64Array));
-            DefineConstructor(typeof(Promise));
-            DefineConstructor(typeof(Map));
-            DefineConstructor(typeof(Set));
+                DefineConstructor(typeof(ArrayBuffer));
+                DefineConstructor(typeof(Int8Array));
+                DefineConstructor(typeof(Uint8Array));
+                DefineConstructor(typeof(Uint8ClampedArray));
+                DefineConstructor(typeof(Int16Array));
+                DefineConstructor(typeof(Uint16Array));
+                DefineConstructor(typeof(Int32Array));
+                DefineConstructor(typeof(Uint32Array));
+                DefineConstructor(typeof(Float32Array));
+                DefineConstructor(typeof(Float64Array));
+                DefineConstructor(typeof(Promise));
+                DefineConstructor(typeof(Map));
+                DefineConstructor(typeof(Set));
 
-            DefineConstructor(typeof(Debug));
+                DefineConstructor(typeof(Debug));
 
-            #region Base Functions
-            DefineVariable("eval").Assign(new EvalFunction());
-            _variables["eval"]._attributes |= JSValueAttributesInternal.Eval;
-            DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
-            DefineVariable("unescape").Assign(new ExternalFunction(GlobalFunctions.unescape));
-            DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
-            DefineVariable("encodeURI").Assign(new ExternalFunction(GlobalFunctions.encodeURI));
-            DefineVariable("encodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.encodeURIComponent));
-            DefineVariable("decodeURI").Assign(new ExternalFunction(GlobalFunctions.decodeURI));
-            DefineVariable("decodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.decodeURIComponent));
-            DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
-            DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
-            DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));
-            #endregion
+                #region Base Functions
+                DefineVariable("eval").Assign(new EvalFunction());
+                _variables["eval"]._attributes |= JSValueAttributesInternal.Eval;
+                DefineVariable("isNaN").Assign(new ExternalFunction(GlobalFunctions.isNaN));
+                DefineVariable("unescape").Assign(new ExternalFunction(GlobalFunctions.unescape));
+                DefineVariable("escape").Assign(new ExternalFunction(GlobalFunctions.escape));
+                DefineVariable("encodeURI").Assign(new ExternalFunction(GlobalFunctions.encodeURI));
+                DefineVariable("encodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.encodeURIComponent));
+                DefineVariable("decodeURI").Assign(new ExternalFunction(GlobalFunctions.decodeURI));
+                DefineVariable("decodeURIComponent").Assign(new ExternalFunction(GlobalFunctions.decodeURIComponent));
+                DefineVariable("isFinite").Assign(new ExternalFunction(GlobalFunctions.isFinite));
+                DefineVariable("parseFloat").Assign(new ExternalFunction(GlobalFunctions.parseFloat));
+                DefineVariable("parseInt").Assign(new ExternalFunction(GlobalFunctions.parseInt));
+                #endregion
 #if DEV
-            DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
+                DefineVariable("__pinvoke").Assign(new ExternalFunction(GlobalFunctions.__pinvoke));
 #endif
-            #region Consts
-            _variables["undefined"] = JSValue.undefined;
-            _variables["Infinity"] = Number.POSITIVE_INFINITY;
-            _variables["NaN"] = Number.NaN;
-            _variables["null"] = JSValue.@null;
-            #endregion
+                #region Consts
+                _variables["undefined"] = JSValue.undefined;
+                _variables["Infinity"] = Number.POSITIVE_INFINITY;
+                _variables["NaN"] = Number.NaN;
+                _variables["null"] = JSValue.@null;
+                #endregion
 
-            foreach (var v in _variables.Values)
-                v._attributes |= JSValueAttributesInternal.DoNotEnumerate;
+                foreach (var v in _variables.Values)
+                    v._attributes |= JSValueAttributesInternal.DoNotEnumerate;
+            }
+            finally
+            {
+                Deactivate();
+            }
         }
 
         public void ActivateInCurrentThread()
@@ -127,7 +144,7 @@ namespace NiL.JS.Core
             if (CurrentContext != null)
                 throw new InvalidOperationException();
 
-            if (!base.Activate())
+            if (!Activate())
                 throw new Exception("Unable to activate base context");
         }
 
@@ -160,7 +177,10 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        var staticProxy = new StaticProxy(this, type);
+                        var indexerSupport = IndexersSupportMode == IndexersSupportMode.ForceEnable
+                            || (IndexersSupportMode == IndexersSupportMode.WithAttributeOnly && type.GetTypeInfo().IsDefined(typeof(UseIndexersAttribute)));
+
+                        var staticProxy = new StaticProxy(this, type, indexerSupport);
                         if (type.GetTypeInfo().IsAbstract)
                         {
                             _proxies[type] = staticProxy;
@@ -180,7 +200,7 @@ namespace NiL.JS.Core
                             }
                             else
                             {
-                                dynamicProxy = new PrototypeProxy(this, type)
+                                dynamicProxy = new PrototypeProxy(this, type, indexerSupport)
                                 {
                                     _objectPrototype = parentPrototype
                                 };
@@ -188,20 +208,20 @@ namespace NiL.JS.Core
                         }
                         else
                         {
-                            dynamicProxy = new PrototypeProxy(this, type);
+                            dynamicProxy = new PrototypeProxy(this, type, indexerSupport);
                         }
 
                         if (type == typeof(JSObject))
                             constructor = new ObjectConstructor(this, staticProxy, dynamicProxy);
                         else
-                            constructor = new ProxyConstructor(this, staticProxy, dynamicProxy);
+                            constructor = new ConstructorProxy(this, staticProxy, dynamicProxy);
 
                         if (type.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false))
                             dynamicProxy._attributes |= JSValueAttributesInternal.Immutable;
                         constructor._attributes = dynamicProxy._attributes;
                         dynamicProxy._attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly;
 
-                        if (dynamicProxy != parentPrototype && type != typeof(ProxyConstructor))
+                        if (dynamicProxy != parentPrototype && type != typeof(ConstructorProxy))
                         {
                             dynamicProxy._fields["constructor"] = constructor;
                         }
@@ -213,7 +233,7 @@ namespace NiL.JS.Core
                     {
                         if (dynamicProxy._objectPrototype == null)
                             dynamicProxy._objectPrototype = _GlobalPrototype ?? JSValue.@null;
-                        var fake = (dynamicProxy as PrototypeProxy).prototypeInstance;
+                        var fake = (dynamicProxy as PrototypeProxy).PrototypeInstance;
                     }
                 }
             }
@@ -263,7 +283,7 @@ namespace NiL.JS.Core
             });
         }
 
-        internal JSValue ProxyValue(object value)
+        public JSValue ProxyValue(object value)
         {
             JSValue res;
             if (value == null)
@@ -426,19 +446,15 @@ namespace NiL.JS.Core
                     {
                         if (value is Delegate)
                         {
-                            return new JSValue
-                            {
-                                _oValue = new MethodProxy(this, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target),
-                                _valueType = JSValueType.Function
-                            };
+                            return new MethodProxy(this, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
                         }
                         else if (value is IList)
                         {
-                            return new JSValue
-                            {
-                                _oValue = new NativeList(value as IList),
-                                _valueType = JSValueType.Object
-                            };
+                            return new NativeList(value as IList);
+                        }
+                        else if (value is ExpandoObject)
+                        {
+                            return new ExpandoObjectWrapper(value as ExpandoObject);
                         }
                         else
                         {
