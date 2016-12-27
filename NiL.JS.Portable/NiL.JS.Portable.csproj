@@ -193,9 +193,6 @@
     <Compile Include="..\NiL.JS\Core\Functions\SimpleFunction.cs">
       <Link>Core\Functions\SimpleFunction.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Core\Functions\SimpleFunction.cs">
-      <Link>Core\Functions\SimpleFunction.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Core\GlobalContext.cs">
       <Link>Core\GlobalContext.cs</Link>
     </Compile>
