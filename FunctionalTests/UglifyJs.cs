@@ -13,7 +13,7 @@ namespace FunctionalTests
     [TestClass]
     public class UglifyJs
     {
-        private static readonly string UglifyJsScriptPath = Environment.CurrentDirectory + "/../../../Tests/uglifyjs.js";
+        private static readonly string UglifyJsScriptPath = Environment.CurrentDirectory + "../../../../../Tests/uglifyjs.js";
 
         private Module _module;
         private GlobalContext _context;
@@ -21,12 +21,13 @@ namespace FunctionalTests
         [TestInitialize]
         public void Initialize()
         {
-            _context = new GlobalContext();
-            _context.ActivateInCurrentThread();
-
             using (var file = new FileStream(UglifyJsScriptPath, FileMode.Open))
             using (var fileReader = new StreamReader(file))
+            {
+                _context = new GlobalContext();
+                _context.ActivateInCurrentThread();
                 _module = new Module(fileReader.ReadToEnd());
+            }
 
             _module.Run();
         }

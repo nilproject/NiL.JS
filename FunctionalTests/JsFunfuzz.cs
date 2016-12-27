@@ -10,7 +10,7 @@ namespace FunctionalTests
     [TestClass]
     public class JsFunfuzz
     {
-        private static readonly string JsFunfuzzScriptPath = Environment.CurrentDirectory + "/../../../Tests/jsfunfuzz.js";
+        private static readonly string JsFunfuzzScriptPath = Environment.CurrentDirectory + "../../../../../Tests/jsfunfuzz.js";
 
         private Module _module;
         private StringBuilder _output;
