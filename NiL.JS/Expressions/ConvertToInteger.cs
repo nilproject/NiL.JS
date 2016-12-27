@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using System.Reflection;
 
+#if NET40
+using NiL.JS.Backward;
+#endif
+
 namespace NiL.JS.Expressions
 {
 #if !(PORTABLE || NETCORE)

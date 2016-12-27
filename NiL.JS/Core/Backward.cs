@@ -73,6 +73,15 @@ namespace NiL.JS.Backward
                 return null;
             return t[0];
         }
+
+        public static TAttributeType GetCustomAttribute<TAttributeType>(this FieldInfo _this) where TAttributeType : Attribute
+        {
+            var t = _this.GetCustomAttributes(typeof(TAttributeType), true);
+            if (t == null || t.Length == 0)
+                return null;
+
+            return t[0] as TAttributeType;
+        }
     }
 
     internal static class TypeExtensions
@@ -90,6 +99,15 @@ namespace NiL.JS.Backward
         public static Type GetTypeInfo(this Type type)
         {
             return type;
+        }
+
+        public static TAttributeType GetCustomAttribute<TAttributeType>(this Type type) where TAttributeType : Attribute
+        {
+            var t = type.GetCustomAttributes(typeof(TAttributeType), true);
+            if (t == null || t.Length == 0)
+                return null;
+
+            return t[0] as TAttributeType;
         }
     }
 
