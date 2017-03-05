@@ -31,7 +31,10 @@ namespace NiL.JS.BaseLibrary
         Generator,
         Method,
         MethodGenerator,
-        Arrow
+        Arrow,
+        AsyncFunction,
+        AsyncAnonymousFunction,
+        AsyncArrow
     }
 
 #if !(PORTABLE || NETCORE)
@@ -329,7 +332,14 @@ namespace NiL.JS.BaseLibrary
             for (int i = 0; i < len; i++)
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function (" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
-            var func = FunctionDefinition.Parse(new ParseInfo(Tools.RemoveComments(code, 0), code, null) { CodeContext = CodeContext.InExpression }, ref index, FunctionKind.Function);
+            var func = FunctionDefinition.Parse(
+                new ParseInfo(Tools.RemoveComments(code, 0), code, null)
+                {
+                    CodeContext = CodeContext.InExpression
+                },
+                ref index,
+                FunctionKind.Function);
+
             if (func != null && code.Length == index)
             {
                 Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), _context._strict ? CodeContext.Strict : CodeContext.None, null, null, Options.None);
@@ -342,8 +352,9 @@ namespace NiL.JS.BaseLibrary
             }
             else
                 ExceptionHelper.Throw(new SyntaxError("Unknown syntax error"));
+
             _valueType = JSValueType.Function;
-            this._oValue = this;
+            _oValue = this;
         }
 
         [Hidden]

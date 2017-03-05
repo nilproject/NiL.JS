@@ -649,6 +649,7 @@ namespace NiL.JS.Core
                 var newVarDescs = new VariableDescriptor[tv.Values.Count];
                 tv.Values.CopyTo(newVarDescs, 0);
                 body._variables = newVarDescs;
+                body._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
             }
 
             body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
@@ -657,7 +658,7 @@ namespace NiL.JS.Core
             if (stats.ContainsYield)
                 body.Decompose(ref cb);
 
-            body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+            body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
             var debugging = _debugging;
             _debugging = false;

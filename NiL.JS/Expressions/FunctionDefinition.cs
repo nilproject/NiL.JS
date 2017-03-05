@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
-using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Core.Functions;
-using NiL.JS.Core.Interop;
 using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
@@ -21,8 +20,8 @@ namespace NiL.JS.Expressions
         internal ParameterDescriptor(string name, bool rest, int depth)
             : base(name, depth)
         {
-            this.IsRest = rest;
-            this.lexicalScope = true;
+            IsRest = rest;
+            lexicalScope = true;
         }
 
         public override string ToString()
@@ -161,14 +160,14 @@ namespace NiL.JS.Expressions
             };
         }
 
+        internal static ParseDelegate ParseFunction(FunctionKind kind)
+        {
+            return new ParseDelegate((ParseInfo info, ref int index) => Parse(info, ref index, kind));
+        }
+
         internal static CodeNode ParseFunction(ParseInfo state, ref int index)
         {
             return Parse(state, ref index, FunctionKind.Function);
-        }
-
-        internal static CodeNode ParseArrow(ParseInfo state, ref int index)
-        {
-            return Parse(state, ref index, FunctionKind.Arrow);
         }
 
         internal static Expression Parse(ParseInfo state, ref int index, FunctionKind kind)
@@ -186,6 +185,7 @@ namespace NiL.JS.Expressions
                     {
                         if (!Parser.Validate(code, "function", ref i))
                             return null;
+
                         if (code[i] == '*')
                         {
                             kind = FunctionKind.Generator;
@@ -193,22 +193,21 @@ namespace NiL.JS.Expressions
                         }
                         else if ((code[i] != '(') && (!Tools.IsWhiteSpace(code[i])))
                             return null;
+
                         break;
                     }
                 case FunctionKind.Getter:
                     {
-                        if (!Parser.Validate(code, "get", ref i))
+                        if (!Parser.Validate(code, "get ", ref i))
                             return null;
-                        if ((!Tools.IsWhiteSpace(code[i])))
-                            return null;
+
                         break;
                     }
                 case FunctionKind.Setter:
                     {
-                        if (!Parser.Validate(code, "set", ref i))
+                        if (!Parser.Validate(code, "set ", ref i))
                             return null;
-                        if ((!Tools.IsWhiteSpace(code[i])))
-                            return null;
+
                         break;
                     }
                 case FunctionKind.MethodGenerator:
@@ -221,10 +220,23 @@ namespace NiL.JS.Expressions
                         }
                         else if (kind == FunctionKind.MethodGenerator)
                             throw new ArgumentException("mode");
+
                         break;
                     }
                 case FunctionKind.Arrow:
                     {
+                        break;
+                    }
+                case FunctionKind.AsyncFunction:
+                    {
+                        if (!Parser.Validate(code, "async", ref i))
+                            return null;
+
+                        Tools.SkipSpaces(code, ref i);
+
+                        if (!Parser.Validate(code, "function", ref i))
+                            return null;
+
                         break;
                     }
                 default:
@@ -262,17 +274,19 @@ namespace NiL.JS.Expressions
                     ExceptionHelper.ThrowSyntaxError("Getter and Setter must have name", code, index);
                 else if (kind == FunctionKind.Method || kind == FunctionKind.MethodGenerator)
                     ExceptionHelper.ThrowSyntaxError("Method must have name", code, index);
+
+                i++;
             }
             else if (code[i] != '(')
             {
                 arrowWithSunglePrm = true;
-                i--;
             }
-            do
-                i++;
-            while (Tools.IsWhiteSpace(code[i]));
+
+            Tools.SkipSpaces(code, ref i);
+
             if (code[i] == ',')
                 ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
+
             while (code[i] != ')')
             {
                 if (parameters.Count == 255 || (kind == FunctionKind.Setter && parameters.Count == 1) || kind == FunctionKind.Getter)
@@ -322,14 +336,10 @@ namespace NiL.JS.Expressions
                 }
             }
 
-            switch (kind)
+            if (kind == FunctionKind.Setter)
             {
-                case FunctionKind.Setter:
-                    {
-                        if (parameters.Count != 1)
-                            ExceptionHelper.ThrowSyntaxError("Setter must have only one argument", code, index);
-                        break;
-                    }
+                if (parameters.Count != 1)
+                    ExceptionHelper.ThrowSyntaxError("Setter must have only one argument", code, index);
             }
 
             i++;
@@ -374,10 +384,13 @@ namespace NiL.JS.Expressions
             else
             {
                 var oldCodeContext = state.CodeContext;
+                state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional | CodeContext.InEval);
                 if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
                     state.CodeContext |= CodeContext.InGenerator;
+                else if (kind == FunctionKind.AsyncFunction)
+                    state.CodeContext |= CodeContext.InAsync;
                 state.CodeContext |= CodeContext.InFunction;
-                state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional | CodeContext.InEval | CodeContext.InWith);
+
                 var labels = state.Labels;
                 state.Labels = new List<string>();
                 state.AllowReturn++;
@@ -400,6 +413,7 @@ namespace NiL.JS.Expressions
                 if (kind == FunctionKind.Function && string.IsNullOrEmpty(name))
                     kind = FunctionKind.AnonymousFunction;
             }
+
             if (body._strict || (parameters.Count > 0 && parameters[parameters.Count - 1].IsRest) || kind == FunctionKind.Arrow)
             {
                 for (var j = parameters.Count; j-- > 1;)
@@ -469,6 +483,7 @@ namespace NiL.JS.Expressions
                         }
                     }
                 }
+
                 for (int j = 0, k = parameters.Count; j < body._variables.Length; j++)
                 {
                     if (body._variables[j] != null)
@@ -493,6 +508,7 @@ namespace NiL.JS.Expressions
                 var tindex = i;
                 while (i < code.Length && Tools.IsWhiteSpace(code[i]) && !Tools.IsLineTerminator(code[i]))
                     i++;
+
                 if (i < code.Length && code[i] == '(')
                 {
                     var args = new List<Expression>();
@@ -507,14 +523,17 @@ namespace NiL.JS.Expressions
                             do
                                 i++;
                             while (Tools.IsWhiteSpace(code[i]));
-                        args.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
+                        args.Add(ExpressionTree.Parse(state, ref i, false, false));
                     }
+
                     i++;
                     index = i;
                     while (i < code.Length && Tools.IsWhiteSpace(code[i]))
                         i++;
+
                     if (i < code.Length && code[i] == ';')
                         ExceptionHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
+
                     return new Call(func, args.ToArray());
                 }
                 else
@@ -550,8 +569,10 @@ namespace NiL.JS.Expressions
             for (var i = 0; i < parameters.Length; i++)
                 res[i] = parameters[i].references[0];
             res[parameters.Length] = _body;
+
             if (Reference != null)
                 res[res.Length - 1] = Reference;
+
             return res;
         }
 
@@ -638,7 +659,17 @@ namespace NiL.JS.Expressions
             _functionInfo.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
 
             var bodyCode = _body as CodeNode;
-            bodyCode.Build(ref bodyCode, 0, variables, codeContext & ~(CodeContext.Conditional | CodeContext.InExpression | CodeContext.InEval | CodeContext.InWith) | CodeContext.InFunction, message, _functionInfo, opts);
+            bodyCode.Build(
+                ref bodyCode,
+                0,
+                variables,
+                codeContext & ~(CodeContext.Conditional
+                              | CodeContext.InExpression
+                              | CodeContext.InEval)
+                            | CodeContext.InFunction,
+                message,
+                _functionInfo,
+                opts);
             _body = bodyCode as CodeBlock;
 
             if (message != null)
@@ -651,21 +682,20 @@ namespace NiL.JS.Expressions
                         break;
                 }
             }
-
-
-            _body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+            
+            _body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             checkUsings();
             if (stats != null)
             {
-                stats.ContainsDebugger |= this._functionInfo.ContainsDebugger;
-                stats.ContainsEval |= this._functionInfo.ContainsEval;
+                stats.ContainsDebugger |= _functionInfo.ContainsDebugger;
+                stats.ContainsEval |= _functionInfo.ContainsEval;
                 stats.ContainsInnerEntities = true;
-                stats.ContainsTry |= this._functionInfo.ContainsTry;
-                stats.ContainsWith |= this._functionInfo.ContainsWith;
-                stats.ContainsYield |= this._functionInfo.ContainsYield;
-                stats.UseCall |= this._functionInfo.UseCall;
-                stats.UseGetMember |= this._functionInfo.UseGetMember;
-                stats.ContainsThis |= this._functionInfo.ContainsThis;
+                stats.ContainsTry |= _functionInfo.ContainsTry;
+                stats.ContainsWith |= _functionInfo.ContainsWith;
+                stats.ContainsYield |= _functionInfo.ContainsYield;
+                stats.UseCall |= _functionInfo.UseCall;
+                stats.UseGetMember |= _functionInfo.UseGetMember;
+                stats.ContainsThis |= _functionInfo.ContainsThis;
             }
 
             if (descriptorToRestore != null)
@@ -697,25 +727,27 @@ namespace NiL.JS.Expressions
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             var bd = _body as CodeNode;
-            _body.Optimize(ref bd, this, message, opts, this._functionInfo);
-            if (this._functionInfo.Returns.Count > 0)
+            _body._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
+            _body.Optimize(ref bd, this, message, opts, _functionInfo);
+            _body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+            if (_functionInfo.Returns.Count > 0)
             {
-                this._functionInfo.ResultType = this._functionInfo.Returns[0].ResultType;
-                for (var i = 1; i < this._functionInfo.Returns.Count; i++)
+                _functionInfo.ResultType = _functionInfo.Returns[0].ResultType;
+                for (var i = 1; i < _functionInfo.Returns.Count; i++)
                 {
-                    if (this._functionInfo.ResultType != this._functionInfo.Returns[i].ResultType)
+                    if (_functionInfo.ResultType != _functionInfo.Returns[i].ResultType)
                     {
-                        this._functionInfo.ResultType = PredictedType.Ambiguous;
+                        _functionInfo.ResultType = PredictedType.Ambiguous;
                         if (message != null
-                            && this._functionInfo.ResultType >= PredictedType.Undefined
-                            && this._functionInfo.Returns[i].ResultType >= PredictedType.Undefined)
+                            && _functionInfo.ResultType >= PredictedType.Undefined
+                            && _functionInfo.Returns[i].ResultType >= PredictedType.Undefined)
                             message(MessageLevel.Warning, new CodeCoordinates(0, parameters[i].references[0].Position, 0), "Type of return value is ambiguous");
                         break;
                     }
                 }
             }
             else
-                this._functionInfo.ResultType = PredictedType.Undefined;
+                _functionInfo.ResultType = PredictedType.Undefined;
         }
 
         private void checkUsings()
@@ -770,7 +802,6 @@ namespace NiL.JS.Expressions
                 if (block != null)
                 {
                     block._variables = tempVariables.Values.Where(x => !(x is ParameterDescriptor)).ToArray();
-                    block.suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
                 }
             }
         }
@@ -807,6 +838,11 @@ namespace NiL.JS.Expressions
                 case FunctionKind.Arrow:
                     {
                         break;
+                    }
+                case FunctionKind.AsyncFunction:
+                    {
+                        code.Append("async ");
+                        goto default;
                     }
                 default:
                     {

@@ -902,16 +902,19 @@ namespace NiL.JS.Expressions
                         {
                             if (Tools.IsLineTerminator(state.Code[i]))
                                 goto case '\n';
+
                             if (i != rollbackPos)
                             {
                                 i = rollbackPos;
                                 goto case '\n';
                             }
+
                             if (state.Code[i] == 'o' && state.Code[i + 1] == 'f')
                             {
                                 i = rollbackPos;
                                 goto case ';';
                             }
+
                             ExceptionHelper.ThrowSyntaxError("Unexpected token '" + state.Code[i] + "'", state.Code, i);
                             break;
                         }

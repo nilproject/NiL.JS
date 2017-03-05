@@ -26,7 +26,8 @@ namespace NiL.JS.Core
         InClassConstructor = 256,
         InStaticMember = 512,
         InGenerator = 1024,
-        InFunction = 2048
+        InFunction = 2048,
+        InAsync = 4096
     }
 
 #if !(PORTABLE || NETCORE)

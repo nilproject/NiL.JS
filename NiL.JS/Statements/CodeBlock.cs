@@ -44,7 +44,7 @@ namespace NiL.JS.Statements
         internal CodeNode[] _lines;
         internal bool _strict;
         internal bool built;
-        internal SuppressScopeIsolationMode suppressScopeIsolation;
+        internal SuppressScopeIsolationMode _suppressScopeIsolation;
 
         public VariableDescriptor[] Variables { get { return _variables; } }
         public CodeNode[] Body { get { return _lines; } }
@@ -282,7 +282,7 @@ namespace NiL.JS.Statements
             }
             else
             {
-                if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
+                if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 {
                     context = new Context(context, false, context._owner)
                     {
@@ -299,7 +299,7 @@ namespace NiL.JS.Statements
                     initVariables(context);
             }
 
-            if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
+            if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 evaluateWithScope(context, i, clearSuspendData);
             else
                 evaluateLines(context, i, clearSuspendData);
@@ -309,14 +309,14 @@ namespace NiL.JS.Statements
 
         private void evaluateWithScope(Context context, int i, bool clearSuspendData)
         {
-            var activated = suppressScopeIsolation != SuppressScopeIsolationMode.Suppress && context.Activate();
+            var activated = _suppressScopeIsolation != SuppressScopeIsolationMode.Suppress && context.Activate();
             try
             {
                 evaluateLines(context, i, clearSuspendData);
             }
             finally
             {
-                if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
+                if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 {
                     if (activated)
                         context.Deactivate();
@@ -588,7 +588,7 @@ namespace NiL.JS.Statements
                 }
             }
 
-            if (_lines.Length == 1 && suppressScopeIsolation == SuppressScopeIsolationMode.Suppress)
+            if (_lines.Length == 1 && _suppressScopeIsolation == SuppressScopeIsolationMode.Suppress)
             {
                 if (_variables.Length != 0)
                     throw new InvalidOperationException();
@@ -636,8 +636,8 @@ namespace NiL.JS.Statements
 
                 if (_variables.Length == 0)
                 {
-                    if (suppressScopeIsolation == SuppressScopeIsolationMode.Auto)
-                        suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+                    if (_suppressScopeIsolation == SuppressScopeIsolationMode.Auto)
+                        _suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
                     scopeBias--;
                 }
@@ -655,7 +655,7 @@ namespace NiL.JS.Statements
                 }
             }
             else
-                suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+                _suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
             if (transferedVariables == null)
             {

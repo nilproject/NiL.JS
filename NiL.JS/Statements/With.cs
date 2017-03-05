@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
 
@@ -177,8 +176,21 @@ namespace NiL.JS.Statements
                 var block = _body as CodeBlock;
                 if (block != null)
                 {
-                    block._variables = tempVariables.Values.Where(x => !(x is ParameterDescriptor)).ToArray();
-                    block.suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
+                    var variables = new List<VariableDescriptor>();
+                    foreach (var variable in tempVariables)
+                    {
+                        if ((variable.Value is ParameterDescriptor) || !(variable.Value.initializer is FunctionDefinition))
+                        {
+                            transferedVariables.Add(variable.Key, variable.Value);
+                        }
+                        else
+                        {
+                            variables.Add(variable.Value);
+                        }
+                    }
+
+                    block._variables = variables.ToArray();
+                    block._suppressScopeIsolation = block._variables.Length == 0 ? SuppressScopeIsolationMode.Suppress : SuppressScopeIsolationMode.DoNotSuppress;
                 }
             }
         }

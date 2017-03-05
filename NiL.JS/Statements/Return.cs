@@ -34,10 +34,13 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "return", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
+
             if (state.AllowReturn == 0)
                 ExceptionHelper.Throw(new SyntaxError("Invalid use of return statement."));
+
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i]))
                 i++;
+
             var body = state.Code[i] == ';' || Tools.IsLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, CodeFragmentType.Expression);
             var pos = index;
             index = i;

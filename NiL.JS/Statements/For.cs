@@ -303,7 +303,7 @@ namespace NiL.JS.Statements
                     _body = bodyAsCodeBlock = new CodeBlock(new[] { _body, new PerIterationScopeInitializer(initAsVds.variables) });
                 }
 
-                bodyAsCodeBlock.suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
+                bodyAsCodeBlock._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
 
                 for (var i = 0; i < initAsVds.variables.Length; i++)
                 {

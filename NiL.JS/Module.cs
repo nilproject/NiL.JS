@@ -155,17 +155,16 @@ namespace NiL.JS
             var stat = new FunctionInfo();
             Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
             var body = root as CodeBlock;
-            body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+            body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             Context._thisBind = new GlobalObject(Context);
             Context._strict = body._strict;
 
             var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
-            if (tv != null)
-                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
-
             var bd = body as CodeNode;
             body.Optimize(ref bd, null, icallback, options, stat);
+            if (tv != null)
+                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
 
             if (stat.ContainsYield)
                 body.Decompose(ref bd);

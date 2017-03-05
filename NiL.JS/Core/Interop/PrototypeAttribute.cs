@@ -19,9 +19,9 @@ namespace NiL.JS.Core.Interop
         {
         }
 
-        internal PrototypeAttribute(Type type, bool replace)
+        internal PrototypeAttribute(Type type, bool doNotChainButReplace)
         {
-            Replace = replace;
+            Replace = doNotChainButReplace;
             PrototypeType = type;
         }
     }
