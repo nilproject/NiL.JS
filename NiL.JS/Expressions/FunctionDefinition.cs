@@ -762,13 +762,16 @@ namespace NiL.JS.Expressions
         {
             base.RebuildScope(functionInfo, null, scopeBias);
 
-            var tv = _functionInfo.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
-            _body.RebuildScope(_functionInfo, tv, scopeBias + (_body._variables == null || _body._variables.Length == 0 || !_functionInfo.WithLexicalEnvironment ? 1 : 0));
-            if (tv != null)
+            var tempVariables = _functionInfo.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
+            _body.RebuildScope(_functionInfo, tempVariables, scopeBias + (_body._variables == null || _body._variables.Length == 0 || !_functionInfo.WithLexicalEnvironment ? 1 : 0));
+            if (tempVariables != null)
             {
-                var vars = new List<VariableDescriptor>(tv.Values);
-                vars.RemoveAll(x => x is ParameterDescriptor);
-                _body._variables = vars.ToArray();
+                var block = _body as CodeBlock;
+                if (block != null)
+                {
+                    block._variables = tempVariables.Values.Where(x => !(x is ParameterDescriptor)).ToArray();
+                    block.suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
+                }
             }
         }
 

@@ -94,6 +94,7 @@
     <Content Include="Array\includes.js" />
     <Content Include="Array\findIndex.js" />
     <Content Include="flow control tests.js" />
+    <Content Include="FunctionInsideWith.js" />
     <Content Include="fuzz.js" />
     <Content Include="Generated\Embedded.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

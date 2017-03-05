@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
 
@@ -10,11 +11,11 @@ namespace NiL.JS.Statements
 #endif
     public sealed class With : CodeNode
     {
-        private CodeNode scope;
-        private CodeNode body;
+        private CodeNode _scope;
+        private CodeNode _body;
 
-        public CodeNode Body { get { return body; } }
-        public CodeNode Scope { get { return scope; } }
+        public CodeNode Body { get { return _body; } }
+        public CodeNode Scope { get { return _scope; } }
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
@@ -63,8 +64,8 @@ namespace NiL.JS.Statements
             index = i;
             return new With()
             {
-                scope = obj,
-                body = body,
+                _scope = obj,
+                _body = body,
                 Position = pos,
                 Length = index - pos
             };
@@ -87,9 +88,9 @@ namespace NiL.JS.Statements
             }
 
             if (context._executionMode != AbortReason.Resume && context._debugging)
-                context.raiseDebugger(scope);
+                context.raiseDebugger(_scope);
 
-            scopeObject = scope.Evaluate(context);
+            scopeObject = _scope.Evaluate(context);
             if (context._executionMode == AbortReason.Suspend)
             {
                 context.SuspendData[this] = null;
@@ -104,7 +105,7 @@ namespace NiL.JS.Statements
                     intcontext._executionMode = c._executionMode;
                     intcontext._executionInfo = c._executionInfo;
                     intcontext.Activate();
-                    c._lastResult = body.Evaluate(intcontext) ?? intcontext._lastResult;
+                    c._lastResult = _body.Evaluate(intcontext) ?? intcontext._lastResult;
                     c._executionMode = intcontext._executionMode;
                     c._executionInfo = intcontext._executionInfo;
                     if (c._executionMode == AbortReason.Suspend)
@@ -118,8 +119,8 @@ namespace NiL.JS.Statements
                 }
             };
 
-            if (context._debugging && !(body is CodeBlock))
-                context.raiseDebugger(body);
+            if (context._debugging && !(_body is CodeBlock))
+                context.raiseDebugger(_body);
 
             action(context);
             return null;
@@ -129,8 +130,8 @@ namespace NiL.JS.Statements
         {
             var res = new List<CodeNode>()
             {
-                body,
-                scope
+                _body,
+                _scope
             };
             res.RemoveAll(x => x == null);
             return res.ToArray();
@@ -140,39 +141,51 @@ namespace NiL.JS.Statements
         {
             if (stats != null)
                 stats.ContainsWith = true;
-            Parser.Build(ref scope, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.InWith, message, stats, opts);
+            Parser.Build(ref _scope, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _body, expressionDepth, new Dictionary<string, VariableDescriptor>(), codeContext | CodeContext.InWith, message, stats, opts);
             return false;
         }
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            if (scope != null)
-                scope.Optimize(ref scope, owner, message, opts, stats);
-            if (body != null)
-                body.Optimize(ref body, owner, message, opts, stats);
+            if (_scope != null)
+                _scope.Optimize(ref _scope, owner, message, opts, stats);
 
-            if (body == null)
-                _this = scope;
+            if (_body != null)
+                _body.Optimize(ref _body, owner, message, opts, stats);
+
+            if (_body == null)
+                _this = _scope;
         }
 
         public override void Decompose(ref CodeNode self)
         {
-            if (scope != null)
-                scope.Decompose(ref scope);
-            if (body != null)
-                body.Decompose(ref body);
+            if (_scope != null)
+                _scope.Decompose(ref _scope);
+            if (_body != null)
+                _body.Decompose(ref _body);
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            scope?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _scope?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
+            var tempVariables = new Dictionary<string, VariableDescriptor>();
+            _body?.RebuildScope(functionInfo, tempVariables, scopeBias);
+            if (tempVariables != null)
+            {
+                var block = _body as CodeBlock;
+                if (block != null)
+                {
+                    block._variables = tempVariables.Values.Where(x => !(x is ParameterDescriptor)).ToArray();
+                    block.suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
+                }
+            }
         }
 
         public override string ToString()
         {
-            return "with (" + scope + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            return "with (" + _scope + ")" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

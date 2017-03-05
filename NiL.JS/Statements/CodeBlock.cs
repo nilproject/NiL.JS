@@ -187,17 +187,11 @@ namespace NiL.JS.Statements
 
                             expectSemicolon = false;
                         }
+
                         continue;
                     }
 
-                    if (t is EntityDefinition)
-                    {
-                        expectSemicolon = false;
-                    }
-                    else
-                    {
-                        expectSemicolon = true;
-                    }
+                    expectSemicolon = !(t is EntityDefinition);
 
                     body.Add(t);
                 }
@@ -212,8 +206,10 @@ namespace NiL.JS.Statements
                 state.functionScopeLevel = oldFunctionScopeLevel;
                 state.lexicalScopeLevel--;
             }
+
             if (!sroot)
                 position++;
+
             int startPos = index;
             index = position;
             return new CodeBlock(body.ToArray())
@@ -238,12 +234,14 @@ namespace NiL.JS.Statements
                 if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
                     count++;
             }
+
             if (count > 0)
             {
                 variables = new VariableDescriptor[count];
                 HashSet<string> declaredVariables = null;
                 if (state.lexicalScopeLevel != state.functionScopeLevel)
                     declaredVariables = new HashSet<string>();
+
                 for (int i = oldVariablesCount, targetIndex = 0; i < state.Variables.Count; i++)
                 {
                     if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
@@ -252,7 +250,7 @@ namespace NiL.JS.Statements
                         if (declaredVariables != null)
                         {
                             if (declaredVariables.Contains(variables[targetIndex].name) && variables[targetIndex].lexicalScope)
-                                ExceptionHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" has already been defined", state.Code, i);
+                                ExceptionHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" already has been defined", state.Code, i);
 
                             declaredVariables.Add(variables[targetIndex].name);
                         }
@@ -263,6 +261,7 @@ namespace NiL.JS.Statements
                         state.Variables[i - targetIndex] = state.Variables[i];
                     }
                 }
+
                 state.Variables.RemoveRange(state.Variables.Count - count, count);
             }
 
@@ -407,8 +406,10 @@ namespace NiL.JS.Statements
                     break;
                 res.Add(node);
             }
+
             if (_variables != null)
                 res.AddRange(from v in _variables where v.initializer != null && (!(v.initializer is FunctionDefinition) || (v.initializer as FunctionDefinition)._body != this) select v.initializer);
+
             return res.ToArray();
         }
 
@@ -514,6 +515,7 @@ namespace NiL.JS.Statements
                 compiledVersion = JITHelpers.compile(this, depth >= 0);
 #endif
             }
+
             if (t >= 0 && this == _this)
             {
                 var newBody = new CodeNode[_lines.Length - t - 1];
@@ -522,6 +524,7 @@ namespace NiL.JS.Statements
                     newBody[f++] = _lines[t];
                 _lines = newBody;
             }
+
             if (_variables != null && _variables.Length != 0)
             {
                 for (var i = 0; i < _variables.Length; i++)
@@ -529,6 +532,7 @@ namespace NiL.JS.Statements
                     variables.Remove(_variables[i].name);
                 }
             }
+
             if (variablesToRestore != null)
             {
                 for (var i = 0; i < variablesToRestore.Count; i++)
@@ -536,6 +540,7 @@ namespace NiL.JS.Statements
                     variables[variablesToRestore[i].name] = variablesToRestore[i];
                 }
             }
+
             return false;
         }
 
@@ -563,12 +568,14 @@ namespace NiL.JS.Statements
                     }
                 }
             }
+
             for (int i = 0; i < _lines.Length; i++)
             {
                 var cn = _lines[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, stats);
                 _lines[i] = cn;
             }
+
             if (_variables != null)
             {
                 for (var i = 0; i < _variables.Length; i++)
@@ -583,6 +590,9 @@ namespace NiL.JS.Statements
 
             if (_lines.Length == 1 && suppressScopeIsolation == SuppressScopeIsolationMode.Suppress)
             {
+                if (_variables.Length != 0)
+                    throw new InvalidOperationException();
+
                 _this = _lines[0];
             }
         }
@@ -620,6 +630,7 @@ namespace NiL.JS.Statements
                         if (!transferedVariables.TryGetValue(_variables[i].name, out desc) || _variables[i].initializer != null)
                             transferedVariables[_variables[i].name] = _variables[i];
                     }
+
                     _variables = emptyVariables;
                 }
 
