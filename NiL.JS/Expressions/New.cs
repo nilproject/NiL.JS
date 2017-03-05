@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
         public static CodeNode Parse(ParseInfo state, ref int index)
         {
             var i = index;
-            if (!Parser.Validate(state.Code, "new", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+            if (!Parser.Validate(state.Code, "new", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;

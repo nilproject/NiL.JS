@@ -79,7 +79,7 @@ namespace NiL.JS.Statements
                 {
                     do
                     {
-                        if (Parser.Validate(state.Code, "case", i) && Parser.IsIdentificatorTerminator(state.Code[i + 4]))
+                        if (Parser.Validate(state.Code, "case", i) && Parser.IsIdentifierTerminator(state.Code[i + 4]))
                         {
                             i += 4;
                             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -90,7 +90,7 @@ namespace NiL.JS.Statements
                             i++;
                             cases.Add(new SwitchCase() { index = body.Count, statement = sample });
                         }
-                        else if (Parser.Validate(state.Code, "default", i) && Parser.IsIdentificatorTerminator(state.Code[i + 7]))
+                        else if (Parser.Validate(state.Code, "default", i) && Parser.IsIdentifierTerminator(state.Code[i + 7]))
                         {
                             i += 7;
                             while (Tools.IsWhiteSpace(state.Code[i]))

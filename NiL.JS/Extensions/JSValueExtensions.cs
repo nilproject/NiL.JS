@@ -144,6 +144,9 @@ namespace NiL.JS.Extensions
                         if (self.Value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
                             return ((Function)self.Value).MakeDelegate<T>();
 
+                        if (typeof(T).IsAssignableFrom(self.GetType()))
+                            return (T)(object)self;
+
                         try
                         {
                             return (T)(Tools.convertJStoObj(self, typeof(T), true) ?? self.Value);

@@ -147,7 +147,8 @@ namespace NiL.JS.Test
             Context.DefaultGlobalContext.DefineVariable("$").Assign(JSValue.Wrap(
                 new
                 {
-                    sleep = new Action<int>(time => Thread.Sleep(time))
+                    sleep = new Action<int>(time => Thread.Sleep(time)),
+                    threadId = new Func<int>(()=> Thread.CurrentThread.ManagedThreadId)
                 }));
 #if !PORTABLE
             Context.DefaultGlobalContext.DefineVariable("$nil").Assign(JSValue.Wrap(
@@ -181,7 +182,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 3
+            int mode = 2
                     ;
             switch (mode)
             {

@@ -230,7 +230,7 @@ namespace NiL.JS.Core
                             return false;
                         needInc = false;
                     }
-                    else if (i < pattern.Length - 1 && IsIdentificatorTerminator(pattern[i + 1]))
+                    else if (i < pattern.Length - 1 && IsIdentifierTerminator(pattern[i + 1]))
                     {
                         i++;
                     }
@@ -241,7 +241,7 @@ namespace NiL.JS.Core
                 j++;
             }
 
-            var result = IsIdentificatorTerminator(pattern[pattern.Length - 1]) || j >= code.Length || IsIdentificatorTerminator(code[j]);
+            var result = IsIdentifierTerminator(pattern[pattern.Length - 1]) || j >= code.Length || IsIdentifierTerminator(code[j]);
             if (result)
                 index = j;
 
@@ -265,6 +265,7 @@ namespace NiL.JS.Core
             int j = index;
             if ((!allowEscape || code[j] != '\\') && (code[j] != '$') && (code[j] != '_') && (!char.IsLetter(code[j])))
                 return false;
+
             j++;
             while (j < code.Length)
             {
@@ -272,8 +273,10 @@ namespace NiL.JS.Core
                     break;
                 j++;
             }
+
             if (index == j)
                 return false;
+
             if (allowEscape || checkReservedWords)
             {
                 string name = code.Substring(index, j - index);
@@ -291,6 +294,7 @@ namespace NiL.JS.Core
                     else if (nname.IndexOf('\\') != -1)
                         return false;
                 }
+
                 if (checkReservedWords)
                 {
                     switch (name)
@@ -355,6 +359,7 @@ namespace NiL.JS.Core
                     }
                 }
             }
+
             index = j;
             return true;
         }
@@ -458,7 +463,7 @@ namespace NiL.JS.Core
                             }
                         default:
                             {
-                                if (IsIdentificatorTerminator(c))
+                                if (IsIdentifierTerminator(c))
                                 {
                                     w = false;
                                     break;
@@ -470,9 +475,11 @@ namespace NiL.JS.Core
                             }
                     }
                 }
+
                 index = j;
                 return true;
             }
+
             return false;
         }
 
@@ -505,9 +512,11 @@ namespace NiL.JS.Core
                     if (j >= code.Length)
                         return false;
                 }
+
                 index = ++j;
                 return true;
             }
+
             return false;
         }
 
@@ -543,6 +552,7 @@ namespace NiL.JS.Core
                     }
                 }
             }
+
             return ValidateNumber(code, ref index);
         }
 
@@ -566,7 +576,7 @@ namespace NiL.JS.Core
                 || (c == '|');
         }
 
-        public static bool IsIdentificatorTerminator(char c)
+        public static bool IsIdentifierTerminator(char c)
         {
             return c == ' '
                 || Tools.IsLineTerminator(c)
@@ -595,16 +605,19 @@ namespace NiL.JS.Core
         {
             while ((index < state.Code.Length) && (Tools.IsWhiteSpace(state.Code[index])))
                 index++;
+
             if (index >= state.Code.Length || state.Code[index] == '}')
                 return null;
+
             int sindex = index;
             if (state.Code[index] == ',' || state.Code[index] == ';')
             {
-                //index++;
                 return null;
             }
+
             if (index >= state.Code.Length)
                 return null;
+
             for (int i = 0; i < rules[(int)ruleSet].Count; i++)
             {
                 if (rules[(int)ruleSet][i].Validate(state.Code, index))
@@ -614,8 +627,10 @@ namespace NiL.JS.Core
                         return result;
                 }
             }
+
             if (throwError)
                 ExceptionHelper.ThrowUnknownToken(state.Code, sindex);
+
             return null;
         }
 
@@ -624,6 +639,7 @@ namespace NiL.JS.Core
             var t = (CodeNode)self;
             while (t != null && t.Build(ref t, expressionDepth, variables, codeContext, message, stats, opts))
                 self = (T)t;
+
             self = (T)t;
         }
 
@@ -636,6 +652,7 @@ namespace NiL.JS.Core
                 s = null;
                 return;
             }
+
             s = t as Expression ?? new ExpressionWrapper(t);
         }
 

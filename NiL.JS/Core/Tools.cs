@@ -15,7 +15,7 @@ using NiL.JS.Extensions;
 using NiL.JS.Backward;
 #endif
 
-using jsbool = NiL.JS.BaseLibrary.Boolean;
+using JSBool = NiL.JS.BaseLibrary.Boolean;
 
 namespace NiL.JS.Core
 {
@@ -45,7 +45,7 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
-            return "(" + Line + ":" + Column + (Length != 0 ? "*" + Length : "") + ")";
+            return $"({ Line }:{ Column }{ (Length != 0 ? "*" + Length : "") })";
         }
 
         public static CodeCoordinates FromTextPosition(string text, int position, int length)
@@ -355,7 +355,6 @@ namespace NiL.JS.Core
                         return JSObjectToInt32(r, @null, undefined, nan, true);
                     }
                 case JSValueType.NotExists:
-                //ExceptionsHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable not defined.")));
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
                     return undefined;
@@ -534,15 +533,15 @@ namespace NiL.JS.Core
                         if (hightLoyalty)
                         {
                             if (targetType == typeof(string))
-                                return jsobj._iValue != 0 ? jsbool.TrueString : jsbool.FalseString;
+                                return jsobj._iValue != 0 ? JSBool.TrueString : JSBool.FalseString;
 
                         }
 
                         if (targetType == typeof(bool))
                             return jsobj._iValue != 0;
 
-                        if (targetType == typeof(jsbool))
-                            return new jsbool(jsobj._iValue != 0);
+                        if (targetType == typeof(JSBool))
+                            return new JSBool(jsobj._iValue != 0);
 
                         return null;
                     }
@@ -829,7 +828,9 @@ namespace NiL.JS.Core
                 else if (d == -100000000000000000000d)
                     res = "-100000000000000000000";
                 else
-                    res = abs < 1.0 ? neg == 1 ? "-0" : "0" : ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(CultureInfo.InvariantCulture));
+                    res = abs < 1.0 ? 
+                        (neg == 1 ? "-0" : "0") : 
+                        ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(CultureInfo.InvariantCulture));
 
                 abs %= 1.0;
                 if (abs != 0 && res.Length < (15 + neg))
@@ -841,147 +842,6 @@ namespace NiL.JS.Core
             }
 
             return res;
-        }
-
-        private static string dtoString(double a)
-        {
-            var b = (ulong)BitConverter.DoubleToInt64Bits(a);
-            ulong m0 = (b & ((1UL << 52) - 1)) | (1UL << 52);
-            ulong m1 = m0 & uint.MaxValue;
-            m0 &= ~(ulong)uint.MaxValue;
-            m1 <<= 21;
-            int e = 0;
-            var s = (ulong)(b >> 63) | 1;
-            e |= (int)(b >> 52);
-            e = 52 - e + 1023;
-
-            const int estep = 3;
-            const int dstep = 10;
-            const int estepCor0 = 3;
-            const int estepCor1 = 107;// 321;
-            int count = 0;
-            int ec = 0;
-            if (e < 0)
-            {
-                while (e <= -(estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0)))
-                {
-                    e += estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
-                    m0 <<= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
-                    m0 /= dstep;
-                    m1 <<= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
-                    m1 /= dstep;
-                    count++;
-                    if (count % estepCor1 == 0)
-                        ec++;
-                }
-                m0 <<= -e;
-                m1 <<= -e;
-            }
-            else
-            {
-                while (e >= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0))
-                {
-                    e -= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
-                    m0 *= dstep;
-                    m0 >>= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
-                    m1 *= dstep;
-                    m1 >>= estep + (count % estepCor0 == 0 && count % estepCor1 != 0 ? 1 : 0);
-                    if (count % estepCor1 == 0)
-                        ec--;
-                    count--;
-                }
-                count += ec / 3;
-                m0 >>= e;
-                m1 >>= e;
-            }
-            m0 += m1 >> 21;
-
-            if (m0 == 0)
-                return s > 0 ? "0" : "-0";
-            if (count >= 0)
-            {
-                while (m0 >= (ulong)1e17)
-                {
-                    var mod = m0 % 10;
-                    m0 /= 10;
-                    if (mod >= 5)
-                        m0++;
-                    count++;
-                }
-                var ts = m0.ToString();
-                var res = new StringBuilder();
-                if (ts.Length + count < 22)
-                {
-                    res.Append(ts);
-                    for (var i = 0; i < count; i++)
-                        res.Append("0");
-                    return res.ToString();
-                }
-                for (var i = 0; i < System.Math.Min(17, ts.Length); i++)
-                {
-                    if (i == 1)
-                        res.Append('.');
-                    res.Append(ts[i]);
-                }
-                while (res[res.Length - 1] == '0')
-                    res.Length--;
-                if (!Tools.IsDigit(res[res.Length - 1]))
-                    res.Length--;
-                res.Append("e+").Append(ts.Length - 1 + count);
-                return res.ToString();
-            }
-            else
-            {
-                while (m0 >= (ulong)1e17)
-                {
-                    var mod = m0 % 10;
-                    m0 /= 10;
-                    if (mod >= 5)
-                        m0++;
-                    count++;
-                }
-                var ts = m0.ToString();
-                var res = new StringBuilder();
-                if (count + ts.Length <= 0)
-                {
-                    if (count + ts.Length <= -7)
-                    {
-                        for (var i = 0; i < ts.Length; i++)
-                        {
-                            if (i == 1)
-                                res.Append('.');
-                            res.Append(ts[i]);
-                        }
-                        res.Append("e").Append(count + ts.Length);
-                    }
-                    else
-                    {
-                        res.Append("0.");
-                        for (var i = -count - ts.Length; i-- > 0;)
-                            res.Append('0');
-                        res.Append(ts);
-                    }
-                }
-                else
-                {
-                    for (var i = 0; i < ts.Length; i++)
-                    {
-                        if (count + ts.Length == i)
-                            res.Append('.');
-                        res.Append(ts[i]);
-                    }
-                    for (var i = res.Length; i-- > 0;)
-                    {
-                        if (res[i] == '0')
-                            res.Length--;
-                        else
-                            break;
-                    }
-                    if (res[res.Length - 1] == '.')
-                        res.Length--;
-                }
-                return res.ToString();
-            }
         }
 
         internal static void CheckEndOfInput(string code, ref int i)
@@ -1114,7 +974,7 @@ namespace NiL.JS.Core
                 {
                     if (raiseOldOctalLiterals)
                         ExceptionHelper.ThrowSyntaxError("Octal literals not allowed in strict mode", code, i);
-                    
+
                     while ((i + 1 < code.Length) && (code[i + 1] == '0'))
                     {
                         i++;
@@ -1294,7 +1154,7 @@ namespace NiL.JS.Core
                                     temp++;
                                 }
                             }
-                            else
+                            else if (temp != 0)
                             {
                                 while ((temp >> 52) == 0)
                                 {
@@ -1623,10 +1483,10 @@ namespace NiL.JS.Core
 
         internal static string RemoveComments(string code, int startPosition)
         {
-            StringBuilder res = null;// new StringBuilder(code.Length);
+            StringBuilder res = null;
             for (int i = startPosition; i < code.Length;)
             {
-                while (i < code.Length && Tools.IsWhiteSpace(code[i]))
+                while (i < code.Length && IsWhiteSpace(code[i]))
                 {
                     if (res != null)
                         res.Append(code[i++]);
@@ -1661,10 +1521,7 @@ namespace NiL.JS.Core
                     break;
                 }
 
-                if (//Parser.ValidateName(code, ref i, false) ||
-                    //Parser.ValidateNumber(code, ref i) ||
-                    //Parser.ValidateRegex(code, ref i, false) ||
-                    Parser.ValidateString(code, ref i, false))
+                if (Parser.ValidateString(code, ref i, false))
                 {
                     if (res != null)
                         for (; s < i; s++)

@@ -28,7 +28,7 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "try", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+            if (!Parser.Validate(state.Code, "try", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
@@ -77,7 +77,7 @@ namespace NiL.JS.Statements
                     i++;
             }
             CodeNode f = null;
-            if (Parser.Validate(state.Code, "finally", i) && Parser.IsIdentificatorTerminator(state.Code[i + 7]))
+            if (Parser.Validate(state.Code, "finally", i) && Parser.IsIdentifierTerminator(state.Code[i + 7]))
             {
                 i += 7;
                 while (Tools.IsWhiteSpace(state.Code[i]))

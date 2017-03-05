@@ -102,6 +102,9 @@ namespace NiL.JS.BaseLibrary
 
         internal virtual void run()
         {
+            if (_task.Status != TaskStatus.Created)
+                throw new InvalidOperationException("Task can't be started");
+
             if (_innerTask == null)
             {
                 _innerTask = new Task(callbackInvoke);

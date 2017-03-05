@@ -32,7 +32,7 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "return", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+            if (!Parser.Validate(state.Code, "return", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
             if (state.AllowReturn == 0)
                 ExceptionHelper.Throw(new SyntaxError("Invalid use of return statement."));

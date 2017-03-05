@@ -31,8 +31,10 @@ namespace NiL.JS.Statements
             int i = index;
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
-            if (!Parser.Validate(state.Code, "do", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+
+            if (!Parser.Validate(state.Code, "do", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
+
             int labelsCount = state.LabelsCount;
             state.LabelsCount = 0;
             while (Tools.IsWhiteSpace(state.Code[i]))
