@@ -273,7 +273,7 @@ namespace NiL.JS.Statements
             int i = 0;
             bool clearSuspendData = false;
 
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 var suspendData = context.SuspendData[this] as SuspendData;
                 context = suspendData.Context;
@@ -286,7 +286,7 @@ namespace NiL.JS.Statements
                 {
                     context = new Context(context, false, context._owner)
                     {
-                        _suspendData = context._suspendData,
+                        SuspendData = context.SuspendData,
                         _definedVariables = _variables,
                         _thisBind = context._thisBind,
                         _strict = context._strict,
@@ -374,14 +374,16 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
-                if (context._executionMode != AbortReason.None)
+                if (context._executionMode != ExecutionMode.None)
                 {
-                    if (context._executionMode == AbortReason.Suspend)
+                    if (context._executionMode == ExecutionMode.Suspend)
                     {
                         context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
                     }
+
                     break;
                 }
+
                 if (clearSuspendData)
                     context.SuspendData.Clear();
             }
@@ -649,8 +651,8 @@ namespace NiL.JS.Statements
                         initialVariables[i].definitionScopeLevel -= initialVariables[i].scopeBias;
                         initialVariables[i].definitionScopeLevel += scopeBias;
                     }
-                    initialVariables[i].scopeBias = scopeBias;
 
+                    initialVariables[i].scopeBias = scopeBias;
                     initialVariables[i].initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
                 }
             }
@@ -685,7 +687,7 @@ namespace NiL.JS.Statements
         internal void initVariables(Context context)
         {
             var stats = context._owner?._functionDefinition?._functionInfo;
-            var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.ContainsYield;
+            var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.NeedDecompose;
             for (var i = 0; i < _variables.Length; i++)
             {
                 var v = _variables[i];

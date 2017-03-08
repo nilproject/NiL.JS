@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             Exception exception = null;
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 var action = context.SuspendData[this] as Action<Context>;
                 if (action != null)
@@ -124,7 +124,7 @@ namespace NiL.JS.Statements
             {
                 body.Evaluate(context);
 
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                     context.SuspendData[this] = null;
             }
             catch (Exception e)
@@ -143,14 +143,14 @@ namespace NiL.JS.Statements
             }
             finally
             {
-                if (context._executionMode != AbortReason.Suspend && finallyBody != null)
+                if (context._executionMode != ExecutionMode.Suspend && finallyBody != null)
                 {
                     finallyHandler(context, exception);
                     exception = null;
                 }
             }
 
-            if (context._executionMode != AbortReason.Suspend && exception != null)
+            if (context._executionMode != ExecutionMode.Suspend && exception != null)
                 throw exception;
 
             return null;
@@ -163,28 +163,28 @@ namespace NiL.JS.Statements
 
             var abort = context._executionMode;
             var ainfo = context._executionInfo;
-            if (abort == AbortReason.Return && ainfo != null)
+            if (abort == ExecutionMode.Return && ainfo != null)
             {
                 if (ainfo.Defined)
                     ainfo = ainfo.CloneImpl(false);
                 else
                     ainfo = JSValue.Undefined;
             }
-            context._executionMode = AbortReason.None;
+            context._executionMode = ExecutionMode.None;
             context._executionInfo = JSValue.undefined;
 
             Action<Context> finallyAction = null;
             finallyAction = (c) =>
             {
                 c._lastResult = finallyBody.Evaluate(c) ?? context._lastResult;
-                if (c._executionMode == AbortReason.None)
+                if (c._executionMode == ExecutionMode.None)
                 {
                     c._executionMode = abort;
                     c._executionInfo = ainfo;
                     if (exception != null)
                         throw exception as JSException ?? new JSException(null as JSValue, exception);
                 }
-                else if (c._executionMode == AbortReason.Suspend)
+                else if (c._executionMode == ExecutionMode.Suspend)
                 {
                     c.SuspendData[this] = finallyAction;
                 }
@@ -234,7 +234,7 @@ namespace NiL.JS.Statements
                 c._executionMode = catchContext._executionMode;
                 c._executionInfo = catchContext._executionInfo;
 
-                if (c._executionMode == AbortReason.Suspend)
+                if (c._executionMode == ExecutionMode.Suspend)
                 {
                     if (finallyBody != null)
                     {
@@ -246,7 +246,7 @@ namespace NiL.JS.Statements
                             }
                             finally
                             {
-                                if (c2._executionMode != AbortReason.Suspend)
+                                if (c2._executionMode != ExecutionMode.Suspend)
                                     finallyHandler(c2, e);
                             }
                         });

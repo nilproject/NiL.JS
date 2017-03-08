@@ -166,7 +166,7 @@ namespace NiL.JS
             if (tv != null)
                 body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
 
-            if (stat.ContainsYield)
+            if (stat.NeedDecompose)
                 body.Decompose(ref bd);
         }
 

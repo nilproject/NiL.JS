@@ -76,7 +76,7 @@ namespace NiL.JS.Statements
             WithContext intcontext = null;
             Action<Context> action = null;
 
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 action = context.SuspendData[this] as Action<Context>;
                 if (action != null)
@@ -86,11 +86,11 @@ namespace NiL.JS.Statements
                 }
             }
 
-            if (context._executionMode != AbortReason.Resume && context._debugging)
+            if (context._executionMode != ExecutionMode.Resume && context._debugging)
                 context.raiseDebugger(_scope);
 
             scopeObject = _scope.Evaluate(context);
-            if (context._executionMode == AbortReason.Suspend)
+            if (context._executionMode == ExecutionMode.Suspend)
             {
                 context.SuspendData[this] = null;
                 return null;
@@ -107,7 +107,7 @@ namespace NiL.JS.Statements
                     c._lastResult = _body.Evaluate(intcontext) ?? intcontext._lastResult;
                     c._executionMode = intcontext._executionMode;
                     c._executionInfo = intcontext._executionInfo;
-                    if (c._executionMode == AbortReason.Suspend)
+                    if (c._executionMode == ExecutionMode.Suspend)
                     {
                         c.SuspendData[this] = action;
                     }
@@ -170,7 +170,7 @@ namespace NiL.JS.Statements
             _scope?.RebuildScope(functionInfo, transferedVariables, scopeBias);
 
             var tempVariables = new Dictionary<string, VariableDescriptor>();
-            _body?.RebuildScope(functionInfo, tempVariables, scopeBias);
+            _body?.RebuildScope(functionInfo, tempVariables, scopeBias + 1);
             if (tempVariables != null)
             {
                 var block = _body as CodeBlock;

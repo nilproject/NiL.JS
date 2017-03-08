@@ -89,7 +89,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return _functionInfo.ContainsYield;
+                return _functionInfo.NeedDecompose;
             }
         }
 
@@ -420,8 +420,10 @@ namespace NiL.JS.Expressions
                     for (var k = j; k-- > 0;)
                         if (parameters[j].Name == parameters[k].Name)
                             ExceptionHelper.ThrowSyntaxError("Duplicate names of function parameters not allowed in strict mode", code, index);
+
                 if (name == "arguments" || name == "eval")
                     ExceptionHelper.ThrowSyntaxError("Functions name can not be \"arguments\" or \"eval\" in strict mode at", code, index);
+
                 for (int j = parameters.Count; j-- > 0;)
                 {
                     if (parameters[j].Name == "arguments" || parameters[j].Name == "eval")
@@ -596,6 +598,9 @@ namespace NiL.JS.Expressions
             if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
                 return new GeneratorFunction(context, this);
 
+            if (kind == FunctionKind.AsyncFunction || kind == FunctionKind.AsyncAnonymousFunction || kind == FunctionKind.AsyncArrow)
+                return new AsyncFunction(context, this);
+
             if (_body != null)
             {
                 if (_body._lines.Length == 0)
@@ -607,7 +612,7 @@ namespace NiL.JS.Expressions
                 {
                     var @return = _body._lines[0] as Return;
                     if (@return != null
-                        && (@return.Value == null || @return.Value.ContextIndependent))
+                    && (@return.Value == null || @return.Value.ContextIndependent))
                     {
                         return new SimpleFunction(context, this);
                     }
@@ -692,7 +697,7 @@ namespace NiL.JS.Expressions
                 stats.ContainsInnerEntities = true;
                 stats.ContainsTry |= _functionInfo.ContainsTry;
                 stats.ContainsWith |= _functionInfo.ContainsWith;
-                stats.ContainsYield |= _functionInfo.ContainsYield;
+                stats.NeedDecompose |= _functionInfo.NeedDecompose;
                 stats.UseCall |= _functionInfo.UseCall;
                 stats.UseGetMember |= _functionInfo.UseGetMember;
                 stats.ContainsThis |= _functionInfo.ContainsThis;

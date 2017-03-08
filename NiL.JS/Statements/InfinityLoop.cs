@@ -31,15 +31,15 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(body);
 
                 context._lastResult = body.Evaluate(context) ?? context._lastResult;
-                if (context._executionMode != AbortReason.None)
+                if (context._executionMode != ExecutionMode.None)
                 {
-                    if (context._executionMode < AbortReason.Return)
+                    if (context._executionMode < ExecutionMode.Return)
                     {
                         var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
-                        var _break = (context._executionMode > AbortReason.Continue) || !me;
+                        var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                         if (me)
                         {
-                            context._executionMode = AbortReason.None;
+                            context._executionMode = ExecutionMode.None;
                             context._executionInfo = JSValue.notExists;
                         }
                         if (_break)

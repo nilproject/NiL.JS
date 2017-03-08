@@ -42,7 +42,7 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            context._executionMode = AbortReason.Continue;
+            context._executionMode = ExecutionMode.Continue;
             context._executionInfo = label;
             return null;
         }

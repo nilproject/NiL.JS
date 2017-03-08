@@ -81,14 +81,14 @@ namespace NiL.JS.BaseLibrary
 
         internal readonly FunctionDefinition _functionDefinition;
         [Hidden]
-        internal readonly Context _context;
+        internal readonly Context _initialContext;
         [Hidden]
         public Context Context
         {
             [Hidden]
             get
             {
-                return _context;
+                return _initialContext;
             }
         }
         [Field]
@@ -314,14 +314,14 @@ namespace NiL.JS.BaseLibrary
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            _context = context;
+            _initialContext = context;
         }
 
         [DoNotEnumerate]
         public Function(Arguments args)
         {
-            _context = (Context.CurrentContext ?? Context.DefaultGlobalContext).RootContext;
-            if (_context == Context._DefaultGlobalContext || _context == null)
+            _initialContext = (Context.CurrentContext ?? Context.DefaultGlobalContext).RootContext;
+            if (_initialContext == Context._DefaultGlobalContext || _initialContext == null)
                 throw new InvalidOperationException("Special Functions constructor can be called from javascript code only");
 
             _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
@@ -342,7 +342,7 @@ namespace NiL.JS.BaseLibrary
 
             if (func != null && code.Length == index)
             {
-                Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), _context._strict ? CodeContext.Strict : CodeContext.None, null, null, Options.None);
+                Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), _initialContext._strict ? CodeContext.Strict : CodeContext.None, null, null, Options.None);
 
                 func.RebuildScope(null, null, 0);
                 func.Optimize(ref func, null, null, Options.None, null);
@@ -361,10 +361,10 @@ namespace NiL.JS.BaseLibrary
         internal Function(Context context, FunctionDefinition functionDefinition)
         {
             _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
-            this._context = context;
-            this._functionDefinition = functionDefinition;
+            _initialContext = context;
+            _functionDefinition = functionDefinition;
             _valueType = JSValueType.Function;
-            this._oValue = this;
+            _oValue = this;
         }
 
         [Hidden]
@@ -448,7 +448,7 @@ namespace NiL.JS.BaseLibrary
             if (_functionDefinition.trace)
                 System.Console.WriteLine("DEBUG: Run \"" + _functionDefinition.Reference.Name + "\"");
 #endif
-            JSValue res = null;
+            JSValue result = null;
             var body = _functionDefinition._body;
             if (body._lines.Length == 0)
             {
@@ -456,7 +456,7 @@ namespace NiL.JS.BaseLibrary
                 return notExists;
             }
 
-            var ceocw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsWith || _functionDefinition._functionInfo.ContainsYield;
+            var ceocw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsWith || _functionDefinition._functionInfo.NeedDecompose;
             if (_functionDefinition.recursionDepth > _functionDefinition.parametersStored) // рекурсивный вызов.
             {
                 if (!ceocw)
@@ -469,7 +469,7 @@ namespace NiL.JS.BaseLibrary
 
             for (;;) // tail recursion catcher
             {
-                var internalContext = new Context(_context, ceocw, this);
+                var internalContext = new Context(_initialContext, ceocw, this);
                 internalContext._definedVariables = body._variables;
                 internalContext.Activate();
 
@@ -478,32 +478,37 @@ namespace NiL.JS.BaseLibrary
                     initContext(targetObject, arguments, ceocw, internalContext);
                     initParameters(arguments, internalContext);
                     _functionDefinition.recursionDepth++;
-                    res = evaluate(internalContext);
+                    result = evaluateBody(internalContext);
                 }
                 finally
                 {
 #if DEBUG && !(PORTABLE || NETCORE)
                     if (_functionDefinition.trace)
-                        System.Console.WriteLine("DEBUG: Exit \"" + _functionDefinition.Reference.Name + "\"");
+                        Console.WriteLine("DEBUG: Exit \"" + _functionDefinition.Reference.Name + "\"");
 #endif
                     _functionDefinition.recursionDepth--;
                     if (_functionDefinition.parametersStored > _functionDefinition.recursionDepth)
                         _functionDefinition.parametersStored = _functionDefinition.recursionDepth;
+
                     exit(internalContext);
                 }
-                if (res != null) // tail recursion
+
+                if (result != null) // tail recursion
                     break;
+
                 arguments = internalContext._executionInfo as Arguments;
                 targetObject = correctTargetObject(internalContext._objectSource, body._strict);
             }
-            return res;
+
+            return result;
         }
 
-        internal JSValue evaluate(Context internalContext)
+        internal JSValue evaluateBody(Context internalContext)
         {
             _functionDefinition._body.Evaluate(internalContext);
-            if (internalContext._executionMode == AbortReason.TailRecursion)
+            if (internalContext._executionMode == ExecutionMode.TailRecursion)
                 return null;
+
             var ai = internalContext._executionInfo;
             if (ai == null || ai._valueType < JSValueType.Undefined)
             {
@@ -511,7 +516,9 @@ namespace NiL.JS.BaseLibrary
                 return notExists;
             }
             else if (ai._valueType == JSValueType.Undefined)
+            {
                 return undefined;
+            }
             else
             {
                 // константы и новосозданные объекты копировать нет смысла
@@ -524,7 +531,7 @@ namespace NiL.JS.BaseLibrary
         internal void exit(Context internalContext)
         {
             _functionDefinition?._body?.clearVariablesCache();
-            internalContext._executionMode = AbortReason.Return;
+            internalContext._executionMode = ExecutionMode.Return;
             internalContext.Deactivate();
         }
 
@@ -555,11 +562,12 @@ namespace NiL.JS.BaseLibrary
 
         internal void initContext(JSValue targetObject, Arguments arguments, bool storeArguments, Context internalContext)
         {
-            if (this._functionDefinition.reference._descriptor != null && _functionDefinition.reference._descriptor.cacheRes == null)
+            if (_functionDefinition.reference._descriptor != null && _functionDefinition.reference._descriptor.cacheRes == null)
             {
                 _functionDefinition.reference._descriptor.cacheContext = internalContext._parent;
                 _functionDefinition.reference._descriptor.cacheRes = this;
             }
+
             internalContext._thisBind = targetObject;
             internalContext._strict |= _functionDefinition._body._strict;
             if (_functionDefinition.kind == FunctionKind.Arrow)
@@ -570,8 +578,10 @@ namespace NiL.JS.BaseLibrary
             else
             {
                 internalContext._arguments = arguments;
+
                 if (storeArguments)
                     internalContext._variables["arguments"] = arguments;
+
                 if (_functionDefinition._body._strict)
                 {
                     arguments._attributes |= JSValueAttributesInternal.ReadOnly;
@@ -704,15 +714,15 @@ namespace NiL.JS.BaseLibrary
         internal JSValue correctTargetObject(JSValue thisBind, bool strict)
         {
             if (thisBind == null)
-                return strict ? undefined : _context != null ? _context.RootContext._thisBind : null;
-            else if (_context != null)
+                return strict ? undefined : _initialContext != null ? _initialContext.RootContext._thisBind : null;
+            else if (_initialContext != null)
             {
                 if (!strict) // Поправляем this
                 {
                     if (thisBind._valueType > JSValueType.Undefined && thisBind._valueType < JSValueType.Object)
                         return thisBind.ToObject();
                     else if (thisBind._valueType <= JSValueType.Undefined || thisBind._oValue == null)
-                        return _context.RootContext._thisBind;
+                        return _initialContext.RootContext._thisBind;
                 }
                 else if (thisBind._valueType <= JSValueType.Undefined)
                     return undefined;

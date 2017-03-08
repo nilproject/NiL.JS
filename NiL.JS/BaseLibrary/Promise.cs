@@ -19,6 +19,7 @@ namespace NiL.JS.BaseLibrary
 
     public class Promise
     {
+        private readonly object _sync = new object();
         private JSValue _innerResult;
         private Task _innerTask;
         private Function _callback;
@@ -95,7 +96,7 @@ namespace NiL.JS.BaseLibrary
             });
         }
 
-        protected Promise(Task<JSValue> task)
+        internal Promise(Task<JSValue> task)
         {
             _task = task;
         }
@@ -107,8 +108,14 @@ namespace NiL.JS.BaseLibrary
 
             if (_innerTask == null)
             {
-                _innerTask = new Task(callbackInvoke);
-                _innerTask.Start();
+                lock (_sync)
+                {
+                    if (_innerTask == null)
+                    {
+                        _innerTask = new Task(callbackInvoke);
+                        _innerTask.Start();
+                    }
+                }
             }
         }
 
@@ -136,10 +143,10 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (!statusSetted)
                         {
+                            reject = true;
                             statusSetted = true;
                             _innerResult = args[0];
                             _task.Start();
-                            reject = true;
                         }
 
                         return null;

@@ -89,9 +89,9 @@ namespace NiL.JS.Expressions
             JSValue[] tagResult = null;
             int i = 0;
 
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
-                var suspendData = context._suspendData[this] as SuspendData;
+                var suspendData = context.SuspendData[this] as SuspendData;
 
                 if (Mode == TemplateStringMode.Regular)
                 {
@@ -125,9 +125,9 @@ namespace NiL.JS.Expressions
                 if (i > 0)
                 {
                     var temp = expressions[i - 1].Evaluate(context);
-                    if (context._executionMode != AbortReason.None)
+                    if (context._executionMode != ExecutionMode.None)
                     {
-                        if (context._executionMode == AbortReason.Suspend)
+                        if (context._executionMode == ExecutionMode.Suspend)
                         {
                             var suspendData = new SuspendData();
                             suspendData.Index = i;

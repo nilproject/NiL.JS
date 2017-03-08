@@ -51,21 +51,18 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var temp = _forWrite ? _source.EvaluateForWrite(context) : _source.Evaluate(context);
-            if (context._executionMode == AbortReason.Suspend)
-            {
+
+            if (context._executionMode == ExecutionMode.Suspend)
                 return null;
-            }
             else
-            {
                 context.SuspendData[_source] = _forWrite ? temp : temp.CloneImpl(false);
-            }
 
             return null;
         }
 
         public override string ToString()
         {
-            return "@(" + _source + ")";
+            return _source.ToString();
         }
 
         protected internal override CodeNode[] getChildsImpl()

@@ -107,7 +107,7 @@ namespace NiL.JS.Test
 
         public class B : DynamicObject
         {
-            
+
         }
 
         [UseIndexers]
@@ -148,7 +148,8 @@ namespace NiL.JS.Test
                 new
                 {
                     sleep = new Action<int>(time => Thread.Sleep(time)),
-                    threadId = new Func<int>(()=> Thread.CurrentThread.ManagedThreadId)
+                    threadId = new Func<int>(() => Thread.CurrentThread.ManagedThreadId),
+                    delay = new Func<int, Task>((x) => Task.Delay(x))
                 }));
 #if !PORTABLE
             Context.DefaultGlobalContext.DefineVariable("$nil").Assign(JSValue.Wrap(
@@ -157,11 +158,11 @@ namespace NiL.JS.Test
                     GetCtor = new Func<string, JSValue>(name => JSValue.GetConstructor(NamespaceProvider.GetType(name)))
                 }));
 #endif
-            Context.DefaultGlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSObject.Undefined; }));
+            Context.DefaultGlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSValue.Undefined; }));
             Context.DefaultGlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
             {
                 for (var i = 0; i < a.Length; i++)
-                    System.Console.WriteLine(a[i]);
+                    Console.WriteLine(a[i]);
                 return JSValue.Undefined;
             }));
 

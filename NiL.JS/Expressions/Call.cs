@@ -133,7 +133,6 @@ namespace NiL.JS.Expressions
             }
             else
             {
-
                 if (allowTCO
                     && _callMode == 0
                     && (func._functionDefinition.kind != FunctionKind.Generator)
@@ -184,7 +183,7 @@ namespace NiL.JS.Expressions
 
         private void tailCall(Context context, Function func)
         {
-            context._executionMode = AbortReason.TailRecursion;
+            context._executionMode = ExecutionMode.TailRecursion;
 
             var arguments = new Arguments(context);
 

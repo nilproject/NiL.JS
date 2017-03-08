@@ -175,7 +175,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             SuspendData suspendData = null;
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 suspendData = context.SuspendData[this] as SuspendData;
             }
@@ -187,7 +187,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(_source);
 
                 source = _source.Evaluate(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;
@@ -215,7 +215,7 @@ namespace NiL.JS.Statements
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     if (suspendData == null)
                         suspendData = new SuspendData();
@@ -237,9 +237,9 @@ namespace NiL.JS.Statements
             while (source != null)
             {
                 var keys = (suspendData != null ? suspendData.keys : null) ?? source.GetEnumerator(false, EnumerationMode.RequireValues);
-                while (context._executionMode >= AbortReason.Resume || keys.MoveNext())
+                while (context._executionMode >= ExecutionMode.Resume || keys.MoveNext())
                 {
-                    if (context._executionMode != AbortReason.Resume)
+                    if (context._executionMode != ExecutionMode.Resume)
                     {
                         var key = keys.Current.Key;
                         variable._valueType = JSValueType.String;
@@ -255,21 +255,21 @@ namespace NiL.JS.Statements
                     }
 
                     context._lastResult = _body.Evaluate(context) ?? context._lastResult;
-                    if (context._executionMode != AbortReason.None)
+                    if (context._executionMode != ExecutionMode.None)
                     {
-                        if (context._executionMode < AbortReason.Return)
+                        if (context._executionMode < ExecutionMode.Return)
                         {
                             var me = context._executionInfo == null || System.Array.IndexOf(_labels, context._executionInfo._oValue as string) != -1;
-                            var _break = (context._executionMode > AbortReason.Continue) || !me;
+                            var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                             if (me)
                             {
-                                context._executionMode = AbortReason.None;
+                                context._executionMode = ExecutionMode.None;
                                 context._executionInfo = JSValue.notExists;
                             }
                             if (_break)
                                 return null;
                         }
-                        else if (context._executionMode == AbortReason.Suspend)
+                        else if (context._executionMode == ExecutionMode.Suspend)
                         {
                             if (suspendData == null)
                                 suspendData = new SuspendData();

@@ -165,7 +165,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             SuspendData suspendData = null;
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 suspendData = context.SuspendData[this] as SuspendData;
             }
@@ -177,7 +177,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(_source);
 
                 source = _source.Evaluate(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;
@@ -205,7 +205,7 @@ namespace NiL.JS.Statements
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     if (suspendData == null)
                         suspendData = new SuspendData();
@@ -224,29 +224,29 @@ namespace NiL.JS.Statements
             if (iterator == null)
                 return null;
 
-            IIteratorResult iteratorResult = context._executionMode != AbortReason.Resume ? iterator.next() : null;
-            while (context._executionMode >= AbortReason.Resume || !iteratorResult.done)
+            IIteratorResult iteratorResult = context._executionMode != ExecutionMode.Resume ? iterator.next() : null;
+            while (context._executionMode >= ExecutionMode.Resume || !iteratorResult.done)
             {
-                if (context._executionMode != AbortReason.Resume)
+                if (context._executionMode != ExecutionMode.Resume)
                     variable.Assign(iteratorResult.value);
 
                 _body.Evaluate(context);
 
-                if (context._executionMode != AbortReason.None)
+                if (context._executionMode != ExecutionMode.None)
                 {
-                    if (context._executionMode < AbortReason.Return)
+                    if (context._executionMode < ExecutionMode.Return)
                     {
                         var me = context._executionInfo == null || System.Array.IndexOf(_labels, context._executionInfo._oValue as string) != -1;
-                        var _break = (context._executionMode > AbortReason.Continue) || !me;
+                        var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                         if (me)
                         {
-                            context._executionMode = AbortReason.None;
+                            context._executionMode = ExecutionMode.None;
                             context._executionInfo = JSValue.notExists;
                         }
                         if (_break)
                             return null;
                     }
-                    else if (context._executionMode == AbortReason.Suspend)
+                    else if (context._executionMode == ExecutionMode.Suspend)
                     {
                         if (suspendData == null)
                             suspendData = new SuspendData();

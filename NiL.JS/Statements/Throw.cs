@@ -56,7 +56,7 @@ namespace NiL.JS.Statements
                         context.GlobalContext.ProxyValue(_exception) 
                 : _body.Evaluate(context);
 
-            if (context._executionMode == AbortReason.Suspend)
+            if (context._executionMode == ExecutionMode.Suspend)
                 return null;
 
             ExceptionHelper.Throw(value);

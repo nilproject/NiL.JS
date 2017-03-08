@@ -53,7 +53,7 @@ namespace NiL.JS.Core
         public bool ContainsRestParameters;
         public bool ContainsEval;
         public bool ContainsWith;
-        public bool ContainsYield;
+        public bool NeedDecompose;
         public bool ContainsInnerEntities;
         public bool ContainsThis;
         public bool ContainsDebugger;

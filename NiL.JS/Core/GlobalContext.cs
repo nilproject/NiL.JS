@@ -8,6 +8,7 @@ using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 using System.Dynamic;
+using System.Threading.Tasks;
 
 #if NET40 || NETCORE
 using NiL.JS.Backward;
@@ -285,14 +286,15 @@ namespace NiL.JS.Core
 
         public JSValue ProxyValue(object value)
         {
-            JSValue res;
             if (value == null)
+            {
                 return JSValue.NotExists;
+            }
             else
             {
-                res = value as JSValue;
-                if (res != null)
-                    return res;
+                var jsvalue = value as JSValue;
+                if (jsvalue != null)
+                    return jsvalue;
             }
 #if PORTABLE || NETCORE
             switch (value.GetType().GetTypeCode())
@@ -455,6 +457,21 @@ namespace NiL.JS.Core
                         else if (value is ExpandoObject)
                         {
                             return new ExpandoObjectWrapper(value as ExpandoObject);
+                        }
+                        else if (value is Task)
+                        {
+                            Task<JSValue> result;
+                            if (value.GetType().IsGenericType && typeof(Task<>).IsAssignableFrom(value.GetType().GetGenericTypeDefinition()))
+                            {
+                                result = new Task<JSValue>(() => ProxyValue(value.GetType().GetMethod("get_Result").Invoke(value, null)));
+                            }
+                            else
+                            {
+                                result = new Task<JSValue>(() => JSValue.NotExists);
+                            }
+
+                            (value as Task).ContinueWith(task => result.Start());
+                            return new ObjectWrapper(new Promise(result));
                         }
                         else
                         {

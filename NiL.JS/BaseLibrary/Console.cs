@@ -16,6 +16,7 @@ namespace NiL.JS.BaseLibrary
                 var r = args[i].ToString();
                 System.Console.Write(r);
             }
+
             System.Console.WriteLine();
             return JSValue.undefined;
         }

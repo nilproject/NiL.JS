@@ -18,11 +18,11 @@ namespace NiL.JS.Expressions
             _parts = parts;
         }
 
-        public override Core.JSValue Evaluate(Core.Context context)
+        public override JSValue Evaluate(Context context)
         {
             var i = 0;
 
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 i = (int)context.SuspendData[this];
             }
@@ -30,7 +30,7 @@ namespace NiL.JS.Expressions
             for (; i < _parts.Length; i++)
             {
                 _parts[i].Evaluate(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = i;
                     return null;
@@ -38,13 +38,18 @@ namespace NiL.JS.Expressions
             }
 
             var result = _prototype.Evaluate(context);
-            if (context._executionMode == AbortReason.Suspend)
+            if (context._executionMode == ExecutionMode.Suspend)
             {
                 context.SuspendData[this] = i;
                 return null;
             }
 
             return result;
+        }
+
+        public override string ToString()
+        {
+            return _prototype.ToString();
         }
     }
 }
