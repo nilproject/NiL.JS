@@ -237,7 +237,7 @@ namespace NiL.JS.BaseLibrary
                 if (_task.IsCanceled || _task.IsFaulted)
                     catchPromise.run(Result);
                 else
-                    _task.ContinueWith(task => catchPromise.run(Result), TaskContinuationOptions.NotOnRanToCompletion);
+                    _task.ContinueWith(task => catchPromise.run(Result), TaskContinuationOptions.OnlyOnFaulted);
             }
 
             return result;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
@@ -17,10 +18,7 @@ namespace NiL.JS.Core.Functions
         {
             private readonly AsyncFunction _asyncFunction;
             private readonly JSValue _promise;
-            private readonly Task<JSValue> _task;
             private readonly Context _context;
-
-            private JSValue _result;
 
             public JSValue ResultPromise { get; private set; }
 
@@ -29,47 +27,74 @@ namespace NiL.JS.Core.Functions
                 _promise = promise;
                 _asyncFunction = asyncFunction;
                 _context = context;
-                _task = new Task<JSValue>(() => _result);
             }
 
             public void Build()
             {
-                ResultPromise = Marshal(new Promise(_task));
-                build(_promise);
+                ResultPromise = subscribe(_promise, then, fail);
             }
 
-            private void build(JSValue promise)
+            private static JSValue subscribe(JSValue promise, Func<JSValue, JSValue> then, Func<JSValue, JSValue> fail)
             {
                 var thenFunction = promise["then"];
                 if (thenFunction == null || thenFunction.ValueType != JSValueType.Function)
                     throw new JSException(new TypeError("The promise has no function \"then\""));
 
-                thenFunction.As<Function>().Call(promise, new Arguments { new Func<JSValue, JSValue>(then), new Func<JSValue, JSValue>(fail) });
+                return thenFunction.As<Function>().Call(promise, new Arguments { then, fail });
             }
 
             private JSValue fail(JSValue arg)
             {
-                throw new NotImplementedException();
+                return @continue(arg, ExecutionMode.ResumeThrow);
             }
 
             private JSValue then(JSValue arg)
             {
+                return @continue(arg, ExecutionMode.Resume);
+            }
+
+            private JSValue @continue(JSValue arg, ExecutionMode mode)
+            {
                 _context._executionInfo = arg;
-                _context._executionMode = ExecutionMode.Resume;
+                _context._executionMode = mode;
 
-                var result = _asyncFunction.run(_context);
-
-                if (_context._executionMode == ExecutionMode.Suspend)
+                JSValue result = null;
+                var thread = Thread.CurrentThread;
+                do
                 {
-                    build(_context._executionInfo);
-                }
-                else
-                {
-                    _result = result;
-                    _task.Start();
-                }
+                    result = _asyncFunction.run(_context);
 
-                return null;
+                    if (_context._executionMode == ExecutionMode.Suspend)
+                    {
+                        subscribe(
+                            result,
+                            r =>
+                            {
+                                _context._executionInfo = r;
+                                _context._executionMode = ExecutionMode.Resume;
+#pragma warning disable CS0618 // Тип или член устарел
+                                thread.Resume();
+#pragma warning restore CS0618 // Тип или член устарел
+                                return null;
+                            },
+                            e =>
+                            {
+                                _context._executionInfo = e;
+                                _context._executionMode = ExecutionMode.ResumeThrow;
+#pragma warning disable CS0618 // Тип или член устарел
+                                thread.Resume();
+#pragma warning restore CS0618 // Тип или член устарел
+                                return null;
+                            });
+
+#pragma warning disable CS0618
+                        thread.Suspend();
+#pragma warning restore CS0618
+                    }
+                }
+                while (_context._executionMode == ExecutionMode.Resume || _context._executionMode == ExecutionMode.ResumeThrow);
+
+                return result;
             }
         }
 
