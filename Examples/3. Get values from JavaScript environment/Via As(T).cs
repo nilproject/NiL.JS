@@ -16,8 +16,6 @@ namespace Examples.Get_values_from_JavaScript_environment
             int result = context.GetVariable("result").As<int>(); // using NiL.JS.Extensions;
             
             Console.WriteLine("result: " + result); // Console: result: 246
-
-            Console.WriteLine("Type of result: " + result.GetType()); // Console: Type of result: System.Int32
         }
     }
 }
