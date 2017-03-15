@@ -17,7 +17,7 @@ namespace Examples.Get_values_from_JavaScript_environment
 
             var result = context.GetVariable("result");
 
-            Console.WriteLine("Result is integer: " + result.Is<int>()); // using NiL.JS.Extensions; Console: is result integer: True
+            Console.WriteLine("Result is integer: " + result.Is<int>()); // using NiL.JS.Extensions; Console: Result is integer: True
             Console.WriteLine("Type of result: " + result.ValueType); // Console: Type of result: Integer
         }
     }
