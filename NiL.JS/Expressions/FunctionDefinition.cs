@@ -281,6 +281,10 @@ namespace NiL.JS.Expressions
             {
                 arrowWithSunglePrm = true;
             }
+            else
+            {
+                i++;
+            }
 
             Tools.SkipSpaces(code, ref i);
 
