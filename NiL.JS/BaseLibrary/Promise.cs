@@ -39,11 +39,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public Task<JSValue> Task
-        {
-            get { return _task; }
-            protected set { _task = value; }
-        }
+        public Task<JSValue> Task => _task;
 
         [Hidden]
         public bool Complited
@@ -64,11 +60,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public Function Callback
-        {
-            get { return _callback; }
-            protected set { _callback = value; }
-        }
+        public Function Callback => _callback;
 
         public Promise(Function callback)
             : this()
@@ -102,12 +94,12 @@ namespace NiL.JS.BaseLibrary
             });
         }
 
-        protected internal Promise(Task<JSValue> task)
+        internal Promise(Task<JSValue> task)
         {
             _task = task;
         }
 
-        protected void handlePromiseCascade(JSValue value)
+        private void handlePromiseCascade(JSValue value)
         {
             if (value?.Value is Promise)
             {
@@ -124,7 +116,7 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        protected void callbackInvoke()
+        private void callbackInvoke()
         {
             var statusSeted = false;
             var reject = false;
