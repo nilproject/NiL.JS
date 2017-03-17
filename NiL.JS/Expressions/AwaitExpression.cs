@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Statements;
 
@@ -50,7 +51,7 @@ namespace NiL.JS.Expressions
                 return null;
             }
 
-            if (result != null && result._valueType < JSValueType.Object)
+            if (result != null && (result._valueType < JSValueType.Object || !(result.Value is Promise)))
                 return result;
 
             context._executionMode = ExecutionMode.Suspend;

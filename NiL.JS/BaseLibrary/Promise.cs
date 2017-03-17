@@ -17,14 +17,14 @@ namespace NiL.JS.BaseLibrary
         Rejected
     }
 
-    public class Promise
+    public sealed class Promise
     {
         private readonly object _sync = new object();
+
         private Task _innerTask;
         private Function _callback;
         private Task<JSValue> _task;
-
-        protected JSValue _innerResult;
+        private JSValue _innerResult;
 
         [Hidden]
         public PromiseState State
@@ -74,10 +74,12 @@ namespace NiL.JS.BaseLibrary
             : this()
         {
             _callback = callback ?? Function.Empty;
-            run();
+            
+            _innerTask = new Task(callbackInvoke);
+            _innerTask.Start();
         }
 
-        protected Promise()
+        private Promise()
         {
             _task = new Task<JSValue>(() =>
             {
@@ -100,27 +102,9 @@ namespace NiL.JS.BaseLibrary
             });
         }
 
-        internal Promise(Task<JSValue> task)
+        protected internal Promise(Task<JSValue> task)
         {
             _task = task;
-        }
-
-        internal virtual void run()
-        {
-            if (_task.Status != TaskStatus.Created)
-                throw new InvalidOperationException("Task can't be started");
-
-            if (_innerTask == null)
-            {
-                lock (_sync)
-                {
-                    if (_innerTask == null)
-                    {
-                        _innerTask = new Task(callbackInvoke);
-                        _innerTask.Start();
-                    }
-                }
-            }
         }
 
         protected void handlePromiseCascade(JSValue value)
@@ -142,7 +126,7 @@ namespace NiL.JS.BaseLibrary
 
         protected void callbackInvoke()
         {
-            var statusSetted = false;
+            var statusSeted = false;
             var reject = false;
 
             try
@@ -151,9 +135,9 @@ namespace NiL.JS.BaseLibrary
                 {
                     new ExternalFunction((self, args)=>
                     {
-                        if (!statusSetted)
+                        if (!statusSeted)
                         {
-                            statusSetted = true;
+                            statusSeted = true;
 
                             handlePromiseCascade(args[0]);
                         }
@@ -162,10 +146,10 @@ namespace NiL.JS.BaseLibrary
                     }),
                     new ExternalFunction((self, args)=>
                     {
-                        if (!statusSetted)
+                        if (!statusSeted)
                         {
                             reject = true;
-                            statusSetted = true;
+                            statusSeted = true;
 
                             handlePromiseCascade(args[0]);
                         }
@@ -177,13 +161,24 @@ namespace NiL.JS.BaseLibrary
             catch (JSException e)
             {
                 _innerResult = e.Error;
+
+                if (!statusSeted)
+                    _task.Start();
+
                 throw;
             }
             catch
             {
                 _innerResult = JSValue.Wrap(new Error("Unknown error"));
+
+                if (!statusSeted)
+                    _task.Start();
+
                 throw;
             }
+            
+            if (!statusSeted)
+                _task.Start();
 
             if (reject)
                 throw new JSException(_innerResult);
@@ -199,7 +194,7 @@ namespace NiL.JS.BaseLibrary
             if (promises == null)
                 return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.race(...)"))));
 
-            return new AnyPromise(whenAny(promises.AsEnumerable().Select(convertToTask).ToArray()));
+            return new Promise(whenAny(promises.AsEnumerable().Select(convertToTask).ToArray()).ContinueWith(x => x.Result.Result));
         }
 
         public static Promise all(IIterable promises)
@@ -207,7 +202,7 @@ namespace NiL.JS.BaseLibrary
             if (promises == null)
                 return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.all(...)"))));
 
-            return new AllPromise(whenAll(promises.AsEnumerable().Select(convertToTask).ToArray()));
+            return new Promise(whenAll(promises.AsEnumerable().Select(convertToTask).ToArray()).ContinueWith(x => new Array(x.Result) as JSValue));
         }
 
         private static Task<JSValue> convertToTask(JSValue arg)
@@ -222,51 +217,33 @@ namespace NiL.JS.BaseLibrary
 
         public Promise then(Function onFulfilment, Function onRejection)
         {
-            var thenPromise = onFulfilment != null && onFulfilment._valueType == JSValueType.Function ? new CompletionPromise(onFulfilment) : null;
-            var catchPromise = onRejection != null && onRejection._valueType == JSValueType.Function ? new CompletionPromise(onRejection) : null;
-
-            return then(thenPromise, catchPromise);
+            return then(
+                onFulfilment == null ? null as Func<JSValue, JSValue> : value => onFulfilment.Call(JSValue.undefined, new Arguments { value }),
+                onRejection == null ? null as Func<JSValue, JSValue> : value => onRejection.Call(JSValue.undefined, new Arguments { value }));
         }
 
-        internal virtual Promise then(CompletionPromise thenPromise, CompletionPromise catchPromise)
+        [Hidden]
+        public Promise then(Func<JSValue, JSValue> onFulfilment, Func<JSValue, JSValue> onRejection)
         {
-            Promise result;
-
-            if (thenPromise == null && catchPromise == null)
+            if (onFulfilment == null && onRejection == null)
                 return resolve(JSValue.undefined);
 
-            if (thenPromise != null)
-            {
-                if (catchPromise != null)
-                    result = new AnyPromise(whenAny(thenPromise.Task, catchPromise.Task));
-                else
-                    result = thenPromise;
-            }
-            else
-                result = catchPromise;
+            var thenTask = onFulfilment == null ? null : _task.ContinueWith(task => onFulfilment(Result), TaskContinuationOptions.OnlyOnRanToCompletion);
+            var catchTask = onRejection == null ? null : _task.ContinueWith(task => onRejection(Result), TaskContinuationOptions.NotOnRanToCompletion);
 
-            if (thenPromise != null)
+            if (thenTask != null)
             {
-                if (_task.Status == TaskStatus.RanToCompletion)
-                    thenPromise.run(Result);
-                else
-                    _task.ContinueWith(task => thenPromise.run(Result), TaskContinuationOptions.OnlyOnRanToCompletion);
+                if (catchTask != null)
+                    return new Promise(whenAny(thenTask, catchTask).ContinueWith(x => x.Result.Result));
+
+                return new Promise(thenTask);
             }
 
-            if (catchPromise != null)
-            {
-                if (_task.IsCanceled || _task.IsFaulted)
-                    catchPromise.run(Result);
-                else
-                    _task.ContinueWith(task => catchPromise.run(Result), TaskContinuationOptions.OnlyOnFaulted);
-            }
-
-            return result;
+            return new Promise(catchTask);
         }
 
         private static Task<Task<JSValue>> whenAny(params Task<JSValue>[] tasks)
         {
-#if NET40
             Task<JSValue> result = null;
             var task = new Task<Task<JSValue>>(() => result);
             Action<Task<JSValue>> contination = t =>
@@ -283,15 +260,10 @@ namespace NiL.JS.BaseLibrary
 
             for (var i = 0; i < tasks.Length; i++)
             {
-                tasks[i].ContinueWith(contination);
-                if (tasks[i].Status == TaskStatus.Created)
-                    tasks[i].Start();
+                tasks[i].ContinueWith(contination, TaskContinuationOptions.OnlyOnRanToCompletion);
             }
 
             return task;
-#else
-            return Task<JSValue>.WhenAny(tasks);
-#endif
         }
 
         private static PromiseState statusToState(TaskStatus status)
@@ -316,10 +288,10 @@ namespace NiL.JS.BaseLibrary
 
         private static Task<JSValue[]> whenAll(Task<JSValue>[] tasks)
         {
-#if NET40
             JSValue[] result = new JSValue[tasks.Length];
             var task = new Task<JSValue[]>(() => result);
             var count = tasks.Length - 1;
+
             Action<Task<JSValue>> contination = t =>
             {
                 var index = System.Array.IndexOf(tasks, t);
@@ -334,26 +306,17 @@ namespace NiL.JS.BaseLibrary
 
             for (var i = 0; i < tasks.Length; i++)
             {
-                tasks[i].ContinueWith(contination);
-                if (tasks[i].Status == TaskStatus.Created)
-                    tasks[i].Start();
+                tasks[i].ContinueWith(contination, TaskContinuationOptions.OnlyOnRanToCompletion);
             }
 
             return task;
-#else
-            return Task<JSValue>.WhenAll(tasks);
-#endif
         }
 
         private static Task<JSValue> fromException(Exception exception)
         {
-#if NET40
             var task = new Task<JSValue>(new Func<JSValue>(() => { throw exception; }));
             task.Start();
             return task;
-#else
-            return Task<JSValue>.Run<JSValue>(new Func<JSValue>(() => { throw exception; }));
-#endif
         }
 
         private static Task<JSValue> fromResult(JSValue arg)
@@ -365,56 +328,6 @@ namespace NiL.JS.BaseLibrary
 #else
             return Task<JSValue>.FromResult(arg);
 #endif
-        }
-    }
-
-    [Prototype(typeof(Promise), true)]
-    internal class CompletionPromise : Promise
-    {
-        internal CompletionPromise(Function callback)
-            : base(null as Task<JSValue>)
-        {
-            Callback = callback;
-            Task = new Task<JSValue>(() => Callback.Call(new Arguments { _innerResult }));
-        }
-
-        internal CompletionPromise(Task<JSValue> task)
-            : base(task)
-        {
-        }
-
-        internal sealed override void run()
-        {
-            throw new InvalidOperationException();
-        }
-
-        internal void run(JSValue arg)
-        {
-            if (_innerResult == null)
-            {
-                _innerResult = arg ?? JSValue.undefined;
-                handlePromiseCascade(_innerResult);
-            }
-        }
-    }
-
-    [Prototype(typeof(Promise), true)]
-    internal sealed class AnyPromise : CompletionPromise
-    {
-        internal AnyPromise(Task<Task<JSValue>> task)
-            : base(new Task<JSValue>(() => task.Result.Result))
-        {
-            task.ContinueWith(x => run(null));
-        }
-    }
-
-    [Prototype(typeof(Promise), true)]
-    internal sealed class AllPromise : CompletionPromise
-    {
-        internal AllPromise(Task<JSValue[]> task)
-            : base(new Task<JSValue>(() => new Array(task.Result)))
-        {
-            task.ContinueWith(x => run(null));
         }
     }
 }

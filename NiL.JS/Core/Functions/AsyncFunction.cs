@@ -36,11 +36,11 @@ namespace NiL.JS.Core.Functions
 
             private static JSValue subscribe(JSValue promise, Func<JSValue, JSValue> then, Func<JSValue, JSValue> fail)
             {
-                var thenFunction = promise["then"];
-                if (thenFunction == null || thenFunction.ValueType != JSValueType.Function)
-                    throw new JSException(new TypeError("The promise has no function \"then\""));
+                var p = promise?.Value as Promise;
+                if (p == null)
+                    throw new InvalidOperationException();
 
-                return thenFunction.As<Function>().Call(promise, new Arguments { then, fail });
+                return Marshal(p.then(then, fail));
             }
 
             private JSValue fail(JSValue arg)
