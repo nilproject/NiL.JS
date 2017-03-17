@@ -20,10 +20,11 @@ namespace NiL.JS.BaseLibrary
     public class Promise
     {
         private readonly object _sync = new object();
-        private JSValue _innerResult;
         private Task _innerTask;
         private Function _callback;
         private Task<JSValue> _task;
+
+        protected JSValue _innerResult;
 
         [Hidden]
         public PromiseState State
@@ -43,11 +44,13 @@ namespace NiL.JS.BaseLibrary
             get { return _task; }
             protected set { _task = value; }
         }
+
         [Hidden]
         public bool Complited
         {
             get { return _task.IsCompleted; }
         }
+
         [Hidden]
         public JSValue Result
         {
@@ -59,6 +62,7 @@ namespace NiL.JS.BaseLibrary
                     (Task.Exception.GetBaseException() as JSException).Error;
             }
         }
+
         [Hidden]
         public Function Callback
         {
@@ -119,6 +123,23 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
+        protected void handlePromiseCascade(JSValue value)
+        {
+            if (value?.Value is Promise)
+            {
+                var promise = value.Value as Promise;
+                promise.Task.ContinueWith((task) =>
+                {
+                    handlePromiseCascade(task.Result);
+                });
+            }
+            else
+            {
+                _innerResult = value;
+                _task.Start();
+            }
+        }
+
         protected void callbackInvoke()
         {
             var statusSetted = false;
@@ -133,8 +154,8 @@ namespace NiL.JS.BaseLibrary
                         if (!statusSetted)
                         {
                             statusSetted = true;
-                            _innerResult = args[0];
-                            _task.Start();
+
+                            handlePromiseCascade(args[0]);
                         }
 
                         return null;
@@ -145,8 +166,8 @@ namespace NiL.JS.BaseLibrary
                         {
                             reject = true;
                             statusSetted = true;
-                            _innerResult = args[0];
-                            _task.Start();
+
+                            handlePromiseCascade(args[0]);
                         }
 
                         return null;
@@ -350,13 +371,11 @@ namespace NiL.JS.BaseLibrary
     [Prototype(typeof(Promise), true)]
     internal class CompletionPromise : Promise
     {
-        private JSValue _arg;
-
         internal CompletionPromise(Function callback)
             : base(null as Task<JSValue>)
         {
             Callback = callback;
-            Task = new Task<JSValue>(() => Callback.Call(new Arguments { _arg }));
+            Task = new Task<JSValue>(() => Callback.Call(new Arguments { _innerResult }));
         }
 
         internal CompletionPromise(Task<JSValue> task)
@@ -371,10 +390,10 @@ namespace NiL.JS.BaseLibrary
 
         internal void run(JSValue arg)
         {
-            if (_arg == null)
+            if (_innerResult == null)
             {
-                _arg = arg ?? JSValue.undefined;
-                Task.Start();
+                _innerResult = arg ?? JSValue.undefined;
+                handlePromiseCascade(_innerResult);
             }
         }
     }
