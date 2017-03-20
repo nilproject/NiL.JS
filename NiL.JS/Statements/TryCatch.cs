@@ -170,6 +170,7 @@ namespace NiL.JS.Statements
                 else
                     ainfo = JSValue.Undefined;
             }
+
             context._executionMode = ExecutionMode.None;
             context._executionInfo = JSValue.undefined;
 
@@ -199,6 +200,7 @@ namespace NiL.JS.Statements
 
             if (catchBody is Empty)
                 return;
+
             JSValue cvar = null;
 #if !(PORTABLE || NETCORE)
             if (e is RuntimeWrappedException)
@@ -208,7 +210,10 @@ namespace NiL.JS.Statements
             }
             else
 #endif
+            {
                 cvar = e is JSException ? (e as JSException).Error.CloneImpl(false) : context.GlobalContext.ProxyValue(e);
+            }
+
             cvar._attributes |= JSValueAttributesInternal.DoNotDelete;
             var catchContext = new CatchContext(cvar, context, catchVariableDesc.name);
 #if DEBUG
@@ -287,6 +292,7 @@ namespace NiL.JS.Statements
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
+
                 _this = finallyBody;
             }
 
@@ -295,21 +301,22 @@ namespace NiL.JS.Statements
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, (catchBody ?? this as CodeNode).Position, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
             }
+
             return false;
         }
 
         public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             body.Optimize(ref body, owner, message, opts, stats);
+
             if (catchBody != null)
-            {
                 catchBody.Optimize(ref catchBody, owner, message, opts, stats);
-            }
+
             if (finallyBody != null)
                 finallyBody.Optimize(ref finallyBody, owner, message, opts, stats);
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>()
             {
@@ -352,6 +359,8 @@ namespace NiL.JS.Statements
 
                 if (variableToRestore != null)
                     transferedVariables[variableToRestore.name] = variableToRestore;
+                else
+                    transferedVariables.Remove(catchVariableDesc.name);
             }
 
             finallyBody?.RebuildScope(functionInfo, transferedVariables, scopeBias);

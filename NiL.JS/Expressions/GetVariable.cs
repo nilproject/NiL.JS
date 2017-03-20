@@ -108,7 +108,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             return null;
         }

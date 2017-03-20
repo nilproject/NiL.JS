@@ -569,7 +569,7 @@ namespace NiL.JS.Expressions
             return MakeFunction(context);
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new CodeNode[1 + parameters.Length + (Reference != null ? 1 : 0)];
             for (var i = 0; i < parameters.Length; i++)

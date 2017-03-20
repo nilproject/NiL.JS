@@ -50,7 +50,7 @@ namespace NiL.JS.Statements
             return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             return null;
         }

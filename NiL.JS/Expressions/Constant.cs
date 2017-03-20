@@ -70,7 +70,7 @@ namespace NiL.JS.Expressions
             return base.EvaluateForWrite(context);
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             if (value != null && value._oValue is CodeNode[])
                 return value._oValue as CodeNode[];

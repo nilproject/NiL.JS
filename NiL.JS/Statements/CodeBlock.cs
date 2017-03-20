@@ -398,7 +398,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>();
             for (int i = 0; i < _lines.Length; i++)

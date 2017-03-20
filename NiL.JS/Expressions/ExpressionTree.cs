@@ -1380,7 +1380,7 @@ namespace NiL.JS.Expressions
             throw new InvalidOperationException();
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             throw new InvalidOperationException();
         }

@@ -40,7 +40,7 @@ namespace NiL.JS.Expressions
             };
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             return new CodeNode[] { first };
         }

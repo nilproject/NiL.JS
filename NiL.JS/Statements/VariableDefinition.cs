@@ -205,7 +205,7 @@ namespace NiL.JS.Statements
             return JSValue.notExists;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>();
             res.AddRange(initializers);

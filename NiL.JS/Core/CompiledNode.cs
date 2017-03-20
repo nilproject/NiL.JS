@@ -97,7 +97,7 @@ namespace NiL.JS.Core
             this.dynamicValues = dynamicValues;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             return original.Childs;
         }

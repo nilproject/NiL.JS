@@ -65,9 +65,9 @@ namespace NiL.JS.Statements
             return _source.ToString();
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
-            return _source.getChildsImpl();
+            return _source.GetChildsImpl();
         }
 
         public override T Visit<T>(Visitor<T> visitor)

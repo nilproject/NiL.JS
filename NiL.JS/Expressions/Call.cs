@@ -282,7 +282,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var result = new CodeNode[_arguments.Length + 1];
             result[0] = first;
