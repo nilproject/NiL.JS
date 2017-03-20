@@ -66,7 +66,7 @@ namespace NiL.JS.BaseLibrary
             : this()
         {
             _callback = callback ?? Function.Empty;
-            
+
             _innerTask = new Task(callbackInvoke);
             _innerTask.Start();
         }
@@ -95,18 +95,24 @@ namespace NiL.JS.BaseLibrary
         }
 
         internal Promise(Task<JSValue> task)
+            : this()
         {
-            _task = task;
+            var continuation = new Action<Task<JSValue>>((t) =>
+            {
+                handlePromiseCascade(t.Result);
+            });
+
+            _innerTask = task.ContinueWith(continuation);
         }
 
         private void handlePromiseCascade(JSValue value)
         {
-            if (value?.Value is Promise)
+            var task = (value?.Value as Promise)?.Task ?? value?.Value as Task<JSValue>;
+            if (task != null)
             {
-                var promise = value.Value as Promise;
-                promise.Task.ContinueWith((task) =>
+                task.ContinueWith((t) =>
                 {
-                    handlePromiseCascade(task.Result);
+                    handlePromiseCascade(t.Result);
                 });
             }
             else
@@ -168,7 +174,7 @@ namespace NiL.JS.BaseLibrary
 
                 throw;
             }
-            
+
             if (!statusSeted)
                 _task.Start();
 
