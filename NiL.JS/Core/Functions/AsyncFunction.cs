@@ -12,7 +12,6 @@ namespace NiL.JS.Core.Functions
         private sealed class Сontinuator
         {
             private readonly AsyncFunction _asyncFunction;
-            private readonly JSValue _result;
             private readonly Context _context;
 
             public JSValue ResultPromise { get; private set; }

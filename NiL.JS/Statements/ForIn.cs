@@ -35,7 +35,7 @@ namespace NiL.JS.Statements
 #if PORTABLE
                 return _labels.AsReadOnly<string>();
 #elif NETCORE
-                return new ReadOnlyCollection<string>(labels);
+                return new ReadOnlyCollection<string>(_labels);
 #else
                 return System.Array.AsReadOnly(_labels);
 #endif
