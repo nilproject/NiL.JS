@@ -36,7 +36,7 @@ namespace NiL.JS.Expressions
             return Evaluate(context);
         }
 
-        public override Core.JSValue Evaluate(Core.Context context)
+        public override JSValue Evaluate(Context context)
         {
             return (JSValue)context.SuspendData[first];
         }

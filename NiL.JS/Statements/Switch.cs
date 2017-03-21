@@ -79,7 +79,7 @@ namespace NiL.JS.Statements
                 {
                     do
                     {
-                        if (Parser.Validate(state.Code, "case", i) && Parser.IsIdentificatorTerminator(state.Code[i + 4]))
+                        if (Parser.Validate(state.Code, "case", i) && Parser.IsIdentifierTerminator(state.Code[i + 4]))
                         {
                             i += 4;
                             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -90,7 +90,7 @@ namespace NiL.JS.Statements
                             i++;
                             cases.Add(new SwitchCase() { index = body.Count, statement = sample });
                         }
-                        else if (Parser.Validate(state.Code, "default", i) && Parser.IsIdentificatorTerminator(state.Code[i + 7]))
+                        else if (Parser.Validate(state.Code, "default", i) && Parser.IsIdentifierTerminator(state.Code[i + 7]))
                         {
                             i += 7;
                             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -150,7 +150,7 @@ namespace NiL.JS.Statements
             int caseIndex = 1;
             int lineIndex = cases[0].index;
 
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 var sdata = context.SuspendData[this] as SuspendData;
                 if (sdata.imageValue == null)
@@ -167,7 +167,7 @@ namespace NiL.JS.Statements
 
                 imageValue = image.Evaluate(context);
             }
-            if (context._executionMode == AbortReason.Suspend)
+            if (context._executionMode == ExecutionMode.Suspend)
             {
                 context.SuspendData[this] = new SuspendData() { caseIndex = 1 };
                 return null;
@@ -179,7 +179,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(cases[caseIndex].statement);
 
                 var cseResult = cases[caseIndex].statement.Evaluate(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = new SuspendData()
                     {
@@ -202,13 +202,13 @@ namespace NiL.JS.Statements
                     continue;
 
                 context._lastResult = lines[lineIndex].Evaluate(context) ?? context._lastResult;
-                if (context._executionMode != AbortReason.None)
+                if (context._executionMode != ExecutionMode.None)
                 {
-                    if (context._executionMode == AbortReason.Break)
+                    if (context._executionMode == ExecutionMode.Break)
                     {
-                        context._executionMode = AbortReason.None;
+                        context._executionMode = ExecutionMode.None;
                     }
-                    else if (context._executionMode == AbortReason.Suspend)
+                    else if (context._executionMode == ExecutionMode.Suspend)
                     {
                         context.SuspendData[this] = new SuspendData()
                         {
@@ -241,7 +241,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>()
             {

@@ -169,6 +169,9 @@
     <Compile Include="..\NiL.JS\Core\Delegates.cs">
       <Link>Core\Delegates.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Functions\AsyncFunction.cs">
+      <Link>Core\Functions\AsyncFunction.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Functions\BindedFunction.cs">
       <Link>Core\Functions\BindedFunction.cs</Link>
     </Compile>
@@ -348,6 +351,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\AssignmentOperatorCache.cs">
       <Link>Expressions\AssignmentOperatorCache.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\AwaitExpression.cs">
+      <Link>Expressions\AwaitExpression.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\BitwiseConjunction.cs">
       <Link>Expressions\BitwiseConjunction.cs</Link>

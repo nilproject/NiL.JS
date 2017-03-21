@@ -104,16 +104,16 @@ namespace NiL.JS.Core
             }
         }
 
-        internal Arguments(Context context)
+        internal Arguments(Context callerContext)
             : this()
         {
-            if (context != null)
+            if (callerContext != null)
             {
-                caller = context._strict
-                    && context._owner != null
-                    && context._owner._functionDefinition._body._strict ? Function.propertiesDummySM : context._owner;
+                caller = callerContext._strict
+                    && callerContext._owner != null
+                    && callerContext._owner._functionDefinition._body._strict ? Function.propertiesDummySM : callerContext._owner;
 
-                _objectPrototype = context.GlobalContext._GlobalPrototype;
+                _objectPrototype = callerContext.GlobalContext._GlobalPrototype;
             }
         }
 

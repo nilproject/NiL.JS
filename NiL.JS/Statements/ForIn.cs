@@ -23,7 +23,7 @@ namespace NiL.JS.Statements
         private CodeNode _variable;
         private CodeNode _source;
         private CodeNode _body;
-        private string[] labels;
+        private string[] _labels;
 
         public CodeNode Variable { get { return _variable; } }
         public CodeNode Source { get { return _source; } }
@@ -33,11 +33,11 @@ namespace NiL.JS.Statements
             get
             {
 #if PORTABLE
-                return labels.AsReadOnly<string>();
+                return _labels.AsReadOnly<string>();
 #elif NETCORE
                 return new ReadOnlyCollection<string>(labels);
 #else
-                return System.Array.AsReadOnly(labels);
+                return System.Array.AsReadOnly(_labels);
 #endif
             }
         }
@@ -50,16 +50,17 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
-            if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
+            Tools.SkipSpaces(state.Code, ref i);
+
+            if (!Parser.Validate(state.Code, "for(", ref i)
+            && (!Parser.Validate(state.Code, "for (", ref i)))
                 return null;
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
+
+            Tools.SkipSpaces(state.Code, ref i);
 
             var result = new ForIn()
             {
-                labels = state.Labels.GetRange(state.Labels.Count - state.LabelsCount, state.LabelsCount).ToArray()
+                _labels = state.Labels.GetRange(state.Labels.Count - state.LabelsCount, state.LabelsCount).ToArray()
             };
 
             VariableDescriptor[] vars = null;
@@ -68,15 +69,14 @@ namespace NiL.JS.Statements
             try
             {
                 var vStart = i;
-                if ((result._variable = VariableDefinition.Parse(state, ref i, true)) != null)
-                {
-                }
-                else
+                result._variable = VariableDefinition.Parse(state, ref i, true);
+                if (result._variable == null)
                 {
                     if (state.Code[i] == ';')
                         return null;
-                    while (Tools.IsWhiteSpace(state.Code[i]))
-                        i++;
+
+                    Tools.SkipSpaces(state.Code, ref i);
+
                     int start = i;
                     string varName;
                     if (!Parser.ValidateName(state.Code, ref i, state.strict))
@@ -86,52 +86,55 @@ namespace NiL.JS.Statements
                             while (Tools.IsWhiteSpace(state.Code[i]))
                                 i++;
                             if (Parser.Validate(state.Code, "in", ref i))
-                                ExceptionHelper.Throw(new SyntaxError("Invalid accumulator name at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start)));
+                                ExceptionHelper.ThrowSyntaxError("Invalid accumulator name at ", state.Code, start, i - start);
                             else
                                 return null;
                         }
                         else
                             return null;
                     }
+
                     varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
                     if (state.strict)
                     {
                         if (varName == "arguments" || varName == "eval")
-                            ExceptionHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
+                            ExceptionHelper.ThrowSyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at ", state.Code, start, i - start);
                     }
+
                     result._variable = new GetVariable(varName, state.lexicalScopeLevel) { Position = start, Length = i - start, ScopeLevel = state.lexicalScopeLevel };
 
-                    while (Tools.IsWhiteSpace(state.Code[i]))
-                        i++;
+                    Tools.SkipSpaces(state.Code, ref i);
+
                     if (state.Code[i] == '=')
                     {
-                        do
-                            i++;
-                        while (Tools.IsWhiteSpace(state.Code[i]));
+                        i++;
+                        Tools.SkipSpaces(state.Code, ref i);
+
                         var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, true);
                         if (defVal == null)
                             return defVal;
+
                         Expression exp = new AssignmentOperatorCache(result._variable as GetVariable ?? (result._variable as VariableDefinition).initializers[0] as GetVariable);
-                        exp = new Assignment(
-                            exp,
-                            (Expression)defVal)
+                        exp = new Assignment(exp, defVal)
                         {
                             Position = exp.Position,
                             Length = defVal.EndPosition - exp.Position
                         };
+
                         if (result._variable == exp.first.first)
                             result._variable = exp;
                         else
                             (result._variable as VariableDefinition).initializers[0] = exp;
-                        while (Tools.IsWhiteSpace(state.Code[i]))
-                            i++;
-                    }
 
+                        Tools.SkipSpaces(state.Code, ref i);
+                    }
                 }
+
                 if (!Parser.Validate(state.Code, "in", ref i))
                 {
                     if (oldVariablesCount < state.Variables.Count)
                         state.Variables.RemoveRange(oldVariablesCount, state.Variables.Count - oldVariablesCount);
+
                     return null;
                 }
 
@@ -172,7 +175,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             SuspendData suspendData = null;
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 suspendData = context.SuspendData[this] as SuspendData;
             }
@@ -184,7 +187,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(_source);
 
                 source = _source.Evaluate(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;
@@ -212,7 +215,7 @@ namespace NiL.JS.Statements
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     if (suspendData == null)
                         suspendData = new SuspendData();
@@ -234,9 +237,9 @@ namespace NiL.JS.Statements
             while (source != null)
             {
                 var keys = (suspendData != null ? suspendData.keys : null) ?? source.GetEnumerator(false, EnumerationMode.RequireValues);
-                while (context._executionMode >= AbortReason.Resume || keys.MoveNext())
+                while (context._executionMode >= ExecutionMode.Resume || keys.MoveNext())
                 {
-                    if (context._executionMode != AbortReason.Resume)
+                    if (context._executionMode != ExecutionMode.Resume)
                     {
                         var key = keys.Current.Key;
                         variable._valueType = JSValueType.String;
@@ -252,21 +255,21 @@ namespace NiL.JS.Statements
                     }
 
                     context._lastResult = _body.Evaluate(context) ?? context._lastResult;
-                    if (context._executionMode != AbortReason.None)
+                    if (context._executionMode != ExecutionMode.None)
                     {
-                        if (context._executionMode < AbortReason.Return)
+                        if (context._executionMode < ExecutionMode.Return)
                         {
-                            var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
-                            var _break = (context._executionMode > AbortReason.Continue) || !me;
+                            var me = context._executionInfo == null || System.Array.IndexOf(_labels, context._executionInfo._oValue as string) != -1;
+                            var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                             if (me)
                             {
-                                context._executionMode = AbortReason.None;
+                                context._executionMode = ExecutionMode.None;
                                 context._executionInfo = JSValue.notExists;
                             }
                             if (_break)
                                 return null;
                         }
-                        else if (context._executionMode == AbortReason.Suspend)
+                        else if (context._executionMode == ExecutionMode.Suspend)
                         {
                             if (suspendData == null)
                                 suspendData = new SuspendData();
@@ -292,7 +295,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>()
             {
@@ -315,11 +318,13 @@ namespace NiL.JS.Statements
                     throw new InvalidOperationException("Invalid left-hand side in for-in");
                 _variable = (_variable as Expressions.Comma).FirstOperand;
             }
+
             if (message != null
-                && (this._source is Expressions.ObjectDefinition
-                || this._source is ArrayDefinition
-                || this._source is Constant))
+                && (_source is ObjectDefinition
+                || _source is ArrayDefinition
+                || _source is Constant))
                 message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
+
             return false;
         }
 

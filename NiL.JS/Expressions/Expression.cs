@@ -176,7 +176,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             if (first != null && second != null)
                 return new CodeNode[]{

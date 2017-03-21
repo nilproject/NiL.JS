@@ -26,7 +26,8 @@ namespace NiL.JS.Core
         InClassConstructor = 256,
         InStaticMember = 512,
         InGenerator = 1024,
-        InFunction = 2048
+        InFunction = 2048,
+        InAsync = 4096
     }
 
 #if !(PORTABLE || NETCORE)
@@ -53,9 +54,9 @@ namespace NiL.JS.Core
         public int EndPosition { get { return Position + Length; } }
 
         private CodeNode[] childs;
-        public CodeNode[] Childs { get { return childs ?? (childs = getChildsImpl() ?? emptyCodeNodeArray); } }
+        public CodeNode[] Childs { get { return childs ?? (childs = GetChildsImpl() ?? emptyCodeNodeArray); } }
 
-        protected internal virtual CodeNode[] getChildsImpl()
+        protected internal virtual CodeNode[] GetChildsImpl()
         {
             return new CodeNode[0];
         }

@@ -162,7 +162,7 @@ namespace NiL.JS.Core.Functions
             _parameters = Parameters;
             _fastWrapper = fastWrapper;
             _forceInstance = forceInstance;
-            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
+            RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
         }
 
         private WrapperDelegate makeFastWrapper(MethodInfo methodInfo)

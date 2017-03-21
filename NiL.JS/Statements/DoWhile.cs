@@ -31,8 +31,10 @@ namespace NiL.JS.Statements
             int i = index;
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
-            if (!Parser.Validate(state.Code, "do", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+
+            if (!Parser.Validate(state.Code, "do", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
+
             int labelsCount = state.LabelsCount;
             state.LabelsCount = 0;
             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -92,21 +94,21 @@ namespace NiL.JS.Statements
             JSValue checkResult;
             do
             {
-                if (context._executionMode != AbortReason.Resume || !context.SuspendData.ContainsKey(this))
+                if (context._executionMode != ExecutionMode.Resume || !context.SuspendData.ContainsKey(this))
                 {
                     if (context._debugging && !(body is CodeBlock))
                         context.raiseDebugger(body);
 
                     context._lastResult = body.Evaluate(context) ?? context._lastResult;
-                    if (context._executionMode != AbortReason.None)
+                    if (context._executionMode != ExecutionMode.None)
                     {
-                        if (context._executionMode < AbortReason.Return)
+                        if (context._executionMode < ExecutionMode.Return)
                         {
                             var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
-                            var _break = (context._executionMode > AbortReason.Continue) || !me;
+                            var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                             if (me)
                             {
-                                context._executionMode = AbortReason.None;
+                                context._executionMode = ExecutionMode.None;
                                 context._executionInfo = JSValue.notExists;
                             }
                             if (_break)
@@ -121,7 +123,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(condition);
 
                 checkResult = condition.Evaluate(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;
@@ -131,7 +133,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>()
             {

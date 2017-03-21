@@ -84,7 +84,7 @@ namespace NiL.JS.Core.Functions
                 if (!arguments[i].Evaluate(initiator).Defined)
                 {
                     if (_functionDefinition.parameters.Length > i && _functionDefinition.parameters[i].initializer != null)
-                        _functionDefinition.parameters[i].initializer.Evaluate(_context);
+                        _functionDefinition.parameters[i].initializer.Evaluate(_initialContext);
                 }
             }
 
@@ -110,10 +110,10 @@ namespace NiL.JS.Core.Functions
             bool tailCall = false;
             for (;;)
             {
-                var internalContext = new Context(_context, false, this);
+                var internalContext = new Context(_initialContext, false, this);
 
                 if (_functionDefinition.kind == FunctionKind.Arrow)
-                    internalContext._thisBind = _context._thisBind;
+                    internalContext._thisBind = _initialContext._thisBind;
                 else
                     internalContext._thisBind = targetObject;
 
@@ -136,8 +136,8 @@ namespace NiL.JS.Core.Functions
 
                 try
                 {
-                    res = evaluate(internalContext);
-                    if (internalContext._executionMode == AbortReason.TailRecursion)
+                    res = evaluateBody(internalContext);
+                    if (internalContext._executionMode == ExecutionMode.TailRecursion)
                     {
                         tailCall = true;
                         args = internalContext._executionInfo as Arguments;

@@ -44,7 +44,7 @@ namespace NiL.JS.Statements
         internal CodeNode[] _lines;
         internal bool _strict;
         internal bool built;
-        internal SuppressScopeIsolationMode suppressScopeIsolation;
+        internal SuppressScopeIsolationMode _suppressScopeIsolation;
 
         public VariableDescriptor[] Variables { get { return _variables; } }
         public CodeNode[] Body { get { return _lines; } }
@@ -187,17 +187,11 @@ namespace NiL.JS.Statements
 
                             expectSemicolon = false;
                         }
+
                         continue;
                     }
 
-                    if (t is EntityDefinition)
-                    {
-                        expectSemicolon = false;
-                    }
-                    else
-                    {
-                        expectSemicolon = true;
-                    }
+                    expectSemicolon = !(t is EntityDefinition);
 
                     body.Add(t);
                 }
@@ -212,8 +206,10 @@ namespace NiL.JS.Statements
                 state.functionScopeLevel = oldFunctionScopeLevel;
                 state.lexicalScopeLevel--;
             }
+
             if (!sroot)
                 position++;
+
             int startPos = index;
             index = position;
             return new CodeBlock(body.ToArray())
@@ -238,12 +234,14 @@ namespace NiL.JS.Statements
                 if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
                     count++;
             }
+
             if (count > 0)
             {
                 variables = new VariableDescriptor[count];
                 HashSet<string> declaredVariables = null;
                 if (state.lexicalScopeLevel != state.functionScopeLevel)
                     declaredVariables = new HashSet<string>();
+
                 for (int i = oldVariablesCount, targetIndex = 0; i < state.Variables.Count; i++)
                 {
                     if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
@@ -252,7 +250,7 @@ namespace NiL.JS.Statements
                         if (declaredVariables != null)
                         {
                             if (declaredVariables.Contains(variables[targetIndex].name) && variables[targetIndex].lexicalScope)
-                                ExceptionHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" has already been defined", state.Code, i);
+                                ExceptionHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" already has been defined", state.Code, i);
 
                             declaredVariables.Add(variables[targetIndex].name);
                         }
@@ -263,6 +261,7 @@ namespace NiL.JS.Statements
                         state.Variables[i - targetIndex] = state.Variables[i];
                     }
                 }
+
                 state.Variables.RemoveRange(state.Variables.Count - count, count);
             }
 
@@ -274,7 +273,7 @@ namespace NiL.JS.Statements
             int i = 0;
             bool clearSuspendData = false;
 
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 var suspendData = context.SuspendData[this] as SuspendData;
                 context = suspendData.Context;
@@ -283,11 +282,11 @@ namespace NiL.JS.Statements
             }
             else
             {
-                if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
+                if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 {
                     context = new Context(context, false, context._owner)
                     {
-                        _suspendData = context._suspendData,
+                        SuspendData = context.SuspendData,
                         _definedVariables = _variables,
                         _thisBind = context._thisBind,
                         _strict = context._strict,
@@ -300,7 +299,7 @@ namespace NiL.JS.Statements
                     initVariables(context);
             }
 
-            if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
+            if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 evaluateWithScope(context, i, clearSuspendData);
             else
                 evaluateLines(context, i, clearSuspendData);
@@ -310,14 +309,14 @@ namespace NiL.JS.Statements
 
         private void evaluateWithScope(Context context, int i, bool clearSuspendData)
         {
-            var activated = suppressScopeIsolation != SuppressScopeIsolationMode.Suppress && context.Activate();
+            var activated = _suppressScopeIsolation != SuppressScopeIsolationMode.Suppress && context.Activate();
             try
             {
                 evaluateLines(context, i, clearSuspendData);
             }
             finally
             {
-                if (suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
+                if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 {
                     if (activated)
                         context.Deactivate();
@@ -375,14 +374,16 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
-                if (context._executionMode != AbortReason.None)
+                if (context._executionMode != ExecutionMode.None)
                 {
-                    if (context._executionMode == AbortReason.Suspend)
+                    if (context._executionMode == ExecutionMode.Suspend)
                     {
                         context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
                     }
+
                     break;
                 }
+
                 if (clearSuspendData)
                     context.SuspendData.Clear();
             }
@@ -397,7 +398,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>();
             for (int i = 0; i < _lines.Length; i++)
@@ -407,8 +408,10 @@ namespace NiL.JS.Statements
                     break;
                 res.Add(node);
             }
+
             if (_variables != null)
                 res.AddRange(from v in _variables where v.initializer != null && (!(v.initializer is FunctionDefinition) || (v.initializer as FunctionDefinition)._body != this) select v.initializer);
+
             return res.ToArray();
         }
 
@@ -514,6 +517,7 @@ namespace NiL.JS.Statements
                 compiledVersion = JITHelpers.compile(this, depth >= 0);
 #endif
             }
+
             if (t >= 0 && this == _this)
             {
                 var newBody = new CodeNode[_lines.Length - t - 1];
@@ -522,6 +526,7 @@ namespace NiL.JS.Statements
                     newBody[f++] = _lines[t];
                 _lines = newBody;
             }
+
             if (_variables != null && _variables.Length != 0)
             {
                 for (var i = 0; i < _variables.Length; i++)
@@ -529,6 +534,7 @@ namespace NiL.JS.Statements
                     variables.Remove(_variables[i].name);
                 }
             }
+
             if (variablesToRestore != null)
             {
                 for (var i = 0; i < variablesToRestore.Count; i++)
@@ -536,6 +542,7 @@ namespace NiL.JS.Statements
                     variables[variablesToRestore[i].name] = variablesToRestore[i];
                 }
             }
+
             return false;
         }
 
@@ -563,12 +570,14 @@ namespace NiL.JS.Statements
                     }
                 }
             }
+
             for (int i = 0; i < _lines.Length; i++)
             {
                 var cn = _lines[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, stats);
                 _lines[i] = cn;
             }
+
             if (_variables != null)
             {
                 for (var i = 0; i < _variables.Length; i++)
@@ -581,8 +590,11 @@ namespace NiL.JS.Statements
                 }
             }
 
-            if (_lines.Length == 1 && suppressScopeIsolation == SuppressScopeIsolationMode.Suppress)
+            if (_lines.Length == 1 && _suppressScopeIsolation == SuppressScopeIsolationMode.Suppress)
             {
+                if (_variables.Length != 0)
+                    throw new InvalidOperationException();
+
                 _this = _lines[0];
             }
         }
@@ -620,13 +632,14 @@ namespace NiL.JS.Statements
                         if (!transferedVariables.TryGetValue(_variables[i].name, out desc) || _variables[i].initializer != null)
                             transferedVariables[_variables[i].name] = _variables[i];
                     }
+
                     _variables = emptyVariables;
                 }
 
                 if (_variables.Length == 0)
                 {
-                    if (suppressScopeIsolation == SuppressScopeIsolationMode.Auto)
-                        suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+                    if (_suppressScopeIsolation == SuppressScopeIsolationMode.Auto)
+                        _suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
                     scopeBias--;
                 }
@@ -638,13 +651,13 @@ namespace NiL.JS.Statements
                         initialVariables[i].definitionScopeLevel -= initialVariables[i].scopeBias;
                         initialVariables[i].definitionScopeLevel += scopeBias;
                     }
-                    initialVariables[i].scopeBias = scopeBias;
 
+                    initialVariables[i].scopeBias = scopeBias;
                     initialVariables[i].initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
                 }
             }
             else
-                suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+                _suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
             if (transferedVariables == null)
             {
@@ -674,7 +687,7 @@ namespace NiL.JS.Statements
         internal void initVariables(Context context)
         {
             var stats = context._owner?._functionDefinition?._functionInfo;
-            var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.ContainsYield;
+            var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.NeedDecompose;
             for (var i = 0; i < _variables.Length; i++)
             {
                 var v = _variables[i];

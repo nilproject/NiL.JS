@@ -241,6 +241,7 @@
     <Compile Include="BaseLibrary\TypedArray.cs" />
     <Compile Include="Core\BinaryTree.cs" />
     <Compile Include="Core\CustomCodeFragment.cs" />
+    <Compile Include="Core\Functions\AsyncFunction.cs" />
     <Compile Include="Core\Functions\BindedFunction.cs" />
     <Compile Include="Core\CatchContext.cs" />
     <Compile Include="Core\CompiledNode.cs" />
@@ -259,6 +260,7 @@
     <Compile Include="Core\Interop\ToStringTagAttribute.cs" />
     <Compile Include="Core\Interop\UseIndexersAttribute.cs" />
     <Compile Include="ExportTable.cs" />
+    <Compile Include="Expressions\AwaitExpression.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />
     <Compile Include="Expressions\GetSetPropertyPair.cs" />
     <Compile Include="Expressions\NewTarget.cs" />

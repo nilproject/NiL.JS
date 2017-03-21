@@ -28,7 +28,7 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "try", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+            if (!Parser.Validate(state.Code, "try", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
@@ -77,7 +77,7 @@ namespace NiL.JS.Statements
                     i++;
             }
             CodeNode f = null;
-            if (Parser.Validate(state.Code, "finally", i) && Parser.IsIdentificatorTerminator(state.Code[i + 7]))
+            if (Parser.Validate(state.Code, "finally", i) && Parser.IsIdentifierTerminator(state.Code[i + 7]))
             {
                 i += 7;
                 while (Tools.IsWhiteSpace(state.Code[i]))
@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             Exception exception = null;
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 var action = context.SuspendData[this] as Action<Context>;
                 if (action != null)
@@ -124,7 +124,7 @@ namespace NiL.JS.Statements
             {
                 body.Evaluate(context);
 
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                     context.SuspendData[this] = null;
             }
             catch (Exception e)
@@ -143,14 +143,14 @@ namespace NiL.JS.Statements
             }
             finally
             {
-                if (context._executionMode != AbortReason.Suspend && finallyBody != null)
+                if (context._executionMode != ExecutionMode.Suspend && finallyBody != null)
                 {
                     finallyHandler(context, exception);
                     exception = null;
                 }
             }
 
-            if (context._executionMode != AbortReason.Suspend && exception != null)
+            if (context._executionMode != ExecutionMode.Suspend && exception != null)
                 throw exception;
 
             return null;
@@ -163,28 +163,29 @@ namespace NiL.JS.Statements
 
             var abort = context._executionMode;
             var ainfo = context._executionInfo;
-            if (abort == AbortReason.Return && ainfo != null)
+            if (abort == ExecutionMode.Return && ainfo != null)
             {
                 if (ainfo.Defined)
                     ainfo = ainfo.CloneImpl(false);
                 else
                     ainfo = JSValue.Undefined;
             }
-            context._executionMode = AbortReason.None;
+
+            context._executionMode = ExecutionMode.None;
             context._executionInfo = JSValue.undefined;
 
             Action<Context> finallyAction = null;
             finallyAction = (c) =>
             {
                 c._lastResult = finallyBody.Evaluate(c) ?? context._lastResult;
-                if (c._executionMode == AbortReason.None)
+                if (c._executionMode == ExecutionMode.None)
                 {
                     c._executionMode = abort;
                     c._executionInfo = ainfo;
                     if (exception != null)
                         throw exception as JSException ?? new JSException(null as JSValue, exception);
                 }
-                else if (c._executionMode == AbortReason.Suspend)
+                else if (c._executionMode == ExecutionMode.Suspend)
                 {
                     c.SuspendData[this] = finallyAction;
                 }
@@ -199,6 +200,7 @@ namespace NiL.JS.Statements
 
             if (catchBody is Empty)
                 return;
+
             JSValue cvar = null;
 #if !(PORTABLE || NETCORE)
             if (e is RuntimeWrappedException)
@@ -208,7 +210,10 @@ namespace NiL.JS.Statements
             }
             else
 #endif
+            {
                 cvar = e is JSException ? (e as JSException).Error.CloneImpl(false) : context.GlobalContext.ProxyValue(e);
+            }
+
             cvar._attributes |= JSValueAttributesInternal.DoNotDelete;
             var catchContext = new CatchContext(cvar, context, catchVariableDesc.name);
 #if DEBUG
@@ -234,7 +239,7 @@ namespace NiL.JS.Statements
                 c._executionMode = catchContext._executionMode;
                 c._executionInfo = catchContext._executionInfo;
 
-                if (c._executionMode == AbortReason.Suspend)
+                if (c._executionMode == ExecutionMode.Suspend)
                 {
                     if (finallyBody != null)
                     {
@@ -246,7 +251,7 @@ namespace NiL.JS.Statements
                             }
                             finally
                             {
-                                if (c2._executionMode != AbortReason.Suspend)
+                                if (c2._executionMode != ExecutionMode.Suspend)
                                     finallyHandler(c2, e);
                             }
                         });
@@ -287,6 +292,7 @@ namespace NiL.JS.Statements
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
+
                 _this = finallyBody;
             }
 
@@ -295,21 +301,22 @@ namespace NiL.JS.Statements
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, (catchBody ?? this as CodeNode).Position, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
             }
+
             return false;
         }
 
         public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             body.Optimize(ref body, owner, message, opts, stats);
+
             if (catchBody != null)
-            {
                 catchBody.Optimize(ref catchBody, owner, message, opts, stats);
-            }
+
             if (finallyBody != null)
                 finallyBody.Optimize(ref finallyBody, owner, message, opts, stats);
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>()
             {
@@ -350,8 +357,13 @@ namespace NiL.JS.Statements
 
                 catchBody.RebuildScope(functionInfo, transferedVariables, scopeBias);
 
-                if (variableToRestore != null)
-                    transferedVariables[variableToRestore.name] = variableToRestore;
+                if (transferedVariables != null)
+                {
+                    if (variableToRestore != null)
+                        transferedVariables[variableToRestore.name] = variableToRestore;
+                    else
+                        transferedVariables.Remove(catchVariableDesc.name);
+                }
             }
 
             finallyBody?.RebuildScope(functionInfo, transferedVariables, scopeBias);

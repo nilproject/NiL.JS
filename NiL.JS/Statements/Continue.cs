@@ -16,7 +16,7 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.IsIdentificatorTerminator(state.Code[i]))
+            if (!Parser.Validate(state.Code, "continue", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
             if (!state.AllowContinue.Peek())
                 ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use of continue statement")));
@@ -42,12 +42,12 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            context._executionMode = AbortReason.Continue;
+            context._executionMode = ExecutionMode.Continue;
             context._executionInfo = label;
             return null;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             return null;
         }

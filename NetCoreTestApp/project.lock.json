@@ -2028,7 +2028,7 @@
           "lib/netstandard1.3/_._": {}
         }
       },
-      "NiL.JS.NetCore/2.3.981": {
+      "NiL.JS.NetCore/2.3.1010": {
         "type": "project",
         "framework": ".NETStandard,Version=v1.3",
         "dependencies": {
@@ -6640,7 +6640,7 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "NiL.JS.NetCore/2.3.981": {
+    "NiL.JS.NetCore/2.3.1010": {
       "type": "project",
       "path": "../NiL.JS.NetCore/project.json",
       "msbuildProject": "../NiL.JS.NetCore/NiL.JS.NetCore.xproj"

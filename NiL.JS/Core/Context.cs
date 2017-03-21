@@ -16,7 +16,7 @@ namespace NiL.JS.Core
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    public enum AbortReason
+    public enum ExecutionMode
     {
         None = 0,
         Continue,
@@ -84,7 +84,7 @@ namespace NiL.JS.Core
         internal readonly static GlobalContext _DefaultGlobalContext = new GlobalContext() { _strict = true };
         public static GlobalContext DefaultGlobalContext { get { return _DefaultGlobalContext; } }
 
-        internal AbortReason _executionMode;
+        internal ExecutionMode _executionMode;
         internal JSValue _objectSource;
         internal JSValue _executionInfo;
         internal JSValue _lastResult;
@@ -94,9 +94,9 @@ namespace NiL.JS.Core
         internal Context _parent;
         internal IDictionary<string, JSValue> _variables;
         internal bool _strict;
-        internal Dictionary<CodeNode, object> _suspendData;
         internal VariableDescriptor[] _definedVariables;
         internal Module _module;
+        private Dictionary<CodeNode, object> _suspendData;
 
         public Context RootContext
         {
@@ -178,7 +178,7 @@ namespace NiL.JS.Core
             }
         }
 
-        public AbortReason AbortReason
+        public ExecutionMode AbortReason
         {
             get
             {
@@ -194,7 +194,11 @@ namespace NiL.JS.Core
             }
         }
 
-        public Dictionary<CodeNode, object> SuspendData { get { return _suspendData ?? (_suspendData = new Dictionary<CodeNode, object>()); } }
+        public Dictionary<CodeNode, object> SuspendData
+        {
+            get { return _suspendData ?? (_suspendData = new Dictionary<CodeNode, object>()); }
+            internal set { _suspendData = value; }
+        }
 
         static Context()
         {
@@ -292,7 +296,7 @@ namespace NiL.JS.Core
                     Monitor.Enter(RunningContexts);
                     entered = true;
                 }
-                
+
                 if (_ThreadIds[i] == 0)
                 {
                     if (firstEmptyIndex == -1)
@@ -556,7 +560,7 @@ namespace NiL.JS.Core
             ctor._attributes |= JSValueAttributesInternal.DoNotEnumerate;
         }
 
-        internal void SetAbortState(AbortReason abortReason, JSValue abortInfo)
+        internal void SetAbortState(ExecutionMode abortReason, JSValue abortInfo)
         {
             _executionMode = abortReason;
             _executionInfo = abortInfo;
@@ -649,15 +653,16 @@ namespace NiL.JS.Core
                 var newVarDescs = new VariableDescriptor[tv.Values.Count];
                 tv.Values.CopyTo(newVarDescs, 0);
                 body._variables = newVarDescs;
+                body._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
             }
 
             body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
             body = cb as CodeBlock ?? body;
 
-            if (stats.ContainsYield)
+            if (stats.NeedDecompose)
                 body.Decompose(ref cb);
 
-            body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+            body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
             var debugging = _debugging;
             _debugging = false;

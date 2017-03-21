@@ -48,12 +48,13 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
-            if (!Parser.Validate(state.Code, "for(", ref i) && (!Parser.Validate(state.Code, "for (", ref i)))
+            Tools.SkipSpaces(state.Code, ref i);
+
+            if (!Parser.Validate(state.Code, "for(", ref i)
+            && (!Parser.Validate(state.Code, "for (", ref i)))
                 return null;
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
+
+            Tools.SkipSpaces(state.Code, ref i);
 
             var result = new ForOf()
             {
@@ -66,57 +67,58 @@ namespace NiL.JS.Statements
             try
             {
                 var vStart = i;
-                if ((result._variable = VariableDefinition.Parse(state, ref i, true)) != null)
-                {
-                }
-                else
+                result._variable = VariableDefinition.Parse(state, ref i, true);
+                if (result._variable == null)
                 {
                     if (state.Code[i] == ';')
                         return null;
-                    while (Tools.IsWhiteSpace(state.Code[i]))
-                        i++;
+
+                    Tools.SkipSpaces(state.Code, ref i);
+
                     int start = i;
-                    string varName;
                     if (!Parser.ValidateName(state.Code, ref i, state.strict))
                         return null;
-                    varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
+
+                    var varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
                     if (state.strict)
                     {
                         if (varName == "arguments" || varName == "eval")
-                            ExceptionHelper.Throw((new SyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
+                            ExceptionHelper.ThrowSyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at ", state.Code, start, i - start);
                     }
-                    result._variable = new GetVariable(varName, state.lexicalScopeLevel) { Position = start, Length = i - start, ScopeLevel = state.lexicalScopeLevel };
-                }
-                while (Tools.IsWhiteSpace(state.Code[i]))
-                    i++;
-                if (state.Code[i] == '=')
-                {
-                    do
-                        i++;
-                    while (Tools.IsWhiteSpace(state.Code[i]));
-                    var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, true);
-                    if (defVal == null)
-                        return defVal;
-                    Expression exp = new AssignmentOperatorCache(result._variable as GetVariable ?? (result._variable as VariableDefinition).initializers[0] as GetVariable);
-                    exp = new Assignment(
-                        exp,
-                        (Expression)defVal)
-                    {
-                        Position = exp.Position,
-                        Length = defVal.EndPosition - exp.Position
-                    };
-                    if (result._variable == exp.first.first)
-                        result._variable = exp;
-                    else
-                        (result._variable as VariableDefinition).initializers[0] = exp;
-                    while (Tools.IsWhiteSpace(state.Code[i]))
-                        i++;
 
+                    result._variable = new GetVariable(varName, state.lexicalScopeLevel) { Position = start, Length = i - start, ScopeLevel = state.lexicalScopeLevel };
+
+                    Tools.SkipSpaces(state.Code, ref i);
+
+                    if (state.Code[i] == '=')
+                    {
+                        Tools.SkipSpaces(state.Code, ref i);
+
+                        var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, true);
+                        if (defVal == null)
+                            return defVal;
+
+                        Expression exp = new AssignmentOperatorCache(result._variable as GetVariable ?? (result._variable as VariableDefinition).initializers[0] as GetVariable);
+                        exp = new Assignment(exp, defVal)
+                        {
+                            Position = exp.Position,
+                            Length = defVal.EndPosition - exp.Position
+                        };
+
+                        if (result._variable == exp.first.first)
+                            result._variable = exp;
+                        else
+                            (result._variable as VariableDefinition).initializers[0] = exp;
+
+                        Tools.SkipSpaces(state.Code, ref i);
+                    }
                 }
+
                 if (!Parser.Validate(state.Code, "of", ref i))
                 {
                     if (oldVariablesCount < state.Variables.Count)
                         state.Variables.RemoveRange(oldVariablesCount, state.Variables.Count - oldVariablesCount);
+
                     return null;
                 }
 
@@ -133,7 +135,7 @@ namespace NiL.JS.Statements
                 Tools.SkipSpaces(state.Code, ref i);
 
                 if (state.Code[i] != ')')
-                    ExceptionHelper.Throw(new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
+                    ExceptionHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
 
                 i++;
                 state.AllowBreak.Push(true);
@@ -162,7 +164,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             SuspendData suspendData = null;
-            if (context._executionMode >= AbortReason.Resume)
+            if (context._executionMode >= ExecutionMode.Resume)
             {
                 suspendData = context.SuspendData[this] as SuspendData;
             }
@@ -174,7 +176,7 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(_source);
 
                 source = _source.Evaluate(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = null;
                     return null;
@@ -202,7 +204,7 @@ namespace NiL.JS.Statements
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
-                if (context._executionMode == AbortReason.Suspend)
+                if (context._executionMode == ExecutionMode.Suspend)
                 {
                     if (suspendData == null)
                         suspendData = new SuspendData();
@@ -221,29 +223,29 @@ namespace NiL.JS.Statements
             if (iterator == null)
                 return null;
 
-            IIteratorResult iteratorResult = context._executionMode != AbortReason.Resume ? iterator.next() : null;
-            while (context._executionMode >= AbortReason.Resume || !iteratorResult.done)
+            IIteratorResult iteratorResult = context._executionMode != ExecutionMode.Resume ? iterator.next() : null;
+            while (context._executionMode >= ExecutionMode.Resume || !iteratorResult.done)
             {
-                if (context._executionMode != AbortReason.Resume)
+                if (context._executionMode != ExecutionMode.Resume)
                     variable.Assign(iteratorResult.value);
 
                 _body.Evaluate(context);
 
-                if (context._executionMode != AbortReason.None)
+                if (context._executionMode != ExecutionMode.None)
                 {
-                    if (context._executionMode < AbortReason.Return)
+                    if (context._executionMode < ExecutionMode.Return)
                     {
                         var me = context._executionInfo == null || System.Array.IndexOf(_labels, context._executionInfo._oValue as string) != -1;
-                        var _break = (context._executionMode > AbortReason.Continue) || !me;
+                        var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                         if (me)
                         {
-                            context._executionMode = AbortReason.None;
+                            context._executionMode = ExecutionMode.None;
                             context._executionInfo = JSValue.notExists;
                         }
                         if (_break)
                             return null;
                     }
-                    else if (context._executionMode == AbortReason.Suspend)
+                    else if (context._executionMode == ExecutionMode.Suspend)
                     {
                         if (suspendData == null)
                             suspendData = new SuspendData();
@@ -264,7 +266,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>
             {
@@ -284,14 +286,15 @@ namespace NiL.JS.Statements
             if (_variable is Expressions.Comma)
             {
                 if ((_variable as Expressions.Comma).SecondOperand != null)
-                    throw new InvalidOperationException("Invalid left-hand side in for-in");
+                    throw new InvalidOperationException("Invalid left-hand side in for-of");
+
                 _variable = (_variable as Expressions.Comma).FirstOperand;
             }
             if (message != null
                 && (this._source is Expressions.ObjectDefinition
                 || this._source is ArrayDefinition
                 || this._source is Constant))
-                message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
+                message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for-of with constant source. This reduce performance. Rewrite without using for..in.");
             return false;
         }
 

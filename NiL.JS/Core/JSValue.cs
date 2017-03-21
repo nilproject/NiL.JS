@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
@@ -94,9 +96,32 @@ namespace NiL.JS.Core
         NonConfigurable = 1 << 4,
     }
 
+    internal sealed class JSObjectDebugView
+    {
+        private JSObject _jsObject;
+
+        public JSObjectDebugView(JSValue jsValue)
+        {
+            _jsObject = jsValue as JSObject;
+            if (_jsObject != null && _jsObject._valueType >= JSValueType.Object)
+                _jsObject = (_jsObject._oValue as JSObject) ?? _jsObject;
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, JSValue>[] Items
+        {
+            get
+            {
+                return _jsObject?._fields?.ToArray();
+            }
+        }
+    }
+
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
+    [DebuggerTypeProxy(typeof(JSObjectDebugView))]
+    [DebuggerDisplay("Value = {Value} ({ValueType})")]
     public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<JSValue>
 #if !(PORTABLE || NETCORE)
 , ICloneable, IConvertible

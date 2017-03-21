@@ -47,11 +47,11 @@ namespace NiL.JS
 
         public ExportTable Exports { get; } = new ExportTable();
 
-        private CodeNode root;
+        private CodeBlock _root;
         /// <summary>
         /// Root node of AST
         /// </summary>
-        public CodeBlock Root { get { return root as CodeBlock; } }
+        public CodeBlock Root { get { return _root; } }
 
         /// <summary>
         /// JavaScript code, used for initialization
@@ -137,14 +137,14 @@ namespace NiL.JS
                         __modulesCache[path] = this;
                 }
 
-                this.FilePath = path;
+                FilePath = path;
             }
 
             if (code == "")
                 return;
 
             int i = 0;
-            root = CodeBlock.Parse(new ParseInfo(Tools.RemoveComments(code, 0), Code, messageCallback), ref i);
+            _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Tools.RemoveComments(code, 0), Code, messageCallback), ref i);
 
             CompilerMessageCallback icallback = messageCallback != null ? (level, cord, message) =>
                 {
@@ -153,21 +153,20 @@ namespace NiL.JS
             : null as CompilerMessageCallback;
 
             var stat = new FunctionInfo();
-            Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
-            var body = root as CodeBlock;
-            body.suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+            Parser.Build(ref _root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
+            var body = _root as CodeBlock;
+            body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             Context._thisBind = new GlobalObject(Context);
             Context._strict = body._strict;
 
             var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
+            var bd = body as CodeNode;
+            body.Optimize(ref bd, null, icallback, options, stat);
             if (tv != null)
                 body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
 
-            var bd = body as CodeNode;
-            body.Optimize(ref bd, null, icallback, options, stat);
-
-            if (stat.ContainsYield)
+            if (stat.NeedDecompose)
                 body.Decompose(ref bd);
         }
 
@@ -187,7 +186,7 @@ namespace NiL.JS
             try
             {
                 Context.Activate();
-                root.Evaluate(Context);
+                _root.Evaluate(Context);
             }
             finally
             {

@@ -51,15 +51,15 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var res = statement.Evaluate(context);
-            if ((context._executionMode == AbortReason.Break) && (context._executionInfo != null) && (context._executionInfo._oValue as string == label))
+            if ((context._executionMode == ExecutionMode.Break) && (context._executionInfo != null) && (context._executionInfo._oValue as string == label))
             {
-                context._executionMode = AbortReason.None;
+                context._executionMode = ExecutionMode.None;
                 context._executionInfo = JSValue.notExists;
             }
             return res;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             return new[] { statement };
         }

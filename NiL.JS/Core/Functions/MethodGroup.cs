@@ -119,9 +119,6 @@ namespace NiL.JS.Core.Functions
                         var target = _methods[i].GetTargetObject(targetObject, _methods[i]._hardTarget);
                         try
                         {
-                            if (args == null)
-                                args = new object[] { arguments };
-
                             value = _methods[i]._method.Invoke(target, args);
 
                             if (_methods[i]._returnConverter != null)

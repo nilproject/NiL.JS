@@ -17,7 +17,10 @@ namespace NiL.JS.Expressions
 
         internal override bool ResultInTempContainer
         {
-            get { return false; }
+            get
+            {
+                return false;
+            }
         }
 
         protected internal override bool ContextIndependent
@@ -59,8 +62,8 @@ namespace NiL.JS.Expressions
             if (!Parser.Validate(state.Code, "yield", ref i))
                 return null;
 
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
+            Tools.SkipSpaces(state.Code, ref i);
+
             bool reiterate = false;
             if (state.Code[i] == '*')
             {
@@ -73,28 +76,27 @@ namespace NiL.JS.Expressions
             var source = ExpressionTree.Parse(state, ref i, false, false, false, true, true);
             if (source == null)
             {
-                var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                ExceptionHelper.ThrowSyntaxError("Invalid prefix operation", state.Code, i);
             }
 
             index = i;
 
-            return new Expressions.Yield(source, reiterate) { Position = index, Length = i - index };
+            return new Yield(source, reiterate) { Position = index, Length = i - index };
         }
 
         public override JSValue Evaluate(Context context)
         {
-            if (context._executionMode == AbortReason.ResumeThrow)
+            if (context._executionMode == ExecutionMode.ResumeThrow)
             {
                 context.SuspendData.Clear();
-                context._executionMode = AbortReason.None;
+                context._executionMode = ExecutionMode.None;
                 var exceptionData = context._executionInfo;
                 ExceptionHelper.Throw(exceptionData);
             }
 
             if (_reiterate)
             {
-                if (context._executionMode == AbortReason.None)
+                if (context._executionMode == ExecutionMode.None)
                 {
                     var iterator = first.Evaluate(context).AsIterable().iterator();
                     var iteratorResult = iterator.next();
@@ -104,10 +106,10 @@ namespace NiL.JS.Expressions
 
                     context.SuspendData[this] = iterator;
                     context._executionInfo = iteratorResult.value;
-                    context._executionMode = AbortReason.Suspend;
+                    context._executionMode = ExecutionMode.Suspend;
                     return JSValue.notExists;
                 }
-                else if (context._executionMode == AbortReason.Resume)
+                else if (context._executionMode == ExecutionMode.Resume)
                 {
                     IIterator iterator = context.SuspendData[this] as IIterator;
                     var iteratorResult = iterator.next(context._executionInfo.Defined ? new Arguments { context._executionInfo } : null);
@@ -116,28 +118,28 @@ namespace NiL.JS.Expressions
 
                     if (iteratorResult.done)
                     {
-                        context._executionMode = AbortReason.None;
+                        context._executionMode = ExecutionMode.None;
                         return iteratorResult.value;
                     }
                     else
                     {
                         context.SuspendData[this] = iterator;
-                        context._executionMode = AbortReason.Suspend;
+                        context._executionMode = ExecutionMode.Suspend;
                         return JSValue.notExists;
                     }
                 }
             }
             else
             {
-                if (context._executionMode == AbortReason.None)
+                if (context._executionMode == ExecutionMode.None)
                 {
                     context._executionInfo = first.Evaluate(context);
-                    context._executionMode = AbortReason.Suspend;
+                    context._executionMode = ExecutionMode.Suspend;
                     return JSValue.notExists;
                 }
-                else if (context._executionMode == AbortReason.Resume)
+                else if (context._executionMode == ExecutionMode.Resume)
                 {
-                    context._executionMode = AbortReason.None;
+                    context._executionMode = ExecutionMode.None;
                     var result = context._executionInfo;
                     context._executionInfo = null;
                     return result;
@@ -148,8 +150,8 @@ namespace NiL.JS.Expressions
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            stats.ContainsYield = true;
-            return base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
+            stats.NeedDecompose = true;
+            return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

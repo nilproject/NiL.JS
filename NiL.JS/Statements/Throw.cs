@@ -30,7 +30,7 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
-            if (!Parser.Validate(state.Code, "throw", ref i) || (!Parser.IsIdentificatorTerminator(state.Code[i])))
+            if (!Parser.Validate(state.Code, "throw", ref i) || (!Parser.IsIdentifierTerminator(state.Code[i])))
                 return null;
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i]))
                 i++;
@@ -56,14 +56,14 @@ namespace NiL.JS.Statements
                         context.GlobalContext.ProxyValue(_exception) 
                 : _body.Evaluate(context);
 
-            if (context._executionMode == AbortReason.Suspend)
+            if (context._executionMode == ExecutionMode.Suspend)
                 return null;
 
             ExceptionHelper.Throw(value);
             return null;
         }
 
-        protected internal override CodeNode[] getChildsImpl()
+        protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>()
             {
