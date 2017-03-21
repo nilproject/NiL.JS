@@ -357,10 +357,13 @@ namespace NiL.JS.Statements
 
                 catchBody.RebuildScope(functionInfo, transferedVariables, scopeBias);
 
-                if (variableToRestore != null)
-                    transferedVariables[variableToRestore.name] = variableToRestore;
-                else
-                    transferedVariables.Remove(catchVariableDesc.name);
+                if (transferedVariables != null)
+                {
+                    if (variableToRestore != null)
+                        transferedVariables[variableToRestore.name] = variableToRestore;
+                    else
+                        transferedVariables.Remove(catchVariableDesc.name);
+                }
             }
 
             finallyBody?.RebuildScope(functionInfo, transferedVariables, scopeBias);

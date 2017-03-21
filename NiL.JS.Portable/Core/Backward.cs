@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
 namespace System
 {
-    [ComVisible(true)]
-    public enum TypeCode
+    internal enum TypeCode
     {
         Empty = 0,          // Null reference
         Object = 1,         // Instance that isn't a value
@@ -35,7 +31,7 @@ namespace System
 
     namespace Reflection
     {
-        public enum MemberTypes
+        internal enum MemberTypes
         {
             Constructor = 1,
             Event = 2,

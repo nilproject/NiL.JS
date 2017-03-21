@@ -461,9 +461,9 @@ namespace NiL.JS.Core
                         else if (value is Task)
                         {
                             Task<JSValue> result;
-                            if (value.GetType().IsGenericType && typeof(Task<>).IsAssignableFrom(value.GetType().GetGenericTypeDefinition()))
+                            if (value.GetType().GetTypeInfo().IsGenericType && typeof(Task<>).IsAssignableFrom(value.GetType().GetGenericTypeDefinition()))
                             {
-                                result = new Task<JSValue>(() => ProxyValue(value.GetType().GetMethod("get_Result").Invoke(value, null)));
+                                result = new Task<JSValue>(() => ProxyValue(value.GetType().GetMethod("get_Result", new Type[0]).Invoke(value, null)));
                             }
                             else
                             {
