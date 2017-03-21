@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
-using System.ComponentModel;
 
 namespace NiL.JS.Core
 {
