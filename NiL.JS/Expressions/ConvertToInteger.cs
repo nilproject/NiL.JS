@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using NiL.JS.Core;
 using System.Reflection;
+using NiL.JS.Core;
+
+#if NET40
+using NiL.JS.Backward;
+#endif
 
 namespace NiL.JS.Expressions
 {
