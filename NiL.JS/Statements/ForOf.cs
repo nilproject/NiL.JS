@@ -76,11 +76,10 @@ namespace NiL.JS.Statements
                     Tools.SkipSpaces(state.Code, ref i);
 
                     int start = i;
-                    string varName;
                     if (!Parser.ValidateName(state.Code, ref i, state.strict))
                         return null;
 
-                    varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
+                    var varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
                     if (state.strict)
                     {
                         if (varName == "arguments" || varName == "eval")
@@ -129,7 +128,7 @@ namespace NiL.JS.Statements
                 if (result._variable is VariableDefinition)
                 {
                     if ((result._variable as VariableDefinition).variables.Length > 1)
-                        ExceptionHelper.ThrowSyntaxError("Too many variables in for-in loop", state.Code, i);
+                        ExceptionHelper.ThrowSyntaxError("Too many variables in for-of loop", state.Code, i);
                 }
 
                 result._source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
@@ -287,14 +286,15 @@ namespace NiL.JS.Statements
             if (_variable is Expressions.Comma)
             {
                 if ((_variable as Expressions.Comma).SecondOperand != null)
-                    throw new InvalidOperationException("Invalid left-hand side in for-in");
+                    throw new InvalidOperationException("Invalid left-hand side in for-of");
+
                 _variable = (_variable as Expressions.Comma).FirstOperand;
             }
             if (message != null
                 && (this._source is Expressions.ObjectDefinition
                 || this._source is ArrayDefinition
                 || this._source is Constant))
-                message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
+                message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for-of with constant source. This reduce performance. Rewrite without using for..in.");
             return false;
         }
 
