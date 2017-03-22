@@ -13,14 +13,20 @@ namespace FunctionalTests
     {
         private class Class
         {
-            public void Method()
-            { }
+            public int Method()
+            {
+                return 0;
+            }
 
-            public void Method(int a, int b)
-            { }
+            public int Method(int a, int b)
+            {
+                return 2;
+            }
 
-            public void Method(int a)
-            { }
+            public int Method(int a)
+            {
+                return 1;
+            }
         }
 
         [TestMethod]
@@ -30,7 +36,9 @@ namespace FunctionalTests
             var instance = new Class();
 
             context.DefineVariable($"{nameof(instance)}").Assign(JSValue.Marshal(instance));
-            context.Eval($"{nameof(instance)}.{nameof(instance.Method)}()");
+            var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}()");
+
+            Assert.AreEqual(0, result.Value);
         }
 
         [TestMethod]
@@ -40,7 +48,9 @@ namespace FunctionalTests
             var instance = new Class();
 
             context.DefineVariable($"{nameof(instance)}").Assign(JSValue.Marshal(instance));
-            context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1)");
+            var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1)");
+
+            Assert.AreEqual(1, result.Value);
         }
 
         [TestMethod]
@@ -50,7 +60,9 @@ namespace FunctionalTests
             var instance = new Class();
 
             context.DefineVariable($"{nameof(instance)}").Assign(JSValue.Marshal(instance));
-            context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1, 2)");
+            var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1, 2)");
+
+            Assert.AreEqual(2, result.Value);
         }
     }
 }
