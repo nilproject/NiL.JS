@@ -13,6 +13,10 @@ namespace Examples._7.Few_words_about_Global_Context
     {
         /*      Global Context
          *      ┌───────────
+         *      │  <Object, Number, Math, Function etc.>
+         *      │  <Global functions like parseInt(...) and isNaN(...)>
+         *      │  <Global constants like undefined and NaN>
+         *      │
          *      │  new Context(), new Module().Context
          *      │  ┌───────────
          *      │  │ <Global variables of the script. Smthg like "window.my_variable"> 
@@ -27,10 +31,6 @@ namespace Examples._7.Few_words_about_Global_Context
          *      │  │ │ └───────────
          *      │  │ └───────────
          *      │  └───────────
-         *      │
-         *      │  <Object, Number, Math, Function etc.>
-         *      │  <Global functions like parseInt(...) and isNaN(...)>
-         *      │  <Global constants like undefined and null>
          *      └───────────
          *      
          *      Before version 2.4 was the one Global Context in all cases.
