@@ -19,7 +19,12 @@ namespace Examples._7.Few_words_about_Global_Context
          *      │  │
          *      │  │ Contexts of nested functions
          *      │  │ ┌───────────
-         *      │  │ │ <Params and local variables of the function>
+         *      │  │ │ <Parameters and local variables of a function>
+         *      │  │ │
+         *      │  │ │ Contexts of functions inside other functions
+         *      │  │ │ ┌───────────
+         *      │  │ │ │ ...
+         *      │  │ │ └───────────
          *      │  │ └───────────
          *      │  └───────────
          *      │
