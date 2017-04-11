@@ -26,7 +26,8 @@ namespace IntegrationTests.Core
                 new KeyValuePair<double, string>(0.35826121851261677000, "0.35826121851261677000"),
                 new KeyValuePair<double, string>(3.29119230376073580000, "3.29119230376073580000"),
                 new KeyValuePair<double, string>(1664158979.1109629, "1664158979.11096290000000000000"),
-                new KeyValuePair<double, string>(0.00021140449751288852, "0.00021140449751288852")
+                new KeyValuePair<double, string>(0.00021140449751288852, "0.00021140449751288852"),
+                new KeyValuePair<double, string>(34.970703125, "34.970703125")
             };
 
             foreach (var number in numbers)

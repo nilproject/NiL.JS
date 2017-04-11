@@ -1153,6 +1153,12 @@ namespace NiL.JS.Core
                                 {
                                     temp++;
                                 }
+
+                                while (temp < (1UL << 52))
+                                {
+                                    e++;
+                                    temp <<= 1;
+                                }
                             }
                             else if (temp != 0)
                             {
