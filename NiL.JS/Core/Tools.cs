@@ -1485,13 +1485,13 @@ namespace NiL.JS.Core
 
                 if (Parser.Validate(code, "<!--", index))
                 {
-                    while (index < code.Length && !Parser.Validate(code, "--!>", index))
+                    while (index < code.Length && !Parser.Validate(code, "-->", index))
                     {
                         index++;
                     }
 
                     if (index < code.Length)
-                        index += 4;
+                        index += 3;
                 }
             }
             while (work);
