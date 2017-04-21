@@ -1464,8 +1464,9 @@ namespace NiL.JS.Core
                         case '/':
                             {
                                 index += 2;
-                                while (index < code.Length && !Tools.IsLineTerminator(code[index]))
+                                while (index < code.Length && !IsLineTerminator(code[index]))
                                     index++;
+
                                 work = true;
                                 break;
                             }
@@ -1485,13 +1486,10 @@ namespace NiL.JS.Core
 
                 if (Parser.Validate(code, "<!--", index))
                 {
-                    while (index < code.Length && !Parser.Validate(code, "-->", index))
-                    {
+                    while (index < code.Length && !IsLineTerminator(code[index]))
                         index++;
-                    }
 
-                    if (index < code.Length)
-                        index += 3;
+                    work = true;
                 }
             }
             while (work);
