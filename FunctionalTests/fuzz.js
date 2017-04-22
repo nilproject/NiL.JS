@@ -253,3 +253,13 @@ console.asserta(() => (new class {}).toString(), {}.toString());
 console.asserta(() => 0b11, 3);
 console.asserta(() => 0o11, 9);
 console.asserta(() => 0x11, 17);
+
+for (let i = 0; i < 1; i++) {
+    let i = NaN;
+
+    isNaN(i);
+
+    (function () {
+        isNaN(i);
+    })();
+}

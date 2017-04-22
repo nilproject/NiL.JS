@@ -736,9 +736,11 @@ namespace NiL.JS.Expressions
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             var bd = _body as CodeNode;
+            var oldScopeIsolation = _body._suppressScopeIsolation;
             _body._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
             _body.Optimize(ref bd, this, message, opts, _functionInfo);
-            _body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+            _body._suppressScopeIsolation = oldScopeIsolation;
+
             if (_functionInfo.Returns.Count > 0)
             {
                 _functionInfo.ResultType = _functionInfo.Returns[0].ResultType;
