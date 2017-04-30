@@ -20,7 +20,7 @@ namespace NiL.JS.Core
             {
                 return _scopeLevel;
             }
-            set
+            internal set
             {
                 _scopeLevel = value + _scopeBias;
             }
@@ -35,13 +35,13 @@ namespace NiL.JS.Core
         }
 
         private int _scopeBias;
-        internal int ScopeBias
+        public int ScopeBias
         {
             get
             {
                 return _scopeBias;
             }
-            set
+            internal set
             {
                 var sign = Math.Sign(_scopeLevel);
                 _scopeLevel -= _scopeBias * sign;
@@ -51,7 +51,7 @@ namespace NiL.JS.Core
         }
 
         public abstract string Name { get; }
-        
+
         protected internal override bool ContextIndependent
         {
             get

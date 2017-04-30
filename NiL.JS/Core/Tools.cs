@@ -1153,6 +1153,12 @@ namespace NiL.JS.Core
                                 {
                                     temp++;
                                 }
+
+                                while (temp < (1UL << 52))
+                                {
+                                    e++;
+                                    temp <<= 1;
+                                }
                             }
                             else if (temp != 0)
                             {
@@ -1449,6 +1455,7 @@ namespace NiL.JS.Core
             {
                 if (code.Length <= index)
                     return;
+
                 work = false;
                 if (code[index] == '/' && index + 1 < code.Length)
                 {
@@ -1457,8 +1464,9 @@ namespace NiL.JS.Core
                         case '/':
                             {
                                 index += 2;
-                                while (index < code.Length && !Tools.IsLineTerminator(code[index]))
+                                while (index < code.Length && !IsLineTerminator(code[index]))
                                     index++;
+
                                 work = true;
                                 break;
                             }
@@ -1475,16 +1483,28 @@ namespace NiL.JS.Core
                             }
                     }
                 }
-            } while (work);
+
+                if (Parser.Validate(code, "<!--", index))
+                {
+                    while (index < code.Length && !IsLineTerminator(code[index]))
+                        index++;
+
+                    work = true;
+                }
+            }
+            while (work);
+
             if (skipSpaces)
-                while ((index < code.Length) && (Tools.IsWhiteSpace(code[index])))
+            {
+                while ((index < code.Length) && (IsWhiteSpace(code[index])))
                     index++;
+            }
         }
 
         internal static string RemoveComments(string code, int startPosition)
         {
             StringBuilder res = null;
-            for (int i = startPosition; i < code.Length;)
+            for (var i = startPosition; i < code.Length;)
             {
                 while (i < code.Length && IsWhiteSpace(code[i]))
                 {
@@ -1493,6 +1513,7 @@ namespace NiL.JS.Core
                     else
                         i++;
                 }
+
                 var s = i;
                 SkipComment(code, ref i, false);
                 if (s != i && res == null)
@@ -1501,13 +1522,15 @@ namespace NiL.JS.Core
                     for (var j = 0; j < s; j++)
                         res.Append(code[j]);
                 }
+
                 for (; s < i; s++)
                 {
-                    if (Tools.IsWhiteSpace(code[s]))
+                    if (IsWhiteSpace(code[s]))
                         res.Append(code[s]);
                     else
                         res.Append(' ');
                 }
+
                 if (i >= code.Length)
                     continue;
 
@@ -1524,14 +1547,17 @@ namespace NiL.JS.Core
                 if (Parser.ValidateString(code, ref i, false))
                 {
                     if (res != null)
+                    {
                         for (; s < i; s++)
                             res.Append(code[s]);
+                    }
                 }
                 else if (res != null)
                     res.Append(code[i++]);
                 else
                     i++;
             }
+
             return (res as object ?? code).ToString();
         }
 

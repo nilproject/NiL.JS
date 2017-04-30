@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
@@ -288,7 +289,7 @@ namespace NiL.JS.Statements
 
             Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
 
-            if (initAsVds != null && initAsVds.Kind != VariableKind.FunctionScope)
+            if (initAsVds != null && initAsVds.Kind != VariableKind.FunctionScope && initAsVds.variables.Any(x => x.captured))
             {
                 var bodyAsCodeBlock = _body as CodeBlock;
                 if (bodyAsCodeBlock != null)

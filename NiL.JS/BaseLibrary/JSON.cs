@@ -75,50 +75,63 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public static JSValue parse(string code, Function reviewer)
         {
-            Stack<StackFrame> stack = new Stack<StackFrame>();
-            Arguments revargs = reviewer != null ? new Arguments() { length = 2 } : null;
+            var stack = new Stack<StackFrame>();
+            var pos = 0;
+            var revargs = reviewer != null ? new Arguments() { length = 2 } : null;
             stack.Push(new StackFrame() { container = null, value = null, state = ParseState.Value });
-            int pos = 0;
+
             while (code.Length > pos && isSpace(code[pos]))
                 pos++;
+
             while (pos < code.Length)
             {
-                int start = pos;
+                var newObject = false;
+                var start = pos;
                 if (Tools.IsDigit(code[start]) || (code[start] == '-' && Tools.IsDigit(code[start + 1])))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
                     double value;
                     if (!Tools.ParseNumber(code, ref pos, out value))
-                        ExceptionHelper.Throw((new SyntaxError("Invalid number definition.")));
+                        ExceptionHelper.ThrowSyntaxError("Invalid number definition.");
+
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = value;
                 }
                 else if (code[start] == '"')
                 {
-                    Parser.ValidateString(code, ref pos, true);
-                    string value = code.Substring(start + 1, pos - start - 2);
+                    if (!Parser.ValidateString(code, ref pos, true))
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
+                    var value = code.Substring(start + 1, pos - start - 2);
                     for (var i = value.Length; i-- > 0;)
                     {
                         if ((value[i] >= 0 && value[i] <= 0x1f))
-                            ExceptionHelper.Throw(new SyntaxError("Invalid string char '\\u000" + (int)value[i] + "'"));
+                            ExceptionHelper.ThrowSyntaxError("Invalid string char '\\u000" + (int)value[i] + "'.");
                     }
+
                     if (stack.Peek().state == ParseState.Name)
                     {
                         stack.Peek().fieldName = value;
                         stack.Peek().state = ParseState.Value;
+
                         while (isSpace(code[pos]))
                             pos++;
+
                         if (code[pos] != ':')
-                            ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
                         pos++;
                     }
                     else
                     {
-                        value = Tools.Unescape(value, false);
                         if (stack.Peek().state != ParseState.Value)
-                            ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
+                        value = Tools.Unescape(value, false);
+
                         var v = stack.Peek();
                         v.state = ParseState.End;
                         v.value = value;
@@ -127,7 +140,8 @@ namespace NiL.JS.BaseLibrary
                 else if (Parser.Validate(code, "null", ref pos))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = JSValue.@null;
@@ -135,7 +149,8 @@ namespace NiL.JS.BaseLibrary
                 else if (Parser.Validate(code, "true", ref pos))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = true;
@@ -143,29 +158,40 @@ namespace NiL.JS.BaseLibrary
                 else if (Parser.Validate(code, "false", ref pos))
                 {
                     if (stack.Peek().state != ParseState.Value)
-                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
                     var v = stack.Peek();
                     v.state = ParseState.End;
                     v.value = false;
                 }
                 else if (code[pos] == '{')
                 {
-                    if (stack.Peek().state == ParseState.Name)
-                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
-                    stack.Peek().value = JSObject.CreateObject();
-                    stack.Peek().state = ParseState.Object;
+                    if (stack.Peek().state != ParseState.Value)
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
+                    var v = stack.Peek();
+                    v.value = JSObject.CreateObject();
+                    v.state = ParseState.Object;
+                    newObject = true;
                     pos++;
                 }
                 else if (code[pos] == '[')
                 {
-                    if (stack.Peek().state == ParseState.Name)
-                        ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
-                    stack.Peek().value = new Array();
-                    stack.Peek().state = ParseState.Array;
+                    if (stack.Peek().state != ParseState.Value)
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
+                    var v = stack.Peek();
+                    v.value = new Array();
+                    v.state = ParseState.Array;
+                    newObject = true;
                     pos++;
                 }
-                else if (stack.Peek().state != ParseState.End)
-                    ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                else if (stack.Peek().state == ParseState.Value)
+                    ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
+                while (code.Length > pos && isSpace(code[pos]))
+                    pos++;
+
                 if (stack.Peek().state == ParseState.End)
                 {
                     var t = stack.Pop();
@@ -190,8 +216,7 @@ namespace NiL.JS.BaseLibrary
                     else
                         stack.Push(t);
                 }
-                while (code.Length > pos && isSpace(code[pos]))
-                    pos++;
+
                 if (code.Length <= pos)
                 {
                     if (stack.Peek().state != ParseState.End)
@@ -199,23 +224,29 @@ namespace NiL.JS.BaseLibrary
                     else
                         break;
                 }
+
                 switch (code[pos])
                 {
                     case ',':
                         {
+                            if (newObject)
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
                             if (stack.Peek().state == ParseState.Array)
                                 stack.Push(new StackFrame() { state = ParseState.Value, fieldName = (stack.Peek().valuesCount++).ToString(CultureInfo.InvariantCulture), container = stack.Peek().value });
                             else if (stack.Peek().state == ParseState.Object)
                                 stack.Push(new StackFrame() { state = ParseState.Name, container = stack.Peek().value });
                             else
-                                ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
                             pos++;
                             break;
                         }
                     case ']':
                         {
                             if (stack.Peek().state != ParseState.Array)
-                                ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
                             stack.Peek().state = ParseState.End;
                             pos++;
                             break;
@@ -223,25 +254,40 @@ namespace NiL.JS.BaseLibrary
                     case '}':
                         {
                             if (stack.Peek().state != ParseState.Object)
-                                ExceptionHelper.Throw((new SyntaxError("Unexpected token.")));
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
                             stack.Peek().state = ParseState.End;
                             pos++;
                             break;
                         }
                     default:
                         {
-                            if (stack.Peek().state == ParseState.Array)
-                                stack.Push(new StackFrame() { state = ParseState.Value, fieldName = (stack.Peek().valuesCount++).ToString(CultureInfo.InvariantCulture), container = stack.Peek().value });
-                            else if (stack.Peek().state == ParseState.Object)
-                                stack.Push(new StackFrame() { state = ParseState.Name, container = stack.Peek().value });
-                            continue;
+                            if (newObject)
+                            {
+                                pos--;
+                                newObject = false;
+                                goto case ',';
+                            }
+
+                            if (stack.Peek().state != ParseState.Value)
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+
+                            break;
                         }
                 }
+
                 while (code.Length > pos && isSpace(code[pos]))
                     pos++;
+
                 if (code.Length <= pos && stack.Peek().state != ParseState.End)
-                    ExceptionHelper.Throw(new SyntaxError("Unexpected end of string."));
+                    ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
             }
+
+            if ((stack.Count != 1) 
+                || (code.Length > pos) 
+                || (stack.Peek().state != ParseState.End))
+                ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
+
             return stack.Pop().value;
         }
 

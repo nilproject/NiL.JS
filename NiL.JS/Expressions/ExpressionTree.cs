@@ -404,6 +404,7 @@ namespace NiL.JS.Expressions
                             }
                             else
                                 throw new ArgumentException("Invalid operator '!'");
+
                             break;
                         }
                     case ',':

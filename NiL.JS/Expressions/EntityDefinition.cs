@@ -29,7 +29,7 @@ namespace NiL.JS.Expressions
 
         public EntityReference(EntityDefinition entityDefinition)
         {
-            _scopeLevel = 1;
+            ScopeLevel = 1;
             this._descriptor = new VariableDescriptor(entityDefinition._name, 1)
             {
                 lexicalScope = !entityDefinition.Hoist,

@@ -92,6 +92,15 @@ namespace NiL.JS
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
+        internal static void ThrowSyntaxError(string message)
+        {
+            Throw(new SyntaxError(message));
+        }
+
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void ThrowSyntaxError(string message, string code, int position)
         {
             ThrowSyntaxError(message, code, position, 0);
