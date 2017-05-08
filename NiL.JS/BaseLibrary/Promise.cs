@@ -80,7 +80,12 @@ namespace NiL.JS.BaseLibrary
                     return JSValue.undefined;
                 }
 
-                _innerTask.Wait();
+                try
+                {
+                    _innerTask.Wait();
+                }
+                catch
+                { }
 
                 switch (statusToState(_innerTask.Status))
                 {
@@ -99,7 +104,19 @@ namespace NiL.JS.BaseLibrary
         {
             var continuation = new Action<Task<JSValue>>((t) =>
             {
-                handlePromiseCascade(t.Result);
+                if (t.Status == TaskStatus.RanToCompletion)
+                {
+                    handlePromiseCascade(t.Result);
+                }
+                else if (t.Status == TaskStatus.Faulted)
+                {
+                    _task.Start();
+                    throw _task.Exception;
+                }
+                else
+                {
+                    _task.Start();
+                }
             });
 
             _innerTask = task.ContinueWith(continuation);
@@ -227,7 +244,21 @@ namespace NiL.JS.BaseLibrary
                 return resolve(JSValue.undefined);
 
             var thenTask = onFulfilment == null ? null : _task.ContinueWith(task => onFulfilment(Result), TaskContinuationOptions.OnlyOnRanToCompletion);
-            var catchTask = onRejection == null ? null : _task.ContinueWith(task => onRejection(Result), TaskContinuationOptions.NotOnRanToCompletion);
+
+            var catchTask = onRejection == null ? null : 
+                _task.ContinueWith(task =>
+                {
+                    var jsException = (task.Exception.InnerException as AggregateException).InnerException as JSException;
+                    if (jsException != null)
+                    {
+                        return onRejection(jsException.Error);
+                    }
+                    else
+                    {
+                        return onRejection(JSValue.Wrap(task.Exception));
+                    }
+                }, 
+                TaskContinuationOptions.NotOnRanToCompletion);
 
             if (thenTask != null)
             {
