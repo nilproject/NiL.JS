@@ -221,8 +221,10 @@ namespace NiL.JS.Core
                             string s = (arg._oValue.ToString());
                             if (s.Length > 0 && (Tools.IsWhiteSpace(s[0]) || Tools.IsWhiteSpace(s[s.Length - 1])))
                                 s = s.Trim(Tools.TrimChars);
+
                             if (Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
                                 return double.NaN;
+
                             return x;
                         }
                     case JSValueType.Date:
@@ -556,7 +558,9 @@ namespace NiL.JS.Core
                             if (targetType == typeof(long))
                                 return (long)jsobj._dValue;
                             if (targetType == typeof(ulong))
-                                return (ulong)jsobj._iValue;
+                                return (ulong)jsobj._dValue;
+                            if (targetType == typeof(decimal))
+                                return (decimal)jsobj._dValue;
                             if (targetType == typeof(string))
                                 return DoubleToString(jsobj._dValue);
 
@@ -626,6 +630,7 @@ namespace NiL.JS.Core
                                 return JSObjectToInt64(jsobj);
                             if (targetType == typeof(ulong))
                                 return (ulong)JSObjectToInt64(jsobj);
+
                             if (targetType == typeof(double))
                             {
                                 if (jsobj.Value.ToString() == "NaN")
@@ -637,28 +642,25 @@ namespace NiL.JS.Core
 
                                 return null;
                             }
+
                             if (targetType == typeof(float))
                             {
-                                if (jsobj.Value.ToString() == "NaN")
-                                    return float.NaN;
-
                                 var r = JSObjectToDouble(jsobj);
                                 if (!double.IsNaN(r))
                                     return (float)r;
 
                                 return null;
                             }
+
                             if (targetType == typeof(decimal))
                             {
-                                if (jsobj.Value.ToString() == "NaN")
-                                    return float.NaN;
-
                                 var r = JSObjectToDouble(jsobj);
                                 if (!double.IsNaN(r))
                                     return (decimal)r;
 
                                 return null;
                             }
+
                             if (targetType.GetTypeInfo().IsEnum)
                             {
                                 try
@@ -828,8 +830,8 @@ namespace NiL.JS.Core
                 else if (d == -100000000000000000000d)
                     res = "-100000000000000000000";
                 else
-                    res = abs < 1.0 ? 
-                        (neg == 1 ? "-0" : "0") : 
+                    res = abs < 1.0 ?
+                        (neg == 1 ? "-0" : "0") :
                         ((d < 0 ? "-" : "") + ((ulong)(System.Math.Abs(d))).ToString(CultureInfo.InvariantCulture));
 
                 abs %= 1.0;
@@ -1013,9 +1015,7 @@ namespace NiL.JS.Core
                 int deg = 0;
                 while (i < code.Length)
                 {
-                    if (!IsDigit(code[i]))
-                        break;
-                    else
+                    if (IsDigit(code[i]))
                     {
                         if (scount <= 18)
                         {
@@ -1030,6 +1030,10 @@ namespace NiL.JS.Core
                         scount++;
                         result = true;
                     }
+                    else
+                    {
+                        break;
+                    }
                 }
 
                 if (!result && (i >= code.Length || code[i] != '.'))
@@ -1043,9 +1047,7 @@ namespace NiL.JS.Core
                     i++;
                     while (i < code.Length)
                     {
-                        if (!IsDigit(code[i]))
-                            break;
-                        else
+                        if (IsDigit(code[i]))
                         {
                             if (scount <= 18 || ((temp * 10) / 10 == temp))
                             {
@@ -1059,6 +1061,10 @@ namespace NiL.JS.Core
 
                             scount++;
                             result = true;
+                        }
+                        else
+                        {
+                            break;
                         }
                     }
                 }
@@ -1113,18 +1119,18 @@ namespace NiL.JS.Core
                             }
                         }
 
-                        if (deg < -18)
+                        if (temp == 0)
+                        {
+                            value = 0;
+                            deg = 0;
+                        }
+                        else if (deg < -18)
                         {
                             var tail = temp % 1000000;
                             temp /= 1000000;
 
                             value = (double)(temp * 1e-12M + tail * 1e-18M);
                             deg += 18;
-                        }
-                        else if (temp <= uint.MaxValue)
-                        {
-                            value = temp * (double)powersOf10[deg + 18];
-                            deg = 0;
                         }
                         else
                         {
