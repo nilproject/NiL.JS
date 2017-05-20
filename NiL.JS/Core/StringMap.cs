@@ -129,6 +129,7 @@ namespace NiL.JS.Core
                     _existsedIndexes[_eicount] = mask;
 
                     _count++;
+                    _eicount++;
                     return;
                 }
             }
@@ -335,6 +336,7 @@ namespace NiL.JS.Core
                     else if (string.CompareOrdinal(_records[i].key, key) == 0)
                     {
                         _count--;
+                        _eicount--;
                         found = true;
                         _records[i].key = null;
                         _records[i].value = default(TValue);
@@ -365,7 +367,7 @@ namespace NiL.JS.Core
 
                         do
                         {
-                            if ((_records[index].hash & mask) != targetIndex)
+                            if ((_records[index].hash & mask) == targetIndex)
                             {
                                 _records[targetIndex] = _records[index];
                                 _records[targetIndex].next = index + 1;
@@ -386,6 +388,8 @@ namespace NiL.JS.Core
 
                         if (prewIndex >= 0)
                             _records[prewIndex].next = 0;
+
+                        index = targetIndex;
                     }
                     else
                     {
@@ -400,6 +404,12 @@ namespace NiL.JS.Core
                             _records[targetIndex].next = 0;
                     }
 
+                    _count--;
+                    _eicount--;
+
+                    var indexInExIndex = Array.IndexOf(_existsedIndexes, index);
+                    Array.Copy(_existsedIndexes, indexInExIndex + 1, _existsedIndexes, indexInExIndex, _existsedIndexes.Length - indexInExIndex - 1);
+                    
                     return true;
                 }
 
@@ -433,7 +443,7 @@ namespace NiL.JS.Core
                     if (oldRecords[index].key != null)
                     {
                         if (newLength == MaxAsListSize << 1)
-                            Add(oldRecords[index].key, oldRecords[index].value);
+                            Add(oldRecords[i].key, oldRecords[i].value);
                         else
                             insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false);
                     }
@@ -565,7 +575,7 @@ namespace NiL.JS.Core
 
             for (int i = 0; i < _eicount; i++)
             {
-                if (_records[_existsedIndexes[i]].key != null 
+                if (_records[_existsedIndexes[i]].key != null
                     && !uint.TryParse(_records[_existsedIndexes[i]].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out number))
                 {
                     yield return new KeyValuePair<string, TValue>(
