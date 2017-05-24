@@ -350,6 +350,8 @@ namespace NiL.JS.Expressions
 
                         i = s;
                         var method = FunctionDefinition.Parse(state, ref i, FunctionKind.Method) as FunctionDefinition;
+                        if (method == null)
+                            ExceptionHelper.ThrowSyntaxError("Unable to parse constructor", state.Code, i);
 
                         if (fieldName == "constructor")
                         {
@@ -359,10 +361,11 @@ namespace NiL.JS.Expressions
                         {
                             flds[fieldName] = new MemberDescriptor(new Constant(method._name), method, @static);
                         }
-                        if (method == null)
-                            ExceptionHelper.Throw(new SyntaxError());
                     }
+
+                    code = state.Code;
                 }
+
                 if (ctor == null)
                 {
                     string ctorCode;
@@ -396,7 +399,6 @@ namespace NiL.JS.Expressions
 
                     state.Variables.Add(result.reference._descriptor);
                 }
-
             }
             finally
             {
