@@ -111,7 +111,7 @@ namespace NiL.JS.BaseLibrary
                 else if (t.Status == TaskStatus.Faulted)
                 {
                     _task.Start();
-                    throw _task.Exception;
+                    throw t.Exception.GetBaseException();
                 }
                 else
                 {
@@ -248,7 +248,11 @@ namespace NiL.JS.BaseLibrary
             var catchTask = onRejection == null ? null : 
                 _task.ContinueWith(task =>
                 {
-                    var jsException = (task.Exception.InnerException as AggregateException).InnerException as JSException;
+                    Exception ex = task.Exception;
+                    while (ex.InnerException != null)
+                        ex = ex.InnerException;
+
+                    var jsException = ex as JSException;
                     if (jsException != null)
                     {
                         return onRejection(jsException.Error);
