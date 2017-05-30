@@ -28,6 +28,7 @@ namespace NiL.JS.Core.Functions
         private delegate object WrapperDelegate(object target, Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject);
 
         private static readonly Dictionary<MethodBase, WrapperDelegate> WrapperCache = new Dictionary<MethodBase, WrapperDelegate>();
+        private static readonly MethodInfo ArgumentsGetItemMethod = typeof(Arguments).GetMethod("get_Item", new[] { typeof(int) });
 
         private readonly WrapperDelegate _fastWrapper;
         private readonly bool _forceInstance;
@@ -219,10 +220,9 @@ namespace NiL.JS.Core.Functions
                 }
                 else
                 {
-                    Func<Expressions.Expression[], Context, int, object> processArg = processArgument;
-                    Func<Expressions.Expression[], Context, int, object> processArgTail = processArgumentsTail;
-                    Func<int, JSValue, object> convertArg = convertArgument;
-                    var argumentsGetItemMethod = typeof(Arguments).GetMethod("get_Item", new[] { typeof(int) });
+                    var processArg = ((Func<Expressions.Expression[], Context, int, object>)processArgument).GetMethodInfo();
+                    var processArgTail = ((Func<Expressions.Expression[], Context, int, object>)processArgumentsTail).GetMethodInfo();
+                    var convertArg = ((Func<int, JSValue, object>)convertArgument).GetMethodInfo();
 
                     var prms = new Expression[_parameters.Length];
                     for (var i = 0; i < prms.Length; i++)
@@ -230,7 +230,7 @@ namespace NiL.JS.Core.Functions
                         prms[i] = Expression.Convert(
                             Expression.Call(
                                 Expression.Constant(this),
-                                i + 1 < prms.Length ? processArg.GetMethodInfo() : processArgTail.GetMethodInfo(),
+                                i + 1 < prms.Length ? processArg : processArgTail,
                                 arguments,
                                 context,
                                 Expression.Constant(i)),
@@ -247,9 +247,9 @@ namespace NiL.JS.Core.Functions
                         prms[i] = Expression.Convert(
                             Expression.Call(
                                 Expression.Constant(this),
-                                convertArg.GetMethodInfo(),
+                                convertArg,
                                 Expression.Constant(i),
-                                Expression.Call(argumentsObject, argumentsGetItemMethod, Expression.Constant(i))),
+                                Expression.Call(argumentsObjectPrm, ArgumentsGetItemMethod, Expression.Constant(i))),
                             _parameters[i].ParameterType);
                     }
 
@@ -316,7 +316,6 @@ namespace NiL.JS.Core.Functions
                     Func<Expressions.Expression[], Context, int, object> processArg = processArgument;
                     Func<Expressions.Expression[], Context, int, object> processArgTail = processArgumentsTail;
                     Func<int, JSValue, object> convertArg = convertArgument;
-                    var argumentsGetItemMethod = typeof(Arguments).GetMethod("get_Item", new[] { typeof(int) });
 
                     var prms = new Expression[_parameters.Length];
                     for (var i = 0; i < prms.Length; i++)
@@ -340,7 +339,7 @@ namespace NiL.JS.Core.Functions
                                 Expression.Constant(this),
                                 convertArg.GetMethodInfo(),
                                 Expression.Constant(i),
-                                Expression.Call(argumentsObject, argumentsGetItemMethod, Expression.Constant(i))),
+                                Expression.Call(argumentsObject, ArgumentsGetItemMethod, Expression.Constant(i))),
                             _parameters[i].ParameterType);
                     }
 
@@ -500,10 +499,14 @@ namespace NiL.JS.Core.Functions
 
         private object convertArgument(int index, JSValue value)
         {
+            var cvtArgs = ConvertArgsOptions.ThrowOnError;
+            if (_strictConversion)
+                cvtArgs |= ConvertArgsOptions.StrictConversion;
+
             return convertArgument(
                 index,
                 value,
-                ConvertArgsOptions.ThrowOnError | (_strictConversion ? ConvertArgsOptions.StrictConversion : 0));
+                cvtArgs);
         }
 
         private object convertArgument(int index, JSValue value, ConvertArgsOptions options)
