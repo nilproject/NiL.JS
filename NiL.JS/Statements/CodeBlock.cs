@@ -590,11 +590,8 @@ namespace NiL.JS.Statements
                 }
             }
 
-            if (_lines.Length == 1 && _suppressScopeIsolation == SuppressScopeIsolationMode.Suppress)
+            if (_lines.Length == 1 && _suppressScopeIsolation == SuppressScopeIsolationMode.Suppress && _variables.Length == 0)
             {
-                if (_variables.Length != 0)
-                    throw new InvalidOperationException();
-
                 _this = _lines[0];
             }
         }
