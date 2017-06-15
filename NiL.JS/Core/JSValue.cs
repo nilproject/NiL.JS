@@ -544,7 +544,7 @@ namespace NiL.JS.Core
                         break;
                     }
             }
-            ExceptionHelper.Throw(new InvalidOperationException("Method GetProperty(...) of custom types must be overriden"));
+            ExceptionHelper.Throw(new InvalidOperationException("Method GetProperty(...) of custom types must be overridden"));
             return null;
         }
 
