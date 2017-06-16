@@ -820,15 +820,15 @@ namespace NiL.JS.Core
                     if (d == (d % 0.000001))
                         return res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
                 }
-                else if (abs >= 1e+21)
+                else if (abs >= 1e+19)
                     return res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
 
                 int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
 
-                if (d == 100000000000000000000d)
-                    res = "100000000000000000000";
-                else if (d == -100000000000000000000d)
-                    res = "-100000000000000000000";
+                if (d == 1000000000000000000d)
+                    res = "1000000000000000000";
+                else if (d == -1000000000000000000d)
+                    res = "-1000000000000000000";
                 else
                     res = abs < 1.0 ?
                         (neg == 1 ? "-0" : "0") :
