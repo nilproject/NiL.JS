@@ -263,3 +263,11 @@ for (let i = 0; i < 1; i++) {
         isNaN(i);
     })();
 }
+
+(function(){
+    var A = new Array(8).fill(0);
+    A[5] = A[5] + 4;
+
+    if (A[0] !== 0)
+        throw "Array.prototype fill is broken";
+})();
