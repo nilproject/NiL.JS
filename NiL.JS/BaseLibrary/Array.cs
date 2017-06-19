@@ -346,7 +346,7 @@ namespace NiL.JS.BaseLibrary
             {
                 for (var i = start; i < end; i++)
                 {
-                    array._data[(int)i] = value;
+                    array._data[(int)i] = value.CloneImpl(false);
                 }
             }
             else

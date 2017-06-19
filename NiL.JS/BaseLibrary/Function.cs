@@ -484,7 +484,7 @@ namespace NiL.JS.BaseLibrary
                 {
 #if DEBUG && !(PORTABLE || NETCORE)
                     if (_functionDefinition.trace)
-                        Console.WriteLine("DEBUG: Exit \"" + _functionDefinition.Reference.Name + "\"");
+                        System.Console.WriteLine("DEBUG: Exit \"" + _functionDefinition.Reference.Name + "\"");
 #endif
                     _functionDefinition.recursionDepth--;
                     if (_functionDefinition.parametersStored > _functionDefinition.recursionDepth)
