@@ -820,27 +820,38 @@ namespace NiL.JS.Core
                     if (d == (d % 0.000001))
                         return res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
                 }
-                else if (abs >= 1e+19)
+                else if (abs >= 1e+21)
                     return res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
+                else if (d == 100000000000000000000d)
+                    return "100000000000000000000";
+                else if (d == -100000000000000000000d)
+                    return "-100000000000000000000";
 
                 int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
 
-                ulong absIntPart = (abs < 1.0) ? 0 : (ulong)(abs);
-                res = (absIntPart == 0 ? "0" : absIntPart.ToString(CultureInfo.InvariantCulture));
-                
-                abs %= 1.0;
-                if (abs != 0 && res.Length < (15 + neg))
+                if (d >= 1e+18)
                 {
-                    string fracPart = abs.ToString(divFormats[15 - res.Length], CultureInfo.InvariantCulture);
-                    if (fracPart == "1")
-                        res = (absIntPart + 1).ToString(CultureInfo.InvariantCulture);
-                    else
-                        res += fracPart;
+                    res = ((ulong)(abs / 1000)).ToString(CultureInfo.InvariantCulture) + "000";
+                }
+                else
+                {
+                    ulong absIntPart = (abs < 1.0) ? 0 : (ulong)(abs);
+                    res = (absIntPart == 0 ? "0" : absIntPart.ToString(CultureInfo.InvariantCulture));
+
+                    abs %= 1.0;
+                    if (abs != 0 && res.Length < (15 + neg))
+                    {
+                        string fracPart = abs.ToString(divFormats[15 - res.Length], CultureInfo.InvariantCulture);
+                        if (fracPart == "1")
+                            res = (absIntPart + 1).ToString(CultureInfo.InvariantCulture);
+                        else
+                            res += fracPart;
+                    }
                 }
 
                 if (neg == 1)
                     res = "-" + res;
-                
+
                 cachedDoubleString[cachedDoubleStringsIndex].key = d;
                 cachedDoubleString[cachedDoubleStringsIndex].value = res;
                 cachedDoubleStringsIndex = (cachedDoubleStringsIndex + 1) % 7;
