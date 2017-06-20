@@ -500,14 +500,14 @@ namespace NiL.JS.Expressions
             }
 
             if ((state.CodeContext & CodeContext.InExpression) == 0 && kind == FunctionKind.Function)
-            // Позволяет делать вызов сразу при объявлении функции 
+            // Позволяет делать вызов сразу при объявлении функции
             // (в таком случае функция не добавляется в контекст).
             // Если убрать проверку, то в тех сулчаях,
             // когда определение и вызов стоят внутри выражения,
             // будет выдано исключение, потому,
             // что тогда это уже не определение и вызов функции,
             // а часть выражения, которые не могут начинаться со слова "function".
-            // За красивыми словами "может/не может" кроется другая хрень: если бы это было выражение, 
+            // За красивыми словами "может/не может" кроется другая хрень: если бы это было выражение,
             // то прямо тут надо было бы разбирать тот оператор, который стоит после определения функции,
             // что не разумно
             {
@@ -546,7 +546,7 @@ namespace NiL.JS.Expressions
                     i = tindex;
             }
 
-            if ((state.CodeContext & CodeContext.InExpression) == 0)
+            if ((state.CodeContext & (CodeContext.InExpression | CodeContext.InEval)) == 0)
             {
                 if (string.IsNullOrEmpty(name))
                 {
@@ -648,7 +648,7 @@ namespace NiL.JS.Expressions
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), Strings.FunctionInLoop);
 
             /*
-                Если переменная за время построения функции получит хоть одну ссылку плюсом, 
+                Если переменная за время построения функции получит хоть одну ссылку плюсом,
                 значит её следует пометить захваченной. Для этого необходимо запомнить количество
                 ссылок для всех пеменных
             */
@@ -691,7 +691,7 @@ namespace NiL.JS.Expressions
                         break;
                 }
             }
-            
+
             _body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             checkUsings();
             if (stats != null)

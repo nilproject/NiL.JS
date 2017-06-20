@@ -51,19 +51,10 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "switch (", ref i) && !Parser.Validate(state.Code, "switch(", ref i))
                 return null;
+
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
-            var image = ExpressionTree.Parse(state, ref i);
-            if (state.Code[i] != ')')
-                ExceptionHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            do
-                i++;
-            while (Tools.IsWhiteSpace(state.Code[i]));
-            if (state.Code[i] != '{')
-                ExceptionHelper.Throw((new SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            do
-                i++;
-            while (Tools.IsWhiteSpace(state.Code[i]));
+
             var body = new List<CodeNode>();
             var funcs = new List<FunctionDefinition>();
             var cases = new List<SwitchCase>();
@@ -75,6 +66,22 @@ namespace NiL.JS.Statements
             state.lexicalScopeLevel++;
             try
             {
+                var image = ExpressionTree.Parse(state, ref i);
+
+                if (state.Code[i] != ')')
+                    ExceptionHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+
+                do
+                    i++;
+                while (Tools.IsWhiteSpace(state.Code[i]));
+
+                if (state.Code[i] != '{')
+                    ExceptionHelper.Throw((new SyntaxError("Expected \"{\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+
+                do
+                    i++;
+                while (Tools.IsWhiteSpace(state.Code[i]));
+
                 while (state.Code[i] != '}')
                 {
                     do
@@ -137,7 +144,12 @@ namespace NiL.JS.Statements
                 state.lexicalScopeLevel--;
             }
 
-            return new CodeBlock(new[] { result }) { _variables = vars, Position = result.Position, Length = result.Length };
+            return new CodeBlock(new[] { result })
+            {
+                _variables = vars,
+                Position = result.Position,
+                Length = result.Length
+            };
         }
 
         public override JSValue Evaluate(Context context)
