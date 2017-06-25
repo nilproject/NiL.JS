@@ -794,7 +794,7 @@ namespace NiL.JS.Core
             return result;
         }
 
-        internal static string DoubleToString(double d)
+        public static string DoubleToString(double d)
         {
             if (d == 0.0)
                 return "0";
