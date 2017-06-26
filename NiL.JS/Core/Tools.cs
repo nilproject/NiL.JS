@@ -821,15 +821,15 @@ namespace NiL.JS.Core
                     res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
                 else
                 {
-                    int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
+                    int neg = (d < 0.0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
     
-                    if (d >= 1e+18)
+                    if (abs >= 1e+18)
                     {
-                        res = ((ulong)(abs / 1000)).ToString(CultureInfo.InvariantCulture) + "000";
+                        res = ((ulong)(abs / 1000.0)).ToString(CultureInfo.InvariantCulture) + "000";
                     }
                     else
                     {
-                        ulong absIntPart = (abs < 1.0) ? 0 : (ulong)(abs);
+                        ulong absIntPart = (abs < 1.0) ? 0L : (ulong)(abs);
                         res = (absIntPart == 0 ? "0" : absIntPart.ToString(CultureInfo.InvariantCulture));
     
                         abs %= 1.0;
