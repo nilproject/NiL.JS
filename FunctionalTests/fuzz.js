@@ -271,3 +271,14 @@ for (let i = 0; i < 1; i++) {
     if (A[0] !== 0)
         throw "Array.prototype fill is broken";
 })();
+
+(function () {
+    eval("function ok(){} ok()");
+    eval("()=>(ok())")();
+    try {
+        eval("function(){}")();
+        console.log("Error in function hoisting");
+    } catch (e) {
+        // OK
+    }
+})();
