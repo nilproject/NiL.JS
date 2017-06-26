@@ -1111,7 +1111,7 @@ namespace NiL.JS.BaseLibrary
             else
             {
                 var length = Tools._GetLengthOfArraylike(self, false);
-                for (var i = 0; i < length >> 1; i++)
+                for (var i = 0; i < (length >> 1); i++)
                 {
                     JSValue i0 = i.ToString();
                     JSValue i1 = (length - 1 - i).ToString();
