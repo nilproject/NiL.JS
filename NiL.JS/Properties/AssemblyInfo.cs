@@ -21,5 +21,5 @@ using System.Runtime.InteropServices;
 
 internal static class InternalInfo
 {
-    internal const string Version = "2.4.1058";
+    internal const string Version = "2.4.1064";
 }
