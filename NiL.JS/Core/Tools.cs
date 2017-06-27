@@ -794,7 +794,7 @@ namespace NiL.JS.Core
             return result;
         }
 
-        internal static string DoubleToString(double d)
+        public static string DoubleToString(double d)
         {
             if (d == 0.0)
                 return "0";
@@ -815,46 +815,41 @@ namespace NiL.JS.Core
                 }
 
                 var abs = System.Math.Abs(d);
-                if (abs < 1.0)
-                {
-                    if (d == (d % 0.000001))
-                        return res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
-                }
+                if (abs < 0.000001)
+                    res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
                 else if (abs >= 1e+21)
-                    return res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
-                else if (d == 100000000000000000000d)
-                    return "100000000000000000000";
-                else if (d == -100000000000000000000d)
-                    return "-100000000000000000000";
-
-                int neg = (d < 0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
-
-                if (d >= 1e+18)
-                {
-                    res = ((ulong)(abs / 1000)).ToString(CultureInfo.InvariantCulture) + "000";
-                }
+                    res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
                 else
                 {
-                    ulong absIntPart = (abs < 1.0) ? 0 : (ulong)(abs);
-                    res = (absIntPart == 0 ? "0" : absIntPart.ToString(CultureInfo.InvariantCulture));
-
-                    abs %= 1.0;
-                    if (abs != 0 && res.Length < (15 + neg))
+                    int neg = (d < 0.0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
+    
+                    if (abs >= 1e+18)
                     {
-                        string fracPart = abs.ToString(divFormats[15 - res.Length], CultureInfo.InvariantCulture);
-                        if (fracPart == "1")
-                            res = (absIntPart + 1).ToString(CultureInfo.InvariantCulture);
-                        else
-                            res += fracPart;
+                        res = ((ulong)(abs / 1000.0)).ToString(CultureInfo.InvariantCulture) + "000";
                     }
+                    else
+                    {
+                        ulong absIntPart = (abs < 1.0) ? 0L : (ulong)(abs);
+                        res = (absIntPart == 0 ? "0" : absIntPart.ToString(CultureInfo.InvariantCulture));
+    
+                        abs %= 1.0;
+                        if (abs != 0 && res.Length <= 15)
+                        {
+                            string fracPart = abs.ToString(divFormats[15 - res.Length], CultureInfo.InvariantCulture);
+                            if (fracPart == "1")
+                                res = (absIntPart + 1).ToString(CultureInfo.InvariantCulture);
+                            else
+                                res += fracPart;
+                        }
+                    }
+                    
+                    if (neg == 1)
+                        res = "-" + res;
                 }
-
-                if (neg == 1)
-                    res = "-" + res;
 
                 cachedDoubleString[cachedDoubleStringsIndex].key = d;
                 cachedDoubleString[cachedDoubleStringsIndex].value = res;
-                cachedDoubleStringsIndex = (cachedDoubleStringsIndex + 1) % 7;
+                cachedDoubleStringsIndex = (cachedDoubleStringsIndex + 1) & 7;
             }
 
             return res;

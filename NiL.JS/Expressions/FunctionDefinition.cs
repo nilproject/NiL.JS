@@ -118,7 +118,8 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return true;
+                return kind != FunctionKind.Arrow 
+                    && kind != FunctionKind.AsyncArrow;
             }
         }
 
@@ -546,12 +547,14 @@ namespace NiL.JS.Expressions
                     i = tindex;
             }
 
-            if ((state.CodeContext & (CodeContext.InExpression | CodeContext.InEval)) == 0)
+            if ((state.CodeContext & CodeContext.InExpression) == 0 
+                && (kind != FunctionKind.Arrow || (state.CodeContext & CodeContext.InEval) == 0))
             {
                 if (string.IsNullOrEmpty(name))
                 {
                     ExceptionHelper.ThrowSyntaxError("Function must have name", state.Code, index);
                 }
+
                 if (state.strict && state.functionScopeLevel != state.lexicalScopeLevel)
                 {
                     ExceptionHelper.ThrowSyntaxError("In strict mode code, functions can only be declared at top level or immediately within other function.", state.Code, index);
