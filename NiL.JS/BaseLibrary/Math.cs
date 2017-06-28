@@ -197,8 +197,8 @@ namespace NiL.JS.BaseLibrary
                     x = aspt;
                     res += shift;
                 }
-                else
-                    shift >>= 1;
+
+                shift >>= 1;
             }
 
             return 31 - res;
