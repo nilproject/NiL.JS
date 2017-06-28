@@ -65,14 +65,14 @@ namespace NiL.JS.BaseLibrary
                             value._iValue = -value._iValue;
                         }
 
-                        return value;                        
+                        return value;
                     }
                 case JSValueType.Double:
                     {
                         if (value._dValue > 0
                             || (value._dValue == 0 && double.IsPositiveInfinity(1.0 / value._dValue)))
                             return value;
-                        
+
                         value = value.CloneImpl(false);
 
                         value._dValue = -value._dValue;
@@ -180,21 +180,28 @@ namespace NiL.JS.BaseLibrary
         [DoNotDelete]
         public static JSValue clz32(JSValue value)
         {
-            var x = Tools.JSObjectToInt32(value, 0, 0, false);
-            int res;
+            var x = (uint)Tools.JSObjectToInt32(value, 0, 0, false);
+
             if (x < 0)
-                res = 0;
-            else if (x == 0)
-                res = 32;
-            else
+                return 0;
+            if (x == 0)
+                return 32;
+
+            var res = 0;
+            var shift = 16;
+            while (x > 1)
             {
-                res = 0;
-                while ((x >>= 1) != 0) // naive approach
-                    res++;
-                res = 31 - res;
+                var aspt = x >> shift;
+                if (aspt != 0)
+                {
+                    x = aspt;
+                    res += shift;
+                }
+                else
+                    shift >>= 1;
             }
 
-            return res;
+            return 31 - res;
         }
 
         [DoNotEnumerate]
@@ -248,7 +255,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
                 res = System.Math.Exp(x) - 1.0;
-            
+
             if ((value._attributes & JSValueAttributesInternal.Cloned) != 0)
             {
                 value._valueType = JSValueType.Double;
@@ -729,7 +736,7 @@ namespace NiL.JS.BaseLibrary
         {
             return System.Math.IEEERemainder(Tools.JSObjectToDouble(a), Tools.JSObjectToDouble(b));
         }
-        
+
         #endregion
     }
 }
