@@ -235,15 +235,15 @@ namespace NiL.JS.BaseLibrary
             if (x >= -1.0 && x <= 1.0) // for better accuracy
             {
                 double f = 1.0;
-                double _x = x;
-                double _res = x;
+                double p = x;
+                double s = x;
                 int i = 2;
-                while (res != _res)
+                while (res != s)
                 {
-                    res = _res;
-                    _x *= x;
+                    res = s;
+                    p *= x;
                     f *= i++;
-                    _res += _x / f;
+                    s += p / f;
                 }
             }
             else
@@ -400,14 +400,14 @@ namespace NiL.JS.BaseLibrary
             double res = 0.0;
             if (x >= -0.25 && x <= 0.25) // for better accuracy
             {
-                double _x = x;
-                double _res = x;
+                double p = x;
+                double s = x;
                 int i = 1;
-                while (res != _res)
+                while (res != s)
                 {
-                    res = _res;
-                    _res -= (_x *= x) / ++i;
-                    _res += (_x *= x) / ++i;
+                    res = s;
+                    s -= (p *= x) / ++i;
+                    s += (p *= x) / ++i;
                 }
                 return res;
             }
