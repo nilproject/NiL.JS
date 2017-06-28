@@ -788,7 +788,12 @@ namespace NiL.JS.Core
             for (var j = result.Count; j-- > 0;)
             {
                 var temp = (array._data[j] ?? JSValue.undefined);
-                result[j] = convertJStoObj(temp, elementType, hightLoyalty);
+                var value = convertJStoObj(temp, elementType, hightLoyalty);
+
+                if (!hightLoyalty && value == null && (elementType.GetTypeInfo().IsValueType || (!temp.IsNull && !temp.IsUndefined())))
+                    return null;
+
+                result[j] = value;
             }
 
             return result;
@@ -822,7 +827,7 @@ namespace NiL.JS.Core
                 else
                 {
                     int neg = (d < 0.0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
-    
+
                     if (abs >= 1e+18)
                     {
                         res = ((ulong)(abs / 1000.0)).ToString(CultureInfo.InvariantCulture) + "000";
@@ -831,7 +836,7 @@ namespace NiL.JS.Core
                     {
                         ulong absIntPart = (abs < 1.0) ? 0L : (ulong)(abs);
                         res = (absIntPart == 0 ? "0" : absIntPart.ToString(CultureInfo.InvariantCulture));
-    
+
                         abs %= 1.0;
                         if (abs != 0 && res.Length <= 15)
                         {
@@ -842,7 +847,7 @@ namespace NiL.JS.Core
                                 res += fracPart;
                         }
                     }
-                    
+
                     if (neg == 1)
                         res = "-" + res;
                 }
@@ -1550,7 +1555,7 @@ namespace NiL.JS.Core
                     continue;
 
                 if (Parser.ValidateRegex(code, ref i, false)) // оно путает деление с комментарием в конце строки и regexp.
-                // Посему делаем так: если встретили что-то похожее на regexp - останавливаемся. 
+                // Посему делаем так: если встретили что-то похожее на regexp - останавливаемся.
                 // Остальные комментарии удалим когда, в процессе разбора, поймём, что же это на самом деле
                 {
                     if (res != null)
