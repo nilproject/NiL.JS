@@ -1,7 +1,7 @@
 {
   "title": "NiL.JS NET Core",
   "description": "ECMAScript 6 (ES2015) engine",
-  "version": "2.4.1064",
+  "version": "2.4.1070",
   "authors": [ "NiLProject" ],
   "packOptions": {
     "owners": [ "NiLProject" ],
