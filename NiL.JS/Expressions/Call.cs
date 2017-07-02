@@ -239,7 +239,7 @@ namespace NiL.JS.Expressions
             }
 
             base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
-            if (first is GetVariable)
+            if (first is Variable)
             {
                 var name = first.ToString();
                 if (name == "eval" && stats != null)

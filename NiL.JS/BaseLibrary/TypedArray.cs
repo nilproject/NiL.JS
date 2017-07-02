@@ -168,7 +168,7 @@ namespace NiL.JS.BaseLibrary
                 var value = src.GetProperty(index, false, PropertyScope.Сommon);
                 if (value._valueType == JSValueType.Property)
                 {
-                    value = ((value._oValue as GsPropertyPair).getter ?? Function.Empty).Call(src, dummyArgs);
+                    value = ((value._oValue as PropertyPair).getter ?? Function.Empty).Call(src, dummyArgs);
                     dummyArgs.Reset();
                 }
                 this[(int)(i + offset)] = value;

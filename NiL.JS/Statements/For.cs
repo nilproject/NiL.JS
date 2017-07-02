@@ -356,8 +356,8 @@ namespace NiL.JS.Statements
                     if (variable.ScopeLevel >= 0 && variable._descriptor.definitionScopeLevel >= 0)
                     {
                         if (_initializer is Assignment
-                            && (_initializer as Assignment).FirstOperand is GetVariable
-                            && ((_initializer as Assignment).FirstOperand as GetVariable)._descriptor == variable._descriptor)
+                            && (_initializer as Assignment).FirstOperand is Variable
+                            && ((_initializer as Assignment).FirstOperand as Variable)._descriptor == variable._descriptor)
                         {
                             var value = (_initializer as Assignment).SecondOperand;
                             if (value is Constant)

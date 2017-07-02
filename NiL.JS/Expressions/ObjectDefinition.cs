@@ -126,12 +126,12 @@ namespace NiL.JS.Expressions
                     {
                         case 'g':
                             {
-                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new GetSetPropertyPair((Expression)initializer, null)));
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new PropertyPair((Expression)initializer, null)));
                                 break;
                             }
                         case 's':
                             {
-                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new GetSetPropertyPair(null, (Expression)initializer)));
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new PropertyPair(null, (Expression)initializer)));
                                 break;
                             }
                         default:
@@ -149,7 +149,7 @@ namespace NiL.JS.Expressions
                     var accessorName = propertyAccessor._name;
                     if (!flds.ContainsKey(accessorName))
                     {
-                        var propertyPair = new GetSetPropertyPair
+                        var propertyPair = new PropertyPair
                         (
                             mode == FunctionKind.Getter ? propertyAccessor : null,
                             mode == FunctionKind.Setter ? propertyAccessor : null
@@ -158,7 +158,7 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
-                        var vle = flds[accessorName] as GetSetPropertyPair;
+                        var vle = flds[accessorName] as PropertyPair;
 
                         if (vle == null)
                             ExceptionHelper.ThrowSyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field", state.Code, s);
@@ -242,7 +242,7 @@ namespace NiL.JS.Expressions
                         if (flds.TryGetValue(fieldName, out aei))
                         {
                             if (state.strict ? (!(aei is Constant) || (aei as Constant).value != JSValue.undefined)
-                                             : aei is GetSetPropertyPair)
+                                             : aei is PropertyPair)
                                 ExceptionHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
                             if (state.message != null)
                                 state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 0), "Duplicate key \"" + fieldName + "\"");
@@ -260,7 +260,7 @@ namespace NiL.JS.Expressions
                                 while (Tools.IsWhiteSpace(state.Code[i]));
                             }
 
-                            initializer = new GetVariable(fieldName, state.lexicalScopeLevel);
+                            initializer = new Variable(fieldName, state.lexicalScopeLevel);
                         }
                         else
                         {
@@ -332,8 +332,8 @@ namespace NiL.JS.Expressions
                 {
                     if (existedValue.Is(JSValueType.Property) && value.Is(JSValueType.Property))
                     {
-                        var egs = existedValue.As<Core.GsPropertyPair>();
-                        var ngs = value.As<Core.GsPropertyPair>();
+                        var egs = existedValue.As<Core.PropertyPair>();
+                        var ngs = value.As<Core.PropertyPair>();
                         egs.getter = ngs.getter ?? egs.getter;
                         egs.setter = ngs.setter ?? egs.setter;
                     }

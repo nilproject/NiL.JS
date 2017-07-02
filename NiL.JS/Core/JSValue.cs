@@ -486,7 +486,7 @@ namespace NiL.JS.Core
 #endif
             }
 
-            property._oValue = new GsPropertyPair(jsGetter, jsSetter);
+            property._oValue = new PropertyPair(jsGetter, jsSetter);
         }
 
         [Hidden]
@@ -769,9 +769,9 @@ namespace NiL.JS.Core
             if (_valueType == JSValueType.Property)
             {
                 var tempStr = "[";
-                if ((_oValue as GsPropertyPair).getter != null)
+                if ((_oValue as PropertyPair).getter != null)
                     tempStr += "Getter";
-                if ((_oValue as GsPropertyPair).setter != null)
+                if ((_oValue as PropertyPair).setter != null)
                     tempStr += (tempStr.Length != 1 ? "/Setter" : "Setter");
                 if (tempStr.Length == 1)
                     return "[Invalid Property]";

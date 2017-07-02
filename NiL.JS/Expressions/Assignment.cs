@@ -118,7 +118,7 @@ namespace NiL.JS.Expressions
                 setterArgs.Reset();
                 setterArgs.length = 1;
                 setterArgs[0] = temp;
-                var setter = (field._oValue as Core.GsPropertyPair).setter;
+                var setter = (field._oValue as Core.PropertyPair).setter;
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (context._strict)
@@ -192,7 +192,7 @@ namespace NiL.JS.Expressions
                     message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position, Length), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
             }
 
-            var gve = first as GetVariable;
+            var gve = first as Variable;
             if (gve != null && gve._descriptor.IsDefined && (_codeContext & CodeContext.InWith) == 0)
             {
                 if (owner != null // не будем это применять в корневом узле. Только в функциях. Иначе это может задумываться как настройка контекста для последующего использования в Eval

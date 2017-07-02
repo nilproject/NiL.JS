@@ -25,7 +25,7 @@ namespace NiL.JS.Core.Interop
         internal StringMap<IList<MemberInfo>> _members;
         internal GlobalContext _context;
 
-        private GsPropertyPair _indexerProperty;
+        private PropertyPair _indexerProperty;
         private bool _indexersSupported;
         private ConstructorInfo _instanceCtor;
         private JSObject _prototypeInstance;
@@ -271,7 +271,7 @@ namespace NiL.JS.Core.Interop
 
                     if (getter != null || setter != null)
                     {
-                        _indexerProperty = new GsPropertyPair();
+                        _indexerProperty = new PropertyPair();
 
                         if (getter != null)
                         {
@@ -359,7 +359,7 @@ namespace NiL.JS.Core.Interop
                     return new JSValue
                     {
                         _valueType = JSValueType.Property,
-                        _oValue = new GsPropertyPair(null, _indexerProperty.setter.bind(new Arguments { null, key }))
+                        _oValue = new PropertyPair(null, _indexerProperty.setter.bind(new Arguments { null, key }))
                     };
                 }
                 else
@@ -367,7 +367,7 @@ namespace NiL.JS.Core.Interop
                     return new JSValue
                     {
                         _valueType = JSValueType.Property,
-                        _oValue = new GsPropertyPair(_indexerProperty.getter.bind(new Arguments { null, key }), null)
+                        _oValue = new PropertyPair(_indexerProperty.getter.bind(new Arguments { null, key }), null)
                     };
                 }
             }
@@ -421,7 +421,7 @@ namespace NiL.JS.Core.Interop
                                 r = new JSValue()
                                 {
                                     _valueType = JSValueType.Property,
-                                    _oValue = new GsPropertyPair
+                                    _oValue = new PropertyPair
                                     (
                                         new ExternalFunction((thisBind, a) => _context.ProxyValue(field.GetValue(field.IsStatic ? null : thisBind.Value))),
                                         !m[0].IsDefined(typeof(ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
@@ -433,7 +433,7 @@ namespace NiL.JS.Core.Interop
                                 };
 
                                 r._attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
-                                if ((r._oValue as GsPropertyPair).setter == null)
+                                if ((r._oValue as PropertyPair).setter == null)
                                     r._attributes |= JSValueAttributesInternal.ReadOnly;
 
                             }
@@ -445,7 +445,7 @@ namespace NiL.JS.Core.Interop
                             r = new JSValue()
                             {
                                 _valueType = JSValueType.Property,
-                                _oValue = new GsPropertyPair
+                                _oValue = new PropertyPair
                                     (
 #if (PORTABLE || NETCORE)
                                         pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(_context, pinfo.GetMethod) : null,
@@ -459,7 +459,7 @@ namespace NiL.JS.Core.Interop
 
                             r._attributes = JSValueAttributesInternal.Immutable;
 
-                            if ((r._oValue as GsPropertyPair).setter == null)
+                            if ((r._oValue as PropertyPair).setter == null)
                                 r._attributes |= JSValueAttributesInternal.ReadOnly;
 
                             if (pinfo.IsDefined(typeof(FieldAttribute), false))
@@ -473,7 +473,7 @@ namespace NiL.JS.Core.Interop
                             r = new JSValue()
                             {
                                 _valueType = JSValueType.Property,
-                                _oValue = new GsPropertyPair
+                                _oValue = new PropertyPair
                                 (
                                     null,
 #if (PORTABLE || NETCORE)

@@ -90,7 +90,7 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
-        internal protected virtual T Visit(GetVariable node)
+        internal protected virtual T Visit(Variable node)
         {
             return Visit(node as VariableReference);
         }

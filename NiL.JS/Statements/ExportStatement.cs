@@ -103,7 +103,7 @@ namespace NiL.JS.Statements
                 export._map.Add(
                     new KeyValuePair<string, Expression>(
                         alias,
-                        new GetVariable(name, state.lexicalScopeLevel)
+                        new Variable(name, state.lexicalScopeLevel)
                         {
                             Position = start,
                             Length = name.Length

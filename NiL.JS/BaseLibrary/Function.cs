@@ -73,7 +73,7 @@ namespace NiL.JS.BaseLibrary
         internal static readonly JSValue propertiesDummySM = new JSValue()
         {
             _valueType = JSValueType.Property,
-            _oValue = new Core.GsPropertyPair() { getter = TTEProxy, setter = TTEProxy },
+            _oValue = new Core.PropertyPair() { getter = TTEProxy, setter = TTEProxy },
             _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
 
@@ -826,7 +826,7 @@ namespace NiL.JS.BaseLibrary
                     ExceptionHelper.Throw(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
                 if (len._valueType == JSValueType.Property)
-                    len = (len._oValue as Core.GsPropertyPair).getter.Call(argsSource, null);
+                    len = (len._oValue as Core.PropertyPair).getter.Call(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
                 if (nargs.length >= 50000)
                     ExceptionHelper.Throw(new RangeError("Too many arguments."));

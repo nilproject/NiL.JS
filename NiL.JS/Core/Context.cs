@@ -469,7 +469,7 @@ namespace NiL.JS.Core
 #endif
             }
 
-            property._oValue = new GsPropertyPair(jsGetter, jsSetter);
+            property._oValue = new PropertyPair(jsGetter, jsSetter);
         }
 
         public JSValue GetVariable(string name)

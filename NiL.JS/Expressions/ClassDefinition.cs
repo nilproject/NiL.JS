@@ -160,7 +160,7 @@ namespace NiL.JS.Expressions
                 if (baseClassName == "null")
                     baseType = new Constant(JSValue.@null);
                 else
-                    baseType = new GetVariable(baseClassName, 1);
+                    baseType = new Variable(baseClassName, 1);
 
                 baseType.Position = n;
                 baseType.Length = i - n;
@@ -237,12 +237,12 @@ namespace NiL.JS.Expressions
                         {
                             case 'g':
                                 {
-                                    computedProperties.Add(new MemberDescriptor((Expression)propertyName, new GetSetPropertyPair((Expression)initializer, null), @static));
+                                    computedProperties.Add(new MemberDescriptor((Expression)propertyName, new PropertyPair((Expression)initializer, null), @static));
                                     break;
                                 }
                             case 's':
                                 {
-                                    computedProperties.Add(new MemberDescriptor((Expression)propertyName, new GetSetPropertyPair(null, (Expression)initializer), @static));
+                                    computedProperties.Add(new MemberDescriptor((Expression)propertyName, new PropertyPair(null, (Expression)initializer), @static));
                                     break;
                                 }
                             default:
@@ -260,7 +260,7 @@ namespace NiL.JS.Expressions
                         var accessorName = (@static ? "static " : "") + propertyAccessor._name;
                         if (!flds.ContainsKey(accessorName))
                         {
-                            var propertyPair = new GetSetPropertyPair
+                            var propertyPair = new PropertyPair
                             (
                                 mode == FunctionKind.Getter ? propertyAccessor : null,
                                 mode == FunctionKind.Setter ? propertyAccessor : null
@@ -269,7 +269,7 @@ namespace NiL.JS.Expressions
                         }
                         else
                         {
-                            var vle = flds[accessorName].Value as GetSetPropertyPair;
+                            var vle = flds[accessorName].Value as PropertyPair;
 
                             if (vle == null)
                                 ExceptionHelper.Throw((new SyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field at " + CodeCoordinates.FromTextPosition(state.Code, s, 0))));
@@ -545,8 +545,8 @@ namespace NiL.JS.Expressions
                 {
                     if (existedValue.Is(JSValueType.Property) && value.Is(JSValueType.Property))
                     {
-                        var egs = existedValue.As<Core.GsPropertyPair>();
-                        var ngs = value.As<Core.GsPropertyPair>();
+                        var egs = existedValue.As<Core.PropertyPair>();
+                        var ngs = value.As<Core.PropertyPair>();
                         egs.getter = ngs.getter ?? egs.getter;
                         egs.setter = ngs.setter ?? egs.setter;
                     }

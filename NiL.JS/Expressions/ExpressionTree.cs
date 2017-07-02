@@ -469,9 +469,9 @@ namespace NiL.JS.Expressions
                                     goto default;
                                 if (state.strict)
                                 {
-                                    if ((first is GetVariable)
-                                        && ((first as GetVariable).Name == "arguments" || (first as GetVariable).Name == "eval"))
-                                        ExceptionHelper.ThrowSyntaxError("Cannot incriment \"" + (first as GetVariable).Name + "\" in strict mode.", state.Code, i);
+                                    if ((first is Variable)
+                                        && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
+                                        ExceptionHelper.ThrowSyntaxError("Cannot incriment \"" + (first as Variable).Name + "\" in strict mode.", state.Code, i);
                                 }
                                 first = new Increment(first, IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
@@ -505,9 +505,9 @@ namespace NiL.JS.Expressions
                                     goto default;
                                 if (state.strict)
                                 {
-                                    if ((first is GetVariable)
-                                        && ((first as GetVariable).Name == "arguments" || (first as GetVariable).Name == "eval"))
-                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (first as GetVariable).Name + "\" in strict mode."));
+                                    if ((first is Variable)
+                                        && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
+                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (first as Variable).Name + "\" in strict mode."));
                                 }
                                 first = new Decrement(first, DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
@@ -752,14 +752,14 @@ namespace NiL.JS.Expressions
                                 name = jsname._oValue.ToString();
 
                             first = new Property(first, new Constant(name)
-                                                        {
-                                                            Position = s,
-                                                            Length = i - s
-                                                        })
-                                    {
-                                        Position = first.Position,
-                                        Length = i - first.Position
-                                    };
+                            {
+                                Position = s,
+                                Length = i - s
+                            })
+                            {
+                                Position = first.Position,
+                                Length = i - first.Position
+                            };
 
                             repeat = true;
                             canAsign = true;
@@ -808,7 +808,9 @@ namespace NiL.JS.Expressions
                                 Tools.CheckEndOfInput(state.Code, ref i);
 
                                 if (state.Code[i] == ')')
+                                {
                                     break;
+                                }
                                 else
                                 {
                                     bool commaExists = args.Count == 0;
@@ -865,7 +867,7 @@ namespace NiL.JS.Expressions
                                 Length = i - first.Position + 1,
                                 withSpread = true
                             };
-                            
+
                             repeat = !forNew;
                             canAsign = false;
                             binary = false;
@@ -924,15 +926,18 @@ namespace NiL.JS.Expressions
             while (repeat);
 
             if (state.strict
-                && (first is GetVariable) 
-                && ((first as GetVariable).Name == "arguments" || (first as GetVariable).Name == "eval"))
+                && (first is Variable)
+                && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
             {
                 if (assign || kind == OperationType.Assignment)
                     ExceptionHelper.ThrowSyntaxError("Assignment to eval or arguments is not allowed in strict mode", state.Code, i);
             }
 
-            if ((!canAsign) && ((kind == OperationType.Assignment) || (assign)))
-                ExceptionHelper.ThrowSyntaxError("Invalid left-hand side in assignment", state.Code, i);
+            if ((kind == OperationType.Assignment) || assign)
+            {
+                if (!canAsign || !canBeAssignee(first))
+                    ExceptionHelper.ThrowReferenceError("Invalid left-hand side in assignment", state.Code, first.Position, first.Length);
+            }
 
             if (binary && !forUnary)
             {
@@ -947,7 +952,7 @@ namespace NiL.JS.Expressions
                         second = parseContinuation(state, parseTernaryBranches(state, forForLoop, ref i), startIndex, ref i, ref proot, forUnary, processComma, false, forForLoop);
                     }
                     else
-                        second = (Expression)ExpressionTree.Parse(state, ref i, false, processComma, false, false, forForLoop);
+                        second = ExpressionTree.Parse(state, ref i, false, processComma, false, false, forForLoop);
                 }
                 else
                 {
@@ -1009,6 +1014,13 @@ namespace NiL.JS.Expressions
             return res;
         }
 
+        private static bool canBeAssignee(Expression first)
+        {
+            return first is Variable
+                || first is Property
+                || ((first is Constant) && (first.Evaluate(null).ValueType <= JSValueType.Undefined));
+        }
+
         private static Expression parseOperand(ParseInfo state, ref int i, bool forNew, bool forForLoop)
         {
             int start = i;
@@ -1059,7 +1071,7 @@ namespace NiL.JS.Expressions
                             else
                                 state.stringConstants[name] = name;
 
-                            operand = new GetVariable(name, state.lexicalScopeLevel);
+                            operand = new Variable(name, state.lexicalScopeLevel);
                             break;
                         }
                 }
@@ -1095,7 +1107,7 @@ namespace NiL.JS.Expressions
                         else
                             name = jsName._oValue.ToString();
 
-                        operand = new GetVariable(name, state.lexicalScopeLevel);
+                        operand = new Variable(name, state.lexicalScopeLevel);
                     }
                 }
                 else if (Parser.ValidateValue(state.Code, ref i))
@@ -1168,16 +1180,16 @@ namespace NiL.JS.Expressions
 
                                     operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
 
-                                    if (((operand as Property) as object ?? (operand as GetVariable)) == null)
+                                    if (((operand as Property) as object ?? (operand as Variable)) == null)
                                     {
                                         ExceptionHelper.ThrowSyntaxError("Invalid prefix operation. ", state.Code, i);
                                     }
 
                                     if (state.strict
-                                        && (operand is GetVariable)
-                                        && ((operand as GetVariable).Name == "arguments" || (operand as GetVariable).Name == "eval"))
+                                        && (operand is Variable)
+                                        && ((operand as Variable).Name == "arguments" || (operand as Variable).Name == "eval"))
                                     {
-                                        ExceptionHelper.ThrowSyntaxError("Can not incriment \"" + (operand as GetVariable).Name + "\" in strict mode.", state.Code, i);
+                                        ExceptionHelper.ThrowSyntaxError("Can not incriment \"" + (operand as Variable).Name + "\" in strict mode.", state.Code, i);
                                     }
 
                                     operand = new Increment(operand, IncrimentType.Preincriment);
@@ -1204,15 +1216,15 @@ namespace NiL.JS.Expressions
 
                                     operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
 
-                                    if (((operand as Property) as object ?? (operand as GetVariable)) == null)
+                                    if (((operand as Property) as object ?? (operand as Variable)) == null)
                                     {
                                         ExceptionHelper.ThrowSyntaxError("Invalid prefix operation.", state.Code, i);
                                     }
 
                                     if (state.strict
-                                        && (operand is GetVariable)
-                                        && ((operand as GetVariable).Name == "arguments" || (operand as GetVariable).Name == "eval"))
-                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (operand as GetVariable).Name + "\" in strict mode."));
+                                        && (operand is Variable)
+                                        && ((operand as Variable).Name == "arguments" || (operand as Variable).Name == "eval"))
+                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (operand as Variable).Name + "\" in strict mode."));
 
                                     operand = new Decrement(operand, DecrimentType.Predecriment);
                                 }
@@ -1309,7 +1321,7 @@ namespace NiL.JS.Expressions
                         do
                             i++;
                         while (Tools.IsWhiteSpace(state.Code[i]));
-                        var temp = (Expression)ExpressionTree.Parse(state, ref i, false, false);
+                        var temp = Parse(state, ref i, false, false);
                         if (operand == null)
                             operand = temp;
                         else
@@ -1317,13 +1329,14 @@ namespace NiL.JS.Expressions
                         while (Tools.IsWhiteSpace(state.Code[i]))
                             i++;
                         if (state.Code[i] != ')' && state.Code[i] != ',')
-                            ExceptionHelper.Throw((new SyntaxError("Expected \")\"")));
+                            ExceptionHelper.ThrowSyntaxError("Expected \")\"");
                     }
+
                     i++;
                     if (((state.CodeContext & (CodeContext.InExpression | CodeContext.InEval)) != 0 && operand is FunctionDefinition)
                         || (forNew && operand is Call))
                     {
-                        operand = new Expressions.Comma(operand, null);
+                        operand = new Comma(operand, null);
                     }
                 }
                 else

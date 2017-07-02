@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    public sealed class GetSetPropertyPair : Expression
+    public sealed class PropertyPair : Expression
     {
         public Expression Getter
         {
@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public GetSetPropertyPair(Expression getter, Expression setter)
+        public PropertyPair(Expression getter, Expression setter)
             : base(getter, setter, true)
         {
             tempContainer._valueType = JSValueType.Property;
@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
         
         public override JSValue Evaluate(Context context)
         {
-            tempContainer._oValue = new Core.GsPropertyPair
+            tempContainer._oValue = new Core.PropertyPair
             (
                 Getter == null ? null : (Function)Getter.Evaluate(context),
                 Setter == null ? null : (Function)Setter.Evaluate(context)

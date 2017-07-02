@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    public sealed class GetArgumentsExpression : GetVariable
+    public sealed class GetArgumentsExpression : Variable
     {
         internal GetArgumentsExpression(int functionDepth)
             : base("arguments", functionDepth)
@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    public class GetVariable : VariableReference
+    public class Variable : VariableReference
     {
         private string _variableName;
         internal bool _SuspendThrow;
@@ -60,7 +60,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal GetVariable(string name, int scopeLevel)
+        internal Variable(string name, int scopeLevel)
         {
             int fake = 0;
             if (!Parser.ValidateName(name, fake, true, true, false))

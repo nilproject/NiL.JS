@@ -66,11 +66,11 @@ namespace NiL.JS.Expressions
         {
             if (base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts))
                 return true;
-            if (first is GetVariable)
+            if (first is Variable)
             {
                 if ((codeContext & CodeContext.Strict) != 0)
                     ExceptionHelper.Throw(new SyntaxError("Can not delete variable in strict mode"));
-                (first as GetVariable)._SuspendThrow = true;
+                (first as Variable)._SuspendThrow = true;
             }
             var gme = first as Property;
             if (gme != null)

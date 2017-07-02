@@ -456,7 +456,7 @@ namespace NiL.JS.BaseLibrary
                         continue;
 
                     if (value._valueType == JSValueType.Property)
-                        value = ((value._oValue as GsPropertyPair).getter ?? Function.Empty).Call(obj, null);
+                        value = ((value._oValue as PropertyPair).getter ?? Function.Empty).Call(obj, null);
                     strval = stringifyImpl(member.Key, value, replacer, space, processed, args);
 
                     if (strval == null)

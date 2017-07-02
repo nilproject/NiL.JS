@@ -88,7 +88,7 @@ namespace NiL.JS.Expressions
             Arguments args = null;
             if (val._valueType == JSValueType.Property)
             {
-                var ppair = val._oValue as Core.GsPropertyPair;
+                var ppair = val._oValue as Core.PropertyPair;
                 setter = ppair.setter;
                 if (context._strict && setter == null)
                     ExceptionHelper.ThrowIncrementPropertyWOSetter(first);

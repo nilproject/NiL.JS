@@ -105,8 +105,8 @@ namespace NiL.JS.Expressions
                 threads[i] = cn as Expression;
             }
             if (message != null
-                && (threads[0] is GetVariable || threads[0] is Constant)
-                && (threads[1] is GetVariable || threads[1] is Constant)
+                && (threads[0] is Variable || threads[0] is Constant)
+                && (threads[1] is Variable || threads[1] is Constant)
                 && ResultType == PredictedType.Ambiguous)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Type of an expression is ambiguous");
         }
