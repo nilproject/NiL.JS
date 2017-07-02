@@ -86,8 +86,8 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            tempContainer.Assign(first.Evaluate(context));
-            if (Check(tempContainer, second.Evaluate(context)))
+            _tempContainer.Assign(_left.Evaluate(context));
+            if (Check(_tempContainer, _right.Evaluate(context)))
                 return BaseLibrary.Boolean.True;
             return BaseLibrary.Boolean.False;
         }
@@ -99,7 +99,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " === " + second + ")";
+            return "(" + _left + " === " + _right + ")";
         }
     }
 }

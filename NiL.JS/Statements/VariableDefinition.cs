@@ -92,8 +92,8 @@ namespace NiL.JS.Statements
                     var et = expression as ExpressionTree;
                     if (et != null)
                     {
-                        if (et.Type == OperationType.None && et.second == null)
-                            et = et.first as ExpressionTree;
+                        if (et.Type == OperationType.None && et._right == null)
+                            et = et._left as ExpressionTree;
                         valid |= et != null && et.Type == OperationType.Assignment;
                     }
                     else
@@ -228,7 +228,7 @@ namespace NiL.JS.Statements
 
                     if (mode == VariableKind.ConstantInLexicalScope && initializers[i] is Assignment)
                     {
-                        initializers[i] = new ForceAssignmentOperator(initializers[i].first, initializers[i].second)
+                        initializers[i] = new ForceAssignmentOperator(initializers[i]._left, initializers[i]._right)
                         {
                             Position = initializers[i].Position,
                             Length = initializers[i].Length

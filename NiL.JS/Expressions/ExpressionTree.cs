@@ -113,23 +113,23 @@ namespace NiL.JS.Expressions
             {
                 case OperationType.Multiply:
                     {
-                        return new Multiplication(first, second);
+                        return new Multiplication(_left, _right);
                     }
                 case OperationType.None:
                     {
-                        return new Comma(first, second);
+                        return new Comma(_left, _right);
                     }
                 case OperationType.Assignment:
                     {
-                        return new Assignment(first, second);
+                        return new Assignment(_left, _right);
                     }
                 case OperationType.Less:
                     {
-                        return new Less(first, second);
+                        return new Less(_left, _right);
                     }
                 case OperationType.Incriment:
                     {
-                        return new Increment(first ?? second, first == null ? IncrimentType.Postincriment : IncrimentType.Preincriment);
+                        return new Increment(_left ?? _right, _left == null ? IncrimentType.Postincriment : IncrimentType.Preincriment);
                     }
                 case OperationType.Call:
                     {
@@ -137,103 +137,103 @@ namespace NiL.JS.Expressions
                     }
                 case OperationType.Decriment:
                     {
-                        return new Decrement(first ?? second, first == null ? DecrimentType.Postdecriment : DecrimentType.Postdecriment);
+                        return new Decrement(_left ?? _right, _left == null ? DecrimentType.Postdecriment : DecrimentType.Postdecriment);
                     }
                 case OperationType.LessOrEqual:
                     {
-                        return new LessOrEqual(first, second);
+                        return new LessOrEqual(_left, _right);
                     }
                 case OperationType.Addition:
                     {
-                        return new Addition(first, second);
+                        return new Addition(_left, _right);
                     }
                 case OperationType.StrictNotEqual:
                     {
-                        return new StrictNotEqual(first, second);
+                        return new StrictNotEqual(_left, _right);
                     }
                 case OperationType.More:
                     {
-                        return new More(first, second);
+                        return new More(_left, _right);
                     }
                 case OperationType.MoreOrEqual:
                     {
-                        return new MoreOrEqual(first, second);
+                        return new MoreOrEqual(_left, _right);
                     }
                 case OperationType.Division:
                     {
-                        return new Division(first, second);
+                        return new Division(_left, _right);
                     }
                 case OperationType.Equal:
                     {
-                        return new Equal(first, second);
+                        return new Equal(_left, _right);
                     }
                 case OperationType.Substract:
                     {
-                        return new Substract(first, second);
+                        return new Substract(_left, _right);
                     }
                 case OperationType.StrictEqual:
                     {
-                        return new StrictEqual(first, second);
+                        return new StrictEqual(_left, _right);
                     }
                 case OperationType.LogicalOr:
                     {
-                        return new LogicalDisjunction(first, second);
+                        return new LogicalDisjunction(_left, _right);
                     }
                 case OperationType.LogicalAnd:
                     {
-                        return new LogicalConjunction(first, second);
+                        return new LogicalConjunction(_left, _right);
                     }
                 case OperationType.NotEqual:
                     {
-                        return new NotEqual(first, second);
+                        return new NotEqual(_left, _right);
                     }
                 case OperationType.UnsignedShiftRight:
                     {
-                        return new UnsignedShiftRight(first, second);
+                        return new UnsignedShiftRight(_left, _right);
                     }
                 case OperationType.SignedShiftLeft:
                     {
-                        return new SignedShiftLeft(first, second);
+                        return new SignedShiftLeft(_left, _right);
                     }
                 case OperationType.SignedShiftRight:
                     {
-                        return new SignedShiftRight(first, second);
+                        return new SignedShiftRight(_left, _right);
                     }
                 case OperationType.Modulo:
                     {
-                        return new Modulo(first, second);
+                        return new Modulo(_left, _right);
                     }
                 case OperationType.LogicalNot:
                     {
-                        return new LogicalNegation(first);
+                        return new LogicalNegation(_left);
                     }
                 case OperationType.Not:
                     {
-                        return new BitwiseNegation(first);
+                        return new BitwiseNegation(_left);
                     }
                 case OperationType.Xor:
                     {
-                        return new BitwiseExclusiveDisjunction(first, second);
+                        return new BitwiseExclusiveDisjunction(_left, _right);
                     }
                 case OperationType.Or:
                     {
-                        return new BitwiseDisjunction(first, second);
+                        return new BitwiseDisjunction(_left, _right);
                     }
                 case OperationType.And:
                     {
-                        return new BitwiseConjunction(first, second);
+                        return new BitwiseConjunction(_left, _right);
                     }
                 case OperationType.Conditional:
                     {
-                        while ((second is ExpressionTree)
-                            && (second as ExpressionTree)._operationKind == OperationType.None
-                            && (second as ExpressionTree).second == null)
-                            second = (second as ExpressionTree).first;
-                        return new Conditional(first, (Expression[])second.Evaluate(null)._oValue);
+                        while ((_right is ExpressionTree)
+                            && (_right as ExpressionTree)._operationKind == OperationType.None
+                            && (_right as ExpressionTree)._right == null)
+                            _right = (_right as ExpressionTree)._left;
+                        return new Conditional(_left, (Expression[])_right.Evaluate(null)._oValue);
                     }
                 case OperationType.TypeOf:
                     {
-                        return new TypeOf(first);
+                        return new TypeOf(_left);
                     }
                 case OperationType.New:
                     {
@@ -241,15 +241,15 @@ namespace NiL.JS.Expressions
                     }
                 case OperationType.Delete:
                     {
-                        return new Delete(first);
+                        return new Delete(_left);
                     }
                 case OperationType.InstanceOf:
                     {
-                        return new InstanceOf(first, second);
+                        return new InstanceOf(_left, _right);
                     }
                 case OperationType.In:
                     {
-                        return new In(first, second);
+                        return new In(_left, _right);
                     }
                 default:
                     throw new ArgumentException("invalid operation type");
@@ -260,16 +260,16 @@ namespace NiL.JS.Expressions
         {
             if (statement == null)
                 return null;
-            ExpressionTree cur = statement.second as ExpressionTree;
+            ExpressionTree cur = statement._right as ExpressionTree;
             if (cur == null)
                 return statement;
             Stack<Expression> stats = new Stack<Expression>();
             Stack<Expression> types = new Stack<Expression>();
             types.Push(statement);
-            stats.Push(statement.first);
+            stats.Push(statement._left);
             while (cur != null)
             {
-                stats.Push(cur.first);
+                stats.Push(cur._left);
                 for (; types.Count > 0;)
                 {
                     var topType = (int)(types.Peek() as ExpressionTree)._operationKind;
@@ -278,10 +278,10 @@ namespace NiL.JS.Expressions
                             && (((int)cur._operationKind & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)))
                     {
                         var stat = types.Pop() as ExpressionTree;
-                        stat.second = stats.Pop();
-                        stat.first = stats.Pop();
-                        stat.Position = (stat.first ?? stat).Position;
-                        stat.Length = (stat.second ?? stat.first ?? stat).Length + (stat.second ?? stat.first ?? stat).Position - stat.Position;
+                        stat._right = stats.Pop();
+                        stat._left = stats.Pop();
+                        stat.Position = (stat._left ?? stat).Position;
+                        stat.Length = (stat._right ?? stat._left ?? stat).Length + (stat._right ?? stat._left ?? stat).Position - stat.Position;
                         stats.Push(stat);
                     }
                     else
@@ -289,17 +289,17 @@ namespace NiL.JS.Expressions
                 }
 
                 types.Push(cur);
-                if (!(cur.second is ExpressionTree))
-                    stats.Push(cur.second);
-                cur = cur.second as ExpressionTree;
+                if (!(cur._right is ExpressionTree))
+                    stats.Push(cur._right);
+                cur = cur._right as ExpressionTree;
             }
             while (stats.Count > 1)
             {
                 var stat = types.Pop() as Expression;
-                stat.second = stats.Pop();
-                stat.first = stats.Pop();
-                stat.Position = (stat.first ?? stat).Position;
-                stat.Length = (stat.second ?? stat.first ?? stat).Length + (stat.second ?? stat.first ?? stat).Position - stat.Position;
+                stat._right = stats.Pop();
+                stat._left = stats.Pop();
+                stat.Position = (stat._left ?? stat).Position;
+                stat.Length = (stat._right ?? stat._left ?? stat).Length + (stat._right ?? stat._left ?? stat).Position - stat.Position;
                 stats.Push(stat);
             }
             return stats.Peek();
@@ -968,10 +968,10 @@ namespace NiL.JS.Expressions
                 var opassigncache = new AssignmentOperatorCache(first);
                 if (second is ExpressionTree && (second as ExpressionTree)._operationKind == OperationType.None)
                 {
-                    second.first = new Assignment(opassigncache, new ExpressionTree()
+                    second._left = new Assignment(opassigncache, new ExpressionTree()
                     {
-                        first = opassigncache,
-                        second = second.first,
+                        _left = opassigncache,
+                        _right = second._left,
                         _operationKind = kind,
                         Position = startIndex,
                         Length = i - startIndex
@@ -986,8 +986,8 @@ namespace NiL.JS.Expressions
                 {
                     res = new Assignment(opassigncache, new ExpressionTree()
                     {
-                        first = opassigncache,
-                        second = second,
+                        _left = opassigncache,
+                        _right = second,
                         _operationKind = kind,
                         Position = startIndex,
                         Length = i - startIndex
@@ -1005,7 +1005,7 @@ namespace NiL.JS.Expressions
                     if (forUnary && (kind == OperationType.None) && (first is ExpressionTree))
                         res = first as Expression;
                     else
-                        res = new ExpressionTree() { first = first, second = second, _operationKind = kind, Position = startIndex, Length = i - startIndex };
+                        res = new ExpressionTree() { _left = first, _right = second, _operationKind = kind, Position = startIndex, Length = i - startIndex };
                 }
                 else
                     res = first;
@@ -1414,7 +1414,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return _operationKind + "(" + first + (second != null ? ", " + second : "") + ")";
+            return _operationKind + "(" + _left + (_right != null ? ", " + _right : "") + ")";
         }
     }
 }

@@ -29,12 +29,12 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var t = first.Evaluate(context);
+            var t = _left.Evaluate(context);
             if (t._valueType == JSValueType.String)
                 return t;
-            tempContainer._valueType = JSValueType.String;
-            tempContainer._oValue = t.ToPrimitiveValue_Value_String().ToString();
-            return tempContainer;
+            _tempContainer._valueType = JSValueType.String;
+            _tempContainer._oValue = t.ToPrimitiveValue_Value_String().ToString();
+            return _tempContainer;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "( \"\" + " + first + ")";
+            return "( \"\" + " + _left + ")";
         }
     }
 }

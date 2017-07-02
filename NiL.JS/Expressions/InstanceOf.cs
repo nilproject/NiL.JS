@@ -30,11 +30,11 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var a = tempContainer ?? new JSValue { _attributes = JSValueAttributesInternal.Temporary };
-            tempContainer = null;
-            a.Assign(first.Evaluate(context));
-            var c = second.Evaluate(context);
-            tempContainer = a;
+            var a = _tempContainer ?? new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+            _tempContainer = null;
+            a.Assign(_left.Evaluate(context));
+            var c = _right.Evaluate(context);
+            _tempContainer = a;
             if (c._valueType != JSValueType.Function)
                 ExceptionHelper.Throw(new TypeError("Right-hand value of instanceof is not a function."));
 
@@ -63,7 +63,7 @@ namespace NiL.JS.Expressions
             var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (!res)
             {
-                if (first is Constant)
+                if (_left is Constant)
                 {
                     // TODO
                 }
@@ -79,7 +79,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " instanceof " + second + ")";
+            return "(" + _left + " instanceof " + _right + ")";
         }
     }
 }

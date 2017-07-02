@@ -207,8 +207,8 @@ namespace NiL.JS.Expressions
                     CodeNode lastAssign = null;
                     for (var i = assigns.Count; i-- > 0;)
                     {
-                        if (assigns[i].first == this
-                            || ((assigns[i].first is AssignmentOperatorCache) && assigns[i].first.first == this))
+                        if (assigns[i]._left == this
+                            || ((assigns[i]._left is AssignmentOperatorCache) && assigns[i]._left._left == this))
                         {
                             // оптимизация не применяется
                             lastAssign = null;
@@ -241,9 +241,9 @@ namespace NiL.JS.Expressions
                         }
                     }
                     var assign = lastAssign as Assignment;
-                    if (assign != null && (assign._codeContext & CodeContext.Conditional) == 0 && assign.second is Constant)
+                    if (assign != null && (assign._codeContext & CodeContext.Conditional) == 0 && assign._right is Constant)
                     {
-                        _this = assign.second;
+                        _this = assign._right;
                     }
                 }
             }

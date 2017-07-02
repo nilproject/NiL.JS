@@ -11,8 +11,8 @@ namespace NiL.JS.Expressions
     {
         private JSValue cachedMemberName;
 
-        public Expression Source { get { return first; } }
-        public Expression PropertyName { get { return second; } }
+        public Expression Source { get { return _left; } }
+        public Expression PropertyName { get { return _right; } }
 
         protected internal override bool ContextIndependent
         {
@@ -37,16 +37,16 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             JSValue source = null;
-            source = first.Evaluate(context);
+            source = _left.Evaluate(context);
             if (source._valueType < JSValueType.Object)
                 source = source.CloneImpl(false);
             else
                 source = source._oValue as JSValue ?? source;
 
-            var res = source.DeleteProperty(cachedMemberName ?? second.Evaluate(context));
+            var res = source.DeleteProperty(cachedMemberName ?? _right.Evaluate(context));
             context._objectSource = null;
             if (!res && context._strict)
-                ExceptionHelper.ThrowTypeError("Cannot delete property \"" + first + "\".");
+                ExceptionHelper.ThrowTypeError("Cannot delete property \"" + _left + "\".");
             return res;
         }
 
@@ -62,15 +62,15 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            var res = first.ToString();
+            var res = _left.ToString();
             int i = 0;
-            var cn = second as Constant;
-            if (second is Constant
+            var cn = _right as Constant;
+            if (_right is Constant
                 && cn.value.ToString().Length > 0
                 && (Parser.ValidateName(cn.value.ToString(), ref i, true)))
                 res += "." + cn.value;
             else
-                res += "[" + second + "]";
+                res += "[" + _right + "]";
             return "delete " + res;
         }
     }

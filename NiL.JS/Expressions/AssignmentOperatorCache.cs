@@ -11,7 +11,7 @@ namespace NiL.JS.Expressions
     {
         private JSValue secondResult;
 
-        public CodeNode Source { get { return first; } }
+        public CodeNode Source { get { return _left; } }
 
         protected internal override bool ContextIndependent
         {
@@ -25,7 +25,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return first.ResultType;
+                return _left.ResultType;
             }
         }
 
@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
 
         internal protected override JSValue EvaluateForWrite(Context context)
         {
-            var res = first.EvaluateForWrite(context);
+            var res = _left.EvaluateForWrite(context);
             secondResult = Tools.InvokeGetter(res, context._objectSource);
             return res;
         }
@@ -56,18 +56,18 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return first.ToString();
+            return _left.ToString();
         }
 
         public override int Length
         {
             get
             {
-                return first.Length;
+                return _left.Length;
             }
             internal set
             {
-                first.Length = value;
+                _left.Length = value;
             }
         }
 
@@ -75,17 +75,17 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return first.Position;
+                return _left.Position;
             }
             internal set
             {
-                first.Position = value;
+                _left.Position = value;
             }
         }
 
         protected internal override CodeNode[] GetChildsImpl()
         {
-            return first.Childs;
+            return _left.Childs;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -101,16 +101,16 @@ namespace NiL.JS.Expressions
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             // second будем использовать как флаг isVisited
-            if (second != null)
+            if (_right != null)
                 return false;
 
-            second = first;
+            _right = _left;
 
             _codeContext = codeContext;
 
-            var res = first.Build(ref _this, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            if (!res && first is Variable)
-                (first as Variable)._ForceThrow = true;
+            var res = _left.Build(ref _this, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            if (!res && _left is Variable)
+                (_left as Variable)._ForceThrow = true;
             return res;
         }
     }

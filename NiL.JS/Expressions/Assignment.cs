@@ -19,7 +19,7 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             JSValue temp;
-            JSValue field = first.EvaluateForWrite(context);
+            JSValue field = _left.EvaluateForWrite(context);
             if (field._valueType == JSValueType.Property)
             {
                 return setProperty(context, field);
@@ -29,7 +29,7 @@ namespace NiL.JS.Expressions
                 if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
                     throwRoError();
             }
-            temp = second.Evaluate(context);
+            temp = _right.Evaluate(context);
             var oldAttributes = field._attributes;
             field._attributes &= ~JSValueAttributesInternal.ReadOnly;
             field.Assign(temp);
@@ -76,7 +76,7 @@ namespace NiL.JS.Expressions
         {
             JSValue temp;
 
-            JSValue field = first.EvaluateForWrite(context);
+            JSValue field = _left.EvaluateForWrite(context);
             if (field._valueType == JSValueType.Property)
             {
                 return setProperty(context, field);
@@ -87,7 +87,7 @@ namespace NiL.JS.Expressions
                     throwRoError();
             }
 
-            temp = second.Evaluate(context);
+            temp = _right.Evaluate(context);
             field.Assign(temp);
 
             return temp;
@@ -95,7 +95,7 @@ namespace NiL.JS.Expressions
 
         protected void throwRoError()
         {
-            ExceptionHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
+            ExceptionHelper.Throw(new TypeError("Can not assign to readonly property \"" + _left + "\""));
         }
 
         protected JSValue setProperty(Context context, JSValue field)
@@ -106,14 +106,14 @@ namespace NiL.JS.Expressions
                 if (setterArgs == null)
                     setterArgs = new Arguments();
                 var fieldSource = context._objectSource;
-                temp = second.Evaluate(context);
+                temp = _right.Evaluate(context);
                 if (saveResult)
                 {
-                    if (tempContainer == null)
-                        tempContainer = new JSValue();
-                    tempContainer.Assign(temp);
-                    temp = tempContainer;
-                    tempContainer = null;
+                    if (_tempContainer == null)
+                        _tempContainer = new JSValue();
+                    _tempContainer.Assign(temp);
+                    temp = _tempContainer;
+                    _tempContainer = null;
                 }
                 setterArgs.Reset();
                 setterArgs.length = 1;
@@ -122,9 +122,9 @@ namespace NiL.JS.Expressions
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (context._strict)
-                    ExceptionHelper.Throw(new TypeError("Can not assign to readonly property \"" + first + "\""));
+                    ExceptionHelper.Throw(new TypeError("Can not assign to readonly property \"" + _left + "\""));
                 if (saveResult)
-                    tempContainer = temp;
+                    _tempContainer = temp;
                 return temp;
             }
         }
@@ -141,23 +141,23 @@ namespace NiL.JS.Expressions
 #endif
             base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
 
-            var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
+            var f = _left as VariableReference ?? ((_left is AssignmentOperatorCache) ? (_left as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
                 var assigns = (f.Descriptor.assignments ?? (f.Descriptor.assignments = new List<Expression>()));
                 if (assigns.IndexOf(this) == -1)
                     assigns.Add(this);
-                if (second is Constant)
+                if (_right is Constant)
                 {
-                    var pt = second.ResultType;
+                    var pt = _right.ResultType;
                     if (f._descriptor.lastPredictedType == PredictedType.Unknown)
                         f._descriptor.lastPredictedType = pt;
                 }
             }
 
-            var gme = first as Property;
+            var gme = _left as Property;
             if (gme != null)
-                _this = new SetProperty(gme.first, gme.second, second) { Position = Position, Length = Length };
+                _this = new SetProperty(gme._left, gme._right, _right) { Position = Position, Length = Length };
 
             if ((codeContext & (CodeContext.InExpression | CodeContext.InEval)) != 0)
                 saveResult = true;
@@ -168,12 +168,12 @@ namespace NiL.JS.Expressions
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             baseOptimize(ref _this, owner, message, opts, stats);
-            var vr = first as VariableReference;
+            var vr = _left as VariableReference;
             if (vr != null)
             {
                 if (vr._descriptor.IsDefined)
                 {
-                    var stype = second.ResultType;
+                    var stype = _right.ResultType;
                     if (vr._descriptor.lastPredictedType == PredictedType.Unknown)
                         vr._descriptor.lastPredictedType = stype;
                     else if (vr._descriptor.lastPredictedType != stype)
@@ -192,7 +192,7 @@ namespace NiL.JS.Expressions
                     message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position, Length), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
             }
 
-            var gve = first as Variable;
+            var gve = _left as Variable;
             if (gve != null && gve._descriptor.IsDefined && (_codeContext & CodeContext.InWith) == 0)
             {
                 if (owner != null // не будем это применять в корневом узле. Только в функциях. Иначе это может задумываться как настройка контекста для последующего использования в Eval
@@ -211,17 +211,17 @@ namespace NiL.JS.Expressions
                         }
                         if (last)
                         {
-                            if (second.ContextIndependent)
+                            if (_right.ContextIndependent)
                             {
                                 _this.Eliminated = true;
                                 _this = Empty.Instance;
                             }
                             else
                             {
-                                _this = second;
-                                this.second = null;
+                                _this = _right;
+                                this._right = null;
                                 this.Eliminated = true;
-                                this.second = _this as Expression;
+                                this._right = _this as Expression;
                             }
                         }
                     }
@@ -246,10 +246,10 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            string f = first.ToString();
+            string f = _left.ToString();
             if (f[0] == '(')
                 f = f.Substring(1, f.Length - 2);
-            string t = second.ToString();
+            string t = _right.ToString();
             if (t[0] == '(')
                 t = t.Substring(1, t.Length - 2);
             return "(" + f + " = " + t + ")";

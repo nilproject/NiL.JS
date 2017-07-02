@@ -39,7 +39,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var temp = first.Evaluate(context);
+            var temp = _left.Evaluate(context);
             if (temp._valueType < JSValueType.Undefined)
                 return true;
             else if ((temp._attributes & JSValueAttributesInternal.Argument) != 0)
@@ -57,7 +57,7 @@ namespace NiL.JS.Expressions
             }
             else if (context._strict)
             {
-                ExceptionHelper.Throw(new TypeError("Can not delete property \"" + first + "\"."));
+                ExceptionHelper.Throw(new TypeError("Can not delete property \"" + _left + "\"."));
             }
             return false;
         }
@@ -66,19 +66,19 @@ namespace NiL.JS.Expressions
         {
             if (base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts))
                 return true;
-            if (first is Variable)
+            if (_left is Variable)
             {
                 if ((codeContext & CodeContext.Strict) != 0)
                     ExceptionHelper.Throw(new SyntaxError("Can not delete variable in strict mode"));
-                (first as Variable)._SuspendThrow = true;
+                (_left as Variable)._SuspendThrow = true;
             }
-            var gme = first as Property;
+            var gme = _left as Property;
             if (gme != null)
             {
-                _this = new DeleteProperty(gme.first, gme.second);
+                _this = new DeleteProperty(gme._left, gme._right);
                 return false;
             }
-            var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
+            var f = _left as VariableReference ?? ((_left is AssignmentOperatorCache) ? (_left as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
                 if (f.Descriptor.IsDefined && message != null)
@@ -96,7 +96,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "delete " + first;
+            return "delete " + _left;
         }
     }
 }

@@ -83,16 +83,16 @@ namespace NiL.JS.Expressions
             for (var i = 1; i < _parts.Count; i++)
                 result = new RopeString(result, prep(_parts[i].Evaluate(context)));
 
-            tempContainer._valueType = JSValueType.String;
-            tempContainer._oValue = result;
-            return tempContainer;
+            _tempContainer._valueType = JSValueType.String;
+            _tempContainer._oValue = result;
+            return _tempContainer;
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (!res)
-                second = _parts[_parts.Count - 1];
+                _right = _parts[_parts.Count - 1];
             return res;
         }
 

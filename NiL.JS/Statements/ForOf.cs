@@ -105,7 +105,7 @@ namespace NiL.JS.Statements
                             Length = defVal.EndPosition - exp.Position
                         };
 
-                        if (result._variable == exp.first.first)
+                        if (result._variable == exp._left._left)
                             result._variable = exp;
                         else
                             (result._variable as VariableDefinition).initializers[0] = exp;
@@ -195,12 +195,12 @@ namespace NiL.JS.Statements
                 if (varialeDefStat != null)
                 {
                     _variable.Evaluate(context);
-                    variable = (varialeDefStat.initializers[0].first ?? varialeDefStat.initializers[0]).EvaluateForWrite(context);
+                    variable = (varialeDefStat.initializers[0]._left ?? varialeDefStat.initializers[0]).EvaluateForWrite(context);
                 }
                 else if (_variable is Assignment)
                 {
                     _variable.Evaluate(context);
-                    variable = (_variable as Assignment).first.Evaluate(context);
+                    variable = (_variable as Assignment)._left.Evaluate(context);
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
@@ -285,10 +285,10 @@ namespace NiL.JS.Statements
             Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
             if (_variable is Expressions.Comma)
             {
-                if ((_variable as Expressions.Comma).SecondOperand != null)
+                if ((_variable as Expressions.Comma).RightOperand != null)
                     throw new InvalidOperationException("Invalid left-hand side in for-of");
 
-                _variable = (_variable as Expressions.Comma).FirstOperand;
+                _variable = (_variable as Expressions.Comma).LeftOperand;
             }
             if (message != null
                 && (this._source is Expressions.ObjectDefinition

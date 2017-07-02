@@ -37,7 +37,7 @@ namespace NiL.JS.Expressions
             {
 #if TYPE_SAFE
                 double da = 0.0;
-                JSValue f = first.Evaluate(context);
+                JSValue f = _left.Evaluate(context);
                 JSValue s = null;
                 long l = 0;
                 int a;
@@ -45,7 +45,7 @@ namespace NiL.JS.Expressions
                     || f._valueType == JSValueType.Boolean)
                 {
                     a = f._iValue;
-                    s = second.Evaluate(context);
+                    s = _right.Evaluate(context);
                     if (s._valueType == JSValueType.Integer
                     || s._valueType == JSValueType.Boolean)
                     {
@@ -54,15 +54,15 @@ namespace NiL.JS.Expressions
                         //    || l < -2147483648L)
                         if (l != (int)l)
                         {
-                            tempContainer._dValue = l;
-                            tempContainer._valueType = JSValueType.Double;
+                            _tempContainer._dValue = l;
+                            _tempContainer._valueType = JSValueType.Double;
                         }
                         else
                         {
-                            tempContainer._iValue = (int)l;
-                            tempContainer._valueType = JSValueType.Integer;
+                            _tempContainer._iValue = (int)l;
+                            _tempContainer._valueType = JSValueType.Integer;
                         }
-                        return tempContainer;
+                        return _tempContainer;
                     }
                     else
                         da = a;
@@ -70,11 +70,11 @@ namespace NiL.JS.Expressions
                 else
                 {
                     da = Tools.JSObjectToDouble(f);
-                    s = second.Evaluate(context);
+                    s = _right.Evaluate(context);
                 }
-                tempContainer._dValue = da - Tools.JSObjectToDouble(s);
-                tempContainer._valueType = JSValueType.Double;
-                return tempContainer;
+                _tempContainer._dValue = da - Tools.JSObjectToDouble(s);
+                _tempContainer._valueType = JSValueType.Double;
+                return _tempContainer;
 #else
                 tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) - Tools.JSObjectToDouble(second.Invoke(context));
                 tempResult.valueType = JSObjectType.Double;
@@ -88,9 +88,9 @@ namespace NiL.JS.Expressions
             var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (!res)
             {
-                if (first is Constant && Tools.JSObjectToDouble(first.Evaluate(null)) == 0.0)
+                if (_left is Constant && Tools.JSObjectToDouble(_left.Evaluate(null)) == 0.0)
                 {
-                    _this = new Negation(second);
+                    _this = new Negation(_right);
                     return true;
                 }
             }
@@ -104,7 +104,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " - " + second + ")";
+            return "(" + _left + " - " + _right + ")";
         }
     }
 }

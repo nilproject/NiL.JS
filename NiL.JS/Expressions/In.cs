@@ -31,12 +31,12 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             bool res;
-            if (tempContainer == null)
-                tempContainer = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
-            tempContainer.Assign(first.Evaluate(context));
-            var temp = tempContainer;
-            tempContainer = null;
-            var source = second.Evaluate(context);
+            if (_tempContainer == null)
+                _tempContainer = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+            _tempContainer.Assign(_left.Evaluate(context));
+            var temp = _tempContainer;
+            _tempContainer = null;
+            var source = _right.Evaluate(context);
             if (source._valueType < JSValueType.Object)
                 ExceptionHelper.Throw(new TypeError("Right-hand value of operator in is not object."));
             if (temp._valueType == JSValueType.Integer)
@@ -45,12 +45,12 @@ namespace NiL.JS.Expressions
                 if (array != null)
                 {
                     res = temp._iValue >= 0 && temp._iValue < array._data.Length && (array._data[temp._iValue] ?? JSValue.notExists).Exists;
-                    tempContainer = temp;
+                    _tempContainer = temp;
                     return res;
                 }
             }
             var t = source.GetProperty(temp, false, PropertyScope.Сommon);
-            tempContainer = temp;
+            _tempContainer = temp;
             return t.Exists;
         }
 
@@ -61,7 +61,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " in " + second + ")";
+            return "(" + _left + " in " + _right + ")";
         }
     }
 }

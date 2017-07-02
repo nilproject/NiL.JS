@@ -51,12 +51,12 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            return (bool)first.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
+            return (bool)_left.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            Parser.Build(ref first, expressionDepth + 1, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _left, expressionDepth + 1, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
             Parser.Build(ref threads[0], expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
             Parser.Build(ref threads[1], expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
 
@@ -64,29 +64,29 @@ namespace NiL.JS.Expressions
             {
                 if (threads[0] == null && threads[1] == null)
                 {
-                    if (first.ContextIndependent)
+                    if (_left.ContextIndependent)
                     {
                         _this = null;
                         return false;
                     }
                     else
                     {
-                        _this = new Comma(first, new Constant(JSValue.undefined));
+                        _this = new Comma(_left, new Constant(JSValue.undefined));
                     }
                 }
                 else if (threads[0] == null)
                 {
-                    _this = new LogicalDisjunction(first, threads[1]) { Position = Position, Length = Length };
+                    _this = new LogicalDisjunction(_left, threads[1]) { Position = Position, Length = Length };
                     return true;
                 }
                 else if (threads[1] == null)
                 {
-                    _this = new LogicalConjunction(first, threads[0]) { Position = Position, Length = Length };
+                    _this = new LogicalConjunction(_left, threads[0]) { Position = Position, Length = Length };
                     return true;
                 }
-                else if (first.ContextIndependent)
+                else if (_left.ContextIndependent)
                 {
-                    _this = ((bool)first.Evaluate(null) ? threads[0] : threads[1]);
+                    _this = ((bool)_left.Evaluate(null) ? threads[0] : threads[1]);
                     return false;
                 }
             }
@@ -126,7 +126,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " ? " + threads[0] + " : " + threads[1] + ")";
+            return "(" + _left + " ? " + threads[0] + " : " + threads[1] + ")";
         }
     }
 }

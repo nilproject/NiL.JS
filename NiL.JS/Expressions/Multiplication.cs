@@ -16,7 +16,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                var pd = first.ResultType;
+                var pd = _left.ResultType;
                 switch (pd)
                 {
                     case PredictedType.Double:
@@ -46,35 +46,35 @@ namespace NiL.JS.Expressions
         {
 #if TYPE_SAFE
             double da = 0.0;
-            JSValue f = first.Evaluate(context);
+            JSValue f = _left.Evaluate(context);
             JSValue s = null;
             long l = 0;
             if (((int)f._valueType & 0xf) > 3) // bool - b0111, int - b1011
             {
                 int a = f._iValue;
-                s = second.Evaluate(context);
+                s = _right.Evaluate(context);
                 if (((int)s._valueType & 0xf) > 3)
                 {
                     if (((a | s._iValue) & 0xFFFF0000) == 0)
                     {
-                        tempContainer._iValue = a * s._iValue;
-                        tempContainer._valueType = JSValueType.Integer;
+                        _tempContainer._iValue = a * s._iValue;
+                        _tempContainer._valueType = JSValueType.Integer;
                     }
                     else
                     {
                         l = (long)a * s._iValue;
                         if (l > 2147483647L || l < -2147483648L)
                         {
-                            tempContainer._dValue = l;
-                            tempContainer._valueType = JSValueType.Double;
+                            _tempContainer._dValue = l;
+                            _tempContainer._valueType = JSValueType.Double;
                         }
                         else
                         {
-                            tempContainer._iValue = (int)l;
-                            tempContainer._valueType = JSValueType.Integer;
+                            _tempContainer._iValue = (int)l;
+                            _tempContainer._valueType = JSValueType.Integer;
                         }
                     }
-                    return tempContainer;
+                    return _tempContainer;
                 }
                 else
                     da = a;
@@ -82,11 +82,11 @@ namespace NiL.JS.Expressions
             else
             {
                 da = Tools.JSObjectToDouble(f);
-                s = second.Evaluate(context);
+                s = _right.Evaluate(context);
             }
-            tempContainer._dValue = da * Tools.JSObjectToDouble(s);
-            tempContainer._valueType = JSValueType.Double;
-            return tempContainer;
+            _tempContainer._dValue = da * Tools.JSObjectToDouble(s);
+            _tempContainer._valueType = JSValueType.Double;
+            return _tempContainer;
 #else
             tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) * Tools.JSObjectToDouble(second.Invoke(context));
             tempResult.valueType = JSObjectType.Double;
@@ -99,18 +99,18 @@ namespace NiL.JS.Expressions
             var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (!res)
             {
-                var exp = first as Constant;
+                var exp = _left as Constant;
                 if (exp != null
                     && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
                 {
-                    _this = new ConvertToNumber(second);
+                    _this = new ConvertToNumber(_right);
                     return true;
                 }
-                exp = second as Constant;
+                exp = _right as Constant;
                 if (exp != null
                     && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)
                 {
-                    _this = new ConvertToNumber(first);
+                    _this = new ConvertToNumber(_left);
                     return true;
                 }
             }
@@ -124,11 +124,11 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            if (first is Constant
-                && ((first as Constant).value._valueType == JSValueType.Integer)
-                && ((first as Constant).value._iValue == -1))
-                return "-" + second;
-            return "(" + first + " * " + second + ")";
+            if (_left is Constant
+                && ((_left as Constant).value._valueType == JSValueType.Integer)
+                && ((_left as Constant).value._iValue == -1))
+                return "-" + _right;
+            return "(" + _left + " * " + _right + ")";
         }
     }
 }

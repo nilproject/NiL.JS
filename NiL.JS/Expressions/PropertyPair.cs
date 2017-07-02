@@ -14,11 +14,11 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return first;
+                return _left;
             }
             internal set
             {
-                first = value;
+                _left = value;
             }
         }
 
@@ -26,11 +26,11 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return second;
+                return _right;
             }
             internal set
             {
-                second = value;
+                _right = value;
             }
         }
 
@@ -45,17 +45,17 @@ namespace NiL.JS.Expressions
         public PropertyPair(Expression getter, Expression setter)
             : base(getter, setter, true)
         {
-            tempContainer._valueType = JSValueType.Property;
+            _tempContainer._valueType = JSValueType.Property;
         }
         
         public override JSValue Evaluate(Context context)
         {
-            tempContainer._oValue = new Core.PropertyPair
+            _tempContainer._oValue = new Core.PropertyPair
             (
                 Getter == null ? null : (Function)Getter.Evaluate(context),
                 Setter == null ? null : (Function)Setter.Evaluate(context)
             );
-            return tempContainer;
+            return _tempContainer;
         }
 
         public override void Decompose(ref Expression self, IList<CodeNode> result)

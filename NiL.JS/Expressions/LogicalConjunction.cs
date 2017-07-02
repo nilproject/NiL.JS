@@ -30,11 +30,11 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var left = first.Evaluate(context);
+            var left = _left.Evaluate(context);
             if (!(bool)left)
                 return left;
             else
-                return second.Evaluate(context);
+                return _right.Evaluate(context);
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
@@ -51,7 +51,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " && " + second + ")";
+            return "(" + _left + " && " + _right + ")";
         }
     }
 }

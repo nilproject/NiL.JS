@@ -29,7 +29,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var temp = first.Evaluate(context);
+            var temp = _left.Evaluate(context);
             JSValue tjso;
             int tint;
             double tdouble;
@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
                 case JSValueType.Integer:
                     {
                         tint = temp._iValue;
-                        tjso = second.Evaluate(context);
+                        tjso = _right.Evaluate(context);
                         switch (tjso._valueType)
                         {
                             case JSValueType.Boolean:
@@ -83,7 +83,7 @@ namespace NiL.JS.Expressions
                 case JSValueType.Double:
                     {
                         tdouble = temp._dValue;
-                        tjso = second.Evaluate(context);
+                        tjso = _right.Evaluate(context);
                         switch (tjso._valueType)
                         {
                             case JSValueType.Boolean:
@@ -127,7 +127,7 @@ namespace NiL.JS.Expressions
                 case JSValueType.String:
                     {
                         tstr = temp._oValue.ToString();
-                        temp = second.Evaluate(context);
+                        temp = _right.Evaluate(context);
                         switch (temp._valueType)
                         {
                             case JSValueType.Boolean:
@@ -186,12 +186,12 @@ namespace NiL.JS.Expressions
                 case JSValueType.Symbol:
                 case JSValueType.Object:
                     {
-                        if (tempContainer == null)
-                            tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
-                        tempContainer.Assign(temp);
-                        temp = tempContainer;
+                        if (_tempContainer == null)
+                            _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                        _tempContainer.Assign(temp);
+                        temp = _tempContainer;
 
-                        tjso = second.Evaluate(context);
+                        tjso = _right.Evaluate(context);
                         switch (tjso._valueType)
                         {
                             case JSValueType.Double:
@@ -255,7 +255,7 @@ namespace NiL.JS.Expressions
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
                     {
-                        temp = second.Evaluate(context);
+                        temp = _right.Evaluate(context);
                         switch (temp._valueType)
                         {
                             case JSValueType.Object:
@@ -279,7 +279,7 @@ namespace NiL.JS.Expressions
             base.Optimize(ref _this, owner, message, opts, stats);
             if (message != null)
             {
-                var fc = first as Constant ?? second as Constant;
+                var fc = _left as Constant ?? _right as Constant;
                 if (fc != null)
                 {
                     switch (fc.value._valueType)
@@ -303,7 +303,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " == " + second + ")";
+            return "(" + _left + " == " + _right + ")";
         }
     }
 }
