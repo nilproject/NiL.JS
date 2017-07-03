@@ -935,7 +935,18 @@ namespace NiL.JS.Expressions
 
             if ((kind == OperationType.Assignment) || assign)
             {
-                if (!canAsign || !canBeAssignee(first))
+                var error = !canAsign || !canBeAssignee(first);
+
+                if (kind == OperationType.Assignment)
+                {
+                    if (first is ObjectDefinition)
+                    {
+                        first = new ObjectDesctructuringAcceptor(first as ObjectDefinition);
+                        error = false;
+                    }
+                }
+
+                if (error)
                     ExceptionHelper.ThrowReferenceError("Invalid left-hand side in assignment", state.Code, first.Position, first.Length);
             }
 

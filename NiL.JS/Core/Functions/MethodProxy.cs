@@ -176,7 +176,7 @@ namespace NiL.JS.Core.Functions
             var argumentsObject = Expression.Condition(
                 Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
                 argumentsObjectPrm,
-                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.EvaluateArgs).GetMethodInfo(), arguments, context)));
+                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(), arguments, context)));
 
             if (_forceInstance)
             {
@@ -299,7 +299,7 @@ namespace NiL.JS.Core.Functions
             var argumentsObject = Expression.Condition(
                 Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
                 argumentsObjectPrm,
-                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.EvaluateArgs).GetMethodInfo(), arguments, context)));
+                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(), arguments, context)));
 
             if (_parameters.Length == 0)
             {

@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             else
             {
                 if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
-                    throwRoError();
+                    throwReadOnlyError();
             }
             temp = _right.Evaluate(context);
             var oldAttributes = field._attributes;
@@ -43,7 +43,7 @@ namespace NiL.JS.Expressions
 #endif
     public class Assignment : Expression
     {
-        private Arguments setterArgs;
+        private Arguments _setterArgs;
         private bool saveResult;
 
         protected internal override bool ContextIndependent
@@ -67,8 +67,8 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public Assignment(Expression first, Expression second)
-            : base(first, second, false)
+        public Assignment(Expression left, Expression right)
+            : base(left, right, false)
         {
         }
 
@@ -84,7 +84,7 @@ namespace NiL.JS.Expressions
             else
             {
                 if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
-                    throwRoError();
+                    throwReadOnlyError();
             }
 
             temp = _right.Evaluate(context);
@@ -93,9 +93,9 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        protected void throwRoError()
+        protected void throwReadOnlyError()
         {
-            ExceptionHelper.Throw(new TypeError("Can not assign to readonly property \"" + _left + "\""));
+            ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, _left));
         }
 
         protected JSValue setProperty(Context context, JSValue field)
@@ -103,28 +103,38 @@ namespace NiL.JS.Expressions
             JSValue temp;
             lock (this)
             {
+                var setterArgs = _setterArgs;
+                _setterArgs = null;
                 if (setterArgs == null)
                     setterArgs = new Arguments();
+
                 var fieldSource = context._objectSource;
                 temp = _right.Evaluate(context);
+
                 if (saveResult)
                 {
                     if (_tempContainer == null)
                         _tempContainer = new JSValue();
+
                     _tempContainer.Assign(temp);
                     temp = _tempContainer;
                     _tempContainer = null;
                 }
+
                 setterArgs.Reset();
-                setterArgs.length = 1;
-                setterArgs[0] = temp;
+                setterArgs.Add(temp);
+
                 var setter = (field._oValue as Core.PropertyPair).setter;
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (context._strict)
-                    ExceptionHelper.Throw(new TypeError("Can not assign to readonly property \"" + _left + "\""));
+                    throwReadOnlyError();
+
                 if (saveResult)
                     _tempContainer = temp;
+
+                _setterArgs = setterArgs;
+
                 return temp;
             }
         }

@@ -412,7 +412,7 @@ namespace NiL.JS.BaseLibrary
                 return NotExists;
 
             // Совсем медленно. Плохая функция попалась
-            Arguments argumentsObject = Tools.EvaluateArgs(arguments, initiator);
+            Arguments argumentsObject = Tools.CreateArguments(arguments, initiator);
 
             initiator._objectSource = null;
 

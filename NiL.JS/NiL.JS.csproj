@@ -262,6 +262,7 @@
     <Compile Include="ExportTable.cs" />
     <Compile Include="Expressions\AwaitExpression.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />
+    <Compile Include="Expressions\ObjectDesctructuringAcceptor.cs" />
     <Compile Include="Expressions\PropertyPair.cs" />
     <Compile Include="Expressions\NewTarget.cs" />
     <Compile Include="Expressions\SuspendableExpression.cs" />

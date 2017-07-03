@@ -19,7 +19,7 @@ namespace NiL.JS.Expressions
 
         public string[] FieldNames { get { return _fieldNames; } }
         public Expression[] Values { get { return _values; } }
-        public IEnumerable<KeyValuePair<Expression, Expression>> ComputedProperties { get { return _computedProperties; } }
+        public KeyValuePair<Expression, Expression>[] ComputedProperties { get { return _computedProperties; } }
 
         protected internal override bool ContextIndependent
         {
@@ -127,17 +127,17 @@ namespace NiL.JS.Expressions
                     {
                         case 'g':
                             {
-                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new PropertyPair((Expression)initializer, null)));
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>(name, new PropertyPair((Expression)initializer, null)));
                                 break;
                             }
                         case 's':
                             {
-                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, new PropertyPair(null, (Expression)initializer)));
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>(name, new PropertyPair(null, (Expression)initializer)));
                                 break;
                             }
                         default:
                             {
-                                computedProperties.Add(new KeyValuePair<Expression, Expression>((Expression)name, (Expression)initializer));
+                                computedProperties.Add(new KeyValuePair<Expression, Expression>(name, (Expression)initializer));
                                 break;
                             }
                     }
@@ -232,9 +232,7 @@ namespace NiL.JS.Expressions
                     else
                     {
                         if (asterisk)
-                        {
                             ExceptionHelper.ThrowSyntaxError("Unexpected token", state.Code, i);
-                        }
 
                         if (state.Code[i] != ':' && state.Code[i] != ',' && state.Code[i] != '}')
                             ExceptionHelper.ThrowSyntaxError("Expected ',', ';' or '}'", state.Code, i);
@@ -242,9 +240,9 @@ namespace NiL.JS.Expressions
                         Expression aei = null;
                         if (flds.TryGetValue(fieldName, out aei))
                         {
-                            if (state.strict ? (!(aei is Constant) || (aei as Constant).value != JSValue.undefined)
-                                             : aei is PropertyPair)
+                            if (state.strict ? (!(aei is Constant) || (aei as Constant).value != JSValue.undefined) : aei is PropertyPair)
                                 ExceptionHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
+
                             if (state.message != null)
                                 state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 0), "Duplicate key \"" + fieldName + "\"");
                         }
@@ -254,13 +252,6 @@ namespace NiL.JS.Expressions
                             if (!Parser.ValidateName(fieldName, 0))
                                 ExceptionHelper.ThrowSyntaxError("Invalid variable name", state.Code, i);
 
-                            if (state.Code[i] == ',')
-                            {
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-                            }
-
                             initializer = new Variable(fieldName, state.lexicalScopeLevel);
                         }
                         else
@@ -268,16 +259,19 @@ namespace NiL.JS.Expressions
                             do
                                 i++;
                             while (Tools.IsWhiteSpace(state.Code[i]));
-                            initializer = (Expression)ExpressionTree.Parse(state, ref i, false, false);
+                            initializer = ExpressionTree.Parse(state, ref i, false, false);
                         }
                     }
                     flds[fieldName] = initializer;
                 }
+
                 while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
+
                 if ((state.Code[i] != ',') && (state.Code[i] != '}'))
                     return null;
             }
+
             i++;
             var pos = index;
             index = i;
@@ -360,16 +354,16 @@ namespace NiL.JS.Expressions
 
             for (var i = 0; i < _values.Length; i++)
             {
-                Parser.Build(ref _values[i], 2,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref _values[i], 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             }
 
             for (var i = 0; i < _computedProperties.Length; i++)
             {
                 var key = _computedProperties[i].Key;
-                Parser.Build(ref key, 2,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref key, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
                 var value = _computedProperties[i].Value;
-                Parser.Build(ref value, 2,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref value, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
                 _computedProperties[i] = new KeyValuePair<Expression, Expression>(key, value);
             }

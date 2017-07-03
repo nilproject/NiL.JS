@@ -1760,13 +1760,17 @@ namespace NiL.JS.Core
             var fb = p >> 8;
             if (fb != 0x0 && fb != 0x16 && fb != 0x18 && fb != 0x20 && fb != 0x30 && fb != 0xFE)
                 return false;
+
             for (var i = 0; i < TrimChars.Length; i++)
+            {
                 if (p == TrimChars[i])
                     return true;
+            }
+
             return false;
         }
 
-        internal static Arguments EvaluateArgs(Expressions.Expression[] arguments, Context initiator)
+        internal static Arguments CreateArguments(Expressions.Expression[] arguments, Context initiator)
         {
             Arguments argumentsObject = new Arguments(initiator);
             IList<JSValue> spreadSource = null;
@@ -1792,7 +1796,7 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    var value = Tools.EvalExpressionSafe(initiator, arguments[sourceIndex]);
+                    var value = EvalExpressionSafe(initiator, arguments[sourceIndex]);
                     if (value._valueType == JSValueType.SpreadOperatorResult)
                     {
                         spreadIndex = 0;

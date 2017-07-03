@@ -121,14 +121,14 @@ namespace NiL.JS.Expressions
                 {
                     case CallMode.Construct:
                         {
-                            return callable.Construct(Tools.EvaluateArgs(_arguments, context));
+                            return callable.Construct(Tools.CreateArguments(_arguments, context));
                         }
                     case CallMode.Super:
                         {
-                            return callable.Construct(targetObject, Tools.EvaluateArgs(_arguments, context));
+                            return callable.Construct(targetObject, Tools.CreateArguments(_arguments, context));
                         }
                     default:
-                        return callable.Call(targetObject, Tools.EvaluateArgs(_arguments, context));
+                        return callable.Call(targetObject, Tools.CreateArguments(_arguments, context));
                 }
             }
             else
