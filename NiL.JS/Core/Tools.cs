@@ -1917,7 +1917,7 @@ namespace NiL.JS.Core
                     BaseLibrary.Function f = v.Value as BaseLibrary.Function;
                     if (recursionDepth >= maxRecursionDepth)
                         return f.name + "()";
-                    return $"function {f.name}()";
+                    return f.ToString(true);
                 case JSValueType.Object:
                     if (v == null || v._oValue == null)
                         return "null";
