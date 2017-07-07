@@ -1889,6 +1889,85 @@ namespace NiL.JS.Core
         }
 
 
+        public static string GetTypeName(JSValue v)
+        {
+            if (v == null)
+                return "null";
+
+            switch (v._valueType)
+            {
+                case JSValueType.NotExists:
+                case JSValueType.NotExistsInObject:
+                case JSValueType.Undefined:
+                    return "undefined";
+                case JSValueType.Boolean:
+                    return "Boolean";
+                case JSValueType.Integer:
+                case JSValueType.Double:
+                    return "Number";
+                case JSValueType.String:
+                    return "String";
+                case JSValueType.Symbol:
+                    return "Symbol";
+                case JSValueType.Object:
+                    {
+                        var o = v as ObjectWrapper;
+                        if (o == null)
+                            o = v._oValue as ObjectWrapper;
+                        if (o != null)
+                            return o.Value.GetType().Name;
+
+                        if (v._oValue == null)
+                            return "null";
+
+                        if (v._oValue is GlobalObject)
+                            return "global";
+                        
+                        if (v._oValue is Proxy)
+                        {
+                            var hostedType = (v._oValue as Proxy)._hostedType;
+                            if (hostedType == typeof(JSObject))
+                                return "Object";
+                            return hostedType.Name;
+                        }
+
+                        if (v.Value.GetType() == typeof(JSObject))
+                            return "Object";
+                        return v.Value.GetType().Name;
+                    }
+                case JSValueType.Function:
+                    {
+                        (v as Function).ToString();
+                        break;
+                    }
+                case JSValueType.Date:
+                    return "Date";
+                case JSValueType.Property:
+                    {
+                        var prop = v._oValue as GsPropertyPair;
+                        if (prop != null)
+                        {
+                            var tempStr = "";
+                            if (prop.getter != null)
+                                tempStr += "Getter";
+                            if (prop.setter != null)
+                                tempStr += ((tempStr.Length > 0) ? "/" : "") + "Setter";
+                            if (tempStr.Length == 0)
+                                tempStr = "Invalid";
+                            return tempStr + " Property";
+                        }
+                        return "Property";
+                    }
+                default:
+                    throw new NotImplementedException();
+            }
+
+            string typeName = v.toString(null).ToString(); // "[object TYPENAME]"
+            typeName = typeName.Substring(8, typeName.Length - 1 - 8); // 8 = "[object ".Length
+            
+                return typeName;
+        }
+
         public static string JSValueToObjectString(JSValue v)
         {
             return Tools.JSValueToObjectString(v, 1, 0);
@@ -1960,9 +2039,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        string typeName = v.toString(null).ToString(); // "[object TYPENAME]"
-                        typeName = typeName.Substring(8, typeName.Length - 1 - 8); // 8 = "[object ".Length
-
+                        string typeName = Tools.GetTypeName(v);
                         if (recursionDepth >= maxRecursionDepth)
                             return typeName;
 
