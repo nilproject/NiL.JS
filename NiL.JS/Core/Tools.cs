@@ -2001,18 +2001,33 @@ namespace NiL.JS.Core
                         return v.ToString();
 
                     if (v.Value is BaseLibrary.Array
-                        || v.Value == Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Array)))
+                        || v.Value == Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Array))
+                        || v == Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Array)))
                     {
                         BaseLibrary.Array a = v.Value as BaseLibrary.Array;
-                        if (a == null)
-                            return v.ToString();
+                        StringBuilder s;
+
+                        if (a == null) // v == Array.prototype
+                        {
+                            s = new StringBuilder("Array [ ");
+                            int j = 0;
+                            for (var e = v.GetEnumerator(true, EnumerationMode.RequireValues); e.MoveNext();)
+                            {
+                                if (j++ > 0)
+                                    s.Append(", ");
+                                s.Append(e.Current.Key).Append(": ");
+                                s.Append(Tools.JSValueToObjectString(e.Current.Value, maxRecursionDepth, recursionDepth + 1));
+                            }
+                            s.Append(" ]");
+                            return s.ToString();
+                        }
 
                         long len = (long)a.length;
 
                         if (recursionDepth >= maxRecursionDepth)
                             return $"Array[{len}]";
 
-                        StringBuilder s = new StringBuilder($"Array ({len}) [ ");
+                        s = new StringBuilder($"Array ({len}) [ ");
                         int i = 0;
                         for (i = 0; i < len; i++)
                         {
