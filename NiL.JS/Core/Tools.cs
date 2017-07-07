@@ -1917,7 +1917,9 @@ namespace NiL.JS.Core
                     BaseLibrary.Function f = v.Value as BaseLibrary.Function;
                     if (recursionDepth >= maxRecursionDepth)
                         return f.name + "()";
-                    return f.ToString(true);
+                    if (recursionDepth == maxRecursionDepth - 1)
+                        return f.ToString(true);
+                    return f.ToString();
                 case JSValueType.Object:
                     if (v == null || v._oValue == null)
                         return "null";
@@ -2063,8 +2065,10 @@ namespace NiL.JS.Core
                             s.Append(args[used++].ToString());
                             break;
                         case 'o':
+                            s.Append(Tools.JSValueToObjectString(args[used++], 1));
+                            break;
                         case 'O':
-                            s.Append(Tools.JSValueToObjectString(args[used++]));
+                            s.Append(Tools.JSValueToObjectString(args[used++], 2));
                             break;
                         case 'i':
                         case 'd':
