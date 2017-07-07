@@ -224,7 +224,7 @@ namespace NiL.JS.Core
                 yield return new KeyValuePair<string, JSValue>("4", a4);
             if (callee != null && callee.Exists && (!hideNonEnum || (callee._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("callee", callee);
-            if (caller != null && callee.Exists && (!hideNonEnum || (caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+            if (caller != null && caller.Exists && (!hideNonEnum || (caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("caller", caller);
             if (_lengthContainer != null && _lengthContainer.Exists && (!hideNonEnum || (_lengthContainer._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("length", _lengthContainer);
