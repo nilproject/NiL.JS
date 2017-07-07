@@ -941,13 +941,20 @@ namespace NiL.JS.Expressions
                 {
                     if (first is ObjectDefinition)
                     {
-                        first = new ObjectDesctructuringAcceptor(first as ObjectDefinition);
-                        error = false;
+                        try
+                        {
+                            first = new ObjectDesctructuringAcceptor(first as ObjectDefinition);
+                            error = false;
+                        }
+                        catch
+                        {
+                            // Exception will be handled in next line
+                        }
                     }
                 }
 
                 if (error)
-                    ExceptionHelper.ThrowReferenceError("Invalid left-hand side in assignment", state.Code, first.Position, first.Length);
+                    ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment, state.Code, first.Position, first.Length);
             }
 
             if (binary && !forUnary)
@@ -1025,7 +1032,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        private static bool canBeAssignee(Expression first)
+        internal static bool canBeAssignee(Expression first)
         {
             return first is Variable
                 || first is Property

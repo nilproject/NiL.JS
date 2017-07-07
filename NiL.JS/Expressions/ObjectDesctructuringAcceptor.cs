@@ -117,8 +117,28 @@ namespace NiL.JS.Expressions
             _objectDefinition = objectDefinition;
         }
 
-        public bool CheckObjectDefinition(ObjectDefinition objectDefinition, bool @throw)
+        public static bool CheckObjectDefinition(ObjectDefinition objectDefinition, bool @throw)
         {
+            for (var i = 0; i < objectDefinition.Values.Length; i++)
+            {
+                if (!ExpressionTree.canBeAssignee(objectDefinition.Values[i]))
+                {
+                    if (@throw)
+                        ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
+                    return false;
+                }
+            }
+
+            for (var i = 0; i < objectDefinition.ComputedProperties.Length; i++)
+            {
+                if (!ExpressionTree.canBeAssignee(objectDefinition.ComputedProperties[i].Value))
+                {
+                    if (@throw)
+                        ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
+                    return false;
+                }
+            }
+
             return true;
         }
 
