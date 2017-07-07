@@ -128,12 +128,12 @@ namespace NiL.JS.Core
 
         public void Add(JSValue arg)
         {
-            this[length++] = arg;
+            this[length++] = arg.CloneImpl((JSValueAttributesInternal)uint.MaxValue);
         }
 
         public void Add(object value)
         {
-            this[length++] = JSValue.Marshal(value);
+            this[length++] = Marshal(value);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool createMember, PropertyScope memberScope)
