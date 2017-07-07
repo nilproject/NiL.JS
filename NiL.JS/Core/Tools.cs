@@ -2081,7 +2081,7 @@ namespace NiL.JS.Core
         }
 
 
-        public static string FormatArgs(IEnumerable args)
+        public static string FormatArgs(IEnumerable<KeyValuePair<string, JSValue>> args)
         {
             if (args == null)
                 return null;
@@ -2090,17 +2090,11 @@ namespace NiL.JS.Core
             if (!e.MoveNext())
                 return null;
 
-            var o = e.Current;
-            JSValue v = o as JSValue;
+            var arg = e.Current.Value;
             string f = null;
 
-            if (o != null)
-            {
-                if (o is string || o is System.String)
-                    f = o.ToString();
-                else if (v != null && v.ValueType == JSValueType.String)
-                    f = v.ToString();
-            }
+            if (arg != null && arg.ValueType == JSValueType.String)
+                f = arg.ToString();
 
             bool hasNext = e.MoveNext();
             
@@ -2111,7 +2105,7 @@ namespace NiL.JS.Core
                 int pos = 0;
                 while (pos < f.Length && hasNext)
                 {
-                    v = (o = e.Current) as JSValue;
+                    arg = e.Current.Value;
                     bool usedArg = false;
 
                     int next = f.IndexOf('%', pos);
@@ -2155,36 +2149,18 @@ namespace NiL.JS.Core
                     switch (c)
                     {
                         case 's':
-                            if (v != null)
-                                s.Append(Tools.JSValueToString(v));
-                            else if (o == null)
-                                s.Append("null");
-                            else
-                            {
-                                if (o is System.String || o is System.Char)
-                                    s.Append('"').Append(o.ToString()).Append('"');
-                                else
-                                    s.Append(o.ToString());
-                            }
+                            s.Append(Tools.JSValueToString(arg));
                             usedArg = true;
                             break;
                         case 'o':
                         case 'O':
                             int maxRec = (c == 'o') ? 1 : 2;
-                            if (v != null)
-                                s.Append(Tools.JSValueToObjectString(v, maxRec));
-                            else
-                                s.Append((o ?? null).ToString()); // maybe list all properties + methods
-
+                            s.Append(Tools.JSValueToObjectString(arg, maxRec));
                             usedArg = true;
                             break;
                         case 'i':
                         case 'd':
-                            d = double.NaN;
-                            if (v != null)
-                                d = (double)Tools.JSObjectToNumber(v);
-                            else
-                                double.TryParse((o ?? "null").ToString(), out d);
+                            d = (double)Tools.JSObjectToNumber(arg);
 
                             if (double.IsNaN(d) || double.IsInfinity(d))
                                 d = 0.0;
@@ -2200,11 +2176,7 @@ namespace NiL.JS.Core
                             usedArg = true;
                             break;
                         case 'f':
-                            d = double.NaN;
-                            if (v != null)
-                                d = (double)Tools.JSObjectToNumber(v);
-                            else
-                                double.TryParse((o ?? "null").ToString(), out d);
+                            d = (double)Tools.JSObjectToNumber(arg);
 
                             if (para >= 0)
                                 d = System.Math.Round(d, System.Math.Min(15, para));
@@ -2235,36 +2207,46 @@ namespace NiL.JS.Core
 
                 while (hasNext)
                 {
-                    v = e.Current as JSValue;
+                    arg = e.Current.Value;
                     s.Append(' ');
-                    if (v != null)
+                    if (arg != null)
                     {
-                        if (v.ValueType == JSValueType.Object)
-                            s.Append(Tools.JSValueToObjectString(v));
+                        if (arg.ValueType == JSValueType.Object)
+                            s.Append(Tools.JSValueToObjectString(arg));
                         else
-                            s.Append(v.ToString());
+                            s.Append(arg.ToString());
                     }
                     else
-                        s.Append((e.Current ?? "null").ToString());
+                        s.Append("null");
                     hasNext = e.MoveNext();
                 }
             }
             else
             {
-                e.Reset();
-                while (e.MoveNext())
+                if (arg != null)
                 {
-                    v = e.Current as JSValue;
+                    if (arg.ValueType == JSValueType.Object)
+                        s.Append(Tools.JSValueToObjectString(arg));
+                    else
+                        s.Append(arg.ToString());
+                }
+                else
+                    s.Append("null");
+
+                while (hasNext)
+                {
+                    arg = e.Current.Value;
                     s.Append(' ');
-                    if (v != null)
+                    if (arg != null)
                     {
-                        if (v.ValueType == JSValueType.Object)
-                            s.Append(Tools.JSValueToObjectString(v));
+                        if (arg.ValueType == JSValueType.Object)
+                            s.Append(Tools.JSValueToObjectString(arg));
                         else
-                            s.Append(v.ToString());
+                            s.Append(arg.ToString());
                     }
                     else
-                        s.Append((e.Current ?? "null").ToString());
+                        s.Append("null");
+                    hasNext = e.MoveNext();
                 }
             }
 
