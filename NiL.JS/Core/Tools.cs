@@ -1986,13 +1986,15 @@ namespace NiL.JS.Core
                     return "Date " + dstr;
                 case JSValueType.Function:
                     BaseLibrary.Function f = v.Value as BaseLibrary.Function;
+                    if (f == null)
+                        return v.ToString();
                     if (recursionDepth >= maxRecursionDepth)
                         return f.name + "()";
                     if (recursionDepth == maxRecursionDepth - 1)
                         return f.ToString(true);
                     return f.ToString();
                 case JSValueType.Object:
-                    if (v == null || v._oValue == null)
+                    if (v._oValue == null)
                         return "null";
 
                     if (v.Value is RegExp)
@@ -2002,6 +2004,9 @@ namespace NiL.JS.Core
                         || v.Value == Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Array)))
                     {
                         BaseLibrary.Array a = v.Value as BaseLibrary.Array;
+                        if (a == null)
+                            return v.ToString();
+
                         long len = (long)a.length;
 
                         if (recursionDepth >= maxRecursionDepth)
@@ -2041,8 +2046,10 @@ namespace NiL.JS.Core
                         JSObject o = v as JSObject;
                         if (o == null)
                             o = v._oValue as JSObject;
+                        if (o == null)
+                            return v.ToString();
 
-                        
+
                         int i = 0;
                         for (var e = o.GetEnumerator(true, EnumerationMode.RequireValues); e.MoveNext();)
                         {
