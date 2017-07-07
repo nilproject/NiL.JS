@@ -103,7 +103,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public void LogArguments(LogLevel level, Arguments args, int argsStart)
         {
-            if (args.length == 0 || args.length <= argsStart)
+            if (args == null || args.length == 0 || args.length <= argsStart)
                 return;
             
             LogMessage(level, Tools.FormatArgs(args.Skip(argsStart)));
