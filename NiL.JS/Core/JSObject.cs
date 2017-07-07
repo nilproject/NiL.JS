@@ -14,10 +14,7 @@ namespace NiL.JS.Core
         internal IDictionary<Symbol, JSValue> _symbols;
         internal JSObject _objectPrototype;
 
-        [DoNotDelete]
-        [DoNotEnumerate]
-        [NotConfigurable]
-        [CLSCompliant(false)]
+        [Hidden]
         public sealed override JSObject __proto__
         {
             [Hidden]
