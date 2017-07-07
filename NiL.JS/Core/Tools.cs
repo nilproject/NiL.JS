@@ -1991,6 +1991,27 @@ namespace NiL.JS.Core
             return v.ToString();
         }
         
+        public static string JSValueToString(JSValue v)
+        {
+            if (v == null)
+                return "null";
+
+            if (v.ValueType == JSValueType.Object)
+            {
+                if (v._oValue == null)
+                    return "null";
+
+                var o = v as ObjectWrapper;
+                if (o == null)
+                    o = v._oValue as ObjectWrapper;
+                if (o != null)
+                    return o.Value.ToString();
+            }
+
+            return v.ToString();
+        }
+
+
         public static string FormatArgs(Arguments args)
         {
             return FormatArgs(args, 0, args.length, true);
@@ -2062,7 +2083,7 @@ namespace NiL.JS.Core
                     switch (c)
                     {
                         case 's':
-                            s.Append(args[used++].ToString());
+                            s.Append(Tools.JSValueToString(args[used++]));
                             break;
                         case 'o':
                             s.Append(Tools.JSValueToObjectString(args[used++], 1));
