@@ -175,6 +175,20 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
+        public JSValue asserta(Function f, JSValue sample)
+        {
+            if (sample == null || !sample.Exists)
+                sample = Boolean.True;
+
+            if (!JSObject.@is(f.Call(null), sample))
+            {
+                var message = f.ToString();
+                message = message.Substring(message.IndexOf("=>") + 2).Trim();
+                LogMessage(LogLevel.Error, message + " not equals " + sample);
+            }
+            return JSValue.undefined;
+        }
+
         public JSValue clear(JSValue thisBind, Arguments args)
         {
             _groups.Clear();
