@@ -2018,44 +2018,44 @@ namespace NiL.JS.Core
                 string f = (args[start] ?? "null").ToString();
 
                 int used = start + 1;
-                while (f != "" && used < stop)
+                int pos = 0;
+                while (pos < f.Length && used < stop)
                 {
-                    int next = f.IndexOf('%');
-                    if (next < 0 || next == f.Length - 1) break;
+                    int next = f.IndexOf('%', pos);
+                    if (next < 0 || next == f.Length - 1)
+                        break;
                     if (next > 0)
-                        s.Append(f.Substring(0, next));
+                        s.Append(f.Substring(pos, next - pos));
+                    pos = next; // now: f[pos] == '%'
 
                     bool include = false;
                     int len = 2;
 
-                    char c = f[next + 1];
+                    char c = f[pos + 1];
 
                     int para = -1; // the int parameter after "%."
                     if (c == '.') // expected format: "%.0000f"
                     {
-                        while (next + len < f.Length)
+                        while (pos + len < f.Length)
                         {
-                            if (Tools.IsDigit(f[next + len]))
+                            if (Tools.IsDigit(f[pos + len]))
                                 len++;
                             else
                                 break;
                         }
-                        if (next + len == f.Length)
-                        {
-                            f = f.Substring(next);
+                        if (pos + len == f.Length) // invalid: "... %.000"
                             break;
-                        }
 
                         if (len > 12) // >10 digits  ->  >2^32
                             para = int.MaxValue;
                         else
                         {
                             long res = -1;
-                            if (len > 2 && long.TryParse(f.Substring(next + 2, len - 2), out res))
+                            if (len > 2 && long.TryParse(f.Substring(pos + 2, len - 2), out res))
                                 para = (int)System.Math.Min(res, int.MaxValue);
                         }
                         if (len > 2)
-                            c = f[next + len++];
+                            c = f[pos + len++];
                     }
 
                     double d;
@@ -2101,10 +2101,11 @@ namespace NiL.JS.Core
                     }
 
                     if (include)
-                        s.Append(f.Substring(next, len));
-                    f = f.Substring(next + len);
+                        s.Append(f.Substring(pos, len));
+                    pos += len;
                 }
-                s.Append(f.Replace("%%", "%")); // out of arguments? -> still unescape %%
+                if (pos < f.Length)
+                    s.Append(f.Substring(pos).Replace("%%", "%")); // out of arguments? -> still unescape %%
 
                 for (int i = used; i < stop; i++)
                 {
