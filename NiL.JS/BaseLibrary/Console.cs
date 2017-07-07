@@ -1,17 +1,19 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
 using NiL.JS.Core;
+using NiL.JS.Core.Interop;
 using NiL.JS.Core.Functions;
 
 #if !NETCORE
 namespace NiL.JS.BaseLibrary
 {
-	/// <summary>
-	/// A console modelled after the Console Living Standard.
-	/// https://console.spec.whatwg.org
-	/// </summary>
-	public class console
+    /// <summary>
+    /// A console modelled after the Console Living Standard.
+    /// https://console.spec.whatwg.org
+    /// </summary>
+    public class JSConsole
     {
 
         public enum LogLevel
@@ -28,9 +30,7 @@ namespace NiL.JS.BaseLibrary
 
         private GlobalContext _globalContext;
         private JSObject _obj;
-
-        private TextWriter[] _textWriters;
-
+        
         private Dictionary<string, int> _counters = new Dictionary<string, int>();
         private List<string> _groups = new List<string>();
         private Dictionary<string, Stopwatch> _timers = new Dictionary<string, Stopwatch>();
@@ -53,14 +53,9 @@ namespace NiL.JS.BaseLibrary
         }
 
         
-        internal console(GlobalContext globalContext)
-            :this(globalContext, null, null, null, null)
-        {
-        }
-        internal console(GlobalContext globalContext, TextWriter logTw, TextWriter infoTw, TextWriter warnTw, TextWriter errorTw)
+        internal JSConsole(GlobalContext globalContext)
         {
             this._globalContext = globalContext;
-            this._textWriters = new TextWriter[4] { logTw, infoTw, warnTw, errorTw };
             CreateConsoleObject();
         }
 
@@ -69,6 +64,7 @@ namespace NiL.JS.BaseLibrary
             _obj = JSObject.CreateObject();
 
             _obj["assert"] = new ExternalFunction(this.assert);
+            //_obj["asserta"] = new ExternalFunction(this.asserta);
             _obj["clear"] = new ExternalFunction(this.clear);
             _obj["count"] = new ExternalFunction(this.count);
             _obj["debug"] = new ExternalFunction(this.debug);
@@ -89,56 +85,41 @@ namespace NiL.JS.BaseLibrary
             _obj["timeEnd"] = new ExternalFunction(this.timeEnd);
         }
 
-        
-        public TextWriter GetLogger(LogLevel ll)
+
+        [Hidden]
+        public virtual TextWriter GetLogger(LogLevel ll)
         {
-            int lli = (int)ll;
-
-            TextWriter res = null;
-            if (lli >= 0 && lli < _textWriters.Length)
-                res = _textWriters[lli];
-
-            if (res == null)
-            {
-                if (ll == LogLevel.Error)
-                    res = System.Console.Error;
-                else
-                    res = System.Console.Out;
-            }
-
-            return res;
+            if (ll == LogLevel.Error)
+                return System.Console.Error;
+            else
+                return System.Console.Out;
         }
-        public void SetLogger(LogLevel ll, TextWriter value)
-        {
-            int lli = (int)ll;
-            if (lli >= 0 && lli < _textWriters.Length)
-                _textWriters[lli] = value;
-        }
-        
+
+        [Hidden]
         public void LogArguments(LogLevel level, Arguments args)
         {
-            LogArguments(level, args, 0, args.length, true);
+            LogArguments(level, args, 0);
         }
+        [Hidden]
         public void LogArguments(LogLevel level, Arguments args, int argsStart)
-        {
-            LogArguments(level, args, argsStart, args.length, true);
-        }
-        public void LogArguments(LogLevel level, Arguments args, int argsStart, int argsStop, bool formatted)
         {
             if (args.length == 0 || args.length <= argsStart)
                 return;
-
-            LogMessage(level, Tools.FormatArgs(args, argsStart, argsStop, formatted));
+            
+            LogMessage(level, Tools.FormatArgs(args.Skip(argsStart)));
         }
+        [Hidden]
         public void LogMessage(LogLevel level, string message)
         {
             Print(level, GetLogger(level), message, _groups.Count);
         }
-        
+
+        [Hidden]
         public void Print(LogLevel level, TextWriter textWriter, string message)
         {
             Print(level, textWriter, message, 0);
         }
+        [Hidden]
         public void Print(LogLevel level, TextWriter textWriter, string message, int indent)
         {
             if (message == null || textWriter == null)
@@ -189,7 +170,7 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        public JSValue clear(JSValue thisBind, Arguments args)
+        public virtual JSValue clear(JSValue thisBind, Arguments args)
         {
             _groups.Clear();
             //System.Console.Clear();
@@ -254,15 +235,16 @@ namespace NiL.JS.BaseLibrary
             LogArguments(LogLevel.Warn, args);
             return JSValue.undefined;
         }
-        
-        public JSValue dir(JSValue thisBind, Arguments args)
+
+        public virtual JSValue dir(JSValue thisBind, Arguments args)
         {
-            LogMessage(LogLevel.Log, Tools.JSValueToObjectString(args[0]));
+            LogMessage(LogLevel.Log, Tools.JSValueToObjectString(args[0], 2));
             return JSValue.undefined;
         }
 
         //public JSValue dirxml(JSValue thisBind, Arguments args)
         //{
+        //    LogMessage(LogLevel.Log, Tools.JSValueToObjectString(args[0], 2));
         //    return JSValue.undefined;
         //}
 
@@ -340,20 +322,20 @@ namespace NiL.JS.BaseLibrary
 
         
 
-        internal static List<console> _consoles;
-        internal static void AddConsole(console console)
+        internal static List<JSConsole> _consoles;
+        internal static void AddConsole(JSConsole console)
         {
             if (_consoles == null)
-                _consoles = new List<console>(4);
+                _consoles = new List<JSConsole>(4);
             _consoles.Add(console);
         }
-        internal static void RemoveConsole(console console)
+        internal static void RemoveConsole(JSConsole console)
         {
             if (_consoles == null)
-                _consoles = new List<console>(4);
+                _consoles = new List<JSConsole>(4);
             _consoles.Add(console);
         }
-        public static console GetConsole(GlobalContext globalContext)
+        public static JSConsole GetConsole(GlobalContext globalContext)
         {
             if (_consoles == null)
                 return null;
@@ -369,36 +351,18 @@ namespace NiL.JS.BaseLibrary
         {
             return CreateConsoleObject(CreateConsole(globalContext));
         }
-        public static JSValue CreateConsoleObject(GlobalContext globalContext, TextWriter logTw, TextWriter infoTw, TextWriter warnTw, TextWriter errorTw)
-        {
-            return CreateConsoleObject(CreateConsole(globalContext, logTw, infoTw, warnTw, errorTw));
-        }
-        public static JSValue CreateConsoleObject(console console)
+        public static JSValue CreateConsoleObject(JSConsole console)
         {
             return console.ConsoleObject;
         }
 
-        public static console CreateConsole(GlobalContext globalContext)
+        public static JSConsole CreateConsole(GlobalContext globalContext)
         {
-            console c = GetConsole(globalContext);
+            JSConsole c = GetConsole(globalContext);
             if (c != null)
                 return c;
 
-            c = new console(globalContext);
-            AddConsole(c);
-
-            return c;
-        }
-        public static console CreateConsole(GlobalContext globalContext, TextWriter logTw, TextWriter infoTw, TextWriter warnTw, TextWriter errorTw)
-        {
-            console c = GetConsole(globalContext);
-            if (c != null)
-            {
-                c._textWriters = new TextWriter[4] { logTw, infoTw, warnTw, errorTw };
-                return c;
-            }
-
-            c = new console(globalContext, logTw, infoTw, warnTw, errorTw);
+            c = new JSConsole(globalContext);
             AddConsole(c);
 
             return c;
