@@ -1936,10 +1936,7 @@ namespace NiL.JS.Core
                         return v.Value.GetType().Name;
                     }
                 case JSValueType.Function:
-                    {
-                        (v as Function).ToString();
-                        break;
-                    }
+                    return "Function";
                 case JSValueType.Date:
                     return "Date";
                 case JSValueType.Property:
@@ -1961,11 +1958,6 @@ namespace NiL.JS.Core
                 default:
                     throw new NotImplementedException();
             }
-
-            string typeName = v.toString(null).ToString(); // "[object TYPENAME]"
-            typeName = typeName.Substring(8, typeName.Length - 1 - 8); // 8 = "[object ".Length
-            
-                return typeName;
         }
 
         public static string JSValueToObjectString(JSValue v)
