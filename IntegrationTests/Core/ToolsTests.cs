@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
+using System.Collections;
+using System;
 
 namespace IntegrationTests.Core
 {
@@ -101,6 +103,8 @@ namespace IntegrationTests.Core
                 new object[] { "%.% %.2% %.-1i %e %. %.8e2f %.5 1 2 3", "%.% %.2% %.-1i %e %. %.8e2f %.5", 1, 2, 3 }
             };
 
+            var FormatArgs = (Func<IEnumerable, string>)typeof(Tools).GetMethod("FormatArgs", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).CreateDelegate(typeof(Func<IEnumerable, string>));
+
             foreach (var val in vals)
             {
                 var args = new Arguments();
@@ -108,7 +112,7 @@ namespace IntegrationTests.Core
                 {
                     args.Add(val[i]);
                 }
-                var result = Tools.FormatArgs(args);
+                var result = FormatArgs(args);
 
                 Assert.IsTrue((result == null) == (val[0] == null));
 
