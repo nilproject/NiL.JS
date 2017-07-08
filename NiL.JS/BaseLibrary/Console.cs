@@ -1,11 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
-#if !NETCORE
 namespace NiL.JS.BaseLibrary
 {
     /// <summary>
@@ -14,7 +14,6 @@ namespace NiL.JS.BaseLibrary
     /// </summary>
     public class JSConsole
     {
-
         [Hidden]
         public enum LogLevel
         {
@@ -28,21 +27,20 @@ namespace NiL.JS.BaseLibrary
         private List<string> _groups = new List<string>();
         private Dictionary<string, Stopwatch> _timers = new Dictionary<string, Stopwatch>();
 
-
-
         [Hidden]
         public virtual TextWriter GetLogger(LogLevel ll)
         {
             if (ll == LogLevel.Error)
-                return System.Console.Error;
+                return Console.Error;
             else
-                return System.Console.Out;
+                return Console.Out;
         }
 
         internal void LogArguments(LogLevel level, Arguments args)
         {
             LogArguments(level, args, 0);
         }
+
         internal void LogArguments(LogLevel level, Arguments args, int argsStart)
         {
             if (args == null || args.length == 0 || args.length <= argsStart)
@@ -50,6 +48,7 @@ namespace NiL.JS.BaseLibrary
 
             LogMessage(level, Tools.FormatArgs(args.Skip(argsStart)));
         }
+
         [Hidden]
         public void LogMessage(LogLevel level, string message)
         {
@@ -61,6 +60,7 @@ namespace NiL.JS.BaseLibrary
         {
             Print(level, textWriter, message, 0, "|   ");
         }
+
         [Hidden]
         public void Print(LogLevel level, TextWriter textWriter, string message, int indent, string indentChar)
         {
@@ -90,7 +90,6 @@ namespace NiL.JS.BaseLibrary
                 textWriter.WriteLine(message);
         }
 
-
         public JSValue assert(Arguments args)
         {
             if (!(bool)args[0])
@@ -115,7 +114,7 @@ namespace NiL.JS.BaseLibrary
         public virtual JSValue clear(Arguments args)
         {
             _groups.Clear();
-            //System.Console.Clear();
+            // Console.Clear();
 
             return JSValue.undefined;
         }
@@ -190,7 +189,6 @@ namespace NiL.JS.BaseLibrary
         //    return JSValue.undefined;
         //}
 
-
         public JSValue group(Arguments args)
         {
             string label = Tools.FormatArgs(args) ?? "null";
@@ -227,7 +225,6 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-
         public JSValue time(Arguments args)
         {
             string label = "";
@@ -263,7 +260,6 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-
         [Hidden]
         public override bool Equals(object obj)
         {
@@ -281,7 +277,5 @@ namespace NiL.JS.BaseLibrary
         {
             return base.ToString();
         }
-
     }
 }
-#endif

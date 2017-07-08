@@ -887,7 +887,16 @@ namespace NiL.JS.Core
                     return intStringCache[i].value;
             }
 
-            return (intStringCache[intStrCacheIndex = (intStrCacheIndex + 1) & (cacheSize - 1)] = new IntStringCacheItem { key = value, value = value.ToString(CultureInfo.InvariantCulture) }).value;
+            intStrCacheIndex = (intStrCacheIndex + 1) & (cacheSize - 1);
+
+            var cacheItem = new IntStringCacheItem
+            {
+                key = value,
+                value = value.ToString(CultureInfo.InvariantCulture)
+            };
+
+            intStringCache[intStrCacheIndex] = cacheItem;
+            return cacheItem.value;
         }
 
         public static bool ParseNumber(string code, out double value, int radix)
@@ -1791,7 +1800,7 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    var value = Tools.EvalExpressionSafe(initiator, arguments[sourceIndex]);
+                    var value = EvalExpressionSafe(initiator, arguments[sourceIndex]);
                     if (value._valueType == JSValueType.SpreadOperatorResult)
                     {
                         spreadIndex = 0;
