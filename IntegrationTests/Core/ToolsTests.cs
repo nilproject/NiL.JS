@@ -78,7 +78,7 @@ namespace IntegrationTests.Core
                 new object[] { "Array (4) [ 1, \"abc\", /abc/i, Array[2] ]", c.Eval("o=[1,'abc',/abc/i,[1,2]]") },
                 new object[] { "Object { a: 2, b: \"abc\", c: /abc/i, d: Array[2] }", c.Eval("o={a:2, b:'abc', c:/abc/i, d:[1,2]}") },
 
-                new object[] { "[object Object] [object Object]", "%s %s", new object(), JSObject.CreateObject() },
+                new object[] { "System.Object [object Object]", "%s %s", new object(), JSObject.CreateObject() },
                 new object[] { "Object {  } Object {  }", "%o %o", new object(), JSObject.CreateObject() },
 
                 new object[] { "1,2,3,[object Math],function Object() { [native code] }", "%s", c.Eval("[1,2,[3],Math,Object]") },
