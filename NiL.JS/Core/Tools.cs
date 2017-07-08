@@ -1882,5 +1882,420 @@ namespace NiL.JS.Core
         {
             return method.GetMethodInfo();
         }
+
+
+        public static string GetTypeName(JSValue v)
+        {
+            if (v == null)
+                return "null";
+
+            switch (v._valueType)
+            {
+                case JSValueType.NotExists:
+                case JSValueType.NotExistsInObject:
+                case JSValueType.Undefined:
+                    return "undefined";
+                case JSValueType.Boolean:
+                    return "Boolean";
+                case JSValueType.Integer:
+                case JSValueType.Double:
+                    return "Number";
+                case JSValueType.String:
+                    return "String";
+                case JSValueType.Symbol:
+                    return "Symbol";
+                case JSValueType.Object:
+                    {
+                        var o = v as ObjectWrapper;
+                        if (o == null)
+                            o = v._oValue as ObjectWrapper;
+                        if (o != null)
+                            return o.Value.GetType().Name;
+
+                        if (v._oValue == null)
+                            return "null";
+
+                        if (v._oValue is GlobalObject)
+                            return "global";
+
+                        if (v._oValue is Proxy)
+                        {
+                            var hostedType = (v._oValue as Proxy)._hostedType;
+                            if (hostedType == typeof(JSObject))
+                                return "Object";
+                            return hostedType.Name;
+                        }
+
+                        if (v.Value.GetType() == typeof(JSObject))
+                            return "Object";
+                        return v.Value.GetType().Name;
+                    }
+                case JSValueType.Function:
+                    return "Function";
+                case JSValueType.Date:
+                    return "Date";
+                case JSValueType.Property:
+                    {
+                        var prop = v._oValue as GsPropertyPair;
+                        if (prop != null)
+                        {
+                            var tempStr = "";
+                            if (prop.getter != null)
+                                tempStr += "Getter";
+                            if (prop.setter != null)
+                                tempStr += ((tempStr.Length > 0) ? "/" : "") + "Setter";
+                            if (tempStr.Length == 0)
+                                tempStr = "Invalid";
+                            return tempStr + " Property";
+                        }
+                        return "Property";
+                    }
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        public static string JSValueToObjectString(JSValue v)
+        {
+            return Tools.JSValueToObjectString(v, 1, 0);
+        }
+
+        public static string JSValueToObjectString(JSValue v, int maxRecursionDepth)
+        {
+            return Tools.JSValueToObjectString(v, maxRecursionDepth, 0);
+        }
+
+        internal static string JSValueToObjectString(JSValue v, int maxRecursionDepth, int recursionDepth = 0)
+        {
+            if (v == null)
+                return "null";
+
+            switch (v.ValueType)
+            {
+                case JSValueType.String:
+                    return "\"" + v.ToString() + "\"";
+                case JSValueType.Date:
+                    string dstr = v.ToString();
+                    if (dstr == "Invalid date")
+                        return dstr;
+                    return "Date " + dstr;
+                case JSValueType.Function:
+                    BaseLibrary.Function f = v.Value as BaseLibrary.Function;
+                    if (f == null)
+                        return v.ToString();
+                    if (recursionDepth >= maxRecursionDepth)
+                        return f.name + "()";
+                    if (recursionDepth == maxRecursionDepth - 1)
+                        return f.ToString(true);
+                    return f.ToString();
+                case JSValueType.Object:
+                    if (v._oValue == null)
+                        return "null";
+
+                    if (v.Value is RegExp)
+                        return v.ToString();
+
+                    if (v.Value is BaseLibrary.Array
+                        || v.Value == Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Array))
+                        || v == Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Array)))
+                    {
+                        BaseLibrary.Array a = v.Value as BaseLibrary.Array;
+                        StringBuilder s;
+
+                        if (a == null) // v == Array.prototype
+                        {
+                            s = new StringBuilder("Array [ ");
+                            int j = 0;
+                            for (var e = v.GetEnumerator(true, EnumerationMode.RequireValues); e.MoveNext();)
+                            {
+                                if (j++ > 0)
+                                    s.Append(", ");
+                                s.Append(e.Current.Key).Append(": ");
+                                s.Append(Tools.JSValueToObjectString(e.Current.Value, maxRecursionDepth, recursionDepth + 1));
+                            }
+                            s.Append(" ]");
+                            return s.ToString();
+                        }
+
+                        long len = (long)a.length;
+
+                        if (recursionDepth >= maxRecursionDepth)
+                            return $"Array[{len}]";
+
+                        s = new StringBuilder($"Array ({len}) [ ");
+                        int i = 0;
+                        for (i = 0; i < len; i++)
+                        {
+                            if (i > 0)
+                                s.Append(", ");
+                            s.Append(Tools.JSValueToObjectString(a[i], maxRecursionDepth, recursionDepth + 1));
+                        }
+                        if (a._fields != null)
+                        {
+                            for (var e = a._fields.GetEnumerator(); e.MoveNext();)
+                            {
+                                if (i++ > 0)
+                                    s.Append(", ");
+                                s.Append(e.Current.Key).Append(": ");
+                                s.Append(Tools.JSValueToObjectString(e.Current.Value, maxRecursionDepth, recursionDepth + 1));
+                            }
+                        }
+                        s.Append(" ]");
+
+                        return s.ToString();
+                    }
+                    else
+                    {
+                        string typeName = Tools.GetTypeName(v);
+                        if (recursionDepth >= maxRecursionDepth)
+                            return typeName;
+
+                        StringBuilder s = new StringBuilder(typeName);
+                        s.Append(" { ");
+
+                        JSObject o = v as JSObject;
+                        if (o == null)
+                            o = v._oValue as JSObject;
+                        if (o == null)
+                            return v.ToString();
+
+
+                        int i = 0;
+                        for (var e = o.GetEnumerator(true, EnumerationMode.RequireValues); e.MoveNext();)
+                        {
+                            if (i++ > 0)
+                                s.Append(", ");
+                            s.Append(e.Current.Key).Append(": ");
+                            s.Append(Tools.JSValueToObjectString(e.Current.Value, maxRecursionDepth, recursionDepth + 1));
+                        }
+
+                        s.Append(" }");
+
+                        return s.ToString();
+                    }
+            }
+            return v.ToString();
+        }
+
+        internal static string JSValueToString(JSValue v)
+        {
+            if (v == null)
+                return "null";
+
+            if (v.ValueType == JSValueType.Object)
+            {
+                if (v._oValue == null)
+                    return "null";
+
+                var o = v as ObjectWrapper;
+                if (o == null)
+                    o = v._oValue as ObjectWrapper;
+                if (o != null)
+                    return o.Value.ToString();
+            }
+
+            return v.ToString();
+        }
+
+
+        internal static string FormatArgs(IEnumerable args)
+        {
+            if (args == null)
+                return null;
+
+            IEnumerable ie = args;
+            if (args is IEnumerable<KeyValuePair<string, JSValue>>)
+                ie = (args as IEnumerable<KeyValuePair<string, JSValue>>).Select((x) => x.Value);
+
+            var e = ie.GetEnumerator();
+            if (!e.MoveNext())
+                return null;
+
+            object o = e.Current;
+            JSValue v = o as JSValue;
+            string f = null;
+
+            if (f == null && o != null && (o is string))
+                f = v.ToString();
+            if (f == null && v != null && v.ValueType == JSValueType.String)
+                f = v.ToString();
+
+            bool hasNext = e.MoveNext();
+
+            var s = new StringBuilder();
+
+            if (f != null && hasNext)
+            {
+                int pos = 0;
+                while (pos < f.Length && hasNext)
+                {
+                    v = (o = e.Current) as JSValue;
+                    bool usedArg = false;
+
+                    int next = f.IndexOf('%', pos);
+                    if (next < 0 || next == f.Length - 1)
+                        break;
+                    if (next > 0)
+                        s.Append(f.Substring(pos, next - pos));
+                    pos = next; // now: f[pos] == '%'
+
+                    bool include = false;
+                    int len = 2;
+
+                    char c = f[pos + 1];
+
+                    int para = -1; // the int parameter after "%."
+                    if (c == '.') // expected format: "%.0000f"
+                    {
+                        while (pos + len < f.Length)
+                        {
+                            if (Tools.IsDigit(f[pos + len]))
+                                len++;
+                            else
+                                break;
+                        }
+                        if (pos + len == f.Length) // invalid: "... %.000"
+                            break;
+
+                        if (len > 12) // >10 digits  ->  >2^32
+                            para = int.MaxValue;
+                        else
+                        {
+                            long res = -1;
+                            if (len > 2 && long.TryParse(f.Substring(pos + 2, len - 2), out res))
+                                para = (int)System.Math.Min(res, int.MaxValue);
+                        }
+                        if (len > 2)
+                            c = f[pos + len++];
+                    }
+
+                    double d;
+                    switch (c)
+                    {
+                        case 's':
+                            if (v != null)
+                                s.Append(Tools.JSValueToString(v));
+                            else
+                                s.Append((o ?? "null").ToString());
+
+                            usedArg = true;
+                            break;
+                        case 'o':
+                        case 'O':
+                            int maxRec = (c == 'o') ? 1 : 2;
+                            if (v != null)
+                                s.Append(Tools.JSValueToObjectString(v, maxRec));
+                            else if (o == null)
+                                s.Append("null");
+                            else if (o is string || o is char || o is StringBuilder)
+                                s.Append('"').Append(o.ToString()).Append('"');
+                            else
+                                s.Append((o ?? "null").ToString());
+
+                            usedArg = true;
+                            break;
+                        case 'i':
+                        case 'd':
+                            d = double.NaN;
+                            if (v != null)
+                                d = (double)Tools.JSObjectToNumber(v);
+                            else if (!Tools.ParseNumber((o ?? "null").ToString(), out d, 0))
+                                d = double.NaN;
+
+                            if (double.IsNaN(d) || double.IsInfinity(d))
+                                d = 0.0;
+                            d = System.Math.Truncate(d);
+
+                            string dstr = Tools.DoubleToString(System.Math.Abs(d));
+                            if (d < 0)
+                                s.Append('-');
+                            if (dstr.Length < para)
+                                s.Append(new string('0', para - dstr.Length));
+                            s.Append(dstr);
+
+                            usedArg = true;
+                            break;
+                        case 'f':
+                            d = double.NaN;
+                            if (v != null)
+                                d = (double)Tools.JSObjectToNumber(v);
+                            else if (!Tools.ParseNumber((o ?? "null").ToString(), out d, 0))
+                                d = double.NaN;
+
+                            if (para >= 0)
+                                d = System.Math.Round(d, System.Math.Min(15, para));
+                            s.Append(Tools.DoubleToString(d));
+
+                            usedArg = true;
+                            break;
+                        case '%':
+                            if (len == 2)
+                                s.Append('%');
+                            else
+                                include = true;
+                            break;
+                        default:
+                            include = true;
+                            break;
+                    }
+
+                    if (include)
+                        s.Append(f.Substring(pos, len));
+                    pos += len;
+
+                    if (usedArg)
+                        hasNext = e.MoveNext();
+                }
+                if (pos < f.Length)
+                    s.Append(f.Substring(pos).Replace("%%", "%")); // out of arguments? -> still unescape %%
+
+                while (hasNext)
+                {
+                    v = (o = e.Current) as JSValue;
+                    s.Append(' ');
+                    if (v != null)
+                    {
+                        if (v.ValueType == JSValueType.Object)
+                            s.Append(Tools.JSValueToObjectString(v));
+                        else
+                            s.Append(v.ToString());
+                    }
+                    else
+                        s.Append((o ?? "null").ToString());
+                    hasNext = e.MoveNext();
+                }
+            }
+            else
+            {
+                if (v != null)
+                {
+                    if (v.ValueType == JSValueType.Object)
+                        s.Append(Tools.JSValueToObjectString(v));
+                    else
+                        s.Append(v.ToString());
+                }
+                else
+                    s.Append((o ?? "null").ToString());
+
+                while (hasNext)
+                {
+                    v = (o = e.Current) as JSValue;
+                    s.Append(' ');
+                    if (v != null)
+                    {
+                        if (v.ValueType == JSValueType.Object)
+                            s.Append(Tools.JSValueToObjectString(v));
+                        else
+                            s.Append(v.ToString());
+                    }
+                    else
+                        s.Append((o ?? "null").ToString());
+                    hasNext = e.MoveNext();
+                }
+            }
+
+            return s.ToString();
+        }
+
     }
 }
