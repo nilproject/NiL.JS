@@ -1306,7 +1306,7 @@ namespace NiL.JS.Core
             StringBuilder res = null;
             for (int i = 0; i < code.Length; i++)
             {
-                if ((code[i] == '\\' && i + 1 < code.Length))
+                if (code[i] == '\\' && i + 1 < code.Length)
                 {
                     if (res == null)
                     {
@@ -1329,11 +1329,11 @@ namespace NiL.JS.Core
                                         break;
                                     }
                                     else
-                                        ExceptionHelper.Throw((new SyntaxError("Invalid escape code (\"" + code + "\")")));
+                                        ExceptionHelper.ThrowSyntaxError("Invalid escape code (\"" + code + "\")");
                                 }
                                 string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
                                 ushort chc = 0;
-                                if (ushort.TryParse(c, System.Globalization.NumberStyles.HexNumber, null, out chc))
+                                if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
                                 {
                                     char ch = (char)chc;
                                     res.Append(ch);
@@ -1344,7 +1344,7 @@ namespace NiL.JS.Core
                                     if (processRegexComp)
                                         res.Append(code[i]);
                                     else
-                                        ExceptionHelper.Throw((new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'")));
+                                        ExceptionHelper.ThrowSyntaxError("Invalid escape sequence '\\" + code[i] + c + "'");
                                 }
                                 break;
                             }
@@ -1376,18 +1376,6 @@ namespace NiL.JS.Core
                         case 'r':
                             {
                                 res.Append(processRegexComp ? "\\r" : "\r");
-                                break;
-                            }
-                        case '\n':
-                            {
-                                if (code.Length > i + 1 && code[i] == '\r')
-                                    i++;
-                                break;
-                            }
-                        case '\r':
-                            {
-                                if (code.Length > i + 1 && code[i] == '\n')
-                                    i++;
                                 break;
                             }
                         case 'c':
@@ -1433,6 +1421,7 @@ namespace NiL.JS.Core
                                 {
                                     if (strict)
                                         ExceptionHelper.Throw((new SyntaxError("Octal literals are not allowed in strict mode.")));
+
                                     var ccode = code[i] - '0';
                                     if (i + 1 < code.Length && IsDigit(code[i + 1]))
                                         ccode = ccode * 10 + (code[++i] - '0');
