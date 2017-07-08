@@ -89,7 +89,7 @@ namespace NiL.JS.Core
                 DefineConstructor(typeof(SyntaxError));
                 DefineConstructor(typeof(RegExp));
 #if !(PORTABLE || NETCORE)
-                DefineVariable("console").Assign(JSConsole.CreateConsoleObject(this));
+                DefineVariable("console").Assign(JSValue.Marshal(new JSConsole()));
 #endif
                 DefineConstructor(typeof(ArrayBuffer));
                 DefineConstructor(typeof(Int8Array));
