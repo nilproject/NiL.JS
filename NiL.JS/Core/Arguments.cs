@@ -77,6 +77,9 @@ namespace NiL.JS.Core
             }
             set
             {
+                if (value != null)
+                    value = value.CloneImpl((JSValueAttributesInternal)uint.MaxValue);
+
                 switch (index)
                 {
                     case 0:
@@ -128,7 +131,7 @@ namespace NiL.JS.Core
 
         public void Add(JSValue arg)
         {
-            this[length++] = arg.CloneImpl((JSValueAttributesInternal)uint.MaxValue);
+            this[length++] = arg;
         }
 
         public void Add(object value)
