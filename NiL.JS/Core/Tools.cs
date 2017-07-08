@@ -2082,7 +2082,7 @@ namespace NiL.JS.Core
             return v.ToString();
         }
 
-        public static string JSValueToString(JSValue v)
+        internal static string JSValueToString(JSValue v)
         {
             if (v == null)
                 return "null";
@@ -2103,7 +2103,7 @@ namespace NiL.JS.Core
         }
 
 
-        public static string FormatArgs(IEnumerable args)
+        internal static string FormatArgs(IEnumerable args)
         {
             if (args == null)
                 return null;
