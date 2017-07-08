@@ -112,6 +112,21 @@ namespace System
             return self.AddMethod;
         }
 
+        internal static MethodInfo GetGetMethod(this PropertyInfo self)
+        {
+            return self.GetMethod;
+        }
+
+        internal static MethodInfo GetSetMethod(this PropertyInfo self)
+        {
+            return self.SetMethod;
+        }
+
+        internal static MethodInfo GetAddMethod(this EventInfo self)
+        {
+            return self.AddMethod;
+        }
+
         private static readonly Type[] _Types = 
             {
                 null,

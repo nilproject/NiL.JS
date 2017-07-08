@@ -150,7 +150,11 @@ namespace NiL.JS.Core.Interop
                             && ((property.GetGetMethod() ?? property.GetSetMethod()).Attributes & MethodAttributes.NewSlot) == 0)
                         {
                             property = parentProperty;
-                            parentProperty = property.DeclaringType.BaseType.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
+#if (PORTABLE || NETCORE)
+                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType.GetRuntimeProperty(property.Name);
+#else
+                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
+#endif
                         }
 
                         member = property;
@@ -188,7 +192,11 @@ namespace NiL.JS.Core.Interop
                             while (parentMethod != null && (method.Attributes & MethodAttributes.NewSlot) == 0)
                             {
                                 method = parentMethod;
+#if (PORTABLE || NETCORE)
+                                parentMethod = method.DeclaringType.GetTypeInfo().BaseType.GetMethod(method.Name, parameterTypes);
+#else
                                 parentMethod = method.DeclaringType.BaseType.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance, null, parameterTypes, null);
+#endif
                             }
                         }
 
