@@ -1378,6 +1378,12 @@ namespace NiL.JS.Core
                                 res.Append(processRegexComp ? "\\r" : "\r");
                                 break;
                             }
+                        case '\r':
+                            {
+                                if (code.Length > i + 1 && code[i + 1] == '\n')
+                                    i++;
+                                break;
+                            }
                         case 'c':
                         case 'C':
                             {
