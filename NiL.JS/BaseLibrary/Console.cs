@@ -4,7 +4,6 @@ using System.Linq;
 using System.IO;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
-using NiL.JS.Core.Functions;
 
 #if !NETCORE
 namespace NiL.JS.BaseLibrary
@@ -16,6 +15,7 @@ namespace NiL.JS.BaseLibrary
     public class JSConsole
     {
 
+        [Hidden]
         public enum LogLevel
         {
             Log = 0,
@@ -24,66 +24,10 @@ namespace NiL.JS.BaseLibrary
             Error = 3
         }
 
-        private string _indentChar = "|   ";
-        private string _indentGroupBegin = "|---# {0}";
-        private string _indentGroupBegin0 = "# {0}";
-
-        private GlobalContext _globalContext;
-        private JSObject _obj;
-        
         private Dictionary<string, int> _counters = new Dictionary<string, int>();
         private List<string> _groups = new List<string>();
         private Dictionary<string, Stopwatch> _timers = new Dictionary<string, Stopwatch>();
 
-
-        public GlobalContext GlobalContext
-        {
-            get
-            {
-                return _globalContext;
-            }
-        }
-
-        public JSObject ConsoleObject
-        {
-            get
-            {
-                return _obj;
-            }
-        }
-
-        
-        internal JSConsole(GlobalContext globalContext)
-        {
-            this._globalContext = globalContext;
-            CreateConsoleObject();
-        }
-
-        internal void CreateConsoleObject()
-        {
-            _obj = JSObject.CreateObject();
-
-            _obj["assert"] = new ExternalFunction(this.assert);
-            //_obj["asserta"] = new ExternalFunction(this.asserta);
-            _obj["clear"] = new ExternalFunction(this.clear);
-            _obj["count"] = new ExternalFunction(this.count);
-            _obj["debug"] = new ExternalFunction(this.debug);
-            _obj["error"] = new ExternalFunction(this.error);
-            _obj["info"] = new ExternalFunction(this.info);
-            _obj["log"] = new ExternalFunction(this.log);
-            //_obj["table"] = new ExternalFunction(this.table);
-            //_obj["trace"] = new ExternalFunction(this.trace);
-            _obj["warn"] = new ExternalFunction(this.warn);
-            _obj["dir"] = new ExternalFunction(this.dir);
-            //_obj["dirxml"] = new ExternalFunction(this.dirxml);
-            
-            _obj["group"] = new ExternalFunction(this.group);
-            _obj["groupCollapsed"] = new ExternalFunction(this.groupCollapsed);
-            _obj["groupEnd"] = new ExternalFunction(this.groupEnd);
-
-            _obj["time"] = new ExternalFunction(this.time);
-            _obj["timeEnd"] = new ExternalFunction(this.timeEnd);
-        }
 
 
         [Hidden]
@@ -105,22 +49,22 @@ namespace NiL.JS.BaseLibrary
         {
             if (args == null || args.length == 0 || args.length <= argsStart)
                 return;
-            
+
             LogMessage(level, Tools.FormatArgs(args.Skip(argsStart)));
         }
         [Hidden]
         public void LogMessage(LogLevel level, string message)
         {
-            Print(level, GetLogger(level), message, _groups.Count);
+            Print(level, GetLogger(level), message, _groups.Count, "|   ");
         }
 
         [Hidden]
         public void Print(LogLevel level, TextWriter textWriter, string message)
         {
-            Print(level, textWriter, message, 0);
+            Print(level, textWriter, message, 0, "|   ");
         }
         [Hidden]
-        public void Print(LogLevel level, TextWriter textWriter, string message, int indent)
+        public void Print(LogLevel level, TextWriter textWriter, string message, int indent, string indentChar)
         {
             if (message == null || textWriter == null)
                 return;
@@ -129,7 +73,7 @@ namespace NiL.JS.BaseLibrary
             {
                 string ind = "";
                 for (int j = 0; j < indent; j++)
-                    ind += _indentChar;
+                    ind += indentChar;
 
                 int last = 0;
                 for (int i = 0; i < message.Length; i++)
@@ -149,7 +93,7 @@ namespace NiL.JS.BaseLibrary
         }
 
 
-        public JSValue assert(JSValue thisBind, Arguments args)
+        public JSValue assert(Arguments args)
         {
             if (!(bool)args[0])
                 LogArguments(LogLevel.Log, args, 1);
@@ -170,7 +114,7 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        public virtual JSValue clear(JSValue thisBind, Arguments args)
+        public virtual JSValue clear(Arguments args)
         {
             _groups.Clear();
             //System.Console.Clear();
@@ -178,7 +122,7 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        public JSValue count(JSValue thisBind, Arguments args)
+        public JSValue count(Arguments args)
         {
             string label = "";
             if (args.length > 0)
@@ -188,7 +132,7 @@ namespace NiL.JS.BaseLibrary
                 _counters.Add(label, 0);
 
             string c = Tools.Int32ToString(++_counters[label]);
-            
+
             if (label != "")
                 label += ": ";
             LogMessage(LogLevel.Info, label + c);
@@ -196,60 +140,60 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        public JSValue debug(JSValue thisBind, Arguments args)
+        public JSValue debug(Arguments args)
         {
             LogArguments(LogLevel.Log, args);
             return JSValue.undefined;
         }
-        
-        public JSValue error(JSValue thisBind, Arguments args)
+
+        public JSValue error(Arguments args)
         {
             LogArguments(LogLevel.Error, args);
             return JSValue.undefined;
         }
-        
-        public JSValue info(JSValue thisBind, Arguments args)
+
+        public JSValue info(Arguments args)
         {
             LogArguments(LogLevel.Info, args);
             return JSValue.undefined;
         }
-        
-        public JSValue log(JSValue thisBind, Arguments args)
+
+        public JSValue log(Arguments args)
         {
             LogArguments(LogLevel.Log, args);
             return JSValue.undefined;
         }
 
-        //public JSValue table(JSValue thisBind, Arguments args)
+        //public JSValue table(Arguments args)
         //{
         //    return JSValue.undefined;
         //}
 
-        //public JSValue trace(JSValue thisBind, Arguments args)
+        //public JSValue trace(Arguments args)
         //{
         //    return JSValue.undefined;
         //}
 
-        public JSValue warn(JSValue thisBind, Arguments args)
+        public JSValue warn(Arguments args)
         {
             LogArguments(LogLevel.Warn, args);
             return JSValue.undefined;
         }
 
-        public virtual JSValue dir(JSValue thisBind, Arguments args)
+        public virtual JSValue dir(Arguments args)
         {
             LogMessage(LogLevel.Log, Tools.JSValueToObjectString(args[0], 2));
             return JSValue.undefined;
         }
 
-        //public JSValue dirxml(JSValue thisBind, Arguments args)
+        //public JSValue dirxml(Arguments args)
         //{
         //    LogMessage(LogLevel.Log, Tools.JSValueToObjectString(args[0], 2));
         //    return JSValue.undefined;
         //}
 
 
-        public JSValue group(JSValue thisBind, Arguments args)
+        public JSValue group(Arguments args)
         {
             string label = Tools.FormatArgs(args) ?? "null";
             if (label == "")
@@ -259,33 +203,34 @@ namespace NiL.JS.BaseLibrary
             {
                 string _temp = _groups[_groups.Count - 1];
                 _groups.RemoveAt(_groups.Count - 1);
-                LogMessage(LogLevel.Info, System.String.Format(_indentGroupBegin, label));
+                LogMessage(LogLevel.Info, "|---# " + label);
+
                 _groups.Add(_temp);
             }
             else
-                LogMessage(LogLevel.Info, System.String.Format(_indentGroupBegin0, label));
-            
+                LogMessage(LogLevel.Info, "# " + label);
+
             _groups.Add(label);
 
             return JSValue.undefined;
         }
 
-        public JSValue groupCollapsed(JSValue thisBind, Arguments args)
+        public JSValue groupCollapsed(Arguments args)
         {
-            group(thisBind, args);
+            group(args);
             return JSValue.undefined;
         }
 
-        public JSValue groupEnd(JSValue thisBind, Arguments args)
+        public JSValue groupEnd(Arguments args)
         {
             if (_groups.Count == 0)
                 _groups.RemoveAt(_groups.Count - 1);
-            
+
             return JSValue.undefined;
         }
 
 
-        public JSValue time(JSValue thisBind, Arguments args)
+        public JSValue time(Arguments args)
         {
             string label = "";
             if (args.length > 0)
@@ -299,7 +244,7 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        public JSValue timeEnd(JSValue thisBind, Arguments args)
+        public JSValue timeEnd(Arguments args)
         {
             string label = "";
             if (args.length > 0)
@@ -312,7 +257,7 @@ namespace NiL.JS.BaseLibrary
                 elapsed = (double)_timers[label].ElapsedTicks / Stopwatch.Frequency * 1000.0;
                 _timers.Remove(label);
             }
-            
+
             if (label != "")
                 label += ": ";
             LogMessage(LogLevel.Info, label + Tools.DoubleToString(System.Math.Round(elapsed, 10)) + "ms");
@@ -320,52 +265,23 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        
 
-        internal static List<JSConsole> _consoles;
-        internal static void AddConsole(JSConsole console)
+        [Hidden]
+        public override bool Equals(object obj)
         {
-            if (_consoles == null)
-                _consoles = new List<JSConsole>(4);
-            _consoles.Add(console);
-        }
-        internal static void RemoveConsole(JSConsole console)
-        {
-            if (_consoles == null)
-                _consoles = new List<JSConsole>(4);
-            _consoles.Add(console);
-        }
-        public static JSConsole GetConsole(GlobalContext globalContext)
-        {
-            if (_consoles == null)
-                return null;
-            for (int i = 0; i < _consoles.Count; i++)
-            {
-                if (_consoles[i]._globalContext == globalContext)
-                    return _consoles[i];
-            }
-            return null;
+            return base.Equals(obj);
         }
 
-        public static JSValue CreateConsoleObject(GlobalContext globalContext)
+        [Hidden]
+        public override int GetHashCode()
         {
-            return CreateConsoleObject(CreateConsole(globalContext));
-        }
-        public static JSValue CreateConsoleObject(JSConsole console)
-        {
-            return console.ConsoleObject;
+            return base.GetHashCode();
         }
 
-        public static JSConsole CreateConsole(GlobalContext globalContext)
+        [Hidden]
+        public override string ToString()
         {
-            JSConsole c = GetConsole(globalContext);
-            if (c != null)
-                return c;
-
-            c = new JSConsole(globalContext);
-            AddConsole(c);
-
-            return c;
+            return base.ToString();
         }
 
     }
