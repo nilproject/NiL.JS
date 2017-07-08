@@ -1457,7 +1457,7 @@ namespace NiL.JS.Core
             return (c == '\u000A') || (c == '\u000D') || (c == '\u2028') || (c == '\u2029');
         }
 
-        internal static void SkipComment(string code, ref int index, bool skipSpaces)
+        internal static void skipComment(string code, ref int index, bool skipSpaces)
         {
             bool work;
             do
@@ -1510,7 +1510,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static string RemoveComments(string code, int startPosition)
+        internal static string removeComments(string code, int startPosition)
         {
             StringBuilder res = null;
             for (var i = startPosition; i < code.Length;)
@@ -1524,7 +1524,7 @@ namespace NiL.JS.Core
                 }
 
                 var s = i;
-                SkipComment(code, ref i, false);
+                skipComment(code, ref i, false);
                 if (s != i && res == null)
                 {
                     res = new StringBuilder(code.Length);
@@ -1594,7 +1594,7 @@ namespace NiL.JS.Core
             return ((p % 'a' % 'A' + 10) % ('0' + 10));
         }
 
-        internal static long _GetLengthOfArraylike(JSValue src, bool reassignLen)
+        internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
         {
             var length = src.GetProperty("length", true, PropertyScope.Сommon); // тут же проверка на null/undefined с падением если надо
 
@@ -1647,7 +1647,7 @@ namespace NiL.JS.Core
                 {
                     if (_length == -1)
                     {
-                        _length = _GetLengthOfArraylike(src, reassignLen);
+                        _length = getLengthOfArraylike(src, reassignLen);
                         if (_length == 0)
                             return temp;
                     }

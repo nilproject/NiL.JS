@@ -229,7 +229,7 @@ namespace NiL.JS.BaseLibrary
              || self.IsUndefined())
                 ExceptionHelper.ThrowTypeError("this is null or undefined");
 
-            var length = Tools._GetLengthOfArraylike(self, false);
+            var length = Tools.getLengthOfArraylike(self, false);
 
             var target = Tools.JSObjectToInt64(args[0], 0, true);
             if (target < 0)
@@ -321,7 +321,7 @@ namespace NiL.JS.BaseLibrary
              || self.IsUndefined())
                 ExceptionHelper.ThrowTypeError("this is null or undefined");
 
-            var length = Tools._GetLengthOfArraylike(self, false);
+            var length = Tools.getLengthOfArraylike(self, false);
 
             var value = args[0];
 
@@ -590,7 +590,7 @@ namespace NiL.JS.BaseLibrary
 #endif
             }
 
-            var length = nativeMode ? arraySrc._data.Length : Tools._GetLengthOfArraylike(self, false);
+            var length = nativeMode ? arraySrc._data.Length : Tools.getLengthOfArraylike(self, false);
             long startIndex = 0;
             long endIndex = 0;
             Function jsCallback = null;
@@ -775,7 +775,7 @@ namespace NiL.JS.BaseLibrary
 #endif
             }
 
-            var length = nativeMode ? arraySrc._data.Length : Tools._GetLengthOfArraylike(self, false);
+            var length = nativeMode ? arraySrc._data.Length : Tools.getLengthOfArraylike(self, false);
             long startIndex = length - 1;
             Function jsCallback = null;
             JSValue thisBind = null;
@@ -1000,7 +1000,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var length = Tools._GetLengthOfArraylike(self, true);
+                var length = Tools.getLengthOfArraylike(self, true);
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
                 length--;
@@ -1044,7 +1044,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var length = (long)Tools._GetLengthOfArraylike(self, false);
+                var length = (long)Tools.getLengthOfArraylike(self, false);
                 var i = length;
                 length += args.length;
                 self["length"] = length;
@@ -1110,7 +1110,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var length = Tools._GetLengthOfArraylike(self, false);
+                var length = Tools.getLengthOfArraylike(self, false);
                 for (var i = 0; i < (length >> 1); i++)
                 {
                     JSValue i0 = i.ToString();
@@ -1569,7 +1569,7 @@ namespace NiL.JS.BaseLibrary
             }
             else // êòî-òî îòïðàâèë îáúåêò ñ ïîëåì length
             {
-                long _length = Tools._GetLengthOfArraylike(self, false);
+                long _length = Tools.getLengthOfArraylike(self, false);
                 var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
                 long pos1 = 0;
                 if (args.Length > 1)
@@ -1864,7 +1864,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var len = Tools._GetLengthOfArraylike(self, false);
+                var len = Tools.getLengthOfArraylike(self, false);
                 if (comparer != null)
                 {
                     var second = new JSValue();
@@ -1959,7 +1959,7 @@ namespace NiL.JS.BaseLibrary
             args[0] = 0;
             args[1] = args[0];
             spliceImpl(self, args, false);
-            return Tools._GetLengthOfArraylike(self, false);
+            return Tools.getLengthOfArraylike(self, false);
         }
 
         [Hidden]
@@ -2309,7 +2309,7 @@ namespace NiL.JS.BaseLibrary
 
         private static IEnumerable getGenericEntriesEnumerator(JSValue self)
         {
-            var length = Tools._GetLengthOfArraylike(self, false);
+            var length = Tools.getLengthOfArraylike(self, false);
             for (var i = 0U; i < length; i++)
             {
                 JSValue value;
