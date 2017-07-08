@@ -1922,7 +1922,7 @@ namespace NiL.JS.Core
 
                         if (v._oValue is GlobalObject)
                             return "global";
-                        
+
                         if (v._oValue is Proxy)
                         {
                             var hostedType = (v._oValue as Proxy)._hostedType;
@@ -1964,7 +1964,7 @@ namespace NiL.JS.Core
         {
             return Tools.JSValueToObjectString(v, 1, 0);
         }
-        
+
         public static string JSValueToObjectString(JSValue v, int maxRecursionDepth)
         {
             return Tools.JSValueToObjectString(v, maxRecursionDepth, 0);
@@ -2081,7 +2081,7 @@ namespace NiL.JS.Core
             }
             return v.ToString();
         }
-        
+
         public static string JSValueToString(JSValue v)
         {
             if (v == null)
@@ -2103,23 +2103,30 @@ namespace NiL.JS.Core
         }
 
 
-        public static string FormatArgs(IEnumerable<KeyValuePair<string, JSValue>> args)
+        public static string FormatArgs(IEnumerable args)
         {
             if (args == null)
                 return null;
 
-            var e = args.GetEnumerator();
+            IEnumerable ie = args;
+            if (args is IEnumerable<KeyValuePair<string, JSValue>>)
+                ie = (args as IEnumerable<KeyValuePair<string, JSValue>>).Select((x) => x.Value);
+
+            var e = ie.GetEnumerator();
             if (!e.MoveNext())
                 return null;
 
-            var arg = e.Current.Value;
+            object o = e.Current;
+            JSValue v = o as JSValue;
             string f = null;
 
-            if (arg != null && arg.ValueType == JSValueType.String)
-                f = arg.ToString();
+            if (f == null && o != null && (o is string))
+                f = v.ToString();
+            if (f == null && v != null && v.ValueType == JSValueType.String)
+                f = v.ToString();
 
             bool hasNext = e.MoveNext();
-            
+
             var s = new StringBuilder();
 
             if (f != null && hasNext)
@@ -2127,7 +2134,7 @@ namespace NiL.JS.Core
                 int pos = 0;
                 while (pos < f.Length && hasNext)
                 {
-                    arg = e.Current.Value;
+                    v = (o = e.Current) as JSValue;
                     bool usedArg = false;
 
                     int next = f.IndexOf('%', pos);
@@ -2171,18 +2178,34 @@ namespace NiL.JS.Core
                     switch (c)
                     {
                         case 's':
-                            s.Append(Tools.JSValueToString(arg));
+                            if (v != null)
+                                s.Append(Tools.JSValueToString(v));
+                            else
+                                s.Append((o ?? "null").ToString());
+
                             usedArg = true;
                             break;
                         case 'o':
                         case 'O':
                             int maxRec = (c == 'o') ? 1 : 2;
-                            s.Append(Tools.JSValueToObjectString(arg, maxRec));
+                            if (v != null)
+                                s.Append(Tools.JSValueToObjectString(v, maxRec));
+                            else if (o == null)
+                                s.Append("null");
+                            else if (o is string || o is char || o is StringBuilder)
+                                s.Append('"').Append(o.ToString()).Append('"');
+                            else
+                                s.Append((o ?? "null").ToString());
+
                             usedArg = true;
                             break;
                         case 'i':
                         case 'd':
-                            d = (double)Tools.JSObjectToNumber(arg);
+                            d = double.NaN;
+                            if (v != null)
+                                d = (double)Tools.JSObjectToNumber(v);
+                            else if (!Tools.ParseNumber((o ?? "null").ToString(), out d, 0))
+                                d = double.NaN;
 
                             if (double.IsNaN(d) || double.IsInfinity(d))
                                 d = 0.0;
@@ -2198,7 +2221,11 @@ namespace NiL.JS.Core
                             usedArg = true;
                             break;
                         case 'f':
-                            d = (double)Tools.JSObjectToNumber(arg);
+                            d = double.NaN;
+                            if (v != null)
+                                d = (double)Tools.JSObjectToNumber(v);
+                            else if (!Tools.ParseNumber((o ?? "null").ToString(), out d, 0))
+                                d = double.NaN;
 
                             if (para >= 0)
                                 d = System.Math.Round(d, System.Math.Min(15, para));
@@ -2229,45 +2256,45 @@ namespace NiL.JS.Core
 
                 while (hasNext)
                 {
-                    arg = e.Current.Value;
+                    v = (o = e.Current) as JSValue;
                     s.Append(' ');
-                    if (arg != null)
+                    if (v != null)
                     {
-                        if (arg.ValueType == JSValueType.Object)
-                            s.Append(Tools.JSValueToObjectString(arg));
+                        if (v.ValueType == JSValueType.Object)
+                            s.Append(Tools.JSValueToObjectString(v));
                         else
-                            s.Append(arg.ToString());
+                            s.Append(v.ToString());
                     }
                     else
-                        s.Append("null");
+                        s.Append((o ?? "null").ToString());
                     hasNext = e.MoveNext();
                 }
             }
             else
             {
-                if (arg != null)
+                if (v != null)
                 {
-                    if (arg.ValueType == JSValueType.Object)
-                        s.Append(Tools.JSValueToObjectString(arg));
+                    if (v.ValueType == JSValueType.Object)
+                        s.Append(Tools.JSValueToObjectString(v));
                     else
-                        s.Append(arg.ToString());
+                        s.Append(v.ToString());
                 }
                 else
-                    s.Append("null");
+                    s.Append((o ?? "null").ToString());
 
                 while (hasNext)
                 {
-                    arg = e.Current.Value;
+                    v = (o = e.Current) as JSValue;
                     s.Append(' ');
-                    if (arg != null)
+                    if (v != null)
                     {
-                        if (arg.ValueType == JSValueType.Object)
-                            s.Append(Tools.JSValueToObjectString(arg));
+                        if (v.ValueType == JSValueType.Object)
+                            s.Append(Tools.JSValueToObjectString(v));
                         else
-                            s.Append(arg.ToString());
+                            s.Append(v.ToString());
                     }
                     else
-                        s.Append("null");
+                        s.Append((o ?? "null").ToString());
                     hasNext = e.MoveNext();
                 }
             }
