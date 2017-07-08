@@ -39,13 +39,11 @@ namespace NiL.JS.BaseLibrary
                 return System.Console.Out;
         }
 
-        [Hidden]
-        public void LogArguments(LogLevel level, Arguments args)
+        internal void LogArguments(LogLevel level, Arguments args)
         {
             LogArguments(level, args, 0);
         }
-        [Hidden]
-        public void LogArguments(LogLevel level, Arguments args, int argsStart)
+        internal void LogArguments(LogLevel level, Arguments args, int argsStart)
         {
             if (args == null || args.length == 0 || args.length <= argsStart)
                 return;
