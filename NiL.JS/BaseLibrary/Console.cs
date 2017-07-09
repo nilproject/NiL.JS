@@ -207,11 +207,9 @@ namespace NiL.JS.BaseLibrary
 
             HashSet<string> filter = null;
             __a = args[1];
-            System.Console.WriteLine(__a);
             if (__a != null)
             {
                 var f = __a.Value as BaseLibrary.Array;
-                System.Console.WriteLine(f);
                 if (f != null && (int)f.length > 0)
                 {
                     filter = new HashSet<string>();
