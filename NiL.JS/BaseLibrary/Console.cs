@@ -192,11 +192,10 @@ namespace NiL.JS.BaseLibrary
             if (_lineSplitter == null)
                 _lineSplitter = new Regex("\r\n?|\n");
 
-            var __a = args[0];
-            if (__a == null)
+            if (args[0] == null)
                 return log(args);
 
-            var a = __a.Value as BaseLibrary.Array;
+            var a = args[0].Value as BaseLibrary.Array;
             if (a == null)
                 return log(args);
 
@@ -206,10 +205,9 @@ namespace NiL.JS.BaseLibrary
 
 
             HashSet<string> filter = null;
-            __a = args[1];
-            if (__a != null)
+            if (args[1] != null)
             {
-                var f = __a.Value as BaseLibrary.Array;
+                var f = args[1].Value as BaseLibrary.Array;
                 if (f != null && (int)f.length > 0)
                 {
                     filter = new HashSet<string>();
@@ -232,12 +230,12 @@ namespace NiL.JS.BaseLibrary
                     continue;
 
                 var d = new Dictionary<string, string[]>();
-                for (var e = item.GetEnumerator(); e.MoveNext();)
+                foreach (var prop in item)
                 {
-                    if (filter != null && !filter.Contains(e.Current.Key))
+                    if (filter != null && !filter.Contains(prop.Key))
                         continue;
 
-                    string colName = e.Current.Key ?? "";
+                    string colName = prop.Key ?? "";
 
                     if (!cols.ContainsKey(colName))
                         cols.Add(colName, colName.Length);
@@ -245,7 +243,7 @@ namespace NiL.JS.BaseLibrary
                     int colWidth = cols[colName];
                     int colMaxWidth = System.Math.Max(cols[colName], _tableMaxColWidth);
 
-                    string[] splits = _lineSplitter.Split(Tools.JSValueToObjectString(e.Current.Value, 0));
+                    string[] splits = _lineSplitter.Split(Tools.JSValueToObjectString(prop.Value, 0));
                     var lines = new List<string>(splits.Length);
                     foreach (var line in splits)
                     {
@@ -267,7 +265,7 @@ namespace NiL.JS.BaseLibrary
                     }
 
                     cols[colName] = colWidth;
-                    d.Add(e.Current.Key, lines.ToArray());
+                    d.Add(prop.Key, lines.ToArray());
                 }
 
                 indexWidth = System.Math.Max(indexWidth, i.ToString().Length);
@@ -278,7 +276,7 @@ namespace NiL.JS.BaseLibrary
             if (rows.Count == 0 || cols.Count == 0)
                 return log(args);
 
-            List<string> colsN = new List<string>(new string[] { indexName });
+            List<string> colsN = new List<string> { indexName };
             if (filter != null)
                 colsN.AddRange(filter.Where((x) => cols.ContainsKey(x)));
             else
@@ -383,8 +381,6 @@ namespace NiL.JS.BaseLibrary
             {
                 if (c._parent == null) // GlobalContext
                     break;
-                if (i++ > Context.MaxConcurentContexts) // prevent infinite loops
-                    ExceptionHelper.Throw(new Error("Unable to trace back to root."));
 
                 Function owner = c._owner;
                 if (owner == null)
@@ -458,12 +454,12 @@ namespace NiL.JS.BaseLibrary
 
         public virtual JSValue groupCollapsed(Arguments args)
         {
-            return group(args); ;
+            return group(args);
         }
 
         public virtual JSValue groupEnd(Arguments args)
         {
-            if (_groups.Count == 0)
+            if (_groups.Count > 0)
                 _groups.RemoveAt(_groups.Count - 1);
 
             return JSValue.undefined;
