@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
@@ -14,6 +16,7 @@ namespace NiL.JS.BaseLibrary
     /// </summary>
     public class JSConsole
     {
+
         [Hidden]
         public enum LogLevel
         {
@@ -23,9 +26,32 @@ namespace NiL.JS.BaseLibrary
             Error = 3
         }
 
+        private static Regex _lineSplitter;
+
         private Dictionary<string, int> _counters = new Dictionary<string, int>();
         private List<string> _groups = new List<string>();
         private Dictionary<string, Stopwatch> _timers = new Dictionary<string, Stopwatch>();
+
+        private int _tableMaxColWidth = 100;
+
+        /// <summary>
+        /// This controls in part the maximum width (in chars) that a column printed by table can have.
+        /// The actual maximum width is the maximum of this value and the length of the columns header (the name of the property displayed).
+        /// </summary>
+        [Hidden]
+        public virtual int TableMaximumColumnWidth
+        {
+            get
+            {
+                return _tableMaxColWidth;
+            }
+            set
+            {
+                if (value <= 0)
+                    ExceptionHelper.Throw(new RangeError("TableMaximumColumnWidth needs to be at least 1"));
+                _tableMaxColWidth = value;
+            }
+        }
 
         [Hidden]
         public virtual TextWriter GetLogger(LogLevel ll)
@@ -137,7 +163,7 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        public JSValue debug(Arguments args)
+        public virtual JSValue debug(Arguments args)
         {
             LogArguments(LogLevel.Log, args);
             return JSValue.undefined;
@@ -161,15 +187,231 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        //public JSValue table(Arguments args)
-        //{
-        //    return JSValue.undefined;
-        //}
+        public virtual JSValue table(Arguments args)
+        {
+            if (_lineSplitter == null)
+                _lineSplitter = new Regex("\r\n?|\n");
 
-        //public JSValue trace(Arguments args)
-        //{
-        //    return JSValue.undefined;
-        //}
+            if (args[0] == null)
+                return log(args);
+
+            var a = args[0].Value as BaseLibrary.Array;
+            if (a == null)
+                return log(args);
+
+            int len = (int)a.length;
+            if (len == 0)
+                return log(args);
+
+
+            HashSet<string> filter = null;
+            if (args[1] != null)
+            {
+                var f = args[1].Value as BaseLibrary.Array;
+                if (f != null && (int)f.length > 0)
+                {
+                    filter = new HashSet<string>();
+                    int fLen = (int)f.length;
+                    for (int i = 0; i < fLen; i++)
+                        filter.Add(Tools.JSValueToString(f[i]));
+                }
+            }
+
+
+            var cols = new SortedDictionary<string, int>(); // name of col -> its width
+            var rows = new List<Dictionary<string, string[]>>(); // name of cols -> its data as lines of string
+            string indexName = "(index)";
+            int indexWidth = indexName.Length;
+
+            for (int i = 0; i < len; i++)
+            {
+                var item = a[i];
+                if (item == null || item._valueType != JSValueType.Object)
+                    continue;
+
+                var d = new Dictionary<string, string[]>();
+                foreach (var prop in item)
+                {
+                    if (filter != null && !filter.Contains(prop.Key))
+                        continue;
+
+                    string colName = prop.Key ?? "";
+
+                    if (!cols.ContainsKey(colName))
+                        cols.Add(colName, colName.Length);
+
+                    int colWidth = cols[colName];
+                    int colMaxWidth = System.Math.Max(cols[colName], _tableMaxColWidth);
+
+                    string[] splits = _lineSplitter.Split(Tools.JSValueToObjectString(prop.Value, 0));
+                    var lines = new List<string>(splits.Length);
+                    foreach (var line in splits)
+                    {
+                        if (line.Length <= colMaxWidth)
+                        {
+                            colWidth = System.Math.Max(colWidth, line.Length);
+                            lines.Add(line);
+                        }
+                        else
+                        {
+                            colWidth = colMaxWidth;
+                            int p = 0;
+                            while (p < line.Length)
+                            {
+                                lines.Add(line.Substring(p, System.Math.Min(colWidth, line.Length - p)));
+                                p += lines.Last().Length;
+                            }
+                        }
+                    }
+
+                    cols[colName] = colWidth;
+                    d.Add(prop.Key, lines.ToArray());
+                }
+
+                indexWidth = System.Math.Max(indexWidth, i.ToString().Length);
+                d.Add(indexName, new string[] { i.ToString() });
+                rows.Add(d);
+            }
+
+            if (rows.Count == 0 || cols.Count == 0)
+                return log(args);
+
+            List<string> colsN = new List<string> { indexName };
+            if (filter != null)
+                colsN.AddRange(filter.Where((x) => cols.ContainsKey(x)));
+            else
+                colsN.AddRange(cols.Select((x) => x.Key));
+            cols.Add(indexName, indexWidth);
+            int columns = colsN.Count;
+
+            var s = new StringBuilder();
+
+            // top line
+            s.Append("+-");
+            for (int i = 0; i < columns; i++)
+            {
+                if (i > 0)
+                    s.Append("-+-");
+                int colWidth = cols[colsN[i]];
+                s.Append(new string('-', colWidth));
+            }
+            s.Append("-+\n");
+
+            // header
+            s.Append("| ");
+            for (int i = 0; i < columns; i++)
+            {
+                if (i > 0)
+                    s.Append(" | ");
+                int colWidth = cols[colsN[i]];
+                s.Append(colsN[i].PadRight(colWidth));
+            }
+            s.Append(" |\n");
+
+            // middle line
+            s.Append("+-");
+            for (int i = 0; i < columns; i++)
+            {
+                if (i > 0)
+                    s.Append("-+-");
+                s.Append(new string('-', cols[colsN[i]]));
+            }
+            s.Append("-+\n");
+
+            // body
+            for (int r = 0; r < rows.Count; r++)
+            {
+                var row = rows[r];
+                bool hasNextLine = true;
+                int offset = 0;
+                while (hasNextLine)
+                {
+                    hasNextLine = false;
+
+                    s.Append("| ");
+                    for (int i = 0; i < columns; i++)
+                    {
+                        if (i > 0)
+                            s.Append(" | ");
+                        string colName = colsN[i];
+                        int colWidth = cols[colName];
+                        string line = "";
+
+                        if (row.ContainsKey(colName))
+                        {
+                            var lines = row[colName];
+                            if (offset < lines.Length)
+                                line = lines[offset];
+                            if (lines.Length > offset + 1)
+                                hasNextLine = true;
+                        }
+
+                        s.Append(line.PadRight(colWidth));
+                    }
+                    s.Append(" |\n");
+
+                    offset++;
+                }
+            }
+
+            // bottom line
+            s.Append("+-");
+            for (int i = 0; i < colsN.Count; i++)
+            {
+                if (i > 0)
+                    s.Append("-+-");
+                s.Append(new string('-', cols[colsN[i]]));
+            }
+            s.Append("-+");
+
+
+            LogMessage(LogLevel.Log, s.ToString());
+
+            return JSValue.undefined;
+        }
+
+        public JSValue trace(Arguments args)
+        {
+            Context c = Context.CurrentContext;
+
+            StringBuilder s = new StringBuilder();
+
+            int i = 0;
+            while (c != null)
+            {
+                if (c._parent == null) // GlobalContext
+                    break;
+
+                Function owner = c._owner;
+                if (owner == null)
+                    break;
+
+                if (i > 1)
+                    s.AppendLine();
+
+                s.Append(owner.name);
+                if (owner._functionDefinition != null)
+                {
+                    if (owner._functionDefinition.Length > 0)
+                        s.Append(" @" + owner._functionDefinition.Position);
+                }
+
+                c = c._parent;
+            }
+
+            if (args != null && args.length > 0)
+            {
+                group(args);
+                LogMessage(LogLevel.Log, s.ToString());
+                groupEnd(args);
+            }
+            else
+            {
+                LogMessage(LogLevel.Log, s.ToString());
+            }
+
+            return JSValue.undefined;
+        }
 
         public JSValue warn(Arguments args)
         {
@@ -183,16 +425,15 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        //public JSValue dirxml(Arguments args)
-        //{
-        //    LogMessage(LogLevel.Log, Tools.JSValueToObjectString(args[0], 2));
-        //    return JSValue.undefined;
-        //}
-
-        public JSValue group(Arguments args)
+        public virtual JSValue dirxml(Arguments args)
         {
-            string label = Tools.FormatArgs(args) ?? "null";
-            if (label == "")
+            return dir(args);
+        }
+
+        public virtual JSValue group(Arguments args)
+        {
+            string label = Tools.FormatArgs(args);
+            if (string.IsNullOrEmpty(label))
                 label = "console.group";
 
             if (_groups.Count > 0)
@@ -211,15 +452,14 @@ namespace NiL.JS.BaseLibrary
             return JSValue.undefined;
         }
 
-        public JSValue groupCollapsed(Arguments args)
+        public virtual JSValue groupCollapsed(Arguments args)
         {
-            group(args);
-            return JSValue.undefined;
+            return group(args);
         }
 
-        public JSValue groupEnd(Arguments args)
+        public virtual JSValue groupEnd(Arguments args)
         {
-            if (_groups.Count == 0)
+            if (_groups.Count > 0)
                 _groups.RemoveAt(_groups.Count - 1);
 
             return JSValue.undefined;
@@ -277,5 +517,6 @@ namespace NiL.JS.BaseLibrary
         {
             return base.ToString();
         }
+
     }
 }
