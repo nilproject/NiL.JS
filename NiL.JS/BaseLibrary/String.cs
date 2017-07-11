@@ -29,6 +29,46 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        public static JSValue fromCodePoint(Arguments code)
+        {
+            if (code == null || code.Length == 0)
+                return new String();
+
+            JSValue n;
+            uint ucs = 0;
+            string res = "";
+            for (int i = 0; i < code.Length; i++)
+            {
+                n = Tools.JSObjectToNumber(code[i]);
+                if (n._valueType == JSValueType.Integer)
+                {
+                    if (n._iValue < 0 || n._iValue > 0x10FFFF)
+                        ExceptionHelper.Throw((new RangeError("Invalid code point " + Tools.Int32ToString(n._iValue))));
+                    ucs = (uint)n._iValue;
+                }
+                else if (n._valueType == JSValueType.Double)
+                {
+                    if (n._dValue < 0 || n._dValue > 0x10FFFF || double.IsInfinity(n._dValue) || double.IsNaN(n._dValue) || n._dValue % 1.0 != 0.0)
+                        ExceptionHelper.Throw((new RangeError("Invalid code point " + Tools.DoubleToString(n._dValue))));
+                    ucs = (uint)n._dValue;
+                }
+
+                if (ucs >= 0 && ucs <= 0xFFFF)
+                    res += ((char)ucs).ToString();
+                else if (ucs > 0xFFFF && ucs <= 0x10FFFF)
+                {
+                    ucs -= 0x10000;
+                    char h = (char)((ucs >> 10) + 0xD800);
+                    char l = (char)((ucs % 0x400) + 0xDC00);
+                    res += h.ToString() + l.ToString();
+                }
+                else
+                    ExceptionHelper.Throw((new RangeError("Invalid code point " + ucs.ToString())));
+            }
+            return res;
+        }
+
+        [DoNotEnumerate]
         public String()
             : this("")
         {
@@ -86,6 +126,36 @@ namespace NiL.JS.BaseLibrary
             {
                 _valueType = JSValueType.Integer,
                 _iValue = selfStr[p],
+            };
+            return res;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsCount(1)]
+        public static JSValue codePointAt(JSValue self, Arguments pos)
+        {
+            int p = Tools.JSObjectToInt32(pos[0], true);
+            var selfStr = self.ToString();
+            if ((p < 0) || (p >= selfStr.Length))
+                return JSValue.undefined;
+
+            // look here in section 3.7 Surrogates for more information.
+            // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
+
+            int code = selfStr[p];
+            if (p + 1 < selfStr.Length && code >= 0xD800 && code <= 0xDBFF)
+            {
+                // code is the high part
+                int low = selfStr[p + 1];
+                if (low >= 0xDC00 && low <= 0xDFFF)
+                    code = (code - 0xD800) * 0x400 + (low - 0xDC00) + 0x10000;
+            }
+
+            var res = new JSValue()
+            {
+                _valueType = JSValueType.Integer,
+                _iValue = code,
             };
             return res;
         }
@@ -798,7 +868,16 @@ namespace NiL.JS.BaseLibrary
             var str = _oValue.ToString();
             var len = str.Length;
             for (var i = 0; i < len; i++)
-                yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumeratorMode > 0 ? str[i].ToString() : null);
+            {
+                if (str[i] >= '\uD800' && str[i] <= '\uDBFF' && i + 1 < len && str[i + 1] >= '\uDC00' && str[i + 1] <= '\uDFFF') // Unicode surrogates
+                {
+                    yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumeratorMode > 0 ? str.Substring(i, 2) : null);
+                    i++;
+                }
+                else
+                    yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumeratorMode > 0 ? str[i].ToString() : null);
+            }
+
             if (!hideNonEnum)
                 yield return new KeyValuePair<string, JSValue>("length", length);
             if (_fields != null)
