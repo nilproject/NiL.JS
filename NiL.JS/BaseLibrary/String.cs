@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -278,41 +278,49 @@ namespace NiL.JS.BaseLibrary
 
             var a0 = args[0];
             var regex = a0.Value as RegExp;
-            if (regex != null)
+
+            if (regex == null)
+                regex = new RegExp((a0._valueType > JSValueType.Undefined ? (object)a0 : "").ToString(), "", false); // cached
+
+            if (!regex._global)
             {
-                if (!regex._global)
-                {
-                    regex.lastIndex._valueType = JSValueType.Integer;
-                    regex.lastIndex._iValue = 0;
-                    return regex.exec(self);
-                }
-                else
-                {
-                    var match = regex._Regex.Match(self.ToString());
-                    int index = 0;
-
-                    // Result should be w/o 'index' and 'input'
-                    var res = new Array();
-                    while (match.Success)
-                    {
-                        res._data[index++] = match.Value;
-                        match = match.NextMatch();
-                    }
-
-                    return res;
-                }
+                return regex.exec(self);
             }
             else
             {
-                var match = new Regex((a0._valueType > JSValueType.Undefined ? (object)a0 : "").ToString(), RegexOptions.ECMAScript).Match(self.ToString());
+                regex.lastIndex = 0;
 
-                var res = new Array(match.Groups.Count);
-                for (int i = 0; i < match.Groups.Count; i++)
-                    res._data[i] = match.Groups[i].Value;
+                if (regex.sticky)
+                {
+                    var match = regex._regex.Match(self.ToString());
+                    if (!match.Success || match.Index != 0)
+                        return null;
 
-                res.SetProperty("index", match.Index, false);
-                res.SetProperty("input", self, true);
-                return res;
+                    var res = new Array();
+                    res._data[0] = match.Value;
+
+                    int li = 0;
+                    while (true)
+                    {
+                        match = match.NextMatch();
+                        if (!match.Success || match.Index != ++li)
+                            break;
+                        res._data[li] = match.Value;
+                    }
+                    return res;
+                }
+                else
+                {
+                    var matches = regex._regex.Matches(self.ToString());
+                    if (matches.Count == 0)
+                        return null;
+
+                    var res = new JSValue[matches.Count];
+                    for (int i = 0; i < matches.Count; i++)
+                        res[i] = matches[i].Value;
+
+                    return new Array(res);
+                }
             }
         }
 
@@ -406,29 +414,24 @@ namespace NiL.JS.BaseLibrary
         {
             if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
+
             if (args.length == 0)
                 return 0;
+
             var a0 = args[0];
-            if (a0._valueType == JSValueType.Object
-                && a0._oValue is RegExp)
-            {
-                var regex = a0._oValue as RegExp;
-                if (!regex._global)
-                {
-                    var res = regex.exec(self);
-                    if ((res ?? @null) != @null)
-                        return res["index"];
-                    return -1;
-                }
-                else
-                {
-                    return regex._Regex.Match(self.ToString()).Index;
-                }
-            }
-            else
-            {
+            var regex = a0.Value as RegExp;
+
+            if (regex == null)
                 return self.ToString().IndexOf(a0.ToString());
-            }
+
+            var match = regex._regex.Match(self.ToString());
+            if (!match.Success)
+                return -1;
+
+            if (regex.sticky && match.Index != 0)
+                return -1;
+
+            return match.Index;
         }
 
         [DoNotEnumerate]
