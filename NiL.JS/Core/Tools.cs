@@ -1302,10 +1302,18 @@ namespace NiL.JS.Core
 #endif
         public static string Unescape(string code, bool strict)
         {
-            return Unescape(code, strict, true, false);
+            return Unescape(code, strict, true, false, true);
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static string Unescape(string code, bool strict, bool processUnknown, bool processRegexComp)
+        {
+            return Unescape(code, strict, processUnknown, processRegexComp, true);
+        }
+
+        public static string Unescape(string code, bool strict, bool processUnknown, bool processRegexComp, bool fullUnicode)
         {
             if (code == null)
                 throw new ArgumentNullException("code");
@@ -1340,21 +1348,60 @@ namespace NiL.JS.Core
                                     else
                                         ExceptionHelper.ThrowSyntaxError("Invalid escape code (\"" + code + "\")");
                                 }
-                                string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
-                                ushort chc = 0;
-                                if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
+
+                                if (fullUnicode && code[i] == 'u' && code[i + 1] == '{')
                                 {
-                                    char ch = (char)chc;
-                                    res.Append(ch);
-                                    i += c.Length;
+                                    // look here in section 3.7 Surrogates for more information.
+                                    // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
+
+                                    int closingBracket = code.IndexOf('}', i + 2);
+                                    if (closingBracket == -1)
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence"));
+
+                                    string c = code.Substring(i + 2, closingBracket - i - 2);
+                                    uint ucs = 0;
+                                    if (uint.TryParse(c, NumberStyles.HexNumber, null, out ucs))
+                                    {
+                                        if (ucs <= 0xFFFF)
+                                            res.Append((char)ucs);
+                                        else if (ucs <= 0x10FFFF)
+                                        {
+                                            ucs -= 0x10000;
+                                            char h = (char)((ucs >> 10) + 0xD800);
+                                            char l = (char)((ucs % 0x400) + 0xDC00);
+                                            res.Append(h).Append(l);
+                                        }
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                        i += c.Length + 2;
+                                    }
+                                    else
+                                    {
+                                        if (processRegexComp)
+                                            res.Append(code[i]);
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                    }
                                 }
                                 else
                                 {
-                                    if (processRegexComp)
-                                        res.Append(code[i]);
+                                    string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
+                                    ushort chc = 0;
+                                    if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
+                                    {
+                                        char ch = (char)chc;
+                                        res.Append(ch);
+                                        i += c.Length;
+                                    }
                                     else
-                                        ExceptionHelper.ThrowSyntaxError("Invalid escape sequence '\\" + code[i] + c + "'");
+                                    {
+                                        if (processRegexComp)
+                                            res.Append(code[i]);
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'"));
+                                    }
                                 }
+
                                 break;
                             }
                         case 't':
