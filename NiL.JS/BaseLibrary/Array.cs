@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -67,6 +67,15 @@ namespace NiL.JS.BaseLibrary
             if (length > 0)
                 _data[(int)((uint)length - 1)] = null;
 
+            _attributes |= JSValueAttributesInternal.SystemObject;
+        }
+
+        [DoNotEnumerate]
+        internal Array(JSValue[] data)
+        {
+            _oValue = this;
+            _valueType = JSValueType.Object;
+            _data = new SparseArray<JSValue>(data);
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
