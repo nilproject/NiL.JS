@@ -79,35 +79,35 @@ namespace NiL.JS.BaseLibrary
                         case 'i':
                             {
                                 if ((options & RegexOptions.IgnoreCase) != 0)
-                                    ExceptionHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    ExceptionHelper.Throw(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"'));
                                 options |= RegexOptions.IgnoreCase;
                                 break;
                             }
                         case 'm':
                             {
                                 if ((options & RegexOptions.Multiline) != 0)
-                                    ExceptionHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    ExceptionHelper.Throw(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"'));
                                 options |= RegexOptions.Multiline;
                                 break;
                             }
                         case 'g':
                             {
                                 if (_global)
-                                    ExceptionHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    ExceptionHelper.Throw(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"'));
                                 _global = true;
                                 break;
                             }
                         case 'u':
                             {
                                 if (_unicode)
-                                    ExceptionHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    ExceptionHelper.Throw(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"'));
                                 _unicode = true;
                                 break;
                             }
                         case 'y':
                             {
                                 if (_sticky)
-                                    ExceptionHelper.Throw((new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"')));
+                                    ExceptionHelper.Throw(new SyntaxError("Try to double use RegExp flag \"" + flags[i] + '"'));
                                 _sticky = true;
                                 break;
                             }
@@ -121,8 +121,8 @@ namespace NiL.JS.BaseLibrary
                 _source = pattern;
 
                 string label = _source + "/"
-                + ((options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0 ? "i" : "")
-                + ((options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? "m" : "")
+                + ((options & RegexOptions.IgnoreCase) != 0 ? "i" : "")
+                + ((options & RegexOptions.Multiline) != 0 ? "m" : "")
                 + (_unicode ? "u" : "");
                 if (_cacheIndex >= 0)
                 {
@@ -194,7 +194,7 @@ namespace NiL.JS.BaseLibrary
         {
             get
             {
-                return (_regex.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0;
+                return (_regex.Options & RegexOptions.IgnoreCase) != 0;
             }
         }
 
@@ -207,7 +207,7 @@ namespace NiL.JS.BaseLibrary
         {
             get
             {
-                return (_regex.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0;
+                return (_regex.Options & RegexOptions.Multiline) != 0;
             }
         }
 
@@ -382,8 +382,8 @@ namespace NiL.JS.BaseLibrary
         {
             return "/" + _source + "/"
                 + (_global ? "g" : "")
-                + ((_regex.Options & System.Text.RegularExpressions.RegexOptions.IgnoreCase) != 0 ? "i" : "")
-                + ((_regex.Options & System.Text.RegularExpressions.RegexOptions.Multiline) != 0 ? "m" : "")
+                + ((_regex.Options & RegexOptions.IgnoreCase) != 0 ? "i" : "")
+                + ((_regex.Options & RegexOptions.Multiline) != 0 ? "m" : "")
                 + (_unicode ? "u" : "")
                 + (_sticky ? "y" : "");
         }
