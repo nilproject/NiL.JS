@@ -67,6 +67,14 @@ namespace NiL.JS.Core
                 ensureCapacity(capacity);
         }
 
+        public SparseArray(TValue[] values)
+        {
+            mode = ArrayMode.Flat;
+            this.values = values;
+            navyData = emptyNavyData;
+            allocatedCount = (pseudoLength = (uint)values.Length);
+        }
+
         #region Члены IList<TValue>
 
         public int IndexOf(TValue item)
