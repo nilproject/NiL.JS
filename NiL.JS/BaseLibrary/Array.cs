@@ -177,7 +177,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 if (!res)
                 {
-                    SetLenght(nlen + 1); // áåñêîíå÷íîé ðåêóðñèè íå ìîæåò áûòü.
+                    SetLenght(nlen + 1);
                     return false;
                 }
             }
@@ -1576,7 +1576,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 return res;
             }
-            else // êòî-òî îòïðàâèë îáúåêò ñ ïîëåì length
+            else
             {
                 long _length = Tools.getLengthOfArraylike(self, false);
                 var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);
