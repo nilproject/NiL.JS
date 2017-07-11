@@ -423,16 +423,6 @@ namespace NiL.JS.Core
                     if (j >= code.Length)
                         break;
                     char c = code[j];
-                    if (c == '\\')
-                    {
-                        int len = 1;
-                        if (code[j + 1] == 'u')
-                            len = 5;
-                        else if (code[j + 1] == 'x')
-                            len = 3;
-                        c = Tools.Unescape(code.Substring(j, len + 1), false)[0];
-                        j += len;
-                    }
                     switch (c)
                     {
                         case 'g':
