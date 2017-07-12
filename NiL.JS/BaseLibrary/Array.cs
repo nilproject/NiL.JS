@@ -989,6 +989,20 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        public static JSValue of(Arguments args)
+        {
+            if (args == null || args.Length == 0)
+                return new Array();
+
+            int len = args.Length;
+            var res = new JSValue[len];
+            for (int i = 0; i < len; i++)
+                res[i] = args[i].CloneImpl(false);
+
+            return new Array(res);
+        }
+
+        [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(0)]
         public static JSValue pop(JSValue self)
