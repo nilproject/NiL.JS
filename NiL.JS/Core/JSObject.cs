@@ -748,7 +748,7 @@ namespace NiL.JS.Core
 
         [DoNotEnumerate]
         [CLSCompliant(false)]
-        public JSObject __lookupGetter(Arguments args)
+        public JSObject __lookupGetter__(Arguments args)
         {
             var field = GetProperty(args[0], false, PropertyScope.Common);
             if (field._valueType == JSValueType.Property)
@@ -758,7 +758,7 @@ namespace NiL.JS.Core
 
         [DoNotEnumerate]
         [CLSCompliant(false)]
-        public JSObject __lookupSetter(Arguments args)
+        public JSObject __lookupSetter__(Arguments args)
         {
             var field = GetProperty(args[0], false, PropertyScope.Common);
             if (field._valueType == JSValueType.Property)

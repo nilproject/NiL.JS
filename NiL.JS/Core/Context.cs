@@ -629,7 +629,7 @@ namespace NiL.JS.Core
             }
 
             int index = 0;
-            string c = Tools.RemoveComments(code, 0);
+            string c = Tools.removeComments(code, 0);
             var ps = new ParseInfo(c, code, null)
             {
                 strict = _strict,

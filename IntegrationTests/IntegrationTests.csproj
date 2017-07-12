@@ -98,6 +98,7 @@
   <ItemGroup>
     <Compile Include="BaseLibrary\JsonTests.cs" />
     <Compile Include="BaseLibrary\StringTests.cs" />
+    <Compile Include="Core\ArgumentsTests.cs" />
     <Compile Include="Core\Functions\MethodProxyTests.cs" />
     <Compile Include="Core\JSObjectTests.cs" />
     <Compile Include="Core\JSValueTests.cs" />

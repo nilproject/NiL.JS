@@ -873,10 +873,11 @@ namespace NiL.JS.Expressions
                     code.Append(parameters[i])
                         .Append(++i < parameters.Length ? "," : "");
 
-            code.Append(") ");
+            code.Append(")");
 
             if (!headerOnly)
             {
+                code.Append(" ");
                 if (kind == FunctionKind.Arrow)
                     code.Append("=> ");
 
