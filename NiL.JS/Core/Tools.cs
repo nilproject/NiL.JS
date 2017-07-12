@@ -1607,7 +1607,7 @@ namespace NiL.JS.Core
 
         internal static long _GetLengthOfArraylike(JSValue src, bool reassignLen)
         {
-            var length = src.GetProperty("length", true, PropertyScope.Сommon); // тут же проверка на null/undefined с падением если надо
+            var length = src.GetProperty("length", true, PropertyScope.Common); // тут же проверка на null/undefined с падением если надо
 
             var result = (uint)JSObjectToInt64(InvokeGetter(length, src).ToPrimitiveValue_Value_String(), 0, false);
             if (reassignLen)

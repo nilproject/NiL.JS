@@ -86,7 +86,7 @@ namespace NiL.JS.Core
         [Hidden]
         protected internal JSObject()
         {
-            /// На будущее. Наверное, нужно будет сделать переходную версию, 
+            /// На будущее. Наверное, нужно будет сделать переходную версию,
             /// но я пока не знаю как это сделать получше.
             /*
             valueType = JSValueType.Object;
@@ -106,7 +106,7 @@ namespace NiL.JS.Core
             {
                 _valueType = JSValueType.Object
             };
-            
+
             t._oValue = t;
             t._attributes = (JSValueAttributesInternal)attributes;
 
@@ -183,9 +183,9 @@ namespace NiL.JS.Core
             JSValue res = null;
             var symbol = key._oValue as Symbol;
 
-            var fromProto = (_symbols == null 
-                            || !_symbols.TryGetValue(symbol, out res) 
-                            || res._valueType < JSValueType.Undefined) 
+            var fromProto = (_symbols == null
+                            || !_symbols.TryGetValue(symbol, out res)
+                            || res._valueType < JSValueType.Undefined)
                                   && ((proto = __proto__)._oValue != null);
             if (fromProto)
             {
@@ -237,7 +237,7 @@ namespace NiL.JS.Core
                 }
             }
 
-            field = GetProperty(key, true, PropertyScope.Сommon);
+            field = GetProperty(key, true, PropertyScope.Common);
             if (field._valueType == JSValueType.Property)
             {
                 var setter = (field._oValue as GsPropertyPair).setter;
@@ -750,7 +750,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public JSObject __lookupGetter(Arguments args)
         {
-            var field = GetProperty(args[0], false, PropertyScope.Сommon);
+            var field = GetProperty(args[0], false, PropertyScope.Common);
             if (field._valueType == JSValueType.Property)
                 return (field._oValue as GsPropertyPair).getter;
             return null;
@@ -760,7 +760,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public JSObject __lookupSetter(Arguments args)
         {
-            var field = GetProperty(args[0], false, PropertyScope.Сommon);
+            var field = GetProperty(args[0], false, PropertyScope.Common);
             if (field._valueType == JSValueType.Property)
                 return (field._oValue as GsPropertyPair).getter;
             return null;

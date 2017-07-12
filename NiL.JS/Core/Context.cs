@@ -500,7 +500,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        res = GlobalContext._GlobalPrototype.GetProperty(name, false, PropertyScope.Сommon);
+                        res = GlobalContext._GlobalPrototype.GetProperty(name, false, PropertyScope.Common);
                         if (res._valueType == JSValueType.NotExistsInObject)
                             res._valueType = JSValueType.NotExists;
                     }
@@ -600,10 +600,10 @@ namespace NiL.JS.Core
             if (string.IsNullOrEmpty(code))
                 return JSValue.undefined;
 
-            // чистить кэш тут не достаточно. 
-            // Мы не знаем, где объявлена одноимённая переменная 
+            // чистить кэш тут не достаточно.
+            // Мы не знаем, где объявлена одноимённая переменная
             // и в тех случаях, когда она пришла из функции выше
-            // или даже глобального контекста, её кэш может быть 
+            // или даже глобального контекста, её кэш может быть
             // не сброшен вовремя и значение будет браться из контекста
             // eval'а, а не того контекста, в котором её позовут.
             /*
@@ -612,7 +612,7 @@ namespace NiL.JS.Core
              *  function b(){
              *      eval("var c = 2");
              *      // переменная объявлена в контексте b, значит и значение должно быть из
-             *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет, 
+             *      // контекста b, но если по выходу из b кэш этой переменной сброшен не будет,
              *      // то в a её значение будет 2
              *  }
              * }
