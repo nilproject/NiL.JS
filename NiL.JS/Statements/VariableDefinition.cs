@@ -109,6 +109,8 @@ namespace NiL.JS.Statements
                                 names.Add(expressions[i].ToString());
                                 initializers.Add(expressions[i]);
                             }
+
+                            initializers.Add(expr);
                         }
                     }
                     else
