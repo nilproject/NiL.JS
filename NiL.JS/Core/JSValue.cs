@@ -552,7 +552,11 @@ namespace NiL.JS.Core
         {
             if ((name._valueType == JSValueType.String || name._valueType >= JSValueType.Object)
                 && string.CompareOrdinal(name._oValue.ToString(), "length") == 0)
+            {
+                if (_oValue is RopeString)
+                    return (_oValue as RopeString).Length;
                 return _oValue.ToString().Length;
+            }
 
             double dindex = 0.0;
             int index = 0;
