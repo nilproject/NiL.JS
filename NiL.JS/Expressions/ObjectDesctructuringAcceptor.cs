@@ -156,5 +156,31 @@ namespace NiL.JS.Expressions
         {
             return _objectDefinition.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
         }
+
+        public IList<Variable> GetTargetVariables()
+        {
+            var result = new List<Variable>(_objectDefinition.Values.Length + _objectDefinition.ComputedProperties.Length);
+            collectTargetVariables(_objectDefinition, result);
+            return result;
+        }
+
+        private static void collectTargetVariables(ObjectDefinition objectDefinition, List<Variable> result)
+        {
+            for (var i = 0; i < objectDefinition.Values.Length; i++)
+            {
+                if (objectDefinition.Values[i] is ObjectDefinition)
+                    collectTargetVariables(objectDefinition.Values[i] as ObjectDefinition, result);
+                else
+                    result.Add((Variable)objectDefinition.Values[i]);
+            }
+
+            for (var i = 0; i < objectDefinition.ComputedProperties.Length; i++)
+            {
+                if (objectDefinition.ComputedProperties[i].Value is ObjectDefinition)
+                    collectTargetVariables(objectDefinition.ComputedProperties[i].Value as ObjectDefinition, result);
+                else
+                    result.Add((Variable)objectDefinition.ComputedProperties[i].Value);
+            }
+        }
     }
 }

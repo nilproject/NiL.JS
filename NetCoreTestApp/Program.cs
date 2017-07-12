@@ -4,30 +4,61 @@ using System.IO;
 using System.Linq;
 using NiL.JS;
 using NiL.JS.Core;
+using NiL.JS.Extensions;
+using System.Collections;
+using System.Collections.Generic;
+using NiL.JS.Core.Interop;
 
 namespace NetCoreTestApp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public class MyObject
         {
-            testCompilation();
+            public NiL.JS.BaseLibrary.Array getCodes()
+            {
+                var gc = Context.CurrentContext.GlobalContext;
+                return new NiL.JS.BaseLibrary.Array(MakeCodes());
+            }
+
+            private IList<long> MakeCodes()
+            {
+                return (new List<long>() { 1, 2, 3, 4, 5 }).Where(x => x > 0).ToList();
+            }
+
+            public void takeCodes()
+            {
+            }
+
+            public void takeCodes(int x)
+            {
+            }
+
+            public void takeCodes(double[] codes)
+            {
+                for (int i = 0; i < codes.Length; i++)
+                {
+                    Console.WriteLine("[{0}]: {1}", i, codes[i]);
+                }
+            }
+
+            public void takeCodes(long[] codes)
+            {
+                for (int i = 0; i < codes.Length; i++)
+                {
+                    Console.WriteLine("[{0}]: {1}", i, codes[i]);
+                }
+            }
         }
 
-        private static void testCompilation()
+        static void Main(string[] args)
         {
-            var module = new Module(@"
-var a = 1;
-for (var i = 0; i < 100; i++)
-    a = a + a;
-",
-null,
-Options.Compile);
+            new Module(File.ReadAllText("tests/modules/ftest.js")).Run();
         }
 
         private static void sunspider()
         {
-            var folderPath = "sunspider-0.9.1";
+            var folderPath = "tests/sunspider-0.9.1";
 
             Action<string> _ = Console.WriteLine;
             var sw = new Stopwatch();

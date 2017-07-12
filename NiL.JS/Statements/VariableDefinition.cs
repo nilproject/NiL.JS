@@ -67,12 +67,12 @@ namespace NiL.JS.Statements
             {
                 Tools.SkipSpaces(state.Code, ref position);
 
-                s = position;
+                /*s = position;
                 if (!Parser.ValidateName(state.Code, ref position, state.strict))
                 {
                     if (Parser.ValidateName(state.Code, ref position, false, true, state.strict))
-                        ExceptionHelper.Throw((new SyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.strict) + "\" is a reserved word at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s))));
-                    ExceptionHelper.Throw((new SyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s))));
+                        ExceptionHelper.ThrowSyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.strict) + "\" is a reserved word, but used as a variable. " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
+                    ExceptionHelper.ThrowSyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
                 }
 
                 string name = Tools.Unescape(state.Code.Substring(s, position - s), state.strict);
@@ -83,30 +83,44 @@ namespace NiL.JS.Statements
                 }
                 names.Add(name);
 
-                position = s;
+                position = s;*/
                 var expression = ExpressionTree.Parse(state, ref position, processComma: false, forForLoop: forForLoop);
 
                 if (!(expression is VariableReference))
                 {
                     bool valid = false;
-                    var et = expression as ExpressionTree;
-                    if (et != null)
+                    var expr = expression as ExpressionTree;
+                    if (expr != null)
                     {
-                        if (et.Type == OperationType.None && et._right == null)
-                            et = et._left as ExpressionTree;
-                        valid |= et != null && et.Type == OperationType.Assignment;
+                        if (expr.Type == OperationType.None && expr._right == null)
+                            expr = expr._left as ExpressionTree;
+                        valid |= expr != null && expr.Type == OperationType.Assignment;
+
+                        if (expr._left is VariableReference)
+                        {
+                            names.Add(expr._left.ToString());
+                            initializers.Add(expression);
+                        }
+                        else
+                        {
+                            var expressions = (expr._left as ObjectDesctructuringAcceptor).GetTargetVariables();
+                            for (var i = 0; i < expressions.Count; i++)
+                            {
+                                names.Add(expressions[i].ToString());
+                                initializers.Add(expressions[i]);
+                            }
+                        }
                     }
                     else
                     {
                         var cnst = expression as Constant;
                         valid = cnst != null && cnst.value == JSValue.undefined;
+                        initializers.Add(expression);
                     }
 
                     if (!valid)
                         ExceptionHelper.ThrowSyntaxError("Invalid variable initializer", state.Code, position);
                 }
-
-                initializers.Add(expression);
 
                 s = position;
 
