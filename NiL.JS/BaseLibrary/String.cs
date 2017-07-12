@@ -326,6 +326,83 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
+        [ArgumentsCount(1)]
+        public static JSValue normalize(JSValue self, Arguments args)
+        {
+            var selfStr = (self ?? undefinedString).ToString();
+
+            var form = "NFC";
+            if (args != null && args.Length > 0)
+            {
+                var a0 = args[0];
+                if (a0 != null && a0._valueType > JSValueType.Undefined)
+                    form = a0.ToString();
+            }
+
+            switch (form)
+            {
+                case "NFC":
+                    {
+                        selfStr = selfStr.Normalize(NormalizationForm.FormC);
+                        break;
+                    }
+                case "NFD":
+                    {
+                        selfStr = selfStr.Normalize(NormalizationForm.FormD);
+                        break;
+                    }
+                case "NFKC":
+                    {
+                        selfStr = selfStr.Normalize(NormalizationForm.FormKC);
+                        break;
+                    }
+                case "NFKD":
+                    {
+                        selfStr = selfStr.Normalize(NormalizationForm.FormKD);
+                        break;
+                    }
+                default:
+                    ExceptionHelper.Throw(new RangeError("The normalization form should be one of NFC, NFD, NFKC, NFKD"));
+                    break;
+            }
+            return selfStr;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsCount(1)]
+        public static JSValue repeat(JSValue self, Arguments args)
+        {
+            var selfStr = (self ?? undefinedString).ToString();
+
+            double count = 0;
+            if (args.Length > 0)
+                count = Tools.JSObjectToDouble(args[0]);
+            if (double.IsNaN(count))
+                count = 0;
+            count = System.Math.Truncate(count);
+
+            if (count < 0 || double.IsInfinity(count))
+                ExceptionHelper.Throw(new RangeError("Invalid count value"));
+
+            int c = (int)count;
+
+            if (c == 0)
+                return "";
+            if (c == 1)
+                return selfStr;
+            if (selfStr.Length == 0)
+                return "";
+
+            var s = new StringBuilder(selfStr.Length * c);
+            for (int i = 0; i < c; i++)
+                s.Append(selfStr);
+
+            return s.ToString();
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
         [ArgumentsCount(2)]
         [AllowNullArguments]
         public static JSValue replace(JSValue self, Arguments args)
