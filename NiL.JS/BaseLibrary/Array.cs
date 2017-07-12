@@ -32,7 +32,7 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         public Array(int length)
-            : this((long)length)
+            : this((double)length)
         {
         }
 
