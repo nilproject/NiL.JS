@@ -77,6 +77,9 @@ namespace NiL.JS.Core
             }
             set
             {
+                if (value != null)
+                    value = value.CloneImpl((JSValueAttributesInternal)uint.MaxValue);
+
                 switch (index)
                 {
                     case 0:
@@ -133,7 +136,7 @@ namespace NiL.JS.Core
 
         public void Add(object value)
         {
-            this[length++] = JSValue.Marshal(value);
+            this[length++] = Marshal(value);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool createMember, PropertyScope memberScope)
@@ -224,7 +227,7 @@ namespace NiL.JS.Core
                 yield return new KeyValuePair<string, JSValue>("4", a4);
             if (callee != null && callee.Exists && (!hideNonEnum || (callee._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("callee", callee);
-            if (caller != null && callee.Exists && (!hideNonEnum || (caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+            if (caller != null && caller.Exists && (!hideNonEnum || (caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("caller", caller);
             if (_lengthContainer != null && _lengthContainer.Exists && (!hideNonEnum || (_lengthContainer._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("length", _lengthContainer);

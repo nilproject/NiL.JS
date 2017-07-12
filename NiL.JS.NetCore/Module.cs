@@ -141,7 +141,7 @@ namespace NiL.JS
                 return;
 
             int i = 0;
-            _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Tools.RemoveComments(code, 0), Code, messageCallback), ref i);
+            _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Tools.removeComments(code, 0), Code, messageCallback), ref i);
 
             CompilerMessageCallback icallback = messageCallback != null ? (level, cord, message) =>
             {

@@ -117,62 +117,96 @@ namespace NiL.JS.Core.Interop
                 IList<MemberInfo> temp = null;
                 bool instanceAttribute = false;
 #if (PORTABLE || NETCORE)
-                    var mmbrs = _hostedType.GetTypeInfo().DeclaredMembers
+                    var members = _hostedType.GetTypeInfo().DeclaredMembers
                          .Union(_hostedType.GetRuntimeMethods())
                          .Union(_hostedType.GetRuntimeProperties())
                          .Union(_hostedType.GetRuntimeFields())
                          .Union(_hostedType.GetRuntimeEvents()).ToArray();
 #else
-                var mmbrs = _hostedType.GetMembers();
+                var members = _hostedType.GetMembers();
 #endif
-                for (int i = 0; i < mmbrs.Length; i++)
+                for (int i = 0; i < members.Length; i++)
                 {
-                    if (mmbrs[i].IsDefined(typeof(HiddenAttribute), false))
+                    var member = members[i];
+                    if (member.IsDefined(typeof(HiddenAttribute), false))
                         continue;
 
-                    instanceAttribute = mmbrs[i].IsDefined(typeof(InstanceMemberAttribute), false);
+                    instanceAttribute = member.IsDefined(typeof(InstanceMemberAttribute), false);
 
                     if (!IsInstancePrototype && instanceAttribute)
                         continue;
 
-                    if (mmbrs[i] is PropertyInfo)
+                    var property = member as PropertyInfo;
+                    if (property != null)
                     {
-                        if (((mmbrs[i] as PropertyInfo).GetSetMethod(true) ?? (mmbrs[i] as PropertyInfo).GetGetMethod(true)).IsStatic != !(IsInstancePrototype ^ instanceAttribute))
+                        if ((property.GetSetMethod(true) ?? property.GetGetMethod(true)).IsStatic != !(IsInstancePrototype ^ instanceAttribute))
                             continue;
-                        if (((mmbrs[i] as PropertyInfo).GetSetMethod(true) == null || !(mmbrs[i] as PropertyInfo).GetSetMethod(true).IsPublic)
-                            && ((mmbrs[i] as PropertyInfo).GetGetMethod(true) == null || !(mmbrs[i] as PropertyInfo).GetGetMethod(true).IsPublic))
+                        if ((property.GetSetMethod(true) == null || !property.GetSetMethod(true).IsPublic)
+                            && (property.GetGetMethod(true) == null || !property.GetGetMethod(true).IsPublic))
                             continue;
+                        
+                        var parentProperty = property;
+                        while (parentProperty != null 
+                            && ((property.GetGetMethod() ?? property.GetSetMethod()).Attributes & MethodAttributes.NewSlot) == 0)
+                        {
+                            property = parentProperty;
+#if (PORTABLE || NETCORE)
+                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType.GetRuntimeProperty(property.Name);
+#else
+                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
+#endif
+                        }
+
+                        member = property;
                     }
-                    if ((mmbrs[i] is EventInfo)
-                        && (!(mmbrs[i] as EventInfo).GetAddMethod(true).IsPublic || (mmbrs[i] as EventInfo).GetAddMethod(true).IsStatic != !IsInstancePrototype))
+
+                    if (member is EventInfo
+                        && (!(member as EventInfo).GetAddMethod(true).IsPublic || (member as EventInfo).GetAddMethod(true).IsStatic != !IsInstancePrototype))
                         continue;
 
-                    if ((mmbrs[i] is FieldInfo) && (!(mmbrs[i] as FieldInfo).IsPublic || (mmbrs[i] as FieldInfo).IsStatic != !IsInstancePrototype))
+                    if (member is FieldInfo && (!(member as FieldInfo).IsPublic || (member as FieldInfo).IsStatic != !IsInstancePrototype))
                         continue;
 #if (PORTABLE || NETCORE)
-                    if ((mmbrs[i] is TypeInfo) && !(mmbrs[i] as TypeInfo).IsPublic)
+                    if ((members[i] is TypeInfo) && !(members[i] as TypeInfo).IsPublic)
                         continue;
 #else
-                    if ((mmbrs[i] is Type) && !(mmbrs[i] as Type).IsPublic && !(mmbrs[i] as Type).IsNestedPublic)
+                    if (member is Type && !(member as Type).IsPublic && !(member as Type).IsNestedPublic)
                         continue;
 #endif
-                    if (mmbrs[i] is MethodBase)
+                    var method = member as MethodBase;
+                    if (method != null)
                     {
-                        if ((mmbrs[i] as MethodBase).IsStatic != !(IsInstancePrototype ^ instanceAttribute))
+                        if (method.IsStatic != !(IsInstancePrototype ^ instanceAttribute))
                             continue;
-                        if (!(mmbrs[i] as MethodBase).IsPublic)
+                        if (!method.IsPublic)
                             continue;
-                        if ((mmbrs[i] as MethodBase).DeclaringType == typeof(object) && mmbrs[i].Name == "GetType")
+                        if (method.DeclaringType == typeof(object) && member.Name == "GetType")
                             continue;
-                        if (mmbrs[i] is ConstructorInfo)
+                        if (method is ConstructorInfo)
                             continue;
+
+                        if (method.IsVirtual && (method.Attributes & MethodAttributes.NewSlot) == 0)
+                        {
+                            var parameterTypes = method.GetParameters().Select(x => x.ParameterType).ToArray();
+                            var parentMethod = method;
+                            while (parentMethod != null && (method.Attributes & MethodAttributes.NewSlot) == 0)
+                            {
+                                method = parentMethod;
+#if (PORTABLE || NETCORE)
+                                parentMethod = method.DeclaringType.GetTypeInfo().BaseType.GetMethod(method.Name, parameterTypes);
+#else
+                                parentMethod = method.DeclaringType.BaseType.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance, null, parameterTypes, null);
+#endif
+                            }
+                        }
+
+                        member = method;
                     }
 
-                    var membername = mmbrs[i].Name;
-
-                    if (mmbrs[i].IsDefined(typeof(JavaScriptNameAttribute), false))
+                    var membername = member.Name;
+                    if (member.IsDefined(typeof(JavaScriptNameAttribute), false))
                     {
-                        var nameOverrideAttribute = mmbrs[i].GetCustomAttributes(typeof(JavaScriptNameAttribute), false).ToArray();
+                        var nameOverrideAttribute = member.GetCustomAttributes(typeof(JavaScriptNameAttribute), false).ToArray();
                         membername = (nameOverrideAttribute[0] as JavaScriptNameAttribute).Name;
                     }
                     else
@@ -180,9 +214,9 @@ namespace NiL.JS.Core.Interop
                         membername = membername[0] == '.' ? membername : membername.Contains(".") ? membername.Substring(membername.LastIndexOf('.') + 1) : membername;
 
 #if (PORTABLE || NETCORE)
-                        if (mmbrs[i] is TypeInfo && membername.Contains("`"))
+                        if (members[i] is TypeInfo && membername.Contains("`"))
 #else
-                        if (mmbrs[i] is Type && membername.Contains('`'))
+                        if (member is Type && membername.Contains('`'))
 #endif
                         {
                             membername = membername.Substring(0, membername.IndexOf('`'));
@@ -220,17 +254,17 @@ namespace NiL.JS.Core.Interop
                     {
                         if (_symbols == null)
                             _symbols = new Dictionary<Symbol, JSValue>();
-                        _symbols.Add(Symbol.@for(membername.Substring(2)), proxyMember(false, new[] { mmbrs[i] }));
+                        _symbols.Add(Symbol.@for(membername.Substring(2)), proxyMember(false, new[] { member }));
                     }
                     else
                     {
                         if (temp.Count == 1)
                             tempMembers.Add(membername + "$0", new[] { temp[0] });
 
-                        temp.Add(mmbrs[i]);
+                        temp.Add(member);
 
                         if (temp.Count != 1)
-                            tempMembers.Add(membername + "$" + (temp.Count - 1), new[] { mmbrs[i] });
+                            tempMembers.Add(membername + "$" + (temp.Count - 1), new[] { member });
                     }
                 }
 
@@ -528,6 +562,7 @@ namespace NiL.JS.Core.Interop
         {
             if (_members == null)
                 fillMembers();
+
             string stringName = null;
             JSValue field = null;
             if (_fields != null

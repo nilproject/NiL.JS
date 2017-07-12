@@ -637,7 +637,7 @@ namespace NiL.JS.Expressions
                                 i = rollbackPos;
                                 break;
                             }
-                            state.Code = Tools.RemoveComments(state.SourceCode, i + 1);
+                            state.Code = Tools.removeComments(state.SourceCode, i + 1);
                             binary = true;
                             kind = OperationType.Division;
                             if (state.Code[i + 1] == '=')

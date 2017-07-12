@@ -19,13 +19,13 @@ namespace NiL.JS.Core.Functions
     {
         /// <summary>
         /// На первом проходе будут выбираться методы со строгим соответствием типов
-        /// 
+        ///
         /// На втором проходе будут выбираться методы, для которых
         /// получится преобразовать входные аргументы.
-        /// 
-        /// На третьем проходе будет выбираться первый метод, 
+        ///
+        /// На третьем проходе будет выбираться первый метод,
         /// для которого получится сгенерировать параметры по-умолчанию.
-        /// 
+        ///
         /// Если нужен более строгий подбор, то количество проходов нужно
         /// уменьшить до одного
         /// </summary>
@@ -89,7 +89,7 @@ namespace NiL.JS.Core.Functions
                         {
                             args = _methods[i].ConvertArguments(
                                 arguments,
-                                (pass >= 1 ? ConvertArgsOptions.Default : ConvertArgsOptions.StrictConversion) 
+                                (pass >= 1 ? ConvertArgsOptions.Default : ConvertArgsOptions.StrictConversion)
                                 | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.Default));
 
                             if (args == null)
@@ -100,11 +100,7 @@ namespace NiL.JS.Core.Functions
                                 if (args[j] != null ?
                                     !_methods[i]._parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
-#if (PORTABLE || NETCORE)
                                     _methods[i]._parameters[j].ParameterType.GetTypeInfo().IsValueType)
-#else
-                                    _methods[i]._parameters[j].ParameterType.IsValueType)
-#endif
                                 {
                                     j = 0;
                                     args = null;

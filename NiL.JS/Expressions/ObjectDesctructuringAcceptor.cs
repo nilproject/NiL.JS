@@ -30,7 +30,7 @@ namespace NiL.JS.Expressions
                 for (var i = 0; i < targetMap.FieldNames.Length; i++, j++)
                     values[j] = source[targetMap.FieldNames[i]].CloneImpl(false);
                 for (var i = 0; i < targetMap.ComputedProperties.Length; i++, j++)
-                    values[j] = source.GetProperty(targetMap.ComputedProperties[i].Key.Evaluate(_context), false, PropertyScope.Сommon).CloneImpl(false);
+                    values[j] = source.GetProperty(targetMap.ComputedProperties[i].Key.Evaluate(_context), false, PropertyScope.Common).CloneImpl(false);
 
                 Arguments setterArgs = null;
                 j = 0;

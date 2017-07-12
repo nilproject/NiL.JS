@@ -282,3 +282,5 @@ for (let i = 0; i < 1; i++) {
         // OK
     }
 })();
+
+console.asserta(() => 1..__proto__, Number.prototype);

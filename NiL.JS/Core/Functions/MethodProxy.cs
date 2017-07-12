@@ -462,11 +462,7 @@ namespace NiL.JS.Core.Functions
                 else if (!_method.IsStatic && !_method.IsConstructor)
                 {
                     target = convertTargetObject(targetValue ?? undefined, _method.DeclaringType);
-                    if (target == null
-#if !(PORTABLE || NETCORE)
-                        || !_method.DeclaringType.IsAssignableFrom(target.GetType())
-#endif
-                        )
+                    if (target == null)
                     {
                         // Исключительная ситуация. Я не знаю почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
                         if (_method.Name == "get_length" && typeof(Function).IsAssignableFrom(_method.DeclaringType))
