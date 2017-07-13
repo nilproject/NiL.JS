@@ -603,61 +603,80 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(2)]
         public static JSValue split(JSValue self, Arguments args)
         {
-            if (args.Length == 0 || !args[0].Defined)
-                return new Array(new object[] { self.ToString() });
+            if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
+
+            if (args == null || args.Length == 0 || !args[0].Defined)
+                return new Array(new JSValue[] { self.ToString() });
+
+            var a0 = args[0];
+            var regex = a0?.Value as RegExp;
 
             var selfString = self.ToString();
             var limit = (uint)Tools.JSObjectToInt64(args[1], long.MaxValue, true);
 
-            if (args[0]._valueType == JSValueType.Object && args[0]._oValue is RegExp)
+            if (limit == 0)
+                return new Array();
+
+            if (regex != null)
             {
-                var match = (args[0]._oValue as RegExp)._Regex.Match(selfString);
-                if ((args[0]._oValue as RegExp)._Regex.ToString().Length == 0)
-                {
-                    match = match.NextMatch();
-                    if (limit == uint.MaxValue)
-                        limit = (uint)selfString.Length;
-                }
+                var re = regex._regex;
+
+                var m = re.Match(selfString, 0);
+                if (!m.Success)
+                    return new Array(new JSValue[] { selfString });
 
                 Array res = new Array();
+
                 int index = 0;
                 while (res._data.Length < limit)
                 {
-                    if (!match.Success)
+                    if (index > 0)
+                        m = m.NextMatch();
+
+                    if (!m.Success)
                     {
                         res._data.Add(selfString.Substring(index, selfString.Length - index));
                         break;
                     }
 
-                    int nindex = match.Index;
-                    if (nindex == -1)
-                    {
-                        res._data.Add(selfString.Substring(index, selfString.Length - index));
+                    if (m.Index >= selfString.Length)
                         break;
-                    }
-                    else
+
+                    int nindex = m.Index + (m.Length == 0 ? 1 : 0);
+                    var item = selfString.Substring(index, nindex - index);
+                    res._data.Add(item);
+
+                    if (nindex < selfString.Length)
                     {
-                        var item = selfString.Substring(index, nindex - index);
-                        res._data.Add(item);
-                        index = nindex + match.Length;
+                        for (int i = 1; i < m.Groups.Count; i++)
+                        {
+                            if (res._data.Length >= limit)
+                                break;
+                            res._data.Add(m.Groups[i].Success ? m.Groups[i].Value : undefined);
+                        }
                     }
 
-                    match = match.NextMatch();
+                    index = nindex + m.Length;
                 }
 
                 return res;
             }
             else
             {
-                string fstr = args[0].ToString();
-                Array res = new Array();
+                string fstr = a0?.ToString();
+
                 if (string.IsNullOrEmpty(fstr))
                 {
-                    for (var i = 0; i < System.Math.Min(selfString.Length, limit); i++)
-                        res._data.Add(selfString[i]);
+                    int len = System.Math.Min(selfString.Length, (int)System.Math.Min(int.MaxValue, limit));
+                    var arr = new JSValue[len];
+                    for (var i = 0; i < len; i++)
+                        arr[i] = new String(selfString[i].ToString());
+                    return new Array(arr);
                 }
                 else
                 {
+                    Array res = new Array();
                     int index = 0;
                     while (res._data.Length < limit)
                     {
@@ -669,14 +688,12 @@ namespace NiL.JS.BaseLibrary
                         }
                         else
                         {
-                            var item = selfString.Substring(index, nindex - index);
-                            res._data.Add(item);
+                            res._data.Add(selfString.Substring(index, nindex - index));
                             index = nindex + fstr.Length;
                         }
                     }
+                    return res;
                 }
-
-                return res;
             }
         }
 
