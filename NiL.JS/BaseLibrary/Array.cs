@@ -994,12 +994,7 @@ namespace NiL.JS.BaseLibrary
             if (args == null || args.Length == 0)
                 return new Array();
 
-            int len = args.Length;
-            var res = new JSValue[len];
-            for (int i = 0; i < len; i++)
-                res[i] = args[i].CloneImpl(false);
-
-            return new Array(res);
+            return new Array(args);
         }
 
         [DoNotEnumerate]
