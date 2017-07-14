@@ -409,77 +409,79 @@ namespace NiL.JS.BaseLibrary
         {
             if (args == null || args.length == 0)
                 return self;
-            if ((args[0] ?? @null)._valueType == JSValueType.Object
-                && (args[0] ?? @null).Value != null
-                && args[0].Value.GetType() == typeof(RegExp))
+
+            var a0 = args[0];
+            var regex = a0?.Value as RegExp;
+
+            var a1 = args[1];
+            var f = a1?.Value as Function;
+
+            var selfStr = self.ToString();
+
+            if (regex != null)
             {
-                var f = args[1]._oValue as Function;
-                if (args.length > 1 && f != null)
+                var re = regex._regex;
+                if (f != null)
                 {
-                    string temp = self._oValue.ToString();
+                    var str = new String(selfStr);
                     var match = new String();
-                    var margs = new Arguments();
-                    match._oValue = (args[0]._oValue as RegExp)._Regex.Replace(self.ToString(),
+                    var fArgs = new Arguments();
+                    return re.Replace(
+                        selfStr,
                         (m) =>
                         {
-                            self._oValue = temp;
-                            self._valueType = JSValueType.String;
-                            margs.length = m.Groups.Count + 2;
-
-                            JSValue t;
-                            for (int i = 1; i < m.Groups.Count; i++)
-                            {
-                                t = m.Groups[i].Value;
-                                margs[i] = t;
-                            }
-
-                            t = m.Index;
+                            str._oValue = selfStr;
+                            str._valueType = JSValueType.String;
                             match._oValue = m.Value;
-                            margs[0] = match;
-                            margs[margs.length - 2] = t;
-                            margs[margs.length - 1] = self;
+                            match._valueType = JSValueType.String;
 
-                            return f.Call(margs).ToString();
-                        }, (args[0].Value as RegExp)._global ? int.MaxValue : 1);
-                    self._oValue = temp;
-                    self._valueType = JSValueType.String;
-                    return match;
+                            fArgs.length = m.Groups.Count + 2;
+                            fArgs[0] = match;
+
+                            for (int i = 1; i < m.Groups.Count; i++)
+                                fArgs[i] = m.Groups[i].Value;
+
+                            fArgs[fArgs.length - 2] = m.Index;
+                            fArgs[fArgs.length - 1] = str;
+
+                            return f.Call(fArgs).ToString();
+                        },
+                        regex._global ? int.MaxValue : 1);
                 }
                 else
                 {
-                    return (args[0].Value as RegExp)._Regex.Replace(self.ToString(), args.Length > 1 ? args[1].ToString() : "undefined", (args[0].Value as RegExp)._global ? int.MaxValue : 1);
+                    string replacement = args.Length > 1 ? (a1 ?? "").ToString() : "undefined";
+                    return re.Replace(selfStr, replacement, regex._global ? int.MaxValue : 1);
                 }
             }
             else
             {
-                string pattern = args.Length > 0 ? args[0].ToString() : "";
-                var f = args[1]._oValue as Function;
-                if (args.Length > 1 && f != null)
+                string pattern = (a0 ?? "").ToString();
+                if (f != null)
                 {
-                    string othis = self._oValue.ToString();
-                    var margs = new Arguments();
-                    margs.length = 3;
-                    margs[0] = pattern;
-                    margs[2] = self;
-                    int index = self.ToString().IndexOf(pattern);
+                    int index = selfStr.IndexOf(pattern);
                     if (index == -1)
-                        return self;
-                    margs[1] = index;
-                    var res = othis.Substring(0, index) + f.Call(margs).ToString() + othis.Substring(index + pattern.Length);
-                    self._oValue = othis;
-                    self._valueType = JSValueType.String;
-                    return res;
+                        return selfStr;
+
+                    var fArgs = new Arguments();
+                    fArgs.length = 3;
+                    fArgs[0] = pattern;
+                    fArgs[1] = index;
+                    fArgs[2] = self;
+
+                    return selfStr.Substring(0, index) + f.Call(fArgs).ToString() + selfStr.Substring(index + pattern.Length);
                 }
                 else
                 {
-                    string replace = args.Length > 1 ? args[1].ToString() : "undefined";
-                    if (string.IsNullOrEmpty(pattern))
-                        return replace + self;
-                    var str = self.ToString();
-                    var index = str.IndexOf(pattern);
+                    string replacement = args.Length > 1 ? (a1 ?? "").ToString() : "undefined";
+                    if (pattern.Length == 0)
+                        return replacement + selfStr;
+
+                    var index = selfStr.IndexOf(pattern);
                     if (index == -1)
-                        return self;
-                    return str.Substring(0, index) + replace + str.Substring(index + pattern.Length);
+                        return selfStr;
+
+                    return selfStr.Substring(0, index) + replacement + selfStr.Substring(index + pattern.Length);
                 }
             }
         }
