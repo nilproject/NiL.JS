@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
-using NiL.JS.Extensions;
 
 namespace NiL.JS.BaseLibrary
 {
@@ -14,32 +12,33 @@ namespace NiL.JS.BaseLibrary
     public sealed class String : JSObject
     {
         [DoNotEnumerate]
-        public static JSValue fromCharCode(Arguments code)
+        public static JSValue fromCharCode(Arguments args)
         {
-            int chc = 0;
-            if (code == null || code.Length == 0)
+            if (args == null || args.Length == 0)
                 return new String();
+
+            int chc = 0;
             string res = "";
-            for (int i = 0; i < code.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
-                chc = Tools.JSObjectToInt32(code[i]);
+                chc = Tools.JSObjectToInt32(args[i]);
                 res += ((char)chc).ToString();
             }
             return res;
         }
 
         [DoNotEnumerate]
-        public static JSValue fromCodePoint(Arguments code)
+        public static JSValue fromCodePoint(Arguments args)
         {
-            if (code == null || code.Length == 0)
+            if (args == null || args.Length == 0)
                 return new String();
 
             JSValue n;
             uint ucs = 0;
             string res = "";
-            for (int i = 0; i < code.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
-                n = Tools.JSObjectToNumber(code[i]);
+                n = Tools.JSObjectToNumber(args[i]);
                 if (n._valueType == JSValueType.Integer)
                 {
                     if (n._iValue < 0 || n._iValue > 0x10FFFF)
@@ -104,40 +103,49 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
-        public static String charAt(JSValue self, Arguments pos)
+        public static String charAt(JSValue self, Arguments args)
         {
-            var strValue = self.ToString();
-            int p = Tools.JSObjectToInt32(pos[0], true);
-            if ((p < 0) || (p >= strValue.Length))
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.charAt called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            int p = Tools.JSObjectToInt32(args[0], true);
+            if (p < 0 || p >= selfStr.Length)
                 return "";
-            return strValue[p].ToString();//Tools.charStrings[strValue[p]];
+
+            return selfStr[p].ToString();
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
-        public static JSValue charCodeAt(JSValue self, Arguments pos)
+        public static JSValue charCodeAt(JSValue self, Arguments args)
         {
-            int p = Tools.JSObjectToInt32(pos[0], true);
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.charCodeAt called on null or undefined"));
+
             var selfStr = self.ToString();
-            if ((p < 0) || (p >= selfStr.Length))
+
+            int p = Tools.JSObjectToInt32(args[0], true);
+            if (p < 0 || p >= selfStr.Length)
                 return Number.NaN;
-            var res = new JSValue()
-            {
-                _valueType = JSValueType.Integer,
-                _iValue = selfStr[p],
-            };
-            return res;
+
+            return new Number((int)selfStr[p]);
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
-        public static JSValue codePointAt(JSValue self, Arguments pos)
+        public static JSValue codePointAt(JSValue self, Arguments args)
         {
-            int p = Tools.JSObjectToInt32(pos[0], true);
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.codePointAt called on null or undefined"));
+
             var selfStr = self.ToString();
-            if ((p < 0) || (p >= selfStr.Length))
+
+            int p = Tools.JSObjectToInt32(args[0], true);
+            if (p < 0 || p >= selfStr.Length)
                 return JSValue.undefined;
 
             // look here in section 3.7 Surrogates for more information.
@@ -152,12 +160,7 @@ namespace NiL.JS.BaseLibrary
                     code = (code - 0xD800) * 0x400 + (low - 0xDC00) + 0x10000;
             }
 
-            var res = new JSValue()
-            {
-                _valueType = JSValueType.Integer,
-                _iValue = code,
-            };
-            return res;
+            return code;
         }
 
         [DoNotEnumerate]
@@ -165,17 +168,24 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue concat(JSValue self, Arguments args)
         {
-            if (args.length == 0)
-                return self.ToString();
-            if (args.length == 1)
-                return string.Concat(self.ToString(), args[0].ToString());
-            if (args.length == 2)
-                return string.Concat(self.ToString(), args[0].ToString(), args[1].ToString());
-            if (args.length == 3)
-                return string.Concat(self.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString());
-            if (args.length == 4)
-                return string.Concat(self.ToString(), args[0].ToString(), args[1].ToString(), args[2].ToString(), args[3].ToString());
-            var res = new StringBuilder().Append(self);
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.concat called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
+                return selfStr;
+
+            if (args.Length == 1)
+                return string.Concat(selfStr, args[0].ToString());
+            if (args.Length == 2)
+                return string.Concat(selfStr, args[0].ToString(), args[1].ToString());
+            if (args.Length == 3)
+                return string.Concat(selfStr, args[0].ToString(), args[1].ToString(), args[2].ToString());
+            if (args.Length == 4)
+                return string.Concat(selfStr, args[0].ToString(), args[1].ToString(), args[2].ToString(), args[3].ToString());
+
+            var res = new StringBuilder().Append(selfStr);
             for (var i = 0; i < args.Length; i++)
                 res.Append(args[i]);
             return res.ToString();
@@ -186,10 +196,14 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue endsWith(JSValue self, Arguments args)
         {
-            var selfAsString = (self ?? undefinedString).ToString();
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.endsWith called on null or undefined"));
+
+            var selfStr = self.ToString();
+
             var value = (args?[0] ?? undefinedString).ToString();
 
-            return selfAsString.EndsWith(value) ? Boolean.True : Boolean.False;
+            return selfStr.EndsWith(value, StringComparison.Ordinal) ? Boolean.True : Boolean.False;
         }
 
 
@@ -198,10 +212,14 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue includes(JSValue self, Arguments args)
         {
-            var selfAsString = (self ?? undefinedString).ToString();
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.includes called on null or undefined"));
+
+            var selfStr = self.ToString();
+
             var value = (args?[0] ?? undefinedString).ToString();
 
-            return selfAsString.IndexOf(value) != -1 ? Boolean.True : Boolean.False;
+            return selfStr.IndexOf(value, StringComparison.Ordinal) != -1 ? Boolean.True : Boolean.False;
         }
 
         [DoNotEnumerate]
@@ -209,25 +227,29 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue indexOf(JSValue self, Arguments args)
         {
-            if (args.Length == 0)
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.indexOf called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
                 return -1;
 
-            var strValue = self.ToString();
             string fstr = args[0].ToString();
 
             var pos = 0;
-            if (args.length > 1)
+            if (args.Length > 1)
             {
                 pos = Tools.JSObjectToInt32(args[1], 0, 0, true);
 
                 if (pos < 0)
                     pos = 0;
 
-                if (pos > strValue.Length)
-                    pos = strValue.Length - 1;
+                if (pos > selfStr.Length)
+                    pos = selfStr.Length - 1;
             }
 
-            return strValue.IndexOf(fstr, pos, StringComparison.Ordinal);
+            return selfStr.IndexOf(fstr, pos, StringComparison.Ordinal);
         }
 
         [DoNotEnumerate]
@@ -235,14 +257,18 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue lastIndexOf(JSValue self, Arguments args)
         {
-            if (args.Length == 0)
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.lastIndexOf called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
                 return -1;
 
-            var strValue = self.ToString();
             string fstr = args[0].ToString();
 
-            var pos = strValue.Length;
-            if (args.length > 1)
+            var pos = selfStr.Length;
+            if (args.Length > 1)
             {
                 pos = Tools.JSObjectToInt32(args[1], pos, pos, true);
 
@@ -251,11 +277,11 @@ namespace NiL.JS.BaseLibrary
 
                 pos += fstr.Length;
 
-                if (pos > strValue.Length)
-                    pos = strValue.Length;
+                if (pos > selfStr.Length)
+                    pos = selfStr.Length;
             }
 
-            return strValue.LastIndexOf(fstr, pos, StringComparison.Ordinal);
+            return selfStr.LastIndexOf(fstr, pos, StringComparison.Ordinal);
         }
 
         [DoNotEnumerate]
@@ -263,9 +289,16 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue localeCompare(JSValue self, Arguments args)
         {
-            string str0 = self.ToString();
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.localeCompare called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
+                return -1;
+
             string str1 = args[0].ToString();
-            return string.CompareOrdinal(str0, str1);
+            return string.Compare(selfStr, str1, StringComparison.InvariantCulture);
         }
 
         [DoNotEnumerate]
@@ -273,7 +306,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue match(JSValue self, Arguments args)
         {
-            if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
 
             var a0 = args[0];
@@ -329,43 +362,32 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue normalize(JSValue self, Arguments args)
         {
-            var selfStr = (self ?? undefinedString).ToString();
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.normalize called on null or undefined"));
 
-            var form = "NFC";
-            if (args != null && args.Length > 0)
-            {
-                var a0 = args[0];
-                if (a0 != null && a0._valueType > JSValueType.Undefined)
-                    form = a0.ToString();
-            }
+            var selfStr = self.ToString();
 
-            switch (form)
-            {
-                case "NFC":
-                    {
-                        selfStr = selfStr.Normalize(NormalizationForm.FormC);
-                        break;
-                    }
-                case "NFD":
-                    {
-                        selfStr = selfStr.Normalize(NormalizationForm.FormD);
-                        break;
-                    }
-                case "NFKC":
-                    {
-                        selfStr = selfStr.Normalize(NormalizationForm.FormKC);
-                        break;
-                    }
-                case "NFKD":
-                    {
-                        selfStr = selfStr.Normalize(NormalizationForm.FormKD);
-                        break;
-                    }
-                default:
-                    ExceptionHelper.Throw(new RangeError("The normalization form should be one of NFC, NFD, NFKC, NFKD"));
-                    break;
-            }
-            return selfStr;
+            if (args == null || args.Length == 0)
+                return selfStr.Normalize(NormalizationForm.FormC);
+
+            string form = "NFC";
+            var a0 = args[0];
+            if (a0 != null && a0._valueType > JSValueType.Undefined)
+                form = a0.ToString();
+
+            NormalizationForm nf = NormalizationForm.FormC;
+            if (form == "NFC")
+                nf = NormalizationForm.FormC;
+            else if (form == "NFD")
+                nf = NormalizationForm.FormD;
+            else if (form == "NFKC")
+                nf = NormalizationForm.FormKC;
+            else if (form == "NFKD")
+                nf = NormalizationForm.FormKD;
+            else
+                ExceptionHelper.Throw(new RangeError("The normalization form should be one of NFC, NFD, NFKC, NFKD"));
+
+            return selfStr.Normalize(nf);
         }
 
         [DoNotEnumerate]
@@ -373,7 +395,15 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue repeat(JSValue self, Arguments args)
         {
-            var selfStr = (self ?? undefinedString).ToString();
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.repeat called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
+                return "";
+            if (selfStr.Length == 0)
+                return "";
 
             double count = 0;
             if (args.Length > 0)
@@ -391,8 +421,6 @@ namespace NiL.JS.BaseLibrary
                 return "";
             if (c == 1)
                 return selfStr;
-            if (selfStr.Length == 0)
-                return "";
 
             var s = new StringBuilder(selfStr.Length * c);
             for (int i = 0; i < c; i++)
@@ -407,16 +435,19 @@ namespace NiL.JS.BaseLibrary
         [AllowNullArguments]
         public static JSValue replace(JSValue self, Arguments args)
         {
-            if (args == null || args.length == 0)
-                return self;
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.replace called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
+                return selfStr;
 
             var a0 = args[0];
             var regex = a0?.Value as RegExp;
 
             var a1 = args[1];
             var f = a1?.Value as Function;
-
-            var selfStr = self.ToString();
 
             if (regex != null)
             {
@@ -459,12 +490,11 @@ namespace NiL.JS.BaseLibrary
                 string pattern = (a0 ?? "").ToString();
                 if (f != null)
                 {
-                    int index = selfStr.IndexOf(pattern);
+                    int index = selfStr.IndexOf(pattern, StringComparison.Ordinal);
                     if (index == -1)
                         return selfStr;
 
-                    var fArgs = new Arguments();
-                    fArgs.length = 3;
+                    var fArgs = new Arguments() { length = 3 };
                     fArgs[0] = pattern;
                     fArgs[1] = index;
                     fArgs[2] = self;
@@ -477,7 +507,7 @@ namespace NiL.JS.BaseLibrary
                     if (pattern.Length == 0)
                         return replacement + selfStr;
 
-                    var index = selfStr.IndexOf(pattern);
+                    var index = selfStr.IndexOf(pattern, StringComparison.Ordinal);
                     if (index == -1)
                         return selfStr;
 
@@ -491,19 +521,21 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue search(JSValue self, Arguments args)
         {
-            if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
-                ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.search called on null or undefined"));
 
-            if (args.length == 0)
+            string selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
                 return 0;
 
             var a0 = args[0];
             var regex = a0.Value as RegExp;
 
             if (regex == null)
-                return self.ToString().IndexOf(a0.ToString());
+                return selfStr.IndexOf(a0.ToString(), StringComparison.Ordinal);
 
-            var match = regex._regex.Match(self.ToString());
+            var match = regex._regex.Match(selfStr);
             if (!match.Success)
                 return -1;
 
@@ -518,86 +550,28 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(2)]
         public static JSValue slice(JSValue self, Arguments args)
         {
-            string selfString = self.ToPrimitiveValue_Value_String().ToString();
-            if (args.Length == 0)
-                return selfString;
-            int pos0 = 0;
-            switch (args[0]._valueType)
-            {
-                case JSValueType.Integer:
-                case JSValueType.Boolean:
-                    {
-                        pos0 = args[0]._iValue;
-                        break;
-                    }
-                case JSValueType.Double:
-                    {
-                        if (double.IsNaN(args[0]._dValue) || double.IsNegativeInfinity(args[0]._dValue))
-                            pos0 = 0;
-                        else if (double.IsPositiveInfinity(args[0]._dValue))
-                            pos0 = selfString.Length;
-                        else
-                            pos0 = (int)args[0]._dValue;
-                        break;
-                    }
-                case JSValueType.Object:
-                case JSValueType.Date:
-                case JSValueType.Function:
-                case JSValueType.String:
-                    {
-                        pos0 = Tools.JSObjectToInt32(args[0], 0, true);
-                        break;
-                    }
-            }
-            int pos1 = 0;
-            if (args.Length > 1)
-            {
-                switch (args[1]._valueType)
-                {
-                    case JSValueType.Integer:
-                    case JSValueType.Boolean:
-                        {
-                            pos1 = args[1]._iValue;
-                            break;
-                        }
-                    case JSValueType.Double:
-                        {
-                            if (double.IsNaN(args[1]._dValue) || double.IsNegativeInfinity(args[0]._dValue))
-                                pos1 = 0;
-                            else if (double.IsPositiveInfinity(args[1]._dValue))
-                                pos1 = selfString.Length;
-                            else
-                                pos1 = (int)args[1]._dValue;
-                            break;
-                        }
-                    case JSValueType.Object:
-                    case JSValueType.Date:
-                    case JSValueType.Function:
-                    case JSValueType.String:
-                        {
-                            //double d;
-                            //Tools.ParseNumber(args[1].ToPrimitiveValue_Value_String().ToString(), pos1, out d, Tools.ParseNumberOptions.Default);
-                            //pos1 = (int)d;
-                            pos1 = Tools.JSObjectToInt32(args[1], 0, true);
-                            break;
-                        }
-                    case JSValueType.NotExists:
-                    case JSValueType.NotExistsInObject:
-                    case JSValueType.Undefined:
-                        {
-                            pos1 = selfString.Length;
-                            break;
-                        }
-                }
-            }
-            else
-                pos1 = selfString.Length;
-            while (pos0 < 0)
-                pos0 += selfString.Length;
-            while (pos1 < 0)
-                pos1 += selfString.Length;
-            pos0 = System.Math.Min(pos0, selfString.Length);
-            return selfString.Substring(pos0, System.Math.Min(selfString.Length, System.Math.Max(0, pos1 - pos0)));
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.slice called on null or undefined"));
+
+            string selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
+                return self.ToString();
+
+            int pos0 = Tools.JSObjectToInt32(args[0], 0, 0, 0, true);
+            int pos1 = Tools.JSObjectToInt32(args[1], 0, selfStr.Length, 0, true);
+
+            if (pos0 < 0)
+                pos0 += selfStr.Length;
+            if (pos1 < 0)
+                pos1 += selfStr.Length;
+            pos0 = System.Math.Min(System.Math.Max(0, pos0), selfStr.Length);
+            pos1 = System.Math.Min(System.Math.Max(0, pos1), selfStr.Length);
+
+            if (pos0 >= pos1)
+                return new String();
+
+            return selfStr.Substring(pos0, pos1 - pos0);
         }
 
         [DoNotEnumerate]
@@ -605,8 +579,10 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(2)]
         public static JSValue split(JSValue self, Arguments args)
         {
-            if (self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
-                ExceptionHelper.Throw(new TypeError("String.prototype.match called on null or undefined"));
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.split called on null or undefined"));
+
+            var selfStr = self.ToString();
 
             if (args == null || args.Length == 0 || !args[0].Defined)
                 return new Array(new JSValue[] { self.ToString() });
@@ -614,7 +590,6 @@ namespace NiL.JS.BaseLibrary
             var a0 = args[0];
             var regex = a0?.Value as RegExp;
 
-            var selfString = self.ToString();
             var limit = (uint)Tools.JSObjectToInt64(args[1], long.MaxValue, true);
 
             if (limit == 0)
@@ -624,9 +599,9 @@ namespace NiL.JS.BaseLibrary
             {
                 var re = regex._regex;
 
-                var m = re.Match(selfString, 0);
+                var m = re.Match(selfStr, 0);
                 if (!m.Success)
-                    return new Array(new JSValue[] { selfString });
+                    return new Array(new JSValue[] { selfStr });
 
                 Array res = new Array();
 
@@ -638,18 +613,18 @@ namespace NiL.JS.BaseLibrary
 
                     if (!m.Success)
                     {
-                        res._data.Add(selfString.Substring(index, selfString.Length - index));
+                        res._data.Add(selfStr.Substring(index, selfStr.Length - index));
                         break;
                     }
 
-                    if (m.Index >= selfString.Length)
+                    if (m.Index >= selfStr.Length)
                         break;
 
                     int nindex = m.Index + (m.Length == 0 ? 1 : 0);
-                    var item = selfString.Substring(index, nindex - index);
+                    var item = selfStr.Substring(index, nindex - index);
                     res._data.Add(item);
 
-                    if (nindex < selfString.Length)
+                    if (nindex < selfStr.Length)
                     {
                         for (int i = 1; i < m.Groups.Count; i++)
                         {
@@ -670,10 +645,10 @@ namespace NiL.JS.BaseLibrary
 
                 if (string.IsNullOrEmpty(fstr))
                 {
-                    int len = System.Math.Min(selfString.Length, (int)System.Math.Min(int.MaxValue, limit));
+                    int len = System.Math.Min(selfStr.Length, (int)System.Math.Min(int.MaxValue, limit));
                     var arr = new JSValue[len];
                     for (var i = 0; i < len; i++)
-                        arr[i] = new String(selfString[i].ToString());
+                        arr[i] = new String(selfStr[i].ToString());
                     return new Array(arr);
                 }
                 else
@@ -682,15 +657,15 @@ namespace NiL.JS.BaseLibrary
                     int index = 0;
                     while (res._data.Length < limit)
                     {
-                        int nindex = selfString.IndexOf(fstr, index, StringComparison.Ordinal);
+                        int nindex = selfStr.IndexOf(fstr, index, StringComparison.Ordinal);
                         if (nindex == -1)
                         {
-                            res._data.Add(selfString.Substring(index, selfString.Length - index));
+                            res._data.Add(selfStr.Substring(index, selfStr.Length - index));
                             break;
                         }
                         else
                         {
-                            res._data.Add(selfString.Substring(index, nindex - index));
+                            res._data.Add(selfStr.Substring(index, nindex - index));
                             index = nindex + fstr.Length;
                         }
                     }
@@ -704,10 +679,14 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue startsWith(JSValue self, Arguments args)
         {
-            var selfAsString = (self ?? undefinedString).ToString();
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.startsWith called on null or undefined"));
+
+            var selfStr = self.ToString();
+
             var value = (args?[0] ?? undefinedString).ToString();
 
-            return selfAsString.StartsWith(value) ? Boolean.True : Boolean.False;
+            return selfStr.StartsWith(value, StringComparison.Ordinal) ? Boolean.True : Boolean.False;
         }
 
         [DoNotEnumerate]
@@ -715,12 +694,16 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(2)]
         public static JSValue substring(JSValue self, Arguments args)
         {
-            string selfString = self.ToString();
-            if (args.Length == 0)
-                return selfString;
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.substring called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
+                return self.ToString();
 
             int pos0 = Tools.JSObjectToInt32(args[0], 0, 0, 0, true);
-            int pos1 = Tools.JSObjectToInt32(args[1], 0, selfString.Length, 0, true);
+            int pos1 = Tools.JSObjectToInt32(args[1], 0, selfStr.Length, 0, true);
 
             if (pos0 > pos1)
             {
@@ -729,10 +712,10 @@ namespace NiL.JS.BaseLibrary
                 pos0 ^= pos1;
             }
 
-            pos0 = System.Math.Max(0, System.Math.Min(pos0, selfString.Length));
-            pos1 = System.Math.Max(0, System.Math.Min(pos1, selfString.Length));
+            pos0 = System.Math.Max(0, System.Math.Min(pos0, selfStr.Length));
+            pos1 = System.Math.Max(0, System.Math.Min(pos1, selfStr.Length));
 
-            return selfString.Substring(pos0, System.Math.Min(selfString.Length, System.Math.Max(0, pos1 - pos0)));
+            return selfStr.Substring(pos0, System.Math.Min(selfStr.Length, System.Math.Max(0, pos1 - pos0)));
         }
 
         [DoNotEnumerate]
@@ -740,25 +723,28 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(2)]
         public static JSValue substr(JSValue self, Arguments args)
         {
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.substr called on null or undefined"));
+
+            var selfStr = self.ToString();
+
             if (args.Length == 0)
                 return self;
 
-            var selfString = self.ToString();
-
             int start = Tools.JSObjectToInt32(args[0], 0, 0, 0, true);
-            int length = Tools.JSObjectToInt32(args[1], 0, selfString.Length, 0, true);
+            int length = Tools.JSObjectToInt32(args[1], 0, selfStr.Length, 0, true);
 
             if (start < 0)
-                start += selfString.Length;
+                start += selfStr.Length;
             if (start < 0)
                 start = 0;
-            if (start >= selfString.Length || length <= 0)
+            if (start >= selfStr.Length || length <= 0)
                 return "";
 
-            if (selfString.Length < start + length)
-                length = selfString.Length - start;
+            if (selfStr.Length < start + length)
+                length = selfStr.Length - start;
 
-            return selfString.Substring(start, length);
+            return selfStr.Substring(start, length);
         }
 
         [DoNotEnumerate]
@@ -766,11 +752,10 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(0)]
         public static JSValue toLocaleLowerCase(JSValue self)
         {
-            var sstr = self.ToString();
-            var res = sstr.ToLower();
-            if (self._valueType == JSValueType.String && string.CompareOrdinal(sstr, res) == 0)
-                return self;
-            return res;
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.toLocaleLowerCase called on null or undefined"));
+
+            return self.ToString().ToLower();
         }
 
         [DoNotEnumerate]
@@ -778,11 +763,10 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(0)]
         public static JSValue toLocaleUpperCase(JSValue self)
         {
-            var sstr = self.ToString();
-            var res = sstr.ToUpper();
-            if (self._valueType == JSValueType.String && string.CompareOrdinal(sstr, res) == 0)
-                return self;
-            return res;
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.toLocaleUpperCase called on null or undefined"));
+
+            return self.ToString().ToUpper();
         }
 
         [DoNotEnumerate]
@@ -790,11 +774,10 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(0)]
         public static JSValue toLowerCase(JSValue self)
         {
-            var sstr = self.ToString();
-            var res = sstr.ToLowerInvariant();
-            if (self._valueType == JSValueType.String && string.CompareOrdinal(sstr, res) == 0)
-                return self;
-            return res;
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.toLowerCase called on null or undefined"));
+
+            return self.ToString().ToLowerInvariant();
         }
 
         [DoNotEnumerate]
@@ -802,11 +785,10 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(0)]
         public static JSValue toUpperCase(JSValue self)
         {
-            var sstr = self.ToString();
-            var res = sstr.ToUpperInvariant();
-            if (self._valueType == JSValueType.String && string.CompareOrdinal(sstr, res) == 0)
-                return self;
-            return res;
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.toUpperCase called on null or undefined"));
+
+            return self.ToString().ToUpperInvariant();
         }
 
         [DoNotEnumerate]
@@ -814,24 +796,9 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(0)]
         public static JSValue trim(JSValue self)
         {
-            switch (self._valueType)
-            {
-                case JSValueType.Undefined:
-                case JSValueType.NotExists:
-                case JSValueType.NotExistsInObject:
-                    {
-                        ExceptionHelper.Throw(new TypeError("string can't be undefined"));
-                        break;
-                    }
-                case JSValueType.Function:
-                case JSValueType.String:
-                case JSValueType.Object:
-                    {
-                        if (self._oValue == null)
-                            ExceptionHelper.Throw(new TypeError("string can't be null"));
-                        break;
-                    }
-            }
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.trim called on null or undefined"));
+
             try
             {
                 var sb = new StringBuilder(self.ToString());
@@ -986,6 +953,7 @@ namespace NiL.JS.BaseLibrary
                     if (f.Value.Exists && (!hideNonEnum || (f.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                         yield return f;
                 }
+
             }
         }
 
@@ -1007,99 +975,138 @@ namespace NiL.JS.BaseLibrary
             return result.ToString();
         }
 
-        #region HTML Wraping
+        #region HTML Wrapping
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue anchor(JSValue self, Arguments arg)
         {
-            return "<a name=\"" + arg[0].Value + "\">" + self + "</a>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.anchor called on null or undefined"));
+
+            return "<a name=\"" + arg[0].Value + "\">" + self.ToString() + "</a>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue big(JSValue self)
         {
-            return "<big>" + self + "</big>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.big called on null or undefined"));
+
+            return "<big>" + self.ToString() + "</big>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue blink(JSValue self)
         {
-            return "<blink>" + self + "</blink>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.blink called on null or undefined"));
+
+            return "<blink>" + self.ToString() + "</blink>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue bold(JSValue self)
         {
-            return "<bold>" + self + "</bold>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.bold called on null or undefined"));
+
+            return "<bold>" + self.ToString() + "</bold>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue @fixed(JSValue self)
         {
-            return "<tt>" + self + "</tt>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.fixed called on null or undefined"));
+
+            return "<tt>" + self.ToString() + "</tt>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue fontcolor(JSValue self, Arguments arg)
         {
-            return "<font color=\"" + arg[0].Value + "\">" + self + "</font>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.fontcolor called on null or undefined"));
+
+            return "<font color=\"" + arg[0].Value + "\">" + self.ToString() + "</font>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue fontsize(JSValue self, Arguments arg)
         {
-            return "<font size=\"" + arg.Value + "\">" + self + "</font>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.fontsize called on null or undefined"));
+
+            return "<font size=\"" + arg.Value + "\">" + self.ToString() + "</font>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue italics(JSValue self)
         {
-            return "<i>" + self + "</i>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.italics called on null or undefined"));
+
+            return "<i>" + self.ToString() + "</i>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue link(JSValue self, Arguments arg)
         {
-            return "<a href=\"" + arg[0].Value + "\">" + self + "</a>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.link called on null or undefined"));
+
+            return "<a href=\"" + arg[0].Value + "\">" + self.ToString() + "</a>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue small(JSValue self)
         {
-            return "<small>" + self + "</small>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.small called on null or undefined"));
+
+            return "<small>" + self.ToString() + "</small>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue strike(JSValue self)
         {
-            return "<strike>" + self + "</strike>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.strike called on null or undefined"));
+
+            return "<strike>" + self.ToString() + "</strike>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue sub(JSValue self)
         {
-            return "<sub>" + self + "</sub>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.sub called on null or undefined"));
+
+            return "<sub>" + self.ToString() + "</sub>";
         }
 
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue sup(JSValue self)
         {
-            return "<sup>" + self + "</sup>";
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.sup called on null or undefined"));
+
+            return "<sup>" + self.ToString() + "</sup>";
         }
         #endregion
-        
+
         [Hidden]
         public static implicit operator String(string val)
         {
