@@ -931,7 +931,12 @@ namespace NiL.JS.BaseLibrary
             if (_data == null || _data.Length == 0)
                 return "";
 
-            var sb = new System.Text.StringBuilder();
+            if ((_data.Length - 1) * separator.Length > int.MaxValue)
+                ExceptionHelper.Throw(new RangeError("The array is too big"));
+
+            selfA._data = emptyData;
+
+            var sb = new System.Text.StringBuilder((int)((_data.Length - 1) * separator.Length));
             JSValue t, temp = 0;
 
             for (long i = 0; i < _data.Length; i++)
@@ -965,6 +970,8 @@ namespace NiL.JS.BaseLibrary
                         sb.Append(locale ? t.ToPrimitiveValue_LocaleString_Value() : t.ToPrimitiveValue_String_Value());
                 }
             }
+
+            selfA._data = _data;
 
             return sb.ToString();
         }
