@@ -799,42 +799,12 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.trim called on null or undefined"));
 
-            try
-            {
-                var sb = new StringBuilder(self.ToString());
-                int initialLength = sb.Length;
-                int index = 0;
-                for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++)
-                    ;
-                if (index > 0)
-                    sb.Remove(0, index);
-                index = sb.Length - 1;
-                while (index >= 0 && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1)
-                    index--;
-                index++;
-                if (index < sb.Length)
-                    sb.Remove(index, sb.Length - index);
-                if (sb.Length != initialLength)
-                {
-                    index = 0;
-                    for (;;)
-                    {
-                        while (index < sb.Length && sb[index] != '\n' && sb[index] != '\r')
-                            index++;
-                        if (index >= sb.Length)
-                            break;
-                        var startindex = index;
-                        for (; index < sb.Length && System.Array.IndexOf(Tools.TrimChars, sb[index]) != -1; index++)
-                            ;
-                        sb.Remove(startindex, index - startindex);
-                    }
-                }
-                return sb.ToString();
-            }
-            catch
-            {
-                throw;
-            }
+            var selfStr = self.ToString();
+
+            if (selfStr == "")
+                return selfStr;
+
+            return selfStr.Trim(Tools.TrimChars);
         }
 
         [DoNotEnumerate]
