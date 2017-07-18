@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
