@@ -1709,6 +1709,67 @@ namespace NiL.JS.Core
             return code[i].ToString();
         }
 
+        internal static int NextCodePoint(string str, ref int i)
+        {
+            if (str[i] >= '\uD800' && str[i] <= '\uDBFF' && i + 1 < str.Length && str[i + 1] >= '\uDC00' && str[i + 1] <= '\uDFFF')
+                return ((str[i] - 0xD800) * 0x400) + (str[++i] - 0xDC00) + 0x10000;
+            return str[i];
+        }
+        internal static int NextCodePoint(string str, ref int i, bool regexp)
+        {
+            if (str[i] >= '\uD800' && str[i] <= '\uDBFF' && i + 1 < str.Length && str[i + 1] >= '\uDC00' && str[i + 1] <= '\uDFFF')
+                return ((str[i] - 0xD800) * 0x400) + (str[++i] - 0xDC00) + 0x10000;
+
+            if (regexp && str[i] == '\\' && i + 1 < str.Length)
+            {
+                i++;
+                if (i + 1 < str.Length && str[i] == 'c' && str[i + 1] >= 'A' && str[i + 1] <= 'Z')
+                {
+                    i++;
+                    return str[i] - '@';
+                }
+
+                if (str[i] == 't')
+                    return '\t';
+                if (str[i] == 'f')
+                    return '\f';
+                if (str[i] == 'v')
+                    return '\v';
+                if (str[i] == 'b')
+                    return '\b';
+                if (str[i] == 'n')
+                    return '\n';
+                if (str[i] == 'r')
+                    return '\r';
+
+                return NextCodePoint(str, ref i);
+            }
+
+            return str[i];
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static bool IsSurrogatePair(string str, int i)
+        {
+            return (i >= 0 && i + 1 < str.Length && str[i] >= '\uD800' && str[i] <= '\uDBFF' && str[i + 1] >= '\uDC00' && str[i + 1] <= '\uDFFF');
+        }
+
+        internal static string CodePointToString(int codePoint)
+        {
+            if (codePoint < 0 || codePoint > 0x10FFFF)
+                ExceptionHelper.Throw(new RangeError("Invalid code point " + codePoint));
+
+            if (codePoint <= 0xFFFF)
+                return ((char)codePoint).ToString();
+
+            codePoint -= 0x10000;
+            char h = (char)((codePoint >> 10) + 0xD800);
+            char l = (char)((codePoint % 0x400) + 0xDC00);
+            return h.ToString() + l.ToString();
+        }
+
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
