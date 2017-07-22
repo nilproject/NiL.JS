@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -1917,7 +1917,7 @@ namespace NiL.JS.Core
 
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
         {
-            var length = src.GetProperty("length", true, PropertyScope.Сommon); // тут же проверка на null/undefined с падением если надо
+            var length = src.GetProperty("length", true, PropertyScope.Common); // тут же проверка на null/undefined с падением если надо
 
             var result = (uint)JSObjectToInt64(InvokeGetter(length, src).ToPrimitiveValue_Value_String(), 0, false);
             if (reassignLen)
@@ -2339,12 +2339,39 @@ namespace NiL.JS.Core
 
                         s = new StringBuilder($"Array ({len}) [ ");
                         int i = 0;
+                        int undefs = 0;
                         for (i = 0; i < len; i++)
                         {
-                            if (i > 0)
-                                s.Append(", ");
-                            s.Append(Tools.JSValueToObjectString(a[i], maxRecursionDepth, recursionDepth + 1));
+                            var val = a[i];
+                            if (undefs > 1)
+                            {
+                                if (val != null && val._valueType <= JSValueType.Undefined)
+                                    undefs++;
+                                else
+                                {
+                                    s.Append(" x ").Append(undefs);
+                                    s.Append(", ");
+                                    s.Append(Tools.JSValueToObjectString(val, maxRecursionDepth, recursionDepth + 1));
+                                    undefs = 0;
+                                }
+                            }
+                            else
+                            {
+                                if (val != null && val._valueType <= JSValueType.Undefined)
+                                {
+                                    if (++undefs > 1)
+                                        continue;
+                                }
+                                else
+                                    undefs = 0;
+                                if (i > 0)
+                                    s.Append(", ");
+                                s.Append(Tools.JSValueToObjectString(val, maxRecursionDepth, recursionDepth + 1));
+                            }
                         }
+                        if (undefs > 0)
+                            s.Append(" x ").Append(undefs);
+
                         if (a._fields != null)
                         {
                             for (var e = a._fields.GetEnumerator(); e.MoveNext();)

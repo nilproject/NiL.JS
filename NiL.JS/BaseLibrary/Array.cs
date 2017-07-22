@@ -32,25 +32,17 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         public Array(int length)
+            : this((double)length)
         {
-            _oValue = this;
-            _valueType = JSValueType.Object;
-            if (length < 0)
-                ExceptionHelper.Throw((new RangeError("Invalid array length.")));
-            _data = new SparseArray<JSValue>((int)System.Math.Min(100000, (uint)length));
-
-            if (length > 0)
-                _data[length - 1] = null;
-
-            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         internal Array(long length)
         {
-            _oValue = this;
-            _valueType = JSValueType.Object;
             if (length < 0 || length > uint.MaxValue)
                 ExceptionHelper.Throw((new RangeError("Invalid array length.")));
+
+            _oValue = this;
+            _valueType = JSValueType.Object;
             _data = new SparseArray<JSValue>((int)System.Math.Min(100000, length));
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -58,16 +50,16 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Array(double length)
         {
-            _oValue = this;
-            _valueType = JSValueType.Object;
             if (((long)length != length) || (length < 0) || (length > 0xffffffff))
                 ExceptionHelper.Throw((new RangeError("Invalid array length.")));
+
+            _oValue = this;
+            _valueType = JSValueType.Object;
             _data = new SparseArray<JSValue>();
+            _attributes |= JSValueAttributesInternal.SystemObject;
 
             if (length > 0)
                 _data[(int)((uint)length - 1)] = null;
-
-            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -84,12 +76,14 @@ namespace NiL.JS.BaseLibrary
         {
             if (args == null)
                 throw new ArgumentNullException("args");
+
             _oValue = this;
             _valueType = JSValueType.Object;
             _data = new SparseArray<JSValue>();
+            _attributes |= JSValueAttributesInternal.SystemObject;
+
             for (var i = 0; i < args.length; i++)
                 _data[i] = args[i].CloneImpl(false);
-            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [Hidden]
@@ -672,7 +666,7 @@ namespace NiL.JS.BaseLibrary
                                             tempKey._dValue = i;
                                             tempKey._valueType = JSValueType.Double;
                                         }
-                                        var value = source.GetProperty(tempKey, false, PropertyScope.Сommon);
+                                        var value = source.GetProperty(tempKey, false, PropertyScope.Common);
                                         if (processMissing || value.Exists)
                                         {
                                             if (!callback(Tools.InvokeGetter(value, self), i, thisBind, jsCallback))
@@ -737,7 +731,7 @@ namespace NiL.JS.BaseLibrary
                                     tempKey._valueType = JSValueType.Double;
                                 }
 
-                                value = self.GetProperty(tempKey, false, PropertyScope.Сommon);
+                                value = self.GetProperty(tempKey, false, PropertyScope.Common);
                                 if (processMissing || value.Exists)
                                 {
                                     if (!callback(Tools.InvokeGetter(value, self), i, thisBind, jsCallback))
@@ -826,7 +820,7 @@ namespace NiL.JS.BaseLibrary
                         tempKey._valueType = JSValueType.Double;
                     }
 
-                    var value = self.GetProperty(tempKey, false, PropertyScope.Сommon);
+                    var value = self.GetProperty(tempKey, false, PropertyScope.Common);
                     if (value.Exists)
                     {
                         if (!callback(Tools.InvokeGetter(value, self), i, thisBind, jsCallback))
@@ -872,7 +866,7 @@ namespace NiL.JS.BaseLibrary
                                 tempKey._valueType = JSValueType.Double;
                             }
 
-                            value = self.GetProperty(tempKey, false, PropertyScope.Сommon);
+                            value = self.GetProperty(tempKey, false, PropertyScope.Common);
                             if (value.Exists)
                             {
                                 if (!callback(Tools.InvokeGetter(value, self), i, thisBind, jsCallback))
@@ -959,7 +953,7 @@ namespace NiL.JS.BaseLibrary
                         temp._dValue = i;
                         temp._valueType = JSValueType.Double;
                     }
-                    t = self.GetProperty(temp, false, PropertyScope.Сommon);
+                    t = self.GetProperty(temp, false, PropertyScope.Common);
                 }
 
                 if (t != null && t.Defined)
@@ -1031,7 +1025,7 @@ namespace NiL.JS.BaseLibrary
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
                 length--;
-                var tres = self.GetProperty(length.ToString(), true, PropertyScope.Сommon);
+                var tres = self.GetProperty(length.ToString(), true, PropertyScope.Common);
                 JSValue res;
                 if (tres._valueType == JSValueType.Property)
                     res = ((tres._oValue as GsPropertyPair).getter ?? Function.Empty).Call(self, null);
@@ -1142,8 +1136,8 @@ namespace NiL.JS.BaseLibrary
                 {
                     JSValue i0 = i.ToString();
                     JSValue i1 = (length - 1 - i).ToString();
-                    var item0 = self.GetProperty(i0, false, PropertyScope.Сommon);
-                    var item1 = self.GetProperty(i1, false, PropertyScope.Сommon);
+                    var item0 = self.GetProperty(i0, false, PropertyScope.Common);
+                    var item1 = self.GetProperty(i1, false, PropertyScope.Common);
                     var value0 = item0;
                     var value1 = item1;
                     if (value0._valueType == JSValueType.Property)
@@ -1389,7 +1383,7 @@ namespace NiL.JS.BaseLibrary
                     return notExists;
                 }
                 var ti = new JSValue() { _valueType = JSValueType.String, _oValue = "0" };
-                var t = self.GetProperty(ti, true, PropertyScope.Сommon);
+                var t = self.GetProperty(ti, true, PropertyScope.Common);
                 var res = t;
                 if (res._valueType == JSValueType.Property)
                     res = Tools.InvokeGetter(res, self).CloneImpl(false);
@@ -1430,7 +1424,7 @@ namespace NiL.JS.BaseLibrary
                 for (var i = 0; i < keysToRemove.Count; i++)
                 {
                     tjo._oValue = keysToRemove[i];
-                    var to = self.GetProperty(tjo, true, PropertyScope.Сommon);
+                    var to = self.GetProperty(tjo, true, PropertyScope.Common);
                     if ((to._attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete)) == 0)
                     {
                         to._oValue = null;
@@ -1449,7 +1443,7 @@ namespace NiL.JS.BaseLibrary
                         tjo._iValue = (item.Key - 1);
                     if (item.Value != null && item.Value.Exists)
                     {
-                        var temp = self.GetProperty(tjo, true, PropertyScope.Сommon);
+                        var temp = self.GetProperty(tjo, true, PropertyScope.Common);
                         if (temp._valueType == JSValueType.Property)
                             ((temp._oValue as GsPropertyPair).setter ?? Function.Empty).Call(self, new Arguments { item.Value });
                         else
@@ -1617,7 +1611,7 @@ namespace NiL.JS.BaseLibrary
 
                 if (pos1 == 0 && args.length <= 2)
                 {
-                    var lenobj = self.GetProperty("length", true, PropertyScope.Сommon);
+                    var lenobj = self.GetProperty("length", true, PropertyScope.Common);
                     if (lenobj._valueType == JSValueType.Property)
                     {
                         ((lenobj._oValue as GsPropertyPair).setter ?? Function.Empty).Call(self, new Arguments { _length });
@@ -1687,7 +1681,7 @@ namespace NiL.JS.BaseLibrary
                             tjo._valueType = JSValueType.Double;
                             tjo._dValue = i + delta;
                         }
-                        var dst = self.GetProperty(tjo, true, PropertyScope.Сommon);
+                        var dst = self.GetProperty(tjo, true, PropertyScope.Common);
                         if (i + delta <= int.MaxValue)
                         {
                             tjo._valueType = JSValueType.Integer;
@@ -1698,7 +1692,7 @@ namespace NiL.JS.BaseLibrary
                             tjo._valueType = JSValueType.Double;
                             tjo._dValue = i;
                         }
-                        var src = self.GetProperty(tjo, true, PropertyScope.Сommon);
+                        var src = self.GetProperty(tjo, true, PropertyScope.Common);
                         if (src._valueType == JSValueType.Property)
                             src = Tools.InvokeGetter(src, self);
 
@@ -1726,7 +1720,7 @@ namespace NiL.JS.BaseLibrary
                             tjo._valueType = JSValueType.Double;
                             tjo._dValue = i;
                         }
-                        var src = self.GetProperty(tjo, true, PropertyScope.Сommon);
+                        var src = self.GetProperty(tjo, true, PropertyScope.Common);
                         if (i >= _length + delta)
                         {
                             if ((src._attributes & JSValueAttributesInternal.DoNotDelete) == 0)
@@ -1749,7 +1743,7 @@ namespace NiL.JS.BaseLibrary
                             tjo._valueType = JSValueType.Double;
                             tjo._dValue = i + delta;
                         }
-                        var dst = self.GetProperty(tjo, true, PropertyScope.Сommon);
+                        var dst = self.GetProperty(tjo, true, PropertyScope.Common);
                         if (i + delta <= int.MaxValue)
                         {
                             tjo._valueType = JSValueType.Integer;
@@ -1760,7 +1754,7 @@ namespace NiL.JS.BaseLibrary
                             tjo._valueType = JSValueType.Double;
                             tjo._dValue = i;
                         }
-                        var srcItem = self.GetProperty(tjo, true, PropertyScope.Сommon);
+                        var srcItem = self.GetProperty(tjo, true, PropertyScope.Common);
                         var src = srcItem;
                         if (src._valueType == JSValueType.Property)
                             src = Tools.InvokeGetter(src, self);
@@ -1796,7 +1790,7 @@ namespace NiL.JS.BaseLibrary
                         tjo._valueType = JSValueType.Double;
                         tjo._dValue = (i - 2 + pos0);
                     }
-                    var dst = self.GetProperty(tjo, true, PropertyScope.Сommon);
+                    var dst = self.GetProperty(tjo, true, PropertyScope.Common);
                     if (dst._valueType == JSValueType.Property)
                     {
                         ((dst._oValue as GsPropertyPair).setter ?? Function.Empty).Call(self, new Arguments { args[i] });
@@ -1808,7 +1802,7 @@ namespace NiL.JS.BaseLibrary
                 }
 
                 _length += delta;
-                var lenObj = self.GetProperty("length", true, PropertyScope.Сommon);
+                var lenObj = self.GetProperty("length", true, PropertyScope.Common);
                 if (lenObj._valueType == JSValueType.Property)
                 {
                     ((lenObj._oValue as GsPropertyPair).setter ?? Function.Empty).Call(self, new Arguments { _length });
@@ -1924,7 +1918,7 @@ namespace NiL.JS.BaseLibrary
                     for (var i = keysToRemove.Count; i-- > 0;)
                     {
                         tjo._oValue = keysToRemove[i];
-                        var t = self.GetProperty(tjo, true, PropertyScope.Сommon);
+                        var t = self.GetProperty(tjo, true, PropertyScope.Common);
                         if ((t._attributes & JSValueAttributesInternal.DoNotDelete) == 0)
                         {
                             t._oValue = null;
@@ -2054,7 +2048,7 @@ namespace NiL.JS.BaseLibrary
                 notExists._valueType = JSValueType.NotExistsInObject;
                 var res = _data[(int)index] ?? notExists;
                 if (res._valueType < JSValueType.Undefined)
-                    return __proto__.GetProperty(index, false, PropertyScope.Сommon);
+                    return __proto__.GetProperty(index, false, PropertyScope.Common);
                 return res;
             }
             [Hidden]
@@ -2233,7 +2227,7 @@ namespace NiL.JS.BaseLibrary
         }*/
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <remarks>Не убирть!</remarks>
         /// <returns></returns>

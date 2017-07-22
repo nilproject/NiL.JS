@@ -165,7 +165,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                     index._iValue = (int)i;
-                var value = src.GetProperty(index, false, PropertyScope.Сommon);
+                var value = src.GetProperty(index, false, PropertyScope.Common);
                 if (value._valueType == JSValueType.Property)
                 {
                     value = ((value._oValue as GsPropertyPair).getter ?? Function.Empty).Call(src, dummyArgs);

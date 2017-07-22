@@ -163,8 +163,8 @@ namespace NiL.JS.Core
 
                         if (_index < 8)
                         {
-                            // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца. 
-                            // Кто-то верит, что это должно работать быстрее. 
+                            // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца.
+                            // Кто-то верит, что это должно работать быстрее.
                             // Вот именно из-за таких кусков кода так и может показаться.
                             // Не время для попыток исправить мир
                             ensureCapacity(8);
@@ -211,8 +211,8 @@ namespace NiL.JS.Core
                         if (@default)
                         {
                             if (pseudoLength <= _index)
-                                pseudoLength = _index + 1; // длина может быть меньше 
-                            // уже записанных элементов если эти элементы имеют значение 
+                                pseudoLength = _index + 1; // длина может быть меньше
+                            // уже записанных элементов если эти элементы имеют значение
                             // по-умолчанию и был вызван Trim
                             return;
                         }
@@ -342,7 +342,7 @@ namespace NiL.JS.Core
         #endregion
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="index"></param>
         /// <returns>Zero if the requested index does not Exists</returns>
@@ -578,12 +578,14 @@ namespace NiL.JS.Core
         private void ensureCapacity(int p)
         {
             p = Math.Max(4, p);
+            if (values.Length >= p)
+                return;
+
             var newValues = new TValue[p];
             if (values != null)
                 for (var i = 0; i < values.Length; i++)
                     newValues[i] = values[i];
             values = newValues;
-
             if (mode == ArrayMode.Sparse)
             {
                 var newData = new _NavyItem[p];
