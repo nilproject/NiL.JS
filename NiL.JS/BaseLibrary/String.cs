@@ -34,7 +34,7 @@ namespace NiL.JS.BaseLibrary
                 return new String();
 
             JSValue n;
-            uint ucs = 0;
+            int ucs = 0;
             string res = "";
             for (int i = 0; i < args.Length; i++)
             {
@@ -43,26 +43,16 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (n._iValue < 0 || n._iValue > 0x10FFFF)
                         ExceptionHelper.Throw(new RangeError("Invalid code point " + Tools.Int32ToString(n._iValue)));
-                    ucs = (uint)n._iValue;
+                    ucs = n._iValue;
                 }
                 else if (n._valueType == JSValueType.Double)
                 {
                     if (n._dValue < 0 || n._dValue > 0x10FFFF || double.IsInfinity(n._dValue) || double.IsNaN(n._dValue) || n._dValue % 1.0 != 0.0)
                         ExceptionHelper.Throw(new RangeError("Invalid code point " + Tools.DoubleToString(n._dValue)));
-                    ucs = (uint)n._dValue;
+                    ucs = (int)n._dValue;
                 }
 
-                if (ucs >= 0 && ucs <= 0xFFFF)
-                    res += ((char)ucs).ToString();
-                else if (ucs > 0xFFFF && ucs <= 0x10FFFF)
-                {
-                    ucs -= 0x10000;
-                    char h = (char)((ucs >> 10) + 0xD800);
-                    char l = (char)((ucs % 0x400) + 0xDC00);
-                    res += h.ToString() + l.ToString();
-                }
-                else
-                    ExceptionHelper.Throw(new RangeError("Invalid code point " + ucs.ToString()));
+                res += Tools.CodePointToString(ucs);
             }
             return res;
         }
@@ -148,19 +138,7 @@ namespace NiL.JS.BaseLibrary
             if (p < 0 || p >= selfStr.Length)
                 return JSValue.undefined;
 
-            // look here in section 3.7 Surrogates for more information.
-            // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
-
-            int code = selfStr[p];
-            if (p + 1 < selfStr.Length && code >= 0xD800 && code <= 0xDBFF)
-            {
-                // code is the high part
-                int low = selfStr[p + 1];
-                if (low >= 0xDC00 && low <= 0xDFFF)
-                    code = (code - 0xD800) * 0x400 + (low - 0xDC00) + 0x10000;
-            }
-
-            return code;
+            return Tools.NextCodePoint(selfStr, ref p);
         }
 
         [DoNotEnumerate]
