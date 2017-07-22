@@ -42,13 +42,13 @@ namespace NiL.JS.BaseLibrary
                 if (n._valueType == JSValueType.Integer)
                 {
                     if (n._iValue < 0 || n._iValue > 0x10FFFF)
-                        ExceptionHelper.Throw((new RangeError("Invalid code point " + Tools.Int32ToString(n._iValue))));
+                        ExceptionHelper.Throw(new RangeError("Invalid code point " + Tools.Int32ToString(n._iValue)));
                     ucs = (uint)n._iValue;
                 }
                 else if (n._valueType == JSValueType.Double)
                 {
                     if (n._dValue < 0 || n._dValue > 0x10FFFF || double.IsInfinity(n._dValue) || double.IsNaN(n._dValue) || n._dValue % 1.0 != 0.0)
-                        ExceptionHelper.Throw((new RangeError("Invalid code point " + Tools.DoubleToString(n._dValue))));
+                        ExceptionHelper.Throw(new RangeError("Invalid code point " + Tools.DoubleToString(n._dValue)));
                     ucs = (uint)n._dValue;
                 }
 
@@ -62,7 +62,7 @@ namespace NiL.JS.BaseLibrary
                     res += h.ToString() + l.ToString();
                 }
                 else
-                    ExceptionHelper.Throw((new RangeError("Invalid code point " + ucs.ToString())));
+                    ExceptionHelper.Throw(new RangeError("Invalid code point " + ucs.ToString()));
             }
             return res;
         }
