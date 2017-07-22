@@ -915,14 +915,14 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue join(JSValue self, Arguments args)
         {
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("Array.prototype.join called for null or undefined"));
+
             return joinImpl(self, args == null || args.length == 0 || !args[0].Defined ? "," : args[0].ToString(), false);
         }
 
         private static string joinImpl(JSValue self, string separator, bool locale)
         {
-            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
-                ExceptionHelper.Throw(new TypeError("Array.prototype.join called for null or undefined"));
-
             var selfA = self.Value as Array;
             selfA = selfA ?? Tools.arraylikeToArray(self, true, false, false, -1);
 
