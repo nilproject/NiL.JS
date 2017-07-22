@@ -370,6 +370,84 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         [InstanceMember]
+        [ArgumentsCount(2)]
+        public static JSValue padEnd(JSValue self, Arguments args)
+        {
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.codePointAt called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
+                return selfStr;
+
+            int p = Tools.JSObjectToInt32(args[0], true);
+            if (p <= selfStr.Length)
+                return selfStr;
+
+            if (args.Length >= 2 && args[1] != null && args[1].Defined)
+            {
+                string filler = args[1].ToString();
+
+                if (string.IsNullOrEmpty(filler))
+                    return selfStr;
+                if (filler.Length == 1)
+                    return selfStr.PadRight(p, filler[0]);
+
+                var s = new StringBuilder(p);
+
+                s.Append(selfStr);
+                for (int i = p / filler.Length - 1; i >= 0; i--)
+                    s.Append(filler);
+                s.Append(filler.Substring(0, p % filler.Length));
+
+                return s.ToString();
+            }
+
+            return selfStr.PadRight(p, ' ');
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsCount(2)]
+        public static JSValue padStart(JSValue self, Arguments args)
+        {
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("String.prototype.codePointAt called on null or undefined"));
+
+            var selfStr = self.ToString();
+
+            if (args == null || args.Length == 0)
+                return selfStr;
+
+            int p = Tools.JSObjectToInt32(args[0], true);
+            if (p <= selfStr.Length)
+                return selfStr;
+
+            if (args.Length >= 2 && args[1] != null && args[1].Defined)
+            {
+                string filler = args[1].ToString();
+
+                if (string.IsNullOrEmpty(filler))
+                    return selfStr;
+                if (filler.Length == 1)
+                    return selfStr.PadLeft(p, filler[0]);
+
+                var s = new StringBuilder(p);
+
+                for (int i = p / filler.Length - 1; i >= 0; i--)
+                    s.Append(filler);
+                s.Append(filler.Substring(0, p % filler.Length));
+                s.Append(selfStr);
+
+                return s.ToString();
+            }
+
+            return selfStr.PadLeft(p, ' ');
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
         [ArgumentsCount(1)]
         public static JSValue repeat(JSValue self, Arguments args)
         {
