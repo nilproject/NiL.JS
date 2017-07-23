@@ -386,7 +386,7 @@ namespace NiL.JS.BaseLibrary
                 if (owner == null)
                     break;
 
-                if (i > 1)
+                if (i++ > 0)
                     s.AppendLine();
 
                 s.Append(owner.name);
