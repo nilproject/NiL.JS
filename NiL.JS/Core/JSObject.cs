@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
-using System.ComponentModel;
 
 namespace NiL.JS.Core
 {
@@ -119,7 +120,7 @@ namespace NiL.JS.Core
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
         {
 #if DEBUG
-            System.Diagnostics.Debug.Assert(_oValue == this || !(_oValue is JSValue), "АХТУНГ!");
+            System.Diagnostics.Debug.Assert(_oValue == this || !(_oValue is JSValue), "Look out!");
 #endif
             JSValue res = null;
             JSObject proto = null;
