@@ -120,7 +120,7 @@ namespace NiL.JS.Core
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
         {
 #if DEBUG
-            System.Diagnostics.Debug.Assert(_oValue == this || !(_oValue is JSValue), "АХТУНГ!");
+            System.Diagnostics.Debug.Assert(_oValue == this || !(_oValue is JSValue), "Look out!");
 #endif
             JSValue res = null;
             JSObject proto = null;
