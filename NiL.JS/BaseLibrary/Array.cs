@@ -62,7 +62,6 @@ namespace NiL.JS.BaseLibrary
                 _data[(int)((uint)length - 1)] = null;
         }
 
-        [DoNotEnumerate]
         internal Array(JSValue[] data)
         {
             _oValue = this;
