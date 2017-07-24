@@ -641,7 +641,7 @@ namespace NiL.JS.BaseLibrary
             var selfStr = self.ToString();
 
             if (args == null || args.Length == 0 || !args[0].Defined)
-                return new Array(new JSValue[] { self.ToString() });
+                return new Array { selfStr };
 
             var a0 = args[0];
             var regex = a0?.Value as RegExp;
