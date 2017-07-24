@@ -58,10 +58,10 @@ namespace NiL.JS.BaseLibrary
             }
             var pattern = ptrn._valueType > JSValueType.Undefined ? ptrn.ToString() : "";
             var flags = args.GetProperty("length")._iValue > 1 && args[1]._valueType > JSValueType.Undefined ? args[1].ToString() : "";
-            makeRegex(pattern, flags, false);
+            makeRegex(pattern, flags);
         }
 
-        private void makeRegex(string pattern, string flags, bool unescapeFlags)
+        private void makeRegex(string pattern, string flags)
         {
             pattern = pattern ?? "null";
             flags = flags ?? "null";
@@ -72,8 +72,6 @@ namespace NiL.JS.BaseLibrary
             {
                 var options = RegexOptions.ECMAScript | RegexOptions.CultureInvariant;
 
-                if (unescapeFlags)
-                    flags = Tools.Unescape(flags, false, true, false, true);
                 for (int i = 0; i < flags.Length; i++)
                 {
                     switch (flags[i])
@@ -438,7 +436,7 @@ namespace NiL.JS.BaseLibrary
 
             // optimize
 
-            var _r = new List<CharRange>();
+            var rNew = new List<CharRange>();
 
             CharRange cr = r[0];
             for (int i = 1; i < r.Count; i++)
@@ -451,12 +449,12 @@ namespace NiL.JS.BaseLibrary
                     continue;
                 }
 
-                _r.Add(cr);
+                rNew.Add(cr);
                 cr = r[i];
             }
-            _r.Add(cr);
+            rNew.Add(cr);
 
-            return _r.ToArray();
+            return rNew.ToArray();
         }
         private static CharRange[] invertCharSet(CharRange[] set)
         {
@@ -486,15 +484,8 @@ namespace NiL.JS.BaseLibrary
 
         [DoNotEnumerate]
         public RegExp(string pattern, string flags)
-            : this(pattern, flags, false)
         {
-        }
-
-        [DoNotEnumerate]
-        [Hidden]
-        public RegExp(string pattern, string flags, bool unescapeFlags)
-        {
-            makeRegex(pattern, flags, unescapeFlags);
+            makeRegex(pattern, flags);
         }
 
         internal bool _global;
