@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -415,8 +415,12 @@ namespace NiL.JS.Core
                 if (j == code.Length)
                     return false;
 
-                bool w = true;
-                bool g = false, i = false, m = false;
+                var w = true;
+                var g = false;
+                var i = false;
+                var m = false;
+                var u = false;
+                var y = false;
                 while (w)
                 {
                     j++;
