@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Statements;
@@ -71,7 +71,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            return new RegExp(pattern, flags);
+            return new RegExp(pattern, flags, false);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

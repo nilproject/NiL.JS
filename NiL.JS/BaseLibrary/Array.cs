@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -60,6 +60,14 @@ namespace NiL.JS.BaseLibrary
 
             if (length > 0)
                 _data[(int)((uint)length - 1)] = null;
+        }
+
+        internal Array(JSValue[] data)
+        {
+            _oValue = this;
+            _valueType = JSValueType.Object;
+            _data = new SparseArray<JSValue>(data);
+            _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
         [DoNotEnumerate]
@@ -162,7 +170,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 if (!res)
                 {
-                    SetLenght(nlen + 1); // áåñêîíå÷íîé ðåêóðñèè íå ìîæåò áûòü.
+                    SetLenght(nlen + 1);
                     return false;
                 }
             }
@@ -898,58 +906,67 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
-        public static JSValue join(JSValue self, Arguments separator)
+        public static JSValue join(JSValue self, Arguments args)
         {
-            return joinImpl(self, separator == null || separator.length == 0 || !separator[0].Defined ? "," : separator[0].ToString(), false);
+            if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
+                ExceptionHelper.Throw(new TypeError("Array.prototype.join called for null or undefined"));
+
+            return joinImpl(self, args == null || args.length == 0 || !args[0].Defined ? "," : args[0].ToString(), false);
         }
 
         private static string joinImpl(JSValue self, string separator, bool locale)
         {
-            if ((self._oValue == null && self._valueType >= JSValueType.Object) || self._valueType <= JSValueType.Undefined)
-                ExceptionHelper.Throw(new TypeError("Array.prototype.join called for null or undefined"));
+            var selfA = self.Value as Array;
+            selfA = selfA ?? Tools.arraylikeToArray(self, true, false, false, -1);
 
-            if (self._valueType >= JSValueType.Object && self._oValue.GetType() == typeof(Array))
+            var _data = selfA._data;
+
+            if (_data == null || _data.Length == 0)
+                return "";
+
+            if ((_data.Length - 1) * separator.Length > int.MaxValue)
+                ExceptionHelper.Throw(new RangeError("The array is too big"));
+
+            selfA._data = emptyData;
+
+            var sb = new System.Text.StringBuilder((int)((_data.Length - 1) * separator.Length));
+            JSValue t, temp = 0;
+
+            for (long i = 0; i < _data.Length; i++)
             {
-                var selfa = self as Array;
-                if (selfa._data.Length == 0)
-                    return "";
-                var _data = selfa._data;
-                try
+                if (i > 0)
+                    sb.Append(separator);
+
+                int index = unchecked((int)i);
+                t = _data[index];
+
+                if (t == null || !t.Exists)
                 {
-                    selfa._data = emptyData;
-                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                    JSValue t;
-                    JSValue temp = 0;
-                    for (var i = 0L; i < (long)_data.Length; i++)
+                    if (i <= int.MaxValue)
                     {
-                        t = _data[(int)i];
-                        if (i <= int.MaxValue)
-                            temp._iValue = (int)i;
-                        else
-                        {
-                            temp._dValue = i;
-                            temp._valueType = JSValueType.Double;
-                        }
-                        if (((t != null && t.Exists) || null != (t = self.GetProperty(temp, false, PropertyScope.Common)))
-                            && t.Defined)
-                        {
-                            if (t._valueType < JSValueType.String || t._oValue != null)
-                                sb.Append(locale ? t.ToPrimitiveValue_LocaleString_Value() : t.ToPrimitiveValue_String_Value());
-                        }
-                        sb.Append(separator);
+                        temp._iValue = index;
+                        temp._valueType = JSValueType.Integer;
                     }
-                    sb.Length -= separator.Length;
-                    return sb.ToString();
+                    else
+                    {
+                        temp._dValue = i;
+                        temp._valueType = JSValueType.Double;
+                    }
+                    t = self.GetProperty(temp, false, PropertyScope.Common);
                 }
-                finally
+
+                if (t != null && t.Defined)
                 {
-                    selfa._data = _data;
+                    if (t._valueType == JSValueType.String)
+                        sb.Append(t.ToString());
+                    else if (t._valueType < JSValueType.String || t._oValue != null)
+                        sb.Append(locale ? t.ToPrimitiveValue_LocaleString_Value() : t.ToPrimitiveValue_String_Value());
                 }
             }
-            else
-            {
-                return joinImpl(Tools.arraylikeToArray(self, true, false, false, -1), separator, locale);
-            }
+
+            selfA._data = _data;
+
+            return sb.ToString();
         }
 
         [DoNotEnumerate]
@@ -971,6 +988,15 @@ namespace NiL.JS.BaseLibrary
             });
 
             return result;
+        }
+
+        [DoNotEnumerate]
+        public static JSValue of(Arguments args)
+        {
+            if (args == null || args.Length == 0)
+                return new Array();
+
+            return new Array(args);
         }
 
         [DoNotEnumerate]
@@ -1561,7 +1587,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 return res;
             }
-            else // êòî-òî îòïðàâèë îáúåêò ñ ïîëåì length
+            else
             {
                 long _length = Tools.getLengthOfArraylike(self, false);
                 var pos0 = (long)System.Math.Min(Tools.JSObjectToDouble(args[0]), _length);

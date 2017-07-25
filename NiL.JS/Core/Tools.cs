@@ -86,7 +86,7 @@ namespace NiL.JS.Core
     {
         private static readonly Type[] intTypeWithinArray = new[] { typeof(int) };
 
-        internal static readonly char[] TrimChars = new[] { '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u0020', '\u00A0', '\u1680', '\u180E', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF' };
+        internal static readonly char[] TrimChars = new[] { '\u0020', '\u0009', '\u000A', '\u000D', '\u000B', '\u000C', '\u00A0', '\u1680', '\u180E', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200A', '\u2028', '\u2029', '\u202F', '\u205F', '\u3000', '\uFEFF' };
 
         internal static readonly char[] NumChars = new[]
         {
@@ -1302,10 +1302,18 @@ namespace NiL.JS.Core
 #endif
         public static string Unescape(string code, bool strict)
         {
-            return Unescape(code, strict, true, false);
+            return Unescape(code, strict, true, false, true);
         }
 
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
         public static string Unescape(string code, bool strict, bool processUnknown, bool processRegexComp)
+        {
+            return Unescape(code, strict, processUnknown, processRegexComp, true);
+        }
+
+        public static string Unescape(string code, bool strict, bool processUnknown, bool processRegexComp, bool fullUnicode)
         {
             if (code == null)
                 throw new ArgumentNullException("code");
@@ -1340,21 +1348,60 @@ namespace NiL.JS.Core
                                     else
                                         ExceptionHelper.ThrowSyntaxError("Invalid escape code (\"" + code + "\")");
                                 }
-                                string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
-                                ushort chc = 0;
-                                if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
+
+                                if (fullUnicode && code[i] == 'u' && code[i + 1] == '{')
                                 {
-                                    char ch = (char)chc;
-                                    res.Append(ch);
-                                    i += c.Length;
+                                    // look here in section 3.7 Surrogates for more information.
+                                    // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
+
+                                    int closingBracket = code.IndexOf('}', i + 2);
+                                    if (closingBracket == -1)
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence"));
+
+                                    string c = code.Substring(i + 2, closingBracket - i - 2);
+                                    uint ucs = 0;
+                                    if (uint.TryParse(c, NumberStyles.HexNumber, null, out ucs))
+                                    {
+                                        if (ucs <= 0xFFFF)
+                                            res.Append((char)ucs);
+                                        else if (ucs <= 0x10FFFF)
+                                        {
+                                            ucs -= 0x10000;
+                                            char h = (char)((ucs >> 10) + 0xD800);
+                                            char l = (char)((ucs % 0x400) + 0xDC00);
+                                            res.Append(h).Append(l);
+                                        }
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                        i += c.Length + 2;
+                                    }
+                                    else
+                                    {
+                                        if (processRegexComp)
+                                            res.Append(code[i]);
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                    }
                                 }
                                 else
                                 {
-                                    if (processRegexComp)
-                                        res.Append(code[i]);
+                                    string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
+                                    ushort chc = 0;
+                                    if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
+                                    {
+                                        char ch = (char)chc;
+                                        res.Append(ch);
+                                        i += c.Length;
+                                    }
                                     else
-                                        ExceptionHelper.ThrowSyntaxError("Invalid escape sequence '\\" + code[i] + c + "'");
+                                    {
+                                        if (processRegexComp)
+                                            res.Append(code[i]);
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'"));
+                                    }
                                 }
+
                                 break;
                             }
                         case 't':
@@ -1466,6 +1513,261 @@ namespace NiL.JS.Core
             }
 
             return (res as object ?? code).ToString();
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public static string UnescapeNextChar(string code, int index, out int processedChars, bool strict)
+        {
+            return UnescapeNextChar(code, index, out processedChars, strict, true, false, true);
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        public static string UnescapeNextChar(string code, int index, out int processedChars, bool strict, bool processUnknown, bool processRegexComp)
+        {
+            return UnescapeNextChar(code, index, out processedChars, strict, processUnknown, processRegexComp, true);
+        }
+
+        public static string UnescapeNextChar(string code, int index, out int processedChars, bool strict, bool processUnknown, bool processRegexComp, bool fullUnicode)
+        {
+            processedChars = 0;
+
+            if (code == null)
+                throw new ArgumentNullException("code");
+            if (code.Length == 0)
+                return code;
+            if (index >= code.Length)
+                return "";
+
+
+            int i = index;
+            if (code[i] == '\\' && i + 1 < code.Length)
+            {
+                i++;
+                processedChars = 2; // most cases
+                switch (code[i])
+                {
+                    case 'x':
+                    case 'u':
+                        {
+                            if (i + (code[i] == 'u' ? 5 : 3) > code.Length)
+                            {
+                                if (processRegexComp)
+                                    return code[i].ToString();
+                                else
+                                    ExceptionHelper.Throw(new SyntaxError("Invalid escape code (\"" + code + "\")"));
+                            }
+
+                            if (code[i] == 'u' && code[i + 1] == '{')
+                            {
+                                if (fullUnicode)
+                                {
+                                    // look here in section 3.7 Surrogates for more information.
+                                    // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
+
+                                    int closingBracket = code.IndexOf('}', i + 2);
+                                    if (closingBracket == -1)
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence"));
+
+                                    string c = code.Substring(i + 2, closingBracket - i - 2);
+                                    uint ucs = 0;
+                                    if (uint.TryParse(c, NumberStyles.HexNumber, null, out ucs))
+                                    {
+                                        processedChars += c.Length + 2;
+                                        if (ucs <= 0xFFFF)
+                                            return ((char)ucs).ToString();
+                                        else if (ucs <= 0x10FFFF)
+                                        {
+                                            ucs -= 0x10000;
+                                            char h = (char)((ucs >> 10) + 0xD800);
+                                            char l = (char)((ucs % 0x400) + 0xDC00);
+                                            return h.ToString() + l.ToString();
+                                        }
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                    }
+                                    else
+                                    {
+                                        if (processRegexComp)
+                                            return code[i].ToString();
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                    }
+                                }
+                                else
+                                    return code[i].ToString();
+                            }
+                            else
+                            {
+                                string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
+                                ushort chc = 0;
+                                if (ushort.TryParse(c, System.Globalization.NumberStyles.HexNumber, null, out chc))
+                                {
+                                    processedChars += c.Length;
+                                    char ch = (char)chc;
+                                    return ch.ToString();
+                                }
+                                else
+                                {
+                                    if (processRegexComp)
+                                        return code[i].ToString();
+                                    else
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'"));
+                                }
+                            }
+                            return code[i].ToString(); // this will never be reached
+                        }
+                    case 't':
+                        return (processRegexComp ? "\\t" : "\t");
+                    case 'f':
+                        return (processRegexComp ? "\\f" : "\f");
+                    case 'v':
+                        return (processRegexComp ? "\\v" : "\v");
+                    case 'b':
+                        return (processRegexComp ? "\\b" : "\b");
+                    case 'n':
+                        return (processRegexComp ? "\\n" : "\n");
+                    case 'r':
+                        return (processRegexComp ? "\\r" : "\r");
+                    case '\n':
+                        {
+                            return "";
+                        }
+                    case '\r':
+                        {
+                            if (code.Length > i + 1 && code[i] == '\n')
+                                processedChars = 3;
+                            return "";
+                        }
+                    case 'c':
+                    case 'C':
+                        {
+                            if (!processRegexComp)
+                                goto default;
+
+                            if (i + 1 < code.Length)
+                            {
+                                char ch = code[i + 1];
+                                // convert a -> A
+                                if (ch >= 'a' && ch <= 'z')
+                                    ch = (char)(ch - ('a' - 'A'));
+                                if ((char)(ch - '@') < ' ')
+                                {
+                                    processedChars++;
+                                    return "\\c" + ch.ToString();
+                                }
+                            }
+
+                            // invalid control character
+                            goto case 'p';
+                        }
+                    // not supported in standard
+                    case 'P':
+                    case 'p':
+                    case 'k':
+                    case 'K':
+                        {
+                            if (!processRegexComp)
+                                goto default;
+
+                            // regex that does not match anything
+                            return @"\b\B";
+                        }
+                    default:
+                        {
+                            if (IsDigit(code[i]) && !processRegexComp)
+                            {
+                                if (strict)
+                                    ExceptionHelper.Throw(new SyntaxError("Octal literals are not allowed in strict mode."));
+                                var ccode = code[i] - '0';
+                                if (i + 1 < code.Length && IsDigit(code[i + 1]))
+                                {
+                                    ccode = ccode * 10 + (code[++i] - '0');
+                                    processedChars++;
+                                }
+                                if (i + 1 < code.Length && IsDigit(code[i + 1]))
+                                {
+                                    ccode = ccode * 10 + (code[++i] - '0');
+                                    processedChars++;
+                                }
+                                return ((char)ccode).ToString();
+                            }
+                            else
+                            {
+                                if (!processUnknown)
+                                    return "\\" + code[i].ToString();
+                                return code[i].ToString();
+                            }
+                        }
+                }
+            }
+
+            processedChars = 1;
+            return code[i].ToString();
+        }
+
+        internal static int NextCodePoint(string str, ref int i)
+        {
+            if (str[i] >= '\uD800' && str[i] <= '\uDBFF' && i + 1 < str.Length && str[i + 1] >= '\uDC00' && str[i + 1] <= '\uDFFF')
+                return ((str[i] - 0xD800) * 0x400) + (str[++i] - 0xDC00) + 0x10000;
+            return str[i];
+        }
+        internal static int NextCodePoint(string str, ref int i, bool regexp)
+        {
+            if (str[i] >= '\uD800' && str[i] <= '\uDBFF' && i + 1 < str.Length && str[i + 1] >= '\uDC00' && str[i + 1] <= '\uDFFF')
+                return ((str[i] - 0xD800) * 0x400) + (str[++i] - 0xDC00) + 0x10000;
+
+            if (regexp && str[i] == '\\' && i + 1 < str.Length)
+            {
+                i++;
+                if (i + 1 < str.Length && str[i] == 'c' && str[i + 1] >= 'A' && str[i + 1] <= 'Z')
+                {
+                    i++;
+                    return str[i] - '@';
+                }
+
+                if (str[i] == 't')
+                    return '\t';
+                if (str[i] == 'f')
+                    return '\f';
+                if (str[i] == 'v')
+                    return '\v';
+                if (str[i] == 'b')
+                    return '\b';
+                if (str[i] == 'n')
+                    return '\n';
+                if (str[i] == 'r')
+                    return '\r';
+
+                return NextCodePoint(str, ref i);
+            }
+
+            return str[i];
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static bool IsSurrogatePair(string str, int i)
+        {
+            return (i >= 0 && i + 1 < str.Length && str[i] >= '\uD800' && str[i] <= '\uDBFF' && str[i + 1] >= '\uDC00' && str[i + 1] <= '\uDFFF');
+        }
+
+        internal static string CodePointToString(int codePoint)
+        {
+            if (codePoint < 0 || codePoint > 0x10FFFF)
+                ExceptionHelper.Throw(new RangeError("Invalid code point " + codePoint));
+
+            if (codePoint <= 0xFFFF)
+                return ((char)codePoint).ToString();
+
+            codePoint -= 0x10000;
+            char h = (char)((codePoint >> 10) + 0xD800);
+            char l = (char)((codePoint % 0x400) + 0xDC00);
+            return h.ToString() + l.ToString();
         }
 
 #if INLINE

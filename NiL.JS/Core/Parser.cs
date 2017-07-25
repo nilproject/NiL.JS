@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -423,23 +423,13 @@ namespace NiL.JS.Core
                     if (j >= code.Length)
                         break;
                     char c = code[j];
-                    if (c == '\\')
-                    {
-                        int len = 1;
-                        if (code[j + 1] == 'u')
-                            len = 5;
-                        else if (code[j + 1] == 'x')
-                            len = 3;
-                        c = Tools.Unescape(code.Substring(j, len + 1), false)[0];
-                        j += len;
-                    }
                     switch (c)
                     {
                         case 'g':
                             {
                                 if (g)
                                     if (throwError)
-                                        throw new ArgumentException("Invalid flag in regexp definition");
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
                                     else
                                         return false;
                                 g = true;
@@ -449,22 +439,42 @@ namespace NiL.JS.Core
                             {
                                 if (i)
                                     if (throwError)
-                                        throw new ArgumentException("Invalid flag in regexp definition");
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
                                     else
                                         return false;
                                 i = true;
                                 break;
-                            }
-                        case 'm':
-                            {
-                                if (m)
-                                    if (throwError)
-                                        throw new ArgumentException("Invalid flag in regexp definition");
-                                    else
-                                        return false;
-                                m = true;
-                                break;
-                            }
+							}
+						case 'm':
+							{
+								if (m)
+									if (throwError)
+										throw new ArgumentException("Invalid flag in RegExp definition");
+									else
+										return false;
+								m = true;
+								break;
+							}
+						case 'u':
+							{
+								if (u)
+									if (throwError)
+										throw new ArgumentException("Invalid flag in RegExp definition");
+									else
+										return false;
+								u = true;
+								break;
+							}
+						case 'y':
+							{
+								if (y)
+									if (throwError)
+										throw new ArgumentException("Invalid flag in RegExp definition");
+									else
+										return false;
+								y = true;
+								break;
+							}
                         default:
                             {
                                 if (IsIdentifierTerminator(c))
