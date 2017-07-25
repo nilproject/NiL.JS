@@ -77,9 +77,6 @@ namespace NiL.JS.Core
             }
             set
             {
-                if (value != null)
-                    value = value.CloneImpl((JSValueAttributesInternal)uint.MaxValue);
-
                 switch (index)
                 {
                     case 0:

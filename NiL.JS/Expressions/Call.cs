@@ -188,7 +188,7 @@ namespace NiL.JS.Expressions
             var arguments = new Arguments(context);
 
             for (int i = 0; i < this._arguments.Length; i++)
-                arguments.Add(Tools.EvalExpressionSafe(context, this._arguments[i]));
+                arguments.Add(Tools.EvalExpressionSafe(context, _arguments[i]));
             context._objectSource = null;
 
             arguments.callee = func;

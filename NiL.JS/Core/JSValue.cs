@@ -745,7 +745,7 @@ namespace NiL.JS.Core
             var res = new JSValue();
             res.Assign(this);
             res._valueType = _valueType;
-            res._attributes = this._attributes &
+            res._attributes = _attributes &
                 ~(JSValueAttributesInternal.ReadOnly
                 | JSValueAttributesInternal.SystemObject
                 | JSValueAttributesInternal.Temporary

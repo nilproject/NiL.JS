@@ -408,7 +408,7 @@ namespace NiL.JS.Core
                             escape = false;
                         }
                     }
-                    
+
                     j++;
                 }
 
@@ -448,37 +448,37 @@ namespace NiL.JS.Core
                                         return false;
                                 i = true;
                                 break;
-							}
-						case 'm':
-							{
-								if (m)
-									if (throwError)
-										throw new ArgumentException("Invalid flag in RegExp definition");
-									else
-										return false;
-								m = true;
-								break;
-							}
-						case 'u':
-							{
-								if (u)
-									if (throwError)
-										throw new ArgumentException("Invalid flag in RegExp definition");
-									else
-										return false;
-								u = true;
-								break;
-							}
-						case 'y':
-							{
-								if (y)
-									if (throwError)
-										throw new ArgumentException("Invalid flag in RegExp definition");
-									else
-										return false;
-								y = true;
-								break;
-							}
+                            }
+                        case 'm':
+                            {
+                                if (m)
+                                    if (throwError)
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
+                                    else
+                                        return false;
+                                m = true;
+                                break;
+                            }
+                        case 'u':
+                            {
+                                if (u)
+                                    if (throwError)
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
+                                    else
+                                        return false;
+                                u = true;
+                                break;
+                            }
+                        case 'y':
+                            {
+                                if (y)
+                                    if (throwError)
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
+                                    else
+                                        return false;
+                                y = true;
+                                break;
+                            }
                         default:
                             {
                                 if (IsIdentifierTerminator(c))
