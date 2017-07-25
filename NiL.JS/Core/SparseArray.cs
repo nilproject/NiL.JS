@@ -605,9 +605,13 @@ namespace NiL.JS.Core
                 ensureCapacity(0);
                 return;
             }
+
             navyData = new _NavyItem[values.Length];
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < values.Length; i++)
                 this[i] = values[i];
+
+            if (values.Length < len)
+                this[(int)len - 1] = default(TValue);
         }
     }
 }

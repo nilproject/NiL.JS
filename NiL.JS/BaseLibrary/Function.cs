@@ -305,6 +305,7 @@ namespace NiL.JS.BaseLibrary
             _functionDefinition = creatorDummy;
             _valueType = JSValueType.Function;
             _oValue = this;
+            RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
         }
 
         [Hidden]
@@ -315,6 +316,7 @@ namespace NiL.JS.BaseLibrary
                 throw new ArgumentNullException(nameof(context));
 
             _initialContext = context;
+            RequireNewKeywordLevel = RequireNewKeywordLevel.Both;
         }
 
         [DoNotEnumerate]
