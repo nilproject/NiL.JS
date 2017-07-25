@@ -272,9 +272,6 @@ namespace NiL.JS.BaseLibrary
 
             var selfStr = self.ToString();
 
-            if (args == null || args.Length == 0)
-                return -1;
-
             string str1 = args[0].ToString();
             return string.Compare(selfStr, str1, StringComparison.InvariantCulture);
         }
