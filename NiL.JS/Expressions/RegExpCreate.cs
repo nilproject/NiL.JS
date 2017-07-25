@@ -71,7 +71,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            return new RegExp(pattern, flags, false);
+            return new RegExp(pattern, flags);
         }
 
         public override T Visit<T>(Visitor<T> visitor)

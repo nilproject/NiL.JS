@@ -416,7 +416,7 @@ namespace NiL.JS.Core
                     return false;
 
                 bool w = true;
-                bool g = false, i = false, m = false;
+                bool g = false, i = false, m = false, u = false, y = false;
                 while (w)
                 {
                     j++;

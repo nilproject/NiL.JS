@@ -291,7 +291,7 @@ namespace NiL.JS.BaseLibrary
             var regex = a0.Value as RegExp;
 
             if (regex == null)
-                regex = new RegExp((a0._valueType > JSValueType.Undefined ? (object)a0 : "").ToString(), "", false); // cached
+                regex = new RegExp((a0._valueType > JSValueType.Undefined ? (object)a0 : "").ToString(), ""); // cached
 
             if (!regex._global)
             {
