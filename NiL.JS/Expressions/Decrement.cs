@@ -84,18 +84,16 @@ namespace NiL.JS.Expressions
             Function setter = null;
             JSValue res = null;
             var val = _left.EvaluateForWrite(context);
-            Arguments args = null;
             if (val._valueType == JSValueType.Property)
             {
                 var ppair = val._oValue as Core.PropertyPair;
                 setter = ppair.setter;
                 if (context._strict && setter == null)
                     raiseErrorProp();
-                args = new Arguments();
                 if (ppair.getter == null)
                     val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
                 else
-                    val = ppair.getter.Call(context._objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
+                    val = ppair.getter.Call(context._objectSource, null).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
             }
             else if ((val._attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {

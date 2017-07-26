@@ -512,7 +512,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     var str = new String(selfStr);
                     var match = new String();
-                    var fArgs = new Arguments();
+                    var fArgs = new Arguments(Context.CurrentContext);
                     return re.Replace(
                         selfStr,
                         (m) =>
@@ -550,7 +550,7 @@ namespace NiL.JS.BaseLibrary
                     if (index == -1)
                         return selfStr;
 
-                    var fArgs = new Arguments() { length = 3 };
+                    var fArgs = new Arguments(Context.CurrentContext) { length = 3 };
                     fArgs[0] = pattern;
                     fArgs[1] = index;
                     fArgs[2] = self;

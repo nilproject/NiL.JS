@@ -177,9 +177,9 @@ namespace NiL.JS.Statements
                 var variableDef = _internalDefinition as VariableDefinition;
                 if (variableDef != null)
                 {
-                    for (var i = 0; i < variableDef.variables.Length; i++)
+                    for (var i = 0; i < variableDef._variables.Length; i++)
                     {
-                        context._module.Exports[variableDef.variables[i].name] = variableDef.variables[i].references[0].Evaluate(context);
+                        context._module.Exports[variableDef._variables[i].name] = variableDef._variables[i].references[0].Evaluate(context);
                     }
                 }
                 else

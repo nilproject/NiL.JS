@@ -147,7 +147,7 @@ namespace NiL.JS.BaseLibrary
 
             try
             {
-                _callback.Call(new Arguments
+                _callback.Call(new Arguments(null)
                 {
                     new ExternalFunction((self, args)=>
                     {

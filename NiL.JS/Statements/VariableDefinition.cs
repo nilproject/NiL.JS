@@ -24,18 +24,18 @@ namespace NiL.JS.Statements
     {
         private VariableKind _kind;
 
-        internal readonly VariableDescriptor[] variables;
-        internal Expression[] initializers;
+        internal readonly VariableDescriptor[] _variables;
+        internal Expression[] _initializers;
 
-        public CodeNode[] Initializers { get { return initializers; } }
-        public VariableDescriptor[] Variables { get { return variables; } }
+        public CodeNode[] Initializers { get { return _initializers; } }
+        public VariableDescriptor[] Variables { get { return _variables; } }
         public VariableKind Kind { get { return _kind; } }
 
         internal VariableDefinition(VariableDescriptor[] variables, Expression[] initializers, VariableKind kind)
         {
-            this.initializers = initializers;
-            this.variables = variables;
-            this._kind = kind;
+            _initializers = initializers;
+            _variables = variables;
+            _kind = kind;
         }
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
@@ -102,6 +102,7 @@ namespace NiL.JS.Statements
                     }
 
                     names.Add(name);
+                    initializers.Add(expression);
                 }
                 else
                 {
@@ -112,13 +113,8 @@ namespace NiL.JS.Statements
                         if (expr.Type == OperationType.None && expr._right == null)
                             expr = expr._left as ExpressionTree;
                         valid |= expr != null && expr.Type == OperationType.Assignment;
-
-                        if (expr._left is VariableReference)
-                        {
-                            names.Add(expr._left.ToString());
-                            initializers.Add(expression);
-                        }
-                        else
+                        
+                        if (expr._left is ObjectDesctructor)
                         {
                             var expressions = (expr._left as ObjectDesctructor).GetTargetVariables();
                             for (var i = 0; i < expressions.Count; i++)
@@ -129,12 +125,18 @@ namespace NiL.JS.Statements
 
                             initializers.Add(expr);
                         }
+                        else
+                        {
+                            names.Add(expr._left.ToString());
+                            initializers.Add(expression);
+                        }
                     }
                     else
                     {
                         var cnst = expression as Constant;
                         valid = cnst != null && cnst.value == JSValue.undefined;
                         initializers.Add(expression);
+                        names.Add(cnst.value.ToString());
                     }
 
                     if (!valid)
@@ -196,10 +198,12 @@ namespace NiL.JS.Statements
                 state.Variables.Add(variables[i]);
             }
 
-            var inits = initializers.ToArray();
+            if (initializers.Count != variables.Length)
+                throw new InvalidOperationException("initializers.Count != variables.Length");
+
             var pos = index;
             index = position;
-            return new VariableDefinition(variables, inits, mode)
+            return new VariableDefinition(variables, initializers.ToArray(), mode)
             {
                 Position = pos,
                 Length = index - pos
@@ -214,20 +218,20 @@ namespace NiL.JS.Statements
                 i = (int)context.SuspendData[this];
             }
 
-            for (; i < initializers.Length; i++)
+            for (; i < _initializers.Length; i++)
             {
-                if (context._executionMode == ExecutionMode.None && _kind > VariableKind.FunctionScope && variables[i].lexicalScope)
+                if (context._executionMode == ExecutionMode.None && _kind > VariableKind.FunctionScope && _variables[i].lexicalScope)
                 {
-                    JSValue f = context.DefineVariable(variables[i].name, false);
+                    JSValue f = context.DefineVariable(_variables[i].name, false);
 
-                    variables[i].cacheRes = f;
-                    variables[i].cacheContext = context;
+                    _variables[i].cacheRes = f;
+                    _variables[i].cacheContext = context;
 
                     if (_kind == VariableKind.ConstantInLexicalScope)
                         f._attributes |= JSValueAttributesInternal.ReadOnly;
                 }
 
-                initializers[i].Evaluate(context);
+                _initializers[i].Evaluate(context);
 
                 if (context._executionMode == ExecutionMode.Suspend)
                 {
@@ -241,7 +245,7 @@ namespace NiL.JS.Statements
         protected internal override CodeNode[] GetChildsImpl()
         {
             var res = new List<CodeNode>();
-            res.AddRange(initializers);
+            res.AddRange(_initializers);
             res.RemoveAll(x => x == null);
             return res.ToArray();
         }
@@ -252,25 +256,25 @@ namespace NiL.JS.Statements
                 stats.WithLexicalEnvironment = true;
 
             int actualChilds = 0;
-            for (int i = 0; i < initializers.Length; i++)
+            for (int i = 0; i < _initializers.Length; i++)
             {
-                Parser.Build(ref initializers[i], message != null ? 2 : expressionDepth, variables, codeContext, message, stats, opts);
-                if (initializers[i] != null)
+                Parser.Build(ref _initializers[i], message != null ? 2 : expressionDepth, variables, codeContext, message, stats, opts);
+                if (_initializers[i] != null)
                 {
                     actualChilds++;
 
-                    if (_kind == VariableKind.ConstantInLexicalScope && initializers[i] is Assignment)
+                    if (_kind == VariableKind.ConstantInLexicalScope && _initializers[i] is Assignment)
                     {
-                        initializers[i] = new ForceAssignmentOperator(initializers[i]._left, initializers[i]._right)
+                        _initializers[i] = new ForceAssignmentOperator(_initializers[i]._left, _initializers[i]._right)
                         {
-                            Position = initializers[i].Position,
-                            Length = initializers[i].Length
+                            Position = _initializers[i].Position,
+                            Length = _initializers[i].Length
                         };
                     }
                 }
             }
 
-            if (actualChilds < initializers.Length)
+            if (actualChilds < _initializers.Length)
             {
                 if ((opts & Options.SuppressUselessStatementsElimination) == 0 && actualChilds == 0)
                 {
@@ -280,10 +284,10 @@ namespace NiL.JS.Statements
                 }
 
                 var newinits = new Expression[actualChilds];
-                for (int i = 0, j = 0; i < initializers.Length; i++)
-                    if (initializers[i] != null)
-                        newinits[j++] = initializers[i];
-                initializers = newinits;
+                for (int i = 0, j = 0; i < _initializers.Length; i++)
+                    if (_initializers[i] != null)
+                        newinits[j++] = _initializers[i];
+                _initializers = newinits;
             }
 
             return false;
@@ -291,9 +295,9 @@ namespace NiL.JS.Statements
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            for (int i = 0; i < initializers.Length; i++)
+            for (int i = 0; i < _initializers.Length; i++)
             {
-                initializers[i].Optimize(ref initializers[i], owner, message, opts, stats);
+                _initializers[i].Optimize(ref _initializers[i], owner, message, opts, stats);
             }
         }
 
@@ -315,9 +319,9 @@ namespace NiL.JS.Statements
             else
                 res = "var ";
 
-            for (var i = 0; i < initializers.Length; i++)
+            for (var i = 0; i < _initializers.Length; i++)
             {
-                var t = initializers[i].ToString();
+                var t = _initializers[i].ToString();
                 if (string.IsNullOrEmpty(t))
                     continue;
                 if (t[0] == '(')
@@ -332,17 +336,17 @@ namespace NiL.JS.Statements
 
         public override void Decompose(ref CodeNode self)
         {
-            for (var i = 0; i < initializers.Length; i++)
+            for (var i = 0; i < _initializers.Length; i++)
             {
-                initializers[i].Decompose(ref initializers[i]);
+                _initializers[i].Decompose(ref _initializers[i]);
             }
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            for (var i = 0; i < initializers.Length; i++)
+            for (var i = 0; i < _initializers.Length; i++)
             {
-                initializers[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
+                _initializers[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
             }
         }
     }

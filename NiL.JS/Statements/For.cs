@@ -274,8 +274,8 @@ namespace NiL.JS.Statements
 
             if ((opts & Options.SuppressUselessStatementsElimination) == 0)
             {
-                if (initAsVds != null && initAsVds.initializers.Length == 1 && initAsVds.Kind == VariableKind.FunctionScope)
-                    _initializer = initAsVds.initializers[0];
+                if (initAsVds != null && initAsVds._initializers.Length == 1 && initAsVds.Kind == VariableKind.FunctionScope)
+                    _initializer = initAsVds._initializers[0];
             }
 
             Parser.Build(ref _condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
@@ -289,27 +289,27 @@ namespace NiL.JS.Statements
 
             Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
 
-            if (initAsVds != null && initAsVds.Kind != VariableKind.FunctionScope && initAsVds.variables.Any(x => x.captured))
+            if (initAsVds != null && initAsVds.Kind != VariableKind.FunctionScope && initAsVds._variables.Any(x => x.captured))
             {
                 var bodyAsCodeBlock = _body as CodeBlock;
                 if (bodyAsCodeBlock != null)
                 {
                     var newLines = new CodeNode[bodyAsCodeBlock._lines.Length + 1];
                     System.Array.Copy(bodyAsCodeBlock._lines, newLines, bodyAsCodeBlock._lines.Length);
-                    newLines[newLines.Length - 1] = new PerIterationScopeInitializer(initAsVds.variables);
+                    newLines[newLines.Length - 1] = new PerIterationScopeInitializer(initAsVds._variables);
                     bodyAsCodeBlock._lines = newLines;
                 }
                 else
                 {
-                    _body = bodyAsCodeBlock = new CodeBlock(new[] { _body, new PerIterationScopeInitializer(initAsVds.variables) });
+                    _body = bodyAsCodeBlock = new CodeBlock(new[] { _body, new PerIterationScopeInitializer(initAsVds._variables) });
                 }
 
                 bodyAsCodeBlock._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
 
-                for (var i = 0; i < initAsVds.variables.Length; i++)
+                for (var i = 0; i < initAsVds._variables.Length; i++)
                 {
-                    if (initAsVds.variables[i].captured)
-                        initAsVds.variables[i].definitionScopeLevel = -1;
+                    if (initAsVds._variables[i].captured)
+                        initAsVds._variables[i].definitionScopeLevel = -1;
                 }
             }
 

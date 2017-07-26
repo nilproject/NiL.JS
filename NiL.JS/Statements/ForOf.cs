@@ -98,7 +98,7 @@ namespace NiL.JS.Statements
                         if (defVal == null)
                             return defVal;
 
-                        Expression exp = new AssignmentOperatorCache(result._variable as Variable ?? (result._variable as VariableDefinition).initializers[0] as Variable);
+                        Expression exp = new AssignmentOperatorCache(result._variable as Variable ?? (result._variable as VariableDefinition)._initializers[0] as Variable);
                         exp = new Assignment(exp, defVal)
                         {
                             Position = exp.Position,
@@ -108,7 +108,7 @@ namespace NiL.JS.Statements
                         if (result._variable == exp._left._left)
                             result._variable = exp;
                         else
-                            (result._variable as VariableDefinition).initializers[0] = exp;
+                            (result._variable as VariableDefinition)._initializers[0] = exp;
 
                         Tools.SkipSpaces(state.Code, ref i);
                     }
@@ -127,7 +127,7 @@ namespace NiL.JS.Statements
 
                 if (result._variable is VariableDefinition)
                 {
-                    if ((result._variable as VariableDefinition).variables.Length > 1)
+                    if ((result._variable as VariableDefinition)._variables.Length > 1)
                         ExceptionHelper.ThrowSyntaxError("Too many variables in for-of loop", state.Code, i);
                 }
 
@@ -195,7 +195,7 @@ namespace NiL.JS.Statements
                 if (varialeDefStat != null)
                 {
                     _variable.Evaluate(context);
-                    variable = (varialeDefStat.initializers[0]._left ?? varialeDefStat.initializers[0]).EvaluateForWrite(context);
+                    variable = (varialeDefStat._initializers[0]._left ?? varialeDefStat._initializers[0]).EvaluateForWrite(context);
                 }
                 else if (_variable is Assignment)
                 {

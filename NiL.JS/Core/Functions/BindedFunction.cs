@@ -89,6 +89,7 @@ namespace NiL.JS.Core.Functions
             {
                 if (arguments == null)
                     arguments = new Arguments();
+
                 arguments.length += bindedArguments.length;
                 for (var i = arguments.length; i-- > bindedArguments.length; )
                     arguments[i] = arguments[i - bindedArguments.length];

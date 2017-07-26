@@ -38,7 +38,7 @@ namespace NiL.JS.Core
 
         private _LengthContainer _lengthContainer;
         internal int length;
-        private bool cloned;
+        internal bool suppressClone;
 
         public int Length
         {
@@ -116,6 +116,8 @@ namespace NiL.JS.Core
 
                 _objectPrototype = callerContext.GlobalContext._GlobalPrototype;
             }
+
+            suppressClone = true;
         }
 
         public Arguments()
@@ -249,9 +251,9 @@ namespace NiL.JS.Core
 
         private void cloneValues()
         {
-            if (cloned)
+            if (suppressClone)
                 return;
-            cloned = true;
+            suppressClone = true;
 
             var mask = JSValueAttributesInternal.ReadOnly
                     | JSValueAttributesInternal.SystemObject
