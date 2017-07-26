@@ -45,6 +45,8 @@
       "NETCORE"
     ],
     "outputName": "NiL.JS",
+    "publicSign": true,
+    "keyFile": "../NiL.JS.Key.snk",
     "optimize": false,
     "warningsAsErrors": true,
     "debugType": "portable"
