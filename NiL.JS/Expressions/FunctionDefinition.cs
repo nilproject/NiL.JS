@@ -52,7 +52,10 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            throw new InvalidOperationException();
+            if (_descriptor.cacheContext != context)
+                throw new InvalidOperationException();
+
+            return _descriptor.cacheRes;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -306,22 +309,24 @@ namespace NiL.JS.Expressions
                 int n = position;
                 if (!Parser.ValidateName(code, ref position, state.strict))
                 {
-                    if (code[position] == '{' || code[position] == '[')
-                    {
-                        destructor = ExpressionTree.Parse(state, ref position, processComma: false);
-                        containsDestructuringPrms = true;
-                    }
+                    if (code[position] == '{')
+                        destructor = (Expression)ObjectDefinition.Parse(state, ref position);
+                    else if (code[position] == '[')
+                        destructor = (Expression)ArrayDefinition.Parse(state, ref position);
 
                     if (destructor == null)
                         ExceptionHelper.ThrowUnknownToken(code, nameStartPos);
+
+                    containsDestructuringPrms = true;
                 }
 
                 var pname = Tools.Unescape(code.Substring(n, position - n), state.strict);
-                var desc = new ParameterReference(pname, rest, state.lexicalScopeLevel + 1)
-                {
-                    Position = n,
-                    Length = position - n
-                }.Descriptor as ParameterDescriptor;
+                var reference = new ParameterReference(pname, rest, state.lexicalScopeLevel + 1)
+                                    {
+                                        Position = n,
+                                        Length = position - n
+                                    };
+                var desc = reference.Descriptor as ParameterDescriptor;
 
                 if (destructor != null)
                     desc.destructor = new ObjectDesctructor(destructor);
@@ -436,11 +441,7 @@ namespace NiL.JS.Expressions
                                     destructuringTargets.Add(new VariableDescriptor(targets[j].Name, state.functionScopeLevel));
                                 }
 
-                                assignments.Add(
-                                    new Assignment(
-                                        parameters[i].destructor,
-                                        new Property(
-                                            new GetArgumentsExpression(state.functionScopeLevel), new Constant(state.GetCachedValue(i)))));
+                                assignments.Add(new Assignment(parameters[i].destructor, parameters[i].references[0]));
                             }
                         }
 

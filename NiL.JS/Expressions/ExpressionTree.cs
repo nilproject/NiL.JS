@@ -1052,20 +1052,13 @@ namespace NiL.JS.Expressions
                 {
                     case "super":
                         {
-                            /*
-                             * Это ключевое слово. Не переменная.
-                             * Оно может быть использовано только для получения свойств
-                             * или вызова конструктора. При том, вызов конструктора допускается
-                             * только внутри конструктора класса-потомка.
-                             */
-
                             while (Tools.IsWhiteSpace(state.Code[i]))
                                 i++;
 
                             if ((state.CodeContext & CodeContext.InClassDefenition) == 0
-                                || (state.Code[i] != '.' // получение свойства
+                                || (state.Code[i] != '.'
                                     && state.Code[i] != '['
-                                    && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0))) // вызов конструктора
+                                    && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0)))
                                 ExceptionHelper.ThrowSyntaxError("super keyword unexpected in this coontext", state.Code, i);
 
                             operand = new Super();
