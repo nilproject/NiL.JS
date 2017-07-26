@@ -667,47 +667,47 @@ namespace NiL.JS.BaseLibrary
 
             for (var i = min; i < _functionDefinition.parameters.Length; i++)
             {
-                var arg = _functionDefinition.parameters[i];
-                if (arg.initializer != null)
+                var parameter = _functionDefinition.parameters[i];
+                if (parameter.initializer != null)
                 {
-                    if (ceaw || arg.assignments != null)
+                    if (ceaw || parameter.assignments != null)
                     {
-                        arg.cacheRes = arg.initializer.Evaluate(internalContext).CloneImpl(false);
+                        parameter.cacheRes = parameter.initializer.Evaluate(internalContext).CloneImpl(false);
                     }
                     else
                     {
-                        arg.cacheRes = arg.initializer.Evaluate(internalContext);
-                        if (!arg.cacheRes.Defined)
-                            arg.cacheRes = undefined;
+                        parameter.cacheRes = parameter.initializer.Evaluate(internalContext);
+                        if (!parameter.cacheRes.Defined)
+                            parameter.cacheRes = undefined;
                     }
                 }
                 else
                 {
-                    if (ceaw || arg.assignments != null)
+                    if (ceaw || parameter.assignments != null)
                     {
                         if (i == min && restArray != null)
-                            arg.cacheRes = restArray.CloneImpl(false);
+                            parameter.cacheRes = restArray.CloneImpl(false);
                         else
-                            arg.cacheRes = new JSValue() { _valueType = JSValueType.Undefined };
-                        arg.cacheRes._attributes = JSValueAttributesInternal.Argument;
+                            parameter.cacheRes = new JSValue() { _valueType = JSValueType.Undefined };
+                        parameter.cacheRes._attributes = JSValueAttributesInternal.Argument;
                     }
                     else
                     {
                         if (i == min && restArray != null)
-                            arg.cacheRes = restArray;
+                            parameter.cacheRes = restArray;
                         else
-                            arg.cacheRes = JSValue.undefined;
+                            parameter.cacheRes = JSValue.undefined;
                     }
                 }
-                arg.cacheContext = internalContext;
-                if (arg.captured || ceaw)
+                parameter.cacheContext = internalContext;
+                if (parameter.captured || ceaw)
                 {
                     if (internalContext._variables == null)
                         internalContext._variables = getFieldsContainer();
-                    internalContext._variables[arg.Name] = arg.cacheRes;
+                    internalContext._variables[parameter.Name] = parameter.cacheRes;
                 }
-                if (string.CompareOrdinal(arg.name, "arguments") == 0)
-                    internalContext._arguments = arg.cacheRes;
+                if (string.CompareOrdinal(parameter.name, "arguments") == 0)
+                    internalContext._arguments = parameter.cacheRes;
             }
         }
 

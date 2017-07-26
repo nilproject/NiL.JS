@@ -3,10 +3,6 @@ using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
-#if (PORTABLE || NETCORE)
-using System.Reflection;
-#endif
-
 namespace NiL.JS.Core.Functions
 {
     /// <remarks>
