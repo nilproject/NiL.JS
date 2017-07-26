@@ -333,7 +333,7 @@ namespace NiL.JS.BaseLibrary
         }
 
 // Not implemented in .Net Standard 1.3. Will be in .Net Standard 2.0
-#if !NETCORE
+#if !NETCORE && !PORTABLE
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
