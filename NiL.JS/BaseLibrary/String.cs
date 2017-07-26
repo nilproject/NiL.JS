@@ -273,7 +273,7 @@ namespace NiL.JS.BaseLibrary
             var selfStr = self.ToString();
 
             string str1 = args[0].ToString();
-            return string.Compare(selfStr, str1, StringComparison.InvariantCulture);
+            return string.CompareOrdinal(selfStr, str1);
         }
 
         [DoNotEnumerate]
@@ -331,7 +331,7 @@ namespace NiL.JS.BaseLibrary
                 }
             }
         }
-
+#if !NETCORE
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
@@ -350,7 +350,7 @@ namespace NiL.JS.BaseLibrary
             if (a0 != null && a0._valueType > JSValueType.Undefined)
                 form = a0.ToString();
 
-            NormalizationForm nf = NormalizationForm.FormC;
+            var nf = NormalizationForm.FormC;
             if (form == "NFC")
                 nf = NormalizationForm.FormC;
             else if (form == "NFD")
@@ -364,7 +364,7 @@ namespace NiL.JS.BaseLibrary
 
             return selfStr.Normalize(nf);
         }
-
+#endif
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(2)]
