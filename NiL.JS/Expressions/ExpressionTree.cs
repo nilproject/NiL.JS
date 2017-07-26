@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
      * Ты входишь в самый тёмный переулок всего проекта. Ходят слухи о страшных делах, происходящих в этом месте.
      * Изредка отсюда доносятся людские стоны, полные боли и отчаяния. Наберись терпения и мужества, ибо те ужасы,
      * что ты можешь тут увидеть, испытают твой нервы.
-     * Если желание твоё посетить сие место всё ещё живо и не угасло... и да хранит тебя Б-г. 
+     * Если желание твоё посетить сие место всё ещё живо и не угасло... и да хранит тебя Б-г.
      */
 
 #if !(PORTABLE || NETCORE)
@@ -113,23 +113,23 @@ namespace NiL.JS.Expressions
             {
                 case OperationType.Multiply:
                     {
-                        return new Multiplication(first, second);
+                        return new Multiplication(_left, _right);
                     }
                 case OperationType.None:
                     {
-                        return new Comma(first, second);
+                        return new Comma(_left, _right);
                     }
                 case OperationType.Assignment:
                     {
-                        return new Assignment(first, second);
+                        return new Assignment(_left, _right);
                     }
                 case OperationType.Less:
                     {
-                        return new Less(first, second);
+                        return new Less(_left, _right);
                     }
                 case OperationType.Incriment:
                     {
-                        return new Increment(first ?? second, first == null ? IncrimentType.Postincriment : IncrimentType.Preincriment);
+                        return new Increment(_left ?? _right, _left == null ? IncrimentType.Postincriment : IncrimentType.Preincriment);
                     }
                 case OperationType.Call:
                     {
@@ -137,103 +137,103 @@ namespace NiL.JS.Expressions
                     }
                 case OperationType.Decriment:
                     {
-                        return new Decrement(first ?? second, first == null ? DecrimentType.Postdecriment : DecrimentType.Postdecriment);
+                        return new Decrement(_left ?? _right, _left == null ? DecrimentType.Postdecriment : DecrimentType.Postdecriment);
                     }
                 case OperationType.LessOrEqual:
                     {
-                        return new LessOrEqual(first, second);
+                        return new LessOrEqual(_left, _right);
                     }
                 case OperationType.Addition:
                     {
-                        return new Addition(first, second);
+                        return new Addition(_left, _right);
                     }
                 case OperationType.StrictNotEqual:
                     {
-                        return new StrictNotEqual(first, second);
+                        return new StrictNotEqual(_left, _right);
                     }
                 case OperationType.More:
                     {
-                        return new More(first, second);
+                        return new More(_left, _right);
                     }
                 case OperationType.MoreOrEqual:
                     {
-                        return new MoreOrEqual(first, second);
+                        return new MoreOrEqual(_left, _right);
                     }
                 case OperationType.Division:
                     {
-                        return new Division(first, second);
+                        return new Division(_left, _right);
                     }
                 case OperationType.Equal:
                     {
-                        return new Equal(first, second);
+                        return new Equal(_left, _right);
                     }
                 case OperationType.Substract:
                     {
-                        return new Substract(first, second);
+                        return new Substract(_left, _right);
                     }
                 case OperationType.StrictEqual:
                     {
-                        return new StrictEqual(first, second);
+                        return new StrictEqual(_left, _right);
                     }
                 case OperationType.LogicalOr:
                     {
-                        return new LogicalDisjunction(first, second);
+                        return new LogicalDisjunction(_left, _right);
                     }
                 case OperationType.LogicalAnd:
                     {
-                        return new LogicalConjunction(first, second);
+                        return new LogicalConjunction(_left, _right);
                     }
                 case OperationType.NotEqual:
                     {
-                        return new NotEqual(first, second);
+                        return new NotEqual(_left, _right);
                     }
                 case OperationType.UnsignedShiftRight:
                     {
-                        return new UnsignedShiftRight(first, second);
+                        return new UnsignedShiftRight(_left, _right);
                     }
                 case OperationType.SignedShiftLeft:
                     {
-                        return new SignedShiftLeft(first, second);
+                        return new SignedShiftLeft(_left, _right);
                     }
                 case OperationType.SignedShiftRight:
                     {
-                        return new SignedShiftRight(first, second);
+                        return new SignedShiftRight(_left, _right);
                     }
                 case OperationType.Modulo:
                     {
-                        return new Modulo(first, second);
+                        return new Modulo(_left, _right);
                     }
                 case OperationType.LogicalNot:
                     {
-                        return new LogicalNegation(first);
+                        return new LogicalNegation(_left);
                     }
                 case OperationType.Not:
                     {
-                        return new BitwiseNegation(first);
+                        return new BitwiseNegation(_left);
                     }
                 case OperationType.Xor:
                     {
-                        return new BitwiseExclusiveDisjunction(first, second);
+                        return new BitwiseExclusiveDisjunction(_left, _right);
                     }
                 case OperationType.Or:
                     {
-                        return new BitwiseDisjunction(first, second);
+                        return new BitwiseDisjunction(_left, _right);
                     }
                 case OperationType.And:
                     {
-                        return new BitwiseConjunction(first, second);
+                        return new BitwiseConjunction(_left, _right);
                     }
                 case OperationType.Conditional:
                     {
-                        while ((second is ExpressionTree)
-                            && (second as ExpressionTree)._operationKind == OperationType.None
-                            && (second as ExpressionTree).second == null)
-                            second = (second as ExpressionTree).first;
-                        return new Conditional(first, (Expression[])second.Evaluate(null)._oValue);
+                        while ((_right is ExpressionTree)
+                            && (_right as ExpressionTree)._operationKind == OperationType.None
+                            && (_right as ExpressionTree)._right == null)
+                            _right = (_right as ExpressionTree)._left;
+                        return new Conditional(_left, (Expression[])_right.Evaluate(null)._oValue);
                     }
                 case OperationType.TypeOf:
                     {
-                        return new TypeOf(first);
+                        return new TypeOf(_left);
                     }
                 case OperationType.New:
                     {
@@ -241,15 +241,15 @@ namespace NiL.JS.Expressions
                     }
                 case OperationType.Delete:
                     {
-                        return new Delete(first);
+                        return new Delete(_left);
                     }
                 case OperationType.InstanceOf:
                     {
-                        return new InstanceOf(first, second);
+                        return new InstanceOf(_left, _right);
                     }
                 case OperationType.In:
                     {
-                        return new In(first, second);
+                        return new In(_left, _right);
                     }
                 default:
                     throw new ArgumentException("invalid operation type");
@@ -260,16 +260,16 @@ namespace NiL.JS.Expressions
         {
             if (statement == null)
                 return null;
-            ExpressionTree cur = statement.second as ExpressionTree;
+            ExpressionTree cur = statement._right as ExpressionTree;
             if (cur == null)
                 return statement;
             Stack<Expression> stats = new Stack<Expression>();
             Stack<Expression> types = new Stack<Expression>();
             types.Push(statement);
-            stats.Push(statement.first);
+            stats.Push(statement._left);
             while (cur != null)
             {
-                stats.Push(cur.first);
+                stats.Push(cur._left);
                 for (; types.Count > 0;)
                 {
                     var topType = (int)(types.Peek() as ExpressionTree)._operationKind;
@@ -278,10 +278,10 @@ namespace NiL.JS.Expressions
                             && (((int)cur._operationKind & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)))
                     {
                         var stat = types.Pop() as ExpressionTree;
-                        stat.second = stats.Pop();
-                        stat.first = stats.Pop();
-                        stat.Position = (stat.first ?? stat).Position;
-                        stat.Length = (stat.second ?? stat.first ?? stat).Length + (stat.second ?? stat.first ?? stat).Position - stat.Position;
+                        stat._right = stats.Pop();
+                        stat._left = stats.Pop();
+                        stat.Position = (stat._left ?? stat).Position;
+                        stat.Length = (stat._right ?? stat._left ?? stat).Length + (stat._right ?? stat._left ?? stat).Position - stat.Position;
                         stats.Push(stat);
                     }
                     else
@@ -289,17 +289,17 @@ namespace NiL.JS.Expressions
                 }
 
                 types.Push(cur);
-                if (!(cur.second is ExpressionTree))
-                    stats.Push(cur.second);
-                cur = cur.second as ExpressionTree;
+                if (!(cur._right is ExpressionTree))
+                    stats.Push(cur._right);
+                cur = cur._right as ExpressionTree;
             }
             while (stats.Count > 1)
             {
                 var stat = types.Pop() as Expression;
-                stat.second = stats.Pop();
-                stat.first = stats.Pop();
-                stat.Position = (stat.first ?? stat).Position;
-                stat.Length = (stat.second ?? stat.first ?? stat).Length + (stat.second ?? stat.first ?? stat).Position - stat.Position;
+                stat._right = stats.Pop();
+                stat._left = stats.Pop();
+                stat.Position = (stat._left ?? stat).Position;
+                stat.Length = (stat._right ?? stat._left ?? stat).Length + (stat._right ?? stat._left ?? stat).Position - stat.Position;
                 stats.Push(stat);
             }
             return stats.Peek();
@@ -469,9 +469,9 @@ namespace NiL.JS.Expressions
                                     goto default;
                                 if (state.strict)
                                 {
-                                    if ((first is GetVariable)
-                                        && ((first as GetVariable).Name == "arguments" || (first as GetVariable).Name == "eval"))
-                                        ExceptionHelper.ThrowSyntaxError("Cannot incriment \"" + (first as GetVariable).Name + "\" in strict mode.", state.Code, i);
+                                    if ((first is Variable)
+                                        && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
+                                        ExceptionHelper.ThrowSyntaxError("Cannot incriment \"" + (first as Variable).Name + "\" in strict mode.", state.Code, i);
                                 }
                                 first = new Increment(first, IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
@@ -505,9 +505,9 @@ namespace NiL.JS.Expressions
                                     goto default;
                                 if (state.strict)
                                 {
-                                    if ((first is GetVariable)
-                                        && ((first as GetVariable).Name == "arguments" || (first as GetVariable).Name == "eval"))
-                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (first as GetVariable).Name + "\" in strict mode."));
+                                    if ((first is Variable)
+                                        && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
+                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (first as Variable).Name + "\" in strict mode."));
                                 }
                                 first = new Decrement(first, DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
                                 repeat = true;
@@ -752,14 +752,14 @@ namespace NiL.JS.Expressions
                                 name = jsname._oValue.ToString();
 
                             first = new Property(first, new Constant(name)
-                                                        {
-                                                            Position = s,
-                                                            Length = i - s
-                                                        })
-                                    {
-                                        Position = first.Position,
-                                        Length = i - first.Position
-                                    };
+                            {
+                                Position = s,
+                                Length = i - s
+                            })
+                            {
+                                Position = first.Position,
+                                Length = i - first.Position
+                            };
 
                             repeat = true;
                             canAsign = true;
@@ -808,7 +808,9 @@ namespace NiL.JS.Expressions
                                 Tools.CheckEndOfInput(state.Code, ref i);
 
                                 if (state.Code[i] == ')')
+                                {
                                     break;
+                                }
                                 else
                                 {
                                     bool commaExists = args.Count == 0;
@@ -865,7 +867,7 @@ namespace NiL.JS.Expressions
                                 Length = i - first.Position + 1,
                                 withSpread = true
                             };
-                            
+
                             repeat = !forNew;
                             canAsign = false;
                             binary = false;
@@ -924,15 +926,36 @@ namespace NiL.JS.Expressions
             while (repeat);
 
             if (state.strict
-                && (first is GetVariable) 
-                && ((first as GetVariable).Name == "arguments" || (first as GetVariable).Name == "eval"))
+                && (first is Variable)
+                && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
             {
                 if (assign || kind == OperationType.Assignment)
                     ExceptionHelper.ThrowSyntaxError("Assignment to eval or arguments is not allowed in strict mode", state.Code, i);
             }
 
-            if ((!canAsign) && ((kind == OperationType.Assignment) || (assign)))
-                ExceptionHelper.ThrowSyntaxError("Invalid left-hand side in assignment", state.Code, i);
+            if ((kind == OperationType.Assignment) || assign)
+            {
+                var error = !canAsign || !canBeAssignee(first);
+
+                if (kind == OperationType.Assignment)
+                {
+                    if (first is ObjectDefinition || first is ArrayDefinition)
+                    {
+                        try
+                        {
+                            first = new ObjectDesctructor(first);
+                            error = false;
+                        }
+                        catch
+                        {
+                            // Exception will be handled in next line
+                        }
+                    }
+                }
+
+                if (error)
+                    ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment, state.Code, first.Position, first.Length);
+            }
 
             if (binary && !forUnary)
             {
@@ -947,7 +970,7 @@ namespace NiL.JS.Expressions
                         second = parseContinuation(state, parseTernaryBranches(state, forForLoop, ref i), startIndex, ref i, ref proot, forUnary, processComma, false, forForLoop);
                     }
                     else
-                        second = (Expression)ExpressionTree.Parse(state, ref i, false, processComma, false, false, forForLoop);
+                        second = ExpressionTree.Parse(state, ref i, false, processComma, false, false, forForLoop);
                 }
                 else
                 {
@@ -963,10 +986,10 @@ namespace NiL.JS.Expressions
                 var opassigncache = new AssignmentOperatorCache(first);
                 if (second is ExpressionTree && (second as ExpressionTree)._operationKind == OperationType.None)
                 {
-                    second.first = new Assignment(opassigncache, new ExpressionTree()
+                    second._left = new Assignment(opassigncache, new ExpressionTree()
                     {
-                        first = opassigncache,
-                        second = second.first,
+                        _left = opassigncache,
+                        _right = second._left,
                         _operationKind = kind,
                         Position = startIndex,
                         Length = i - startIndex
@@ -981,8 +1004,8 @@ namespace NiL.JS.Expressions
                 {
                     res = new Assignment(opassigncache, new ExpressionTree()
                     {
-                        first = opassigncache,
-                        second = second,
+                        _left = opassigncache,
+                        _right = second,
                         _operationKind = kind,
                         Position = startIndex,
                         Length = i - startIndex
@@ -1000,13 +1023,20 @@ namespace NiL.JS.Expressions
                     if (forUnary && (kind == OperationType.None) && (first is ExpressionTree))
                         res = first as Expression;
                     else
-                        res = new ExpressionTree() { first = first, second = second, _operationKind = kind, Position = startIndex, Length = i - startIndex };
+                        res = new ExpressionTree() { _left = first, _right = second, _operationKind = kind, Position = startIndex, Length = i - startIndex };
                 }
                 else
                     res = first;
             }
 
             return res;
+        }
+
+        internal static bool canBeAssignee(Expression first)
+        {
+            return first is Variable
+                || first is Property
+                || ((first is Constant) && (first.Evaluate(null).ValueType <= JSValueType.Undefined));
         }
 
         private static Expression parseOperand(ParseInfo state, ref int i, bool forNew, bool forForLoop)
@@ -1025,7 +1055,7 @@ namespace NiL.JS.Expressions
                             /*
                              * Это ключевое слово. Не переменная.
                              * Оно может быть использовано только для получения свойств
-                             * или вызова конструктора. При том, вызов конструктора допускается 
+                             * или вызова конструктора. При том, вызов конструктора допускается
                              * только внутри конструктора класса-потомка.
                              */
 
@@ -1059,7 +1089,7 @@ namespace NiL.JS.Expressions
                             else
                                 state.stringConstants[name] = name;
 
-                            operand = new GetVariable(name, state.lexicalScopeLevel);
+                            operand = new Variable(name, state.lexicalScopeLevel);
                             break;
                         }
                 }
@@ -1095,7 +1125,7 @@ namespace NiL.JS.Expressions
                         else
                             name = jsName._oValue.ToString();
 
-                        operand = new GetVariable(name, state.lexicalScopeLevel);
+                        operand = new Variable(name, state.lexicalScopeLevel);
                     }
                 }
                 else if (Parser.ValidateValue(state.Code, ref i))
@@ -1168,16 +1198,16 @@ namespace NiL.JS.Expressions
 
                                     operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
 
-                                    if (((operand as Property) as object ?? (operand as GetVariable)) == null)
+                                    if (((operand as Property) as object ?? (operand as Variable)) == null)
                                     {
                                         ExceptionHelper.ThrowSyntaxError("Invalid prefix operation. ", state.Code, i);
                                     }
 
                                     if (state.strict
-                                        && (operand is GetVariable)
-                                        && ((operand as GetVariable).Name == "arguments" || (operand as GetVariable).Name == "eval"))
+                                        && (operand is Variable)
+                                        && ((operand as Variable).Name == "arguments" || (operand as Variable).Name == "eval"))
                                     {
-                                        ExceptionHelper.ThrowSyntaxError("Can not incriment \"" + (operand as GetVariable).Name + "\" in strict mode.", state.Code, i);
+                                        ExceptionHelper.ThrowSyntaxError("Can not incriment \"" + (operand as Variable).Name + "\" in strict mode.", state.Code, i);
                                     }
 
                                     operand = new Increment(operand, IncrimentType.Preincriment);
@@ -1204,15 +1234,15 @@ namespace NiL.JS.Expressions
 
                                     operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
 
-                                    if (((operand as Property) as object ?? (operand as GetVariable)) == null)
+                                    if (((operand as Property) as object ?? (operand as Variable)) == null)
                                     {
                                         ExceptionHelper.ThrowSyntaxError("Invalid prefix operation.", state.Code, i);
                                     }
 
                                     if (state.strict
-                                        && (operand is GetVariable)
-                                        && ((operand as GetVariable).Name == "arguments" || (operand as GetVariable).Name == "eval"))
-                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (operand as GetVariable).Name + "\" in strict mode."));
+                                        && (operand is Variable)
+                                        && ((operand as Variable).Name == "arguments" || (operand as Variable).Name == "eval"))
+                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (operand as Variable).Name + "\" in strict mode."));
 
                                     operand = new Decrement(operand, DecrimentType.Predecriment);
                                 }
@@ -1309,7 +1339,7 @@ namespace NiL.JS.Expressions
                         do
                             i++;
                         while (Tools.IsWhiteSpace(state.Code[i]));
-                        var temp = (Expression)ExpressionTree.Parse(state, ref i, false, false);
+                        var temp = Parse(state, ref i, false, false);
                         if (operand == null)
                             operand = temp;
                         else
@@ -1317,13 +1347,14 @@ namespace NiL.JS.Expressions
                         while (Tools.IsWhiteSpace(state.Code[i]))
                             i++;
                         if (state.Code[i] != ')' && state.Code[i] != ',')
-                            ExceptionHelper.Throw((new SyntaxError("Expected \")\"")));
+                            ExceptionHelper.ThrowSyntaxError("Expected \")\"");
                     }
+
                     i++;
                     if (((state.CodeContext & (CodeContext.InExpression | CodeContext.InEval)) != 0 && operand is FunctionDefinition)
                         || (forNew && operand is Call))
                     {
-                        operand = new Expressions.Comma(operand, null);
+                        operand = new Comma(operand, null);
                     }
                 }
                 else
@@ -1401,7 +1432,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return _operationKind + "(" + first + (second != null ? ", " + second : "") + ")";
+            return _operationKind + "(" + _left + (_right != null ? ", " + _right : "") + ")";
         }
     }
 }

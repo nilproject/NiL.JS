@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
-using System.Collections.Generic;
 
 #if NET40
 using NiL.JS.Backward;
@@ -176,7 +176,7 @@ namespace NiL.JS.Core.Functions
             var argumentsObject = Expression.Condition(
                 Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
                 argumentsObjectPrm,
-                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.EvaluateArgs).GetMethodInfo(), arguments, context)));
+                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(), arguments, context)));
 
             if (_forceInstance)
             {
@@ -299,7 +299,7 @@ namespace NiL.JS.Core.Functions
             var argumentsObject = Expression.Condition(
                 Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
                 argumentsObjectPrm,
-                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.EvaluateArgs).GetMethodInfo(), arguments, context)));
+                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(), arguments, context)));
 
             if (_parameters.Length == 0)
             {

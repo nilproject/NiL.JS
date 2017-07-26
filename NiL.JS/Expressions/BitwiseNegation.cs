@@ -29,9 +29,9 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            tempContainer._iValue = ~Tools.JSObjectToInt32(first.Evaluate(context));
-            tempContainer._valueType = JSValueType.Integer;
-            return tempContainer;
+            _tempContainer._iValue = ~Tools.JSObjectToInt32(_left.Evaluate(context));
+            _tempContainer._valueType = JSValueType.Integer;
+            return _tempContainer;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "~" + first;
+            return "~" + _left;
         }
     }
 }

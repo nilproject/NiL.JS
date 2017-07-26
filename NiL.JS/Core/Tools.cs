@@ -1923,7 +1923,7 @@ namespace NiL.JS.Core
             if (reassignLen)
             {
                 if (length._valueType == JSValueType.Property)
-                    ((length._oValue as GsPropertyPair).setter ?? Function.Empty).Call(src, new Arguments() { result });
+                    ((length._oValue as PropertyPair).setter ?? Function.Empty).Call(src, new Arguments() { result });
                 else
                     length.Assign(result);
             }
@@ -1956,7 +1956,7 @@ namespace NiL.JS.Core
                             goDeep = true;
                         }
                         if (evalProps && value._valueType == JSValueType.Property)
-                            value = (value._oValue as GsPropertyPair).getter == null ? JSValue.undefined : (value._oValue as GsPropertyPair).getter.Call(src, null).CloneImpl(false);
+                            value = (value._oValue as PropertyPair).getter == null ? JSValue.undefined : (value._oValue as PropertyPair).getter.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (temp._data[element.Key] == null)
@@ -1979,7 +1979,7 @@ namespace NiL.JS.Core
                         if (!value.Exists)
                             continue;
                         if (evalProps && value._valueType == JSValueType.Property)
-                            value = (value._oValue as GsPropertyPair).getter == null ? JSValue.undefined : (value._oValue as GsPropertyPair).getter.Call(src, null).CloneImpl(false);
+                            value = (value._oValue as PropertyPair).getter == null ? JSValue.undefined : (value._oValue as PropertyPair).getter.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
@@ -2041,7 +2041,7 @@ namespace NiL.JS.Core
         {
             if (property._valueType != JSValueType.Property)
                 return property;
-            var getter = property._oValue as GsPropertyPair;
+            var getter = property._oValue as PropertyPair;
             if (getter == null || getter.getter == null)
                 return JSValue.undefined;
             property = getter.getter.Call(target, null);
@@ -2077,13 +2077,17 @@ namespace NiL.JS.Core
             var fb = p >> 8;
             if (fb != 0x0 && fb != 0x16 && fb != 0x18 && fb != 0x20 && fb != 0x30 && fb != 0xFE)
                 return false;
+
             for (var i = 0; i < TrimChars.Length; i++)
+            {
                 if (p == TrimChars[i])
                     return true;
+            }
+
             return false;
         }
 
-        internal static Arguments EvaluateArgs(Expressions.Expression[] arguments, Context initiator)
+        internal static Arguments CreateArguments(Expressions.Expression[] arguments, Context initiator)
         {
             Arguments argumentsObject = new Arguments(initiator);
             IList<JSValue> spreadSource = null;
@@ -2258,7 +2262,7 @@ namespace NiL.JS.Core
                     return "Date";
                 case JSValueType.Property:
                     {
-                        var prop = v._oValue as GsPropertyPair;
+                        var prop = v._oValue as PropertyPair;
                         if (prop != null)
                         {
                             var tempStr = "";

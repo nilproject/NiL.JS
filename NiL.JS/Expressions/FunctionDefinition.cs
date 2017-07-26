@@ -15,6 +15,8 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class ParameterDescriptor : VariableDescriptor
     {
+        internal ObjectDesctructor destructor;
+
         public bool IsRest { get; private set; }
 
         internal ParameterDescriptor(string name, bool rest, int depth)
@@ -118,7 +120,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return kind != FunctionKind.Arrow 
+                return kind != FunctionKind.Arrow
                     && kind != FunctionKind.AsyncArrow;
             }
         }
@@ -174,7 +176,7 @@ namespace NiL.JS.Expressions
         internal static Expression Parse(ParseInfo state, ref int index, FunctionKind kind)
         {
             string code = state.Code;
-            int i = index;
+            int position = index;
             switch (kind)
             {
                 case FunctionKind.AnonymousFunction:
@@ -184,29 +186,29 @@ namespace NiL.JS.Expressions
                     }
                 case FunctionKind.Function:
                     {
-                        if (!Parser.Validate(code, "function", ref i))
+                        if (!Parser.Validate(code, "function", ref position))
                             return null;
 
-                        if (code[i] == '*')
+                        if (code[position] == '*')
                         {
                             kind = FunctionKind.Generator;
-                            i++;
+                            position++;
                         }
-                        else if ((code[i] != '(') && (!Tools.IsWhiteSpace(code[i])))
+                        else if ((code[position] != '(') && (!Tools.IsWhiteSpace(code[position])))
                             return null;
 
                         break;
                     }
                 case FunctionKind.Getter:
                     {
-                        if (!Parser.Validate(code, "get ", ref i))
+                        if (!Parser.Validate(code, "get ", ref position))
                             return null;
 
                         break;
                     }
                 case FunctionKind.Setter:
                     {
-                        if (!Parser.Validate(code, "set ", ref i))
+                        if (!Parser.Validate(code, "set ", ref position))
                             return null;
 
                         break;
@@ -214,10 +216,10 @@ namespace NiL.JS.Expressions
                 case FunctionKind.MethodGenerator:
                 case FunctionKind.Method:
                     {
-                        if (code[i] == '*')
+                        if (code[position] == '*')
                         {
                             kind = FunctionKind.MethodGenerator;
-                            i++;
+                            position++;
                         }
                         else if (kind == FunctionKind.MethodGenerator)
                             throw new ArgumentException("mode");
@@ -230,12 +232,12 @@ namespace NiL.JS.Expressions
                     }
                 case FunctionKind.AsyncFunction:
                     {
-                        if (!Parser.Validate(code, "async", ref i))
+                        if (!Parser.Validate(code, "async", ref position))
                             return null;
 
-                        Tools.SkipSpaces(code, ref i);
+                        Tools.SkipSpaces(code, ref position);
 
-                        if (!Parser.Validate(code, "function", ref i))
+                        if (!Parser.Validate(code, "function", ref position))
                             return null;
 
                         break;
@@ -244,100 +246,115 @@ namespace NiL.JS.Expressions
                     throw new NotImplementedException(kind.ToString());
             }
 
-            Tools.SkipSpaces(state.Code, ref i);
+            Tools.SkipSpaces(state.Code, ref position);
 
             var parameters = new List<ParameterDescriptor>();
             CodeBlock body = null;
             string name = null;
             bool arrowWithSunglePrm = false;
             int nameStartPos = 0;
+            bool containsDestructuringPrms = false;
 
             if (kind != FunctionKind.Arrow)
             {
-                if (code[i] != '(')
+                if (code[position] != '(')
                 {
-                    nameStartPos = i;
-                    if (Parser.ValidateName(code, ref i, false, true, state.strict))
-                        name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
-                    else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateString(code, ref i, false))
-                        name = Tools.Unescape(code.Substring(nameStartPos + 1, i - nameStartPos - 2), state.strict);
-                    else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateNumber(code, ref i))
-                        name = Tools.Unescape(code.Substring(nameStartPos, i - nameStartPos), state.strict);
+                    nameStartPos = position;
+                    if (Parser.ValidateName(code, ref position, false, true, state.strict))
+                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.strict);
+                    else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateString(code, ref position, false))
+                        name = Tools.Unescape(code.Substring(nameStartPos + 1, position - nameStartPos - 2), state.strict);
+                    else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateNumber(code, ref position))
+                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.strict);
                     else
-                        ExceptionHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, i - nameStartPos);
+                        ExceptionHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, position - nameStartPos);
 
-                    Tools.SkipSpaces(code, ref i);
+                    Tools.SkipSpaces(code, ref position);
 
-                    if (code[i] != '(')
-                        ExceptionHelper.ThrowUnknownToken(code, i);
+                    if (code[position] != '(')
+                        ExceptionHelper.ThrowUnknownToken(code, position);
                 }
                 else if (kind == FunctionKind.Getter || kind == FunctionKind.Setter)
                     ExceptionHelper.ThrowSyntaxError("Getter and Setter must have name", code, index);
                 else if (kind == FunctionKind.Method || kind == FunctionKind.MethodGenerator)
                     ExceptionHelper.ThrowSyntaxError("Method must have name", code, index);
 
-                i++;
+                position++;
             }
-            else if (code[i] != '(')
+            else if (code[position] != '(')
             {
                 arrowWithSunglePrm = true;
             }
             else
             {
-                i++;
+                position++;
             }
 
-            Tools.SkipSpaces(code, ref i);
+            Tools.SkipSpaces(code, ref position);
 
-            if (code[i] == ',')
-                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
+            if (code[position] == ',')
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, position);
 
-            while (code[i] != ')')
+            while (code[position] != ')')
             {
                 if (parameters.Count == 255 || (kind == FunctionKind.Setter && parameters.Count == 1) || kind == FunctionKind.Getter)
                     ExceptionHelper.ThrowSyntaxError(string.Format(Strings.TooManyArgumentsForFunction, name), code, index);
 
-                bool rest = Parser.Validate(code, "...", ref i);
+                bool rest = Parser.Validate(code, "...", ref position);
 
-                int n = i;
-                if (!Parser.ValidateName(code, ref i, state.strict))
-                    ExceptionHelper.ThrowUnknownToken(code, nameStartPos);
+                Expression destructor = null;
+                int n = position;
+                if (!Parser.ValidateName(code, ref position, state.strict))
+                {
+                    if (code[position] == '{' || code[position] == '[')
+                    {
+                        destructor = ExpressionTree.Parse(state, ref position, processComma: false);
+                        containsDestructuringPrms = true;
+                    }
 
-                var pname = Tools.Unescape(code.Substring(n, i - n), state.strict);
+                    if (destructor == null)
+                        ExceptionHelper.ThrowUnknownToken(code, nameStartPos);
+                }
+
+                var pname = Tools.Unescape(code.Substring(n, position - n), state.strict);
                 var desc = new ParameterReference(pname, rest, state.lexicalScopeLevel + 1)
                 {
                     Position = n,
-                    Length = i - n
+                    Length = position - n
                 }.Descriptor as ParameterDescriptor;
+
+                if (destructor != null)
+                    desc.destructor = new ObjectDesctructor(destructor);
+
                 parameters.Add(desc);
 
-                Tools.SkipSpaces(state.Code, ref i);
+                Tools.SkipSpaces(state.Code, ref position);
                 if (arrowWithSunglePrm)
                 {
-                    i--;
+                    position--;
                     break;
                 }
 
-                if (code[i] == '=')
+                if (code[position] == '=')
                 {
                     if (kind == FunctionKind.Arrow)
-                        ExceptionHelper.ThrowSyntaxError("Parameters of arrow-function cannot have an initializer", code, i);
+                        ExceptionHelper.ThrowSyntaxError("Parameters of arrow-function cannot have an initializer", code, position);
 
                     if (rest)
-                        ExceptionHelper.ThrowSyntaxError("Rest parameters can not have an initializer", code, i);
+                        ExceptionHelper.ThrowSyntaxError("Rest parameters can not have an initializer", code, position);
                     do
-                        i++;
-                    while (Tools.IsWhiteSpace(code[i]));
-                    desc.initializer = ExpressionTree.Parse(state, ref i, false, false) as Expression;
+                        position++;
+                    while (Tools.IsWhiteSpace(code[position]));
+                    desc.initializer = ExpressionTree.Parse(state, ref position, false, false) as Expression;
                 }
 
-                if (code[i] == ',')
+                if (code[position] == ',')
                 {
                     if (rest)
-                        ExceptionHelper.ThrowSyntaxError("Rest parameters must be the last in parameters list", code, i);
+                        ExceptionHelper.ThrowSyntaxError("Rest parameters must be the last in parameters list", code, position);
                     do
-                        i++;
-                    while (Tools.IsWhiteSpace(code[i]));
+                        position++;
+                    while (Tools.IsWhiteSpace(code[position]));
                 }
             }
 
@@ -347,17 +364,17 @@ namespace NiL.JS.Expressions
                     ExceptionHelper.ThrowSyntaxError("Setter must have only one argument", code, index);
             }
 
-            i++;
-            Tools.SkipSpaces(code, ref i);
+            position++;
+            Tools.SkipSpaces(code, ref position);
 
             if (kind == FunctionKind.Arrow)
             {
-                if (!Parser.Validate(code, "=>", ref i))
-                    ExceptionHelper.ThrowSyntaxError("Expected \"=>\"", code, i);
-                Tools.SkipSpaces(code, ref i);
+                if (!Parser.Validate(code, "=>", ref position))
+                    ExceptionHelper.ThrowSyntaxError("Expected \"=>\"", code, position);
+                Tools.SkipSpaces(code, ref position);
             }
 
-            if (code[i] != '{')
+            if (code[position] != '{')
             {
                 var oldFunctionScopeLevel = state.functionScopeLevel;
                 state.functionScopeLevel = ++state.lexicalScopeLevel;
@@ -368,7 +385,7 @@ namespace NiL.JS.Expressions
                     {
                         body = new CodeBlock(new CodeNode[]
                         {
-                            new Return(ExpressionTree.Parse(state, ref i, processComma: false) as Expression)
+                            new Return(ExpressionTree.Parse(state, ref position, processComma: false) as Expression)
                         })
                         {
                             _variables = new VariableDescriptor[0]
@@ -378,7 +395,7 @@ namespace NiL.JS.Expressions
                         body.Length = body._lines[0].Length;
                     }
                     else
-                        ExceptionHelper.ThrowUnknownToken(code, i);
+                        ExceptionHelper.ThrowUnknownToken(code, position);
                 }
                 finally
                 {
@@ -404,7 +421,34 @@ namespace NiL.JS.Expressions
                     state.AllowBreak.Push(false);
                     state.AllowContinue.Push(false);
                     state.AllowDirectives = true;
-                    body = CodeBlock.Parse(state, ref i) as CodeBlock;
+                    body = CodeBlock.Parse(state, ref position) as CodeBlock;
+                    if (containsDestructuringPrms)
+                    {
+                        var destructuringTargets = new List<VariableDescriptor>();
+                        var assignments = new List<Expression>();
+                        for (var i = 0; i < parameters.Count; i++)
+                        {
+                            if (parameters[i].destructor != null)
+                            {
+                                var targets = parameters[i].destructor.GetTargetVariables();
+                                for (var j = 0; j < targets.Count; j++)
+                                {
+                                    destructuringTargets.Add(new VariableDescriptor(targets[j].Name, state.functionScopeLevel));
+                                }
+
+                                assignments.Add(
+                                    new Assignment(
+                                        parameters[i].destructor,
+                                        new Property(
+                                            new GetArgumentsExpression(state.functionScopeLevel), new Constant(state.GetCachedValue(i)))));
+                            }
+                        }
+
+                        var newLines = new CodeNode[body._lines.Length + 1];
+                        System.Array.Copy(body._lines, 0, newLines, 1, body._lines.Length);
+                        newLines[0] = new VariableDefinition(destructuringTargets.ToArray(), assignments.ToArray(), VariableKind.AutoGeneratedParameters);
+                        body._lines = newLines;
+                    }
                 }
                 finally
                 {
@@ -415,6 +459,7 @@ namespace NiL.JS.Expressions
                     state.Labels = labels;
                     state.AllowReturn--;
                 }
+
                 if (kind == FunctionKind.Function && string.IsNullOrEmpty(name))
                     kind = FunctionKind.AnonymousFunction;
             }
@@ -442,7 +487,7 @@ namespace NiL.JS.Expressions
                 _body = body,
                 kind = kind,
                 Position = index,
-                Length = i - index,
+                Length = position - index,
 #if DEBUG
                 trace = body.directives != null ? body.directives.Contains("debug trace") : false
 #endif
@@ -512,42 +557,42 @@ namespace NiL.JS.Expressions
             // то прямо тут надо было бы разбирать тот оператор, который стоит после определения функции,
             // что не разумно
             {
-                var tindex = i;
-                while (i < code.Length && Tools.IsWhiteSpace(code[i]) && !Tools.IsLineTerminator(code[i]))
-                    i++;
+                var tindex = position;
+                while (position < code.Length && Tools.IsWhiteSpace(code[position]) && !Tools.IsLineTerminator(code[position]))
+                    position++;
 
-                if (i < code.Length && code[i] == '(')
+                if (position < code.Length && code[position] == '(')
                 {
                     var args = new List<Expression>();
-                    i++;
+                    position++;
                     for (;;)
                     {
-                        while (Tools.IsWhiteSpace(code[i]))
-                            i++;
-                        if (code[i] == ')')
+                        while (Tools.IsWhiteSpace(code[position]))
+                            position++;
+                        if (code[position] == ')')
                             break;
-                        else if (code[i] == ',')
+                        else if (code[position] == ',')
                             do
-                                i++;
-                            while (Tools.IsWhiteSpace(code[i]));
-                        args.Add(ExpressionTree.Parse(state, ref i, false, false));
+                                position++;
+                            while (Tools.IsWhiteSpace(code[position]));
+                        args.Add(ExpressionTree.Parse(state, ref position, false, false));
                     }
 
-                    i++;
-                    index = i;
-                    while (i < code.Length && Tools.IsWhiteSpace(code[i]))
-                        i++;
+                    position++;
+                    index = position;
+                    while (position < code.Length && Tools.IsWhiteSpace(code[position]))
+                        position++;
 
-                    if (i < code.Length && code[i] == ';')
+                    if (position < code.Length && code[position] == ';')
                         ExceptionHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
 
                     return new Call(func, args.ToArray());
                 }
                 else
-                    i = tindex;
+                    position = tindex;
             }
 
-            if ((state.CodeContext & CodeContext.InExpression) == 0 
+            if ((state.CodeContext & CodeContext.InExpression) == 0
                 && (kind != FunctionKind.Arrow || (state.CodeContext & CodeContext.InEval) == 0))
             {
                 if (string.IsNullOrEmpty(name))
@@ -563,7 +608,7 @@ namespace NiL.JS.Expressions
                 state.Variables.Add(func.reference._descriptor);
             }
 
-            index = i;
+            index = position;
             return func;
         }
 

@@ -10,9 +10,9 @@ namespace NiL.JS.Expressions
 #endif
     public abstract class Expression : CodeNode
     {
-        internal Expression first;
-        internal Expression second;
-        internal JSValue tempContainer;
+        internal Expression _left;
+        internal Expression _right;
+        internal JSValue _tempContainer;
         internal CodeContext _codeContext;
 
         internal protected virtual PredictedType ResultType
@@ -28,8 +28,8 @@ namespace NiL.JS.Expressions
             get { return false; }
         }
 
-        public Expression FirstOperand { get { return first; } }
-        public Expression SecondOperand { get { return second; } }
+        public Expression LeftOperand { get { return _left; } }
+        public Expression RightOperand { get { return _right; } }
 
         public override bool Eliminated
         {
@@ -39,10 +39,10 @@ namespace NiL.JS.Expressions
             }
             internal set
             {
-                if (first != null)
-                    first.Eliminated = true;
-                if (second != null)
-                    second.Eliminated = true;
+                if (_left != null)
+                    _left.Eliminated = true;
+                if (_right != null)
+                    _right.Eliminated = true;
                 base.Eliminated = value;
             }
         }
@@ -53,8 +53,8 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return (first == null || first.ContextIndependent)
-                    && (second == null || second.ContextIndependent);
+                return (_left == null || _left.ContextIndependent)
+                    && (_right == null || _right.ContextIndependent);
             }
         }
 
@@ -62,8 +62,8 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return (first != null && first.NeedDecompose)
-                    || (second != null && second.NeedDecompose);
+                return (_left != null && _left.NeedDecompose)
+                    || (_right != null && _right.NeedDecompose);
             }
         }
 
@@ -74,10 +74,10 @@ namespace NiL.JS.Expressions
 
         protected Expression(Expression first, Expression second, bool createTempContainer)
         {
-            this.first = first;
-            this.second = second;
+            this._left = first;
+            this._right = second;
             if (createTempContainer)
-                tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
@@ -85,8 +85,8 @@ namespace NiL.JS.Expressions
             _codeContext = codeContext;
             codeContext = codeContext | CodeContext.InExpression;
 
-            Parser.Build(ref first, expressionDepth + 1, variables, codeContext, message, stats, opts);
-            Parser.Build(ref second, expressionDepth + 1, variables, codeContext, message, stats, opts);
+            Parser.Build(ref _left, expressionDepth + 1, variables, codeContext, message, stats, opts);
+            Parser.Build(ref _right, expressionDepth + 1, variables, codeContext, message, stats, opts);
             if (this.ContextIndependent)
             {
                 if (message != null && !(this is RegExpExpression))
@@ -134,17 +134,17 @@ namespace NiL.JS.Expressions
 
         internal void baseOptimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            var f = first as CodeNode;
-            var s = second as CodeNode;
+            var f = _left as CodeNode;
+            var s = _right as CodeNode;
             if (f != null)
             {
                 f.Optimize(ref f, owner, message, opts, stats);
-                first = f as Expression;
+                _left = f as Expression;
             }
             if (s != null)
             {
                 s.Optimize(ref s, owner, message, opts, stats);
-                second = s as Expression;
+                _right = s as Expression;
             }
             if (ContextIndependent && !(this is Constant))
             {
@@ -178,18 +178,18 @@ namespace NiL.JS.Expressions
 
         protected internal override CodeNode[] GetChildsImpl()
         {
-            if (first != null && second != null)
+            if (_left != null && _right != null)
                 return new CodeNode[]{
-                    first,
-                    second
+                    _left,
+                    _right
                 };
-            if (first != null)
+            if (_left != null)
                 return new CodeNode[]{
-                    first
+                    _left
                 };
-            if (second != null)
+            if (_right != null)
                 return new CodeNode[]{
-                    second
+                    _right
                 };
             return null;
         }
@@ -217,27 +217,27 @@ namespace NiL.JS.Expressions
 
         public virtual void Decompose(ref Expression self, IList<CodeNode> result)
         {
-            if (first != null)
+            if (_left != null)
             {
-                first.Decompose(ref first, result);
+                _left.Decompose(ref _left, result);
             }
 
-            if (second != null)
+            if (_right != null)
             {
-                if (second.NeedDecompose && !(first is ExtractStoredValue))
+                if (_right.NeedDecompose && !(_left is ExtractStoredValue))
                 {
-                    result.Add(new StoreValue(first, LValueModifier));
-                    first = new ExtractStoredValue(first);
+                    result.Add(new StoreValue(_left, LValueModifier));
+                    _left = new ExtractStoredValue(_left);
                 }
 
-                second.Decompose(ref second, result);
+                _right.Decompose(ref _right, result);
             }
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            first?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            second?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _left?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _right?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
     }
 }

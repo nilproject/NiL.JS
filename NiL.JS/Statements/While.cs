@@ -54,7 +54,7 @@ namespace NiL.JS.Statements
                     ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare function in nested blocks.");
-                body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
+                body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции,
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
             state.AllowBreak.Pop();
@@ -162,7 +162,7 @@ namespace NiL.JS.Statements
             {
                 if (message != null)
                     message(MessageLevel.Warning, new CodeCoordinates(0, condition.Position, 2), "Useless conversion. Remove double negation in condition");
-                condition = (condition as Expression).first;
+                condition = (condition as Expression)._left;
             }
             try
             {
@@ -184,7 +184,7 @@ namespace NiL.JS.Statements
                 }
                 else if ((opts & Options.SuppressUselessExpressionsElimination) == 0
                         && ((this.condition is Expressions.ObjectDefinition && (this.condition as Expressions.ObjectDefinition).FieldNames.Length == 0)
-                            || (this.condition is ArrayDefinition && (this.condition as ArrayDefinition).Elements.Count == 0)))
+                            || (this.condition is ArrayDefinition && (this.condition as ArrayDefinition).Elements.Length == 0)))
                 {
                     _this = new InfinityLoop(this.body, this.labels);
                     this.condition.Eliminated = true;

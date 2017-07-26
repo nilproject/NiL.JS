@@ -42,7 +42,7 @@ namespace NiL.JS.Core
         {
             return System.Linq.Expressions.Expression.Call(
                 System.Linq.Expressions.Expression.Constant(this),
-                this.GetType().GetMethod(forAssign ? "EvaluateForWrite" : "Evaluate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
+                GetType().GetMethod(forAssign ? "EvaluateForWrite" : "Evaluate", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Context) }, null),
                 JITHelpers.ContextParameter
                 );
         }
@@ -61,7 +61,7 @@ namespace NiL.JS.Core
             return new CodeNode[0];
         }
 
-        internal protected virtual JSValue EvaluateForWrite(NiL.JS.Core.Context context)
+        internal protected virtual JSValue EvaluateForWrite(Context context)
         {
             ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
             return null;

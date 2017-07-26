@@ -14,7 +14,7 @@ namespace NiL.JS.Expressions
         private static JSValue writableNotExists = null;
         private Expression[] elements;
 
-        public ICollection<Expression> Elements { get { return elements; } }
+        public Expression[] Elements { get { return elements; } }
 
         protected internal override bool ContextIndependent
         {

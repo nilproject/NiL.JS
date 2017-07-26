@@ -16,7 +16,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                var pd = first.ResultType;
+                var pd = _left.ResultType;
                 switch (pd)
                 {
                     case PredictedType.Double:
@@ -47,79 +47,79 @@ namespace NiL.JS.Expressions
             int itemp;
             long ltemp;
             double dtemp;
-            var op = first.Evaluate(context);
+            var op = _left.Evaluate(context);
             if (op._valueType == Core.JSValueType.Integer)
             {
                 itemp = op._iValue;
-                op = second.Evaluate(context);
+                op = _right.Evaluate(context);
                 if (op._valueType == Core.JSValueType.Integer)
                 {
                     ltemp = (long)itemp + op._iValue;
                     if ((int)ltemp == ltemp)
                     {
-                        tempContainer._valueType = JSValueType.Integer;
-                        tempContainer._iValue = (int)ltemp;
+                        _tempContainer._valueType = JSValueType.Integer;
+                        _tempContainer._iValue = (int)ltemp;
                     }
                     else
                     {
-                        tempContainer._valueType = JSValueType.Double;
-                        tempContainer._dValue = (double)ltemp;
+                        _tempContainer._valueType = JSValueType.Double;
+                        _tempContainer._dValue = (double)ltemp;
                     }
                 }
                 else if (op._valueType == Core.JSValueType.Double)
                 {
-                    tempContainer._valueType = JSValueType.Double;
-                    tempContainer._dValue = itemp + op._dValue;
+                    _tempContainer._valueType = JSValueType.Double;
+                    _tempContainer._dValue = itemp + op._dValue;
                 }
                 else
                 {
-                    tempContainer._valueType = JSValueType.Integer;
-                    tempContainer._iValue = itemp;
-                    Addition.Impl(tempContainer, tempContainer, op);
+                    _tempContainer._valueType = JSValueType.Integer;
+                    _tempContainer._iValue = itemp;
+                    Addition.Impl(_tempContainer, _tempContainer, op);
                 }
             }
             else if (op._valueType == Core.JSValueType.Double)
             {
                 dtemp = op._dValue;
-                op = second.Evaluate(context);
+                op = _right.Evaluate(context);
                 if (op._valueType == Core.JSValueType.Integer)
                 {
-                    tempContainer._valueType = JSValueType.Double;
-                    tempContainer._dValue = dtemp + op._iValue;
+                    _tempContainer._valueType = JSValueType.Double;
+                    _tempContainer._dValue = dtemp + op._iValue;
                 }
                 else if (op._valueType == Core.JSValueType.Double)
                 {
-                    tempContainer._valueType = JSValueType.Double;
-                    tempContainer._dValue = dtemp + op._dValue;
+                    _tempContainer._valueType = JSValueType.Double;
+                    _tempContainer._dValue = dtemp + op._dValue;
                 }
                 else
                 {
-                    tempContainer._valueType = JSValueType.Double;
-                    tempContainer._dValue = dtemp;
-                    Addition.Impl(tempContainer, tempContainer, op);
+                    _tempContainer._valueType = JSValueType.Double;
+                    _tempContainer._dValue = dtemp;
+                    Addition.Impl(_tempContainer, _tempContainer, op);
                 }
             }
             else
             {
-                Addition.Impl(tempContainer, op.CloneImpl(false), second.Evaluate(context));
+                Addition.Impl(_tempContainer, op.CloneImpl(false), _right.Evaluate(context));
             }
-            return tempContainer;
+            return _tempContainer;
         }
 #if !PORTABLE && !NET35
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
-            var ft = first.TryCompile(false, false, null, dynamicValues);
-            var st = second.TryCompile(false, false, null, dynamicValues);
+            var ft = _left.TryCompile(false, false, null, dynamicValues);
+            var st = _right.TryCompile(false, false, null, dynamicValues);
             if (ft == st) // null == null
                 return null;
             if (ft == null && st != null)
             {
-                second = new CompiledNode(second, st, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
+                _right = new CompiledNode(_right, st, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
                 return null;
             }
             if (ft != null && st == null)
             {
-                first = new CompiledNode(first, ft, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
+                _left = new CompiledNode(_left, ft, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
                 return null;
             }
             if (ft.Type == st.Type && (ft.Type == typeof(double) || ft.Type == expectedType))
@@ -136,7 +136,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " + " + second + ")";
+            return "(" + _left + " + " + _right + ")";
         }
     }
 }

@@ -101,7 +101,7 @@ namespace NiL.JS.Statements
                             ExceptionHelper.ThrowSyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at ", state.Code, start, i - start);
                     }
 
-                    result._variable = new GetVariable(varName, state.lexicalScopeLevel) { Position = start, Length = i - start, ScopeLevel = state.lexicalScopeLevel };
+                    result._variable = new Variable(varName, state.lexicalScopeLevel) { Position = start, Length = i - start, ScopeLevel = state.lexicalScopeLevel };
 
                     Tools.SkipSpaces(state.Code, ref i);
 
@@ -114,14 +114,14 @@ namespace NiL.JS.Statements
                         if (defVal == null)
                             return defVal;
 
-                        Expression exp = new AssignmentOperatorCache(result._variable as GetVariable ?? (result._variable as VariableDefinition).initializers[0] as GetVariable);
+                        Expression exp = new AssignmentOperatorCache(result._variable as Variable ?? (result._variable as VariableDefinition).initializers[0] as Variable);
                         exp = new Assignment(exp, defVal)
                         {
                             Position = exp.Position,
                             Length = defVal.EndPosition - exp.Position
                         };
 
-                        if (result._variable == exp.first.first)
+                        if (result._variable == exp._left._left)
                             result._variable = exp;
                         else
                             (result._variable as VariableDefinition).initializers[0] = exp;
@@ -206,12 +206,12 @@ namespace NiL.JS.Statements
                 if (varialeDefStat != null)
                 {
                     _variable.Evaluate(context);
-                    variable = (varialeDefStat.initializers[0].first ?? varialeDefStat.initializers[0]).EvaluateForWrite(context);
+                    variable = (varialeDefStat.initializers[0]._left ?? varialeDefStat.initializers[0]).EvaluateForWrite(context);
                 }
                 else if (_variable is Assignment)
                 {
                     _variable.Evaluate(context);
-                    variable = (_variable as Assignment).first.Evaluate(context);
+                    variable = (_variable as Assignment)._left.Evaluate(context);
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
@@ -314,9 +314,9 @@ namespace NiL.JS.Statements
             Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
             if (_variable is Expressions.Comma)
             {
-                if ((_variable as Expressions.Comma).SecondOperand != null)
+                if ((_variable as Expressions.Comma).RightOperand != null)
                     throw new InvalidOperationException("Invalid left-hand side in for-in");
-                _variable = (_variable as Expressions.Comma).FirstOperand;
+                _variable = (_variable as Expressions.Comma).LeftOperand;
             }
 
             if (message != null

@@ -29,7 +29,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            return !(bool)first.Evaluate(context);
+            return !(bool)_left.Evaluate(context);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -39,7 +39,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "!" + first;
+            return "!" + _left;
         }
     }
 }

@@ -31,9 +31,9 @@ namespace NiL.JS.Expressions
         {
             baseOptimize(ref _this, owner, message, opts, stats);
             if (_this == this)
-                if (first.ResultType == PredictedType.Number && second.ResultType == PredictedType.Number)
+                if (_left.ResultType == PredictedType.Number && _right.ResultType == PredictedType.Number)
                 {
-                    _this = new NumberMoreOrEqual(first, second);
+                    _this = new NumberMoreOrEqual(_left, _right);
                     return;
                 }
         }
@@ -45,7 +45,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " >= " + second + ")";
+            return "(" + _left + " >= " + _right + ")";
         }
     }
 }

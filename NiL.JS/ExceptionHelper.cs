@@ -131,6 +131,15 @@ namespace NiL.JS
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [DebuggerStepThrough]
+        internal static void ThrowReferenceError(string message, string code, int position, int length)
+        {
+            var cord = CodeCoordinates.FromTextPosition(code, position, 0);
+            Throw(new ReferenceError(message + " " + cord));
+        }
+
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
+        [DebuggerStepThrough]
         internal static void ThrowReferenceError(string message)
         {
             Throw(new ReferenceError(message));

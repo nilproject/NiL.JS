@@ -31,11 +31,11 @@ namespace NiL.JS.Expressions
         {
             int itemp;
             double dtemp;
-            var op = first.Evaluate(context);
+            var op = _left.Evaluate(context);
             if (op._valueType == Core.JSValueType.Integer)
             {
                 itemp = op._iValue;
-                op = second.Evaluate(context);
+                op = _right.Evaluate(context);
                 if (op._valueType == Core.JSValueType.Integer)
                 {
                     return itemp < op._iValue;
@@ -46,17 +46,17 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    if (tempContainer == null)
-                        tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
-                    tempContainer._valueType = JSValueType.Integer;
-                    tempContainer._iValue = itemp;
-                    return Less.Check(tempContainer, op);
+                    if (_tempContainer == null)
+                        _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                    _tempContainer._valueType = JSValueType.Integer;
+                    _tempContainer._iValue = itemp;
+                    return Less.Check(_tempContainer, op);
                 }
             }
             else if (op._valueType == Core.JSValueType.Double)
             {
                 dtemp = op._dValue;
-                op = second.Evaluate(context);
+                op = _right.Evaluate(context);
                 if (op._valueType == Core.JSValueType.Integer)
                 {
                     return dtemp < op._iValue;
@@ -67,22 +67,22 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    if (tempContainer == null)
-                        tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
-                    tempContainer._valueType = JSValueType.Double;
-                    tempContainer._dValue = dtemp;
-                    return Less.Check(tempContainer, op);
+                    if (_tempContainer == null)
+                        _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                    _tempContainer._valueType = JSValueType.Double;
+                    _tempContainer._dValue = dtemp;
+                    return Less.Check(_tempContainer, op);
                 }
             }
             else
             {
-                if (tempContainer == null)
-                    tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
-                var temp = tempContainer;
+                if (_tempContainer == null)
+                    _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                var temp = _tempContainer;
                 temp.Assign(op);
-                tempContainer = null;
-                var res = Less.Check(temp, second.Evaluate(context));
-                tempContainer = temp;
+                _tempContainer = null;
+                var res = Less.Check(temp, _right.Evaluate(context));
+                _tempContainer = temp;
                 return res;
             }
         }
@@ -94,7 +94,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " < " + second + ")";
+            return "(" + _left + " < " + _right + ")";
         }
     }
 }

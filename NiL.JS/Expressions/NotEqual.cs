@@ -34,7 +34,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " != " + second + ")";
+            return "(" + _left + " != " + _right + ")";
         }
     }
 }

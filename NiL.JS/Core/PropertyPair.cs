@@ -2,7 +2,7 @@
 
 namespace NiL.JS.Core
 {
-    public sealed class GsPropertyPair
+    public sealed class PropertyPair
     {
         internal Function getter;
         internal Function setter;
@@ -10,9 +10,9 @@ namespace NiL.JS.Core
         public Function Getter { get { return getter; } }
         public Function Setter { get { return setter; } }
 
-        internal GsPropertyPair() { }
+        internal PropertyPair() { }
 
-        public GsPropertyPair(Function getter, Function setter)
+        public PropertyPair(Function getter, Function setter)
         {
             this.getter = getter;
             this.setter = setter;

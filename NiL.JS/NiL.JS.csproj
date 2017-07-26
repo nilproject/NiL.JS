@@ -262,7 +262,8 @@
     <Compile Include="ExportTable.cs" />
     <Compile Include="Expressions\AwaitExpression.cs" />
     <Compile Include="Expressions\ExtractStoredValue.cs" />
-    <Compile Include="Expressions\GetSetPropertyPair.cs" />
+    <Compile Include="Expressions\ObjectDesctructuringAcceptor.cs" />
+    <Compile Include="Expressions\PropertyPair.cs" />
     <Compile Include="Expressions\NewTarget.cs" />
     <Compile Include="Expressions\SuspendableExpression.cs" />
     <Compile Include="Expressions\TemplateString.cs" />
@@ -394,7 +395,7 @@
     <Compile Include="Expressions\In.cs" />
     <Compile Include="Expressions\StrictEqual.cs" />
     <Compile Include="Statements\Switch.cs" />
-    <Compile Include="Expressions\GetVariable.cs" />
+    <Compile Include="Expressions\Variable.cs" />
     <Compile Include="Expressions\ObjectDefinition.cs" />
     <Compile Include="Expressions\Assignment.cs" />
     <Compile Include="Expressions\Call.cs" />

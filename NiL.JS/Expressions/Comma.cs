@@ -13,7 +13,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return (second ?? first).ResultType;
+                return (_right ?? _left).ResultType;
             }
         }
 
@@ -31,12 +31,12 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             JSValue temp = null;
-            temp = first.Evaluate(context);
-            if (second != null)
+            temp = _left.Evaluate(context);
+            if (_right != null)
             {
                 if (context != null)
                     context._objectSource = null;
-                temp = second.Evaluate(context);
+                temp = _right.Evaluate(context);
             }
             if (context != null)
                 context._objectSource = null;
@@ -49,15 +49,15 @@ namespace NiL.JS.Expressions
         {
             this._codeContext = codeContext;
 
-            if (message != null && expressionDepth<= 1 && first != null && second != null)
+            if (message != null && expressionDepth<= 1 && _left != null && _right != null)
                 message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use comma as a statements delimiter");
-            if (second == null)
+            if (_right == null)
             {
-                _this = first;
+                _this = _left;
                 return true;
             }
-            Parser.Build(ref first, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref second, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _left, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _right, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
             return false;
         }
 
@@ -68,7 +68,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + (second != null ? ", " + second : "") + ")";
+            return "(" + _left + (_right != null ? ", " + _right : "") + ")";
         }
     }
 }

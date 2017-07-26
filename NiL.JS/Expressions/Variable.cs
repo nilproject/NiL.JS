@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    public sealed class GetArgumentsExpression : GetVariable
+    public sealed class GetArgumentsExpression : Variable
     {
         internal GetArgumentsExpression(int functionDepth)
             : base("arguments", functionDepth)
@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    public class GetVariable : VariableReference
+    public class Variable : VariableReference
     {
         private string _variableName;
         internal bool _SuspendThrow;
@@ -60,7 +60,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal GetVariable(string name, int scopeLevel)
+        internal Variable(string name, int scopeLevel)
         {
             int fake = 0;
             if (!Parser.ValidateName(name, fake, true, true, false))
@@ -207,8 +207,8 @@ namespace NiL.JS.Expressions
                     CodeNode lastAssign = null;
                     for (var i = assigns.Count; i-- > 0;)
                     {
-                        if (assigns[i].first == this
-                            || ((assigns[i].first is AssignmentOperatorCache) && assigns[i].first.first == this))
+                        if (assigns[i]._left == this
+                            || ((assigns[i]._left is AssignmentOperatorCache) && assigns[i]._left._left == this))
                         {
                             // оптимизация не применяется
                             lastAssign = null;
@@ -241,9 +241,9 @@ namespace NiL.JS.Expressions
                         }
                     }
                     var assign = lastAssign as Assignment;
-                    if (assign != null && (assign._codeContext & CodeContext.Conditional) == 0 && assign.second is Constant)
+                    if (assign != null && (assign._codeContext & CodeContext.Conditional) == 0 && assign._right is Constant)
                     {
-                        _this = assign.second;
+                        _this = assign._right;
                     }
                 }
             }
