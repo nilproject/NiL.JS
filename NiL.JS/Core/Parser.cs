@@ -262,6 +262,9 @@ namespace NiL.JS.Core
         public static bool ValidateName(string code, ref int index, bool strict) => ValidateName(code, ref index, true, true, strict);
 
         [CLSCompliant(false)]
+        public static bool ValidateName(string code, int index, bool strict) => ValidateName(code, ref index, true, true, strict);
+
+        [CLSCompliant(false)]
         public static bool ValidateName(string name, int index, bool reserveControl, bool allowEscape, bool strict) => ValidateName(name, ref index, reserveControl, allowEscape, strict);
 
         public static bool ValidateName(string code, ref int index, bool checkReservedWords, bool allowEscape, bool strict)

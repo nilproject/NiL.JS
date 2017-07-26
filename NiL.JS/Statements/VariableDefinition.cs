@@ -84,8 +84,26 @@ namespace NiL.JS.Statements
 
                 position = s;*/
 
+                if (state.Code[position] != '[' && state.Code[position] != '{' && !Parser.ValidateName(state.Code, position, state.strict))
+                {
+                    if (Parser.ValidateName(state.Code, ref position, false, true, state.strict))
+                        ExceptionHelper.ThrowSyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.strict) + "\" is a reserved word, but used as a variable. " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
+                    ExceptionHelper.ThrowSyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
+                }
+
                 var expression = ExpressionTree.Parse(state, ref position, processComma: false, forForLoop: forForLoop);
-                if (!(expression is VariableReference))
+                if (expression is VariableReference)
+                {
+                    var name = expression.ToString();
+                    if (state.strict)
+                    {
+                        if (name == "arguments" || name == "eval")
+                            ExceptionHelper.ThrowSyntaxError("Varible name cannot be \"arguments\" or \"eval\" in strict mode", state.Code, s, position - s);
+                    }
+
+                    names.Add(name);
+                }
+                else
                 {
                     bool valid = false;
                     var expr = expression as ExpressionTree;
