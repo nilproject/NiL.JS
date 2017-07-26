@@ -602,10 +602,26 @@ namespace NiL.JS.BaseLibrary
             var ceaw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsArguments || _functionDefinition._functionInfo.ContainsWith;
             int min = System.Math.Min(args.length, _functionDefinition.parameters.Length - (_functionDefinition._functionInfo.ContainsRestParameters ? 1 : 0));
 
+            JSValue[] defaultValues = null;
             Array restArray = null;
             if (_functionDefinition._functionInfo.ContainsRestParameters)
             {
                 restArray = new Array();
+            }
+
+            for (var i = 0; i < _functionDefinition.parameters.Length; i++)
+            {
+                JSValue t = args[i];
+                var prm = _functionDefinition.parameters[i];
+                if (!t.Defined)
+                {
+                    if (prm.initializer != null)
+                    {
+                        if (defaultValues == null)
+                            defaultValues = new JSValue[_functionDefinition.parameters.Length];
+                        defaultValues[i] = prm.initializer.Evaluate(internalContext);
+                    }
+                }
             }
 
             for (var i = 0; i < min; i++)
@@ -615,7 +631,7 @@ namespace NiL.JS.BaseLibrary
                 if (!t.Defined)
                 {
                     if (prm.initializer != null)
-                        t = prm.initializer.Evaluate(internalContext);
+                        t = defaultValues?[i] ?? undefined;
                     else
                         t = undefined;
                 }
@@ -674,11 +690,11 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (ceaw || parameter.assignments != null)
                     {
-                        parameter.cacheRes = parameter.initializer.Evaluate(internalContext).CloneImpl(false);
+                        parameter.cacheRes = (defaultValues?[i] ?? undefined).CloneImpl(false);
                     }
                     else
                     {
-                        parameter.cacheRes = parameter.initializer.Evaluate(internalContext);
+                        parameter.cacheRes = defaultValues?[i] ?? undefined;
                         if (!parameter.cacheRes.Defined)
                             parameter.cacheRes = undefined;
                     }

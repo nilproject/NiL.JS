@@ -233,7 +233,7 @@ console.asserta(() => Object.call(Error).__proto__ == Object.prototype);
 
 if ((function(a = 5) { return a })() != 5)
     throw new 'Something wrong with default parameter value';
-    
+
 if ("1234".substring(0, null) !== "")
     throw "null should be used as 0";
 
@@ -249,7 +249,7 @@ if (_should_be_changed_ !== '12')
     throw "Incorrect arguments processing in MethodProxy";
 
 console.asserta(() => (new class {}).toString(), {}.toString());
-    
+
 console.asserta(() => 0b11, 3);
 console.asserta(() => 0o11, 9);
 console.asserta(() => 0x11, 17);
@@ -284,3 +284,11 @@ for (let i = 0; i < 1; i++) {
 })();
 
 console.asserta(() => 1..__proto__, Number.prototype);
+
+(function () {
+    function f({ a } = { a: 1 }, c = f({ a: 1 }, 2)) {
+        if (!c)
+            return 1;
+    }
+    f();
+})();
