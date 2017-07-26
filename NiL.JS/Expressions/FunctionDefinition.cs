@@ -15,8 +15,7 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class ParameterDescriptor : VariableDescriptor
     {
-        internal ObjectDesctructor destructor;
-
+        public ObjectDesctructor Destructor { get; internal set; }
         public bool IsRest { get; private set; }
 
         internal ParameterDescriptor(string name, bool rest, int depth)
@@ -329,7 +328,7 @@ namespace NiL.JS.Expressions
                 var desc = reference.Descriptor as ParameterDescriptor;
 
                 if (destructor != null)
-                    desc.destructor = new ObjectDesctructor(destructor);
+                    desc.Destructor = new ObjectDesctructor(destructor);
 
                 parameters.Add(desc);
 
@@ -433,15 +432,15 @@ namespace NiL.JS.Expressions
                         var assignments = new List<Expression>();
                         for (var i = 0; i < parameters.Count; i++)
                         {
-                            if (parameters[i].destructor != null)
+                            if (parameters[i].Destructor != null)
                             {
-                                var targets = parameters[i].destructor.GetTargetVariables();
+                                var targets = parameters[i].Destructor.GetTargetVariables();
                                 for (var j = 0; j < targets.Count; j++)
                                 {
                                     destructuringTargets.Add(new VariableDescriptor(targets[j].Name, state.functionScopeLevel));
                                 }
 
-                                assignments.Add(new Assignment(parameters[i].destructor, parameters[i].references[0]));
+                                assignments.Add(new Assignment(parameters[i].Destructor, parameters[i].references[0]));
                             }
                         }
 

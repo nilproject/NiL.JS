@@ -1919,10 +1919,15 @@ namespace NiL.JS.Core
             if (value._valueType == JSValueType.String)
                 return value.ToString();
 
-            if (!value.Defined)
+            if (value._valueType == JSValueType.Date)
+                return value.ToPrimitiveValue_String_Value().ToString();
+
+            var primitive = value.ToPrimitiveValue_Value_String();
+            
+            if (!primitive.Defined)
                 return "";
 
-            return JSObjectToString(value.ToPrimitiveValue_Value_String());
+            return primitive.ToString();
         }
 
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)

@@ -718,8 +718,9 @@ namespace NiL.JS.BaseLibrary
                             parameter.cacheRes = JSValue.undefined;
                     }
                 }
+
                 parameter.cacheContext = internalContext;
-                if (parameter.destructor == null && (parameter.captured || ceaw))
+                if (parameter.Destructor == null && (parameter.captured || ceaw))
                 {
                     if (internalContext._variables == null)
                         internalContext._variables = getFieldsContainer();

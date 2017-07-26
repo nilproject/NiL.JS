@@ -615,7 +615,7 @@ namespace NiL.JS.BaseLibrary
                 return Tools.JSObjectToString(self);
 
             int pos0 = Tools.JSObjectToInt32(args[0], 0, 0, 0, true);
-            int pos1 = args[1].Exists ? Tools.JSObjectToInt32(args[1], 0, 0, 0, true) : selfStr.Length;
+            int pos1 = Tools.JSObjectToInt32(args[1], 0, selfStr.Length, 0, true);
 
             if (pos0 < 0)
                 pos0 += selfStr.Length;
