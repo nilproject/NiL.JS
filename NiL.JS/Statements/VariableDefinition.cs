@@ -66,24 +66,6 @@ namespace NiL.JS.Statements
             {
                 Tools.SkipSpaces(state.Code, ref position);
 
-                /*s = position;
-                if (!Parser.ValidateName(state.Code, ref position, state.strict))
-                {
-                    if (Parser.ValidateName(state.Code, ref position, false, true, state.strict))
-                        ExceptionHelper.ThrowSyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.strict) + "\" is a reserved word, but used as a variable. " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
-                    ExceptionHelper.ThrowSyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
-                }
-
-                string name = Tools.Unescape(state.Code.Substring(s, position - s), state.strict);
-                if (state.strict)
-                {
-                    if (name == "arguments" || name == "eval")
-                        ExceptionHelper.ThrowSyntaxError("Varible name cannot be \"arguments\" or \"eval\" in strict mode", state.Code, s, position - s);
-                }
-                names.Add(name);
-
-                position = s;*/
-
                 if (state.Code[position] != '[' && state.Code[position] != '{' && !Parser.ValidateName(state.Code, position, state.strict))
                 {
                     if (Parser.ValidateName(state.Code, ref position, false, true, state.strict))
@@ -113,30 +95,36 @@ namespace NiL.JS.Statements
                         if (expr.Type == OperationType.None && expr._right == null)
                             expr = expr._left as ExpressionTree;
                         valid |= expr != null && expr.Type == OperationType.Assignment;
-                        
-                        if (expr._left is ObjectDesctructor)
-                        {
-                            var expressions = (expr._left as ObjectDesctructor).GetTargetVariables();
-                            for (var i = 0; i < expressions.Count; i++)
-                            {
-                                names.Add(expressions[i].ToString());
-                                initializers.Add(expressions[i]);
-                            }
 
-                            initializers.Add(expr);
-                        }
-                        else
+                        if (valid)
                         {
-                            names.Add(expr._left.ToString());
-                            initializers.Add(expression);
+                            if (expr._left is ObjectDesctructor)
+                            {
+                                var expressions = (expr._left as ObjectDesctructor).GetTargetVariables();
+                                for (var i = 0; i < expressions.Count; i++)
+                                {
+                                    names.Add(expressions[i].ToString());
+                                    initializers.Add(expressions[i]);
+                                }
+
+                                initializers.Add(expr);
+                            }
+                            else
+                            {
+                                names.Add(expr._left.ToString());
+                                initializers.Add(expression);
+                            }
                         }
                     }
                     else
                     {
                         var cnst = expression as Constant;
                         valid = cnst != null && cnst.value == JSValue.undefined;
-                        initializers.Add(expression);
-                        names.Add(cnst.value.ToString());
+                        if (valid)
+                        {
+                            initializers.Add(expression);
+                            names.Add(cnst.value.ToString());
+                        }
                     }
 
                     if (!valid)

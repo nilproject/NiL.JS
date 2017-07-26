@@ -661,7 +661,6 @@ namespace NiL.JS.BaseLibrary
             if (!_global && !_sticky)
                 return _regex.IsMatch(input);
 
-
             _lastIndex = Tools.JSObjectToNumber(_lastIndex);
             if ((_lastIndex._attributes & JSValueAttributesInternal.SystemObject) != 0)
                 _lastIndex = _lastIndex.CloneImpl(false);

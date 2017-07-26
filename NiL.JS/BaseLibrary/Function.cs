@@ -188,6 +188,7 @@ namespace NiL.JS.BaseLibrary
                         // выдавать тут константу undefined нельзя, иначе будет падать на вызове defineProperty
                         // присваивание нужно для простановки атрибутов
                         prototype = new JSObject();
+                        _prototype._attributes = JSValueAttributesInternal.None;
                     }
                     else
                     {

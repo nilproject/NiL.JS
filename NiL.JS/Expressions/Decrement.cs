@@ -101,6 +101,7 @@ namespace NiL.JS.Expressions
                     raiseErrorValue();
                 val = val.CloneImpl(false);
             }
+
             switch (val._valueType)
             {
                 case JSValueType.Boolean:
@@ -147,13 +148,17 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
+
             if (post && val.Defined)
             {
                 res = _tempContainer;
                 res.Assign(val);
             }
             else
+            {
                 res = val;
+            }
+
             switch (val._valueType)
             {
                 case JSValueType.Integer:
@@ -180,14 +185,18 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
+
             if (setter != null)
             {
+                var args = new Arguments(context);
                 args.length = 1;
                 args[0] = val;
                 setter.Call(context._objectSource, args);
             }
             else if ((val._attributes & JSValueAttributesInternal.Reassign) != 0)
+            {
                 val.Assign(val);
+            }
             return res;
         }
 

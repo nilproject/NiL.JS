@@ -430,17 +430,8 @@
     <Compile Include="..\NiL.JS\Expressions\ExtractStoredValue.cs">
       <Link>Expressions\ExtractStoredValue.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\ObjectDesctructor.cs">
-      <Link>Expressions\ObjectDesctructor.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Expressions\FunctionDefinition.cs">
       <Link>Expressions\FunctionDefinition.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Expressions\GetSetPropertyPair.cs">
-      <Link>Expressions\GetSetPropertyPair.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Expressions\GetVariable.cs">
-      <Link>Expressions\GetVariable.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\In.cs">
       <Link>Expressions\In.cs</Link>
@@ -508,8 +499,14 @@
     <Compile Include="..\NiL.JS\Expressions\ObjectDefinition.cs">
       <Link>Expressions\ObjectDefinition.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Expressions\ObjectDesctructor.cs">
+      <Link>Expressions\ObjectDesctructor.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Expressions\Property.cs">
       <Link>Expressions\Property.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\PropertyPair.cs">
+      <Link>Expressions\PropertyPair.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\RegExpCreate.cs">
       <Link>Expressions\RegExpCreate.cs</Link>
@@ -555,6 +552,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\UnsignedShiftRight.cs">
       <Link>Expressions\UnsignedShiftRight.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\Variable.cs">
+      <Link>Expressions\Variable.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\Yield.cs">
       <Link>Expressions\Yield.cs</Link>

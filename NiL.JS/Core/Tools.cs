@@ -306,34 +306,33 @@ namespace NiL.JS.Core
             return JSObjectToInt32(arg, nullOrUndefined, nullOrUndefined, nan, alternateInfinity);
         }
 
-        public static int JSObjectToInt32(JSValue arg, int @null, int undefined, int nan, bool alternateInfinity)
+        public static int JSObjectToInt32(JSValue value, int @null, int undefined, int nan, bool alternateInfinity)
         {
-            if (arg == null)
+            if (value == null)
                 return @null;
-
-            var r = arg;
-            switch (r._valueType)
+            
+            switch (value._valueType)
             {
                 case JSValueType.Boolean:
                 case JSValueType.Integer:
                     {
-                        return r._iValue;
+                        return value._iValue;
                     }
                 case JSValueType.Double:
                     {
-                        if (double.IsNaN(r._dValue))
+                        if (double.IsNaN(value._dValue))
                             return nan;
 
-                        if (double.IsInfinity(r._dValue))
-                            return alternateInfinity ? double.IsPositiveInfinity(r._dValue) ? int.MaxValue : int.MinValue : 0;
+                        if (double.IsInfinity(value._dValue))
+                            return alternateInfinity ? double.IsPositiveInfinity(value._dValue) ? int.MaxValue : int.MinValue : 0;
 
-                        return (int)(long)r._dValue;
+                        return (int)(long)value._dValue;
                     }
                 case JSValueType.String:
                     {
                         double x = 0;
                         int ix = 0;
-                        string s = (r._oValue.ToString()).Trim();
+                        string s = (value._oValue.ToString()).Trim();
 
                         if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                             return 0;
@@ -350,11 +349,11 @@ namespace NiL.JS.Core
                 case JSValueType.Function:
                 case JSValueType.Object:
                     {
-                        if (r._oValue == null)
+                        if (value._oValue == null)
                             return @null;
 
-                        r = r.ToPrimitiveValue_Value_String();
-                        return JSObjectToInt32(r, @null, undefined, nan, true);
+                        value = value.ToPrimitiveValue_Value_String();
+                        return JSObjectToInt32(value, @null, undefined, nan, true);
                     }
                 case JSValueType.NotExists:
                 case JSValueType.Undefined:
@@ -1913,6 +1912,17 @@ namespace NiL.JS.Core
         internal static int anum(char p)
         {
             return ((p % 'a' % 'A' + 10) % ('0' + 10));
+        }
+
+        internal static string JSObjectToString(JSValue value)
+        {
+            if (value._valueType == JSValueType.String)
+                return value.ToString();
+
+            if (!value.Defined)
+                return "";
+
+            return JSObjectToString(value.ToPrimitiveValue_Value_String());
         }
 
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
