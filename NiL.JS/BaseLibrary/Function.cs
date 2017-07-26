@@ -700,12 +700,13 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
                 parameter.cacheContext = internalContext;
-                if (parameter.captured || ceaw)
+                if (parameter.destructor == null && (parameter.captured || ceaw))
                 {
                     if (internalContext._variables == null)
                         internalContext._variables = getFieldsContainer();
                     internalContext._variables[parameter.Name] = parameter.cacheRes;
                 }
+
                 if (string.CompareOrdinal(parameter.name, "arguments") == 0)
                     internalContext._arguments = parameter.cacheRes;
             }
