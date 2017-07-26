@@ -322,7 +322,10 @@ namespace NiL.JS.Expressions
                     Position = n,
                     Length = position - n
                 }.Descriptor as ParameterDescriptor;
-                desc.destructor = new ObjectDesctructor(destructor);
+
+                if (destructor != null)
+                    desc.destructor = new ObjectDesctructor(destructor);
+
                 parameters.Add(desc);
 
                 Tools.SkipSpaces(state.Code, ref position);

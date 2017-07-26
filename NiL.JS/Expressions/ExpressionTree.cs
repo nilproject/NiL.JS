@@ -939,11 +939,11 @@ namespace NiL.JS.Expressions
 
                 if (kind == OperationType.Assignment)
                 {
-                    if (first is ObjectDefinition)
+                    if (first is ObjectDefinition || first is ArrayDefinition)
                     {
                         try
                         {
-                            first = new ObjectDesctructor(first as ObjectDefinition);
+                            first = new ObjectDesctructor(first);
                             error = false;
                         }
                         catch
