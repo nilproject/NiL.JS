@@ -736,26 +736,26 @@ namespace NiL.JS.Core
 
         internal JSValue CloneImpl(bool force)
         {
-            if (!force && (_attributes & JSValueAttributesInternal.Cloned) != 0)
-            {
-                _attributes &= ~JSValueAttributesInternal.Cloned;
-                return this;
-            }
-
-            var res = new JSValue();
-            res.Assign(this);
-            res._valueType = _valueType;
-            res._attributes = _attributes &
-                ~(JSValueAttributesInternal.ReadOnly
+            return CloneImpl(force, JSValueAttributesInternal.ReadOnly
                 | JSValueAttributesInternal.SystemObject
                 | JSValueAttributesInternal.Temporary
                 | JSValueAttributesInternal.Reassign
                 | JSValueAttributesInternal.ProxyPrototype);
-            return res;
         }
 
         internal virtual JSValue CloneImpl(JSValueAttributesInternal resetMask)
         {
+            return CloneImpl(true, resetMask);
+        }
+
+        internal virtual JSValue CloneImpl(bool force, JSValueAttributesInternal resetMask)
+        {
+            if (!force && (_attributes & JSValueAttributesInternal.Cloned) != 0)
+            {
+                _attributes &= ~(JSValueAttributesInternal.Cloned | resetMask);
+                return this;
+            }
+
             var res = new JSValue();
             res.Assign(this);
             res._attributes = this._attributes & ~resetMask;

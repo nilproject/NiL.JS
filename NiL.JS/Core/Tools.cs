@@ -2058,7 +2058,14 @@ namespace NiL.JS.Core
 
             if (a._valueType != JSValueType.SpreadOperatorResult)
             {
-                a = a.CloneImpl(false);
+                a = a.CloneImpl(false, JSValueAttributesInternal.ReadOnly
+                    | JSValueAttributesInternal.SystemObject
+                    | JSValueAttributesInternal.Temporary
+                    | JSValueAttributesInternal.Reassign
+                    | JSValueAttributesInternal.ProxyPrototype
+                    | JSValueAttributesInternal.DoNotEnumerate
+                    | JSValueAttributesInternal.NonConfigurable
+                    | JSValueAttributesInternal.DoNotDelete);
                 a._attributes |= JSValueAttributesInternal.Cloned;
             }
 
