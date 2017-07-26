@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
@@ -212,15 +213,15 @@ namespace NiL.JS.Core
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
-            if (a0 != null && a0.Exists && (!hideNonEnum || (a0._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+            if (a0 != null && a0.Exists)
                 yield return new KeyValuePair<string, JSValue>("0", a0);
-            if (a1 != null && a1.Exists && (!hideNonEnum || (a1._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+            if (a1 != null && a1.Exists)
                 yield return new KeyValuePair<string, JSValue>("1", a1);
-            if (a2 != null && a2.Exists && (!hideNonEnum || (a2._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+            if (a2 != null && a2.Exists)
                 yield return new KeyValuePair<string, JSValue>("2", a2);
-            if (a3 != null && a3.Exists && (!hideNonEnum || (a3._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+            if (a3 != null && a3.Exists)
                 yield return new KeyValuePair<string, JSValue>("3", a3);
-            if (a4 != null && a4.Exists && (!hideNonEnum || (a4._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+            if (a4 != null && a4.Exists)
                 yield return new KeyValuePair<string, JSValue>("4", a4);
             if (callee != null && callee.Exists && (!hideNonEnum || (callee._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("callee", callee);
@@ -228,9 +229,14 @@ namespace NiL.JS.Core
                 yield return new KeyValuePair<string, JSValue>("caller", caller);
             if (_lengthContainer != null && _lengthContainer.Exists && (!hideNonEnum || (_lengthContainer._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("length", _lengthContainer);
-            var be = base.GetEnumerator(hideNonEnum, enumeratorMode);
+            var be = base.GetEnumerator(false, enumeratorMode);
+            int i = 0;
             while (be.MoveNext())
-                yield return be.Current;
+            {
+                if ((int.TryParse(be.Current.Key, out i) && i > 0 && i < length) ||
+                    (!hideNonEnum || (be.Current.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                    yield return be.Current;
+            }
         }
 
         protected internal override bool DeleteProperty(JSValue name)
