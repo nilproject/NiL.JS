@@ -353,7 +353,7 @@ namespace NiL.JS.Core
                             return @null;
 
                         value = value.ToPrimitiveValue_Value_String();
-                        return JSObjectToInt32(value, @null, undefined, nan, true);
+                        return JSObjectToInt32(value, 0, 0, 0, true);
                     }
                 case JSValueType.NotExists:
                 case JSValueType.Undefined:
@@ -1912,22 +1912,6 @@ namespace NiL.JS.Core
         internal static int anum(char p)
         {
             return ((p % 'a' % 'A' + 10) % ('0' + 10));
-        }
-
-        internal static string JSObjectToString(JSValue value)
-        {
-            if (value._valueType == JSValueType.String)
-                return value.ToString();
-
-            if (value._valueType == JSValueType.Date)
-                return value.ToPrimitiveValue_String_Value().ToString();
-
-            var primitive = value.ToPrimitiveValue_Value_String();
-            
-            if (!primitive.Defined)
-                return "";
-
-            return primitive.ToString();
         }
 
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)

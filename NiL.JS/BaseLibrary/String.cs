@@ -98,7 +98,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.charAt called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             int p = Tools.JSObjectToInt32(args[0], true);
             if (p < 0 || p >= selfStr.Length)
@@ -115,7 +115,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.charCodeAt called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             int p = Tools.JSObjectToInt32(args[0], true);
             if (p < 0 || p >= selfStr.Length)
@@ -132,7 +132,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.codePointAt called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             int p = Tools.JSObjectToInt32(args[0], true);
             if (p < 0 || p >= selfStr.Length)
@@ -149,7 +149,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.concat called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
                 return selfStr;
@@ -177,7 +177,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.endsWith called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             var value = (args?[0] ?? undefinedString).ToString();
 
@@ -193,7 +193,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.includes called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             var value = (args?[0] ?? undefinedString).ToString();
 
@@ -208,7 +208,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.indexOf called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
                 return -1;
@@ -238,7 +238,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.lastIndexOf called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
                 return -1;
@@ -248,7 +248,11 @@ namespace NiL.JS.BaseLibrary
             var pos = selfStr.Length;
             if (args.Length > 1)
             {
-                pos = Tools.JSObjectToInt32(args[1], pos, pos, true);
+                var posArg = args[1];
+                if (posArg.ValueType >= JSValueType.Object)
+                    posArg = posArg.ToPrimitiveValue_Value_String();
+
+                pos = Tools.JSObjectToInt32(posArg, pos, pos, true);
 
                 if (pos < 0)
                     pos = 0;
@@ -270,7 +274,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.localeCompare called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             string str1 = args[0].ToString();
             return string.CompareOrdinal(selfStr, str1);
@@ -342,7 +346,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.normalize called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
                 return selfStr.Normalize(NormalizationForm.FormC);
@@ -376,7 +380,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.codePointAt called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
                 return selfStr;
@@ -415,7 +419,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.codePointAt called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
                 return selfStr;
@@ -454,7 +458,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.repeat called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
                 return "";
@@ -494,7 +498,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.replace called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
                 return selfStr;
@@ -580,7 +584,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.search called on null or undefined"));
 
-            string selfStr = Tools.JSObjectToString(self);
+            string selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
                 return 0;
@@ -609,10 +613,10 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.slice called on null or undefined"));
 
-            string selfStr = Tools.JSObjectToString(self);
+            string selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
-                return Tools.JSObjectToString(self);
+                return self.BaseToString();
 
             int pos0 = Tools.JSObjectToInt32(args[0], 0, 0, 0, true);
             int pos1 = Tools.JSObjectToInt32(args[1], 0, selfStr.Length, 0, true);
@@ -638,7 +642,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.split called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0 || !args[0].Defined)
                 return new Array { selfStr };
@@ -738,7 +742,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.startsWith called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             var value = (args?[0] ?? undefinedString).ToString();
 
@@ -753,10 +757,10 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.substring called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
-                return Tools.JSObjectToString(self);
+                return self.BaseToString();
 
             int pos0 = Tools.JSObjectToInt32(args[0], 0, 0, 0, true);
             int pos1 = Tools.JSObjectToInt32(args[1], 0, selfStr.Length, 0, true);
@@ -782,7 +786,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.substr called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (args.Length == 0)
                 return self;
@@ -855,7 +859,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.trim called on null or undefined"));
 
-            var selfStr = Tools.JSObjectToString(self);
+            var selfStr = self.BaseToString();
 
             if (selfStr == "")
                 return selfStr;
@@ -870,7 +874,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue toString(JSValue self)
         {
             if ((self as object) is String && self._valueType == JSValueType.Object) // prototype instance
-                return Tools.JSObjectToString(self);
+                return self.BaseToString();
             if (self._valueType != JSValueType.String)
                 ExceptionHelper.Throw(new TypeError("Try to call String.toString for not string object."));
             return self;
@@ -882,7 +886,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue valueOf(JSValue self)
         {
             if ((self as object) is String && self._valueType == JSValueType.Object) // prototype instance
-                return Tools.JSObjectToString(self);
+                return self.BaseToString();
             if (self._valueType != JSValueType.String)
                 ExceptionHelper.Throw(new TypeError("Try to call String.valueOf for not string object."));
             return self;

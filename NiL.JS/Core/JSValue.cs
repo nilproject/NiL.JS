@@ -765,6 +765,11 @@ namespace NiL.JS.Core
         [Hidden]
         public override string ToString()
         {
+            return BaseToString();
+        }
+
+        protected internal string BaseToString()
+        {
             if (_valueType == JSValueType.String)
                 return _oValue.ToString();
             if (_valueType <= JSValueType.Undefined)
@@ -835,31 +840,36 @@ namespace NiL.JS.Core
             {
                 if (_oValue == null)
                     return nullString;
+
                 var tpvs = GetProperty(func0);
                 JSValue res = null;
                 if (tpvs._valueType == JSValueType.Function)
                 {
-                    res = (tpvs._oValue as NiL.JS.BaseLibrary.Function).Call(this, null);
+                    res = (tpvs._oValue as Function).Call(this, null);
                     if (res._valueType == JSValueType.Object)
                     {
-                        if (res._oValue is NiL.JS.BaseLibrary.String)
-                            res = res._oValue as NiL.JS.BaseLibrary.String;
+                        if (res._oValue is BaseLibrary.String)
+                            res = res._oValue as BaseLibrary.String;
                     }
+
                     if (res._valueType < JSValueType.Object)
                         return res;
                 }
+
                 tpvs = GetProperty(func1);
                 if (tpvs._valueType == JSValueType.Function)
                 {
-                    res = (tpvs._oValue as NiL.JS.BaseLibrary.Function).Call(this, null);
+                    res = (tpvs._oValue as Function).Call(this, null);
                     if (res._valueType == JSValueType.Object)
                     {
-                        if (res._oValue is NiL.JS.BaseLibrary.String)
-                            res = res._oValue as NiL.JS.BaseLibrary.String;
+                        if (res._oValue is BaseLibrary.String)
+                            res = res._oValue as BaseLibrary.String;
                     }
+
                     if (res._valueType < JSValueType.Object)
                         return res;
                 }
+
                 ExceptionHelper.Throw(new TypeError("Can't convert object to primitive value."));
             }
             return this;
