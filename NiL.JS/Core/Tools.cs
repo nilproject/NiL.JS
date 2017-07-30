@@ -1482,16 +1482,16 @@ namespace NiL.JS.Core
                             }
                         default:
                             {
-                                if (IsDigit(code[i]) && !processRegexComp)
+                                if (code[i] >= '0' && code[i] <= '7' && !processRegexComp)
                                 {
                                     if (strict)
                                         ExceptionHelper.Throw((new SyntaxError("Octal literals are not allowed in strict mode.")));
 
                                     var ccode = code[i] - '0';
-                                    if (i + 1 < code.Length && IsDigit(code[i + 1]))
-                                        ccode = ccode * 10 + (code[++i] - '0');
-                                    if (i + 1 < code.Length && IsDigit(code[i + 1]))
-                                        ccode = ccode * 10 + (code[++i] - '0');
+                                    if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
+                                        ccode = ccode * 8 + (code[++i] - '0');
+                                    if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
+                                        ccode = ccode * 8 + (code[++i] - '0');
                                     res.Append((char)ccode);
                                 }
                                 else if (processUnknown)
@@ -1677,19 +1677,20 @@ namespace NiL.JS.Core
                         }
                     default:
                         {
-                            if (IsDigit(code[i]) && !processRegexComp)
+                            if (code[i] >= '0' && code[i] <= '7' && !processRegexComp)
                             {
                                 if (strict)
                                     ExceptionHelper.Throw(new SyntaxError("Octal literals are not allowed in strict mode."));
+
                                 var ccode = code[i] - '0';
-                                if (i + 1 < code.Length && IsDigit(code[i + 1]))
+                                if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
                                 {
-                                    ccode = ccode * 10 + (code[++i] - '0');
+                                    ccode = ccode * 8 + (code[++i] - '0');
                                     processedChars++;
                                 }
-                                if (i + 1 < code.Length && IsDigit(code[i + 1]))
+                                if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
                                 {
-                                    ccode = ccode * 10 + (code[++i] - '0');
+                                    ccode = ccode * 8 + (code[++i] - '0');
                                     processedChars++;
                                 }
                                 return ((char)ccode).ToString();
@@ -1726,6 +1727,16 @@ namespace NiL.JS.Core
                 {
                     i++;
                     return str[i] - '@';
+                }
+                
+                if (str[i] >= '0' && str[i] <= '7')
+                {
+                    var ccode = str[i] - '0';
+                    if (i + 1 < str.Length && IsDigit(str[i + 1]))
+                        ccode = ccode * 8 + (str[++i] - '0');
+                    if (i + 1 < str.Length && IsDigit(str[i + 1]))
+                        ccode = ccode * 8 + (str[++i] - '0');
+                    return ccode;
                 }
 
                 if (str[i] == 't')
