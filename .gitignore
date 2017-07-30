@@ -160,4 +160,5 @@ $RECYCLE.BIN/
 /NiL.JS/NuGet.exe
 /NiL.JS/NiL.JS.nuspec
 /FunctionalTests/Generated/SputnikTests.cs
+/FunctionalTests/Generated/Embedded.cs
 /FunctionalTests/Generated/Custom.cs
