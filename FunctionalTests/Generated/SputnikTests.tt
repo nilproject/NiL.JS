@@ -42,8 +42,16 @@ namespace NiL.JS.Test.Generated
 				testName = originalName + "_" + (index++);
 
 			tests.Add(testName);
-	#>
-	
+#>
+<#
+			var code = File.ReadAllText(file);
+			var descStart = code.IndexOf("/*");
+			var desc = code.Substring(descStart, code.IndexOf("*/") - descStart);
+			if (desc.Contains("* @ignore")) 
+			{#>
+		[Ignore]
+			<#}
+#>	
 		[TestMethod]
 #line 1 "<#= file.Replace('\\','/') #>"
 		public void <#= testName #>() => RunFile("<#= file.Replace('\\','/') #>");
