@@ -146,14 +146,15 @@ namespace NiL.JS.Core.Interop
                             continue;
                         
                         var parentProperty = property;
-                        while (parentProperty != null 
+                        while (parentProperty != null
+                            && parentProperty.DeclaringType != typeof(object)
                             && ((property.GetGetMethod() ?? property.GetSetMethod()).Attributes & MethodAttributes.NewSlot) == 0)
                         {
                             property = parentProperty;
 #if (PORTABLE || NETCORE)
-                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType.GetRuntimeProperty(property.Name);
+                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType?.GetRuntimeProperty(property.Name);
 #else
-                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
+                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType?.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
 #endif
                         }
 
@@ -189,7 +190,7 @@ namespace NiL.JS.Core.Interop
                         {
                             var parameterTypes = method.GetParameters().Select(x => x.ParameterType).ToArray();
                             var parentMethod = method;
-                            while (parentMethod != null && (method.Attributes & MethodAttributes.NewSlot) == 0)
+                            while (parentMethod != null && parentMethod.DeclaringType != typeof(object) && (method.Attributes & MethodAttributes.NewSlot) == 0)
                             {
                                 method = parentMethod;
 #if (PORTABLE || NETCORE)
