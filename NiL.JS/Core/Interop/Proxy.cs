@@ -193,9 +193,9 @@ namespace NiL.JS.Core.Interop
                             {
                                 method = parentMethod;
 #if (PORTABLE || NETCORE)
-                                parentMethod = method.DeclaringType.GetTypeInfo().BaseType.GetMethod(method.Name, parameterTypes);
+                                parentMethod = method.DeclaringType.GetTypeInfo().BaseType?.GetMethod(method.Name, parameterTypes);
 #else
-                                parentMethod = method.DeclaringType.BaseType.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance, null, parameterTypes, null);
+                                parentMethod = method.DeclaringType.BaseType?.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance, null, parameterTypes, null);
 #endif
                             }
                         }
