@@ -42,6 +42,20 @@ namespace NiL.JS.Core
             doubleConstants = new Dictionary<double, JSValue>();
             Variables = new List<VariableDescriptor>();
         }
+
+        internal JSValue GetCachedValue(int value)
+        {
+            if (!intConstants.ContainsKey(value))
+            {
+                JSValue jsvalue = value;
+                intConstants[value] = jsvalue;
+                return jsvalue;
+            }
+            else
+            {
+                return intConstants[value];
+            }
+        }
     }
 
     public sealed class FunctionInfo

@@ -35,18 +35,18 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var t = first.Evaluate(context);
+            var t = _left.Evaluate(context);
             if (t._valueType == JSValueType.Integer)
-                tempContainer._iValue = t._iValue;
+                _tempContainer._iValue = t._iValue;
             else
-                tempContainer._iValue = Tools.JSObjectToInt32(t, 0, false);
-            tempContainer._valueType = JSValueType.Integer;
-            return tempContainer;
+                _tempContainer._iValue = Tools.JSObjectToInt32(t, 0, false);
+            _tempContainer._valueType = JSValueType.Integer;
+            return _tempContainer;
         }
 #if !PORTABLE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
-            var st = first.TryCompile(false, false, typeof(int), dynamicValues);
+            var st = _left.TryCompile(false, false, typeof(int), dynamicValues);
             if (st == null)
                 return null;
             if (st.Type == typeof(int))
@@ -65,7 +65,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " | 0)";
+            return "(" + _left + " | 0)";
         }
     }
 }

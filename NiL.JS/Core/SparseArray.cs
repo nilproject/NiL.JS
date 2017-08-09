@@ -67,6 +67,14 @@ namespace NiL.JS.Core
                 ensureCapacity(capacity);
         }
 
+        public SparseArray(TValue[] values)
+        {
+            mode = ArrayMode.Flat;
+            this.values = values;
+            navyData = emptyNavyData;
+            allocatedCount = (pseudoLength = (uint)values.Length);
+        }
+
         #region Члены IList<TValue>
 
         public int IndexOf(TValue item)
@@ -155,8 +163,8 @@ namespace NiL.JS.Core
 
                         if (_index < 8)
                         {
-                            // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца. 
-                            // Кто-то верит, что это должно работать быстрее. 
+                            // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца.
+                            // Кто-то верит, что это должно работать быстрее.
                             // Вот именно из-за таких кусков кода так и может показаться.
                             // Не время для попыток исправить мир
                             ensureCapacity((int)_index + 1);
@@ -203,8 +211,8 @@ namespace NiL.JS.Core
                         if (@default)
                         {
                             if (pseudoLength <= _index)
-                                pseudoLength = _index + 1; // длина может быть меньше 
-                            // уже записанных элементов если эти элементы имеют значение 
+                                pseudoLength = _index + 1; // длина может быть меньше
+                            // уже записанных элементов если эти элементы имеют значение
                             // по-умолчанию и был вызван Trim
                             return;
                         }
@@ -334,7 +342,7 @@ namespace NiL.JS.Core
         #endregion
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="index"></param>
         /// <returns>Zero if the requested index does not Exists</returns>
@@ -592,12 +600,14 @@ namespace NiL.JS.Core
         private void ensureCapacity(int p)
         {
             p = Math.Max(4, p);
+            if (values.Length >= p)
+                return;
+
             var newValues = new TValue[p];
             if (values != null)
                 for (var i = 0; i < values.Length; i++)
                     newValues[i] = values[i];
             values = newValues;
-
             if (mode == ArrayMode.Sparse)
             {
                 var newData = new _NavyItem[p];
@@ -617,9 +627,13 @@ namespace NiL.JS.Core
                 ensureCapacity(0);
                 return;
             }
+
             navyData = new _NavyItem[values.Length];
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < values.Length; i++)
                 this[i] = values[i];
+
+            if (values.Length < len)
+                this[(int)len - 1] = default(TValue);
         }
     }
 }

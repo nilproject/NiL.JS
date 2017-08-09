@@ -34,9 +34,9 @@ namespace NiL.JS.Expressions
             get
             {
 
-                if (first is VariableReference)
+                if (_left is VariableReference)
                 {
-                    var desc = (first as VariableReference)._descriptor;
+                    var desc = (_left as VariableReference)._descriptor;
                     var fe = desc.initializer as FunctionDefinition;
                     if (fe != null)
                         return fe._functionInfo.ResultType; // для рекурсивных функций будет Unknown
@@ -52,7 +52,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                if (first.NeedDecompose)
+                if (_left.NeedDecompose)
                     return true;
 
                 for (var i = 0; i < _arguments.Length; i++)
@@ -73,7 +73,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var temp = first.Evaluate(context);
+            var temp = _left.Evaluate(context);
             JSValue targetObject = context._objectSource;
             ICallable callable = null;
             Function func = null;
@@ -111,7 +111,7 @@ namespace NiL.JS.Expressions
                 context._objectSource = null;
 
                 // Аргументы должны быть вычислены даже если функция не существует.
-                ExceptionHelper.ThrowTypeError(first.ToString() + " is not a function");
+                ExceptionHelper.ThrowTypeError(_left.ToString() + " is not a function");
 
                 return null;
             }
@@ -121,14 +121,14 @@ namespace NiL.JS.Expressions
                 {
                     case CallMode.Construct:
                         {
-                            return callable.Construct(Tools.EvaluateArgs(_arguments, context));
+                            return callable.Construct(Tools.CreateArguments(_arguments, context));
                         }
                     case CallMode.Super:
                         {
-                            return callable.Construct(targetObject, Tools.EvaluateArgs(_arguments, context));
+                            return callable.Construct(targetObject, Tools.CreateArguments(_arguments, context));
                         }
                     default:
-                        return callable.Call(targetObject, Tools.EvaluateArgs(_arguments, context));
+                        return callable.Call(targetObject, Tools.CreateArguments(_arguments, context));
                 }
             }
             else
@@ -188,7 +188,7 @@ namespace NiL.JS.Expressions
             var arguments = new Arguments(context);
 
             for (int i = 0; i < this._arguments.Length; i++)
-                arguments.Add(Tools.EvalExpressionSafe(context, this._arguments[i]));
+                arguments.Add(Tools.EvalExpressionSafe(context, _arguments[i]));
             context._objectSource = null;
 
             arguments.callee = func;
@@ -225,7 +225,7 @@ namespace NiL.JS.Expressions
 
             this._codeContext = codeContext;
 
-            var super = first as Super;
+            var super = _left as Super;
 
             if (super != null)
             {
@@ -239,9 +239,9 @@ namespace NiL.JS.Expressions
             }
 
             base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
-            if (first is GetVariable)
+            if (_left is Variable)
             {
-                var name = first.ToString();
+                var name = _left.ToString();
                 if (name == "eval" && stats != null)
                 {
                     stats.ContainsEval = true;
@@ -285,7 +285,7 @@ namespace NiL.JS.Expressions
         protected internal override CodeNode[] GetChildsImpl()
         {
             var result = new CodeNode[_arguments.Length + 1];
-            result[0] = first;
+            result[0] = _left;
             _arguments.CopyTo(result, 1);
             return result;
         }
@@ -297,7 +297,7 @@ namespace NiL.JS.Expressions
 
         public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
-            first.Decompose(ref first, result);
+            _left.Decompose(ref _left, result);
 
             var lastDecomposeIndex = -1;
             for (var i = 0; i < _arguments.Length; i++)
@@ -331,7 +331,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            string res = first + "(";
+            string res = _left + "(";
             for (int i = 0; i < _arguments.Length; i++)
             {
                 res += _arguments[i];

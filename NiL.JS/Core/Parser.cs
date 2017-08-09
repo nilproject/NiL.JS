@@ -262,6 +262,9 @@ namespace NiL.JS.Core
         public static bool ValidateName(string code, ref int index, bool strict) => ValidateName(code, ref index, true, true, strict);
 
         [CLSCompliant(false)]
+        public static bool ValidateName(string code, int index, bool strict) => ValidateName(code, ref index, true, true, strict);
+
+        [CLSCompliant(false)]
         public static bool ValidateName(string name, int index, bool reserveControl, bool allowEscape, bool strict) => ValidateName(name, ref index, reserveControl, allowEscape, strict);
 
         public static bool ValidateName(string code, ref int index, bool checkReservedWords, bool allowEscape, bool strict)
@@ -408,38 +411,32 @@ namespace NiL.JS.Core
                             escape = false;
                         }
                     }
-                    
+
                     j++;
                 }
 
                 if (j == code.Length)
                     return false;
 
-                bool w = true;
-                bool g = false, i = false, m = false;
+                var w = true;
+                var g = false;
+                var i = false;
+                var m = false;
+                var u = false;
+                var y = false;
                 while (w)
                 {
                     j++;
                     if (j >= code.Length)
                         break;
                     char c = code[j];
-                    if (c == '\\')
-                    {
-                        int len = 1;
-                        if (code[j + 1] == 'u')
-                            len = 5;
-                        else if (code[j + 1] == 'x')
-                            len = 3;
-                        c = Tools.Unescape(code.Substring(j, len + 1), false)[0];
-                        j += len;
-                    }
                     switch (c)
                     {
                         case 'g':
                             {
                                 if (g)
                                     if (throwError)
-                                        throw new ArgumentException("Invalid flag in regexp definition");
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
                                     else
                                         return false;
                                 g = true;
@@ -449,7 +446,7 @@ namespace NiL.JS.Core
                             {
                                 if (i)
                                     if (throwError)
-                                        throw new ArgumentException("Invalid flag in regexp definition");
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
                                     else
                                         return false;
                                 i = true;
@@ -459,10 +456,30 @@ namespace NiL.JS.Core
                             {
                                 if (m)
                                     if (throwError)
-                                        throw new ArgumentException("Invalid flag in regexp definition");
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
                                     else
                                         return false;
                                 m = true;
+                                break;
+                            }
+                        case 'u':
+                            {
+                                if (u)
+                                    if (throwError)
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
+                                    else
+                                        return false;
+                                u = true;
+                                break;
+                            }
+                        case 'y':
+                            {
+                                if (y)
+                                    if (throwError)
+                                        throw new ArgumentException("Invalid flag in RegExp definition");
+                                    else
+                                        return false;
+                                y = true;
                                 break;
                             }
                         default:

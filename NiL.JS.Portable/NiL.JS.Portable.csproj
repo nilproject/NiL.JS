@@ -40,7 +40,7 @@
     <DefineConstants>$(DefineConstants);VERSION21</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>NiL.JS.Keys.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>keys.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\NiL.JS\BaseLibrary\Array.cs">
@@ -433,12 +433,6 @@
     <Compile Include="..\NiL.JS\Expressions\FunctionDefinition.cs">
       <Link>Expressions\FunctionDefinition.cs</Link>
     </Compile>
-    <Compile Include="..\NiL.JS\Expressions\GetSetPropertyPair.cs">
-      <Link>Expressions\GetSetPropertyPair.cs</Link>
-    </Compile>
-    <Compile Include="..\NiL.JS\Expressions\GetVariable.cs">
-      <Link>Expressions\GetVariable.cs</Link>
-    </Compile>
     <Compile Include="..\NiL.JS\Expressions\In.cs">
       <Link>Expressions\In.cs</Link>
     </Compile>
@@ -505,8 +499,14 @@
     <Compile Include="..\NiL.JS\Expressions\ObjectDefinition.cs">
       <Link>Expressions\ObjectDefinition.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Expressions\ObjectDesctructor.cs">
+      <Link>Expressions\ObjectDesctructor.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Expressions\Property.cs">
       <Link>Expressions\Property.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\PropertyPair.cs">
+      <Link>Expressions\PropertyPair.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\RegExpCreate.cs">
       <Link>Expressions\RegExpCreate.cs</Link>
@@ -552,6 +552,9 @@
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\UnsignedShiftRight.cs">
       <Link>Expressions\UnsignedShiftRight.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Expressions\Variable.cs">
+      <Link>Expressions\Variable.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Expressions\Yield.cs">
       <Link>Expressions\Yield.cs</Link>
@@ -643,17 +646,17 @@
     <Compile Include="Core\Backward.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="NiL.JS.Keys.pfx" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="..\NiL.JS\Strings.resx">
       <Link>Strings.resx</Link>
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="keys.snk" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

@@ -11,31 +11,33 @@
 namespace NiL.JS {
     using System;
     using System.Reflection;
-    
-    
+
+
     /// <summary>
-    ///    Класс ресурса со строгой типизацией для поиска локализованных строк и т. п.
+    ///   Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
     /// </summary>
-    // Этот класс был автоматически создан классом StronglyTypedResourceBuilder
-    // с помощью таких средств, как ResGen или Visual Studio.
-    // Чтобы добавить или удалить элемент, отредактируйте ResX-файл, а затем повторно запустите программу ResGen
-    // с параметром /str или заново постройте ваш проект VS.
+    // Этот класс создан автоматически классом StronglyTypedResourceBuilder
+    // с помощью такого средства, как ResGen или Visual Studio.
+    // Чтобы добавить или удалить член, измените файл .ResX и снова запустите ResGen
+    // с параметром /str или перестройте свой проект VS.
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Strings {
-        
+    internal class Strings {
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
+        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Strings() {
         }
-        
+
         /// <summary>
-        ///    Возвращает кэшированный экземпляр ResourceManager, используемый этим классом.
+        ///   Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
+        internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NiL.JS.NetCore.Strings", typeof(Strings).GetTypeInfo().Assembly);
@@ -44,13 +46,13 @@ namespace NiL.JS {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
-        ///    Переопределяет свойство CurrentUICulture текущего потока для всех
-        ///    обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
+        ///   Перезаписывает свойство CurrentUICulture текущего потока для всех
+        ///   обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
+        internal static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -58,164 +60,173 @@ namespace NiL.JS {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Constructor cannot be static.
+        ///   Ищет локализованную строку, похожую на Can not assign to readonly property &quot;{0}&quot;.
         /// </summary>
-        public static string ConstructorCannotBeStatic {
+        internal static string CannotAssignReadOnly {
+            get {
+                return ResourceManager.GetString("CannotAssignReadOnly", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Constructor cannot be static.
+        /// </summary>
+        internal static string ConstructorCannotBeStatic {
             get {
                 return ResourceManager.GetString("ConstructorCannotBeStatic", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Do not define a function inside a loop.
+        ///   Ищет локализованную строку, похожую на Do not define a function inside a loop.
         /// </summary>
-        public static string FunctionInLoop {
+        internal static string FunctionInLoop {
             get {
                 return ResourceManager.GetString("FunctionInLoop", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Identifier &quot;{0}&quot; has already been declared.
+        ///   Ищет локализованную строку, похожую на Identifier &quot;{0}&quot; has already been declared.
         /// </summary>
-        public static string IdentifierAlreadyDeclared {
+        internal static string IdentifierAlreadyDeclared {
             get {
                 return ResourceManager.GetString("IdentifierAlreadyDeclared", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Can not increment property &quot;{0}&quot; without setter..
+        ///   Ищет локализованную строку, похожую на Can not increment property &quot;{0}&quot; without setter..
         /// </summary>
-        public static string IncrementPropertyWOSetter {
+        internal static string IncrementPropertyWOSetter {
             get {
                 return ResourceManager.GetString("IncrementPropertyWOSetter", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Can not increment readonly &quot;{0}&quot;.
+        ///   Ищет локализованную строку, похожую на Can not increment readonly &quot;{0}&quot;.
         /// </summary>
-        public static string IncrementReadonly {
+        internal static string IncrementReadonly {
             get {
                 return ResourceManager.GetString("IncrementReadonly", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Invalid left-hand side in assignment..
+        ///   Ищет локализованную строку, похожую на Invalid left-hand side in assignment..
         /// </summary>
-        public static string InvalidLefthandSideInAssignment {
+        internal static string InvalidLefthandSideInAssignment {
             get {
                 return ResourceManager.GetString("InvalidLefthandSideInAssignment", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Invalid property name at {0}.
+        ///   Ищет локализованную строку, похожую на Invalid property name at {0}.
         /// </summary>
-        public static string InvalidPropertyName {
+        internal static string InvalidPropertyName {
             get {
                 return ResourceManager.GetString("InvalidPropertyName", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Unable to process regular expression {0}.
+        ///   Ищет локализованную строку, похожую на Unable to process regular expression {0}.
         /// </summary>
-        public static string InvalidRegExp {
+        internal static string InvalidRegExp {
             get {
                 return ResourceManager.GetString("InvalidRegExp", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Method &quot;{0}&quot; can not be called with new keyword.
+        ///   Ищет локализованную строку, похожую на Method &quot;{0}&quot; can not be called with new keyword.
         /// </summary>
-        public static string InvalidTryToCallWithNew {
+        internal static string InvalidTryToCallWithNew {
             get {
                 return ResourceManager.GetString("InvalidTryToCallWithNew", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Method &quot;{0}&quot; can not be called without new keyword.
+        ///   Ищет локализованную строку, похожую на Method &quot;{0}&quot; can not be called without new keyword.
         /// </summary>
-        public static string InvalidTryToCallWithoutNew {
+        internal static string InvalidTryToCallWithoutNew {
             get {
                 return ResourceManager.GetString("InvalidTryToCallWithoutNew", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Type &quot;{0}&quot; can not be created with new keyword.
+        ///   Ищет локализованную строку, похожую на Type &quot;{0}&quot; can not be created with new keyword.
         /// </summary>
-        public static string InvalidTryToCreateWithNew {
+        internal static string InvalidTryToCreateWithNew {
             get {
                 return ResourceManager.GetString("InvalidTryToCreateWithNew", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Type &quot;{0}&quot; can not be created without new keyword.
+        ///   Ищет локализованную строку, похожую на Type &quot;{0}&quot; can not be created without new keyword.
         /// </summary>
-        public static string InvalidTryToCreateWithoutNew {
+        internal static string InvalidTryToCreateWithoutNew {
             get {
                 return ResourceManager.GetString("InvalidTryToCreateWithoutNew", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Too many arguments for function &quot;{0}&quot;.
+        ///   Ищет локализованную строку, похожую на Too many arguments for function &quot;{0}&quot;.
         /// </summary>
-        public static string TooManyArgumentsForFunction {
+        internal static string TooManyArgumentsForFunction {
             get {
                 return ResourceManager.GetString("TooManyArgumentsForFunction", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Can&apos;t get property &quot;{0}&quot; of &quot;{1}&quot;.
+        ///   Ищет локализованную строку, похожую на Can&apos;t get property &quot;{0}&quot; of &quot;{1}&quot;.
         /// </summary>
-        public static string TryingToGetProperty {
+        internal static string TryingToGetProperty {
             get {
                 return ResourceManager.GetString("TryingToGetProperty", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Can&apos;t set property &quot;{0}&quot; of &quot;{1}&quot;.
+        ///   Ищет локализованную строку, похожую на Can&apos;t set property &quot;{0}&quot; of &quot;{1}&quot;.
         /// </summary>
-        public static string TryingToSetProperty {
+        internal static string TryingToSetProperty {
             get {
                 return ResourceManager.GetString("TryingToSetProperty", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Unexpected token.
+        ///   Ищет локализованную строку, похожую на Unexpected token.
         /// </summary>
-        public static string UnexpectedToken {
+        internal static string UnexpectedToken {
             get {
                 return ResourceManager.GetString("UnexpectedToken", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Unknown identifier &quot;{0}&quot; at {1}.
+        ///   Ищет локализованную строку, похожую на Unknown identifier &quot;{0}&quot; at {1}.
         /// </summary>
-        public static string UnknowIdentifier {
+        internal static string UnknowIdentifier {
             get {
                 return ResourceManager.GetString("UnknowIdentifier", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///    Ищет локализованную строку, аналогичную Variable &quot;{0}&quot; is not defined.
+        ///   Ищет локализованную строку, похожую на Variable &quot;{0}&quot; is not defined.
         /// </summary>
-        public static string VariableNotDefined {
+        internal static string VariableNotDefined {
             get {
                 return ResourceManager.GetString("VariableNotDefined", resourceCulture);
             }

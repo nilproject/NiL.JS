@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -146,7 +147,7 @@ namespace NiL.JS.BaseLibrary
 
             try
             {
-                _callback.Call(new Arguments
+                _callback.Call(new Arguments(null)
                 {
                     new ExternalFunction((self, args)=>
                     {
@@ -217,7 +218,7 @@ namespace NiL.JS.BaseLibrary
             if (promises == null)
                 return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.all(...)"))));
 
-            return new Promise(whenAll(promises.AsEnumerable().Select(convertToTask).ToArray()).ContinueWith(x => new Array(x.Result) as JSValue));
+            return new Promise(whenAll(promises.AsEnumerable().Select(convertToTask).ToArray()).ContinueWith(x => new Array(x.Result as IEnumerable) as JSValue));
         }
 
         private static Task<JSValue> convertToTask(JSValue arg)

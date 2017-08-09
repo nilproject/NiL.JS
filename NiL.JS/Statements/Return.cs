@@ -79,7 +79,7 @@ namespace NiL.JS.Statements
             {
                 var bat = value as NiL.JS.Expressions.Conditional;
                 var bts = bat.Threads;
-                _this = new IfElse(bat.FirstOperand, new Return(bts[0]), new Return(bts[1])) { Position = bat.Position, Length = bat.Length };
+                _this = new IfElse(bat.LeftOperand, new Return(bts[0]), new Return(bts[1])) { Position = bat.Position, Length = bat.Length };
                 return true;
             }
             else if (value is Call)

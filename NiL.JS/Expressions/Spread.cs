@@ -35,21 +35,21 @@ namespace NiL.JS.Expressions
         {
             return new JSObject
             {
-                _oValue = first.Evaluate(context).AsIterable().AsEnumerable().ToArray(),
+                _oValue = _left.Evaluate(context).AsIterable().AsEnumerable().ToArray(),
                 _valueType = JSValueType.SpreadOperatorResult
             };
         }
 
         protected internal override CodeNode[] GetChildsImpl()
         {
-            return new CodeNode[] { first };
+            return new CodeNode[] { _left };
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            CodeNode f = first;
-            var res = first.Build(ref f, expressionDepth,  variables, codeContext, message, stats, opts);
-            first = f as Expression ?? first;
+            CodeNode f = _left;
+            var res = _left.Build(ref f, expressionDepth,  variables, codeContext, message, stats, opts);
+            _left = f as Expression ?? _left;
             return res;
         }
 
@@ -60,7 +60,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "..." + first;
+            return "..." + _left;
         }
     }
 }

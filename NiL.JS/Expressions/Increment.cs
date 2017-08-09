@@ -36,15 +36,15 @@ namespace NiL.JS.Expressions
 
         internal override bool ResultInTempContainer
         {
-            get { return tempContainer != null; }
+            get { return _tempContainer != null; }
         }
 
         protected internal override PredictedType ResultType
         {
             get
             {
-                var pd = first.ResultType;
-                if (tempContainer == null)
+                var pd = _left.ResultType;
+                if (_tempContainer == null)
                 {
                     switch (pd)
                     {
@@ -84,14 +84,14 @@ namespace NiL.JS.Expressions
             bool post = _type == IncrimentType.Postincriment;
             Function setter = null;
             JSValue res = null;
-            var val = first.EvaluateForWrite(context);
+            var val = _left.EvaluateForWrite(context);
             Arguments args = null;
             if (val._valueType == JSValueType.Property)
             {
-                var ppair = val._oValue as Core.GsPropertyPair;
+                var ppair = val._oValue as Core.PropertyPair;
                 setter = ppair.setter;
                 if (context._strict && setter == null)
-                    ExceptionHelper.ThrowIncrementPropertyWOSetter(first);
+                    ExceptionHelper.ThrowIncrementPropertyWOSetter(_left);
                 args = new Arguments();
                 if (ppair.getter == null)
                     val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
@@ -101,7 +101,7 @@ namespace NiL.JS.Expressions
             else if ((val._attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
                 if (context._strict)
-                    ExceptionHelper.ThrowIncrementReadonly(first);
+                    ExceptionHelper.ThrowIncrementReadonly(_left);
                 val = val.CloneImpl(false);
             }
             switch (val._valueType)
@@ -146,13 +146,13 @@ namespace NiL.JS.Expressions
                     }
                 case JSValueType.NotExists:
                     {
-                        ExceptionHelper.ThrowIfNotExists(val, first);
+                        ExceptionHelper.ThrowIfNotExists(val, _left);
                         break;
                     }
             }
             if (post && val.Defined)
             {
-                res = tempContainer;
+                res = _tempContainer;
                 res.Assign(val);
             }
             else
@@ -198,10 +198,10 @@ namespace NiL.JS.Expressions
         {
             _codeContext = codeContext;
 
-            Parser.Build(ref first, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _left, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
             if (expressionDepth <= 1 && _type == IncrimentType.Postincriment)
                 _type = IncrimentType.Preincriment;
-            var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
+            var f = _left as VariableReference ?? ((_left is AssignmentOperatorCache) ? (_left as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
                 (f.Descriptor.assignments ??
@@ -212,7 +212,7 @@ namespace NiL.JS.Expressions
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            var vr = first as VariableReference;
+            var vr = _left as VariableReference;
             if (vr != null && vr._descriptor.IsDefined)
             {
                 var pd = vr._descriptor.lastPredictedType;
@@ -245,7 +245,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return _type == IncrimentType.Preincriment ? "++" + first : first + "++";
+            return _type == IncrimentType.Preincriment ? "++" + _left : _left + "++";
         }
     }
 }

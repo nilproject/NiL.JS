@@ -30,19 +30,19 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var left = (uint)Tools.JSObjectToInt32(first.Evaluate(context));
-            var t = left >> Tools.JSObjectToInt32(second.Evaluate(context));
+            var left = (uint)Tools.JSObjectToInt32(_left.Evaluate(context));
+            var t = left >> Tools.JSObjectToInt32(_right.Evaluate(context));
             if (t <= int.MaxValue)
             {
-                tempContainer._iValue = (int)t;
-                tempContainer._valueType = JSValueType.Integer;
+                _tempContainer._iValue = (int)t;
+                _tempContainer._valueType = JSValueType.Integer;
             }
             else
             {
-                tempContainer._dValue = (double)t;
-                tempContainer._valueType = JSValueType.Double;
+                _tempContainer._dValue = (double)t;
+                _tempContainer._valueType = JSValueType.Double;
             }
-            return tempContainer;
+            return _tempContainer;
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
@@ -52,10 +52,10 @@ namespace NiL.JS.Expressions
             {
                 try
                 {
-                    if (first.ContextIndependent && Tools.JSObjectToInt32((first).Evaluate(null)) == 0)
+                    if (_left.ContextIndependent && Tools.JSObjectToInt32((_left).Evaluate(null)) == 0)
                         _this = new Constant(0);
-                    else if (second.ContextIndependent && Tools.JSObjectToInt32((second).Evaluate(null)) == 0)
-                        _this = new ConvertToUnsignedInteger(first);
+                    else if (_right.ContextIndependent && Tools.JSObjectToInt32((_right).Evaluate(null)) == 0)
+                        _this = new ConvertToUnsignedInteger(_left);
                 }
                 catch
                 {
@@ -72,7 +72,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " >>> " + second + ")";
+            return "(" + _left + " >>> " + _right + ")";
         }
     }
 }

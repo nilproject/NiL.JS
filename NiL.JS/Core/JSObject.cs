@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -87,7 +87,7 @@ namespace NiL.JS.Core
         [Hidden]
         protected internal JSObject()
         {
-            /// На будущее. Наверное, нужно будет сделать переходную версию, 
+            /// На будущее. Наверное, нужно будет сделать переходную версию,
             /// но я пока не знаю как это сделать получше.
             /*
             valueType = JSValueType.Object;
@@ -107,7 +107,7 @@ namespace NiL.JS.Core
             {
                 _valueType = JSValueType.Object
             };
-            
+
             t._oValue = t;
             t._attributes = (JSValueAttributesInternal)attributes;
 
@@ -120,7 +120,7 @@ namespace NiL.JS.Core
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
         {
 #if DEBUG
-            System.Diagnostics.Debug.Assert(_oValue == this || !(_oValue is JSValue), "АХТУНГ!");
+            System.Diagnostics.Debug.Assert(_oValue == this || !(_oValue is JSValue), "Look out!");
 #endif
             JSValue res = null;
             JSObject proto = null;
@@ -184,9 +184,9 @@ namespace NiL.JS.Core
             JSValue res = null;
             var symbol = key._oValue as Symbol;
 
-            var fromProto = (_symbols == null 
-                            || !_symbols.TryGetValue(symbol, out res) 
-                            || res._valueType < JSValueType.Undefined) 
+            var fromProto = (_symbols == null
+                            || !_symbols.TryGetValue(symbol, out res)
+                            || res._valueType < JSValueType.Undefined)
                                   && ((proto = __proto__)._oValue != null);
             if (fromProto)
             {
@@ -238,10 +238,10 @@ namespace NiL.JS.Core
                 }
             }
 
-            field = GetProperty(key, true, PropertyScope.Сommon);
+            field = GetProperty(key, true, PropertyScope.Common);
             if (field._valueType == JSValueType.Property)
             {
-                var setter = (field._oValue as GsPropertyPair).setter;
+                var setter = (field._oValue as PropertyPair).setter;
                 if (setter != null)
                     setter.Call(this, new Arguments { value });
                 else if (throwOnError)
@@ -365,7 +365,7 @@ namespace NiL.JS.Core
                     var desc = item.Value;
                     if (desc._valueType == JSValueType.Property)
                     {
-                        var getter = (desc._oValue as GsPropertyPair).getter;
+                        var getter = (desc._oValue as PropertyPair).getter;
                         if (getter == null || getter._oValue == null)
                             ExceptionHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
                         desc = (getter._oValue as Function).Call(members, null);
@@ -429,11 +429,11 @@ namespace NiL.JS.Core
                         Function setter = null, getter = null;
                         if (obj._valueType == JSValueType.Property)
                         {
-                            setter = (obj._oValue as GsPropertyPair).setter;
-                            getter = (obj._oValue as GsPropertyPair).getter;
+                            setter = (obj._oValue as PropertyPair).setter;
+                            getter = (obj._oValue as PropertyPair).getter;
                         }
                         obj._valueType = JSValueType.Property;
-                        obj._oValue = new GsPropertyPair
+                        obj._oValue = new PropertyPair
                         {
                             setter = set.Exists ? set._oValue as Function : setter,
                             getter = get.Exists ? get._oValue as Function : getter
@@ -471,7 +471,7 @@ namespace NiL.JS.Core
                     var desc = item.Value;
                     if (desc._valueType == JSValueType.Property)
                     {
-                        var getter = (desc._oValue as GsPropertyPair).getter;
+                        var getter = (desc._oValue as PropertyPair).getter;
                         if (getter == null || getter._oValue == null)
                             ExceptionHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
                         desc = (getter._oValue as Function).Call(members, null);
@@ -610,14 +610,14 @@ namespace NiL.JS.Core
 
                 if (obj._valueType == JSValueType.Property && (obj._attributes & JSValueAttributesInternal.Field) == 0
                     && set.Exists
-                    && (((obj._oValue as GsPropertyPair).setter != null && (obj._oValue as GsPropertyPair).setter._oValue != set._oValue)
-                        || ((obj._oValue as GsPropertyPair).setter == null && set.Defined)))
+                    && (((obj._oValue as PropertyPair).setter != null && (obj._oValue as PropertyPair).setter._oValue != set._oValue)
+                        || ((obj._oValue as PropertyPair).setter == null && set.Defined)))
                     ExceptionHelper.Throw(new TypeError("Cannot redefine setter of not configurable property."));
 
                 if (obj._valueType == JSValueType.Property && (obj._attributes & JSValueAttributesInternal.Field) == 0
                     && get.Exists
-                    && (((obj._oValue as GsPropertyPair).getter != null && (obj._oValue as GsPropertyPair).getter._oValue != get._oValue)
-                        || ((obj._oValue as GsPropertyPair).getter == null && get.Defined)))
+                    && (((obj._oValue as PropertyPair).getter != null && (obj._oValue as PropertyPair).getter._oValue != get._oValue)
+                        || ((obj._oValue as PropertyPair).getter == null && get.Defined)))
                     ExceptionHelper.Throw(new TypeError("Cannot redefine getter of not configurable property."));
             }
 
@@ -642,11 +642,11 @@ namespace NiL.JS.Core
                 Function setter = null, getter = null;
                 if (obj._valueType == JSValueType.Property)
                 {
-                    setter = (obj._oValue as GsPropertyPair).setter;
-                    getter = (obj._oValue as GsPropertyPair).getter;
+                    setter = (obj._oValue as PropertyPair).setter;
+                    getter = (obj._oValue as PropertyPair).getter;
                 }
                 obj._valueType = JSValueType.Property;
-                obj._oValue = new GsPropertyPair
+                obj._oValue = new PropertyPair
                 {
                     setter = set.Exists ? set._oValue as Function : setter,
                     getter = get.Exists ? get._oValue as Function : getter
@@ -710,12 +710,12 @@ namespace NiL.JS.Core
 
             if (field._valueType == JSValueType.Property)
             {
-                (field._oValue as GsPropertyPair).getter = args[1].Value as Function;
+                (field._oValue as PropertyPair).getter = args[1].Value as Function;
             }
             else
             {
                 field._valueType = JSValueType.Property;
-                field._oValue = new GsPropertyPair
+                field._oValue = new PropertyPair
                 {
                     getter = args[1].Value as Function
                 };
@@ -736,11 +736,11 @@ namespace NiL.JS.Core
             if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0)
                 ExceptionHelper.Throw(new TypeError("Cannot change value of readonly peoperty."));
             if (field._valueType == JSValueType.Property)
-                (field._oValue as GsPropertyPair).setter = args[1]._oValue as Function;
+                (field._oValue as PropertyPair).setter = args[1]._oValue as Function;
             else
             {
                 field._valueType = JSValueType.Property;
-                field._oValue = new GsPropertyPair
+                field._oValue = new PropertyPair
                 {
                     setter = args[1].Value as Function
                 };
@@ -749,21 +749,21 @@ namespace NiL.JS.Core
 
         [DoNotEnumerate]
         [CLSCompliant(false)]
-        public JSObject __lookupGetter(Arguments args)
+        public JSObject __lookupGetter__(Arguments args)
         {
-            var field = GetProperty(args[0], false, PropertyScope.Сommon);
+            var field = GetProperty(args[0], false, PropertyScope.Common);
             if (field._valueType == JSValueType.Property)
-                return (field._oValue as GsPropertyPair).getter;
+                return (field._oValue as PropertyPair).getter;
             return null;
         }
 
         [DoNotEnumerate]
         [CLSCompliant(false)]
-        public JSObject __lookupSetter(Arguments args)
+        public JSObject __lookupSetter__(Arguments args)
         {
-            var field = GetProperty(args[0], false, PropertyScope.Сommon);
+            var field = GetProperty(args[0], false, PropertyScope.Common);
             if (field._valueType == JSValueType.Property)
-                return (field._oValue as GsPropertyPair).getter;
+                return (field._oValue as PropertyPair).getter;
             return null;
         }
 
@@ -935,15 +935,15 @@ namespace NiL.JS.Core
             if (obj._valueType != JSValueType.Property || (obj._attributes & JSValueAttributesInternal.Field) != 0)
             {
                 if (obj._valueType == JSValueType.Property)
-                    res["value"] = (obj._oValue as GsPropertyPair).getter.Call(source, null);
+                    res["value"] = (obj._oValue as PropertyPair).getter.Call(source, null);
                 else
                     res["value"] = obj;
                 res["writable"] = obj._valueType < JSValueType.Undefined || (obj._attributes & JSValueAttributesInternal.ReadOnly) == 0;
             }
             else
             {
-                res["set"] = (obj._oValue as GsPropertyPair).setter;
-                res["get"] = (obj._oValue as GsPropertyPair).getter;
+                res["set"] = (obj._oValue as PropertyPair).setter;
+                res["get"] = (obj._oValue as PropertyPair).getter;
             }
             res["configurable"] = (obj._attributes & JSValueAttributesInternal.NonConfigurable) == 0 || (obj._attributes & JSValueAttributesInternal.DoNotDelete) == 0;
             res["enumerable"] = (obj._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0;

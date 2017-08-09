@@ -4,9 +4,25 @@
   "version": "2.4.1070",
   "authors": [ "NiLProject" ],
   "packOptions": {
-    "owners": [ "NiLProject" ],
-    "tags": [ "js", "javascript", "java", "script", "ecma", "ecmascript", "es2015", "v8", "niljs", "nil", "nilproject" ],
-    "repository": { "url": "https://github.com/nilproject/NiL.JS" },
+    "owners": [
+      "NiLProject"
+    ],
+    "tags": [
+      "js",
+      "javascript",
+      "java",
+      "script",
+      "ecma",
+      "ecmascript",
+      "es2015",
+      "v8",
+      "niljs",
+      "nil",
+      "nilproject"
+    ],
+    "repository": {
+      "url": "https://github.com/nilproject/NiL.JS"
+    },
     "iconUrl": "https://github.com/nilproject/NiL.JS/blob/develop/nil.js%20logo%20small.png",
     "licenseUrl": "https://github.com/nilproject/NiL.JS/blob/develop/License"
   },
@@ -23,16 +39,19 @@
     }
   },
   "buildOptions": {
-    "define": [ "NETCORE" ],
+    "define": [
+      "NETCORE"
+    ],
     "outputName": "NiL.JS",
-
     "publicSign": true,
-    "keyFile": "../NiL.JS.Key.snk",
-
-    "optimize": true,
-    "warningsAsErrors": true
+    "keyFile": "../keys.snk",
+    "optimize": false,
+    "warningsAsErrors": true,
+    "debugType": "portable"
   },
   "scripts": {
-    "precompile": [ "makeSymLinks.bat" ]
+    "precompile": [
+      "makeSymLinks.bat"
+    ]
   }
 }

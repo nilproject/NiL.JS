@@ -38,6 +38,7 @@ namespace NiL.JS.Core
 
         private _LengthContainer _lengthContainer;
         internal int length;
+        internal bool suppressClone;
 
         public int Length
         {
@@ -115,6 +116,8 @@ namespace NiL.JS.Core
 
                 _objectPrototype = callerContext.GlobalContext._GlobalPrototype;
             }
+
+            suppressClone = true;
         }
 
         public Arguments()
@@ -133,42 +136,45 @@ namespace NiL.JS.Core
 
         public void Add(object value)
         {
-            this[length++] = JSValue.Marshal(value);
+            this[length++] = Marshal(value);
         }
 
-        protected internal override JSValue GetProperty(JSValue key, bool createMember, PropertyScope memberScope)
+        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
+            if (forWrite)
+                cloneValues();
+
             if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
-                createMember &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
+                forWrite &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
                 if (key._valueType == JSValueType.Integer)
                 {
                     switch (key._iValue)
                     {
                         case 0:
-                            return (a0 ?? (!createMember ? notExists : (a0 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                            return (a0 ?? (!forWrite ? notExists : (a0 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                         case 1:
-                            return (a1 ?? (!createMember ? notExists : (a1 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                            return (a1 ?? (!forWrite ? notExists : (a1 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                         case 2:
-                            return (a2 ?? (!createMember ? notExists : (a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                            return (a2 ?? (!forWrite ? notExists : (a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                         case 3:
-                            return (a3 ?? (!createMember ? notExists : (a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                            return (a3 ?? (!forWrite ? notExists : (a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                         case 4:
-                            return (a4 ?? (!createMember ? notExists : (a4 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                            return (a4 ?? (!forWrite ? notExists : (a4 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                     }
                 }
                 switch (key.ToString())
                 {
                     case "0":
-                        return (a0 ?? (!createMember ? notExists : (a0 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                        return (a0 ?? (!forWrite ? notExists : (a0 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                     case "1":
-                        return (a1 ?? (!createMember ? notExists : (a1 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                        return (a1 ?? (!forWrite ? notExists : (a1 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                     case "2":
-                        return (a2 ?? (!createMember ? notExists : (a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                        return (a2 ?? (!forWrite ? notExists : (a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                     case "3":
-                        return (a3 ?? (!createMember ? notExists : (a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                        return (a3 ?? (!forWrite ? notExists : (a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                     case "4":
-                        return (a4 ?? (!createMember ? notExists : (a4 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
+                        return (a4 ?? (!forWrite ? notExists : (a4 = new JSValue() { _valueType = JSValueType.NotExistsInObject })));
                     case "length":
                         {
                             if (_lengthContainer == null)
@@ -185,7 +191,7 @@ namespace NiL.JS.Core
                             if (callee == null)
                                 callee = NotExistsInObject;
 
-                            if (createMember && (callee._attributes & JSValueAttributesInternal.SystemObject) != 0)
+                            if (forWrite && (callee._attributes & JSValueAttributesInternal.SystemObject) != 0)
                             {
                                 callee = callee.CloneImpl(false);
                                 callee._attributes = JSValueAttributesInternal.DoNotEnumerate;
@@ -197,7 +203,7 @@ namespace NiL.JS.Core
                             if (caller == null)
                                 caller = NotExistsInObject;
 
-                            if (createMember && (caller._attributes & JSValueAttributesInternal.SystemObject) != 0)
+                            if (forWrite && (caller._attributes & JSValueAttributesInternal.SystemObject) != 0)
                             {
                                 caller = caller.CloneImpl(false);
                                 callee._attributes = JSValueAttributesInternal.DoNotEnumerate;
@@ -207,30 +213,62 @@ namespace NiL.JS.Core
                 }
             }
 
-            return base.GetProperty(key, createMember, memberScope);
+            return base.GetProperty(key, forWrite, memberScope);
         }
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
+            cloneValues();
+
             if (a0 != null && a0.Exists && (!hideNonEnum || (a0._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("0", a0);
+
             if (a1 != null && a1.Exists && (!hideNonEnum || (a1._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("1", a1);
+
             if (a2 != null && a2.Exists && (!hideNonEnum || (a2._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("2", a2);
+
             if (a3 != null && a3.Exists && (!hideNonEnum || (a3._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("3", a3);
+
             if (a4 != null && a4.Exists && (!hideNonEnum || (a4._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("4", a4);
+
             if (callee != null && callee.Exists && (!hideNonEnum || (callee._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("callee", callee);
-            if (caller != null && callee.Exists && (!hideNonEnum || (caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+
+            if (caller != null && caller.Exists && (!hideNonEnum || (caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("caller", caller);
+
             if (_lengthContainer != null && _lengthContainer.Exists && (!hideNonEnum || (_lengthContainer._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                 yield return new KeyValuePair<string, JSValue>("length", _lengthContainer);
+
             var be = base.GetEnumerator(hideNonEnum, enumeratorMode);
             while (be.MoveNext())
                 yield return be.Current;
+        }
+
+        private void cloneValues()
+        {
+            if (suppressClone)
+                return;
+            suppressClone = true;
+
+            var mask = JSValueAttributesInternal.ReadOnly
+                    | JSValueAttributesInternal.SystemObject
+                    | JSValueAttributesInternal.Temporary
+                    | JSValueAttributesInternal.Reassign
+                    | JSValueAttributesInternal.ProxyPrototype
+                    | JSValueAttributesInternal.DoNotEnumerate
+                    | JSValueAttributesInternal.NonConfigurable
+                    | JSValueAttributesInternal.DoNotDelete;
+
+            for (var i = 0; i < length; i++)
+            {
+                if (this[i].Exists)
+                    this[i] = this[i].CloneImpl(false, mask);
+            }
         }
 
         protected internal override bool DeleteProperty(JSValue name)

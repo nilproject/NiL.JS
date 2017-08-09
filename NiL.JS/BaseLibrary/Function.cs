@@ -73,7 +73,7 @@ namespace NiL.JS.BaseLibrary
         internal static readonly JSValue propertiesDummySM = new JSValue()
         {
             _valueType = JSValueType.Property,
-            _oValue = new Core.GsPropertyPair() { getter = TTEProxy, setter = TTEProxy },
+            _oValue = new Core.PropertyPair() { getter = TTEProxy, setter = TTEProxy },
             _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
         };
 
@@ -188,6 +188,7 @@ namespace NiL.JS.BaseLibrary
                         // выдавать тут константу undefined нельзя, иначе будет падать на вызове defineProperty
                         // присваивание нужно для простановки атрибутов
                         prototype = new JSObject();
+                        _prototype._attributes = JSValueAttributesInternal.None;
                     }
                     else
                     {
@@ -305,6 +306,7 @@ namespace NiL.JS.BaseLibrary
             _functionDefinition = creatorDummy;
             _valueType = JSValueType.Function;
             _oValue = this;
+            RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
         }
 
         [Hidden]
@@ -315,6 +317,7 @@ namespace NiL.JS.BaseLibrary
                 throw new ArgumentNullException(nameof(context));
 
             _initialContext = context;
+            RequireNewKeywordLevel = RequireNewKeywordLevel.Both;
         }
 
         [DoNotEnumerate]
@@ -333,7 +336,7 @@ namespace NiL.JS.BaseLibrary
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function (" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
             var func = FunctionDefinition.Parse(
-                new ParseInfo(Tools.RemoveComments(code, 0), code, null)
+                new ParseInfo(Tools.removeComments(code, 0), code, null)
                 {
                     CodeContext = CodeContext.InExpression
                 },
@@ -412,7 +415,7 @@ namespace NiL.JS.BaseLibrary
                 return NotExists;
 
             // Совсем медленно. Плохая функция попалась
-            Arguments argumentsObject = Tools.EvaluateArgs(arguments, initiator);
+            Arguments argumentsObject = Tools.CreateArguments(arguments, initiator);
 
             initiator._objectSource = null;
 
@@ -600,10 +603,26 @@ namespace NiL.JS.BaseLibrary
             var ceaw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsArguments || _functionDefinition._functionInfo.ContainsWith;
             int min = System.Math.Min(args.length, _functionDefinition.parameters.Length - (_functionDefinition._functionInfo.ContainsRestParameters ? 1 : 0));
 
+            JSValue[] defaultValues = null;
             Array restArray = null;
             if (_functionDefinition._functionInfo.ContainsRestParameters)
             {
                 restArray = new Array();
+            }
+
+            for (var i = 0; i < _functionDefinition.parameters.Length; i++)
+            {
+                JSValue t = args[i];
+                var prm = _functionDefinition.parameters[i];
+                if (!t.Defined)
+                {
+                    if (prm.initializer != null)
+                    {
+                        if (defaultValues == null)
+                            defaultValues = new JSValue[_functionDefinition.parameters.Length];
+                        defaultValues[i] = prm.initializer.Evaluate(internalContext);
+                    }
+                }
             }
 
             for (var i = 0; i < min; i++)
@@ -613,7 +632,7 @@ namespace NiL.JS.BaseLibrary
                 if (!t.Defined)
                 {
                     if (prm.initializer != null)
-                        t = prm.initializer.Evaluate(internalContext);
+                        t = defaultValues?[i] ?? undefined;
                     else
                         t = undefined;
                 }
@@ -667,47 +686,49 @@ namespace NiL.JS.BaseLibrary
 
             for (var i = min; i < _functionDefinition.parameters.Length; i++)
             {
-                var arg = _functionDefinition.parameters[i];
-                if (arg.initializer != null)
+                var parameter = _functionDefinition.parameters[i];
+                if (parameter.initializer != null)
                 {
-                    if (ceaw || arg.assignments != null)
+                    if (ceaw || parameter.assignments != null)
                     {
-                        arg.cacheRes = arg.initializer.Evaluate(internalContext).CloneImpl(false);
+                        parameter.cacheRes = (defaultValues?[i] ?? undefined).CloneImpl(false);
                     }
                     else
                     {
-                        arg.cacheRes = arg.initializer.Evaluate(internalContext);
-                        if (!arg.cacheRes.Defined)
-                            arg.cacheRes = undefined;
+                        parameter.cacheRes = defaultValues?[i] ?? undefined;
+                        if (!parameter.cacheRes.Defined)
+                            parameter.cacheRes = undefined;
                     }
                 }
                 else
                 {
-                    if (ceaw || arg.assignments != null)
+                    if (ceaw || parameter.assignments != null)
                     {
                         if (i == min && restArray != null)
-                            arg.cacheRes = restArray.CloneImpl(false);
+                            parameter.cacheRes = restArray.CloneImpl(false);
                         else
-                            arg.cacheRes = new JSValue() { _valueType = JSValueType.Undefined };
-                        arg.cacheRes._attributes = JSValueAttributesInternal.Argument;
+                            parameter.cacheRes = new JSValue() { _valueType = JSValueType.Undefined };
+                        parameter.cacheRes._attributes = JSValueAttributesInternal.Argument;
                     }
                     else
                     {
                         if (i == min && restArray != null)
-                            arg.cacheRes = restArray;
+                            parameter.cacheRes = restArray;
                         else
-                            arg.cacheRes = JSValue.undefined;
+                            parameter.cacheRes = JSValue.undefined;
                     }
                 }
-                arg.cacheContext = internalContext;
-                if (arg.captured || ceaw)
+
+                parameter.cacheContext = internalContext;
+                if (parameter.Destructor == null && (parameter.captured || ceaw))
                 {
                     if (internalContext._variables == null)
                         internalContext._variables = getFieldsContainer();
-                    internalContext._variables[arg.Name] = arg.cacheRes;
+                    internalContext._variables[parameter.Name] = parameter.cacheRes;
                 }
-                if (string.CompareOrdinal(arg.name, "arguments") == 0)
-                    internalContext._arguments = arg.cacheRes;
+
+                if (string.CompareOrdinal(parameter.name, "arguments") == 0)
+                    internalContext._arguments = parameter.cacheRes;
             }
         }
 
@@ -826,7 +847,7 @@ namespace NiL.JS.BaseLibrary
                     ExceptionHelper.Throw(new TypeError("Argument list has wrong type."));
                 var len = argsSource["length"];
                 if (len._valueType == JSValueType.Property)
-                    len = (len._oValue as Core.GsPropertyPair).getter.Call(argsSource, null);
+                    len = (len._oValue as Core.PropertyPair).getter.Call(argsSource, null);
                 nargs.length = Tools.JSObjectToInt32(len);
                 if (nargs.length >= 50000)
                     ExceptionHelper.Throw(new RangeError("Too many arguments."));

@@ -38,7 +38,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            return (JSValue)context.SuspendData[first];
+            return (JSValue)context.SuspendData[_left];
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
@@ -48,7 +48,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return first.ToString();
+            return _left.ToString();
         }
 
         public override void Decompose(ref Expression self, IList<CodeNode> result)

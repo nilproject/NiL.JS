@@ -29,35 +29,35 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var val = first.Evaluate(context);
+            var val = _left.Evaluate(context);
             if (val._valueType == JSValueType.Integer
                 || val.ValueType == JSValueType.Boolean)
             {
                 if (val._iValue == 0)
                 {
-                    tempContainer._valueType = JSValueType.Double;
-                    tempContainer._dValue = -0.0;
+                    _tempContainer._valueType = JSValueType.Double;
+                    _tempContainer._dValue = -0.0;
                 }
                 else
                 {
                     if (val._iValue == int.MinValue)
                     {
-                        tempContainer._valueType = JSValueType.Double;
-                        tempContainer._dValue = val._iValue;
+                        _tempContainer._valueType = JSValueType.Double;
+                        _tempContainer._dValue = val._iValue;
                     }
                     else
                     {
-                        tempContainer._valueType = JSValueType.Integer;
-                        tempContainer._iValue = -val._iValue;
+                        _tempContainer._valueType = JSValueType.Integer;
+                        _tempContainer._iValue = -val._iValue;
                     }
                 }
             }
             else
             {
-                tempContainer._dValue = -Tools.JSObjectToDouble(val);
-                tempContainer._valueType = JSValueType.Double;
+                _tempContainer._dValue = -Tools.JSObjectToDouble(val);
+                _tempContainer._valueType = JSValueType.Double;
             }
-            return tempContainer;
+            return _tempContainer;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -67,7 +67,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "-" + first;
+            return "-" + _left;
         }
     }
 }

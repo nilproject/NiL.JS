@@ -14,8 +14,8 @@ namespace NiL.JS.Expressions
         private JSValue cachedMemberName;
         private Expression value;
 
-        public Expression Source { get { return first; } }
-        public Expression FieldName { get { return second; } }
+        public Expression Source { get { return _left; } }
+        public Expression FieldName { get { return _right; } }
         public Expression Value { get { return value; } }
 
         protected internal override bool ContextIndependent
@@ -48,7 +48,7 @@ namespace NiL.JS.Expressions
             {
                 JSValue sjso = null;
                 JSValue source = null;
-                source = first.Evaluate(context);
+                source = _left.Evaluate(context);
                 if (source._valueType >= JSValueType.Object
                     && source._oValue != null
                     && source._oValue != source
@@ -65,12 +65,12 @@ namespace NiL.JS.Expressions
                 }
 
                 source.SetProperty(
-                    cachedMemberName ?? safeGet(tempContainer1, second, context),
-                    safeGet(tempContainer, value, context),
+                    cachedMemberName ?? safeGet(tempContainer1, _right, context),
+                    safeGet(_tempContainer, value, context),
                     context._strict);
 
                 context._objectSource = null;
-                return tempContainer;
+                return _tempContainer;
             }
         }
 
@@ -108,20 +108,20 @@ namespace NiL.JS.Expressions
 
         protected internal override CodeNode[] GetChildsImpl()
         {
-            return new CodeNode[] { first, second, value };
+            return new CodeNode[] { _left, _right, value };
         }
 
         public override string ToString()
         {
-            var res = first.ToString();
+            var res = _left.ToString();
             int i = 0;
-            var cn = second as Constant;
-            if (second is Constant
+            var cn = _right as Constant;
+            if (_right is Constant
                 && cn.value.ToString().Length > 0
                 && (Parser.ValidateName(cn.value.ToString(), ref i, true)))
                 res += "." + cn.value;
             else
-                res += "[" + second + "]";
+                res += "[" + _right + "]";
             return res + " = " + value;
         }
     }

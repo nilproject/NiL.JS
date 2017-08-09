@@ -17,10 +17,11 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                var frt = first.ResultType;
-                var srt = second.ResultType;
+                var frt = _left.ResultType;
+                var srt = _right.ResultType;
                 if (frt == PredictedType.String || srt == PredictedType.String)
                     return PredictedType.String;
+
                 if (frt == srt)
                 {
                     switch (frt)
@@ -32,6 +33,7 @@ namespace NiL.JS.Expressions
                             return PredictedType.Double;
                     }
                 }
+
                 if (frt == PredictedType.Bool)
                 {
                     if (srt == PredictedType.Double)
@@ -39,6 +41,7 @@ namespace NiL.JS.Expressions
                     if (Tools.IsEqual(srt, PredictedType.Number, PredictedType.Group))
                         return PredictedType.Number;
                 }
+
                 if (srt == PredictedType.Bool)
                 {
                     if (frt == PredictedType.Double)
@@ -46,6 +49,7 @@ namespace NiL.JS.Expressions
                     if (Tools.IsEqual(frt, PredictedType.Number, PredictedType.Group))
                         return PredictedType.Number;
                 }
+
                 return PredictedType.Unknown;
             }
         }
@@ -63,10 +67,10 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var f = first.Evaluate(context);
+            var f = _left.Evaluate(context);
 
-            var temp = tempContainer;
-            tempContainer = null;
+            var temp = _tempContainer;
+            _tempContainer = null;
             if (temp == null)
                 temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
 
@@ -74,9 +78,9 @@ namespace NiL.JS.Expressions
             temp._iValue = f._iValue;
             temp._dValue = f._dValue;
             temp._oValue = f._oValue;
-            Impl(temp, temp, second.Evaluate(context));
+            Impl(temp, temp, _right.Evaluate(context));
 
-            tempContainer = temp;
+            _tempContainer = temp;
             return temp;
         }
 
@@ -211,12 +215,17 @@ namespace NiL.JS.Expressions
                                 }
                             case JSValueType.Object:
                             case JSValueType.Function:
+                                {
+                                    tstr = new RopeString(tstr, second.ToPrimitiveValue_Value_String().BaseToString());
+                                    break;
+                                }
                             case JSValueType.Date:
                                 {
-                                    tstr = new RopeString(tstr, second.ToString());
+                                    tstr = new RopeString(tstr, second.ToPrimitiveValue_String_Value().BaseToString());
                                     break;
                                 }
                         }
+
                         resultContainer._oValue = tstr;
                         resultContainer._valueType = JSValueType.String;
                         return;
@@ -292,34 +301,47 @@ namespace NiL.JS.Expressions
             var res = base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
             if (!res && _this == this)
             {
-                if (first is StringConcatenation)
+                if (_left is StringConcatenation)
                 {
-                    _this = first;
-                    (first as StringConcatenation)._parts.Add(second);
+                    _this = _left;
+                    var temp = (_left as StringConcatenation)._parts;
+                    Array.Resize(ref temp, temp.Length + 1);
+                    temp[temp.Length - 1] = _right;
+                    (_left as StringConcatenation)._parts = temp;
                 }
-                else if (second is StringConcatenation)
+                else if (_right is StringConcatenation)
                 {
-                    _this = second;
-                    (second as StringConcatenation)._parts.Insert(0, first);
+                    _this = _right;
+                    var temp = (_right as StringConcatenation)._parts;
+                    Array.Resize(ref temp, temp.Length + 1);
+                    Array.Copy(temp, 0, temp, 1, temp.Length - 1);
+                    temp[0] = _left;
+                    (_right as StringConcatenation)._parts = temp;
                 }
                 else
                 {
-                    if (first.ContextIndependent && first.Evaluate(null)._valueType == JSValueType.String)
+                    if (_left.ContextIndependent && _left.ResultType == PredictedType.String)
                     {
-                        if (first.Evaluate(null).ToString().Length == 0)
-                            _this = new ConvertToString(second);
+                        if (_left.Evaluate(null).ToString().Length == 0)
+                            _this = new ConvertToString(_right);
                         else
-                            _this = new StringConcatenation(new List<Expression>() { first, second });
+                            _this = new StringConcatenation(new[] { _left, _right });
                     }
-                    else if (second.ContextIndependent && second.Evaluate(null)._valueType == JSValueType.String)
+                    else if (_right.ContextIndependent && _right.ResultType == PredictedType.String)
                     {
-                        if (second.Evaluate(null).ToString().Length == 0)
-                            _this = new ConvertToString(first);
+                        if (_right.Evaluate(null).ToString().Length == 0)
+                            _this = new ConvertToString(_left);
                         else
-                            _this = new StringConcatenation(new List<Expression>() { first, second });
+                            _this = new StringConcatenation(new[] { _left, _right });
+                    }
+                    else if (_left.ResultType == PredictedType.String
+                         || _right.ResultType == PredictedType.String)
+                    {
+                        _this = new StringConcatenation(new[] { _left, _right });
                     }
                 }
             }
+
             return res;
         }
 
@@ -327,28 +349,28 @@ namespace NiL.JS.Expressions
         {
             base.Optimize(ref _this, owner, message, opts, stats);
 
-            if (Tools.IsEqual(first.ResultType, PredictedType.Number, PredictedType.Group)
-                && Tools.IsEqual(second.ResultType, PredictedType.Number, PredictedType.Group))
+            if (Tools.IsEqual(_left.ResultType, PredictedType.Number, PredictedType.Group)
+                && Tools.IsEqual(_right.ResultType, PredictedType.Number, PredictedType.Group))
             {
-                _this = new NumberAddition(first, second);
+                _this = new NumberAddition(_left, _right);
                 return;
             }
         }
 #if !PORTABLE && !NET35
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
-            var ft = first.TryCompile(false, false, null, dynamicValues);
-            var st = second.TryCompile(false, false, null, dynamicValues);
+            var ft = _left.TryCompile(false, false, null, dynamicValues);
+            var st = _right.TryCompile(false, false, null, dynamicValues);
             if (ft == st) // null == null
                 return null;
             if (ft == null && st != null)
             {
-                second = new CompiledNode(second, st, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
+                _right = new CompiledNode(_right, st, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
                 return null;
             }
             if (ft != null && st == null)
             {
-                first = new CompiledNode(first, ft, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
+                _left = new CompiledNode(_left, ft, JITHelpers._items.GetValue(dynamicValues) as CodeNode[]);
                 return null;
             }
             if (ft.Type == st.Type)
@@ -363,7 +385,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " + " + second + ")";
+            return "(" + _left + " + " + _right + ")";
         }
     }
 }

@@ -30,9 +30,9 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            tempContainer._iValue = Tools.JSObjectToInt32(first.Evaluate(context)) | Tools.JSObjectToInt32(second.Evaluate(context));
-            tempContainer._valueType = JSValueType.Integer;
-            return tempContainer;
+            _tempContainer._iValue = Tools.JSObjectToInt32(_left.Evaluate(context)) | Tools.JSObjectToInt32(_right.Evaluate(context));
+            _tempContainer._valueType = JSValueType.Integer;
+            return _tempContainer;
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
@@ -40,16 +40,16 @@ namespace NiL.JS.Expressions
             var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (_this != this)
                 return res;
-            if (second.ContextIndependent
-                && Tools.JSObjectToInt32(second.Evaluate(null)) == 0)
+            if (_right.ContextIndependent
+                && Tools.JSObjectToInt32(_right.Evaluate(null)) == 0)
             {
-                _this = new ConvertToInteger(first);
+                _this = new ConvertToInteger(_left);
                 return true;
             }
-            if (first.ContextIndependent
-                 && Tools.JSObjectToInt32(first.Evaluate(null)) == 0)
+            if (_left.ContextIndependent
+                 && Tools.JSObjectToInt32(_left.Evaluate(null)) == 0)
             {
-                _this = new ConvertToInteger(second);
+                _this = new ConvertToInteger(_right);
                 return true;
             }
             return res;
@@ -62,7 +62,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " | " + second + ")";
+            return "(" + _left + " | " + _right + ")";
         }
     }
 }

@@ -42,14 +42,14 @@ namespace NiL.JS.Core
 
         public RopeString(object source)
         {
-            _firstSource = source ?? "";
+            _firstSource = source ?? "" as object;
             _secondSource = "";
         }
 
         public RopeString(object firstSource, object secondSource)
         {
-            _firstSource = firstSource ?? "";
-            _secondSource = secondSource ?? "";
+            _firstSource = firstSource ?? "" as object;
+            _secondSource = secondSource ?? "" as object;
 
             _length = calcLength();
 
@@ -91,7 +91,7 @@ namespace NiL.JS.Core
                 return _length;
             }
         }
-        
+
         public object Clone()
         {
             return new RopeString(_firstSource, _secondSource);

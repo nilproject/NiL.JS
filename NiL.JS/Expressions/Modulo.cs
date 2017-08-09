@@ -12,8 +12,8 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                var ft = first.ResultType;
-                var st = second.ResultType;
+                var ft = _left.ResultType;
+                var st = _right.ResultType;
                 if (ft == st)
                     return st;
                 return PredictedType.Number;
@@ -33,29 +33,29 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var f = first.Evaluate(context);
+            var f = _left.Evaluate(context);
             if (f._valueType == JSValueType.Integer)
             {
                 var ileft = f._iValue;
-                f = second.Evaluate(context);
+                f = _right.Evaluate(context);
                 if (ileft >= 0 && f._valueType == JSValueType.Integer && f._iValue != 0)
                 {
-                    tempContainer._valueType = JSValueType.Integer;
-                    tempContainer._iValue = ileft % f._iValue;
+                    _tempContainer._valueType = JSValueType.Integer;
+                    _tempContainer._iValue = ileft % f._iValue;
                 }
                 else
                 {
-                    tempContainer._valueType = JSValueType.Double;
-                    tempContainer._dValue = ileft % Tools.JSObjectToDouble(f);
+                    _tempContainer._valueType = JSValueType.Double;
+                    _tempContainer._dValue = ileft % Tools.JSObjectToDouble(f);
                 }
             }
             else
             {
                 double left = Tools.JSObjectToDouble(f);
-                tempContainer._dValue = left % Tools.JSObjectToDouble(second.Evaluate(context));
-                tempContainer._valueType = JSValueType.Double;
+                _tempContainer._dValue = left % Tools.JSObjectToDouble(_right.Evaluate(context));
+                _tempContainer._valueType = JSValueType.Double;
             }
-            return tempContainer;
+            return _tempContainer;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -65,7 +65,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " % " + second + ")";
+            return "(" + _left + " % " + _right + ")";
         }
     }
 }

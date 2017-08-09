@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
-using System.Collections.Generic;
 
 #if NET40
 using NiL.JS.Backward;
@@ -176,7 +176,7 @@ namespace NiL.JS.Core.Functions
             var argumentsObject = Expression.Condition(
                 Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
                 argumentsObjectPrm,
-                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.EvaluateArgs).GetMethodInfo(), arguments, context)));
+                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(), arguments, context)));
 
             if (_forceInstance)
             {
@@ -299,7 +299,7 @@ namespace NiL.JS.Core.Functions
             var argumentsObject = Expression.Condition(
                 Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
                 argumentsObjectPrm,
-                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.EvaluateArgs).GetMethodInfo(), arguments, context)));
+                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(), arguments, context)));
 
             if (_parameters.Length == 0)
             {
@@ -462,11 +462,7 @@ namespace NiL.JS.Core.Functions
                 else if (!_method.IsStatic && !_method.IsConstructor)
                 {
                     target = convertTargetObject(targetValue ?? undefined, _method.DeclaringType);
-                    if (target == null
-#if !(PORTABLE || NETCORE)
-                        || !_method.DeclaringType.IsAssignableFrom(target.GetType())
-#endif
-                        )
+                    if (target == null)
                     {
                         // Исключительная ситуация. Я не знаю почему Function.length обобщённое свойство, а не константа. Array.length работает по-другому.
                         if (_method.Name == "get_length" && typeof(Function).IsAssignableFrom(_method.DeclaringType))

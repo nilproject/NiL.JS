@@ -98,7 +98,7 @@ namespace NiL.JS.Expressions
             {
                 if (context._executionMode == ExecutionMode.None)
                 {
-                    var iterator = first.Evaluate(context).AsIterable().iterator();
+                    var iterator = _left.Evaluate(context).AsIterable().iterator();
                     var iteratorResult = iterator.next();
 
                     if (iteratorResult.done)
@@ -133,7 +133,7 @@ namespace NiL.JS.Expressions
             {
                 if (context._executionMode == ExecutionMode.None)
                 {
-                    context._executionInfo = first.Evaluate(context);
+                    context._executionInfo = _left.Evaluate(context);
                     context._executionMode = ExecutionMode.Suspend;
                     return JSValue.notExists;
                 }
@@ -161,7 +161,7 @@ namespace NiL.JS.Expressions
 
         public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
-            first.Decompose(ref first, result);
+            _left.Decompose(ref _left, result);
 
             if ((_codeContext & CodeContext.InExpression) != 0)
             {
@@ -172,7 +172,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "yield" + (_reiterate ? "* " : " ") + first;
+            return "yield" + (_reiterate ? "* " : " ") + _left;
         }
     }
 }

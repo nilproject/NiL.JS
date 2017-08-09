@@ -25,13 +25,13 @@ namespace NiL.JS.Expressions
         public TypeOf(Expression first)
             : base(first, null, false)
         {
-            if (second != null)
+            if (_right != null)
                 throw new InvalidOperationException("Second operand not allowed for typeof operator/");
         }
 
         public override JSValue Evaluate(Context context)
         {
-            var val = first.Evaluate(context);
+            var val = _left.Evaluate(context);
             switch (val._valueType)
             {
                 case JSValueType.Integer:
@@ -71,8 +71,8 @@ namespace NiL.JS.Expressions
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
-            if (first is GetVariable)
-                (first as GetVariable)._SuspendThrow = true;
+            if (_left is Variable)
+                (_left as Variable)._SuspendThrow = true;
             return false;
         }
 
@@ -83,7 +83,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "typeof " + first;
+            return "typeof " + _left;
         }
     }
 }

@@ -35,15 +35,15 @@ namespace NiL.JS.Expressions
 
         internal override bool ResultInTempContainer
         {
-            get { return tempContainer != null; }
+            get { return _tempContainer != null; }
         }
 
         protected internal override PredictedType ResultType
         {
             get
             {
-                var pd = first.ResultType;
-                if (tempContainer == null)
+                var pd = _left.ResultType;
+                if (_tempContainer == null)
                 {
                     switch (pd)
                     {
@@ -83,19 +83,17 @@ namespace NiL.JS.Expressions
             bool post = _type == DecrimentType.Postdecriment;
             Function setter = null;
             JSValue res = null;
-            var val = first.EvaluateForWrite(context);
-            Arguments args = null;
+            var val = _left.EvaluateForWrite(context);
             if (val._valueType == JSValueType.Property)
             {
-                var ppair = val._oValue as Core.GsPropertyPair;
+                var ppair = val._oValue as Core.PropertyPair;
                 setter = ppair.setter;
                 if (context._strict && setter == null)
                     raiseErrorProp();
-                args = new Arguments();
                 if (ppair.getter == null)
                     val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
                 else
-                    val = ppair.getter.Call(context._objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
+                    val = ppair.getter.Call(context._objectSource, null).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
             }
             else if ((val._attributes & JSValueAttributesInternal.ReadOnly) != 0)
             {
@@ -103,6 +101,7 @@ namespace NiL.JS.Expressions
                     raiseErrorValue();
                 val = val.CloneImpl(false);
             }
+
             switch (val._valueType)
             {
                 case JSValueType.Boolean:
@@ -145,17 +144,21 @@ namespace NiL.JS.Expressions
                     }
                 case JSValueType.NotExists:
                     {
-                        ExceptionHelper.ThrowIfNotExists(val, first);
+                        ExceptionHelper.ThrowIfNotExists(val, _left);
                         break;
                     }
             }
+
             if (post && val.Defined)
             {
-                res = tempContainer;
+                res = _tempContainer;
                 res.Assign(val);
             }
             else
+            {
                 res = val;
+            }
+
             switch (val._valueType)
             {
                 case JSValueType.Integer:
@@ -182,35 +185,39 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
+
             if (setter != null)
             {
+                var args = new Arguments(context);
                 args.length = 1;
                 args[0] = val;
                 setter.Call(context._objectSource, args);
             }
             else if ((val._attributes & JSValueAttributesInternal.Reassign) != 0)
+            {
                 val.Assign(val);
+            }
             return res;
         }
 
         private void raiseErrorValue()
         {
-            ExceptionHelper.Throw(new TypeError("Can not decrement readonly \"" + (first) + "\""));
+            ExceptionHelper.Throw(new TypeError("Can not decrement readonly \"" + (_left) + "\""));
         }
 
         private void raiseErrorProp()
         {
-            ExceptionHelper.Throw(new TypeError("Can not decrement property \"" + (first) + "\" without setter."));
+            ExceptionHelper.Throw(new TypeError("Can not decrement property \"" + (_left) + "\" without setter."));
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
 
-            Parser.Build(ref first, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _left, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
             if (expressionDepth <= 1 && _type == DecrimentType.Postdecriment)
                 _type = DecrimentType.Predecriment;
-            var f = first as VariableReference ?? ((first is AssignmentOperatorCache) ? (first as AssignmentOperatorCache).Source as VariableReference : null);
+            var f = _left as VariableReference ?? ((_left is AssignmentOperatorCache) ? (_left as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
                 (f.Descriptor.assignments ??
@@ -221,7 +228,7 @@ namespace NiL.JS.Expressions
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            var vr = first as VariableReference;
+            var vr = _left as VariableReference;
             if (vr != null && vr._descriptor.IsDefined)
             {
                 var pd = vr._descriptor.lastPredictedType;
@@ -254,7 +261,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return _type == DecrimentType.Predecriment ? "--" + first : first + "--";
+            return _type == DecrimentType.Predecriment ? "--" + _left : _left + "--";
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Statements;
@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
             string value = state.Code.Substring(position, i - position);
             position = i;
 
-            state.Code = Tools.RemoveComments(state.SourceCode, i);
+            state.Code = Tools.removeComments(state.SourceCode, i);
             var s = value.LastIndexOf('/') + 1;
             string flags = value.Substring(s);
             try

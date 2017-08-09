@@ -22,7 +22,7 @@ namespace NiL.JS.Core
 #endif
     public enum PropertyScope
     {
-        Сommon = 0,
+        Common = 0,
         Own = 1,
         Super = 2,
         PrototypeOfSuperclass = 3
@@ -128,17 +128,17 @@ namespace NiL.JS.Core
 #endif
     {
         /*
-         * Класс выполняет две роли: представляет значения JS и является контейнером значений в свойствах объектов 
+         * Класс выполняет две роли: представляет значения JS и является контейнером значений в свойствах объектов
          * и переменных в контектсе выполнения.
-         * Преймущества от такого подхода существенные: нет необходимости создавать эти самые контейнеры свойств 
-         * со своими аттрибутами, нет нужды создавать ворох классов для реализации оператора присваивания, 
-         * чтобы поддерживать весь тот букет возможных случаев lvalue. Один JSValue умеет копировать значение 
-         * с другого JSValue'а и, если потребуется, переходить в режим посредника, перенапрвляя вызовы GetMember, 
-         * SetMember и DeleteMember. Однако есть и недостатки - необходимо указывать, с какой целью запрашивается 
-         * значение. В случаях, когда значение запрашивается для записи, необходимо убедиться, что эта операция 
+         * Преймущества от такого подхода существенные: нет необходимости создавать эти самые контейнеры свойств
+         * со своими аттрибутами, нет нужды создавать ворох классов для реализации оператора присваивания,
+         * чтобы поддерживать весь тот букет возможных случаев lvalue. Один JSValue умеет копировать значение
+         * с другого JSValue'а и, если потребуется, переходить в режим посредника, перенапрвляя вызовы GetMember,
+         * SetMember и DeleteMember. Однако есть и недостатки - необходимо указывать, с какой целью запрашивается
+         * значение. В случаях, когда значение запрашивается для записи, необходимо убедиться, что эта операция
          * не перепишет системные значения. К примеру, в свойстве объекта может находиться значение null. Для оптимизации,
-         * это может быть системная константа JSValue.Null, поэтому по запросу значения для записи нужно вернуть 
-         * новый объект, которым следует заменить значение свойства в объекте. 
+         * это может быть системная константа JSValue.Null, поэтому по запросу значения для записи нужно вернуть
+         * новый объект, которым следует заменить значение свойства в объекте.
          */
 
         internal static readonly JSValue numberString = "number";
@@ -424,7 +424,7 @@ namespace NiL.JS.Core
         [Hidden]
         public JSValue GetProperty(string name)
         {
-            return GetProperty((JSValue)name, false, PropertyScope.Сommon);
+            return GetProperty((JSValue)name, false, PropertyScope.Common);
         }
 
         [Hidden]
@@ -486,7 +486,7 @@ namespace NiL.JS.Core
 #endif
             }
 
-            property._oValue = new GsPropertyPair(jsGetter, jsSetter);
+            property._oValue = new PropertyPair(jsGetter, jsSetter);
         }
 
         [Hidden]
@@ -511,7 +511,7 @@ namespace NiL.JS.Core
                         if (propertyScope == PropertyScope.Own)
                             return notExists;
                         forWrite = false;
-                        return Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Сommon);
+                        return Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Common);
                     }
                 case JSValueType.Integer:
                 case JSValueType.Double:
@@ -519,7 +519,7 @@ namespace NiL.JS.Core
                         if (propertyScope == PropertyScope.Own)
                             return notExists;
                         forWrite = false;
-                        return Context.CurrentBaseContext.GetPrototype(typeof(Number)).GetProperty(key, false, PropertyScope.Сommon);
+                        return Context.CurrentBaseContext.GetPrototype(typeof(Number)).GetProperty(key, false, PropertyScope.Common);
                     }
                 case JSValueType.String:
                     {
@@ -552,7 +552,11 @@ namespace NiL.JS.Core
         {
             if ((name._valueType == JSValueType.String || name._valueType >= JSValueType.Object)
                 && string.CompareOrdinal(name._oValue.ToString(), "length") == 0)
+            {
+                if (_oValue is RopeString)
+                    return (_oValue as RopeString).Length;
                 return _oValue.ToString().Length;
+            }
 
             double dindex = 0.0;
             int index = 0;
@@ -568,12 +572,12 @@ namespace NiL.JS.Core
 
             return Context.CurrentBaseContext
                 .GetPrototype(typeof(BaseLibrary.String))
-                .GetProperty(name, false, PropertyScope.Сommon);
+                .GetProperty(name, false, PropertyScope.Common);
         }
 
         internal protected void SetProperty(JSValue name, JSValue value, bool throwOnError)
         {
-            SetProperty(name, value, PropertyScope.Сommon, throwOnError);
+            SetProperty(name, value, PropertyScope.Common, throwOnError);
         }
 
         internal protected virtual void SetProperty(JSValue name, JSValue value, PropertyScope propertyScope, bool throwOnError)
@@ -732,26 +736,26 @@ namespace NiL.JS.Core
 
         internal JSValue CloneImpl(bool force)
         {
-            if (!force && (_attributes & JSValueAttributesInternal.Cloned) != 0)
-            {
-                _attributes &= ~JSValueAttributesInternal.Cloned;
-                return this;
-            }
-
-            var res = new JSValue();
-            res.Assign(this);
-            res._valueType = _valueType;
-            res._attributes = this._attributes &
-                ~(JSValueAttributesInternal.ReadOnly
+            return CloneImpl(force, JSValueAttributesInternal.ReadOnly
                 | JSValueAttributesInternal.SystemObject
                 | JSValueAttributesInternal.Temporary
                 | JSValueAttributesInternal.Reassign
                 | JSValueAttributesInternal.ProxyPrototype);
-            return res;
         }
 
         internal virtual JSValue CloneImpl(JSValueAttributesInternal resetMask)
         {
+            return CloneImpl(true, resetMask);
+        }
+
+        internal virtual JSValue CloneImpl(bool force, JSValueAttributesInternal resetMask)
+        {
+            if (!force && (_attributes & JSValueAttributesInternal.Cloned) != 0)
+            {
+                _attributes &= ~(JSValueAttributesInternal.Cloned | resetMask);
+                return this;
+            }
+
             var res = new JSValue();
             res.Assign(this);
             res._attributes = this._attributes & ~resetMask;
@@ -761,6 +765,11 @@ namespace NiL.JS.Core
         [Hidden]
         public override string ToString()
         {
+            return BaseToString();
+        }
+
+        protected internal string BaseToString()
+        {
             if (_valueType == JSValueType.String)
                 return _oValue.ToString();
             if (_valueType <= JSValueType.Undefined)
@@ -769,9 +778,9 @@ namespace NiL.JS.Core
             if (_valueType == JSValueType.Property)
             {
                 var tempStr = "[";
-                if ((_oValue as GsPropertyPair).getter != null)
+                if ((_oValue as PropertyPair).getter != null)
                     tempStr += "Getter";
-                if ((_oValue as GsPropertyPair).setter != null)
+                if ((_oValue as PropertyPair).setter != null)
                     tempStr += (tempStr.Length != 1 ? "/Setter" : "Setter");
                 if (tempStr.Length == 1)
                     return "[Invalid Property]";
@@ -831,31 +840,36 @@ namespace NiL.JS.Core
             {
                 if (_oValue == null)
                     return nullString;
+
                 var tpvs = GetProperty(func0);
                 JSValue res = null;
                 if (tpvs._valueType == JSValueType.Function)
                 {
-                    res = (tpvs._oValue as NiL.JS.BaseLibrary.Function).Call(this, null);
+                    res = (tpvs._oValue as Function).Call(this, null);
                     if (res._valueType == JSValueType.Object)
                     {
-                        if (res._oValue is NiL.JS.BaseLibrary.String)
-                            res = res._oValue as NiL.JS.BaseLibrary.String;
+                        if (res._oValue is BaseLibrary.String)
+                            res = res._oValue as BaseLibrary.String;
                     }
+
                     if (res._valueType < JSValueType.Object)
                         return res;
                 }
+
                 tpvs = GetProperty(func1);
                 if (tpvs._valueType == JSValueType.Function)
                 {
-                    res = (tpvs._oValue as NiL.JS.BaseLibrary.Function).Call(this, null);
+                    res = (tpvs._oValue as Function).Call(this, null);
                     if (res._valueType == JSValueType.Object)
                     {
-                        if (res._oValue is NiL.JS.BaseLibrary.String)
-                            res = res._oValue as NiL.JS.BaseLibrary.String;
+                        if (res._oValue is BaseLibrary.String)
+                            res = res._oValue as BaseLibrary.String;
                     }
+
                     if (res._valueType < JSValueType.Object)
                         return res;
                 }
+
                 ExceptionHelper.Throw(new TypeError("Can't convert object to primitive value."));
             }
             return this;
@@ -976,7 +990,7 @@ namespace NiL.JS.Core
                         if (self._oValue is GlobalObject)
                             return self._oValue.ToString();
 
-                        var tag = self.GetProperty(Symbol.toStringTag, false, PropertyScope.Сommon);
+                        var tag = self.GetProperty(Symbol.toStringTag, false, PropertyScope.Common);
                         if (tag.Defined)
                         {
                             return $"[object {Tools.InvokeGetter(tag, self)}]";

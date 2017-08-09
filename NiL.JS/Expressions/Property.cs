@@ -12,8 +12,8 @@ namespace NiL.JS.Expressions
         private JSValue cachedMemberName;
         private PropertyScope memberScope;
 
-        public CodeNode Source { get { return first; } }
-        public CodeNode FieldName { get { return second; } }
+        public CodeNode Source { get { return _left; } }
+        public CodeNode FieldName { get { return _right; } }
 
         protected internal override bool ContextIndependent
         {
@@ -37,12 +37,12 @@ namespace NiL.JS.Expressions
         {
             JSValue res = null;
             JSValue source = null;
-            source = first.Evaluate(context);
+            source = _left.Evaluate(context);
             if (source._valueType < JSValueType.Object)
                 source = source.Clone() as JSValue;
             else
                 source = source._oValue as JSValue ?? source;
-            res = source.GetProperty(cachedMemberName ?? second.Evaluate(context), true, memberScope);
+            res = source.GetProperty(cachedMemberName ?? _right.Evaluate(context), true, memberScope);
             context._objectSource = source;
             if (res._valueType == JSValueType.NotExists)
                 res._valueType = JSValueType.NotExistsInObject;
@@ -54,7 +54,7 @@ namespace NiL.JS.Expressions
             JSValue res = null;
             JSValue source = null;
 
-            source = first.Evaluate(context);
+            source = _left.Evaluate(context);
             if (source._valueType < JSValueType.Object)
             {
                 source = source.CloneImpl(false);
@@ -68,7 +68,7 @@ namespace NiL.JS.Expressions
                 }
             }
 
-            res = source.GetProperty(cachedMemberName ?? second.Evaluate(context), false, memberScope);
+            res = source.GetProperty(cachedMemberName ?? _right.Evaluate(context), false, memberScope);
             context._objectSource = source;
 
             if (res == null)
@@ -91,14 +91,14 @@ namespace NiL.JS.Expressions
             if (stats != null)
                 stats.UseGetMember = true;
             base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
-            if (second is Constant)
+            if (_right is Constant)
             {
-                cachedMemberName = second.Evaluate(null);
+                cachedMemberName = _right.Evaluate(null);
                 if (stats != null && cachedMemberName.ToString() == "arguments")
                     stats.ContainsArguments = true;
             }
 
-            if (first is Super)
+            if (_left is Super)
                 memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.PrototypeOfSuperclass;
 
             return false;
@@ -111,14 +111,14 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            var res = first.ToString();
+            var res = _left.ToString();
             int i = 0;
-            if (second is Constant
-                && (second as Constant).value.ToString().Length > 0
-                && (Parser.ValidateName((second as Constant).value.ToString(), ref i, false, true, true)))
-                res += "." + (second as Constant).value;
+            if (_right is Constant
+                && (_right as Constant).value.ToString().Length > 0
+                && (Parser.ValidateName((_right as Constant).value.ToString(), ref i, false, true, true)))
+                res += "." + (_right as Constant).value;
             else
-                res += "[" + second + "]";
+                res += "[" + _right + "]";
             return res;
         }
     }

@@ -12,6 +12,7 @@
  *
  * @path ch15/15.9/15.9.3/S15.9.3.1_A5_T5.js
  * @description 6 arguments, (year, month, date, hours, minutes, seconds)
+ * @ignore depend on timezone
  */
 
 $INCLUDE("environment.js");

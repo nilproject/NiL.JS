@@ -29,18 +29,18 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            var t = (uint)Tools.JSObjectToInt32(first.Evaluate(context));
+            var t = (uint)Tools.JSObjectToInt32(_left.Evaluate(context));
             if (t <= int.MaxValue)
             {
-                tempContainer._iValue = (int)t;
-                tempContainer._valueType = JSValueType.Integer;
+                _tempContainer._iValue = (int)t;
+                _tempContainer._valueType = JSValueType.Integer;
             }
             else
             {
-                tempContainer._dValue = (double)t;
-                tempContainer._valueType = JSValueType.Double;
+                _tempContainer._dValue = (double)t;
+                _tempContainer._valueType = JSValueType.Double;
             }
-            return tempContainer;
+            return _tempContainer;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -50,7 +50,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "(" + first + " | 0)";
+            return "(" + _left + " | 0)";
         }
     }
 }

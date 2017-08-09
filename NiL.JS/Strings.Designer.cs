@@ -11,9 +11,8 @@
 namespace NiL.JS {
     using System;
     using System.Reflection;
-
 #if NET40
-    using Backward;
+    using NiL.JS.Backward;
 #endif
 
     /// <summary>
@@ -61,6 +60,15 @@ namespace NiL.JS {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Can not assign to readonly property &quot;{0}&quot;.
+        /// </summary>
+        internal static string CannotAssignReadOnly {
+            get {
+                return ResourceManager.GetString("CannotAssignReadOnly", resourceCulture);
             }
         }
         

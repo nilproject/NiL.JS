@@ -89,8 +89,8 @@ namespace NiL.JS.Statements
                     init = ExpressionTree.Parse(state, ref i, forForLoop: true);
                 if ((init is ExpressionTree)
                     && (init as ExpressionTree).Type == OperationType.None
-                    && (init as ExpressionTree).second == null)
-                    init = (init as ExpressionTree).first;
+                    && (init as ExpressionTree)._right == null)
+                    init = (init as ExpressionTree)._left;
                 if (state.Code[i] != ';')
                     ExceptionHelper.Throw((new SyntaxError("Expected \";\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
                 do
@@ -274,8 +274,8 @@ namespace NiL.JS.Statements
 
             if ((opts & Options.SuppressUselessStatementsElimination) == 0)
             {
-                if (initAsVds != null && initAsVds.initializers.Length == 1 && initAsVds.Kind == VariableKind.FunctionScope)
-                    _initializer = initAsVds.initializers[0];
+                if (initAsVds != null && initAsVds._initializers.Length == 1 && initAsVds.Kind == VariableKind.FunctionScope)
+                    _initializer = initAsVds._initializers[0];
             }
 
             Parser.Build(ref _condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
@@ -289,27 +289,27 @@ namespace NiL.JS.Statements
 
             Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
 
-            if (initAsVds != null && initAsVds.Kind != VariableKind.FunctionScope && initAsVds.variables.Any(x => x.captured))
+            if (initAsVds != null && initAsVds.Kind != VariableKind.FunctionScope && initAsVds._variables.Any(x => x.captured))
             {
                 var bodyAsCodeBlock = _body as CodeBlock;
                 if (bodyAsCodeBlock != null)
                 {
                     var newLines = new CodeNode[bodyAsCodeBlock._lines.Length + 1];
                     System.Array.Copy(bodyAsCodeBlock._lines, newLines, bodyAsCodeBlock._lines.Length);
-                    newLines[newLines.Length - 1] = new PerIterationScopeInitializer(initAsVds.variables);
+                    newLines[newLines.Length - 1] = new PerIterationScopeInitializer(initAsVds._variables);
                     bodyAsCodeBlock._lines = newLines;
                 }
                 else
                 {
-                    _body = bodyAsCodeBlock = new CodeBlock(new[] { _body, new PerIterationScopeInitializer(initAsVds.variables) });
+                    _body = bodyAsCodeBlock = new CodeBlock(new[] { _body, new PerIterationScopeInitializer(initAsVds._variables) });
                 }
 
                 bodyAsCodeBlock._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
 
-                for (var i = 0; i < initAsVds.variables.Length; i++)
+                for (var i = 0; i < initAsVds._variables.Length; i++)
                 {
-                    if (initAsVds.variables[i].captured)
-                        initAsVds.variables[i].definitionScopeLevel = -1;
+                    if (initAsVds._variables[i].captured)
+                        initAsVds._variables[i].definitionScopeLevel = -1;
                 }
             }
 
@@ -330,36 +330,36 @@ namespace NiL.JS.Statements
                 Constant limit = null;
                 if (_condition is Less)
                 {
-                    variable = (_condition as Less).FirstOperand as VariableReference;
-                    limit = (_condition as Less).SecondOperand as Constant;
+                    variable = (_condition as Less).LeftOperand as VariableReference;
+                    limit = (_condition as Less).RightOperand as Constant;
                 }
                 else if (_condition is More)
                 {
-                    variable = (_condition as More).SecondOperand as VariableReference;
-                    limit = (_condition as More).FirstOperand as Constant;
+                    variable = (_condition as More).RightOperand as VariableReference;
+                    limit = (_condition as More).LeftOperand as Constant;
                 }
                 else if (_condition is NotEqual)
                 {
-                    variable = (_condition as Less).SecondOperand as VariableReference;
-                    limit = (_condition as Less).FirstOperand as Constant;
+                    variable = (_condition as Less).RightOperand as VariableReference;
+                    limit = (_condition as Less).LeftOperand as Constant;
                     if (variable == null && limit == null)
                     {
-                        variable = (_condition as Less).FirstOperand as VariableReference;
-                        limit = (_condition as Less).SecondOperand as Constant;
+                        variable = (_condition as Less).LeftOperand as VariableReference;
+                        limit = (_condition as Less).RightOperand as Constant;
                     }
                 }
                 if (variable != null
                     && limit != null
                     && _post is Increment
-                    && ((_post as Increment).FirstOperand as VariableReference)._descriptor == variable._descriptor)
+                    && ((_post as Increment).LeftOperand as VariableReference)._descriptor == variable._descriptor)
                 {
                     if (variable.ScopeLevel >= 0 && variable._descriptor.definitionScopeLevel >= 0)
                     {
                         if (_initializer is Assignment
-                            && (_initializer as Assignment).FirstOperand is GetVariable
-                            && ((_initializer as Assignment).FirstOperand as GetVariable)._descriptor == variable._descriptor)
+                            && (_initializer as Assignment).LeftOperand is Variable
+                            && ((_initializer as Assignment).LeftOperand as Variable)._descriptor == variable._descriptor)
                         {
-                            var value = (_initializer as Assignment).SecondOperand;
+                            var value = (_initializer as Assignment).RightOperand;
                             if (value is Constant)
                             {
                                 var vvalue = value.Evaluate(null);

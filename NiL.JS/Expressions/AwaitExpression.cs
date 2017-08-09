@@ -41,7 +41,7 @@ namespace NiL.JS.Expressions
                 }
             }
 
-            var result = first.Evaluate(context);
+            var result = _left.Evaluate(context);
 
             if (context._executionMode != ExecutionMode.None)
             {
@@ -87,7 +87,7 @@ namespace NiL.JS.Expressions
 
         public override void Decompose(ref Expression self, IList<CodeNode> result)
         {
-            first.Decompose(ref first, result);
+            _left.Decompose(ref _left, result);
 
             if ((_codeContext & CodeContext.InExpression) != 0)
             {
@@ -98,7 +98,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return "await " + first;
+            return "await " + _left;
         }
     }
 }

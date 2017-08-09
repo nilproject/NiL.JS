@@ -78,20 +78,20 @@ namespace NiL.JS.Core
         }
 
         public CompiledNode(CodeNode original, Expression tree, CodeNode[] dynamicValues)
-            : base(original is Expressions.Expression ? (original as Expressions.Expression).first : null, original is Expressions.Expression ? (original as Expressions.Expression).second : null, (original is Expressions.Expression) && (original as Expressions.Expression).tempContainer == null)
+            : base(original is Expressions.Expression ? (original as Expressions.Expression)._left : null, original is Expressions.Expression ? (original as Expressions.Expression)._right : null, (original is Expressions.Expression) && (original as Expressions.Expression)._tempContainer == null)
         {
-            if (tempContainer == null)
-                tempContainer = (original as Expressions.Expression).tempContainer;
+            if (_tempContainer == null)
+                _tempContainer = (original as Expressions.Expression)._tempContainer;
             this.original = original;
             this.tree = tree;
             this.dynamicValues = dynamicValues;
         }
 
         public CompiledNode(Expressions.Expression original, Expression tree, CodeNode[] dynamicValues)
-            : base(original.first, original.second, original.tempContainer == null)
+            : base(original._left, original._right, original._tempContainer == null)
         {
-            if (tempContainer == null)
-                tempContainer = original.tempContainer;
+            if (_tempContainer == null)
+                _tempContainer = original._tempContainer;
             this.original = original;
             this.tree = tree;
             this.dynamicValues = dynamicValues;
@@ -141,7 +141,7 @@ namespace NiL.JS.Core
 
                 compiledTree = Expression.Lambda<Func<Context, CodeNode[], JSValue, JSValue>>(tree, lambdaArgs).Compile();
             }
-            var result = compiledTree(context, dynamicValues, tempContainer);
+            var result = compiledTree(context, dynamicValues, _tempContainer);
             return result;
         }
 
