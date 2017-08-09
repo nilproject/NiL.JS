@@ -215,9 +215,13 @@ namespace NiL.JS.Expressions
                                 }
                             case JSValueType.Object:
                             case JSValueType.Function:
-                            case JSValueType.Date:
                                 {
                                     tstr = new RopeString(tstr, second.ToPrimitiveValue_Value_String().BaseToString());
+                                    break;
+                                }
+                            case JSValueType.Date:
+                                {
+                                    tstr = new RopeString(tstr, second.ToPrimitiveValue_String_Value().BaseToString());
                                     break;
                                 }
                         }
