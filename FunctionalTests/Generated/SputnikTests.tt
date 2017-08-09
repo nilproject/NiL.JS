@@ -49,8 +49,9 @@ namespace NiL.JS.Test.Generated
 			var desc = code.Substring(descStart, code.IndexOf("*/") - descStart);
 			if (desc.Contains("* @ignore")) 
 			{#>
-		[Ignore]
-			<#}
+
+		[Ignore]<#
+			}
 #>	
 		[TestMethod]
 #line 1 "<#= file.Replace('\\','/') #>"
