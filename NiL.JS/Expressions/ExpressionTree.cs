@@ -117,6 +117,9 @@ namespace NiL.JS.Expressions
                     }
                 case OperationType.None:
                     {
+                        if (_right == null)
+                            return _left;
+
                         return new Comma(_left, _right);
                     }
                 case OperationType.Assignment:

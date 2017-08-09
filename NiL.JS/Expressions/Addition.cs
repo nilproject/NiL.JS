@@ -21,6 +21,7 @@ namespace NiL.JS.Expressions
                 var srt = _right.ResultType;
                 if (frt == PredictedType.String || srt == PredictedType.String)
                     return PredictedType.String;
+
                 if (frt == srt)
                 {
                     switch (frt)
@@ -32,6 +33,7 @@ namespace NiL.JS.Expressions
                             return PredictedType.Double;
                     }
                 }
+
                 if (frt == PredictedType.Bool)
                 {
                     if (srt == PredictedType.Double)
@@ -39,6 +41,7 @@ namespace NiL.JS.Expressions
                     if (Tools.IsEqual(srt, PredictedType.Number, PredictedType.Group))
                         return PredictedType.Number;
                 }
+
                 if (srt == PredictedType.Bool)
                 {
                     if (frt == PredictedType.Double)
@@ -46,6 +49,7 @@ namespace NiL.JS.Expressions
                     if (Tools.IsEqual(frt, PredictedType.Number, PredictedType.Group))
                         return PredictedType.Number;
                 }
+
                 return PredictedType.Unknown;
             }
         }
@@ -213,10 +217,11 @@ namespace NiL.JS.Expressions
                             case JSValueType.Function:
                             case JSValueType.Date:
                                 {
-                                    tstr = new RopeString(tstr, second.ToString());
+                                    tstr = new RopeString(tstr, second.ToPrimitiveValue_Value_String().BaseToString());
                                     break;
                                 }
                         }
+
                         resultContainer._oValue = tstr;
                         resultContainer._valueType = JSValueType.String;
                         return;
@@ -295,31 +300,44 @@ namespace NiL.JS.Expressions
                 if (_left is StringConcatenation)
                 {
                     _this = _left;
-                    (_left as StringConcatenation)._parts.Add(_right);
+                    var temp = (_left as StringConcatenation)._parts;
+                    Array.Resize(ref temp, temp.Length + 1);
+                    temp[temp.Length - 1] = _right;
+                    (_left as StringConcatenation)._parts = temp;
                 }
                 else if (_right is StringConcatenation)
                 {
                     _this = _right;
-                    (_right as StringConcatenation)._parts.Insert(0, _left);
+                    var temp = (_right as StringConcatenation)._parts;
+                    Array.Resize(ref temp, temp.Length + 1);
+                    Array.Copy(temp, 0, temp, 1, temp.Length - 1);
+                    temp[0] = _left;
+                    (_right as StringConcatenation)._parts = temp;
                 }
                 else
                 {
-                    if (_left.ContextIndependent && _left.Evaluate(null)._valueType == JSValueType.String)
+                    if (_left.ContextIndependent && _left.ResultType == PredictedType.String)
                     {
                         if (_left.Evaluate(null).ToString().Length == 0)
                             _this = new ConvertToString(_right);
                         else
-                            _this = new StringConcatenation(new List<Expression>() { _left, _right });
+                            _this = new StringConcatenation(new[] { _left, _right });
                     }
-                    else if (_right.ContextIndependent && _right.Evaluate(null)._valueType == JSValueType.String)
+                    else if (_right.ContextIndependent && _right.ResultType == PredictedType.String)
                     {
                         if (_right.Evaluate(null).ToString().Length == 0)
                             _this = new ConvertToString(_left);
                         else
-                            _this = new StringConcatenation(new List<Expression>() { _left, _right });
+                            _this = new StringConcatenation(new[] { _left, _right });
+                    }
+                    else if (_left.ResultType == PredictedType.String
+                         || _right.ResultType == PredictedType.String)
+                    {
+                        _this = new StringConcatenation(new[] { _left, _right });
                     }
                 }
             }
+
             return res;
         }
 
