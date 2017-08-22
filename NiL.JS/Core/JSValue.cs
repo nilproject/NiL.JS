@@ -720,8 +720,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public static implicit operator JSValue(Delegate action) =>
-            new MethodProxy(Context.CurrentBaseContext, action.GetMethodInfo(), action.Target);
+        public static implicit operator JSValue(Delegate action) => Marshal(action);
 
         [Hidden]
         public object Clone()
