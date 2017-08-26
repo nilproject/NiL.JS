@@ -59,7 +59,7 @@ namespace NiL.JS.Core
                 if (_variables != null)
                     _variables.Clear();
                 else
-                    _variables = new StringMap<JSValue>();
+                    _variables = JSObject.getFieldsContainer();
 
                 _proxies.Clear();
                 _GlobalPrototype = null;

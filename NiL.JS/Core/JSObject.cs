@@ -340,8 +340,13 @@ namespace NiL.JS.Core
 #endif
         internal static IDictionary<string, JSValue> getFieldsContainer()
         {
-            //return new Dictionary<string, JSObject>(System.StringComparer.Ordinal);
-            return new StringMap<JSValue>();
+            // return new Dictionary<string, JSValue>(System.StringComparer.Ordinal);
+            // return new StringMap<JSValue>();
+#if !PORTABLE
+            return new System.Collections.Concurrent.ConcurrentDictionary<string, JSValue>(StringComparer.Ordinal);
+#else
+            return new Dictionary<string, JSValue>(System.StringComparer.Ordinal);
+#endif
         }
 
         [DoNotEnumerate]

@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ECMAScript 6 (ES2015) engine</Description>
+    <AssemblyTitle>NiL.JS NET Core</AssemblyTitle>
+    <VersionPrefix>2.5.1204</VersionPrefix>
+    <Authors>NiLProject</Authors>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PublicSign>true</PublicSign>
+    <DebugType>portable</DebugType>
+    <AssemblyName>NiL.JS</AssemblyName>
+    <AssemblyOriginatorKeyFile>../keys.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PackageId>NiL.JS.NetCore</PackageId>
+    <PackageTags>js;javascript;java;script;ecma;ecmascript;es2015;v8;niljs;nil;nilproject</PackageTags>
+    <PackageIconUrl>https://github.com/nilproject/NiL.JS/blob/develop/nil.js%20logo%20small.png</PackageIconUrl>
+    <PackageLicenseUrl>https://github.com/nilproject/NiL.JS/blob/develop/License</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/nilproject/NiL.JS</RepositoryUrl>
+    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
+    <PackageReference Include="System.Resources.ResourceManager" Version="4.0.1" />
+    <PackageReference Include="System.Runtime" Version="4.1.0" />
+  </ItemGroup>
+
+  <Target Name="PrecompileScript" BeforeTargets="BeforeBuild">
+    <Exec Command="makeSymLinks.bat" />
+  </Target>
+
+</Project>
