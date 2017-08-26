@@ -248,16 +248,17 @@ namespace NiL.JS.Core
                 return true;
             }
 
-            if (_records.Length <= MaxAsListSize)
+            var records = _records;
+            if (records.Length <= MaxAsListSize)
             {
-                for (var i = 0; i < _records.Length; i++)
+                for (var i = 0; i < records.Length; i++)
                 {
-                    if (_records[i].key == null)
+                    if (records[i].key == null)
                         break;
 
-                    if (string.CompareOrdinal(_records[i].key, key) == 0)
+                    if (string.CompareOrdinal(records[i].key, key) == 0)
                     {
-                        value = _records[i].value;
+                        value = records[i].value;
                         return true;
                     }
                 }
@@ -266,13 +267,14 @@ namespace NiL.JS.Core
                 return false;
             }
 
-            if (_previousIndex != -1 && string.CompareOrdinal(_records[_previousIndex].key, key) == 0)
+            var previousIndex = _previousIndex;
+            if (previousIndex != -1 && string.CompareOrdinal(records[previousIndex].key, key) == 0)
             {
-                value = _records[_previousIndex].value;
+                value = records[previousIndex].value;
                 return true;
             }
 
-            var rcount = _records.Length;
+            var rcount = records.Length;
 
             if (rcount == 0)
             {
@@ -285,14 +287,14 @@ namespace NiL.JS.Core
 
             do
             {
-                if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
+                if (records[index].hash == hash && string.CompareOrdinal(records[index].key, key) == 0)
                 {
-                    value = _records[index].value;
+                    value = records[index].value;
                     _previousIndex = index;
                     return true;
                 }
 
-                index = _records[index].next - 1;
+                index = records[index].next - 1;
             }
             while (index >= 0);
 
