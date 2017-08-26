@@ -248,6 +248,7 @@ namespace NiL.JS.Core
                 return true;
             }
 
+            var previousIndex = _previousIndex;
             var records = _records;
             if (records.Length <= MaxAsListSize)
             {
@@ -267,7 +268,6 @@ namespace NiL.JS.Core
                 return false;
             }
 
-            var previousIndex = _previousIndex;
             if (previousIndex != -1 && string.CompareOrdinal(records[previousIndex].key, key) == 0)
             {
                 value = records[previousIndex].value;
@@ -458,7 +458,10 @@ namespace NiL.JS.Core
 
         public void Add(string key, TValue value)
         {
-            insert(key, value, computeHash(key), true);
+            lock (_records)
+            {
+                insert(key, value, computeHash(key), true);
+            }
         }
 
         public bool ContainsKey(string key)
@@ -488,7 +491,10 @@ namespace NiL.JS.Core
             }
             set
             {
-                insert(key, value, computeHash(key), false);
+                lock (_records)
+                {
+                    insert(key, value, computeHash(key), false);
+                }
             }
         }
 
