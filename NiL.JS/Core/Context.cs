@@ -543,7 +543,7 @@ namespace NiL.JS.Core
             string name;
 
             if (_variables == null)
-                _variables = new StringMap<JSValue>();
+                _variables = JSObject.getFieldsContainer();
 
             if (moduleType.GetTypeInfo().IsGenericType)
                 name = moduleType.Name.Substring(0, moduleType.Name.LastIndexOf('`'));
