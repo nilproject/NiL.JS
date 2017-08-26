@@ -448,6 +448,8 @@ namespace NiL.JS.Core
                     {
                         if (value is Delegate)
                         {
+                            if (value is ExternalFunctionDelegate)
+                                return new ExternalFunction(value as ExternalFunctionDelegate);
                             return new MethodProxy(this, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
                         }
                         else if (value is IList)
