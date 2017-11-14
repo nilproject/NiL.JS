@@ -60,7 +60,7 @@ namespace NiL.JS.Extensions
         public EnumeratorToIteratorWrapper(IEnumerator enumerator)
         {
             _enumerator = enumerator;
-            _context = Context.CurrentBaseContext;
+            _context = Context.CurrentGlobalContext;
         }
 
         public IIterator iterator()

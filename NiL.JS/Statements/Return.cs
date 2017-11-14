@@ -61,6 +61,7 @@ namespace NiL.JS.Statements
                 if (context._executionMode < ExecutionMode.Return)
                     context._executionMode = ExecutionMode.Return;
             }
+
             return JSValue.notExists;
         }
 

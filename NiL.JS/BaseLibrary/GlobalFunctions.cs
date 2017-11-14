@@ -117,7 +117,7 @@ namespace NiL.JS.BaseLibrary
                 __pinvokeCallCount++;
             }
 
-            return Context.CurrentBaseContext.ProxyValue(new
+            return Context.CurrentGlobalContext.ProxyValue(new
             {
                 isAlive = new Func<Arguments, bool>((arg) =>
                 {

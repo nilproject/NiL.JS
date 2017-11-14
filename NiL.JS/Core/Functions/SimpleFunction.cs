@@ -27,9 +27,6 @@ namespace NiL.JS.Core.Functions
             var result = notExists;
             notExists._valueType = JSValueType.NotExists;
 
-            if (evalAsConst(body, arguments, initiator, out result))
-                return result;
-
             if (_functionDefinition.parameters.Length == arguments.Length // из-за необходимости иметь возможность построить аргументы, если они потребуются
                 && arguments.Length < 9)
             {
@@ -37,58 +34,6 @@ namespace NiL.JS.Core.Functions
             }
 
             return base.InternalInvoke(targetObject, arguments, initiator, withSpread, construct);
-        }
-
-        private bool evalAsConst(CodeBlock body, Expression[] arguments, Context initiator, out JSValue result)
-        {
-            if (body._lines.Length == 0)
-            {
-                result = notExists;
-            }
-            else if (body._lines.Length == 1)
-            {
-                var ret = body._lines[0] as Return;
-                if (ret != null)
-                {
-                    if (ret.Value != null)
-                    {
-                        if (ret.Value.ContextIndependent)
-                        {
-                            result = ret.Value.Evaluate(null);
-                        }
-                        else
-                        {
-                            result = null;
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        result = notExists;
-                    }
-                }
-                else
-                {
-                    result = null;
-                    return false;
-                }
-            }
-            else
-            {
-                result = null;
-                return false;
-            }
-
-            for (int i = 0; i < arguments.Length; i++)
-            {
-                if (!arguments[i].Evaluate(initiator).Defined)
-                {
-                    if (_functionDefinition.parameters.Length > i && _functionDefinition.parameters[i].initializer != null)
-                        _functionDefinition.parameters[i].initializer.Evaluate(_initialContext);
-                }
-            }
-
-            return true;
         }
 
         private JSValue fastInvoke(JSValue targetObject, Expression[] arguments, Context initiator)
@@ -156,8 +101,10 @@ namespace NiL.JS.Core.Functions
                         _functionDefinition.parametersStored--;
                     exit(internalContext);
                 }
+
                 if (!tailCall)
                     break;
+
                 targetObject = correctTargetObject(internalContext._objectSource, body._strict);
             }
             return res;

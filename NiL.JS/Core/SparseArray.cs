@@ -28,17 +28,17 @@ namespace NiL.JS.Core
         private static readonly _NavyItem[] emptyNavyData = new _NavyItem[0]; // data dummy. In cases where instance of current class was created, but not used
         private static readonly TValue[] emptyData = new TValue[0];
 
-        private _NavyItem[] navyData;
-        private uint allocatedCount;
-        private TValue[] values;
-        private uint pseudoLength;
-        private ArrayMode mode;
+        private _NavyItem[] _navyData;
+        private uint _allocatedCount;
+        private TValue[] _values;
+        private uint _pseudoLength;
+        private ArrayMode _mode;
 
         public ArrayMode Mode
         {
             get
             {
-                return mode;
+                return _mode;
             }
         }
 
@@ -47,44 +47,44 @@ namespace NiL.JS.Core
         {
             get
             {
-                return pseudoLength;
+                return _pseudoLength;
             }
         }
 
         public SparseArray()
         {
-            mode = ArrayMode.Flat;
-            values = emptyData;
-            navyData = emptyNavyData;
+            _mode = ArrayMode.Flat;
+            _values = emptyData;
+            _navyData = emptyNavyData;
         }
 
         public SparseArray(int capacity)
         {
-            mode = ArrayMode.Flat;
-            values = emptyData;
-            navyData = emptyNavyData;
+            _mode = ArrayMode.Flat;
+            _values = emptyData;
+            _navyData = emptyNavyData;
             if (capacity > 0)
                 ensureCapacity(capacity);
         }
 
         public SparseArray(TValue[] values)
         {
-            mode = ArrayMode.Flat;
-            this.values = values;
-            navyData = emptyNavyData;
-            allocatedCount = (pseudoLength = (uint)values.Length);
+            _mode = ArrayMode.Flat;
+            this._values = values;
+            _navyData = emptyNavyData;
+            _allocatedCount = (_pseudoLength = (uint)values.Length);
         }
 
         #region Члены IList<TValue>
 
         public int IndexOf(TValue item)
         {
-            for (var i = 0; i < allocatedCount; i++)
-                if (object.Equals(values[i], item))
+            for (var i = 0; i < _allocatedCount; i++)
+                if (object.Equals(_values[i], item))
                 {
-                    if (mode == ArrayMode.Flat)
+                    if (_mode == ArrayMode.Flat)
                         return i;
-                    return (int)navyData[i].index;
+                    return (int)_navyData[i].index;
                 }
             return -1;
         }
@@ -100,47 +100,47 @@ namespace NiL.JS.Core
         /// <param name="index">Index of item for removing</param>
         public void RemoveAt(int index)
         {
-            if (pseudoLength == 0 || index != (int)(pseudoLength - 1))
+            if (_pseudoLength == 0 || index != (int)(_pseudoLength - 1))
                 throw new InvalidOperationException();
-            this[(int)(pseudoLength - 1)] = default(TValue);
-            pseudoLength--;
+            this[(int)(_pseudoLength - 1)] = default(TValue);
+            _pseudoLength--;
         }
 
         public TValue this[int index]
         {
             get
             {
-                if (mode == ArrayMode.Flat)
+                if (_mode == ArrayMode.Flat)
                 {
-                    if (index < 0 || pseudoLength <= index || values.Length <= index)
+                    if (index < 0 || _pseudoLength <= index || _values.Length <= index)
                         return default(TValue);
 
-                    return values[index];
+                    return _values[index];
                 }
 
-                if (navyData.Length == 0)
+                if (_navyData.Length == 0)
                     return default(TValue);
 
                 uint _index = (uint)index;
                 int bi = 31;
                 uint i = 0;
 
-                if (_index < allocatedCount)
+                if (_index < _allocatedCount)
                 {
-                    if (navyData[index].index == _index)
-                        return values[index];
+                    if (_navyData[index].index == _index)
+                        return _values[index];
                 }
 
                 for (; ; bi--)
                 {
-                    i = (_index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                    i = (_index & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
                     if (i == 0)
                     {
                         return default(TValue);
                     }
-                    else if (navyData[i].index == _index)
+                    else if (_navyData[i].index == _index)
                     {
-                        return values[i];
+                        return _values[i];
                     }
                 }
             }
@@ -150,25 +150,25 @@ namespace NiL.JS.Core
                 //if (navyData.Length <= allocatedCount)
                 //    ensureCapacity(navyData.Length * 2);
                 uint _index = (uint)index;
-                if (mode == ArrayMode.Flat)
+                if (_mode == ArrayMode.Flat)
                 {
-                    if (index < 0 || index > pseudoLength)
+                    if (index < 0 || index > _pseudoLength)
                     {
                         if (@default)
                         {
-                            if (_index >= pseudoLength)
-                                pseudoLength = _index + 1;
+                            if (_index >= _pseudoLength)
+                                _pseudoLength = _index + 1;
                             return;
                         }
 
-                        if (_index < 8)
+                        if (_index < 32)
                         {
                             // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца.
                             // Кто-то верит, что это должно работать быстрее.
                             // Вот именно из-за таких кусков кода так и может показаться.
                             // Не время для попыток исправить мир
-                            ensureCapacity(8);
-                            pseudoLength = _index + 1;
+                            _pseudoLength = _index + 1;
+                            ensureCapacity((int)_pseudoLength);
                             this[index] = value;
                             return;
                         }
@@ -177,28 +177,28 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        if (values.Length <= index)
-                            ensureCapacity(Math.Max(index + 1, values.Length * 2));
-                        if (pseudoLength == index)
-                            pseudoLength = _index + 1;
-                        values[index] = value;
+                        if (_values.Length <= index)
+                            ensureCapacity(Math.Max(index + 1, _values.Length * 2));
+                        if (_pseudoLength == index)
+                            _pseudoLength = _index + 1;
+                        _values[index] = value;
                         return;
                     }
                 }
 
-                if (allocatedCount == 0)
+                if (_allocatedCount == 0)
                 {
-                    allocatedCount = 1;
-                    pseudoLength = 1;
+                    _allocatedCount = 1;
+                    _pseudoLength = 1;
                 }
 
-                if (_index < allocatedCount)
+                if (_index < _allocatedCount)
                 {
-                    if (navyData[index].index == _index)
+                    if (_navyData[index].index == _index)
                     {
-                        values[index] = value;
-                        if (pseudoLength <= index)
-                            pseudoLength = _index + 1;
+                        _values[index] = value;
+                        if (_pseudoLength <= index)
+                            _pseudoLength = _index + 1;
                         return;
                     }
                 }
@@ -206,47 +206,47 @@ namespace NiL.JS.Core
                 int bi = 31;
                 for (uint i = 0, ni = 0; ; bi--)
                 {
-                    if (navyData[i].index > _index)
+                    if (_navyData[i].index > _index)
                     {
                         if (@default)
                         {
-                            if (pseudoLength <= _index)
-                                pseudoLength = _index + 1; // длина может быть меньше
+                            if (_pseudoLength <= _index)
+                                _pseudoLength = _index + 1; // длина может быть меньше
                             // уже записанных элементов если эти элементы имеют значение
                             // по-умолчанию и был вызван Trim
                             return;
                         }
 
-                        var oi = navyData[i].index;
-                        var ov = values[i];
-                        navyData[i].index = _index;
-                        values[i] = value;
-                        if (oi < pseudoLength)
+                        var oi = _navyData[i].index;
+                        var ov = _values[i];
+                        _navyData[i].index = _index;
+                        _values[i] = value;
+                        if (oi < _pseudoLength)
                             this[(int)oi] = ov;
                         return;
                     }
-                    else if (navyData[i].index < _index)
+                    else if (_navyData[i].index < _index)
                     {
                         var b = (_index & (1 << bi)) == 0;
-                        ni = b ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                        ni = b ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
                         if (ni == 0)
                         {
-                            if (pseudoLength <= _index)
-                                pseudoLength = _index + 1;
+                            if (_pseudoLength <= _index)
+                                _pseudoLength = _index + 1;
 
                             if (@default)
                                 return;
 
                             if (b)
-                                navyData[i].zeroContinue = ni = allocatedCount++;
+                                _navyData[i].zeroContinue = ni = _allocatedCount++;
                             else
-                                navyData[i].oneContinue = ni = allocatedCount++;
+                                _navyData[i].oneContinue = ni = _allocatedCount++;
 
-                            if (navyData.Length <= allocatedCount)
-                                ensureCapacity(navyData.Length * 2);
+                            if (_navyData.Length <= _allocatedCount)
+                                ensureCapacity(_navyData.Length * 2);
 
-                            navyData[ni].index = _index;
-                            values[ni] = value;
+                            _navyData[ni].index = _index;
+                            _values[ni] = value;
                             return;
                         }
 
@@ -254,9 +254,9 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        values[i] = value;
-                        if (pseudoLength <= index)
-                            pseudoLength = _index + 1;
+                        _values[i] = value;
+                        if (_pseudoLength <= index)
+                            _pseudoLength = _index + 1;
                         return;
                     }
                 }
@@ -269,20 +269,20 @@ namespace NiL.JS.Core
 
         public void Add(TValue item)
         {
-            if (pseudoLength == uint.MaxValue)
+            if (_pseudoLength == uint.MaxValue)
                 throw new InvalidOperationException();
 
-            this[(int)(pseudoLength)] = item;
+            this[(int)(_pseudoLength)] = item;
         }
 
         public void Clear()
         {
-            while (allocatedCount > 0)
+            while (_allocatedCount > 0)
             {
-                navyData[(int)(--allocatedCount)] = default(_NavyItem);
-                values[(int)allocatedCount] = default(TValue);
+                _navyData[(int)(--_allocatedCount)] = default(_NavyItem);
+                _values[(int)_allocatedCount] = default(TValue);
             }
-            pseudoLength = 0;
+            _pseudoLength = 0;
         }
 
         public bool Contains(TValue item)
@@ -296,9 +296,9 @@ namespace NiL.JS.Core
                 throw new NullReferenceException();
             if (arrayIndex < 0)
                 throw new ArgumentOutOfRangeException();
-            if (Math.Min(pseudoLength, int.MaxValue) - arrayIndex > array.Length)
+            if (Math.Min(_pseudoLength, int.MaxValue) - arrayIndex > array.Length)
                 throw new ArgumentOutOfRangeException();
-            for (var i = Math.Min(pseudoLength, int.MaxValue) + arrayIndex; i-- > arrayIndex;)
+            for (var i = Math.Min(_pseudoLength, int.MaxValue) + arrayIndex; i-- > arrayIndex;)
                 array[i] = default(TValue);
             foreach (var v in DirectOrder)
                 if (v.Key >= 0)
@@ -307,7 +307,7 @@ namespace NiL.JS.Core
 
         int ICollection<TValue>.Count
         {
-            get { return (int)pseudoLength; }
+            get { return (int)_pseudoLength; }
         }
 
         public bool IsReadOnly
@@ -326,7 +326,7 @@ namespace NiL.JS.Core
 
         public IEnumerator<TValue> GetEnumerator()
         {
-            for (var i = 0u; i < pseudoLength; i++)
+            for (var i = 0u; i < _pseudoLength; i++)
                 yield return this[(int)i];
         }
 
@@ -348,14 +348,14 @@ namespace NiL.JS.Core
         /// <returns>Zero if the requested index does not Exists</returns>
         public long NearestIndexNotLess(long index)
         {
-            if (mode == ArrayMode.Sparse)
+            if (_mode == ArrayMode.Sparse)
             {
-                if (navyData.Length == 0)
+                if (_navyData.Length == 0)
                     return index;
             }
             else
             {
-                if (values.Length < index)
+                if (_values.Length < index)
                     return 0;
                 return index;
             }
@@ -364,59 +364,59 @@ namespace NiL.JS.Core
             long pm = -1;
             for (; ; bi--)
             {
-                if (navyData[i].oneContinue != 0)
+                if (_navyData[i].oneContinue != 0)
                     pm = i;
-                i = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                i = (index & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
                 if (i == 0)
                 {
                     if (pm == -1)
                         return 0;
-                    i = navyData[pm].oneContinue;
+                    i = _navyData[pm].oneContinue;
                     for (;;)
                     {
-                        if (navyData[i].zeroContinue != 0)
+                        if (_navyData[i].zeroContinue != 0)
                         {
-                            i = navyData[i].zeroContinue;
+                            i = _navyData[i].zeroContinue;
                             continue;
                         }
-                        if (navyData[i].oneContinue != 0)
+                        if (_navyData[i].oneContinue != 0)
                         {
-                            i = navyData[i].oneContinue;
+                            i = _navyData[i].oneContinue;
                             continue;
                         }
                         break;
                     }
                 }
-                if (navyData[i].index >= (uint)index)
+                if (_navyData[i].index >= (uint)index)
                 {
-                    return navyData[i].index;
+                    return _navyData[i].index;
                 }
             }
         }
 
         public long NearestIndexNotMore(long index)
         {
-            if (mode == ArrayMode.Sparse)
+            if (_mode == ArrayMode.Sparse)
             {
-                if (navyData.Length == 0)
+                if (_navyData.Length == 0)
                     return 0;
             }
             else
             {
-                return Math.Min(values.Length, index);
+                return Math.Min(_values.Length, index);
             }
             int bi = 31;
             long i = 0;
             for (; ; bi--)
             {
-                var ni = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
-                if (ni == 0 || navyData[ni].index > index)
-                    index = navyData[i].index;
+                var ni = (index & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
+                if (ni == 0 || _navyData[ni].index > index)
+                    index = _navyData[i].index;
                 else
                     i = ni;
-                if (navyData[i].index == index)
+                if (_navyData[i].index == index)
                 {
-                    return navyData[i].index;
+                    return _navyData[i].index;
                 }
             }
         }
@@ -426,69 +426,75 @@ namespace NiL.JS.Core
             get
             {
                 var index = 1U;
-                if (mode == ArrayMode.Flat)
+                if (_mode == ArrayMode.Flat)
                 {
-                    for (var i = 0; i < pseudoLength; i++)
+                    for (var i = 0; i < _pseudoLength; i++)
                     {
-                        if (i >= values.Length) // была насильно установлена длина фиктивным элементом.
+                        if (i >= _values.Length) // была насильно установлена длина фиктивным элементом.
                         {
-                            yield return new KeyValuePair<int, TValue>((int)(pseudoLength - 1), default(TValue));
+                            yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
                             yield break;
                         }
-                        yield return new KeyValuePair<int, TValue>(i, values[i]);
-                        if (mode != ArrayMode.Flat)
+
+                        yield return new KeyValuePair<int, TValue>(i, _values[i]);
+
+                        if (_mode != ArrayMode.Flat)
                         {
                             index = (uint)(i + 1);
                             break;
                         }
                     }
                 }
-                if (mode == ArrayMode.Sparse) // Режим может поменяться во время итерации в режиме Flat
+
+                if (_mode == ArrayMode.Sparse) // Режим может поменяться во время итерации в режиме Flat
                 {
-                    if (allocatedCount > 0)
-                        yield return new KeyValuePair<int, TValue>(0, values[0]);
+                    if (_allocatedCount > 0)
+                    {
+                        yield return new KeyValuePair<int, TValue>(0, _values[0]);
+                    }
                     else
                     {
-                        yield return new KeyValuePair<int, TValue>((int)(pseudoLength - 1), default(TValue));
+                        yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
                         yield break;
                     }
-                    while (index < pseudoLength)
+
+                    while (index < _pseudoLength)
                     {
                         int bi = 31;
                         long i = 0;
                         long pm = -1;
                         for (; ; bi--)
                         {
-                            if (navyData[i].oneContinue != 0)
+                            if (_navyData[i].oneContinue != 0)
                                 pm = i;
-                            i = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
+                            i = (index & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
                             if (i == 0)
                             {
                                 if (pm == -1)
                                 {
-                                    yield return new KeyValuePair<int, TValue>((int)(pseudoLength - 1), default(TValue));
+                                    yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
                                     yield break;
                                 }
-                                i = navyData[pm].oneContinue;
+                                i = _navyData[pm].oneContinue;
                                 for (;;)
                                 {
-                                    if (navyData[i].zeroContinue != 0)
+                                    if (_navyData[i].zeroContinue != 0)
                                     {
-                                        i = navyData[i].zeroContinue;
+                                        i = _navyData[i].zeroContinue;
                                         continue;
                                     }
-                                    if (navyData[i].oneContinue != 0)
+                                    if (_navyData[i].oneContinue != 0)
                                     {
-                                        i = navyData[i].oneContinue;
+                                        i = _navyData[i].oneContinue;
                                         continue;
                                     }
                                     break;
                                 }
                             }
-                            if (navyData[i].index >= index)
+                            if (_navyData[i].index >= index)
                             {
-                                index = navyData[i].index;
-                                yield return new KeyValuePair<int, TValue>((int)index, values[i]);
+                                index = _navyData[i].index;
+                                yield return new KeyValuePair<int, TValue>((int)index, _values[i]);
                                 index++;
                                 break;
                             }
@@ -502,24 +508,24 @@ namespace NiL.JS.Core
         {
             get
             {
-                var index = pseudoLength - 1;
-                if (mode == ArrayMode.Flat)
+                var index = _pseudoLength - 1;
+                if (_mode == ArrayMode.Flat)
                 {
-                    if (pseudoLength > values.Length)
-                        yield return new KeyValuePair<int, TValue>((int)(pseudoLength - 1), default(TValue));
-                    for (var i = Math.Min(values.Length, pseudoLength); i-- > 0;)
+                    if (_pseudoLength > _values.Length)
+                        yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
+                    for (var i = Math.Min(_values.Length, _pseudoLength); i-- > 0;)
                     {
-                        if (mode != ArrayMode.Flat)
+                        if (_mode != ArrayMode.Flat)
                         {
                             index = (uint)i;
                             break;
                         }
-                        yield return new KeyValuePair<int, TValue>((int)i, values[i]);
+                        yield return new KeyValuePair<int, TValue>((int)i, _values[i]);
                     }
                 }
-                if (mode == ArrayMode.Sparse)
+                if (_mode == ArrayMode.Sparse)
                 {
-                    if (allocatedCount == 0)
+                    if (_allocatedCount == 0)
                         yield break;
                     while (index > 0)
                     {
@@ -527,14 +533,14 @@ namespace NiL.JS.Core
                         long i = 0;
                         for (; ; bi--)
                         {
-                            var ni = (index & (1 << bi)) == 0 ? navyData[i].zeroContinue : navyData[i].oneContinue;
-                            if (ni == 0 || navyData[ni].index > index)
-                                index = navyData[i].index;
+                            var ni = (index & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
+                            if (ni == 0 || _navyData[ni].index > index)
+                                index = _navyData[i].index;
                             else
                                 i = ni;
-                            if (navyData[i].index == index)
+                            if (_navyData[i].index == index)
                             {
-                                yield return new KeyValuePair<int, TValue>((int)index, values[i]);
+                                yield return new KeyValuePair<int, TValue>((int)index, _values[i]);
                                 if (index == 0)
                                     yield break;
                                 index--;
@@ -542,7 +548,7 @@ namespace NiL.JS.Core
                             }
                         }
                     }
-                    yield return new KeyValuePair<int, TValue>(0, values[0]);
+                    yield return new KeyValuePair<int, TValue>(0, _values[0]);
                 }
             }
         }
@@ -553,11 +559,11 @@ namespace NiL.JS.Core
         public void Trim()
         {
             long len = -1;
-            if (mode == ArrayMode.Flat)
+            if (_mode == ArrayMode.Flat)
             {
-                for (var i = values.Length; i-- > 0;)
+                for (var i = _values.Length; i-- > 0;)
                 {
-                    if (!object.Equals(values[i], default(TValue)))
+                    if (!object.Equals(_values[i], default(TValue)))
                     {
                         len = i;
                         break;
@@ -566,51 +572,51 @@ namespace NiL.JS.Core
             }
             else
             {
-                for (var i = allocatedCount; i-- > 0;)
+                for (var i = _allocatedCount; i-- > 0;)
                 {
-                    if (navyData[i].index > len && !object.Equals(values[i], default(TValue)))
-                        len = navyData[i].index;
+                    if (_navyData[i].index > len && !object.Equals(_values[i], default(TValue)))
+                        len = _navyData[i].index;
                 }
             }
-            pseudoLength = (uint)(len + 1);
+            _pseudoLength = (uint)(len + 1);
         }
 
         private void ensureCapacity(int p)
         {
             p = Math.Max(4, p);
-            if (values.Length >= p)
+            if (_values.Length >= p)
                 return;
 
             var newValues = new TValue[p];
-            if (values != null)
-                for (var i = 0; i < values.Length; i++)
-                    newValues[i] = values[i];
-            values = newValues;
-            if (mode == ArrayMode.Sparse)
+            if (_values != null)
+                for (var i = 0; i < _values.Length; i++)
+                    newValues[i] = _values[i];
+            _values = newValues;
+            if (_mode == ArrayMode.Sparse)
             {
                 var newData = new _NavyItem[p];
-                for (var i = 0; i < navyData.Length; i++)
-                    newData[i] = navyData[i];
-                navyData = newData;
+                for (var i = 0; i < _navyData.Length; i++)
+                    newData[i] = _navyData[i];
+                _navyData = newData;
             }
         }
 
         private void rebuildToSparse()
         {
-            allocatedCount = 0;
-            mode = ArrayMode.Sparse;
-            var len = pseudoLength;
+            _allocatedCount = 0;
+            _mode = ArrayMode.Sparse;
+            var len = _pseudoLength;
             if (len == 0)
             {
                 ensureCapacity(0);
                 return;
             }
 
-            navyData = new _NavyItem[values.Length];
-            for (var i = 0; i < values.Length; i++)
-                this[i] = values[i];
+            _navyData = new _NavyItem[_values.Length];
+            for (var i = 0; i < _values.Length; i++)
+                this[i] = _values[i];
 
-            if (values.Length < len)
+            if (_values.Length < len)
                 this[(int)len - 1] = default(TValue);
         }
     }

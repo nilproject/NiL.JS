@@ -400,9 +400,9 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    Stack<RopeString> stack = new Stack<RopeString>();
-                    Stack<int> step = new Stack<int>();
-                    StringBuilder res = new StringBuilder();
+                    var stack = new Stack<RopeString>();
+                    var step = new Stack<int>();
+                    var res = new StringBuilder(Length);
                     stack.Push(this);
                     step.Push(0);
                     while (stack.Count != 0)
@@ -425,6 +425,7 @@ namespace NiL.JS.Core
                                 step.Push(1);
                             }
                         }
+
                         if (step.Peek() < 2)
                         {
                             if (stack.Peek()._secondSource is RopeString)
@@ -443,9 +444,11 @@ namespace NiL.JS.Core
                                 step.Push(2);
                             }
                         }
+
                         stack.Pop();
                         step.Pop();
                     }
+
                     _firstSource = res.ToString();
                     _secondSource = null;
                 }

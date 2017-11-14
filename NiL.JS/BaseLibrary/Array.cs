@@ -111,7 +111,7 @@ namespace NiL.JS.BaseLibrary
             while (source.MoveNext())
             {
                 var e = source.Current;
-                _data[index++] = (e as JSValue ?? Context.CurrentBaseContext.ProxyValue(e)).CloneImpl(false);
+                _data[index++] = (e as JSValue ?? Context.CurrentGlobalContext.ProxyValue(e)).CloneImpl(false);
             }
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
@@ -190,7 +190,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue concat(JSValue self, Arguments args)
         {
             Array res = null;
-            var lenObj = self.GetProperty("length", PropertyScope.Own);
+            var lenObj = self?.GetProperty("length", PropertyScope.Own) ?? undefined;
             if (!lenObj.Defined)
             {
                 if (self._valueType < JSValueType.Object)
@@ -198,23 +198,29 @@ namespace NiL.JS.BaseLibrary
                 res = new Array() { self };
             }
             else
-                res = Tools.arraylikeToArray(self, true, true, false, -1);
-            for (var i = 0; i < args.length; i++)
             {
-                var v = args[i];
-                var varr = v._oValue as Array;
-                if (varr != null)
+                res = Tools.arraylikeToArray(self, true, true, false, -1);
+            }
+
+            if (args != null)
+            {
+                for (var i = 0; i < args.length; i++)
                 {
-                    varr = Tools.arraylikeToArray(varr, true, false, false, -1);
-                    for (var ai = 0; ai < varr._data.Length; ai++)
+                    var v = args[i];
+                    var varr = v._oValue as Array;
+                    if (varr != null)
                     {
-                        var item = varr._data[ai];
-                        res._data.Add(item);
+                        varr = Tools.arraylikeToArray(varr, true, false, false, -1);
+                        for (var ai = 0; ai < varr._data.Length; ai++)
+                        {
+                            var item = varr._data[ai];
+                            res._data.Add(item);
+                        }
                     }
-                }
-                else
-                {
-                    res._data.Add(v.CloneImpl(false));
+                    else
+                    {
+                        res._data.Add(v.CloneImpl(false));
+                    }
                 }
             }
 
@@ -233,7 +239,7 @@ namespace NiL.JS.BaseLibrary
 
             var length = Tools.getLengthOfArraylike(self, false);
 
-            var target = Tools.JSObjectToInt64(args[0], 0, true);
+            var target = Tools.JSObjectToInt64(args?[0] ?? undefined, 0, true);
             if (target < 0)
                 target += length;
             if (target < 0)
@@ -241,7 +247,7 @@ namespace NiL.JS.BaseLibrary
             if (target > length)
                 target = length;
 
-            var start = Tools.JSObjectToInt64(args[1], 0, true);
+            var start = Tools.JSObjectToInt64(args?[1] ?? undefined, 0, true);
             if (start < 0)
                 start += length;
             if (start < 0)
@@ -249,7 +255,7 @@ namespace NiL.JS.BaseLibrary
             if (start > length)
                 start = length;
 
-            var end = Tools.JSObjectToInt64(args[2], length, true);
+            var end = Tools.JSObjectToInt64(args?[2] ?? undefined, length, true);
             if (end < 0)
                 end += length;
             if (end < 0)
@@ -325,7 +331,7 @@ namespace NiL.JS.BaseLibrary
 
             var length = Tools.getLengthOfArraylike(self, false);
 
-            var value = args[0];
+            var value = args?[0] ?? undefined;
 
             var start = Tools.JSObjectToInt64(args[1], 0, true);
             if (start < 0)
@@ -380,6 +386,8 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue find(JSValue self, Arguments args)
         {
+            if (self == null)
+                self = undefined;
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
@@ -406,6 +414,8 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue findIndex(JSValue self, Arguments args)
         {
+            if (self == null)
+                self = undefined;
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
@@ -432,6 +442,8 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue every(JSValue self, Arguments args)
         {
+            if (self == null)
+                self = undefined;
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
@@ -452,6 +464,8 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue some(JSValue self, Arguments args)
         {
+            if (self == null)
+                self = undefined;
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
@@ -471,6 +485,8 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue filter(JSValue self, Arguments args)
         {
+            if (self == null)
+                self = undefined;
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
@@ -494,6 +510,8 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue map(JSValue self, Arguments args)
         {
+            if (self == null)
+                self = undefined;
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
@@ -518,6 +536,8 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue forEach(JSValue self, Arguments args)
         {
+            if (self == null)
+                self = undefined;
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
@@ -538,9 +558,11 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue indexOf(JSValue self, Arguments args)
         {
+            if (self == null)
+                self = undefined;
             var result = -1L;
 
-            iterateImpl(self, null, args[1], undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, args?[1] ?? undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 if (Expressions.StrictEqual.Check(args[0], value))
                 {
@@ -561,7 +583,7 @@ namespace NiL.JS.BaseLibrary
         {
             var result = -1L;
 
-            iterateImpl(self, null, args[1], undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, args?[1] ?? undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 if (args[0].IsNaN() ?
                         value.IsNaN()
@@ -898,9 +920,12 @@ namespace NiL.JS.BaseLibrary
         public static JSValue isArray(Arguments args)
         {
             if (args == null)
+            {
                 ExceptionHelper.ThrowArgumentNull("args");
+                return null;
+            }
 
-            return args[0].Value is Array || args[0].Value == Context.CurrentBaseContext.GetPrototype(typeof(Array));
+            return args[0].Value is Array || args[0].Value == Context.CurrentGlobalContext.GetPrototype(typeof(Array));
         }
 
         [DoNotEnumerate]
@@ -976,7 +1001,7 @@ namespace NiL.JS.BaseLibrary
         {
             var result = -1L;
 
-            reverseIterateImpl(self, null, args[1], (value, index, thisBind, jsCallback) =>
+            reverseIterateImpl(self, null, args?[1] ?? undefined, (value, index, thisBind, jsCallback) =>
             {
                 if (Expressions.StrictEqual.Check(args[0], value))
                 {
@@ -1049,27 +1074,35 @@ namespace NiL.JS.BaseLibrary
             var selfa = self as Array;
             if (selfa != null)
             {
-                for (var i = 0; i < args.length; i++)
+                if (args != null)
                 {
-                    if (selfa._data.Length == uint.MaxValue)
+                    for (var i = 0; i < args.length; i++)
                     {
-                        if (selfa._fields == null)
-                            selfa._fields = getFieldsContainer();
-                        selfa._fields[uint.MaxValue.ToString()] = args[0].CloneImpl(false);
-                        ExceptionHelper.Throw(new RangeError("Invalid length of array"));
+                        if (selfa._data.Length == uint.MaxValue)
+                        {
+                            if (selfa._fields == null)
+                                selfa._fields = getFieldsContainer();
+                            selfa._fields[uint.MaxValue.ToString()] = args[0].CloneImpl(false);
+                            ExceptionHelper.Throw(new RangeError("Invalid length of array"));
+                        }
+                        selfa._data.Add(args[i].CloneImpl(false));
                     }
-                    selfa._data.Add(args[i].CloneImpl(false));
                 }
+
                 return selfa.length;
             }
             else
             {
                 var length = (long)Tools.getLengthOfArraylike(self, false);
-                var i = length;
-                length += args.length;
-                self["length"] = length;
-                for (var j = 0; i < length; i++, j++)
-                    self[i.ToString()] = args[j].CloneImpl(false);
+                if (args != null)
+                {
+                    var index = length;
+                    length += args.length;
+                    self["length"] = length;
+                    for (var j = 0; index < length; index++, j++)
+                        self[index.ToString()] = args[j].CloneImpl(false);
+                }
+
                 return length;
             }
         }
@@ -2082,55 +2115,68 @@ namespace NiL.JS.BaseLibrary
         {
             if (key._valueType != JSValueType.Symbol && memberScope < PropertyScope.Super)
             {
-                if (key._valueType == JSValueType.String && string.CompareOrdinal("length", key._oValue.ToString()) == 0)
-                    return length;
-
-                bool isIndex = false;
-                int index = 0;
-                if (key._valueType >= JSValueType.Object)
+                var isIndex = false;
+                var index = 0;
+                var repeat = false;
+                do
                 {
-                    key = key.ToPrimitiveValue_String_Value();
-                    var keyValue = key.Value;
-                    if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
-                        return length;
-                }
-
-                switch (key._valueType)
-                {
-                    case JSValueType.Integer:
-                        {
-                            isIndex = (key._iValue & int.MinValue) == 0;
-                            index = key._iValue;
-                            break;
-                        }
-                    case JSValueType.Double:
-                        {
-                            isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
-                            if (isIndex)
-                                index = (int)(uint)key._dValue;
-                            break;
-                        }
-                    case JSValueType.String:
-                        {
-                            var skey = key._oValue.ToString();
-                            if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
+                    repeat = false;
+                    switch (key._valueType)
+                    {
+                        case JSValueType.Integer:
                             {
-                                var dindex = 0.0;
-                                int si = 0;
-                                if (Tools.ParseNumber(skey, ref si, out dindex)
-                                    && (si == skey.Length)
-                                    && dindex >= 0
-                                    && dindex < uint.MaxValue
-                                    && (long)dindex == dindex)
-                                {
-                                    isIndex = true;
-                                    index = (int)(uint)dindex;
-                                }
+                                isIndex = (key._iValue & int.MinValue) == 0;
+                                index = key._iValue;
+                                break;
                             }
+                        case JSValueType.Double:
+                            {
+                                isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
+                                if (isIndex)
+                                    index = (int)(uint)key._dValue;
+                                break;
+                            }
+                        case JSValueType.String:
+                            {
+                                if (string.CompareOrdinal("length", key._oValue.ToString()) == 0)
+                                    return length;
 
-                            break;
-                        }
+                                var skey = key._oValue.ToString();
+                                if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
+                                {
+                                    var dindex = 0.0;
+                                    int si = 0;
+                                    if (Tools.ParseNumber(skey, ref si, out dindex)
+                                        && (si == skey.Length)
+                                        && dindex >= 0
+                                        && dindex < uint.MaxValue
+                                        && (long)dindex == dindex)
+                                    {
+                                        isIndex = true;
+                                        index = (int)(uint)dindex;
+                                    }
+                                }
+
+                                break;
+                            }
+                        default:
+                            {
+                                if (key._valueType >= JSValueType.Object)
+                                {
+                                    key = key.ToPrimitiveValue_String_Value();
+                                    var keyValue = key.Value;
+                                    if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
+                                        return length;
+
+                                    if (key.ValueType < JSValueType.Object)
+                                        repeat = true;
+                                }
+
+                                break;
+                            }
+                    }
                 }
+                while (repeat);
 
                 if (isIndex)
                 {
@@ -2140,9 +2186,10 @@ namespace NiL.JS.BaseLibrary
                         if (_lengthObj != null && (_lengthObj._attributes & JSValueAttributesInternal.ReadOnly) != 0 && index >= _data.Length)
                         {
                             if (memberScope == PropertyScope.Own)
-                                ExceptionHelper.Throw(new TypeError("Can not add item to fixed size array"));
+                                ExceptionHelper.Throw(new TypeError("Can not add item into fixed size array"));
                             return notExists;
                         }
+
                         var res = _data[index];
                         if (res == null)
                         {
@@ -2150,7 +2197,10 @@ namespace NiL.JS.BaseLibrary
                             _data[index] = res;
                         }
                         else if ((res._attributes & JSValueAttributesInternal.SystemObject) != 0)
+                        {
                             _data[index] = res = res.CloneImpl(false);
+                        }
+
                         return res;
                     }
                     else
@@ -2158,7 +2208,10 @@ namespace NiL.JS.BaseLibrary
                         notExists._valueType = JSValueType.NotExistsInObject;
                         var res = _data[index] ?? notExists;
                         if (res._valueType < JSValueType.Undefined && memberScope != PropertyScope.Own)
+                        {
                             return __proto__.GetProperty(key, false, memberScope);
+                        }
+
                         return res;
                     }
                 }
@@ -2355,9 +2408,16 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
 
-                prev = item.Key;
+                if (item.Value == null || !item.Value.Exists)
+                {
+                    yield return new Array { item.Key, this[item.Key] };
+                }
+                else
+                {
+                    yield return new Array() { item.Key, item.Value };
+                }
 
-                yield return new Array() { item.Key, item.Value };
+                prev = item.Key;
             }
         }
     }

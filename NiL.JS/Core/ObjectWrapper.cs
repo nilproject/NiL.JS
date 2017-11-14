@@ -45,7 +45,7 @@ namespace NiL.JS.Core
 
         [Hidden]
         public ObjectWrapper(object instance)
-            : this(instance, instance != null ? Context.CurrentBaseContext.GetPrototype(instance.GetType()) : null)
+            : this(instance, instance != null ? Context.CurrentGlobalContext.GetPrototype(instance.GetType()) : null)
         {
         }
 

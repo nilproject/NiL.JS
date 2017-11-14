@@ -657,16 +657,15 @@ namespace NiL.JS.Expressions
             {
                 if (_body._lines.Length == 0)
                 {
-                    return new SimpleFunction(context, this);
+                    return new ConstantFunction(JSValue.notExists, this);
                 }
-
-                if (_body._lines.Length == 1)
+                else if (_body._lines.Length == 1)
                 {
-                    var @return = _body._lines[0] as Return;
-                    if (@return != null
-                    && (@return.Value == null || @return.Value.ContextIndependent))
+                    var ret = _body._lines[0] as Return;
+                    if (ret != null
+                    && (ret.Value == null || ret.Value.ContextIndependent))
                     {
-                        return new SimpleFunction(context, this);
+                        return new ConstantFunction(ret.Value?.Evaluate(null) ?? JSValue.undefined, this);
                     }
                 }
             }

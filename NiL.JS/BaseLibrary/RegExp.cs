@@ -124,28 +124,33 @@ namespace NiL.JS.BaseLibrary
                 + ((options & RegexOptions.IgnoreCase) != 0 ? "i" : "")
                 + ((options & RegexOptions.Multiline) != 0 ? "m" : "")
                 + (_unicode ? "u" : "");
-                if (_cacheIndex >= 0)
+
+                lock (_cache)
                 {
-                    int _cacheSizeMinusOne = _cacheSize - 1;
-                    for (var i = _cacheSize + _cacheIndex; i > _cacheIndex; i--)
+                    if (_cacheIndex >= 0)
                     {
-                        if (_cache[i & _cacheSizeMinusOne].key == label)
+
+                        int _cacheSizeMinusOne = _cacheSize - 1;
+                        for (var i = _cacheSize + _cacheIndex; i > _cacheIndex; i--)
                         {
-                            _regex = _cache[i & _cacheSizeMinusOne].re;
-                            return;
+                            if (_cache[i & _cacheSizeMinusOne].key == label)
+                            {
+                                _regex = _cache[i & _cacheSizeMinusOne].re;
+                                return;
+                            }
                         }
                     }
+
+                    pattern = Tools.Unescape(pattern, false, false, true, _unicode);
+                    if (_unicode)
+                        pattern = translateToUnicodePattern(pattern);
+
+                    _regex = new Regex(pattern, options);
+
+                    _cacheIndex = (_cacheIndex + 1) % _cacheSize;
+                    _cache[_cacheIndex].key = label;
+                    _cache[_cacheIndex].re = _regex;
                 }
-
-                pattern = Tools.Unescape(pattern, false, false, true, _unicode);
-                if (_unicode)
-                    pattern = translateToUnicodePattern(pattern);
-
-                _regex = new Regex(pattern, options);
-
-                _cacheIndex = (_cacheIndex + 1) % _cacheSize;
-                _cache[_cacheIndex].key = label;
-                _cache[_cacheIndex].re = _regex;
             }
             catch (ArgumentException e)
             {

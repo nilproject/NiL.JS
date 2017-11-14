@@ -23,18 +23,18 @@ namespace NiL.JS.Core
                     wrapContainerParameter
                 };
 
-        private CodeNode[] dynamicValues;
-        private CodeNode original;
-        private Func<Context, CodeNode[], JSValue, JSValue> compiledTree;
-        private Expression tree;
+        private CodeNode[] _dynamicValues;
+        private CodeNode _original;
+        private Func<Context, CodeNode[], JSValue, JSValue> _compiledTree;
+        private Expression _tree;
 
-        public CodeNode Original { get { return original; } }
+        public CodeNode Original { get { return _original; } }
 
         protected internal override bool ContextIndependent
         {
             get
             {
-                return original is Expressions.Expression && (original as Expressions.Expression).ContextIndependent;
+                return _original is Expressions.Expression && (_original as Expressions.Expression).ContextIndependent;
             }
         }
 
@@ -47,9 +47,9 @@ namespace NiL.JS.Core
         {
             get
             {
-                if (!(original is Expressions.Expression))
+                if (!(_original is Expressions.Expression))
                     return PredictedType.Unknown;
-                return (original as Expressions.Expression).ResultType;
+                return (_original as Expressions.Expression).ResultType;
             }
         }
 
@@ -57,11 +57,11 @@ namespace NiL.JS.Core
         {
             get
             {
-                return original.Length;
+                return _original.Length;
             }
             internal set
             {
-                original.Length = value;
+                _original.Length = value;
             }
         }
 
@@ -69,11 +69,11 @@ namespace NiL.JS.Core
         {
             get
             {
-                return original.Position;
+                return _original.Position;
             }
             internal set
             {
-                original.Position = value;
+                _original.Position = value;
             }
         }
 
@@ -82,9 +82,9 @@ namespace NiL.JS.Core
         {
             if (_tempContainer == null)
                 _tempContainer = (original as Expressions.Expression)._tempContainer;
-            this.original = original;
-            this.tree = tree;
-            this.dynamicValues = dynamicValues;
+            this._original = original;
+            this._tree = tree;
+            this._dynamicValues = dynamicValues;
         }
 
         public CompiledNode(Expressions.Expression original, Expression tree, CodeNode[] dynamicValues)
@@ -92,32 +92,32 @@ namespace NiL.JS.Core
         {
             if (_tempContainer == null)
                 _tempContainer = original._tempContainer;
-            this.original = original;
-            this.tree = tree;
-            this.dynamicValues = dynamicValues;
+            this._original = original;
+            this._tree = tree;
+            this._dynamicValues = dynamicValues;
         }
 
         protected internal override CodeNode[] GetChildsImpl()
         {
-            return original.Childs;
+            return _original.Childs;
         }
 
         public override JSValue Evaluate(Context context)
         {
-            if (compiledTree == null)
+            if (_compiledTree == null)
             {
                 Expression tree;
-                this.tree = this.tree.Reduce();
-                if (original is Expressions.Expression)
+                this._tree = this._tree.Reduce();
+                if (_original is Expressions.Expression)
                 {
-                    if (typeof(JSValue).IsAssignableFrom(this.tree.Type))
-                        tree = this.tree;
+                    if (typeof(JSValue).IsAssignableFrom(this._tree.Type))
+                        tree = this._tree;
                     else
-                        tree = Expression.Call(wrapMethod.MakeGenericMethod(this.tree.Type), this.tree, wrapContainerParameter);
+                        tree = Expression.Call(wrapMethod.MakeGenericMethod(this._tree.Type), this._tree, wrapContainerParameter);
                 }
                 else
                 {
-                    tree = Expression.Block(this.tree, JITHelpers.UndefinedConstant);
+                    tree = Expression.Block(this._tree, JITHelpers.UndefinedConstant);
                 }
                 //var ps = new PermissionSet(System.Security.Permissions.PermissionState.Unrestricted);
                 //ps.Assert();
@@ -139,30 +139,30 @@ namespace NiL.JS.Core
                 //Expression.Lambda(tree, lambdaArgs).CompileToMethod(method);
                 //compiledTree = (Func<Context, CodeNode[], JSObject, JSObject>)type.CreateType().GetMethods()[0].CreateDelegate(typeof(Func<Context, CodeNode[], JSObject, JSObject>));
 
-                compiledTree = Expression.Lambda<Func<Context, CodeNode[], JSValue, JSValue>>(tree, lambdaArgs).Compile();
+                _compiledTree = Expression.Lambda<Func<Context, CodeNode[], JSValue, JSValue>>(tree, lambdaArgs).Compile();
             }
-            var result = compiledTree(context, dynamicValues, _tempContainer);
+            var result = _compiledTree(context, _dynamicValues, _tempContainer);
             return result;
         }
 
         internal protected override JSValue EvaluateForWrite(Context context)
         {
-            return original.EvaluateForWrite(context);
+            return _original.EvaluateForWrite(context);
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            return original.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+            return _original.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
         }
 
         public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            original.Optimize(ref _this, owner, message, opts, stats);
+            _original.Optimize(ref _this, owner, message, opts, stats);
         }
 
         internal override Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
-            return tree;
+            return _tree;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -172,7 +172,7 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
-            return original.ToString();
+            return _original.ToString();
         }
     }
 #endif

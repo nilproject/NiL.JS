@@ -44,7 +44,7 @@ namespace NiL.JS.Expressions
     public class Assignment : Expression
     {
         private Arguments _setterArgs;
-        private bool saveResult;
+        private bool _saveResult;
 
         protected internal override bool ContextIndependent
         {
@@ -66,7 +66,7 @@ namespace NiL.JS.Expressions
                 return true;
             }
         }
-
+        
         public Assignment(Expression left, Expression right)
             : base(left, right, false)
         {
@@ -111,7 +111,7 @@ namespace NiL.JS.Expressions
                 var fieldSource = context._objectSource;
                 temp = _right.Evaluate(context);
 
-                if (saveResult)
+                if (_saveResult)
                 {
                     if (_tempContainer == null)
                         _tempContainer = new JSValue();
@@ -130,7 +130,7 @@ namespace NiL.JS.Expressions
                 else if (context._strict)
                     throwReadOnlyError();
 
-                if (saveResult)
+                if (_saveResult)
                     _tempContainer = temp;
 
                 _setterArgs = setterArgs;
@@ -170,7 +170,7 @@ namespace NiL.JS.Expressions
                 _this = new SetProperty(gme._left, gme._right, _right) { Position = Position, Length = Length };
 
             if ((codeContext & (CodeContext.InExpression | CodeContext.InEval)) != 0)
-                saveResult = true;
+                _saveResult = true;
 
             return false;
         }
@@ -202,36 +202,38 @@ namespace NiL.JS.Expressions
                     message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position, Length), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
             }
 
-            var gve = _left as Variable;
-            if (gve != null && gve._descriptor.IsDefined && (_codeContext & CodeContext.InWith) == 0)
+            var variable = _left as Variable;
+            if (variable != null && variable._descriptor.IsDefined && (_codeContext & CodeContext.InWith) == 0 && !variable._descriptor.captured)
             {
-                if (owner != null // не будем это применять в корневом узле. Только в функциях. Иначе это может задумываться как настройка контекста для последующего использования в Eval
-                    && !gve._descriptor.captured
-                    && (opts & Options.SuppressUselessExpressionsElimination) == 0
-                    && !stats.ContainsEval
-                    && !stats.ContainsWith) // можем упустить присваивание
+                if (!stats.ContainsEval && !stats.ContainsWith)
                 {
-                    if ((owner._body._strict || gve._descriptor.owner != owner || !owner._functionInfo.ContainsArguments) // аргументы это одна сущность с двумя именами
+                    if (owner != null // не будем это применять в корневом узле. Только в функциях. 
+                                      // Иначе это может задумываться как настройка контекста для последующего использования в Eval
+                        && (opts & Options.SuppressUselessExpressionsElimination) == 0
                         && (_codeContext & CodeContext.InLoop) == 0)
                     {
-                        bool last = true;
-                        for (var i = 0; last && i < gve._descriptor.references.Count; i++)
+                        if ((owner._body._strict || variable._descriptor.owner != owner || !owner._functionInfo.ContainsArguments)) // аргументы это одна сущность с двумя именами
                         {
-                            last &= gve._descriptor.references[i].Eliminated || gve._descriptor.references[i].Position <= Position;
-                        }
-                        if (last)
-                        {
-                            if (_right.ContextIndependent)
+                            bool last = true;
+                            for (var i = 0; last && i < variable._descriptor.references.Count; i++)
                             {
-                                _this.Eliminated = true;
-                                _this = Empty.Instance;
+                                last &= variable._descriptor.references[i].Eliminated || variable._descriptor.references[i].Position <= Position;
                             }
-                            else
+
+                            if (last)
                             {
-                                _this = _right;
-                                this._right = null;
-                                this.Eliminated = true;
-                                this._right = _this as Expression;
+                                if (_right.ContextIndependent)
+                                {
+                                    _this.Eliminated = true;
+                                    _this = Empty.Instance;
+                                }
+                                else
+                                {
+                                    _this = _right;
+                                    this._right = null;
+                                    this.Eliminated = true;
+                                    this._right = _this as Expression;
+                                }
                             }
                         }
                     }

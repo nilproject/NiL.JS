@@ -1,15 +1,15 @@
-﻿var arr = ['a', , 'c', ];
+﻿//var arr = ['a', , 'c', ];
 
-var eArr = arr.entries();
+//var eArr = arr.entries();
 
-var index = 0;
-for (var item of eArr)
-{
-    if (index !== item[0])
-        console.log(`[Flat array] Expected ${index}. Actual ${item[0]}`);
+//var index = 0;
+//for (var item of eArr)
+//{
+//    if (index !== item[0])
+//        console.log(`[Flat array] Expected ${index}. Actual ${item[0]}`);
 
-    index++;
-}
+//    index++;
+//}
 
 ////////////////////////////////////////
 

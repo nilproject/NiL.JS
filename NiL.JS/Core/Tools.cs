@@ -2178,7 +2178,7 @@ namespace NiL.JS.Core
                         argument = Expression.Convert(argument, typeof(object));
                     }
 
-                    var currentBaseContext = Context.CurrentBaseContext;
+                    var currentBaseContext = Context.CurrentGlobalContext;
 
                     expressions.Add(Expression.Call(
                         argumentsParameter,
@@ -2332,8 +2332,8 @@ namespace NiL.JS.Core
                         return v.ToString();
 
                     if (v.Value is BaseLibrary.Array
-                        || v.Value == Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Array))
-                        || v == Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Array)))
+                        || v.Value == Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Array))
+                        || v == Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Array)))
                     {
                         BaseLibrary.Array a = v.Value as BaseLibrary.Array;
                         StringBuilder s;

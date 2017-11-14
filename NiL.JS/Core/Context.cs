@@ -132,7 +132,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static GlobalContext CurrentBaseContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
+        internal static GlobalContext CurrentGlobalContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
 
         public JSValue ThisBind
         {
@@ -205,7 +205,7 @@ namespace NiL.JS.Core
         }
 
         public Context()
-            : this(CurrentBaseContext, true, Function.Empty)
+            : this(CurrentGlobalContext, true, Function.Empty)
         {
         }
 
@@ -222,7 +222,7 @@ namespace NiL.JS.Core
 
 
         public Context(bool strict)
-            : this(CurrentBaseContext, strict)
+            : this(CurrentGlobalContext, strict)
         {
         }
 
@@ -656,7 +656,7 @@ namespace NiL.JS.Core
                 body._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
             }
 
-            body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, null);
+            body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, stats);
             body = cb as CodeBlock ?? body;
 
             if (stats.NeedDecompose)

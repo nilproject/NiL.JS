@@ -287,6 +287,7 @@ namespace NiL.JS.Expressions
             var res = JSObject.CreateObject();
             if (_fieldNames.Length == 0 && _computedProperties.Length == 0)
                 return res;
+
             res._fields = JSObject.getFieldsContainer();
             for (int i = 0; i < _fieldNames.Length; i++)
             {

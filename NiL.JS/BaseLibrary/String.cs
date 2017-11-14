@@ -648,7 +648,7 @@ namespace NiL.JS.BaseLibrary
                 return new Array { selfStr };
 
             var a0 = args[0];
-            var regex = a0?.Value as RegExp;
+            var regex = a0.Value as RegExp;
 
             var limit = (uint)Tools.JSObjectToInt64(args[1], long.MaxValue, true);
 
@@ -701,7 +701,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                string fstr = a0?.ToString();
+                string fstr = a0.ToString();
 
                 if (string.IsNullOrEmpty(fstr))
                 {

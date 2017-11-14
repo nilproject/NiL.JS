@@ -42,6 +42,7 @@ namespace NiL.JS.Expressions
             var temp = _left.Evaluate(context);
             if (temp._valueType < JSValueType.Undefined)
                 return true;
+
             else if ((temp._attributes & JSValueAttributesInternal.Argument) != 0)
             {
                 return false;
@@ -59,6 +60,7 @@ namespace NiL.JS.Expressions
             {
                 ExceptionHelper.Throw(new TypeError("Can not delete property \"" + _left + "\"."));
             }
+
             return false;
         }
 

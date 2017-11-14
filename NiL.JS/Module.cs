@@ -127,7 +127,7 @@ namespace NiL.JS
                 throw new ArgumentNullException();
 
             Code = code;
-            Context = new Context(Context.CurrentBaseContext, true, null);
+            Context = new Context(Context.CurrentGlobalContext, true, null);
             Context._module = this;
             if (!string.IsNullOrWhiteSpace(path))
             {
@@ -317,7 +317,7 @@ namespace NiL.JS
                 {
                     if (type.Namespace == @namespace)
                     {
-                        result.Exports[type.Name] = Context.CurrentBaseContext.GetConstructor(type);
+                        result.Exports[type.Name] = Context.CurrentGlobalContext.GetConstructor(type);
                     }
                     else if (type.Namespace.StartsWith(@namespace) && type.Namespace[@namespace.Length] == '.')
                     {

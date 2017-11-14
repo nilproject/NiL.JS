@@ -126,7 +126,7 @@ namespace NiL.JS
                 }
 
                 if (resultType != null)
-                    return Context.CurrentBaseContext.GetConstructor(resultType);
+                    return Context.CurrentGlobalContext.GetConstructor(resultType);
 
                 selection = types.StartedWith(reqname).GetEnumerator();
                 if (selection.MoveNext() && selection.Current.Key[reqname.Length] == '.')
