@@ -511,6 +511,8 @@ namespace NiL.JS.Statements
                                 new CodeCoordinates(0, _variables[i].references[0].Position, 0),
                                 "Unused variable \"" + _variables[i].name + "\"");
                         }
+                        else
+                            break;
                     }
                 }
 #if (NET40 || INLINE) && JIT

@@ -13,8 +13,7 @@ namespace NiL.JS.Statements
 #endif
     public sealed class TryCatch : CodeNode
     {
-        private bool @catch;
-
+        private bool _catch;
         private CodeNode body;
         private CodeNode catchBody;
         private CodeNode finallyBody;
@@ -129,7 +128,7 @@ namespace NiL.JS.Statements
             }
             catch (Exception e)
             {
-                if (this.@catch)
+                if (this._catch)
                 {
                     if (catchBody != null)
                         catchHandler(context, e);
@@ -269,24 +268,28 @@ namespace NiL.JS.Statements
                 stats.ContainsTry = true;
 
             Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+            var catchPosition = Position;
             if (catchBody != null)
             {
-                this.@catch = true;
+                _catch = true;
                 catchVariableDesc.owner = this;
                 VariableDescriptor oldVarDesc = null;
                 variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
-
+                catchPosition = catchBody.Position;
                 Parser.Build(ref catchBody, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
-
                 if (oldVarDesc != null)
                     variables[catchVariableDesc.name] = oldVarDesc;
                 else
                     variables.Remove(catchVariableDesc.name);
             }
 
+            var finallyPosition = 0;
             if (finallyBody != null)
+            {
+                finallyPosition = finallyBody.Position;
                 Parser.Build(ref finallyBody, expressionDepth, variables, codeContext, message, stats, opts);
+            }
 
             if (body == null || (body is Empty))
             {
@@ -296,10 +299,16 @@ namespace NiL.JS.Statements
                 _this = finallyBody;
             }
 
-            if (@catch && (catchBody == null || (catchBody is Empty)))
+            if (_catch && (catchBody == null || (catchBody is Empty)))
             {
                 if (message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, (catchBody ?? this as CodeNode).Position, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
+                    message(MessageLevel.Warning, new CodeCoordinates(0, catchPosition, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
+            }
+
+            if (finallyPosition != 0 && (finallyBody == null || (finallyBody is Empty)))
+            {
+                if (message != null)
+                    message(MessageLevel.Warning, new CodeCoordinates(0, catchPosition, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) finally block.");
             }
 
             return false;
