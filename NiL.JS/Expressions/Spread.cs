@@ -45,7 +45,7 @@ namespace NiL.JS.Expressions
             return new CodeNode[] { _left };
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             CodeNode f = _left;
             var res = _left.Build(ref f, expressionDepth,  variables, codeContext, message, stats, opts);

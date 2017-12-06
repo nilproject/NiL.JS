@@ -72,7 +72,7 @@ namespace NiL.JS.Statements
             return new CodeNode[0];
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             Parser.Build(ref value, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             // Улучшает работу оптимизатора хвостовой рекурсии
@@ -93,7 +93,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             if (value != null)
             {

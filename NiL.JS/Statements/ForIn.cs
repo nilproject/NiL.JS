@@ -307,7 +307,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             Parser.Build(ref _variable, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             Parser.Build(ref _source, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
@@ -323,12 +323,12 @@ namespace NiL.JS.Statements
                 && (_source is ObjectDefinition
                 || _source is ArrayDefinition
                 || _source is Constant))
-                message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for..in with constant source. This reduce performance. Rewrite without using for..in.");
+                message(MessageLevel.Recomendation, Position, Length, "for..in with constant source. This reduce performance. Rewrite without using for..in.");
 
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             _variable.Optimize(ref _variable, owner, message, opts, stats);
             _source.Optimize(ref _source, owner, message, opts, stats);

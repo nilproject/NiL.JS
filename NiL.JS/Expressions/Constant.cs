@@ -77,7 +77,7 @@ namespace NiL.JS.Expressions
             return null;
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             this._codeContext = codeContext;
 
@@ -86,7 +86,7 @@ namespace NiL.JS.Expressions
                 _this = null;
                 Eliminated = true;
                 if (message != null && (value._valueType != JSValueType.String || value._oValue.ToString() != "use strict"))
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused constant was removed. Maybe, something missing.");
+                    message(MessageLevel.Warning, Position, Length, "Unused constant was removed. Maybe, something missing.");
             }
 
             return false;

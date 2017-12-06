@@ -244,7 +244,7 @@ namespace NiL.JS.Expressions
                                 ExceptionHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
 
                             if (state.message != null)
-                                state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, i, 0), "Duplicate key \"" + fieldName + "\"");
+                                state.message(MessageLevel.Warning, i, 0, "Duplicate key \"" + fieldName + "\"");
                         }
 
                         if (state.Code[i] == ',' || state.Code[i] == '}')
@@ -349,7 +349,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
 
@@ -372,7 +372,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             for (var i = Values.Length; i-- > 0;)
             {

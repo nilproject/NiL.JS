@@ -24,9 +24,9 @@ namespace NiL.JS.Core
         public int breaksCount;
         public int continiesCount;
 
-        public readonly CompilerMessageCallback message;
+        public readonly InternalCompilerMessageCallback message;
 
-        public ParseInfo(string code, string sourceCode, CompilerMessageCallback message)
+        public ParseInfo(string code, string sourceCode, InternalCompilerMessageCallback message)
         {
             Code = code;
             SourceCode = sourceCode;

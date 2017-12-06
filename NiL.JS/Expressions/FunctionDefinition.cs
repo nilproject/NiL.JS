@@ -681,7 +681,7 @@ namespace NiL.JS.Expressions
             return new Function(context, this);
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (_body.built)
                 return false;
@@ -692,7 +692,7 @@ namespace NiL.JS.Expressions
             _codeContext = codeContext;
 
             if ((codeContext & CodeContext.InLoop) != 0 && message != null)
-                message(MessageLevel.Warning, new CodeCoordinates(0, Position, EndPosition - Position), Strings.FunctionInLoop);
+                message(MessageLevel.Warning, Position, EndPosition - Position, Strings.FunctionInLoop);
 
             /*
                 Если переменная за время построения функции получит хоть одну ссылку плюсом,
@@ -733,7 +733,7 @@ namespace NiL.JS.Expressions
                 for (var i = parameters.Length; i-- > 0;)
                 {
                     if (parameters[i].ReferenceCount == 1)
-                        message(MessageLevel.Recomendation, new CodeCoordinates(0, parameters[i].references[0].Position, 0), "Unused variable \"" + parameters[i].name + "\"");
+                        message(MessageLevel.Recomendation, parameters[i].references[0].Position, 0, "Unused variable \"" + parameters[i].name + "\"");
                     else
                         break;
                 }
@@ -780,7 +780,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             var bd = _body as CodeNode;
             var oldScopeIsolation = _body._suppressScopeIsolation;
@@ -799,7 +799,7 @@ namespace NiL.JS.Expressions
                         if (message != null
                             && _functionInfo.ResultType >= PredictedType.Undefined
                             && _functionInfo.Returns[i].ResultType >= PredictedType.Undefined)
-                            message(MessageLevel.Warning, new CodeCoordinates(0, parameters[i].references[0].Position, 0), "Type of return value is ambiguous");
+                            message(MessageLevel.Warning, parameters[i].references[0].Position, 0, "Type of return value is ambiguous");
                         break;
                     }
                 }

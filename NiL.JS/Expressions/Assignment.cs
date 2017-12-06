@@ -139,7 +139,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
 #if GIVENAMEFUNCTION
             if (first is VariableReference && second is FunctionExpression)
@@ -175,7 +175,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             baseOptimize(ref _this, owner, message, opts, stats);
             var vr = _left as VariableReference;
@@ -193,13 +193,13 @@ namespace NiL.JS.Expressions
                         else
                         {
                             if (message != null && stype >= PredictedType.Undefined && vr._descriptor.lastPredictedType >= PredictedType.Undefined)
-                                message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
+                                message(MessageLevel.Warning, Position, Length, "Variable \"" + vr.Name + "\" has ambiguous type. It can be make impossible some optimizations and cause errors.");
                             vr._descriptor.lastPredictedType = PredictedType.Ambiguous;
                         }
                     }
                 }
                 else if (message != null)
-                    message(MessageLevel.CriticalWarning, new CodeCoordinates(0, Position, Length), "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
+                    message(MessageLevel.CriticalWarning, Position, Length, "Assign to undefined variable \"" + vr.Name + "\". It will declare a global variable.");
             }
 
             var variable = _left as Variable;

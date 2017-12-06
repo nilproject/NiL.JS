@@ -262,7 +262,7 @@ namespace NiL.JS.Statements
             catchAction(context);
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (stats != null)
                 stats.ContainsTry = true;
@@ -294,7 +294,7 @@ namespace NiL.JS.Statements
             if (body == null || (body is Empty))
             {
                 if (message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Empty (or reduced to empty) try" + (catchBody != null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
+                    message(MessageLevel.Warning, Position, Length, "Empty (or reduced to empty) try" + (catchBody != null ? "..catch" : "") + (finallyBody != null ? "..finally" : "") + " block. Maybe, something missing.");
 
                 _this = finallyBody;
             }
@@ -302,19 +302,19 @@ namespace NiL.JS.Statements
             if (_catch && (catchBody == null || (catchBody is Empty)))
             {
                 if (message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, catchPosition, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
+                    message(MessageLevel.Warning, catchPosition, (catchBody ?? this as CodeNode).Length, "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
             }
 
             if (finallyPosition != 0 && (finallyBody == null || (finallyBody is Empty)))
             {
                 if (message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, catchPosition, (catchBody ?? this as CodeNode).Length), "Empty (or reduced to empty) finally block.");
+                    message(MessageLevel.Warning, catchPosition, (catchBody ?? this as CodeNode).Length, "Empty (or reduced to empty) finally block.");
             }
 
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             body.Optimize(ref body, owner, message, opts, stats);
 

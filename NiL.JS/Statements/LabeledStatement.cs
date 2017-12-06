@@ -35,7 +35,7 @@ namespace NiL.JS.Statements
             if (stat is FunctionDefinition)
             {
                 if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, stat.Position, stat.Length), "Labeled function. Are you sure?");
+                    state.message(MessageLevel.CriticalWarning, stat.Position, stat.Length, "Labeled function. Are you sure?");
             }
             var pos = index;
             index = i;
@@ -64,7 +64,7 @@ namespace NiL.JS.Statements
             return new[] { statement };
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             Parser.Build(ref statement, expressionDepth, variables, codeContext, message, stats, opts);
             if (statement == null)
@@ -75,7 +75,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             statement.Optimize(ref statement, owner, message, opts, stats);
             if (statement == null)

@@ -25,7 +25,7 @@ namespace NiL.JS.Statements
                 ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
 
             if (state.message != null)
-                state.message(MessageLevel.CriticalWarning, CodeCoordinates.FromTextPosition(state.Code, index, 4), "Do not use \"with\".");
+                state.message(MessageLevel.CriticalWarning, index, 4, "Do not use \"with\".");
 
             var obj = Parser.Parse(state, ref i, CodeFragmentType.Expression);
             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -136,7 +136,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (stats != null)
                 stats.ContainsWith = true;
@@ -145,7 +145,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             if (_scope != null)
                 _scope.Optimize(ref _scope, owner, message, opts, stats);

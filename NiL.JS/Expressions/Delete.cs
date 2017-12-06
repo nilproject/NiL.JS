@@ -64,7 +64,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts))
                 return true;
@@ -84,7 +84,7 @@ namespace NiL.JS.Expressions
             if (f != null)
             {
                 if (f.Descriptor.IsDefined && message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Tring to delete defined variable." + ((codeContext & CodeContext.Strict) != 0 ? " In strict mode it cause exception." : " It is not allowed"));
+                    message(MessageLevel.Warning, Position, Length, "Tring to delete defined variable." + ((codeContext & CodeContext.Strict) != 0 ? " In strict mode it cause exception." : " It is not allowed"));
                 (f.Descriptor.assignments ??
                     (f.Descriptor.assignments = new System.Collections.Generic.List<Expression>())).Add(this);
             }

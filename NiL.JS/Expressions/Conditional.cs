@@ -54,7 +54,7 @@ namespace NiL.JS.Expressions
             return (bool)_left.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             Parser.Build(ref _left, expressionDepth + 1, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
             Parser.Build(ref threads[0], expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
@@ -95,7 +95,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             base.Optimize(ref _this, owner, message, opts, stats);
             for (var i = threads.Length; i-- > 0;)
@@ -108,7 +108,7 @@ namespace NiL.JS.Expressions
                 && (threads[0] is Variable || threads[0] is Constant)
                 && (threads[1] is Variable || threads[1] is Constant)
                 && ResultType == PredictedType.Ambiguous)
-                message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Type of an expression is ambiguous");
+                message(MessageLevel.Warning, Position, Length, "Type of an expression is ambiguous");
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)

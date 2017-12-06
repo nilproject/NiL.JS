@@ -125,7 +125,7 @@ namespace NiL.JS.Statements
                         }
 
                         if (state.message != null)
-                            state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, body.Position, body.Length), "Do not declare variables in for-loop directly");
+                            state.message(MessageLevel.Warning, body.Position, body.Length, "Do not declare variables in for-loop directly");
                     }
                 }
                 finally
@@ -267,7 +267,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             Parser.Build(ref _initializer, 1, variables, codeContext, message, stats, opts);
             var initAsVds = _initializer as VariableDefinition;
@@ -284,7 +284,7 @@ namespace NiL.JS.Statements
             {
                 Parser.Build(ref _post, 1, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
                 if (_post == null && message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Last expression of for-loop was removed. Maybe, it's a mistake.");
+                    message(MessageLevel.Warning, Position, Length, "Last expression of for-loop was removed. Maybe, it's a mistake.");
             }
 
             Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
@@ -392,7 +392,7 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             if (_initializer != null)
                 _initializer.Optimize(ref _initializer, owner, message, opts, stats);

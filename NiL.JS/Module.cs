@@ -143,17 +143,15 @@ namespace NiL.JS
             if (code == "")
                 return;
 
-            int i = 0;
-            _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Tools.removeComments(code, 0), Code, messageCallback), ref i);
+            var internalCallback = messageCallback != null ? 
+                (level, position, length, message) => messageCallback(level, CodeCoordinates.FromTextPosition(code, position, length), message)
+                : null as InternalCompilerMessageCallback;
 
-            CompilerMessageCallback icallback = messageCallback != null ? (level, cord, message) =>
-                {
-                    messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message);
-                }
-            : null as CompilerMessageCallback;
+            int i = 0;
+            _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Tools.removeComments(code, 0), Code, internalCallback), ref i);
 
             var stat = new FunctionInfo();
-            Parser.Build(ref _root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, icallback, stat, options);
+            Parser.Build(ref _root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, internalCallback, stat, options);
             var body = _root as CodeBlock;
             body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             Context._thisBind = new GlobalObject(Context);
@@ -162,7 +160,7 @@ namespace NiL.JS
             var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
             var bd = body as CodeNode;
-            body.Optimize(ref bd, null, icallback, options, stat);
+            body.Optimize(ref bd, null, internalCallback, options, stat);
             if (tv != null)
                 body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
 
