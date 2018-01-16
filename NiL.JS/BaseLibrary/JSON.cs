@@ -350,45 +350,45 @@ namespace NiL.JS.BaseLibrary
                 switch (c)
                 {
                     case (char)8:
-                        {
-                            sb.Append("\\b");
-                            break;
-                        }
+                    {
+                        sb.Append("\\b");
+                        break;
+                    }
                     case (char)9:
-                        {
-                            sb.Append("\\t");
-                            break;
-                        }
+                    {
+                        sb.Append("\\t");
+                        break;
+                    }
                     case (char)10:
-                        {
-                            sb.Append("\\n");
-                            break;
-                        }
+                    {
+                        sb.Append("\\n");
+                        break;
+                    }
                     case (char)12:
-                        {
-                            sb.Append("\\f");
-                            break;
-                        }
+                    {
+                        sb.Append("\\f");
+                        break;
+                    }
                     case (char)13:
-                        {
-                            sb.Append("\\r");
-                            break;
-                        }
+                    {
+                        sb.Append("\\r");
+                        break;
+                    }
                     case '\\':
-                        {
-                            sb.Append("\\\\");
-                            break;
-                        }
+                    {
+                        sb.Append("\\\\");
+                        break;
+                    }
                     case '"':
-                        {
-                            sb.Append("\\\"");
-                            break;
-                        }
+                    {
+                        sb.Append("\\\"");
+                        break;
+                    }
                     default:
-                        {
-                            sb.Append("\\u").Append(((int)c).ToString("x4"));
-                            break;
-                        }
+                    {
+                        sb.Append("\\u").Append(((int)c).ToString("x4"));
+                        break;
+                    }
                 }
             }
             else
@@ -425,6 +425,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (obj._valueType <= JSValueType.Undefined)
                         return null;
+
                     if (obj._valueType == JSValueType.String)
                     {
                         res = new StringBuilder("\"");
@@ -434,12 +435,18 @@ namespace NiL.JS.BaseLibrary
                         res.Append('"');
                         return res.ToString();
                     }
+
+                    if (obj.ValueType == JSValueType.Double && double.IsNaN(obj._dValue) || double.IsInfinity(obj._dValue))
+                        return "null";
+
                     return obj.ToString();
                 }
+
                 if (obj.Value == null)
                     return null;
                 if (obj._valueType == JSValueType.Function)
                     return null;
+
                 var toJSONmemb = obj["toJSON"];
                 toJSONmemb = toJSONmemb.Value as JSValue ?? toJSONmemb;
                 if (toJSONmemb._valueType == JSValueType.Function)
@@ -447,7 +454,6 @@ namespace NiL.JS.BaseLibrary
                 res = new StringBuilder(obj is Array ? "[" : "{");
 
                 string prevKey = null;
-
                 foreach (var member in obj)
                 {
                     var value = member.Value;
@@ -502,11 +508,11 @@ namespace NiL.JS.BaseLibrary
                     {
                         res.Append('"');
                         for (var i = 0; i < member.Key.Length; i++)
-                        {
                             escapeIfNeed(res, member.Key[i]);
-                        }
+
                         res.Append("\":")
                            .Append(space ?? "");
+
                         for (var i = 0; i < strval.Length; i++)
                         {
                             res.Append(strval[i]);
