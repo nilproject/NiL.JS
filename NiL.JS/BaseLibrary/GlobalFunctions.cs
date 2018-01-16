@@ -26,7 +26,7 @@ namespace NiL.JS.BaseLibrary
             if (r._valueType == JSValueType.String)
             {
                 double d = 0;
-                int i = 0;
+                var i = 0;
                 if (Tools.ParseNumber(r._oValue.ToString(), i, out d, ParseNumberOptions.Default))
                     return double.IsNaN(d);
                 return true;
@@ -43,9 +43,9 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(2)]
         internal static JSValue parseInt(JSValue thisBind, Arguments args)
         {
-            double result = double.NaN;
+            var result = double.NaN;
             var radixo = args[1];
-            double dradix = radixo.Exists ? Tools.JSObjectToDouble(radixo) : 0;
+            var dradix = radixo.Exists ? Tools.JSObjectToDouble(radixo) : 0;
             int radix;
             if (double.IsNaN(dradix) || double.IsInfinity(dradix))
                 radix = 0;
@@ -70,7 +70,7 @@ namespace NiL.JS.BaseLibrary
 
         internal static JSValue parseFloat(JSValue thisBind, Arguments x)
         {
-            double result = double.NaN;
+            var result = double.NaN;
             var source = x[0];
             if (source._valueType == JSValueType.Integer)
                 return source;
@@ -126,7 +126,7 @@ namespace NiL.JS.BaseLibrary
                     argsCount = Tools.JSObjectToInt32(arg.length);
                     if (argsCount == 0)
                     {
-                        for (int i = 0; i < threads.Length; i++)
+                        for (var i = 0; i < threads.Length; i++)
                         {
                             if (threads[i].IsAlive)
                                 return true;
@@ -144,7 +144,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (threads == null)
                         return;
-                    for (int i = 0; i < threads.Length; i++)
+                    for (var i = 0; i < threads.Length; i++)
                     {
                         if (threads[i].IsAlive)
                         {
@@ -162,7 +162,7 @@ namespace NiL.JS.BaseLibrary
 
             if (string.IsNullOrEmpty(str))
                 return str;
-            StringBuilder res = new StringBuilder(str.Length);
+            var res = new StringBuilder(str.Length);
             for (var k = 0; k < str.Length; k++)
             {
                 switch (str[k])
@@ -174,7 +174,7 @@ namespace NiL.JS.BaseLibrary
                             if (!Tools.isHex(str[k + 1])
                                 || !Tools.isHex(str[k + 2]))
                                 ExceptionHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
-                            var cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
+                            var cc = Tools.hexCharToInt(str[k + 1]) * 16 + Tools.hexCharToInt(str[k + 2]);
                             k += 2;
                             if ((cc & 0x80) == 0)
                                 res.Append((char)cc);
@@ -196,7 +196,7 @@ namespace NiL.JS.BaseLibrary
                                     if (!Tools.isHex(str[k + 1])
                                         || !Tools.isHex(str[k + 2]))
                                         ExceptionHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
-                                    cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
+                                    cc = Tools.hexCharToInt(str[k + 1]) * 16 + Tools.hexCharToInt(str[k + 2]);
                                     if ((cc & 0xC0) != 0x80)
                                         ExceptionHelper.Throw(new URIError("URI malformed"));
                                     octet |= (cc & 63) << ((n - j - 1) * 6);
@@ -234,7 +234,7 @@ namespace NiL.JS.BaseLibrary
 
             if (string.IsNullOrEmpty(str))
                 return str;
-            StringBuilder res = new StringBuilder(str.Length);
+            var res = new StringBuilder(str.Length);
             for (var k = 0; k < str.Length; k++)
             {
                 switch (str[k])
@@ -246,7 +246,7 @@ namespace NiL.JS.BaseLibrary
                             if (!Tools.isHex(str[k + 1])
                                 || !Tools.isHex(str[k + 2]))
                                 ExceptionHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
-                            var cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
+                            var cc = Tools.hexCharToInt(str[k + 1]) * 16 + Tools.hexCharToInt(str[k + 2]);
                             k += 2;
                             if ((cc & 0x80) == 0)
                             {
@@ -274,7 +274,7 @@ namespace NiL.JS.BaseLibrary
                                     if (!Tools.isHex(str[k + 1])
                                         || !Tools.isHex(str[k + 2]))
                                         ExceptionHelper.Throw(new URIError("Substring after \"%\" not represent valid code."));
-                                    cc = Tools.anum(str[k + 1]) * 16 + Tools.anum(str[k + 2]);
+                                    cc = Tools.hexCharToInt(str[k + 1]) * 16 + Tools.hexCharToInt(str[k + 2]);
                                     if ((cc & 0xC0) != 0x80)
                                         ExceptionHelper.Throw(new URIError("URI malformed"));
                                     octet |= (cc & 63) << ((n - j - 1) * 6);
@@ -345,7 +345,7 @@ namespace NiL.JS.BaseLibrary
                     res.Append(s[i]);
                 else
                 {
-                    int v = 0;
+                    var v = 0;
                     if (s[i] >= 0xdc00 && s[i] <= 0xdfff)
                         ExceptionHelper.Throw(new URIError(""));
                     if (s[i] < 0xd800 || s[i] > 0xdbff)
@@ -398,7 +398,7 @@ namespace NiL.JS.BaseLibrary
                     res.Append(s[i]);
                 else
                 {
-                    int v = 0;
+                    var v = 0;
                     if (s[i] >= 0xdc00 && s[i] <= 0xdfff)
                         ExceptionHelper.Throw(new URIError(""));
                     if (s[i] < 0xd800 || s[i] > 0xdbff)

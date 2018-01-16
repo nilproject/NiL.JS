@@ -1260,7 +1260,7 @@ namespace NiL.JS.Core
                 ulong temp = 0;
                 while (i < code.Length)
                 {
-                    var degSign = anum(code[i]);
+                    var degSign = hexCharToInt(code[i]);
                     if (degSign >= radix || (NumChars[degSign] != code[i] && (NumChars[degSign] + ('a' - 'A')) != code[i]))
                     {
                         break;
@@ -1908,7 +1908,7 @@ namespace NiL.JS.Core
         {
             if (p < '0' || p > 'f')
                 return false;
-            var c = anum(p);
+            var c = hexCharToInt(p);
             return c >= 0 && c < 16;
         }
 
@@ -1920,7 +1920,7 @@ namespace NiL.JS.Core
 #if INLINE
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        internal static int anum(char p)
+        internal static int hexCharToInt(char p)
         {
             return ((p % 'a' % 'A' + 10) % ('0' + 10));
         }
