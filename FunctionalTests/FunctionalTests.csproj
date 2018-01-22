@@ -70,6 +70,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Bug_106.cs" />
     <Compile Include="ExpandoObjectTests.cs" />
     <Compile Include="FunctionsToDelegateWrapping.cs" />
     <Compile Include="Generated\Embedded.cs">
