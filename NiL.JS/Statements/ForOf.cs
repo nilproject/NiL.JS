@@ -278,27 +278,30 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             Parser.Build(ref _variable, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             Parser.Build(ref _source, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
-            if (_variable is Expressions.Comma)
+
+            if (_variable is Comma)
             {
-                if ((_variable as Expressions.Comma).RightOperand != null)
+                if ((_variable as Comma).RightOperand != null)
                     throw new InvalidOperationException("Invalid left-hand side in for-of");
 
-                _variable = (_variable as Expressions.Comma).LeftOperand;
+                _variable = (_variable as Comma).LeftOperand;
             }
+
             if (message != null
-                && (this._source is Expressions.ObjectDefinition
-                || this._source is ArrayDefinition
-                || this._source is Constant))
-                message(MessageLevel.Recomendation, new CodeCoordinates(0, Position, Length), "for-of with constant source. This reduce performance. Rewrite without using for..in.");
+                && (_source is ObjectDefinition
+                || _source is ArrayDefinition
+                || _source is Constant))
+                message(MessageLevel.Recomendation, Position, Length, "for-of with constant source. This solution has a performance penalty. Rewrite without using for..in.");
+
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             _variable.Optimize(ref _variable, owner, message, opts, stats);
             _source.Optimize(ref _source, owner, message, opts, stats);

@@ -274,7 +274,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             base.Optimize(ref _this, owner, message, opts, stats);
             if (message != null)
@@ -285,11 +285,11 @@ namespace NiL.JS.Expressions
                     switch (fc.value._valueType)
                     {
                         case JSValueType.Undefined:
-                            message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "To compare with undefined use '===' or '!==' instead of '==' or '!='.");
+                            message(MessageLevel.Warning, Position, Length, "To compare with undefined use '===' or '!==' instead of '==' or '!='.");
                             break;
                         case JSValueType.Object:
                             if (fc.value._oValue == null)
-                                message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "To compare with null use '===' or '!==' instead of '==' or '!='.");
+                                message(MessageLevel.Warning, Position, Length, "To compare with null use '===' or '!==' instead of '==' or '!='.");
                             break;
                     }
                 }

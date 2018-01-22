@@ -380,8 +380,15 @@ namespace NiL.JS.BaseLibrary
 
             JSValue targetObject = ConstructObject();
             targetObject._attributes |= JSValueAttributesInternal.ConstructingObject;
-            var result = Construct(targetObject, arguments);
-            targetObject._attributes &= ~JSValueAttributesInternal.ConstructingObject;
+            JSValue result;
+            try
+            {
+                result = Construct(targetObject, arguments);
+            }
+            finally
+            {
+                targetObject._attributes &= ~JSValueAttributesInternal.ConstructingObject;
+            }
             return result;
         }
 
@@ -413,8 +420,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (_functionDefinition._body == null)
                 return NotExists;
-
-            // Совсем медленно. Плохая функция попалась
+            
             Arguments argumentsObject = Tools.CreateArguments(arguments, initiator);
 
             initiator._objectSource = null;
@@ -735,7 +741,9 @@ namespace NiL.JS.BaseLibrary
         internal JSValue correctTargetObject(JSValue thisBind, bool strict)
         {
             if (thisBind == null)
+            {
                 return strict ? undefined : _initialContext != null ? _initialContext.RootContext._thisBind : null;
+            }
             else if (_initialContext != null)
             {
                 if (!strict) // Поправляем this

@@ -180,7 +180,7 @@ namespace NiL.JS.Statements
                             if ((state.Code[position] == ';' || state.Code[position] == ','))
                             {
                                 if (state.message != null && !expectSemicolon)
-                                    state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, position, 1), "Unnecessary semicolon.");
+                                    state.message(MessageLevel.Warning, position, 1, "Unnecessary semicolon.");
 
                                 position++;
                             }
@@ -415,7 +415,7 @@ namespace NiL.JS.Statements
             return res.ToArray();
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (built)
                 return false;
@@ -469,7 +469,7 @@ namespace NiL.JS.Statements
                     else
                     {
                         if (unreachable && message != null)
-                            message(MessageLevel.CriticalWarning, new CodeCoordinates(0, _lines[i].Position, _lines[i].Length), "Unreachable code detected.");
+                            message(MessageLevel.CriticalWarning, _lines[i].Position, _lines[i].Length, "Unreachable code detected.");
                         var cn = _lines[i];
                         Parser.Build(ref cn, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this._strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
                         if (cn is Empty)
@@ -508,9 +508,12 @@ namespace NiL.JS.Statements
                         {
                             message(
                                 MessageLevel.Recomendation,
-                                new CodeCoordinates(0, _variables[i].references[0].Position, 0),
+                                _variables[i].references[0].Position, 
+                                0,
                                 "Unused variable \"" + _variables[i].name + "\"");
                         }
+                        else
+                            break;
                     }
                 }
 #if (NET40 || INLINE) && JIT
@@ -546,14 +549,14 @@ namespace NiL.JS.Statements
             return false;
         }
 
-        internal void Optimize(ref CodeBlock self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        internal void Optimize(ref CodeBlock self, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             CodeNode cn = self;
             Optimize(ref cn, owner, message, opts, stats);
             self = (CodeBlock)cn;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             /*
              * Дублирование оптимизации для локальных переменных нужно для правильной работы ряда оптимизаций

@@ -51,7 +51,7 @@ namespace NiL.JS.Core
         }
 
         private const int InitialSize = 2;
-        private const int MaxAsListSize = 2;
+        private const int MaxAsListSize = 4;
 
         private static readonly Record[] emptyRecords = new Record[0];
 
@@ -118,15 +118,17 @@ namespace NiL.JS.Core
                     }
                 }
 
-                mask = increaseSize() - 1;
-
-                if (_records.Length <= MaxAsListSize)
+                if (_records.Length * 2 <= MaxAsListSize)
                 {
-                    _records[mask].key = key;
-                    _records[mask].value = value;
+                    index = _records.Length;
+                    increaseSize();
+
+                    _records[index].hash = -1;
+                    _records[index].key = key;
+                    _records[index].value = value;
 
                     ensureExistedIndexCapacity();
-                    _existsedIndexes[_eicount] = mask;
+                    _existsedIndexes[_eicount] = index;
 
                     _count++;
                     _eicount++;
@@ -203,9 +205,6 @@ namespace NiL.JS.Core
             }
         }
 
-#if INLINE
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static int computeHash(string key)
         {
             unchecked
@@ -219,7 +218,7 @@ namespace NiL.JS.Core
                 for (var i = 0; i < keyLen; i++)
                 {
                     c = key[i];
-                    c -= (char)((uint)((i - 1) & ~(keyLen - 2)) >> (sizeof(int) * 8 - 1));
+                    c -= (char)((uint)((i - 1) & ~(keyLen - 2)) >> 31);
                     hash += (hash >> 28) + (hash << 4) + c;
                     isNumber &= ('0' - c - 1) & (c - '9' - 1);
                 }
@@ -411,7 +410,7 @@ namespace NiL.JS.Core
 
                     var indexInExIndex = Array.IndexOf(_existsedIndexes, index);
                     Array.Copy(_existsedIndexes, indexInExIndex + 1, _existsedIndexes, indexInExIndex, _existsedIndexes.Length - indexInExIndex - 1);
-                    
+
                     return true;
                 }
 
@@ -445,7 +444,7 @@ namespace NiL.JS.Core
                     if (oldRecords[index].key != null)
                     {
                         if (newLength == MaxAsListSize << 1)
-                            Add(oldRecords[i].key, oldRecords[i].value);
+                            insert(oldRecords[index].key, oldRecords[index].value, computeHash(oldRecords[index].key), false);
                         else
                             insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false);
                     }
@@ -547,48 +546,78 @@ namespace NiL.JS.Core
                 yield return new KeyValuePair<string, TValue>("", _emptyKeyValue);
 
             uint number;
-
             uint foundNumber;
             uint exprected = 0;
-
+            bool repeat = false;
             do
             {
+                repeat = false;
                 foundNumber = uint.MaxValue;
                 int index = -1;
                 for (int i = 0; i < _records.Length; i++)
                 {
                     if (_records[i].key != null
                         && _records[i].hash < 0
-                        && uint.TryParse(_records[i].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out number)
-                        && number >= exprected
-                        && (number < foundNumber || number == uint.MaxValue))
+                        && uint.TryParse(_records[i].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out number))
                     {
-                        foundNumber = number;
-                        index = i;
-                        if (number == exprected)
-                            break;
+                        if (number >= exprected && number <= foundNumber)
+                        {
+                            if (number == exprected)
+                            {
+                                yield return new KeyValuePair<string, TValue>(_records[i].key, _records[i].value);
+                                if (number == uint.MaxValue)
+                                {
+                                    repeat = false;
+                                    break;
+                                }
+
+                                exprected = number + 1;
+                                repeat = true;
+                                if (index != -1)
+                                {
+                                    foundNumber = uint.MaxValue;
+                                    i = index - 1;
+                                    index = -1;
+                                }
+                            }
+                            else
+                            {
+                                repeat |= index != -1;
+                                foundNumber = number;
+                                index = i;
+                            }
+                        }
+                        else
+                        {
+                            repeat |= number > exprected;
+                        }
                     }
                 }
 
                 if (index != -1)
                 {
-                    yield return new KeyValuePair<string, TValue>(
-                        _records[index].key,
-                        _records[index].value);
+                    yield return new KeyValuePair<string, TValue>(_records[index].key, _records[index].value);
+                    if (foundNumber == uint.MaxValue)
+                    {
+                        break;
+                    }
 
                     exprected = foundNumber + 1;
+                    repeat = true;
                 }
             }
-            while (foundNumber < exprected);
+            while (repeat);
 
             for (int i = 0; i < _eicount; i++)
             {
-                if (_records[_existsedIndexes[i]].key != null
-                    && !uint.TryParse(_records[_existsedIndexes[i]].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out number))
+                int index = _existsedIndexes[i];
+                if (_records[index].key != null
+                    && (_records[i].hash >= 0
+                        || !uint.TryParse(_records[i].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out number)))
                 {
                     yield return new KeyValuePair<string, TValue>(
-                        _records[_existsedIndexes[i]].key,
-                        _records[_existsedIndexes[i]].value);
+                        _records[index].key,
+                        _records[index].value);
                 }
             }
         }

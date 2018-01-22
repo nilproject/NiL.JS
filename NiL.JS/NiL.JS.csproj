@@ -246,6 +246,7 @@
     <Compile Include="Core\Functions\BindedFunction.cs" />
     <Compile Include="Core\CatchContext.cs" />
     <Compile Include="Core\CompiledNode.cs" />
+    <Compile Include="Core\Functions\ConstantFunction.cs" />
     <Compile Include="Core\Functions\MethodGroup.cs" />
     <Compile Include="Core\Functions\MethodProxy.cs" />
     <Compile Include="Core\Functions\SimpleFunction.cs" />

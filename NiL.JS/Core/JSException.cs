@@ -16,7 +16,7 @@ namespace NiL.JS.Core
 
         public JSException(Error data)
         {
-            Error = Context.CurrentBaseContext.ProxyValue(data);
+            Error = Context.CurrentGlobalContext.ProxyValue(data);
         }
 
         public JSException(JSValue data)
@@ -33,7 +33,7 @@ namespace NiL.JS.Core
         public JSException(Error avatar, Exception innerException)
             : base("", innerException)
         {
-            Error = Context.CurrentBaseContext.ProxyValue(avatar);
+            Error = Context.CurrentGlobalContext.ProxyValue(avatar);
         }
 
         public override string Message

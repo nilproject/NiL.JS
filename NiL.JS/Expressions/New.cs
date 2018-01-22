@@ -57,7 +57,7 @@ namespace NiL.JS.Expressions
             else
             {
                 if (state.message != null)
-                    state.message(MessageLevel.Warning, CodeCoordinates.FromTextPosition(state.Code, index, 0), "Missed brackets in a constructor invocation.");
+                    state.message(MessageLevel.Warning, index, 0, "Missed brackets in a constructor invocation.");
                 result = new Expressions.New(new Call(result, new Expression[0]) { Position = result.Position, Length = result.Length }) { Position = index, Length = i - index };
             }
             index = i;
@@ -69,10 +69,10 @@ namespace NiL.JS.Expressions
             throw new InvalidOperationException();
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (message != null && expressionDepth <= 1)
-                message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use NewOperator for side effect");
+                message(MessageLevel.Warning, Position, 0, "Do not use NewOperator for side effect");
 
             (_left as Call)._callMode = CallMode.Construct;
             _this = _left;

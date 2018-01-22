@@ -156,7 +156,7 @@ namespace NiL.JS.Expressions
                 return new JSValue { _oValue = tagResult, _valueType = JSValueType.SpreadOperatorResult };
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (expressions.Length == 0)
             {
@@ -171,7 +171,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             for (var i = 0; i < expressions.Length; i++)
                 expressions[i].Optimize(ref expressions[i], owner, message, opts, stats);

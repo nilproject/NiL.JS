@@ -137,7 +137,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
 
@@ -172,7 +172,7 @@ namespace NiL.JS.Expressions
                 _this = null;
                 Eliminated = true;
                 if (message != null)
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Unused getting of defined variable was removed. Maybe something missing.");
+                    message(MessageLevel.Warning, Position, Length, "Unused getting of defined variable was removed. Maybe something missing.");
             }
             else if (_variableName == "arguments" && (codeContext & CodeContext.InFunction) != 0)
             {
@@ -184,7 +184,7 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             if ((opts & Options.SuppressConstantPropogation) == 0
                 && !_descriptor.captured

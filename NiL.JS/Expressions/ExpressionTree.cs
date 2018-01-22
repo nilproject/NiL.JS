@@ -795,7 +795,7 @@ namespace NiL.JS.Expressions
                                     && cname.value._valueType == JSValueType.String
                                     && Parser.ValidateName(cname.value._oValue.ToString(), ref startPos, false)
                                     && startPos == cname.value._oValue.ToString().Length)
-                                    state.message(MessageLevel.Recomendation, CodeCoordinates.FromTextPosition(state.Code, mname.Position, mname.Length), "[\"" + cname.value._oValue + "\"] is better written in dot notation.");
+                                    state.message(MessageLevel.Recomendation, mname.Position, mname.Length, "[\"" + cname.value._oValue + "\"] is better written in dot notation.");
                             }
                             break;
                         }
@@ -1418,7 +1418,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _this = getFastImpl();
             _this.Position = Position;

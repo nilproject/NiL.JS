@@ -151,7 +151,7 @@ namespace NiL.JS.Core.Interop
                                 {
                                     if (value is Delegate)
                                     {
-                                        var context = Context.CurrentBaseContext;
+                                        var context = Context.CurrentGlobalContext;
 #if (PORTABLE || NETCORE)
                                         _oValue = new MethodProxy(context, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
 #else
@@ -246,7 +246,7 @@ namespace NiL.JS.Core.Interop
             if (result is IList)
                 return new NativeList(result as IList);
             else
-                return Context.CurrentBaseContext.ProxyValue(result);
+                return Context.CurrentGlobalContext.ProxyValue(result);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)

@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             return base.Evaluate(context)._iValue == 0;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             baseOptimize(ref _this, owner, message, opts, stats);
             if (_this == this)

@@ -80,7 +80,7 @@ namespace NiL.JS.Expressions
                 _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             _codeContext = codeContext;
             codeContext = codeContext | CodeContext.InExpression;
@@ -90,7 +90,8 @@ namespace NiL.JS.Expressions
             if (this.ContextIndependent)
             {
                 if (message != null && !(this is RegExpExpression))
-                    message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Constant expression. Maybe, it's a mistake.");
+                    message(MessageLevel.Warning, Position, Length, "Constant expression. Maybe, it's a mistake.");
+
                 try
                 {
                     var res = this.Evaluate(null);
@@ -120,19 +121,19 @@ namespace NiL.JS.Expressions
             return false;
         }
 
-        internal void Optimize(ref Expression self, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        internal void Optimize(ref Expression self, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             CodeNode cn = self;
             Optimize(ref cn, owner, message, opts, stats);
             self = (Expression)cn;
         }
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             baseOptimize(ref _this, owner, message, opts, stats);
         }
 
-        internal void baseOptimize(ref CodeNode _this, FunctionDefinition owner, CompilerMessageCallback message, Options opts, FunctionInfo stats)
+        internal void baseOptimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
             var f = _left as CodeNode;
             var s = _right as CodeNode;
@@ -165,10 +166,10 @@ namespace NiL.JS.Expressions
             }
         }
 
-        private void expressionWillThrow(CompilerMessageCallback message)
+        private void expressionWillThrow(InternalCompilerMessageCallback message)
         {
             if (message != null && !(this is RegExpExpression))
-                message(MessageLevel.Warning, new CodeCoordinates(0, Position, Length), "Expression will throw an exception");
+                message(MessageLevel.Warning, Position, Length, "Expression will throw an exception");
         }
 
         public override T Visit<T>(Visitor<T> visitor)

@@ -59,7 +59,7 @@ namespace NiL.JS.Expressions
             catch (Exception e)
             {
                 if (state.message != null)
-                    state.message(MessageLevel.Error, CodeCoordinates.FromTextPosition(state.Code, i - value.Length, value.Length), string.Format(Strings.InvalidRegExp, value));
+                    state.message(MessageLevel.Error, i - value.Length, value.Length, string.Format(Strings.InvalidRegExp, value));
                 return new ExpressionWrapper(new Throw(e));
             }
         }

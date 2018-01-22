@@ -45,12 +45,12 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             this._codeContext = codeContext;
 
             if (message != null && expressionDepth<= 1 && _left != null && _right != null)
-                message(MessageLevel.Warning, new CodeCoordinates(0, Position, 0), "Do not use comma as a statements delimiter");
+                message(MessageLevel.Warning, Position, 0, "Do not use comma as a statements delimiter");
             if (_right == null)
             {
                 _this = _left;

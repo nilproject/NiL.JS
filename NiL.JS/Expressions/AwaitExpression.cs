@@ -79,7 +79,7 @@ namespace NiL.JS.Expressions
             return new AwaitExpression(source);
         }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, CompilerMessageCallback message, FunctionInfo stats, Options opts)
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             stats.NeedDecompose = true;
             return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);

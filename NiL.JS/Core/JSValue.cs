@@ -385,11 +385,17 @@ namespace NiL.JS.Core
 #if INLINE
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-            get { return (_attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject; }
+            get
+            {
+                return (_attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) == JSValueAttributesInternal.SystemObject;
+            }
         }
 
         internal bool IsBox
         {
+#if INLINE
+            [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
             get
             {
                 return _valueType >= JSValueType.Object && _oValue != null && _oValue != this;
@@ -401,12 +407,12 @@ namespace NiL.JS.Core
             switch (_valueType)
             {
                 case JSValueType.Boolean:
-                    return Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Boolean));
+                    return Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Boolean));
                 case JSValueType.Double:
                 case JSValueType.Integer:
-                    return Context.CurrentBaseContext.GetPrototype(typeof(Number));
+                    return Context.CurrentGlobalContext.GetPrototype(typeof(Number));
                 case JSValueType.String:
-                    return Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.String));
+                    return Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.String));
             }
 
             if (_oValue != null && _oValue != this)
@@ -415,10 +421,10 @@ namespace NiL.JS.Core
                 if (oValueAsJsObject != null)
                     return oValueAsJsObject.GetDefaultPrototype() ?? @null;
                 else
-                    return Context.CurrentBaseContext.GetPrototype(_oValue.GetType());
+                    return Context.CurrentGlobalContext.GetPrototype(_oValue.GetType());
             }
 
-            return Context.CurrentBaseContext.GetPrototype(GetType());
+            return Context.CurrentGlobalContext.GetPrototype(GetType());
         }
 
         [Hidden]
@@ -450,7 +456,7 @@ namespace NiL.JS.Core
         [Hidden]
         public void DefineGetSetProperty(string name, Func<object> getter, Action<object> setter)
         {
-            DefineGetSetProperty(Context.CurrentBaseContext, name, getter, setter);
+            DefineGetSetProperty(Context.CurrentGlobalContext, name, getter, setter);
         }
 
         [Hidden]
@@ -511,7 +517,7 @@ namespace NiL.JS.Core
                         if (propertyScope == PropertyScope.Own)
                             return notExists;
                         forWrite = false;
-                        return Context.CurrentBaseContext.GetPrototype(typeof(BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Common);
+                        return Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Common);
                     }
                 case JSValueType.Integer:
                 case JSValueType.Double:
@@ -519,7 +525,7 @@ namespace NiL.JS.Core
                         if (propertyScope == PropertyScope.Own)
                             return notExists;
                         forWrite = false;
-                        return Context.CurrentBaseContext.GetPrototype(typeof(Number)).GetProperty(key, false, PropertyScope.Common);
+                        return Context.CurrentGlobalContext.GetPrototype(typeof(Number)).GetProperty(key, false, PropertyScope.Common);
                     }
                 case JSValueType.String:
                     {
@@ -570,7 +576,7 @@ namespace NiL.JS.Core
             if (propertyScope == PropertyScope.Own)
                 return notExists;
 
-            return Context.CurrentBaseContext
+            return Context.CurrentGlobalContext
                 .GetPrototype(typeof(BaseLibrary.String))
                 .GetProperty(name, false, PropertyScope.Common);
         }
@@ -1252,7 +1258,7 @@ namespace NiL.JS.Core
 
         public static JSValue Marshal(object value)
         {
-            return Context.CurrentBaseContext.ProxyValue(value);
+            return Context.CurrentGlobalContext.ProxyValue(value);
         }
 
         public static JSValue Wrap(object value)
