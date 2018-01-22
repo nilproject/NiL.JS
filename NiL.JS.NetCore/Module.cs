@@ -140,8 +140,9 @@ namespace NiL.JS
             if (code == "")
                 return;
 
-            var internalCallback = messageCallback != null ? (level, cord, message) => messageCallback(level, CodeCoordinates.FromTextPosition(code, cord.Column, cord.Length), message)
-            : null as CompilerMessageCallback;
+            var internalCallback = messageCallback != null ?
+                (level, position, length, message) => messageCallback(level, CodeCoordinates.FromTextPosition(code, position, length), message)
+                : null as InternalCompilerMessageCallback;
 
             int i = 0;
             _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Tools.removeComments(code, 0), Code, internalCallback), ref i);

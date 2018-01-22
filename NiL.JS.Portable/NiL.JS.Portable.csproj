@@ -175,6 +175,9 @@
     <Compile Include="..\NiL.JS\Core\Functions\BindedFunction.cs">
       <Link>Core\Functions\BindedFunction.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Core\Functions\ConstantFunction.cs">
+      <Link>Core\Functions\ConstantFunction.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Core\Functions\ConstructorProxy.cs">
       <Link>Core\Functions\ConstructorProxy.cs</Link>
     </Compile>
