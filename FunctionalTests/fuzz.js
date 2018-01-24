@@ -292,3 +292,5 @@ console.asserta(() => 1..__proto__, Number.prototype);
     }
     f();
 })();
+
+console.asserta(() => JSON.stringify({ 1: 1, 2: { 1: 1 } }, [1]), "{\"1\":1}")

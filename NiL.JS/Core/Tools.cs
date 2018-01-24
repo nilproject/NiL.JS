@@ -2051,12 +2051,15 @@ namespace NiL.JS.Core
         {
             if (property._valueType != JSValueType.Property)
                 return property;
+
             var getter = property._oValue as PropertyPair;
             if (getter == null || getter.getter == null)
                 return JSValue.undefined;
+
             property = getter.getter.Call(target, null);
             if (property._valueType < JSValueType.Undefined)
                 property = JSValue.undefined;
+
             return property;
         }
 
