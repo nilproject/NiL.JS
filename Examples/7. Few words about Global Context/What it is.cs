@@ -34,9 +34,9 @@ namespace Examples._7.Few_words_about_Global_Context
          *      └───────────
          *      
          *      Before version 2.4 was the one Global Context in all cases.
-         *      From version 2.4 you can create addition global contexts for isolation scripts from each other.
+         *      Since version 2.4 you can create addition global contexts for isolation scripts from each other.
          *      
-         *      New created Global Context may be made active in one or more thread, after that all new instances
+         *      New created Global Context can be activated in one or more thread, after that all new instances
          *      of Context will be linked to this Global Context. 
          *      Also you can directly link Context to new Global Context without activation. 
          *      Just specify it when creating by pass it into constructor new Context(my_global_context);
