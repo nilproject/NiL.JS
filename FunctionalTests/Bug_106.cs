@@ -28,7 +28,7 @@ namespace FunctionalTests
             }
             Assert.IsTrue(pass);  // failed
 
-            string json = JSON.stringify(ro, null, null);  // json = {"-1":-1,"test":false}
+            string json = JSON.stringify(ro, null, null, null);  // json = {"-1":-1,"test":false}
         }
 
         /// <summary>change field in immutable object</summary>
