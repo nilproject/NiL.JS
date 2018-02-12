@@ -1336,175 +1336,175 @@ namespace NiL.JS.Core
                     {
                         case 'x':
                         case 'u':
+                        {
+                            if (i + (code[i] == 'u' ? 5 : 3) > code.Length)
                             {
-                                if (i + (code[i] == 'u' ? 5 : 3) > code.Length)
+                                if (processRegexComp)
                                 {
-                                    if (processRegexComp)
-                                    {
-                                        res.Append(code[i]);
-                                        break;
-                                    }
-                                    else
-                                        ExceptionHelper.ThrowSyntaxError("Invalid escape code (\"" + code + "\")");
+                                    res.Append(code[i]);
+                                    break;
                                 }
+                                else
+                                    ExceptionHelper.ThrowSyntaxError("Invalid escape code (\"" + code + "\")");
+                            }
 
-                                if (fullUnicode && code[i] == 'u' && code[i + 1] == '{')
+                            if (fullUnicode && code[i] == 'u' && code[i + 1] == '{')
+                            {
+                                // look here in section 3.7 Surrogates for more information.
+                                // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
+
+                                int closingBracket = code.IndexOf('}', i + 2);
+                                if (closingBracket == -1)
+                                    ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence"));
+
+                                string c = code.Substring(i + 2, closingBracket - i - 2);
+                                uint ucs = 0;
+                                if (uint.TryParse(c, NumberStyles.HexNumber, null, out ucs))
                                 {
-                                    // look here in section 3.7 Surrogates for more information.
-                                    // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
-
-                                    int closingBracket = code.IndexOf('}', i + 2);
-                                    if (closingBracket == -1)
-                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence"));
-
-                                    string c = code.Substring(i + 2, closingBracket - i - 2);
-                                    uint ucs = 0;
-                                    if (uint.TryParse(c, NumberStyles.HexNumber, null, out ucs))
+                                    if (ucs <= 0xFFFF)
+                                        res.Append((char)ucs);
+                                    else if (ucs <= 0x10FFFF)
                                     {
-                                        if (ucs <= 0xFFFF)
-                                            res.Append((char)ucs);
-                                        else if (ucs <= 0x10FFFF)
-                                        {
-                                            ucs -= 0x10000;
-                                            char h = (char)((ucs >> 10) + 0xD800);
-                                            char l = (char)((ucs % 0x400) + 0xDC00);
-                                            res.Append(h).Append(l);
-                                        }
-                                        else
-                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
-                                        i += c.Length + 2;
+                                        ucs -= 0x10000;
+                                        char h = (char)((ucs >> 10) + 0xD800);
+                                        char l = (char)((ucs % 0x400) + 0xDC00);
+                                        res.Append(h).Append(l);
                                     }
                                     else
-                                    {
-                                        if (processRegexComp)
-                                            res.Append(code[i]);
-                                        else
-                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
-                                    }
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                    i += c.Length + 2;
                                 }
                                 else
                                 {
-                                    string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
-                                    ushort chc = 0;
-                                    if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
-                                    {
-                                        char ch = (char)chc;
-                                        res.Append(ch);
-                                        i += c.Length;
-                                    }
+                                    if (processRegexComp)
+                                        res.Append(code[i]);
                                     else
-                                    {
-                                        if (processRegexComp)
-                                            res.Append(code[i]);
-                                        else
-                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'"));
-                                    }
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
                                 }
+                            }
+                            else
+                            {
+                                string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
+                                ushort chc = 0;
+                                if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
+                                {
+                                    char ch = (char)chc;
+                                    res.Append(ch);
+                                    i += c.Length;
+                                }
+                                else
+                                {
+                                    if (processRegexComp)
+                                        res.Append(code[i]);
+                                    else
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'"));
+                                }
+                            }
 
-                                break;
-                            }
+                            break;
+                        }
                         case 't':
-                            {
-                                res.Append(processRegexComp ? "\\t" : "\t");
-                                break;
-                            }
+                        {
+                            res.Append(processRegexComp ? "\\t" : "\t");
+                            break;
+                        }
                         case 'f':
-                            {
-                                res.Append(processRegexComp ? "\\f" : "\f");
-                                break;
-                            }
+                        {
+                            res.Append(processRegexComp ? "\\f" : "\f");
+                            break;
+                        }
                         case 'v':
-                            {
-                                res.Append(processRegexComp ? "\\v" : "\v");
-                                break;
-                            }
+                        {
+                            res.Append(processRegexComp ? "\\v" : "\v");
+                            break;
+                        }
                         case 'b':
-                            {
-                                res.Append(processRegexComp ? "\\b" : "\b");
-                                break;
-                            }
+                        {
+                            res.Append(processRegexComp ? "\\b" : "\b");
+                            break;
+                        }
                         case 'n':
-                            {
-                                res.Append(processRegexComp ? "\\n" : "\n");
-                                break;
-                            }
+                        {
+                            res.Append(processRegexComp ? "\\n" : "\n");
+                            break;
+                        }
                         case 'r':
-                            {
-                                res.Append(processRegexComp ? "\\r" : "\r");
-                                break;
-                            }
+                        {
+                            res.Append(processRegexComp ? "\\r" : "\r");
+                            break;
+                        }
                         case '\n':
-                            {
-                                break;
-                            }
+                        {
+                            break;
+                        }
                         case '\r':
-                            {
-                                if (code.Length > i + 1 && code[i + 1] == '\n')
-                                    i++;
-                                break;
-                            }
+                        {
+                            if (code.Length > i + 1 && code[i + 1] == '\n')
+                                i++;
+                            break;
+                        }
                         case 'c':
                         case 'C':
+                        {
+                            if (!processRegexComp)
+                                goto default;
+
+                            if (i + 1 < code.Length)
                             {
-                                if (!processRegexComp)
-                                    goto default;
-
-                                if (i + 1 < code.Length)
+                                char ch = code[i + 1];
+                                // convert a -> A
+                                if (ch >= 'a' && ch <= 'z')
+                                    ch = (char)(ch - ('a' - 'A'));
+                                if ((char)(ch - '@') < ' ')
                                 {
-                                    char ch = code[i + 1];
-                                    // convert a -> A
-                                    if (ch >= 'a' && ch <= 'z')
-                                        ch = (char)(ch - ('a' - 'A'));
-                                    if ((char)(ch - '@') < ' ')
-                                    {
-                                        res.Append("\\c");
-                                        res.Append(ch);
-                                        ++i;
-                                        break;
-                                    }
+                                    res.Append("\\c");
+                                    res.Append(ch);
+                                    ++i;
+                                    break;
                                 }
-
-                                // invalid control character
-                                goto case 'p';
                             }
+
+                            // invalid control character
+                            goto case 'p';
+                        }
                         // not supported in standard
                         case 'P':
                         case 'p':
                         case 'k':
                         case 'K':
-                            {
-                                if (!processRegexComp)
-                                    goto default;
+                        {
+                            if (!processRegexComp)
+                                goto default;
 
-                                // regex that does not match anything
-                                res.Append(@"\b\B");
-                                break;
-                            }
+                            // regex that does not match anything
+                            res.Append(@"\b\B");
+                            break;
+                        }
                         default:
+                        {
+                            if (!processRegexComp && code[i] >= '0' && code[i] <= '7')
                             {
-                                if (code[i] >= '0' && code[i] <= '7' && !processRegexComp)
-                                {
-                                    if (strict)
-                                        ExceptionHelper.Throw((new SyntaxError("Octal literals are not allowed in strict mode.")));
+                                if (strict && (code[i] != '0' || (code.Length > i + 1 && code[i + 1] >= '0' && code[i + 1] <= '7')))
+                                    ExceptionHelper.Throw(new SyntaxError("Octal literals are not allowed in strict mode."));
 
-                                    var ccode = code[i] - '0';
-                                    if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
-                                        ccode = ccode * 8 + (code[++i] - '0');
-                                    if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
-                                        ccode = ccode * 8 + (code[++i] - '0');
-                                    res.Append((char)ccode);
-                                }
-                                else if (processUnknown)
-                                {
-                                    res.Append(code[i]);
-                                }
-                                else
-                                {
-                                    res.Append('\\');
-                                    res.Append(code[i]);
-                                }
-                                break;
+                                var ccode = code[i] - '0';
+                                if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
+                                    ccode = ccode * 8 + (code[++i] - '0');
+                                if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
+                                    ccode = ccode * 8 + (code[++i] - '0');
+                                res.Append((char)ccode);
                             }
+                            else if (processUnknown)
+                            {
+                                res.Append(code[i]);
+                            }
+                            else
+                            {
+                                res.Append('\\');
+                                res.Append(code[i]);
+                            }
+                            break;
+                        }
                     }
                 }
                 else if (res != null)
@@ -2051,12 +2051,15 @@ namespace NiL.JS.Core
         {
             if (property._valueType != JSValueType.Property)
                 return property;
+
             var getter = property._oValue as PropertyPair;
             if (getter == null || getter.getter == null)
                 return JSValue.undefined;
+
             property = getter.getter.Call(target, null);
             if (property._valueType < JSValueType.Undefined)
                 property = JSValue.undefined;
+
             return property;
         }
 

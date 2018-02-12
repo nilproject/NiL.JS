@@ -26,7 +26,7 @@ namespace NiL.JS.Core.Interop
 
             public override void Assign(JSValue value)
             {
-                (_owner._target as IDictionary<string, object>)[_key] = value.Value;
+                _owner.SetProperty(_key, value, false);
 
                 base.Assign(value);
             }

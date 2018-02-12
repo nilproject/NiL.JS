@@ -296,7 +296,8 @@ namespace NiL.JS.BaseLibrary
         public static JSValue stringify(Arguments args)
         {
             var length = args.length;
-            Function replacer = length > 1 ? args[1]._oValue as Function : null;
+            var replacer = length > 1 ? args[1]._oValue as Function : null;
+            var keys = length > 1 ? args[1]._oValue as Array : null;
             string space = null;
             if (args.length > 2)
             {
@@ -330,15 +331,23 @@ namespace NiL.JS.BaseLibrary
                 }
             }
             var target = args[0];
-            return stringify(target, replacer, space) ?? JSValue.undefined;
+            return stringify(target, replacer, keys, space) ?? JSValue.undefined;
         }
 
         [Hidden]
-        public static string stringify(JSValue obj, Function replacer, string space)
+        public static string stringify(JSValue obj, Function replacer, Array keys, string space)
         {
             if (obj._valueType >= JSValueType.Object && obj.Value == null)
                 return "null";
-            return stringifyImpl("", obj, replacer, space, new List<JSValue>(), new Arguments());
+
+            var keysSet = keys == null ? null : new HashSet<string>();
+            if (keysSet != null)
+            {
+                foreach (var key in keys._data)
+                    keysSet.Add(key.ToString());
+            }
+
+            return stringifyImpl("", obj, replacer, keysSet, space, new List<JSValue>(), new Arguments());
         }
 
         internal static void escapeIfNeed(StringBuilder sb, char c)
@@ -395,7 +404,7 @@ namespace NiL.JS.BaseLibrary
                 sb.Append(c);
         }
 
-        private static string stringifyImpl(string key, JSValue obj, Function replacer, string space, List<JSValue> processed, Arguments args)
+        private static string stringifyImpl(string key, JSValue obj, Function replacer, HashSet<string> keys, string space, List<JSValue> processed, Arguments args)
         {
             if (replacer != null)
             {
@@ -420,7 +429,7 @@ namespace NiL.JS.BaseLibrary
             try
             {
                 StringBuilder res = null;
-                string strval = null;
+                string stringValue = null;
                 if (obj._valueType < JSValueType.Object)
                 {
                     if (obj._valueType <= JSValueType.Undefined)
@@ -429,9 +438,9 @@ namespace NiL.JS.BaseLibrary
                     if (obj._valueType == JSValueType.String)
                     {
                         res = new StringBuilder("\"");
-                        strval = obj.ToString();
-                        for (var i = 0; i < strval.Length; i++)
-                            escapeIfNeed(res, strval[i]);
+                        stringValue = obj.ToString();
+                        for (var i = 0; i < stringValue.Length; i++)
+                            escapeIfNeed(res, stringValue[i]);
                         res.Append('"');
                         return res.ToString();
                     }
@@ -450,25 +459,28 @@ namespace NiL.JS.BaseLibrary
                 var toJSONmemb = obj["toJSON"];
                 toJSONmemb = toJSONmemb.Value as JSValue ?? toJSONmemb;
                 if (toJSONmemb._valueType == JSValueType.Function)
-                    return stringifyImpl("", (toJSONmemb._oValue as Function).Call(obj, null), null, space, processed, null);
+                    return stringifyImpl("", (toJSONmemb._oValue as Function).Call(obj, null), null, null, space, processed, null);
+
                 res = new StringBuilder(obj is Array ? "[" : "{");
 
                 string prevKey = null;
                 foreach (var member in obj)
                 {
+                    if (keys != null && !keys.Contains(member.Key))
+                        continue;
+
                     var value = member.Value;
                     value = value.Value as JSValue ?? value;
                     if (value._valueType < JSValueType.Undefined)
                         continue;
 
-                    if (value._valueType == JSValueType.Property)
-                        value = ((value._oValue as PropertyPair).getter ?? Function.Empty).Call(obj, null);
-                    strval = stringifyImpl(member.Key, value, replacer, space, processed, args);
+                    value = Tools.InvokeGetter(value, obj);
+                    stringValue = stringifyImpl(member.Key, value, replacer, null, space, processed, args);
 
-                    if (strval == null)
+                    if (stringValue == null)
                     {
                         if (obj is Array)
-                            strval = "null";
+                            stringValue = "null";
                         else
                             continue;
                     }
@@ -499,7 +511,7 @@ namespace NiL.JS.BaseLibrary
                             }
 
                             res.Append(space)
-                               .Append(strval);
+                               .Append(stringValue);
 
                             prevKey = member.Key;
                         }
@@ -513,10 +525,10 @@ namespace NiL.JS.BaseLibrary
                         res.Append("\":")
                            .Append(space ?? "");
 
-                        for (var i = 0; i < strval.Length; i++)
+                        for (var i = 0; i < stringValue.Length; i++)
                         {
-                            res.Append(strval[i]);
-                            if (i >= Environment.NewLine.Length && strval.IndexOf(Environment.NewLine, i - 1, Environment.NewLine.Length) != -1)
+                            res.Append(stringValue[i]);
+                            if (i >= Environment.NewLine.Length && stringValue.IndexOf(Environment.NewLine, i - 1, Environment.NewLine.Length) != -1)
                                 res.Append(space);
                         }
 

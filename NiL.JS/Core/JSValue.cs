@@ -141,6 +141,8 @@ namespace NiL.JS.Core
          * новый объект, которым следует заменить значение свойства в объекте.
          */
 
+        internal const int publicAttributesMask = 0x1f | (int)JSValueAttributesInternal.Reassign;
+
         internal static readonly JSValue numberString = "number";
         internal static readonly JSValue undefinedString = "undefined";
         internal static readonly JSValue stringString = "string";
@@ -294,7 +296,22 @@ namespace NiL.JS.Core
             [Hidden]
             get
             {
-                return (JSAttributes)((int)_attributes & 0xffff);
+                return (JSAttributes)((int)_attributes & publicAttributesMask);
+            }
+        }
+
+        protected bool Reassign
+        {
+            get
+            {
+                return (_attributes & JSValueAttributesInternal.Reassign) != 0;
+            }
+            set
+            {
+                if (value)
+                    _attributes |= JSValueAttributesInternal.Reassign;
+                else
+                    _attributes &= ~JSValueAttributesInternal.Reassign;
             }
         }
 
