@@ -4,7 +4,7 @@ using NiL.JS.Core;
 namespace Examples.Pass_values_into_JavaScript_environment
 {
     [Level(2)]
-    public sealed class Primitive_values_over_data_conversion : Example
+    public sealed class Primitive_values_via_data_conversion : Example
     {
         public override void Run()
         {

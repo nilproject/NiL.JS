@@ -15,7 +15,7 @@
     <SignAssembly>true</SignAssembly>
     <PackageId>NiL.JS.NetCore</PackageId>
     <PackageTags>js;javascript;java;script;ecma;ecmascript;es2015;v8;niljs;nil;nilproject</PackageTags>
-    <PackageIconUrl>https://github.com/nilproject/NiL.JS/blob/develop/nil.js%20logo%20small.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/nilproject/NiL.JS/5b0c4730e1e0a23adb95fdc147376065676d8e2c/nil.js%20logo%20small.png</PackageIconUrl>
     <PackageLicenseUrl>https://github.com/nilproject/NiL.JS/blob/develop/License</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/nilproject/NiL.JS</RepositoryUrl>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
@@ -30,6 +30,8 @@
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <Version>2.5.1218</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/nilproject/NiL.JS</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
