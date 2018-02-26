@@ -84,6 +84,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="StringInterpolationTests.cs" />
     <Compile Include="MemberAlias.cs" />
     <Compile Include="JsFunfuzz.cs" />
     <Compile Include="OverloadedMethods.cs" />
