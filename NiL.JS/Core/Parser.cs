@@ -507,7 +507,7 @@ namespace NiL.JS.Core
         public static bool ValidateString(string code, ref int index, bool @throw)
         {
             int j = index;
-            if (j + 1 < code.Length && ((code[j] == '\'') || (code[j] == '"')))
+            if (j + 1 < code.Length && ((code[j] == '\'') || (code[j] == '"') || (code[j] == '`')))
             {
                 char fchar = code[j];
                 j++;
