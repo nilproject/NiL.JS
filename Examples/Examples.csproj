@@ -69,7 +69,7 @@
     <Compile Include="0. Run script\Via eval with code.cs" />
     <Compile Include="2. Pass values into JavaScript environment\Via Marshal.cs" />
     <Compile Include="2. Pass values into JavaScript environment\Via Wrap.cs" />
-    <Compile Include="2. Pass values into JavaScript environment\Primitive values over data conversion.cs" />
+    <Compile Include="2. Pass values into JavaScript environment\Primitive values via data conversion.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExamplesFramework\ExamplesFramework.csproj">
