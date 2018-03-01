@@ -52,7 +52,17 @@ namespace NiL.JS
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
-        internal static void ThrowVariableNotDefined(object variableName)
+        internal static void ThrowVariableIsNotDefined(string variableName, string code, int position, int length)
+        {
+            var cord = CodeCoordinates.FromTextPosition(code, position, 0);
+            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName) + " at " + cord));
+        }
+
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
+        internal static void ThrowVariableIsNotDefined(string variableName)
         {
             Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)));
         }
@@ -124,7 +134,7 @@ namespace NiL.JS
         internal static T ThrowIfNotExists<T>(T obj, object name) where T : JSValue
         {
             if (obj._valueType == JSValueType.NotExists)
-                ExceptionHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" has not been defined.")));
+                ExceptionHelper.Throw((new NiL.JS.BaseLibrary.ReferenceError("Variable \"" + name + "\" is not defined.")));
             return obj;
         }
 

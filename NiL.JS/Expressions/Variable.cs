@@ -77,7 +77,20 @@ namespace NiL.JS.Expressions
             if (context._strict || _ForceThrow)
             {
                 if (result._valueType < JSValueType.Undefined && (!_SuspendThrow || _ForceThrow))
-                    ExceptionHelper.ThrowVariableNotDefined(_variableName);
+                {
+                    if ((_codeContext & CodeContext.InEval) != 0)
+                    {
+                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName);
+                    }
+                    else
+                    {
+                        var code = context.RootContext._owner?._functionDefinition?._body?.Code;
+                        if (code == null)
+                            code = context._module?.Code;
+
+                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, code ?? "", Position, Length);
+                    }
+                }
 
                 if (context._strict)
                 {
@@ -97,7 +110,20 @@ namespace NiL.JS.Expressions
                 case JSValueType.NotExists:
                     {
                         if (!_SuspendThrow)
-                            ExceptionHelper.ThrowVariableNotDefined(_variableName);
+                        {
+                            if ((_codeContext & CodeContext.InEval) != 0)
+                            {
+                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName);
+                            }
+                            else
+                            {
+                                var code = context.RootContext._owner?._functionDefinition?._body?.Code;
+                                if (code == null)
+                                    code = context._module?.Code;
+
+                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName, code ?? "", Position, Length);
+                            }
+                        }
                         break;
                     }
                 case JSValueType.Property:
@@ -165,7 +191,7 @@ namespace NiL.JS.Expressions
                 desc.definitionScopeLevel = -Math.Abs(desc.definitionScopeLevel);
             }
 
-            _ForceThrow |= desc.lexicalScope; // часть TDZ
+            _ForceThrow |= desc.lexicalScope; // пїЅпїЅпїЅпїЅпїЅ TDZ
 
             if (expressionDepth >= 0 && expressionDepth < 2 && desc.IsDefined && !desc.lexicalScope && (opts & Options.SuppressUselessExpressionsElimination) == 0)
             {
@@ -197,12 +223,12 @@ namespace NiL.JS.Expressions
                 if (assigns != null && assigns.Count > 0)
                 {
                     /*
-                     * Применение оптимизации зависит от порядка добавления присваиваний.
-                     * Этот порядок в свою очередь зависит от порядка следования операций в CodeBlock.
-                     * Раньше этот порядок был обратным, сейчас прямой, поэтому здесь присваивания нужно перебирать
-                     * в обратном порядке. Оптимизация не применится если найдется изменение в котором first указывает на
-                     * это использование. Это говорит о том, что в данном месте этой переменной
-                     * присваивается значение
+                     * пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+                     * пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ CodeBlock.
+                     * пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                     * пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ first пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ
+                     * пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                     * пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                      */
                     CodeNode lastAssign = null;
                     for (var i = assigns.Count; i-- > 0;)
@@ -210,7 +236,7 @@ namespace NiL.JS.Expressions
                         if (assigns[i]._left == this
                             || ((assigns[i]._left is AssignmentOperatorCache) && assigns[i]._left._left == this))
                         {
-                            // оптимизация не применяется
+                            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                             lastAssign = null;
                             break;
                         }
@@ -218,13 +244,13 @@ namespace NiL.JS.Expressions
                         if (assigns[i].Position > Position)
                         {
                             if ((_codeContext & CodeContext.InLoop) != 0 && ((assigns[i] as Expression)._codeContext & CodeContext.InLoop) != 0)
-                            // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
+                            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ.
                             {
-                                // оптимизация не применяется
+                                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                                 lastAssign = null;
                                 break;
                             }
-                            continue; // пропускаем ноду
+                            continue; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                         }
 
                         if (_descriptor.isReadOnly)
