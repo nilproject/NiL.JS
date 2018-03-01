@@ -222,21 +222,12 @@ namespace NiL.JS.Expressions
                 var assigns = _descriptor.assignments;
                 if (assigns != null && assigns.Count > 0)
                 {
-                    /*
-                     * ���������� ����������� ������� �� ������� ���������� ������������.
-                     * ���� ������� � ���� ������� ������� �� ������� ���������� �������� � CodeBlock.
-                     * ������ ���� ������� ��� ��������, ������ ������, ������� ����� ������������ ����� ����������
-                     * � �������� �������. ����������� �� ���������� ���� �������� ��������� � ������� first ��������� ��
-                     * ��� �������������. ��� ������� � ���, ��� � ������ ����� ���� ����������
-                     * ������������� ��������
-                     */
                     CodeNode lastAssign = null;
                     for (var i = assigns.Count; i-- > 0;)
                     {
                         if (assigns[i]._left == this
                             || ((assigns[i]._left is AssignmentOperatorCache) && assigns[i]._left._left == this))
                         {
-                            // ����������� �� �����������
                             lastAssign = null;
                             break;
                         }
@@ -244,13 +235,11 @@ namespace NiL.JS.Expressions
                         if (assigns[i].Position > Position)
                         {
                             if ((_codeContext & CodeContext.InLoop) != 0 && ((assigns[i] as Expression)._codeContext & CodeContext.InLoop) != 0)
-                            // ������������ ����� ���� ����� ����� �������������, �� ���� �� ��� � �����, �� ���������� ������� ����.
                             {
-                                // ����������� �� �����������
                                 lastAssign = null;
                                 break;
                             }
-                            continue; // ���������� ����
+                            continue;
                         }
 
                         if (_descriptor.isReadOnly)
