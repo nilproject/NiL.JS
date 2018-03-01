@@ -12,11 +12,24 @@ namespace NiL.JS.Core
 #endif
     public sealed class JSException : Exception
     {
-        public JSValue Error { get; private set; }
+        public JSValue Error { get; }
+        public CodeNode ExceptionMaker { get; }
+        public string Code { get; internal set; }
+        public CodeCoordinates CodeCoordinates { get; internal set; }
 
         public JSException(Error data)
         {
             Error = Context.CurrentGlobalContext.ProxyValue(data);
+        }
+
+        public JSException(Error data, CodeNode exceptionMaker, string code)
+        {
+            Error = Context.CurrentGlobalContext.ProxyValue(data);
+            ExceptionMaker = exceptionMaker;
+            Code = code;
+            if (code != null) {
+                CodeCoordinates = CodeCoordinates.FromTextPosition(code, exceptionMaker.Position, exceptionMaker.Length);
+            }
         }
 
         public JSException(JSValue data)
@@ -40,6 +53,7 @@ namespace NiL.JS.Core
         {
             get
             {
+                var result = " at " + CodeCoordinates;
                 if (Error._oValue is Error)
                 {
                     var n = Error.GetProperty("name");
@@ -48,11 +62,16 @@ namespace NiL.JS.Core
 
                     var m = Error.GetProperty("message");
                     if (m._valueType == JSValueType.Property)
-                        return n + ": " + (m._oValue as PropertyPair).getter.Call(Error, null);
+                        result = n + ": " + (m._oValue as PropertyPair).getter.Call(Error, null) + result;
                     else
-                        return n + ": " + m;
+                        result = n + ": " + m + result;
                 }
-                else return Error.ToString();
+                else
+                {
+                    result = Error.ToString() + result;
+                }
+
+                return result;
             }
         }
     }

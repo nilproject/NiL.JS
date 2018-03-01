@@ -80,7 +80,7 @@ namespace NiL.JS.Expressions
                 {
                     if ((_codeContext & CodeContext.InEval) != 0)
                     {
-                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName);
+                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
                     }
                     else
                     {
@@ -88,7 +88,7 @@ namespace NiL.JS.Expressions
                         if (code == null)
                             code = context._module?.Code;
 
-                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, code ?? "", Position, Length);
+                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, code ?? "", Position, Length, this);
                     }
                 }
 
@@ -113,7 +113,7 @@ namespace NiL.JS.Expressions
                         {
                             if ((_codeContext & CodeContext.InEval) != 0)
                             {
-                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName);
+                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
                             }
                             else
                             {
@@ -121,7 +121,7 @@ namespace NiL.JS.Expressions
                                 if (code == null)
                                     code = context._module?.Code;
 
-                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName, code ?? "", Position, Length);
+                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName, code, Position, Length, this);
                             }
                         }
                         break;

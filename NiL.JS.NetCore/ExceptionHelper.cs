@@ -25,6 +25,15 @@ namespace NiL.JS
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
+        internal static void Throw(Error error, CodeNode exceptionMaker, string code)
+        {
+            throw new JSException(error, exceptionMaker, code);
+        }
+
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void Throw(JSValue error)
         {
             throw new JSException(error ?? JSValue.undefined);
@@ -52,19 +61,19 @@ namespace NiL.JS
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
-        internal static void ThrowVariableIsNotDefined(string variableName, string code, int position, int length)
+        internal static void ThrowVariableIsNotDefined(string variableName, string code, int position, int length, CodeNode exceptionMaker)
         {
             var cord = CodeCoordinates.FromTextPosition(code, position, 0);
-            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName) + " at " + cord));
+            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, code);
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
-        internal static void ThrowVariableIsNotDefined(string variableName)
+        internal static void ThrowVariableIsNotDefined(string variableName, CodeNode exceptionMaker)
         {
-            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)));
+            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, null);
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
