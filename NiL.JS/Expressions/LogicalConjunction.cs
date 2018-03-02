@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NiL.JS.Core;
 
@@ -40,7 +40,7 @@ namespace NiL.JS.Expressions
         public override bool Build(ref CodeNode _this, int expressionDepth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (message != null && expressionDepth <= 1)
-                message(MessageLevel.Warning, Position, 0, "Do not use logical operator as a conditional statement");
+                message(MessageLevel.Warning, Position, 0, "Do not use a logical operator as a conditional statement");
             return base.Build(ref _this, expressionDepth,  variables, codeContext | CodeContext.Conditional, message, stats, opts);
         }
 

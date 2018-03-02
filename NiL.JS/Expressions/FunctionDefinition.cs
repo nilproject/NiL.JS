@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -733,7 +733,7 @@ namespace NiL.JS.Expressions
                 for (var i = parameters.Length; i-- > 0;)
                 {
                     if (parameters[i].ReferenceCount == 1)
-                        message(MessageLevel.Recomendation, parameters[i].references[0].Position, 0, "Unused variable \"" + parameters[i].name + "\"");
+                        message(MessageLevel.Recomendation, parameters[i].references[0].Position, 0, "Unused parameter \"" + parameters[i].name + "\"");
                     else
                         break;
                 }
