@@ -1,4 +1,4 @@
-﻿//#define JIT
+//#define JIT
 
 using System;
 using System.Collections.Generic;
@@ -442,12 +442,12 @@ namespace NiL.JS.Statements
                 for (var i = 0; i < _variables.Length; i++)
                 {
                     Parser.Build(
-                        ref _variables[i].initializer, 
+                        ref _variables[i].initializer,
                         System.Math.Max(2, expressionDepth),
-                        variables, 
-                        codeContext | (this._strict ? CodeContext.Strict : CodeContext.None), 
-                        message, 
-                        stats, 
+                        variables,
+                        codeContext | (this._strict ? CodeContext.Strict : CodeContext.None),
+                        message,
+                        stats,
                         opts);
                 }
             }
@@ -489,6 +489,7 @@ namespace NiL.JS.Statements
                     _lines[t] = _lines[f];
                     _lines[f] = null;
                 }
+
                 if (_lines[t] != null)
                     t--;
             }
@@ -504,11 +505,11 @@ namespace NiL.JS.Statements
                 {
                     for (var i = 0; i < _variables.Length; i++)
                     {
-                        if (_variables[i].ReferenceCount == 1)
+                        if (_variables[i].ReferenceCount == 1 && !(_variables[i].references[0] is ParameterReference))
                         {
                             message(
                                 MessageLevel.Recomendation,
-                                _variables[i].references[0].Position, 
+                                _variables[i].references[0].Position,
                                 0,
                                 "Unused variable \"" + _variables[i].name + "\"");
                         }

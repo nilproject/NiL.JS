@@ -726,6 +726,16 @@ namespace NiL.JS.Core
                 {
                     return body.Evaluate(context) ?? context._lastResult ?? JSValue.notExists;
                 }
+                catch (JSException e)
+                {
+                    if (e.Code == null && e.ExceptionMaker != null)
+                    {
+                        e.Code = code;
+                        e.CodeCoordinates = CodeCoordinates.FromTextPosition(code, e.ExceptionMaker.Position, e.ExceptionMaker.Length);
+                    }
+
+                    throw;
+                }
                 finally
                 {
                     context._thisBind = oldThisBind;
