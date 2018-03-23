@@ -60,6 +60,10 @@ namespace NiL.JS.Core
             int column = 1;
             for (int i = 0; i < position; i++)
             {
+                if (i >= text.Length) {
+                    return null;
+                }
+
                 if (text[i] == '\n')
                 {
                     column = 0;
@@ -310,7 +314,7 @@ namespace NiL.JS.Core
         {
             if (value == null)
                 return @null;
-            
+
             switch (value._valueType)
             {
                 case JSValueType.Boolean:
@@ -1728,7 +1732,7 @@ namespace NiL.JS.Core
                     i++;
                     return str[i] - '@';
                 }
-                
+
                 if (str[i] >= '0' && str[i] <= '7')
                 {
                     var ccode = str[i] - '0';

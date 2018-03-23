@@ -728,7 +728,7 @@ namespace NiL.JS.Core
                 }
                 catch (JSException e)
                 {
-                    if (e.Code == null && e.ExceptionMaker != null)
+                    if ((e.Code == null || e.CodeCoordinates == null) && e.ExceptionMaker != null)
                     {
                         e.Code = code;
                         e.CodeCoordinates = CodeCoordinates.FromTextPosition(code, e.ExceptionMaker.Position, e.ExceptionMaker.Length);

@@ -63,7 +63,6 @@ namespace NiL.JS
         [DebuggerStepThrough]
         internal static void ThrowVariableIsNotDefined(string variableName, string code, int position, int length, CodeNode exceptionMaker)
         {
-            var cord = CodeCoordinates.FromTextPosition(code, position, 0);
             Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, code);
         }
 
