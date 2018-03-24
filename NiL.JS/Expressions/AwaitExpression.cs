@@ -35,7 +35,6 @@ namespace NiL.JS.Expressions
             {
                 if ((bool)context.SuspendData[this])
                 {
-                    context.SuspendData.Clear();
                     context._executionMode = ExecutionMode.None;
                     return context._executionInfo;
                 }

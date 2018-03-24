@@ -1010,5 +1010,24 @@ namespace NiL.JS.Core
         {
             return new BaseLibrary.Array(obj?._symbols.Keys ?? new Symbol[0]);
         }
+
+        [JavaScriptName("assign")]
+        public static JSValue JSAssign(Arguments args)
+        {
+            if (args.length == 0 || !args[0].Defined)
+                ExceptionHelper.ThrowTypeError("Cannot convert undefined or null to object");
+
+            var target = args[0].ToObject();
+            for (var i = 1; i < args.length; i++)
+            {
+                var enumerator = args[i].GetEnumerator(true, EnumerationMode.RequireValues);
+                while (enumerator.MoveNext())
+                {
+                    target.SetProperty(enumerator.Current.Key, enumerator.Current.Value, PropertyScope.Own, true);
+                }
+            }
+
+            return target;
+        }
     }
 }

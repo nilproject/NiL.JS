@@ -77,7 +77,20 @@ namespace NiL.JS.Expressions
             if (context._strict || _ForceThrow)
             {
                 if (result._valueType < JSValueType.Undefined && (!_SuspendThrow || _ForceThrow))
-                    ExceptionHelper.ThrowVariableNotDefined(_variableName);
+                {
+                    if ((_codeContext & CodeContext.InEval) != 0)
+                    {
+                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
+                    }
+                    else
+                    {
+                        var code = context.RootContext._owner?._functionDefinition?._body?.Code;
+                        if (code == null)
+                            code = context._module?.Code;
+
+                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, code ?? "", Position, Length, this);
+                    }
+                }
 
                 if (context._strict)
                 {
@@ -97,7 +110,20 @@ namespace NiL.JS.Expressions
                 case JSValueType.NotExists:
                     {
                         if (!_SuspendThrow)
-                            ExceptionHelper.ThrowVariableNotDefined(_variableName);
+                        {
+                            if ((_codeContext & CodeContext.InEval) != 0)
+                            {
+                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
+                            }
+                            else
+                            {
+                                var code = context.RootContext._owner?._functionDefinition?._body?.Code;
+                                if (code == null)
+                                    code = context._module?.Code;
+
+                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName, code, Position, Length, this);
+                            }
+                        }
                         break;
                     }
                 case JSValueType.Property:
@@ -165,7 +191,7 @@ namespace NiL.JS.Expressions
                 desc.definitionScopeLevel = -Math.Abs(desc.definitionScopeLevel);
             }
 
-            _ForceThrow |= desc.lexicalScope; // часть TDZ
+            _ForceThrow |= desc.lexicalScope; // пїЅпїЅпїЅпїЅпїЅ TDZ
 
             if (expressionDepth >= 0 && expressionDepth < 2 && desc.IsDefined && !desc.lexicalScope && (opts & Options.SuppressUselessExpressionsElimination) == 0)
             {
@@ -196,21 +222,12 @@ namespace NiL.JS.Expressions
                 var assigns = _descriptor.assignments;
                 if (assigns != null && assigns.Count > 0)
                 {
-                    /*
-                     * Применение оптимизации зависит от порядка добавления присваиваний.
-                     * Этот порядок в свою очередь зависит от порядка следования операций в CodeBlock.
-                     * Раньше этот порядок был обратным, сейчас прямой, поэтому здесь присваивания нужно перебирать
-                     * в обратном порядке. Оптимизация не применится если найдется изменение в котором first указывает на
-                     * это использование. Это говорит о том, что в данном месте этой переменной
-                     * присваивается значение
-                     */
                     CodeNode lastAssign = null;
                     for (var i = assigns.Count; i-- > 0;)
                     {
                         if (assigns[i]._left == this
                             || ((assigns[i]._left is AssignmentOperatorCache) && assigns[i]._left._left == this))
                         {
-                            // оптимизация не применяется
                             lastAssign = null;
                             break;
                         }
@@ -218,13 +235,11 @@ namespace NiL.JS.Expressions
                         if (assigns[i].Position > Position)
                         {
                             if ((_codeContext & CodeContext.InLoop) != 0 && ((assigns[i] as Expression)._codeContext & CodeContext.InLoop) != 0)
-                            // присваивание может быть после этого использования, но если всё это в цикле, то выполнение вернётся сюда.
                             {
-                                // оптимизация не применяется
                                 lastAssign = null;
                                 break;
                             }
-                            continue; // пропускаем ноду
+                            continue;
                         }
 
                         if (_descriptor.isReadOnly)

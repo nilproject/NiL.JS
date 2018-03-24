@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
@@ -325,9 +325,7 @@ namespace NiL.JS.Expressions
             base.RebuildScope(functionInfo, transferedVariables, scopeBias);
 
             for (var i = 0; i < _arguments.Length; i++)
-            {
                 _arguments[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
-            }
         }
 
         public override string ToString()
