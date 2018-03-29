@@ -592,7 +592,7 @@ namespace NiL.JS.BaseLibrary
                 var r = ((long)shl(m, e) + ((long)shl(m, (e - 1)) & 1) * s) * s;
                 if ((value._attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
-                    if (r <= int.MaxValue)
+                    if ((r & uint.MaxValue) == r)
                     {
                         value._valueType = JSValueType.Integer;
                         value._iValue = (int)r;
