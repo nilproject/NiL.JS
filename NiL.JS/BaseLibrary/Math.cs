@@ -266,14 +266,11 @@ namespace NiL.JS.BaseLibrary
             return res;
         }
 
-        private static ulong shl(ulong x, int y)
+        private static ulong shr(ulong x, int y)
         {
-            while (y > 0)
-            {
-                x >>= System.Math.Min(y, 62);
-                y -= 62;
-            }
-            return x;
+            if (y > 63)
+                return 0;
+            return x >> y;
         }
 
         [DoNotDelete]
@@ -282,6 +279,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (value._valueType == JSValueType.Integer)
                 return value;
+
             var a = Tools.JSObjectToDouble(value);
             if (a == 0.0)
             {
@@ -291,14 +289,18 @@ namespace NiL.JS.BaseLibrary
                     value._iValue = 0;
                     return value;
                 }
+
                 return a;
             }
+
+            if (double.IsNaN(a))
+                return Number.NaN;
+
             var b = BitConverter.DoubleToInt64Bits(a);
             ulong m = ((ulong)b & ((1UL << 52) - 1)) | (1UL << 52);
-            int e = 0;
             long s = (b >> 63) | 1L;
             b &= long.MaxValue;
-            e |= (int)(b >> 52);
+            int e = (int)(b >> 52);
             e = 52 - e + 1023;
 
             if (e > 0)
@@ -306,14 +308,14 @@ namespace NiL.JS.BaseLibrary
                 if (s < 0)
                 {
                     if ((e > 64) || (m & ((1UL << e) - 1UL)) != 0)
-                        return -(long)shl(m, e) - 1;
-                    return -(long)shl(m, e);
+                        return -(long)shr(m, e) - 1;
+                    return -(long)shr(m, e);
                 }
 
-                var r = (long)shl(m, e) * s;
+                var r = (long)shr(m, e) * s;
                 if ((value._attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
-                    if (r <= int.MaxValue)
+                    if ((r & uint.MaxValue) == r)
                     {
                         value._valueType = JSValueType.Integer;
                         value._iValue = (int)r;
@@ -330,7 +332,14 @@ namespace NiL.JS.BaseLibrary
                 return r;
             }
 
-            return double.IsNaN(a) ? Number.NaN : a;
+            if ((value._attributes & JSValueAttributesInternal.Cloned) != 0)
+            {
+                value._valueType = JSValueType.Double;
+                value._dValue = a;
+                return value;
+            }
+
+            return a;
         }
 
         [DoNotDelete]
@@ -569,27 +578,29 @@ namespace NiL.JS.BaseLibrary
                 return a;
             }
 
+            if (double.IsNaN(a))
+                return Number.NaN;
+
             var b = BitConverter.DoubleToInt64Bits(a);
             ulong m = ((ulong)b & ((1UL << 52) - 1)) | (1UL << 52);
-            int e = 0;
             long s = (b >> 63) | 1L;
             b &= long.MaxValue;
-            e = (int)(b >> 52);
+            int e = (int)(b >> 52);
             e = 52 - e + 1023;
 
             if (e > 0)
             {
                 if (s < 0)
                 {
-                    if ((shl(m, (e - 1)) & 1) == 1)
+                    if ((shr(m, (e - 1)) & 1) == 1)
                     {
                         if ((m & ((1UL << (e - 1)) - 1UL)) != 0)
-                            return -(long)shl(m, e) - 1;
-                        return -(long)shl(m, e);
+                            return -(long)shr(m, e) - 1;
+                        return -(long)shr(m, e);
                     }
                 }
 
-                var r = ((long)shl(m, e) + ((long)shl(m, (e - 1)) & 1) * s) * s;
+                var r = ((long)shr(m, e) + ((long)shr(m, (e - 1)) & 1) * s) * s;
                 if ((value._attributes & JSValueAttributesInternal.Cloned) != 0)
                 {
                     if ((r & uint.MaxValue) == r)
@@ -616,7 +627,7 @@ namespace NiL.JS.BaseLibrary
                 return value;
             }
 
-            return double.IsNaN(a) ? Number.NaN : a;
+            return a;
         }
 
         [DoNotEnumerate]
