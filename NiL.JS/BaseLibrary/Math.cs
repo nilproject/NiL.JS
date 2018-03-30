@@ -533,7 +533,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var @base = Tools.JSObjectToDouble(a);
                 var degree = Tools.JSObjectToDouble(b);
-                if (@base == 1 && double.IsInfinity(degree))
+                if ((@base == 1 || @base == -1) && double.IsInfinity(degree))
                     return Number.NaN;
                 else if (double.IsNaN(@base) && degree == 0.0)
                     return 1;
