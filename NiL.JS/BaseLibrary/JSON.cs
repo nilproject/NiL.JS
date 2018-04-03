@@ -283,12 +283,18 @@ namespace NiL.JS.BaseLibrary
                     ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
             }
 
-            if ((stack.Count != 1) 
-                || (code.Length > pos) 
+            if ((stack.Count != 1)
+                || (code.Length > pos)
                 || (stack.Peek().state != ParseState.End))
                 ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
 
             return stack.Pop().value;
+        }
+
+        [Hidden]
+        public static JSValue stringify(JSValue value)
+        {
+            return stringify(new Arguments { value });
         }
 
         [DoNotEnumerate]
@@ -359,45 +365,45 @@ namespace NiL.JS.BaseLibrary
                 switch (c)
                 {
                     case (char)8:
-                    {
-                        sb.Append("\\b");
-                        break;
-                    }
+                        {
+                            sb.Append("\\b");
+                            break;
+                        }
                     case (char)9:
-                    {
-                        sb.Append("\\t");
-                        break;
-                    }
+                        {
+                            sb.Append("\\t");
+                            break;
+                        }
                     case (char)10:
-                    {
-                        sb.Append("\\n");
-                        break;
-                    }
+                        {
+                            sb.Append("\\n");
+                            break;
+                        }
                     case (char)12:
-                    {
-                        sb.Append("\\f");
-                        break;
-                    }
+                        {
+                            sb.Append("\\f");
+                            break;
+                        }
                     case (char)13:
-                    {
-                        sb.Append("\\r");
-                        break;
-                    }
+                        {
+                            sb.Append("\\r");
+                            break;
+                        }
                     case '\\':
-                    {
-                        sb.Append("\\\\");
-                        break;
-                    }
+                        {
+                            sb.Append("\\\\");
+                            break;
+                        }
                     case '"':
-                    {
-                        sb.Append("\\\"");
-                        break;
-                    }
+                        {
+                            sb.Append("\\\"");
+                            break;
+                        }
                     default:
-                    {
-                        sb.Append("\\u").Append(((int)c).ToString("x4"));
-                        break;
-                    }
+                        {
+                            sb.Append("\\u").Append(((int)c).ToString("x4"));
+                            break;
+                        }
                 }
             }
             else
