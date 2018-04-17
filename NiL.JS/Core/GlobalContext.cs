@@ -16,7 +16,7 @@ using NiL.JS.Backward;
 
 namespace NiL.JS.Core
 {
-    public enum IndexersSupportMode
+    public enum IndexersSupport
     {
         WithAttributeOnly = 0,
         ForceEnable,
@@ -29,7 +29,8 @@ namespace NiL.JS.Core
         private readonly Dictionary<Type, JSObject> _proxies;
 
         public string Name { get; private set; }
-        public IndexersSupportMode IndexersSupportMode { get; set; }
+        public IndexersSupport IndexersSupport { get; set; }
+        public JsonSerializersRegistry JsonSerializersRegistry { get; set; }
 
         public GlobalContext()
             : this("")
@@ -44,7 +45,10 @@ namespace NiL.JS.Core
                 throw new ArgumentNullException(nameof(name));
 
             Name = name;
+
             _proxies = new Dictionary<Type, JSObject>();
+            JsonSerializersRegistry = new JsonSerializersRegistry();
+
             ResetContext();
         }
 
@@ -88,9 +92,6 @@ namespace NiL.JS.Core
                 DefineConstructor(typeof(URIError));
                 DefineConstructor(typeof(SyntaxError));
                 DefineConstructor(typeof(RegExp));
-#if !PORTABLE
-                DefineVariable("console").Assign(JSValue.Marshal(new JSConsole()));
-#endif
                 DefineConstructor(typeof(ArrayBuffer));
                 DefineConstructor(typeof(Int8Array));
                 DefineConstructor(typeof(Uint8Array));
@@ -106,6 +107,9 @@ namespace NiL.JS.Core
                 DefineConstructor(typeof(Set));
 
                 DefineConstructor(typeof(Debug));
+#if !PORTABLE
+                DefineVariable("console").Assign(JSValue.Marshal(new JSConsole()));
+#endif
 
                 #region Base Functions
                 DefineVariable("eval").Assign(new EvalFunction());
@@ -160,7 +164,7 @@ namespace NiL.JS.Core
 
         internal JSObject GetPrototype(Type type)
         {
-            return (GetConstructor(type) as Function).prototype as JSObject;
+            return (GetConstructor(type) as Function)?.prototype as JSObject;
         }
 
         public JSObject GetConstructor(Type type)
@@ -178,8 +182,8 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        var indexerSupport = IndexersSupportMode == IndexersSupportMode.ForceEnable
-                            || (IndexersSupportMode == IndexersSupportMode.WithAttributeOnly && type.GetTypeInfo().IsDefined(typeof(UseIndexersAttribute), false));
+                        var indexerSupport = IndexersSupport == IndexersSupport.ForceEnable
+                            || (IndexersSupport == IndexersSupport.WithAttributeOnly && type.GetTypeInfo().IsDefined(typeof(UseIndexersAttribute), false));
 
                         var staticProxy = new StaticProxy(this, type, indexerSupport);
                         if (type.GetTypeInfo().IsAbstract)
@@ -276,7 +280,7 @@ namespace NiL.JS.Core
                 for (var i = 0; i < args.length; i++)
                 {
                     parameters[i] = args[i].As<Type>();
-                    if (types[i] == null)
+                    if (parameters[i] == null)
                         ExceptionHelper.ThrowTypeError("Invalid argument #" + i + " for generic constructor");
                 }
 
@@ -407,7 +411,7 @@ namespace NiL.JS.Core
                 case TypeCode.UInt32:
                     {
                         var v = (uint)value;
-                        if (v > int.MaxValue)
+                        if ((int)v != v)
                         {
                             return new JSValue
                             {
@@ -427,7 +431,7 @@ namespace NiL.JS.Core
                 case TypeCode.UInt64:
                     {
                         var v = (long)value;
-                        if (v > int.MaxValue)
+                        if ((int)v != v)
                         {
                             return new JSValue
                             {

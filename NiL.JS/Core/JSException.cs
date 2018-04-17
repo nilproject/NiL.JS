@@ -53,7 +53,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                var result = " at " + CodeCoordinates;
+                var result = CodeCoordinates != null ? " at " + CodeCoordinates : "";
                 if (Error._oValue is Error)
                 {
                     var n = Error.GetProperty("name");

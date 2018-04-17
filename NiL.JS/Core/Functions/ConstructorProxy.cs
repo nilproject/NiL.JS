@@ -18,13 +18,13 @@ namespace NiL.JS.Core.Functions
     {
         /// <summary>
         /// На первом проходе будут выбираться методы со строгим соответствием типов
-        /// 
+        ///
         /// На втором проходе будут выбираться методы, для которых
         /// получится преобразовать входные аргументы.
-        /// 
-        /// На третьем проходе будет выбираться первый метод, 
+        ///
+        /// На третьем проходе будет выбираться первый метод,
         /// для которого получится сгенерировать параметры по-умолчанию.
-        /// 
+        ///
         /// Если нужен более строгий подбор, то количество проходов нужно
         /// уменьшить до одного
         /// </summary>
@@ -292,9 +292,9 @@ namespace NiL.JS.Core.Functions
             {
 #if !(PORTABLE || NETCORE)
                 if (System.Diagnostics.Debugger.IsAttached)
-                    System.Diagnostics.Debugger.Log(10, "Exception", e.Message);
+                    System.Diagnostics.Debugger.Log(10, "Exception", e);
 #endif
-                throw e.InnerException;
+                throw e.GetBaseException();
             }
         }
 
