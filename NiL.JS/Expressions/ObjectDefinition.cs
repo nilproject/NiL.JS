@@ -73,26 +73,22 @@ namespace NiL.JS.Expressions
             int i = index;
             while (state.Code[i] != '}')
             {
-                do
-                    i++;
-                while (Tools.IsWhiteSpace(state.Code[i]));
+                i++;
+                Tools.SkipSpaces(state.Code, ref i);
                 int s = i;
                 if (state.Code[i] == '}')
                     break;
 
                 bool getOrSet = Parser.Validate(state.Code, "get", ref i) || Parser.Validate(state.Code, "set", ref i);
-                if (getOrSet)
+                Tools.SkipSpaces(state.Code, ref i);
+                if (getOrSet && state.Code[i] == '(')  // function with name 'get' or 'set'
                 {
-                    while (Tools.IsWhiteSpace(state.Code[i]))
-                        i++;
+                    getOrSet = false;
+                    i = s;
                 }
+
                 var asterisk = state.Code[i] == '*';
-                if (asterisk)
-                {
-                    do
-                        i++;
-                    while (Tools.IsWhiteSpace(state.Code[i]));
-                }
+                Tools.SkipSpaces(state.Code, ref i);
 
                 if (Parser.Validate(state.Code, "[", ref i))
                 {

@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
+using NiL.JS.Backward;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
 namespace NiL.JS.BaseLibrary
 {
-    /// <summary>
-    /// Представляет реализация встроенного объекта JSON. Позволяет производить сериализацию и десериализацию объектов JavaScript.
-    /// </summary>
     public static class JSON
     {
         private enum ParseState
@@ -87,18 +86,18 @@ namespace NiL.JS.BaseLibrary
             {
                 var newObject = false;
                 var start = pos;
+                var frame = stack.Peek();
                 if (Tools.IsDigit(code[start]) || (code[start] == '-' && Tools.IsDigit(code[start + 1])))
                 {
-                    if (stack.Peek().state != ParseState.Value)
+                    if (frame.state != ParseState.Value)
                         ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
                     double value;
                     if (!Tools.ParseNumber(code, ref pos, out value))
                         ExceptionHelper.ThrowSyntaxError("Invalid number definition.");
 
-                    var v = stack.Peek();
-                    v.state = ParseState.End;
-                    v.value = value;
+                    frame.state = ParseState.End;
+                    frame.value = value;
                 }
                 else if (code[start] == '"')
                 {
@@ -112,10 +111,10 @@ namespace NiL.JS.BaseLibrary
                             ExceptionHelper.ThrowSyntaxError("Invalid string char '\\u000" + (int)value[i] + "'.");
                     }
 
-                    if (stack.Peek().state == ParseState.Name)
+                    if (frame.state == ParseState.Name)
                     {
-                        stack.Peek().fieldName = value;
-                        stack.Peek().state = ParseState.Value;
+                        frame.fieldName = value;
+                        frame.state = ParseState.Value;
 
                         while (isSpace(code[pos]))
                             pos++;
@@ -127,99 +126,104 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        if (stack.Peek().state != ParseState.Value)
+                        if (frame.state != ParseState.Value)
                             ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
                         value = Tools.Unescape(value, false);
 
-                        var v = stack.Peek();
+                        var v = frame;
                         v.state = ParseState.End;
                         v.value = value;
                     }
                 }
                 else if (Parser.Validate(code, "null", ref pos))
                 {
-                    if (stack.Peek().state != ParseState.Value)
+                    if (frame.state != ParseState.Value)
                         ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
-                    var v = stack.Peek();
+                    var v = frame;
                     v.state = ParseState.End;
                     v.value = JSValue.@null;
                 }
                 else if (Parser.Validate(code, "true", ref pos))
                 {
-                    if (stack.Peek().state != ParseState.Value)
+                    if (frame.state != ParseState.Value)
                         ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
-                    var v = stack.Peek();
+                    var v = frame;
                     v.state = ParseState.End;
                     v.value = true;
                 }
                 else if (Parser.Validate(code, "false", ref pos))
                 {
-                    if (stack.Peek().state != ParseState.Value)
+                    if (frame.state != ParseState.Value)
                         ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
-                    var v = stack.Peek();
-                    v.state = ParseState.End;
-                    v.value = false;
+                    frame.state = ParseState.End;
+                    frame.value = false;
                 }
                 else if (code[pos] == '{')
                 {
-                    if (stack.Peek().state != ParseState.Value)
+                    if (frame.state != ParseState.Value)
                         ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
-                    var v = stack.Peek();
-                    v.value = JSObject.CreateObject();
-                    v.state = ParseState.Object;
+                    frame.value = JSObject.CreateObject();
+                    frame.state = ParseState.Object;
                     newObject = true;
                     pos++;
                 }
                 else if (code[pos] == '[')
                 {
-                    if (stack.Peek().state != ParseState.Value)
+                    if (frame.state != ParseState.Value)
                         ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
-                    var v = stack.Peek();
-                    v.value = new Array();
-                    v.state = ParseState.Array;
+                    frame.value = new Array();
+                    frame.state = ParseState.Array;
                     newObject = true;
                     pos++;
                 }
-                else if (stack.Peek().state == ParseState.Value)
+                else if (frame.state == ParseState.Value)
                     ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
                 while (code.Length > pos && isSpace(code[pos]))
                     pos++;
 
-                if (stack.Peek().state == ParseState.End)
+                if (frame.state == ParseState.End)
                 {
-                    var t = stack.Pop();
+                    stack.Pop();
                     if (reviewer != null)
                     {
-                        revargs[0] = t.fieldName;
-                        revargs[1] = t.value;
+                        revargs[0] = frame.fieldName;
+                        revargs[1] = frame.value;
                         var value = reviewer.Call(revargs);
                         if (value.Defined)
                         {
-                            if (t.container != null)
-                                t.container.GetProperty(t.fieldName, true, PropertyScope.Own).Assign(value);
+                            if (frame.container != null)
+                            {
+                                frame.container.GetProperty(frame.fieldName, true, PropertyScope.Own).Assign(value);
+                            }
                             else
                             {
-                                t.value = value;
-                                stack.Push(t);
+                                frame.value = value;
+                                stack.Push(frame);
                             }
                         }
                     }
-                    else if (t.container != null)
-                        t.container.GetProperty(t.fieldName, true, PropertyScope.Own).Assign(t.value);
+                    else if (frame.container != null)
+                    {
+                        frame.container.GetProperty(frame.fieldName, true, PropertyScope.Own).Assign(frame.value);
+                    }
                     else
-                        stack.Push(t);
+                    {
+                        stack.Push(frame);
+                    }
+
+                    frame = stack.Peek();
                 }
 
                 if (code.Length <= pos)
                 {
-                    if (stack.Peek().state != ParseState.End)
+                    if (frame.state != ParseState.End)
                         ExceptionHelper.Throw(new SyntaxError("Unexpected end of string."));
                     else
                         break;
@@ -232,31 +236,32 @@ namespace NiL.JS.BaseLibrary
                             if (newObject)
                                 ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
-                            if (stack.Peek().state == ParseState.Array)
-                                stack.Push(new StackFrame() { state = ParseState.Value, fieldName = (stack.Peek().valuesCount++).ToString(CultureInfo.InvariantCulture), container = stack.Peek().value });
-                            else if (stack.Peek().state == ParseState.Object)
-                                stack.Push(new StackFrame() { state = ParseState.Name, container = stack.Peek().value });
+                            if (frame.state == ParseState.Array)
+                                frame = new StackFrame() { state = ParseState.Value, fieldName = (frame.valuesCount++).ToString(CultureInfo.InvariantCulture), container = frame.value };
+                            else if (frame.state == ParseState.Object)
+                                frame = new StackFrame() { state = ParseState.Name, container = frame.value };
                             else
                                 ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
+                            stack.Push(frame);
                             pos++;
                             break;
                         }
                     case ']':
                         {
-                            if (stack.Peek().state != ParseState.Array)
+                            if (frame.state != ParseState.Array)
                                 ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
-                            stack.Peek().state = ParseState.End;
+                            frame.state = ParseState.End;
                             pos++;
                             break;
                         }
                     case '}':
                         {
-                            if (stack.Peek().state != ParseState.Object)
+                            if (frame.state != ParseState.Object)
                                 ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
-                            stack.Peek().state = ParseState.End;
+                            frame.state = ParseState.End;
                             pos++;
                             break;
                         }
@@ -269,7 +274,7 @@ namespace NiL.JS.BaseLibrary
                                 goto case ',';
                             }
 
-                            if (stack.Peek().state != ParseState.Value)
+                            if (frame.state != ParseState.Value)
                                 ExceptionHelper.ThrowSyntaxError("Unexpected token.");
 
                             break;
@@ -279,16 +284,22 @@ namespace NiL.JS.BaseLibrary
                 while (code.Length > pos && isSpace(code[pos]))
                     pos++;
 
-                if (code.Length <= pos && stack.Peek().state != ParseState.End)
+                if (code.Length <= pos && frame.state != ParseState.End)
                     ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
             }
 
-            if ((stack.Count != 1) 
-                || (code.Length > pos) 
+            if ((stack.Count != 1)
+                || (code.Length > pos)
                 || (stack.Peek().state != ParseState.End))
                 ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
 
             return stack.Pop().value;
+        }
+
+        [Hidden]
+        public static string stringify(JSValue value)
+        {
+            return stringify(new Arguments { value }).ToString();
         }
 
         [DoNotEnumerate]
@@ -325,20 +336,13 @@ namespace NiL.JS.BaseLibrary
                         space = sa.ToString();
                         if (space.Length > 10)
                             space = space.Substring(0, 10);
-                        if (space.Length == 0)
+                        else if (space.Length == 0)
                             space = null;
                     }
                 }
             }
-            var target = args[0];
-            return stringify(target, replacer, keys, space) ?? JSValue.undefined;
-        }
 
-        [Hidden]
-        public static string stringify(JSValue obj, Function replacer, Array keys, string space)
-        {
-            if (obj._valueType >= JSValueType.Object && obj.Value == null)
-                return "null";
+            var target = args[0];
 
             var keysSet = keys == null ? null : new HashSet<string>();
             if (keysSet != null)
@@ -347,7 +351,16 @@ namespace NiL.JS.BaseLibrary
                     keysSet.Add(key.ToString());
             }
 
-            return stringifyImpl("", obj, replacer, keysSet, space, new List<JSValue>(), new Arguments());
+            return stringify(target, replacer, keysSet, space) ?? JSValue.undefined;
+        }
+
+        [Hidden]
+        public static string stringify(JSValue obj, Function replacer, HashSet<string> keys, string space)
+        {
+            if (obj._valueType >= JSValueType.Object && obj.Value == null)
+                return "null";
+
+            return stringifyImpl("", obj, replacer, keys, space, new HashSet<JSValue>(), new Arguments());
         }
 
         internal static void escapeIfNeed(StringBuilder sb, char c)
@@ -359,52 +372,52 @@ namespace NiL.JS.BaseLibrary
                 switch (c)
                 {
                     case (char)8:
-                    {
-                        sb.Append("\\b");
-                        break;
-                    }
+                        {
+                            sb.Append("\\b");
+                            break;
+                        }
                     case (char)9:
-                    {
-                        sb.Append("\\t");
-                        break;
-                    }
+                        {
+                            sb.Append("\\t");
+                            break;
+                        }
                     case (char)10:
-                    {
-                        sb.Append("\\n");
-                        break;
-                    }
+                        {
+                            sb.Append("\\n");
+                            break;
+                        }
                     case (char)12:
-                    {
-                        sb.Append("\\f");
-                        break;
-                    }
+                        {
+                            sb.Append("\\f");
+                            break;
+                        }
                     case (char)13:
-                    {
-                        sb.Append("\\r");
-                        break;
-                    }
+                        {
+                            sb.Append("\\r");
+                            break;
+                        }
                     case '\\':
-                    {
-                        sb.Append("\\\\");
-                        break;
-                    }
+                        {
+                            sb.Append("\\\\");
+                            break;
+                        }
                     case '"':
-                    {
-                        sb.Append("\\\"");
-                        break;
-                    }
+                        {
+                            sb.Append("\\\"");
+                            break;
+                        }
                     default:
-                    {
-                        sb.Append("\\u").Append(((int)c).ToString("x4"));
-                        break;
-                    }
+                        {
+                            sb.Append("\\u").Append(((int)c).ToString("x4"));
+                            break;
+                        }
                 }
             }
             else
                 sb.Append(c);
         }
 
-        private static string stringifyImpl(string key, JSValue obj, Function replacer, HashSet<string> keys, string space, List<JSValue> processed, Arguments args)
+        private static string stringifyImpl(string key, JSValue obj, Function replacer, HashSet<string> keys, string space, HashSet<JSValue> processed, Arguments args)
         {
             if (replacer != null)
             {
@@ -422,13 +435,13 @@ namespace NiL.JS.BaseLibrary
 
             obj = obj.Value as JSValue ?? obj;
 
-            if (processed.IndexOf(obj) != -1)
+            if (processed.Contains(obj))
                 ExceptionHelper.Throw(new TypeError("Unable to convert circular structure to JSON."));
-
             processed.Add(obj);
+
             try
             {
-                StringBuilder res = null;
+                StringBuilder result = null;
                 string stringValue = null;
                 if (obj._valueType < JSValueType.Object)
                 {
@@ -437,12 +450,12 @@ namespace NiL.JS.BaseLibrary
 
                     if (obj._valueType == JSValueType.String)
                     {
-                        res = new StringBuilder("\"");
+                        result = new StringBuilder("\"");
                         stringValue = obj.ToString();
                         for (var i = 0; i < stringValue.Length; i++)
-                            escapeIfNeed(res, stringValue[i]);
-                        res.Append('"');
-                        return res.ToString();
+                            escapeIfNeed(result, stringValue[i]);
+                        result.Append('"');
+                        return result.ToString();
                     }
 
                     if (obj.ValueType == JSValueType.Double && double.IsNaN(obj._dValue) || double.IsInfinity(obj._dValue))
@@ -461,7 +474,21 @@ namespace NiL.JS.BaseLibrary
                 if (toJSONmemb._valueType == JSValueType.Function)
                     return stringifyImpl("", (toJSONmemb._oValue as Function).Call(obj, null), null, null, space, processed, null);
 
-                res = new StringBuilder(obj is Array ? "[" : "{");
+                if (obj._valueType >= JSValueType.Object && !typeof(JSValue).GetTypeInfo().IsAssignableFrom(obj.Value.GetType().GetTypeInfo()))
+                {
+                    var currentContext = Context.CurrentGlobalContext;
+                    if (currentContext != null)
+                    {
+                        var value = obj.Value;
+                        var serializer = currentContext.JsonSerializersRegistry?.GetSuitableJsonSerializer(value);
+                        if (serializer != null)
+                        {
+                            return serializer.Serialize(key, value, replacer, keys, space, processed);
+                        }
+                    }
+                }
+
+                result = new StringBuilder(obj is Array ? "[" : "{");
 
                 string prevKey = null;
                 foreach (var member in obj)
@@ -486,31 +513,32 @@ namespace NiL.JS.BaseLibrary
                     }
 
                     if (prevKey != null)
-                        res.Append(",");
+                        result.Append(",");
 
                     if (space != null)
-                        res.Append(Environment.NewLine);
-                    if (space != null)
-                        res.Append(space);
+                    {
+                        result.Append(Environment.NewLine)
+                           .Append(space);
+                    }
 
-                    if (res[0] == '[')
+                    if (result[0] == '[')
                     {
                         int curentIndex;
                         if (int.TryParse(member.Key, out curentIndex))
                         {
                             var prevIndex = int.Parse(prevKey ?? "-1");
 
-                            var capacity = res.Length + ((space?.Length ?? 0) + "null,".Length) * (curentIndex - prevIndex);
-                            if (capacity > res.Length) // Может произойти переполнение
-                                res.EnsureCapacity(capacity);
+                            var capacity = result.Length + ((space != null ? space.Length : 0) + "null,".Length) * (curentIndex - prevIndex);
+                            if (capacity > result.Length) // Может произойти переполнение
+                                result.EnsureCapacity(capacity);
 
                             for (var i = curentIndex - 1; i-- > prevIndex;)
                             {
-                                res.Append(space)
+                                result.Append(space)
                                    .Append("null,");
                             }
 
-                            res.Append(space)
+                            result.Append(space)
                                .Append(stringValue);
 
                             prevKey = member.Key;
@@ -518,18 +546,18 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        res.Append('"');
+                        result.Append('"');
                         for (var i = 0; i < member.Key.Length; i++)
-                            escapeIfNeed(res, member.Key[i]);
+                            escapeIfNeed(result, member.Key[i]);
 
-                        res.Append("\":")
+                        result.Append("\":")
                            .Append(space ?? "");
 
                         for (var i = 0; i < stringValue.Length; i++)
                         {
-                            res.Append(stringValue[i]);
+                            result.Append(stringValue[i]);
                             if (i >= Environment.NewLine.Length && stringValue.IndexOf(Environment.NewLine, i - 1, Environment.NewLine.Length) != -1)
-                                res.Append(space);
+                                result.Append(space);
                         }
 
                         prevKey = member.Key;
@@ -537,13 +565,13 @@ namespace NiL.JS.BaseLibrary
                 }
 
                 if (prevKey != null && space != null)
-                    res.Append(Environment.NewLine);
+                    result.Append(Environment.NewLine);
 
-                return res.Append(obj is Array ? "]" : "}").ToString();
+                return result.Append(obj is Array ? "]" : "}").ToString();
             }
             finally
             {
-                processed.RemoveAt(processed.Count - 1);
+                processed.Remove(processed.Count - 1);
             }
         }
     }

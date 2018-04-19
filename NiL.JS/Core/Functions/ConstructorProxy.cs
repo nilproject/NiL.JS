@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
-
-#if NET40
-using NiL.JS.Backward;
-#endif
 
 namespace NiL.JS.Core.Functions
 {
@@ -18,13 +15,13 @@ namespace NiL.JS.Core.Functions
     {
         /// <summary>
         /// На первом проходе будут выбираться методы со строгим соответствием типов
-        /// 
+        ///
         /// На втором проходе будут выбираться методы, для которых
         /// получится преобразовать входные аргументы.
-        /// 
-        /// На третьем проходе будет выбираться первый метод, 
+        ///
+        /// На третьем проходе будет выбираться первый метод,
         /// для которого получится сгенерировать параметры по-умолчанию.
-        /// 
+        ///
         /// Если нужен более строгий подбор, то количество проходов нужно
         /// уменьшить до одного
         /// </summary>
@@ -89,10 +86,10 @@ namespace NiL.JS.Core.Functions
 
 #if (PORTABLE || NETCORE)
             var ctors = System.Linq.Enumerable.ToArray(staticProxy._hostedType.GetTypeInfo().DeclaredConstructors);
-            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.GetTypeInfo().IsValueType ? 1 : 0));
+            var ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.GetTypeInfo().IsValueType ? 1 : 0));
 #else
             var ctors = staticProxy._hostedType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-            List<MethodProxy> ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.IsValueType ? 1 : 0));
+            var ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.IsValueType ? 1 : 0));
 #endif
             for (int i = 0; i < ctors.Length; i++)
             {
@@ -292,9 +289,9 @@ namespace NiL.JS.Core.Functions
             {
 #if !(PORTABLE || NETCORE)
                 if (System.Diagnostics.Debugger.IsAttached)
-                    System.Diagnostics.Debugger.Log(10, "Exception", e.Message);
+                    System.Diagnostics.Debugger.Log(10, "Exception", e.ToString());
 #endif
-                throw e.InnerException;
+                throw e.GetBaseException();
             }
         }
 

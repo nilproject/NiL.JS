@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace NiL.JS.Backward
 {
+
+#if PORTABLE
     internal enum MemberTypes
     {
         Constructor = 1,
@@ -19,8 +21,49 @@ namespace NiL.JS.Backward
         NestedType = 128,
         All = 191,
     }
+#endif
 
-    internal static class PortableBackward
+#if PORTABLE
+    internal enum TypeCode
+    {
+        Empty = 0,          // Null reference
+        Object = 1,         // Instance that isn't a value
+        DBNull = 2,         // Database null value
+        Boolean = 3,        // Boolean
+        Char = 4,           // Unicode character
+        SByte = 5,          // Signed 8-bit integer
+        Byte = 6,           // Unsigned 8-bit integer
+        Int16 = 7,          // Signed 16-bit integer
+        UInt16 = 8,         // Unsigned 16-bit integer
+        Int32 = 9,          // Signed 32-bit integer
+        UInt32 = 10,        // Unsigned 32-bit integer
+        Int64 = 11,         // Signed 64-bit integer
+        UInt64 = 12,        // Unsigned 64-bit integer
+        Single = 13,        // IEEE 32-bit float
+        Double = 14,        // IEEE 64-bit double
+        Decimal = 15,       // Decimal
+        DateTime = 16,      // DateTime
+        String = 18,        // Unicode character string
+    }
+
+    namespace Reflection
+    {
+        internal enum MemberTypes
+        {
+            Constructor = 1,
+            Event = 2,
+            Field = 4,
+            Method = 8,
+            Property = 16,
+            TypeInfo = 32,
+            Custom = 64,
+            NestedType = 128,
+            All = 191,
+        }
+    }
+#endif
+
+    internal static class Backward
     {
         internal static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> self)
         {
@@ -32,21 +75,29 @@ namespace NiL.JS.Backward
             return new ReadOnlyCollection<T>(self);
         }
 
+        internal static bool IsAssignableFrom(this Type self, Type sourceType)
+        {
+            return self.GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo());
+        }
+
         internal static bool IsSubclassOf(this Type self, Type sourceType)
         {
             return self != sourceType && self.GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo());
         }
 
+#if PORTABLE
         internal static Attribute[] GetCustomAttributes(this Type self, Type attributeType, bool inherit)
         {
             return self.GetTypeInfo().GetCustomAttributes(attributeType, inherit).ToArray();
         }
+#endif
 
         internal static bool IsDefined(this Type self, Type attributeType, bool inherit)
         {
             return self.GetTypeInfo().IsDefined(attributeType, inherit);
         }
 
+#if !NET40
         internal static MemberTypes GetMemberType(this MemberInfo self)
         {
             if (self is ConstructorInfo)
@@ -64,29 +115,51 @@ namespace NiL.JS.Backward
             return MemberTypes.Custom; // чёт своё, пускай сами разбираются
         }
 
-        private static readonly Type[] _Types =
-            {
-                null,
-                typeof(object),
-                Type.GetType("System.DBNull"),
-                typeof(bool),
-                typeof(char),
-                typeof(sbyte),
-                typeof(byte),
-                typeof(short),
-                typeof(ushort),
-                typeof(int),
-                typeof(uint),
-                typeof(long),
-                typeof(ulong),
-                typeof(float),
-                typeof(double),
-                typeof(decimal),
-                typeof(DateTime),
-                null,
-                typeof(string)
-            };
+        internal static MethodInfo GetGetMethod(this PropertyInfo self, bool fictive)
+        {
+            return self.GetMethod;
+        }
 
+        internal static MethodInfo GetSetMethod(this PropertyInfo self, bool fictive)
+        {
+            return self.SetMethod;
+        }
+
+        internal static MethodInfo GetAddMethod(this EventInfo self, bool fictive)
+        {
+            return self.AddMethod;
+        }
+
+        internal static MethodInfo GetGetMethod(this PropertyInfo self)
+        {
+            return self.GetMethod;
+        }
+
+        internal static MethodInfo GetSetMethod(this PropertyInfo self)
+        {
+            return self.SetMethod;
+        }
+
+        internal static MethodInfo GetAddMethod(this EventInfo self)
+        {
+            return self.AddMethod;
+        }
+
+        internal static Type GetInterface(this Type type, string name)
+        {
+            return type.GetTypeInfo().ImplementedInterfaces.First(x => x.Name == name);
+        }
+
+        internal static Type[] GetGenericArguments(this Type type)
+        {
+            return type.GenericTypeArguments;
+        }
+
+        internal static MethodInfo GetMethod(this Type type, string name, Type[] parameters)
+        {
+            return type.GetRuntimeMethod(name, parameters);
+        }
+#endif
         internal static TypeCode GetTypeCode(this Type type)
         {
             if (type == null)
@@ -95,7 +168,7 @@ namespace NiL.JS.Backward
             if (type.GetTypeInfo().IsClass)
             {
                 if (type == _Types[2])
-                    return (TypeCode)2; // Database null value
+                    return TypeCode.DBNull;
 
                 if (type == typeof(string))
                     return TypeCode.String;
@@ -112,10 +185,28 @@ namespace NiL.JS.Backward
             return TypeCode.Object;
         }
 
-        internal static Type GetInterface(this Type type, string name)
+        private static readonly Type[] _Types =
         {
-            return type.GetTypeInfo().ImplementedInterfaces.First(x => x.Name == name);
-        }
+            null,
+            typeof(object),
+            Type.GetType("System.DBNull"),
+            typeof(bool),
+            typeof(char),
+            typeof(sbyte),
+            typeof(byte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(float),
+            typeof(double),
+            typeof(decimal),
+            typeof(DateTime),
+            null,
+            typeof(string)
+        };
     }
 
 #if NET35
@@ -242,4 +333,4 @@ namespace NiL.JS.Backward
         }
     }
 #endif
-}
+    }

@@ -43,6 +43,9 @@
     <AssemblyOriginatorKeyFile>keys.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\NiL.JS\Backward.cs">
+      <Link>Backward.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\BaseLibrary\Array.cs">
       <Link>BaseLibrary\Array.cs</Link>
     </Compile>
@@ -258,6 +261,12 @@
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\JavaScriptAliasAttribute.cs">
       <Link>Core\Interop\JavaScriptAliasAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\JsonSerializer.cs">
+      <Link>Core\Interop\JsonSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS\Core\Interop\JsonSerializersRegistry.cs">
+      <Link>Core\Interop\JsonSerializersRegistry.cs</Link>
     </Compile>
     <Compile Include="..\NiL.JS\Core\Interop\NativeList.cs">
       <Link>Core\Interop\NativeList.cs</Link>
@@ -646,7 +655,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
-    <Compile Include="Core\Backward.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\NiL.JS\Strings.resx">

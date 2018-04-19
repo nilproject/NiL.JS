@@ -2,13 +2,10 @@
 using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
-using System.Reflection.Emit;
-using System.Linq.Expressions;
-using System.Linq;
-
-#if NET40 || NETCORE
 using NiL.JS.Backward;
-#endif
+using System.Reflection.Emit;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace NiL.JS.Extensions
 {

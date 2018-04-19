@@ -1,15 +1,11 @@
 using System;
 using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
-
-#if NET40 || NETCORE
 using NiL.JS.Backward;
-#endif
+using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core.Interop
 {

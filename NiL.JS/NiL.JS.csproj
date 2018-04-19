@@ -218,6 +218,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Backward.cs" />
     <Compile Include="BaseLibrary\GeneratorFunction.cs" />
     <Compile Include="BaseLibrary\GlobalFunctions.cs" />
     <Compile Include="BaseLibrary\Set.cs" />
@@ -226,7 +227,6 @@
     <Compile Include="BaseLibrary\Symbol.cs" />
     <Compile Include="CompilerNotification.cs" />
     <Compile Include="Core\Arguments.cs" />
-    <Compile Include="Core\Backward.cs" />
     <Compile Include="BaseLibrary\Array.cs" />
     <Compile Include="BaseLibrary\ArrayBuffer.cs" />
     <Compile Include="BaseLibrary\Boolean.cs" />
@@ -255,6 +255,8 @@
     <Compile Include="Core\IIteratorResult.cs" />
     <Compile Include="Core\Interop\ExpandoObjectWrapper.cs" />
     <Compile Include="Core\Interop\JavaScriptAliasAttribute.cs" />
+    <Compile Include="Core\Interop\JsonSerializer.cs" />
+    <Compile Include="Core\Interop\JsonSerializersRegistry.cs" />
     <Compile Include="Core\Interop\StaticProxy.cs" />
     <Compile Include="Core\Interop\PrototypeProxy.cs" />
     <Compile Include="Core\Interop\StrictConversionAttribute.cs" />

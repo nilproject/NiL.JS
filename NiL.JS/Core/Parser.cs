@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
-
-#if NET40
-using NiL.JS.Backward;
-#endif
 
 namespace NiL.JS.Core
 {
