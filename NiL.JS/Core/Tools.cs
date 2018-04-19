@@ -6,14 +6,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
-
-#if NET40 || NETCORE
-using NiL.JS.Backward;
-#endif
 
 using JSBool = NiL.JS.BaseLibrary.Boolean;
 

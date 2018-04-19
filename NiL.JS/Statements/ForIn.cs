@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
+using NiL.JS.Backward;
 
 namespace NiL.JS.Statements
 {

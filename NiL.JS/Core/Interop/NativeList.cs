@@ -5,10 +5,7 @@ using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
-
-#if NET40 || NETCORE
 using NiL.JS.Backward;
-#endif
 
 namespace NiL.JS.Core.Interop
 {

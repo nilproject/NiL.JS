@@ -9,10 +9,7 @@ using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 using System.Dynamic;
 using System.Threading.Tasks;
-
-#if NET40 || NETCORE
 using NiL.JS.Backward;
-#endif
 
 namespace NiL.JS.Core
 {

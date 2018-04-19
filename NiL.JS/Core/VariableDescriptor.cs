@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using NiL.JS.Backward;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 

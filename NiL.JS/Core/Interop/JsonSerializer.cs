@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using NiL.JS.Backward;
@@ -18,9 +19,13 @@ namespace NiL.JS.Core.Interop
         public JsonSerializer(Type targetType)
         {
             TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
+#if PORTABLE
+            _properties = targetType.GetRuntimeProperties().ToArray();
+            _fields = targetType.GetRuntimeFields().ToArray();
+#else
             _properties = targetType.GetProperties();
             _fields = targetType.GetFields();
-
+#endif
             var weight = 0;
             var curType = targetType;
             while (curType != null && curType != typeof(object))
@@ -59,7 +64,7 @@ namespace NiL.JS.Core.Interop
                           .Append(space);
                 }
 
-                var propValue = _properties[i].GetValue(value);
+                var propValue = _properties[i].GetValue(value, null);
                 result.Append("\"").Append(_properties[i].Name).Append("\"").Append(":");
                 WriteValue(result, _properties[i].Name, propValue, replacer, keys, space, processed);
             }
@@ -98,8 +103,11 @@ namespace NiL.JS.Core.Interop
 
             if (deserializedJson._valueType < JSValueType.Object)
                 return deserializedJson.Value;
-
-            var result = resultContainer ?? TargetType.GetConstructor(Type.EmptyTypes);
+#if PORTABLE
+            var result = resultContainer ?? TargetType.GetTypeInfo().DeclaredConstructors.First(x=>x.GetParameters().Length == 0).Invoke(new object[0]);
+#else
+            var result = resultContainer ?? TargetType.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
+#endif
             var tempSrcObject = deserializedJson._oValue as JSObject;
             foreach (var property in tempSrcObject._fields)
             {
@@ -113,7 +121,7 @@ namespace NiL.JS.Core.Interop
                     else
                         value = Convert.ChangeType(property.Value.Value, prop.PropertyType);
 
-                    prop.SetValue(result, value);
+                    prop.SetValue(result, value, null);
                     continue;
                 }
 

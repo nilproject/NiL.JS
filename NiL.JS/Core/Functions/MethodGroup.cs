@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Reflection;
+using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
-
-#if NET40
-using NiL.JS.Backward;
-#endif
 
 namespace NiL.JS.Core.Functions
 {
