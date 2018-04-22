@@ -10,6 +10,14 @@ namespace NiL.JS.BaseLibrary
 #endif
     public sealed class Date
     {
+        private static TimeZoneInfo s_currentTimeZone = TimeZoneInfo.Local;
+        [Hidden]
+        public static TimeZoneInfo CurrentTimeZone
+        {
+            get => s_currentTimeZone;
+            set => s_currentTimeZone = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
         private const long _timeAccuracy = TimeSpan.TicksPerMillisecond;
         private const long _unixTimeBase = 62135596800000;
         private const long _minuteMillisecond = 60 * 1000;
@@ -38,7 +46,7 @@ namespace NiL.JS.BaseLibrary
                                                 };
 
         private static readonly string[] daysOfWeek = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
-        private readonly static string[] months = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        private static readonly string[] months = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
         private long _time;
         private long _timeZoneOffset;
@@ -48,7 +56,7 @@ namespace NiL.JS.BaseLibrary
         public Date()
         {
             _time = DateTime.Now.Ticks / 10000;
-            _timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
+            _timeZoneOffset = CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
             _time -= _timeZoneOffset;
         }
 
@@ -56,8 +64,9 @@ namespace NiL.JS.BaseLibrary
         public Date(DateTime dateTime)
         {
             _time = dateTime.Ticks / 10000;
-            _timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(dateTime).Ticks / 10000;
-            _time -= _timeZoneOffset;
+            _timeZoneOffset = CurrentTimeZone.GetUtcOffset(dateTime).Ticks / 10000;
+            if (dateTime.Kind != DateTimeKind.Utc)
+                _time -= _timeZoneOffset;
         }
 
         [DoNotEnumerate]
@@ -185,7 +194,7 @@ namespace NiL.JS.BaseLibrary
         private static long getTimeZoneOffset(long time)
         {
             var dateTime = new DateTime(System.Math.Min(System.Math.Max(time * _timeAccuracy, DateTime.MinValue.Ticks), DateTime.MaxValue.Ticks), DateTimeKind.Utc);
-            var offset = TimeZoneInfo.Local.GetUtcOffset(dateTime).Ticks / _timeAccuracy;
+            var offset = CurrentTimeZone.GetUtcOffset(dateTime).Ticks / _timeAccuracy;
             return offset;
         }
 
@@ -225,7 +234,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue now()
         {
             var time = DateTime.Now.Ticks / 10000;
-            var timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
+            var timeZoneOffset = CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
             return time - timeZoneOffset - _unixTimeBase;
         }
 
@@ -689,26 +698,66 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue toISOString()
         {
-            try
-            {
-                _time -= _timeZoneOffset;
-                if (_time > 8702135600400000 || _time < -8577864403200000 || _error)
-                    ExceptionHelper.Throw(new RangeError("Invalid time value"));
-                var y = getYearImpl(true);
+            return toIsoString();
+        }
 
-                return y +
-                        "-" + (this.getMonthImpl(true) + 1).ToString("00") +
-                        "-" + this.getDateImpl(true).ToString("00") +
-                        "T" + this.getHoursImpl(true).ToString("00") +
-                        ":" + this.getMinutesImpl(true).ToString("00") +
-                        ":" + this.getSecondsImpl().ToString("00") +
-                        "." + (this.getMillisecondsImpl() / 1000.0).ToString(".000", System.Globalization.CultureInfo.InvariantCulture).Substring(1) +
-                        "Z";
-            }
-            finally
-            {
-                _time += _timeZoneOffset;
-            }
+        private JSValue toIsoString()
+        {
+            if ((_time + _timeZoneOffset) > 8702135600400000 || (_time + _timeZoneOffset) < -8577864403200000 || _error)
+                ExceptionHelper.Throw(new RangeError("Invalid time value"));
+
+            var y = getYearImpl(true);
+
+            return y +
+                    "-" + (this.getMonthImpl(false) + 1).ToString("00") +
+                    "-" + this.getDateImpl(false).ToString("00") +
+                    "T" + this.getHoursImpl(false).ToString("00") +
+                    ":" + this.getMinutesImpl(false).ToString("00") +
+                    ":" + this.getSecondsImpl().ToString("00") +
+                    "." + (this.getMillisecondsImpl() / 1000.0).ToString(".000", System.Globalization.CultureInfo.InvariantCulture).Substring(1) +
+                    "Z";
+        }
+
+        private string stringify(bool withTzo)
+        {
+            if (_error)
+                return "Invalid date";
+
+            return stringifyDate(withTzo) + " " + stringifyTime(withTzo);
+        }
+
+        private string stringifyDate(bool withTzo)
+        {
+            if (_error)
+                return "Invalid date";
+
+            var res =
+                daysOfWeek[(getDayImpl(withTzo) + 6) % 7] + " "
+                + months[getMonthImpl(withTzo)]
+                + " " + getDateImpl(withTzo).ToString("00") + " "
+                + getYearImpl(withTzo);
+            return res;
+        }
+
+        private string stringifyTime(bool withTzo)
+        {
+            if (_error)
+                return "Invalid date";
+
+            var offset = new TimeSpan(_timeZoneOffset * _timeAccuracy);
+            var timeName = CurrentTimeZone.IsDaylightSavingTime(new DateTimeOffset(_time * _timeAccuracy, offset)) ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
+            var res =
+                getHoursImpl(withTzo).ToString("00:")
+                + getMinutesImpl(withTzo).ToString("00:")
+                + getSecondsImpl().ToString("00")
+                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + timeName + ")";
+            return res;
+        }
+
+        [Hidden]
+        public override string ToString()
+        {
+            return stringify(true);
         }
 
         [DoNotEnumerate]
@@ -720,37 +769,25 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue toUTCString()
         {
-            return ToString();
+            return stringify(false);
         }
 
         [DoNotEnumerate]
         public JSValue toGMTString()
         {
-            return ToString();
+            return stringify(false);
         }
 
         [DoNotEnumerate]
         public JSValue toTimeString()
         {
-            var offset = new TimeSpan(_timeZoneOffset * 10000);
-            var timeName = TimeZoneInfo.Local.IsDaylightSavingTime(new DateTimeOffset(_time * _timeAccuracy, offset)) ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
-            var res =
-                getHoursImpl(true).ToString("00:")
-                + getMinutesImpl(true).ToString("00:")
-                + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + timeName + ")";
-            return res;
+            return stringifyTime(true);
         }
 
         [DoNotEnumerate]
         public JSValue toDateString()
         {
-            var res =
-                daysOfWeek[(System.Math.Abs(_time) % _weekMilliseconds) / _dayMilliseconds] + " "
-                + months[getMonthImpl(false)]
-                + " " + getDateImpl(false).ToString("00") + " "
-                + getYearImpl(false);
-            return res;
+            return stringifyDate(true);
         }
 
         [DoNotEnumerate]
@@ -762,7 +799,7 @@ namespace NiL.JS.BaseLibrary
             while (y < 0)
                 y += 2800;
             var dt = new DateTime(0);
-            dt = dt.AddDays((System.Math.Abs(_time + _timeZoneOffset) % _weekMilliseconds) / _dayMilliseconds);
+            dt = dt.AddDays(getDateImpl(true));
             dt = dt.AddMonths(getMonthImpl(true));
             dt = dt.AddYears(y);
 #if (PORTABLE || NETCORE)
@@ -770,26 +807,6 @@ namespace NiL.JS.BaseLibrary
 #else
             return dt.ToLongDateString();
 #endif
-        }
-
-        [Hidden]
-        public override string ToString()
-        {
-            if (_error)
-                return "Invalid date";
-
-            var offset = new TimeSpan(_timeZoneOffset * _timeAccuracy);
-            var timeName = TimeZoneInfo.Local.IsDaylightSavingTime(new DateTimeOffset(_time * _timeAccuracy, offset)) ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
-            var res =
-                daysOfWeek[System.Math.Abs(_time + _timeZoneOffset) / _dayMilliseconds % 7] + " "
-                + months[getMonthImpl(true)]
-                + " " + getDateImpl(true).ToString("00") + " "
-                + getYearImpl(true) + " "
-                + getHoursImpl(true).ToString("00:")
-                + getMinutesImpl(true).ToString("00:")
-                + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + timeName + ")";
-            return res;
         }
 
         [DoNotEnumerate]
@@ -1077,7 +1094,7 @@ namespace NiL.JS.BaseLibrary
                 if (pm)
                     time += _hourMilliseconds * 12;
 
-                timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
+                timeZoneOffset = CurrentTimeZone.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
                 if (wasTZ)
                     time += timeZoneOffset;
             }
@@ -1271,7 +1288,7 @@ namespace NiL.JS.BaseLibrary
 
             if (computeTzo)
             {
-                timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
+                timeZoneOffset = CurrentTimeZone.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
                 time -= timeZoneOffset;
             }
 
