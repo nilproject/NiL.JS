@@ -67,11 +67,12 @@ namespace NiL.JS.Test.Generated
                 {
                     pass = negative;
                     if (!pass)
-                        Console.WriteLine(e.Message);
+                        output.Append(e);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     System.Diagnostics.Debugger.Break();
+                    output.Append(e);
                     pass = false;
                 }
                 finally
