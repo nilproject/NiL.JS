@@ -49,13 +49,15 @@ namespace NiL.JS.BaseLibrary
         {
             _time = DateTime.Now.Ticks / 10000;
             _timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).Ticks / 10000;
+            _time -= _timeZoneOffset;
         }
 
-        [Hidden]
-        public Date(long ticks, long timeZoneOffset)
+        [DoNotEnumerate]
+        public Date(DateTime dateTime)
         {
-            _time = ticks / 10000;
-            _timeZoneOffset = timeZoneOffset / 10000;
+            _time = dateTime.Ticks / 10000;
+            _timeZoneOffset = TimeZoneInfo.Local.GetUtcOffset(dateTime).Ticks / 10000;
+            _time -= _timeZoneOffset;
         }
 
         [DoNotEnumerate]

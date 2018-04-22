@@ -330,8 +330,7 @@ namespace NiL.JS.Core
                 case TypeCode.DateTime:
                     {
                         var dateTime = (DateTime)value;
-                        var timeZoneOffset = dateTime.Kind == DateTimeKind.Local ? dateTime.ToLocalTime().Ticks - dateTime.ToUniversalTime().Ticks : 0;
-                        return new ObjectWrapper(new Date(dateTime.ToUniversalTime().Ticks + timeZoneOffset, timeZoneOffset));
+                        return new ObjectWrapper(new Date(dateTime));
                     }
                 case TypeCode.Decimal:
                     {

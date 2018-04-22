@@ -57,7 +57,7 @@ namespace NiL.JS.Core.Interop
                             case TypeCode.DateTime:
                                 {
                                     var dateTime = (DateTime)value;
-                                    base.Assign(new ObjectWrapper(new Date(dateTime.ToUniversalTime().Ticks, dateTime.ToLocalTime().Ticks - dateTime.ToUniversalTime().Ticks)));
+                                    base.Assign(new ObjectWrapper(new Date(dateTime)));
                                     break;
                                 }
                             case TypeCode.Decimal:
