@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("NiL.JS")]
 [assembly: AssemblyDescription("JavaScript engine for .NET")]
 [assembly: AssemblyCompany("NiLProject")]
-[assembly: AssemblyCopyright("Copyright © NiLProject 2013-2017")]
+[assembly: AssemblyCopyright("Copyright © NiLProject 2013-2018")]
 [assembly: AssemblyTrademark("NiL.JS")]
-[assembly: AssemblyVersion(InternalInfo.Version)]
-[assembly: AssemblyFileVersion(InternalInfo.Version)]
+[assembly: AssemblyVersion("2.5.1242.0")]
+[assembly: AssemblyFileVersion("2.5.1242.0")]
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: ComVisible(false)]
 [assembly: CLSCompliant(true)]
@@ -21,5 +21,5 @@ using System.Runtime.InteropServices;
 
 internal static class InternalInfo
 {
-    internal const string Version = "2.5.1241";
+    internal const string Version = "2.5.1242";
 }
