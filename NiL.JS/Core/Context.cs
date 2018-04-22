@@ -560,6 +560,11 @@ namespace NiL.JS.Core
             ctor._attributes |= JSValueAttributesInternal.DoNotEnumerate;
         }
 
+        public virtual bool DeleteVariable(string variableName)
+        {
+            return this._variables.Remove(variableName);
+        }
+
         internal void SetAbortState(ExecutionMode abortReason, JSValue abortInfo)
         {
             _executionMode = abortReason;

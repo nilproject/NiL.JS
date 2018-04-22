@@ -54,6 +54,7 @@ namespace NiL.JS.Expressions
                     temp._valueType = JSValueType.NotExists;
                     temp._oValue = null;
                 }
+
                 return true;
             }
             else if (context._strict)
@@ -66,7 +67,7 @@ namespace NiL.JS.Expressions
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts))
+            if (base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts))
                 return true;
             if (_left is Variable)
             {

@@ -314,9 +314,8 @@ namespace NiL.JS.Core
             if (key.Length == 0)
             {
                 if (!_emptyKeyValueExists)
-                {
                     return false;
-                }
+
                 _emptyKeyValue = default(TValue);
                 _emptyKeyValueExists = false;
                 return true;
@@ -522,7 +521,16 @@ namespace NiL.JS.Core
         public void CopyTo(KeyValuePair<string, TValue>[] array, int arrayIndex)
         {
             foreach (var item in this)
-                array[arrayIndex++] = item;
+            {
+                if (arrayIndex < array.Length)
+                {
+                    array[arrayIndex++] = item;
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
 
         public int Count
