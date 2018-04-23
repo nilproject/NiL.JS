@@ -2,6 +2,7 @@ language: csharp
 mono: none
 dotnet: 2.0.0
 script:
+ - cd ./NiL.JS.NetCore
  - dotnet clean
  - dotnet restore
- - dotnet build ./NiL.JS.NetCore -c Release
+ - dotnet build -c Release
