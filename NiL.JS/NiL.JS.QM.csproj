@@ -9,10 +9,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PublicSign>true</PublicSign>
     <DebugType>portable</DebugType>
-    <AssemblyName>NiL.JS</AssemblyName>
+    <AssemblyName>NiL.JS.QM</AssemblyName>
     <AssemblyOriginatorKeyFile>keys.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <PackageId>NiL.JS</PackageId>
+    <PackageId>NiL.JS.QM</PackageId>
     <PackageTags>js;javascript;java;script;ecma;ecmascript;es2015;v8;niljs;nil;nilproject</PackageTags>
     <PackageIconUrl>https://github.com/nilproject/NiL.JS/blob/develop/nil.js%20logo%20small.png</PackageIconUrl>
     <PackageLicenseUrl>https://github.com/nilproject/NiL.JS/blob/develop/License</PackageLicenseUrl>
