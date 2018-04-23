@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26823.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NiL.JS", "NiL.JS\NiL.JS.csproj", "{8060F6E9-B7FC-4859-A796-417FBAD64EA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NiL.JS", "NiL.JS\NiL.JS.QM.csproj", "{8060F6E9-B7FC-4859-A796-417FBAD64EA7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestApp", "NetCoreTestApp\NetCoreTestApp.csproj", "{2F434059-2B04-4D10-A9D9-B22CEDD87866}"
 EndProject

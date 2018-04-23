@@ -119,7 +119,7 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NiL.JS\NiL.JS.csproj">
+    <ProjectReference Include="..\NiL.JS\NiL.JS.QM.csproj">
       <Project>{f703d739-bcfa-4515-a963-c95651cb1ec4}</Project>
       <Name>NiL.JS</Name>
     </ProjectReference>

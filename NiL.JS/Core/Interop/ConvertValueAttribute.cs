@@ -10,9 +10,9 @@ namespace NiL.JS.Core.Interop
         | AttributeTargets.Property
         | AttributeTargets.ReturnValue
         | AttributeTargets.Parameter)]
-    /// <summary>
-    /// Указывает на необходимость преобразования значения для доступа из сценария.
-    /// </summary>
+    // <summary>
+    // Указывает на необходимость преобразования значения для доступа из сценария.
+    // </summary>
     public abstract class ConvertValueAttribute : Attribute
     {
         /// <summary>

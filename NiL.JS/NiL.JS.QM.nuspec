@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>$id$</id>
+    <id>NiL.JS.QM</id>
     <version>$version$</version>
     <title>NiL.JS Engine</title>
     <authors>NiLProject</authors>

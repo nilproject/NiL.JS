@@ -238,7 +238,9 @@ namespace NiL.JS.BaseLibrary
             }
 
             public static int MaxValue = 0x10FFFF;
+#pragma warning disable 169
             public static int MinValue = 0;
+#pragma warning restore 169
         }
         private static string translateCharSet(string set, bool inverted)
         {

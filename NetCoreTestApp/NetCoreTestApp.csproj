@@ -1,7 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net45;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>NetCoreTestApp</AssemblyName>
     <OutputType>Exe</OutputType>
@@ -12,8 +11,7 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\NiL.JS\NiL.JS.csproj" />
+    <ProjectReference Include="..\NiL.JS\NiL.JS.QM.csproj" />
   </ItemGroup>
 </Project>

@@ -595,6 +595,7 @@ namespace NiL.JS.Core
         /// Evaluate script
         /// </summary>
         /// <param name="code">Code in JavaScript</param>
+        /// <param name="thisBind">Object taking the role of 'this' in the javascript context</param>
         /// <param name="suppressScopeCreation">If true, scope will not be created. All variables, which will be defined via let, const or class will not be destructed after evalution</param>
         /// <returns>Result of last evaluated operation</returns>
         public JSValue Eval(string code, JSValue thisBind, bool suppressScopeCreation)

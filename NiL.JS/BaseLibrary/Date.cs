@@ -678,11 +678,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue toLocaleString()
         {
             var dt = ToDateTime();
-#if !(PORTABLE || NETCORE)
-            return dt.ToLongDateString() + " " + dt.ToLongTimeString();
-#else
             return dt.ToString();
-#endif
         }
 
         [DoNotEnumerate]

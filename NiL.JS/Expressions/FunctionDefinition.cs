@@ -643,7 +643,7 @@ namespace NiL.JS.Expressions
         /// <summary>
         /// Создаёт функцию, описанную выбранным выражением в контексте указанного сценария.
         /// </summary>
-        /// <param name="script">Сценарий, контекст которого будет родительским для контекста выполнения функции.</param>
+        /// <param name="context">Context to apply function to</param>
         /// <returns></returns>
         public Function MakeFunction(Context context)
         {
