@@ -706,7 +706,7 @@ namespace NiL.JS.BaseLibrary
             if ((_time + _timeZoneOffset) > 8702135600400000 || (_time + _timeZoneOffset) < -8577864403200000 || _error)
                 ExceptionHelper.Throw(new RangeError("Invalid time value"));
 
-            var y = getYearImpl(true);
+            var y = getYearImpl(false);
 
             return y +
                     "-" + (this.getMonthImpl(false) + 1).ToString("00") +
@@ -732,10 +732,19 @@ namespace NiL.JS.BaseLibrary
                 return "Invalid date";
 
             var res =
-                daysOfWeek[(getDayImpl(withTzo) + 6) % 7] + " "
-                + months[getMonthImpl(withTzo)]
-                + " " + getDateImpl(withTzo).ToString("00") + " "
-                + getYearImpl(withTzo);
+                withTzo
+                    ? daysOfWeek[(getDayImpl(true) + 6) % 7] + " "
+                                                                + months[getMonthImpl(true)]
+                                                                + " " 
+                                                                + getDateImpl(true).ToString("00") 
+                                                                + " "
+                                                                + getYearImpl(true)
+                    : daysOfWeek[(getDayImpl(false) + 6) % 7] + ", "
+                                                                + getDateImpl(false).ToString("00")
+                                                                + " "
+                                                                + months[getMonthImpl(false)]
+                                                                + " "
+                                                                + getYearImpl(false);
             return res;
         }
 
@@ -746,11 +755,14 @@ namespace NiL.JS.BaseLibrary
 
             var offset = new TimeSpan(_timeZoneOffset * _timeAccuracy);
             var timeName = CurrentTimeZone.IsDaylightSavingTime(new DateTimeOffset(_time * _timeAccuracy, offset)) ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
-            var res =
-                getHoursImpl(withTzo).ToString("00:")
-                + getMinutesImpl(withTzo).ToString("00:")
-                + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + timeName + ")";
+            var res = getHoursImpl(withTzo).ToString("00:")
+                      + getMinutesImpl(withTzo).ToString("00:")
+                      + getSecondsImpl().ToString("00")
+                      + " GMT"
+                      + (withTzo
+                          ? (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") +
+                            " (" + timeName + ")"
+                          : "");
             return res;
         }
 

@@ -61,6 +61,7 @@ namespace NiL.JS.Test
             Value = this;
         }
 
+
         protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
         {
             if (propertyScope <= PropertyScope.Own && key.ValueType != JSValueType.Symbol)
@@ -131,7 +132,7 @@ namespace NiL.JS.Test
         private static void testEx()
         {
             var context = new Context();
-            context.GlobalContext.IndexersSupportMode = IndexersSupportMode.ForceDisable;
+            context.GlobalContext.IndexersSupport = IndexersSupport.ForceDisable;
             context.DefineVariable("test").Assign(new TestIndexer());
             context.Eval("console.log(test['0'])");
         }

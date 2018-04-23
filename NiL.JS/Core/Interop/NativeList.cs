@@ -246,7 +246,7 @@ namespace NiL.JS.Core.Interop
                 return Context.CurrentGlobalContext.ProxyValue(result);
         }
 
-        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
+        internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {

@@ -192,7 +192,7 @@ namespace NiL.JS.BaseLibrary
             return r;
         }
 
-        protected internal sealed override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
+        internal protected sealed override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {

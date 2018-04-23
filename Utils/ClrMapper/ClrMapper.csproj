@@ -71,7 +71,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NiL.JS\NiL.JS.csproj">
+    <ProjectReference Include="..\..\NiL.JS\NiL.JS.csproj">
       <Project>{f703d739-bcfa-4515-a963-c95651cb1ec4}</Project>
       <Name>NiL.JS</Name>
     </ProjectReference>

@@ -111,7 +111,7 @@ namespace NiL.JS.Core.Functions
             return original.GetEnumerator(hideNonEnumerable, enumeratorMode);
         }
 
-        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
+        internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             return original.GetProperty(key, forWrite, memberScope);
         }

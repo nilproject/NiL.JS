@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFrameworks>netstandard1.3;net45;net461</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>NetCoreTestApp</AssemblyName>
     <OutputType>Exe</OutputType>
@@ -14,7 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NiL.JS.NetCore\NiL.JS.NetCore.csproj" />
+    <ProjectReference Include="..\NiL.JS\NiL.JS.csproj" />
   </ItemGroup>
-
 </Project>

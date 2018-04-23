@@ -139,7 +139,7 @@ namespace NiL.JS.Core
             this[length++] = Marshal(value);
         }
 
-        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
+        internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
             if (forWrite)
                 cloneValues();
