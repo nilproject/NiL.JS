@@ -164,3 +164,5 @@ $RECYCLE.BIN/
 /keys.snk
 /NiL.JS.Portable/keys.snk
 /NiL.JS/keys.snk
+.vs/
+.idea/
