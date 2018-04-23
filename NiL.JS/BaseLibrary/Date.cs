@@ -706,41 +706,45 @@ namespace NiL.JS.BaseLibrary
             if ((_time + _timeZoneOffset) > 8702135600400000 || (_time + _timeZoneOffset) < -8577864403200000 || _error)
                 ExceptionHelper.Throw(new RangeError("Invalid time value"));
 
-            var y = getYearImpl(true);
-
-            return y +
-                    "-" + (this.getMonthImpl(false) + 1).ToString("00") +
-                    "-" + this.getDateImpl(false).ToString("00") +
-                    "T" + this.getHoursImpl(false).ToString("00") +
-                    ":" + this.getMinutesImpl(false).ToString("00") +
-                    ":" + this.getSecondsImpl().ToString("00") +
-                    "." + (this.getMillisecondsImpl() / 1000.0).ToString(".000", System.Globalization.CultureInfo.InvariantCulture).Substring(1) +
-                    "Z";
+            return getYearImpl(false) +
+            "-" + (this.getMonthImpl(false) + 1).ToString("00") +
+            "-" + this.getDateImpl(false).ToString("00") +
+            "T" + this.getHoursImpl(false).ToString("00") +
+            ":" + this.getMinutesImpl(false).ToString("00") +
+            ":" + this.getSecondsImpl().ToString("00") +
+            "." + (this.getMillisecondsImpl() / 1000.0).ToString(".000", System.Globalization.CultureInfo.InvariantCulture).Substring(1) +
+            "Z";
         }
 
-        private string stringify(bool withTzo)
+        private string stringify(bool withTzo, bool rfc1123)
         {
             if (_error)
                 return "Invalid date";
 
-            return stringifyDate(withTzo) + " " + stringifyTime(withTzo);
+            return stringifyDate(withTzo, rfc1123) + " " + stringifyTime(withTzo, rfc1123);
         }
 
-        private string stringifyDate(bool withTzo)
+        private string stringifyDate(bool withTzo, bool rfc1123)
         {
+            if (withTzo && rfc1123)
+                throw new ArgumentException();
+
             if (_error)
                 return "Invalid date";
 
             var res =
-                daysOfWeek[(getDayImpl(withTzo) + 6) % 7] + " "
+                daysOfWeek[(getDayImpl(withTzo) + 6) % 7] + (rfc1123 ? ", " : " ")
                 + months[getMonthImpl(withTzo)]
                 + " " + getDateImpl(withTzo).ToString("00") + " "
                 + getYearImpl(withTzo);
             return res;
         }
 
-        private string stringifyTime(bool withTzo)
+        private string stringifyTime(bool withTzo, bool rfc1123)
         {
+            if (withTzo && rfc1123)
+                throw new ArgumentException();
+
             if (_error)
                 return "Invalid date";
 
@@ -750,14 +754,14 @@ namespace NiL.JS.BaseLibrary
                 getHoursImpl(withTzo).ToString("00:")
                 + getMinutesImpl(withTzo).ToString("00:")
                 + getSecondsImpl().ToString("00")
-                + " GMT" + (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + timeName + ")";
+                + " GMT" + (withTzo ? (offset.Ticks > 0 ? "+" : "") + (offset.Hours * 100 + offset.Minutes).ToString("0000") + " (" + timeName + ")" : "");
             return res;
         }
 
         [Hidden]
         public override string ToString()
         {
-            return stringify(true);
+            return stringify(true, false);
         }
 
         [DoNotEnumerate]
@@ -769,25 +773,25 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue toUTCString()
         {
-            return stringify(false);
+            return stringify(false, true);
         }
 
         [DoNotEnumerate]
         public JSValue toGMTString()
         {
-            return stringify(false);
+            return stringify(false, true);
         }
 
         [DoNotEnumerate]
         public JSValue toTimeString()
         {
-            return stringifyTime(true);
+            return stringifyTime(true, false);
         }
 
         [DoNotEnumerate]
         public JSValue toDateString()
         {
-            return stringifyDate(true);
+            return stringifyDate(true, false);
         }
 
         [DoNotEnumerate]
@@ -815,7 +819,7 @@ namespace NiL.JS.BaseLibrary
             var time = 0L;
             var tzo = 0L;
             if (tryParse(dateTime, out time, out tzo))
-                return time - tzo - _unixTimeBase;
+                return time;
             return double.NaN;
         }
 
@@ -1023,7 +1027,8 @@ namespace NiL.JS.BaseLibrary
                 }
 
                 if (token.StartsWith("gmt", StringComparison.OrdinalIgnoreCase)
-                    || (token.StartsWith("ut", StringComparison.OrdinalIgnoreCase) && (token.Length == 2 || token[2] == 'c' || token[2] == 'C'))
+                    || token.StartsWith("ut", StringComparison.OrdinalIgnoreCase)
+                    || token.StartsWith("utc", StringComparison.OrdinalIgnoreCase)
                     || token.StartsWith("pst", StringComparison.OrdinalIgnoreCase)
                     || token.StartsWith("pdt", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1095,8 +1100,6 @@ namespace NiL.JS.BaseLibrary
                     time += _hourMilliseconds * 12;
 
                 timeZoneOffset = CurrentTimeZone.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
-                if (wasTZ)
-                    time += timeZoneOffset;
             }
             catch
             {
