@@ -11,7 +11,7 @@
     <PublicSign>true</PublicSign>
     <DebugType>portable</DebugType>
     <AssemblyName>NiL.JS</AssemblyName>
-    <AssemblyOriginatorKeyFile>../keys.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>keys.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PackageId>NiL.JS.NetCore</PackageId>
     <PackageTags>js;javascript;java;script;ecma;ecmascript;es2015;v8;niljs;nil;nilproject</PackageTags>

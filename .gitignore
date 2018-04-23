@@ -161,7 +161,7 @@ $RECYCLE.BIN/
 /FunctionalTests/Generated/SputnikTests.cs
 /FunctionalTests/Generated/Embedded.cs
 /FunctionalTests/Generated/Custom.cs
-/keys.snk
+# /keys.snk
 /NiL.JS.Portable/keys.snk
 /NiL.JS/keys.snk
 .vs/
