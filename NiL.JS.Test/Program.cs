@@ -61,6 +61,7 @@ namespace NiL.JS.Test
             Value = this;
         }
 
+
         protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
         {
             if (propertyScope <= PropertyScope.Own && key.ValueType != JSValueType.Symbol)

@@ -132,7 +132,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static GlobalContext CurrentGlobalContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
+        public static GlobalContext CurrentGlobalContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
 
         public JSValue ThisBind
         {

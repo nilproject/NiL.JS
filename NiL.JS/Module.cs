@@ -18,9 +18,6 @@ namespace NiL.JS
     /// <summary>
     /// Represents and manages JavaScript module
     /// </summary>
-#if !PORTABLE
-    [Serializable]
-#endif
     public class Module
     {
         private static readonly char[] __pathSplitChars = new[] { '\\', '/' };
@@ -143,7 +140,7 @@ namespace NiL.JS
             if (code == "")
                 return;
 
-            var internalCallback = messageCallback != null ? 
+            var internalCallback = messageCallback != null ?
                 (level, position, length, message) => messageCallback(level, CodeCoordinates.FromTextPosition(code, position, length), message)
                 : null as InternalCompilerMessageCallback;
 
@@ -180,7 +177,7 @@ namespace NiL.JS
         {
             if (Code == "")
                 return;
-            
+
             try
             {
                 Context.Activate();
@@ -298,37 +295,5 @@ namespace NiL.JS
                 return __modulesCache.Remove(path);
             }
         }
-
-#if !PORTABLE
-        /// <summary>
-        /// Returns module, which provides access to clr-namespace
-        /// </summary>
-        /// <param name="namespace">Namespace</param>
-        /// <returns></returns>
-        public static Module ClrNamespace(string @namespace)
-        {
-            var result = new Module();
-
-            foreach (var type in NamespaceProvider.GetTypesByPrefix(@namespace))
-            {
-                try
-                {
-                    if (type.Namespace == @namespace)
-                    {
-                        result.Exports[type.Name] = Context.CurrentGlobalContext.GetConstructor(type);
-                    }
-                    else if (type.Namespace.StartsWith(@namespace) && type.Namespace[@namespace.Length] == '.')
-                    {
-                        var nextSegment = type.Namespace.Substring(@namespace.Length).Split('.')[1];
-                        result.Exports[nextSegment] = new NamespaceProvider($"{@namespace}.{nextSegment}");
-                    }
-                }
-                catch
-                { }
-            }
-
-            return result;
-        }
-#endif
     }
 }

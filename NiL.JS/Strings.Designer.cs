@@ -11,9 +11,7 @@
 namespace NiL.JS {
     using System;
     using System.Reflection;
-#if NET40
-    using NiL.JS.Backward;
-#endif
+
 
     /// <summary>
     ///   Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
@@ -26,15 +24,15 @@ namespace NiL.JS {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
-        
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Strings() {
         }
-        
+
         /// <summary>
         ///   Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
         /// </summary>
@@ -48,7 +46,7 @@ namespace NiL.JS {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Перезаписывает свойство CurrentUICulture текущего потока для всех
         ///   обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
@@ -62,7 +60,7 @@ namespace NiL.JS {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Can not assign to readonly property &quot;{0}&quot;.
         /// </summary>
@@ -71,7 +69,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("CannotAssignReadOnly", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Constructor cannot be static.
         /// </summary>
@@ -80,7 +78,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("ConstructorCannotBeStatic", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Do not define a function inside a loop.
         /// </summary>
@@ -89,7 +87,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("FunctionInLoop", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Identifier &quot;{0}&quot; has already been declared.
         /// </summary>
@@ -98,7 +96,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("IdentifierAlreadyDeclared", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Can not increment property &quot;{0}&quot; without setter..
         /// </summary>
@@ -107,7 +105,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("IncrementPropertyWOSetter", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Can not increment readonly &quot;{0}&quot;.
         /// </summary>
@@ -116,7 +114,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("IncrementReadonly", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Invalid left-hand side in assignment..
         /// </summary>
@@ -125,7 +123,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("InvalidLefthandSideInAssignment", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Invalid property name at {0}.
         /// </summary>
@@ -134,7 +132,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("InvalidPropertyName", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Unable to process regular expression {0}.
         /// </summary>
@@ -143,7 +141,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("InvalidRegExp", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Method &quot;{0}&quot; can not be called with new keyword.
         /// </summary>
@@ -152,7 +150,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("InvalidTryToCallWithNew", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Method &quot;{0}&quot; can not be called without new keyword.
         /// </summary>
@@ -161,7 +159,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("InvalidTryToCallWithoutNew", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Type &quot;{0}&quot; can not be created with new keyword.
         /// </summary>
@@ -170,7 +168,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("InvalidTryToCreateWithNew", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Type &quot;{0}&quot; can not be created without new keyword.
         /// </summary>
@@ -179,7 +177,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("InvalidTryToCreateWithoutNew", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Too many arguments for function &quot;{0}&quot;.
         /// </summary>
@@ -188,7 +186,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("TooManyArgumentsForFunction", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Can&apos;t get property &quot;{0}&quot; of &quot;{1}&quot;.
         /// </summary>
@@ -197,7 +195,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("TryingToGetProperty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Can&apos;t set property &quot;{0}&quot; of &quot;{1}&quot;.
         /// </summary>
@@ -206,7 +204,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("TryingToSetProperty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Unexpected token.
         /// </summary>
@@ -215,7 +213,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("UnexpectedToken", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Unknown identifier &quot;{0}&quot; at {1}.
         /// </summary>
@@ -224,7 +222,7 @@ namespace NiL.JS {
                 return ResourceManager.GetString("UnknowIdentifier", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Variable &quot;{0}&quot; is not defined.
         /// </summary>

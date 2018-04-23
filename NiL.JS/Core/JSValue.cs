@@ -122,9 +122,9 @@ namespace NiL.JS.Core
 #endif
     [DebuggerTypeProxy(typeof(JSObjectDebugView))]
     [DebuggerDisplay("Value = {Value} ({ValueType})")]
-    public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<JSValue>
-#if !(PORTABLE || NETCORE)
-, ICloneable, IConvertible
+    public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<JSValue>, IConvertible
+#if (PORTABLE)
+, ICloneable
 #endif
     {
         /*
@@ -520,12 +520,12 @@ namespace NiL.JS.Core
             return DeleteProperty((JSObject)name);
         }
 
-        internal protected JSValue GetProperty(string name, bool forWrite, PropertyScope propertyScope)
+        protected internal JSValue GetProperty(string name, bool forWrite, PropertyScope propertyScope)
         {
             return GetProperty((JSValue)name, forWrite, propertyScope);
         }
 
-        internal protected virtual JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
+        protected internal virtual JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
         {
             switch (_valueType)
             {
@@ -1150,7 +1150,7 @@ namespace NiL.JS.Core
         }
 
         #region Члены IConvertible
-#if !(PORTABLE || NETCORE)
+#if !(PORTABLE)
         TypeCode IConvertible.GetTypeCode()
         {
             return TypeCode.Object;
