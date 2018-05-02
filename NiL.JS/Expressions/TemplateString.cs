@@ -89,7 +89,7 @@ namespace NiL.JS.Expressions
             JSValue[] tagResult = null;
             int i = 0;
 
-            if (context._executionMode >= ExecutionMode.Resume)
+            if (context != null && context._executionMode >= ExecutionMode.Resume)
             {
                 var suspendData = context.SuspendData[this] as SuspendData;
 
@@ -125,7 +125,7 @@ namespace NiL.JS.Expressions
                 if (i > 0)
                 {
                     var temp = expressions[i - 1].Evaluate(context);
-                    if (context._executionMode != ExecutionMode.None)
+                    if (context != null && context._executionMode != ExecutionMode.None)
                     {
                         if (context._executionMode == ExecutionMode.Suspend)
                         {
