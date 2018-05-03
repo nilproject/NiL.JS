@@ -64,7 +64,7 @@ namespace NiL.JS.Core.Interop
                                 {
                                     _attributes = _attributes | JSValueAttributesInternal.ProxyPrototype,
                                     _fields = _fields,
-                                    _objectPrototype = _context.GlobalContext._GlobalPrototype
+                                    _objectPrototype = _context.GlobalContext._globalPrototype
                                 };
                             }
                         }
@@ -140,7 +140,7 @@ namespace NiL.JS.Core.Interop
                         if ((property.GetSetMethod(true) == null || !property.GetSetMethod(true).IsPublic)
                             && (property.GetGetMethod(true) == null || !property.GetGetMethod(true).IsPublic))
                             continue;
-                        
+
                         var parentProperty = property;
                         while (parentProperty != null
                             && parentProperty.DeclaringType != typeof(object)

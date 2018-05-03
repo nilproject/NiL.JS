@@ -124,7 +124,10 @@ namespace NiL.JS.Core
     [DebuggerDisplay("Value = {Value} ({ValueType})")]
     public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<JSValue>
 #if !(PORTABLE || NETCORE)
-, ICloneable, IConvertible
+, ICloneable
+#endif
+#if !PORTABLE
+, IConvertible
 #endif
     {
         /*
@@ -1150,7 +1153,7 @@ namespace NiL.JS.Core
         }
 
         #region Члены IConvertible
-#if !(PORTABLE || NETCORE)
+#if !(PORTABLE)
         TypeCode IConvertible.GetTypeCode()
         {
             return TypeCode.Object;

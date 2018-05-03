@@ -22,7 +22,8 @@ namespace NiL.JS.Core
 
     public sealed class GlobalContext : Context
     {
-        internal JSObject _GlobalPrototype;
+        internal int _callDepth;
+        internal JSObject _globalPrototype;
         private readonly Dictionary<Type, JSObject> _proxies;
 
         public string Name { get; private set; }
@@ -63,14 +64,14 @@ namespace NiL.JS.Core
                     _variables = JSObject.getFieldsContainer();
 
                 _proxies.Clear();
-                _GlobalPrototype = null;
+                _globalPrototype = null;
 
                 var objectConstructor = GetConstructor(typeof(JSObject)) as Function;
                 _variables.Add("Object", objectConstructor);
                 objectConstructor._attributes |= JSValueAttributesInternal.DoNotDelete;
 
-                _GlobalPrototype = objectConstructor.prototype as JSObject;
-                _GlobalPrototype._objectPrototype = JSValue.@null;
+                _globalPrototype = objectConstructor.prototype as JSObject;
+                _globalPrototype._objectPrototype = JSValue.@null;
 
                 DefineConstructor(typeof(BaseLibrary.Math));
                 DefineConstructor(typeof(BaseLibrary.Array));
@@ -234,7 +235,7 @@ namespace NiL.JS.Core
                     if (dynamicProxy != null && typeof(JSValue).IsAssignableFrom(type))
                     {
                         if (dynamicProxy._objectPrototype == null)
-                            dynamicProxy._objectPrototype = _GlobalPrototype ?? JSValue.@null;
+                            dynamicProxy._objectPrototype = _globalPrototype ?? JSValue.@null;
                         var fake = (dynamicProxy as PrototypeProxy).PrototypeInstance;
                     }
                 }
