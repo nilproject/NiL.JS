@@ -35,9 +35,9 @@ namespace IntegrationTests.BaseLibrary
             var secondDate = new Date(new Arguments { 954000000000 }); // the thing which geek will never have
             var thirdDate = new Date(new Arguments { 954003600000 });
 
-            Assert.IsTrue(d1.ToString().StartsWith("Sun Mar 26 2000 02:00:00 GMT+1100"));
-            Assert.IsTrue(d2.ToString().StartsWith("Sun Mar 26 2000 02:00:00 GMT+1000"));
-            Assert.IsTrue(d3.ToString().StartsWith("Sun Mar 26 2000 03:00:00 GMT+1000"));
+            Assert.IsTrue(firstDate.ToString().StartsWith("Sun Mar 26 2000 02:00:00 GMT+1100"));
+            Assert.IsTrue(secondDate.ToString().StartsWith("Sun Mar 26 2000 02:00:00 GMT+1000"));
+            Assert.IsTrue(thirdDate.ToString().StartsWith("Sun Mar 26 2000 03:00:00 GMT+1000"));
         }
     }
 }

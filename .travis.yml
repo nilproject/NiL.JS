@@ -7,7 +7,7 @@ script:
  - dotnet clean
  - dotnet restore
  - dotnet build -c Release
- - cd FunctionalTests
+ - cd ../FunctionalTests
  - dotnet test -c Release
  - cd ../IntegrationTests
  - dotnet test -c Release
