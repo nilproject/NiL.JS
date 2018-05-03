@@ -10,7 +10,7 @@ namespace FunctionalTests
     [TestClass]
     public class JsFunfuzz
     {
-        private static readonly string JsFunfuzzScriptPath = Environment.CurrentDirectory + "../../../../Tests/jsfunfuzz.js";
+        private static readonly string JsFunfuzzScriptPath = Environment.CurrentDirectory + "/../../../../Tests/jsfunfuzz.js";
 
         private Module _module;
         private StringBuilder _output;
@@ -28,7 +28,9 @@ namespace FunctionalTests
             {
                 using (var file = new FileStream(JsFunfuzzScriptPath, FileMode.Open))
                 using (var fileReader = new StreamReader(file))
+                {
                     _module = new Module(fileReader.ReadToEnd());
+                }
             }
             catch
             {
@@ -46,7 +48,10 @@ namespace FunctionalTests
         [TestCleanup]
         public void Cleanup()
         {
-            _context.Deactivate();
+            if (Context.CurrentContext == _context)
+            {
+                _context.Deactivate();
+            }
 
             Console.SetOut(_oldOutput);
             Console.SetError(_oldErrOutput);

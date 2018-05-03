@@ -27,14 +27,13 @@ namespace IntegrationTests.BaseLibrary
         [TestMethod]
         public void ShouldCorrectHandleSwitchFromDstToStandard_SidneyTimeZone()
         {
-            var timezone = TimeZoneInfo.GetSystemTimeZones()
-                .First(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L
-                       && x.Id.Contains("AUS"));
+            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
             Date.CurrentTimeZone = timezone;
 
-            var d1 = new Date(new Arguments { 953996400000 });
-            var d2 = new Date(new Arguments { 954000000000 });
-            var d3 = new Date(new Arguments { 954003600000 });
+            var firstDate = new Date(new Arguments { 953996400000 });
+            var secondDate = new Date(new Arguments { 954000000000 }); // the thing which geek will never have
+            var thirdDate = new Date(new Arguments { 954003600000 });
 
             Assert.IsTrue(d1.ToString().StartsWith("Sun Mar 26 2000 02:00:00 GMT+1100"));
             Assert.IsTrue(d2.ToString().StartsWith("Sun Mar 26 2000 02:00:00 GMT+1000"));

@@ -33,8 +33,8 @@ namespace IntegrationTests
         public void ImportOperatorShouldImportItem()
         {
             var module1 = new Module("");
-            var privateObject = new PrivateObject(module1.Exports);
-            privateObject.Invoke("set_Item", "a", JSValue.Marshal(0x777));
+            var itemProperty = module1.Exports.GetType().GetProperty("Item");
+            itemProperty.SetValue(module1.Exports, JSValue.Marshal(0x777), new object[] { "a" });
 
             var module2 = new Module("module2", "import {a} from \"another module\"");
             Module.ResolveModule += (m, e) =>

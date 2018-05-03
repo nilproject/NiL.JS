@@ -13,7 +13,7 @@ namespace FunctionalTests
     [TestClass]
     public class UglifyJs
     {
-        private static readonly string UglifyJsScriptPath = Environment.CurrentDirectory + "../../../../Tests/uglifyjs.js";
+        private static readonly string UglifyJsScriptPath = Environment.CurrentDirectory + "/../../../../Tests/uglifyjs.js";
 
         private Module _module;
         private GlobalContext _context;
