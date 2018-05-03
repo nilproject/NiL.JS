@@ -10,6 +10,21 @@ namespace IntegrationTests.BaseLibrary
     public class DateTests
     {
         [TestMethod]
+        public void ShouldParseUSformat()
+        {
+            var date = new Date(new Arguments { "10/31/2010 08:00" });
+            Assert.AreEqual(DateTime.Parse("2010-10-31 08:00"), date.ToDateTime());
+        }
+
+        [TestMethod]
+        public void ShouldGiveISOString()
+        {
+            var expected = "1970-01-01T00:00:00.000Z";
+            var date = new Date(new Arguments { "1970" });
+            Assert.AreEqual(date.toISOString(), expected);
+        }
+
+        [TestMethod]
         public void NewDateShouldContainCurrentTime()
         {
             var dateTime = DateTime.Now;
