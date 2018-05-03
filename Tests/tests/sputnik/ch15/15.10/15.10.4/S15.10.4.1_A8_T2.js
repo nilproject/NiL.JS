@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.4/S15.10.4.1_A8_T2.js
  * @description Pattern is function(){return "a|b|[]";}() and flags is "ig"
+ *
+ * @ignore
  */
 
 __re = new RegExp(function(){return "a|b|[]";}(),"ig");

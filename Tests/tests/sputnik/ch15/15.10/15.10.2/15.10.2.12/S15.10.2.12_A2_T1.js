@@ -6,6 +6,8 @@
  *
  * @path ch15/15.10/15.10.2/15.10.2.12/S15.10.2.12_A2_T1.js
  * @description WhiteSpace
+ *
+ * @ignore
  */
 
 var i0 = "";

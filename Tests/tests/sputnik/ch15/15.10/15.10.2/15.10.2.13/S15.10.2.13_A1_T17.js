@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.2/15.10.2.13/S15.10.2.13_A1_T17.js
  * @description Execute /[]/.exec("a[b\n[]\tc]d") and check results
+ *
+ * @ignore
  */
 
 __executed = /[]/.exec("a[b\n[]\tc]d");

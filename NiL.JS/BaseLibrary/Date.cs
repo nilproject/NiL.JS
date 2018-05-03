@@ -703,7 +703,7 @@ namespace NiL.JS.BaseLibrary
 
         private JSValue toIsoString()
         {
-            if ((_time + _timeZoneOffset) > 8702135600400000 || (_time + _timeZoneOffset) < -8577864403200000 || _error)
+            if ((_time + _timeZoneOffset) > 8702135604000000 || (_time + _timeZoneOffset) <= -8577864403199999 || _error)
                 ExceptionHelper.Throw(new RangeError("Invalid time value"));
 
             return getYearImpl(false) +

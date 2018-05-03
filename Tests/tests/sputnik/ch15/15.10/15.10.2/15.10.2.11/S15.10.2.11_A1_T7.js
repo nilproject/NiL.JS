@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.2/15.10.2.11/S15.10.2.11_A1_T7.js
  * @description DecimalIntegerLiteral is not 0
+ *
+ * @ignore
  */
 
 var arr = /\1(A)(B)\2/.exec("ABB");
@@ -21,5 +23,5 @@ if ((arr === null) || (arr[1] !== "A")) {
 //CHECK#3
 if ((arr === null) || (arr[2] !== "B")) {
   $ERROR('#3: var arr = /\\1(A)(B)\\2/.exec("ABB"); arr[2] === "B". Actual. ' + (arr && arr[2]));
-}      
+}
 

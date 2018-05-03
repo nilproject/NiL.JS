@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T4.js
  * @description Execute /(z)((a+)?(b+)?(c))* /.exec("zaacbbbcac") and check results
+ *
+ * @ignore
  */
 
 __executed = /(z)((a+)?(b+)?(c))*/.exec("zaacbbbcac");
