@@ -209,9 +209,13 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                this._time = this._time + (-amort + Tools.JSObjectToInt64(value)) * mul;
-                if (this._time < 5992660800000)
+                _time = _time + (-amort + Tools.JSObjectToInt64(value)) * mul;
+                if (_time < 5992660800000)
                     _error = true;
+
+                var oldTzo = _timeZoneOffset;
+                _timeZoneOffset = getTimeZoneOffset(_time);
+                _time -= _timeZoneOffset - oldTzo;
             }
         }
 
@@ -668,7 +672,8 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public DateTime ToDateTime()
         {
-            var dt = new DateTime(_time * _timeAccuracy, DateTimeKind.Local);
+            var dt = new DateTime(_time * _timeAccuracy, DateTimeKind.Utc);
+            dt = dt.ToLocalTime();
             return dt;
         }
 
@@ -1114,6 +1119,9 @@ namespace NiL.JS.BaseLibrary
                     time += _hourMilliseconds * 12;
 
                 timeZoneOffset = CurrentTimeZone.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
+
+                if (!wasTZ)
+                    time -= timeZoneOffset;
             }
             catch
             {
