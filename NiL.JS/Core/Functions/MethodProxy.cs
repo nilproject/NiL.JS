@@ -151,13 +151,13 @@ namespace NiL.JS.Core.Functions
                 throw new NotImplementedException();
         }
 
-        private MethodProxy(Context context, bool raw, object hardTarget, MethodBase method, ParameterInfo[] Parameters, WrapperDelegate fastWrapper, bool forceInstance)
+        private MethodProxy(Context context, bool raw, object hardTarget, MethodBase method, ParameterInfo[] parameters, WrapperDelegate fastWrapper, bool forceInstance)
             : base(context)
         {
             _raw = raw;
             _hardTarget = hardTarget;
             _method = method;
-            _parameters = Parameters;
+            _parameters = parameters;
             _fastWrapper = fastWrapper;
             _forceInstance = forceInstance;
             RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
@@ -605,14 +605,15 @@ namespace NiL.JS.Core.Functions
                 return this;
 
             return new MethodProxy(
-                context: Context,
-                raw: _raw,
-                hardTarget: convertTargetObject(args[0], _method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
-                method: _method,
-                Parameters: _parameters,
-                fastWrapper: _fastWrapper,
-                forceInstance: _forceInstance);
+                Context,
+                _raw,
+                convertTargetObject(args[0], _method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
+                _method,
+                _parameters,
+                _fastWrapper,
+                _forceInstance);
         }
+
 #if !NET40
         public override Delegate MakeDelegate(Type delegateType)
         {
