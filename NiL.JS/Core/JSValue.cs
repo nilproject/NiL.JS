@@ -1306,12 +1306,12 @@ namespace NiL.JS.Core
 
         public static JSValue GetConstructor(Type type)
         {
-            return Context.DefaultGlobalContext.GetConstructor(type);
+            return Context.CurrentGlobalContext.GetConstructor(type);
         }
 
         public static Function GetGenericTypeSelector(IList<Type> types)
         {
-            return Context.DefaultGlobalContext.GetGenericTypeSelector(types);
+            return Context.CurrentGlobalContext.GetGenericTypeSelector(types);
         }
     }
 }
