@@ -233,8 +233,6 @@ namespace NiL.JS.Core
                                 return (_oValue as JSObject).Value;
                             return _oValue;
                         }
-                    case JSValueType.Undefined:
-                    case JSValueType.NotExistsInObject:
                     default:
                         return null;
                 }
@@ -271,8 +269,6 @@ namespace NiL.JS.Core
                             _oValue = value;
                             break;
                         }
-                    case JSValueType.Undefined:
-                    case JSValueType.NotExistsInObject:
                     default:
                         throw new InvalidOperationException();
                 }

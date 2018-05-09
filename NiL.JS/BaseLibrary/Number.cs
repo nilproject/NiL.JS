@@ -263,6 +263,7 @@ namespace NiL.JS.BaseLibrary
                                 break;
                             }
                         case JSValueType.NotExistsInObject:
+                        case JSValueType.NotExists:
                         case JSValueType.Undefined:
                             {
                                 r = 10;

@@ -109,6 +109,7 @@ namespace NiL.JS.Expressions
                                     }
                                 case JSValueType.Undefined:
                                 case JSValueType.NotExistsInObject:
+                                case JSValueType.NotExists:
                                     {
                                         return lessOrEqual;
                                     }
