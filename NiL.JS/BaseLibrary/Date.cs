@@ -210,8 +210,7 @@ namespace NiL.JS.BaseLibrary
             else
             {
                 _time = _time + (-amort + Tools.JSObjectToInt64(value)) * mul;
-                if (_time < 5992660800000)
-                    _error = true;
+                _error = isIncorrectTimeRange(_time);
 
                 var oldTzo = _timeZoneOffset;
                 _timeZoneOffset = getTimeZoneOffset(_time);
@@ -496,9 +495,9 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                this._time = Tools.JSObjectToInt64(time) + _unixTimeBase + _timeZoneOffset;
-                _error = this._time < 5992660800000;
+                this.offsetTimeValue(time, _time - _unixTimeBase, 1);
             }
+
             return getTime();
         }
 
@@ -706,7 +705,7 @@ namespace NiL.JS.BaseLibrary
 
         private JSValue toIsoString()
         {
-            if ((_time + _timeZoneOffset) > 8702135604000000 || (_time + _timeZoneOffset) <= -8577864403199999 || _error)
+            if (_error || isIncorrectTimeRange(_time))
                 ExceptionHelper.Throw(new RangeError("Invalid time value"));
 
             return getYearImpl(false) +
@@ -717,6 +716,11 @@ namespace NiL.JS.BaseLibrary
             ":" + this.getSecondsImpl().ToString("00") +
             "." + (this.getMillisecondsImpl() / 1000.0).ToString(".000", System.Globalization.CultureInfo.InvariantCulture).Substring(1) +
             "Z";
+        }
+
+        private static bool isIncorrectTimeRange(long time)
+        {
+            return time > 8702135604000000 || time <= -8577864403199999;
         }
 
         private string stringify(bool withTzo, bool rfc1123)
