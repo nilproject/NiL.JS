@@ -50,7 +50,7 @@ function x2(x) {
 (function (a, b) { with ({}) if (a == b) console.log("Weak parameters") })(x2(2), x2(3));
 
 if (Math.max(...[1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) != 9)
-    console.log("Spread in proxied method work incorrectly");
+    console.log("Spread in proxied method works incorrectly");
 
 function func1(a, b, ...rest) {
     if (JSON.stringify(rest) !== JSON.stringify([2, 3, 4]))
@@ -163,8 +163,8 @@ class A {
 
 class B extends A { constructor() { super(); } }
 
-var a = new A().text; // logs "A"
-var b = new B().text; // logs "B"
+var a = new A().text;
+var b = new B().text;
 
 if (a != "A")
     console.log("new.target works incorrectly");
@@ -294,3 +294,7 @@ console.asserta(() => 1..__proto__, Number.prototype);
 })();
 
 console.asserta(() => JSON.stringify({ 1: 1, 2: { 1: 1 } }, [1]), "{\"1\":1}")
+
+var o = {};
+JSON.stringify([o, o]);
+JSON.stringify([o, [o]]);
