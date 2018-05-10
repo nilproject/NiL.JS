@@ -209,6 +209,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSValueType.Undefined:
                             case JSValueType.NotExistsInObject:
+                            case JSValueType.NotExists:
                                 {
                                     tstr = new RopeString(tstr, "undefined");
                                     break;
@@ -237,6 +238,7 @@ namespace NiL.JS.Expressions
                         return;
                     }
                 case JSValueType.NotExistsInObject:
+                case JSValueType.NotExists:
                 case JSValueType.Undefined:
                     {
                         if (second._valueType >= JSValueType.Object)
@@ -259,6 +261,7 @@ namespace NiL.JS.Expressions
                                 }
                             case JSValueType.Object: // undefined+null
                             case JSValueType.NotExistsInObject:
+                            case JSValueType.NotExists:
                             case JSValueType.Undefined:
                                 {
                                     resultContainer._valueType = JSValueType.Double;

@@ -124,7 +124,10 @@ namespace NiL.JS.Core
     [DebuggerDisplay("Value = {Value} ({ValueType})")]
     public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<JSValue>
 #if !(PORTABLE || NETCORE)
-, ICloneable, IConvertible
+, ICloneable
+#endif
+#if !PORTABLE
+, IConvertible
 #endif
     {
         /*
@@ -230,8 +233,6 @@ namespace NiL.JS.Core
                                 return (_oValue as JSObject).Value;
                             return _oValue;
                         }
-                    case JSValueType.Undefined:
-                    case JSValueType.NotExistsInObject:
                     default:
                         return null;
                 }
@@ -268,8 +269,6 @@ namespace NiL.JS.Core
                             _oValue = value;
                             break;
                         }
-                    case JSValueType.Undefined:
-                    case JSValueType.NotExistsInObject:
                     default:
                         throw new InvalidOperationException();
                 }
@@ -856,15 +855,16 @@ namespace NiL.JS.Core
             return ToPrimitiveValue("toString", "valueOf");
         }
 
-        internal JSValue ToPrimitiveValue(string func0, string func1)
+        internal JSValue ToPrimitiveValue(string func0, string func1 = null)
         {
             if (_valueType >= JSValueType.Object && _oValue != null)
             {
                 if (_oValue == null)
                     return nullString;
 
-                var tpvs = GetProperty(func0);
                 JSValue res = null;
+
+                var tpvs = Tools.InvokeGetter(GetProperty(func0), this);
                 if (tpvs._valueType == JSValueType.Function)
                 {
                     res = (tpvs._oValue as Function).Call(this, null);
@@ -878,18 +878,21 @@ namespace NiL.JS.Core
                         return res;
                 }
 
-                tpvs = GetProperty(func1);
-                if (tpvs._valueType == JSValueType.Function)
+                if (func1 != null)
                 {
-                    res = (tpvs._oValue as Function).Call(this, null);
-                    if (res._valueType == JSValueType.Object)
+                    tpvs = Tools.InvokeGetter(GetProperty(func1), this);
+                    if (tpvs._valueType == JSValueType.Function)
                     {
-                        if (res._oValue is BaseLibrary.String)
-                            res = res._oValue as BaseLibrary.String;
-                    }
+                        res = (tpvs._oValue as Function).Call(this, null);
+                        if (res._valueType == JSValueType.Object)
+                        {
+                            if (res._oValue is BaseLibrary.String)
+                                res = res._oValue as BaseLibrary.String;
+                        }
 
-                    if (res._valueType < JSValueType.Object)
-                        return res;
+                        if (res._valueType < JSValueType.Object)
+                            return res;
+                    }
                 }
 
                 ExceptionHelper.Throw(new TypeError("Can't convert object to primitive value."));
@@ -1069,12 +1072,16 @@ namespace NiL.JS.Core
         public virtual JSValue toLocaleString()
         {
             var self = this._oValue as JSValue ?? this;
+
             if (self._valueType >= JSValueType.Object && self._oValue == null)
                 ExceptionHelper.Throw(new TypeError("toLocaleString calling on null."));
+
             if (self._valueType <= JSValueType.Undefined)
                 ExceptionHelper.Throw(new TypeError("toLocaleString calling on undefined value."));
+
             if (self == this)
-                return toString(null);
+                return ToPrimitiveValue("toString");
+
             return self.toLocaleString();
         }
 
@@ -1083,8 +1090,10 @@ namespace NiL.JS.Core
         {
             if (_valueType >= JSValueType.Object && _oValue == null)
                 ExceptionHelper.Throw(new TypeError("valueOf calling on null."));
+
             if (_valueType <= JSValueType.Undefined)
                 ExceptionHelper.Throw(new TypeError("valueOf calling on undefined value."));
+
             return _valueType < JSValueType.Object ? new JSObject() { _valueType = JSValueType.Object, _oValue = this } : this;
         }
 
@@ -1093,8 +1102,10 @@ namespace NiL.JS.Core
         {
             if (_valueType >= JSValueType.Object && _oValue == null)
                 ExceptionHelper.Throw(new TypeError("propertyIsEnumerable calling on null."));
+
             if (_valueType <= JSValueType.Undefined)
                 ExceptionHelper.Throw(new TypeError("propertyIsEnumerable calling on undefined value."));
+
             var name = args[0];
             string n = name.ToString();
             var res = GetProperty(n, PropertyScope.Own);
@@ -1108,10 +1119,13 @@ namespace NiL.JS.Core
         {
             if (_valueType >= JSValueType.Object && _oValue == null)
                 ExceptionHelper.Throw(new TypeError("isPrototypeOf calling on null."));
+
             if (_valueType <= JSValueType.Undefined)
                 ExceptionHelper.Throw(new TypeError("isPrototypeOf calling on undefined value."));
+
             if (args.GetProperty("length")._iValue == 0)
                 return false;
+
             var a = args[0];
             a = a.__proto__;
             if (this._valueType >= JSValueType.Object)
@@ -1150,7 +1164,7 @@ namespace NiL.JS.Core
         }
 
         #region Члены IConvertible
-#if !(PORTABLE || NETCORE)
+#if !(PORTABLE)
         TypeCode IConvertible.GetTypeCode()
         {
             return TypeCode.Object;
@@ -1288,12 +1302,12 @@ namespace NiL.JS.Core
 
         public static JSValue GetConstructor(Type type)
         {
-            return Context.DefaultGlobalContext.GetConstructor(type);
+            return Context.CurrentGlobalContext.GetConstructor(type);
         }
 
         public static Function GetGenericTypeSelector(IList<Type> types)
         {
-            return Context.DefaultGlobalContext.GetGenericTypeSelector(types);
+            return Context.CurrentGlobalContext.GetGenericTypeSelector(types);
         }
     }
 }

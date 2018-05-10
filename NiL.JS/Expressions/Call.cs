@@ -117,18 +117,27 @@ namespace NiL.JS.Expressions
             }
             else if (func == null)
             {
-                switch (_callMode)
+                checkStack();
+                Context.CurrentGlobalContext._callDepth++;
+                try
                 {
-                    case CallMode.Construct:
-                        {
-                            return callable.Construct(Tools.CreateArguments(_arguments, context));
-                        }
-                    case CallMode.Super:
-                        {
-                            return callable.Construct(targetObject, Tools.CreateArguments(_arguments, context));
-                        }
-                    default:
-                        return callable.Call(targetObject, Tools.CreateArguments(_arguments, context));
+                    switch (_callMode)
+                    {
+                        case CallMode.Construct:
+                            {
+                                return callable.Construct(Tools.CreateArguments(_arguments, context));
+                            }
+                        case CallMode.Super:
+                            {
+                                return callable.Construct(targetObject, Tools.CreateArguments(_arguments, context));
+                            }
+                        default:
+                            return callable.Call(targetObject, Tools.CreateArguments(_arguments, context));
+                    }
+                }
+                finally
+                {
+                    Context.CurrentGlobalContext._callDepth--;
                 }
             }
             else
@@ -149,13 +158,21 @@ namespace NiL.JS.Expressions
                     context._objectSource = null;
 
                 checkStack();
-                if (_callMode == CallMode.Construct)
-                    targetObject = null;
+                Context.CurrentGlobalContext._callDepth++;
+                try
+                {
+                    if (_callMode == CallMode.Construct)
+                        targetObject = null;
 
-                if ((temp._attributes & JSValueAttributesInternal.Eval) != 0)
-                    return callEval(context);
+                    if ((temp._attributes & JSValueAttributesInternal.Eval) != 0)
+                        return callEval(context);
 
-                return func.InternalInvoke(targetObject, _arguments, context, withSpread, _callMode != 0);
+                    return func.InternalInvoke(targetObject, _arguments, context, withSpread, _callMode != 0);
+                }
+                finally
+                {
+                    Context.CurrentGlobalContext._callDepth--;
+                }
             }
         }
 
@@ -197,26 +214,8 @@ namespace NiL.JS.Expressions
 
         private static void checkStack()
         {
-            try
-            {
-                checkStackInternal();
-            }
-            catch
-            {
+            if (Context.CurrentGlobalContext._callDepth >= 1000)
                 throw new JSException(new RangeError("Stack overflow."));
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static void checkStackInternal()
-        {
-#pragma warning disable CS0168
-            decimal f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10;
-            decimal f11, f12, f13, f14, f15, f16, f17, f18, f19;
-#pragma warning restore CS0168
-#if !(PORTABLE || NETCORE) && !NET35
-            RuntimeHelpers.EnsureSufficientExecutionStack();
-#endif
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)

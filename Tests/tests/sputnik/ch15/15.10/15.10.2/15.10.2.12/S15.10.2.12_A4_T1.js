@@ -5,6 +5,8 @@
  *
  * @path ch15/15.10/15.10.2/15.10.2.12/S15.10.2.12_A4_T1.js
  * @description A - Z
+ *
+ * @ignore
  */
 
 var i0 = "";

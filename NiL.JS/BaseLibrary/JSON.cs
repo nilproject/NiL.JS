@@ -571,7 +571,7 @@ namespace NiL.JS.BaseLibrary
             }
             finally
             {
-                processed.Remove(processed.Count - 1);
+                processed.Remove(obj);
             }
         }
     }

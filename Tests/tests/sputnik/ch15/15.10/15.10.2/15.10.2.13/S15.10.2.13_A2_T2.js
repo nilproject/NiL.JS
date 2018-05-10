@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.2/15.10.2.13/S15.10.2.13_A2_T2.js
  * @description Execute /a[^]/.exec("   a\t\n") and check results
+ *
+ * @ignore
  */
 
 __executed = /a[^]/.exec("   a\t\n");

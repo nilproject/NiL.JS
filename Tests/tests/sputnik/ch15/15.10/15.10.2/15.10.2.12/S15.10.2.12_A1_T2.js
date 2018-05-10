@@ -5,6 +5,8 @@
  *
  * @path ch15/15.10/15.10.2/15.10.2.12/S15.10.2.12_A1_T2.js
  * @description LineTerminator
+ *
+ * @ignore
  */
 
 //CHECK#1
@@ -17,17 +19,17 @@ if ((arr === null) || (arr[0] !== "\u000A")) {
 var arr = /\s/.exec("\u000D");
 if ((arr === null) || (arr[0] !== "\u000D")) {
   $ERROR('#2: var arr = /\\s/.exec("\\u000D"); arr[0] === "\\u000D". Actual. ' + (arr && arr[0]));
-}  
+}
 
 //CHECK#3
 var arr = /\s/.exec("\u2028");
 if ((arr === null) || (arr[0] !== "\u2028")) {
   $ERROR('#3: var arr = /\\s/.exec("\\u2028"); arr[0] === "\\u2028". Actual. ' + (arr && arr[0]));
-}    
+}
 
 //CHECK#4
 var arr = /\s/.exec("\u2029");
 if ((arr === null) || (arr[0] !== "\u2029")) {
   $ERROR('#4: var arr = /\\s/.exec("\\u2029"); arr[0] === "\\u2029". Actual. ' + (arr && arr[0]));
-}  
+}
 

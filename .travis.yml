@@ -1,0 +1,14 @@
+language: csharp
+mono: none
+dotnet: 2.0.0
+script:
+ - cd ./NiL.JS.NetCore
+ - source makeSymLinks.sh
+ - dotnet clean
+ - dotnet restore
+ - dotnet build -c Release
+ - cd ../IntegrationTests
+ - dotnet test -c Release
+ - cd ../FunctionalTests
+ - dotnet ./tt4/tiny-t4.dll
+ - dotnet test -c Release

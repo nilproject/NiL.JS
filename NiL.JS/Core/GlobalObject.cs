@@ -21,7 +21,7 @@ namespace NiL.JS.Core
             _fields = context._variables;
             _valueType = JSValueType.Object;
             _oValue = this;
-            _objectPrototype = context.GlobalContext._GlobalPrototype;
+            _objectPrototype = context.GlobalContext._globalPrototype;
         }
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)

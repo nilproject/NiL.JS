@@ -5,6 +5,8 @@
  *
  * @path ch15/15.10/15.10.6/15.10.6.2/S15.10.6.2_A1_T6.js
  * @description String is (function(){return "zaacbbbcac"})() and RegExp is /(z)((a+)?(b+)?(c))* /
+ *
+ * @ignore
  */
 
 __executed = /(z)((a+)?(b+)?(c))*/.exec((function(){return "zaacbbbcac"})());

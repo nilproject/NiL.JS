@@ -132,7 +132,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static GlobalContext CurrentGlobalContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
+        public static GlobalContext CurrentGlobalContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
 
         public JSValue ThisBind
         {
@@ -500,7 +500,7 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        res = GlobalContext._GlobalPrototype.GetProperty(name, false, PropertyScope.Common);
+                        res = GlobalContext._globalPrototype.GetProperty(name, false, PropertyScope.Common);
                         if (res._valueType == JSValueType.NotExistsInObject)
                             res._valueType = JSValueType.NotExists;
                     }

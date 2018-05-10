@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.2/15.10.2.13/S15.10.2.13_A1_T2.js
  * @description Execute /a[]/.test("\0a\0a") and check results
+ *
+ * @ignore
  */
 
 __executed = /a[]/.test("\0a\0a");;

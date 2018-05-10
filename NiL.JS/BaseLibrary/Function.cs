@@ -411,7 +411,7 @@ namespace NiL.JS.BaseLibrary
         {
             JSValue targetObject = new JSObject() { _valueType = JSValueType.Object };
             targetObject._oValue = targetObject;
-            targetObject.__proto__ = prototype._valueType < JSValueType.Object ? Context.GlobalContext._GlobalPrototype : prototype._oValue as JSObject;
+            targetObject.__proto__ = prototype._valueType < JSValueType.Object ? Context.GlobalContext._globalPrototype : prototype._oValue as JSObject;
 
             return targetObject;
         }
@@ -420,7 +420,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (_functionDefinition._body == null)
                 return NotExists;
-            
+
             Arguments argumentsObject = Tools.CreateArguments(arguments, initiator);
 
             initiator._objectSource = null;

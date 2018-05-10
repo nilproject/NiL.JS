@@ -1,5 +1,5 @@
 
-NiL.JS
+NiL.JS [![Build Status](https://travis-ci.org/nilproject/NiL.JS.svg?branch=develop)](https://travis-ci.org/nilproject/NiL.JS)
 ======
     
 Open source ECMAScript 6.0 (ES2015) (JavaScript) engine.

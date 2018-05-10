@@ -615,7 +615,9 @@ namespace NiL.JS.Statements
 
             for (int i = 0; i < _lines.Length; i++)
             {
-                _lines[i].Decompose(ref _lines[i]);
+                var line = _lines[i];
+                line.Decompose(ref line);
+                _lines[i] = line;
             }
         }
 

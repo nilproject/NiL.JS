@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.2/15.10.2.13/S15.10.2.13_A2_T8.js
  * @description Execute /[^]/.exec("abc#$%def%&*@ghi") and check results
+ *
+ * @ignore
  */
 
 __executed = /[^]/.exec("abc#$%def%&*@ghi");
