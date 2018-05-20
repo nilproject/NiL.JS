@@ -7,8 +7,3 @@ script:
  - dotnet clean
  - dotnet restore
  - dotnet build -c Release
- - cd ../IntegrationTests
- - dotnet test -c Release
- - cd ../FunctionalTests
- - dotnet ./tt4/tiny-t4.dll
- - dotnet test -c Release
