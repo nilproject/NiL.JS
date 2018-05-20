@@ -29,6 +29,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/nilproject/NiL.JS</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../keys.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
