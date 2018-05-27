@@ -51,9 +51,9 @@ namespace NiL.JS.Core
             }
         }
 
-        public SparseArray()
+        public SparseArray(ArrayMode arrayMode = ArrayMode.Flat)
         {
-            _mode = ArrayMode.Flat;
+            _mode = arrayMode;
             _values = emptyData;
             _navyData = emptyNavyData;
         }
@@ -80,12 +80,15 @@ namespace NiL.JS.Core
         public int IndexOf(TValue item)
         {
             for (var i = 0; i < _allocatedCount; i++)
+            {
                 if (object.Equals(_values[i], item))
                 {
                     if (_mode == ArrayMode.Flat)
                         return i;
                     return (int)_navyData[i].index;
                 }
+            }
+
             return -1;
         }
 
@@ -173,7 +176,7 @@ namespace NiL.JS.Core
                             return;
                         }
                         else
-                            rebuildToSparse();
+                            RebuildToSparse();
                     }
                     else
                     {
@@ -188,8 +191,7 @@ namespace NiL.JS.Core
 
                 if (_allocatedCount == 0)
                 {
-                    _allocatedCount = 1;
-                    _pseudoLength = 1;
+                    ensureCapacity(1);
                 }
 
                 if (_index < _allocatedCount)
@@ -463,7 +465,7 @@ namespace NiL.JS.Core
                         int bi = 31;
                         long i = 0;
                         long pm = -1;
-                        for (; ; bi--)
+                        for (; bi >= 0; bi--)
                         {
                             if (_navyData[i].oneContinue != 0)
                                 pm = i;
@@ -498,6 +500,12 @@ namespace NiL.JS.Core
                                 index++;
                                 break;
                             }
+                        }
+
+                        if (pm >= 0 && _navyData[pm].index >= index)
+                        {
+                            yield return new KeyValuePair<int, TValue>((int)pm, _values[pm]);
+                            index = (uint)(pm + 1);
                         }
                     }
                 }
@@ -601,7 +609,7 @@ namespace NiL.JS.Core
             }
         }
 
-        private void rebuildToSparse()
+        public void RebuildToSparse()
         {
             _allocatedCount = 0;
             _mode = ArrayMode.Sparse;

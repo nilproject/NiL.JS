@@ -70,7 +70,7 @@ namespace NiL.JS.Core
             Clear();
         }
 
-        private void insert(string key, TValue value, int hash, bool @throw)
+        private void insert(string key, TValue value, int hash, bool @throw, bool allowIncrease)
         {
             if (key == null)
                 ExceptionHelper.ThrowArgumentNull("key");
@@ -156,10 +156,13 @@ namespace NiL.JS.Core
 
             // не нашли
 
-            if ((_count == mask + 1)
-                || (_count > 50 && _count * 8 / 5 >= mask))
+            if (allowIncrease)
             {
-                mask = increaseSize() - 1;
+                if ((_count == mask + 1)
+                    || (_count > 50 && _count * 8 / 5 >= mask))
+                {
+                    mask = increaseSize() - 1;
+                }
             }
 
             int prewIndex = -1;
@@ -190,7 +193,7 @@ namespace NiL.JS.Core
             _eicount++;
             _count++;
 
-            if (colisionCount > 17)
+            if (colisionCount > 17 && allowIncrease)
                 increaseSize();
         }
 
@@ -213,13 +216,13 @@ namespace NiL.JS.Core
                 var keyLen = key.Length;
                 int isNumber = int.MinValue & (-keyLen);
                 char c;
-                hash = (int)((uint)keyLen * 0x55) ^ 0xe5b5e5;
+                hash = (int)((uint)keyLen * 0x33) ^ 0xb7b7b7;
 
                 for (var i = 0; i < keyLen; i++)
                 {
                     c = key[i];
                     c -= (char)((uint)((i - 1) & ~(keyLen - 2)) >> 31);
-                    hash += (hash >> 28) + (hash << 4) + c;
+                    hash += (hash >> 15) + (hash << 7) + c;
                     isNumber &= ('0' - c - 1) & (c - '9' - 1);
                 }
 
@@ -233,7 +236,7 @@ namespace NiL.JS.Core
         public bool TryGetValue(string key, out TValue value)
         {
             if (key == null)
-                ExceptionHelper.ThrowArgumentNull("key");
+                throw new ArgumentNullException("key");
 
             if (key.Length == 0)
             {
@@ -443,9 +446,9 @@ namespace NiL.JS.Core
                     if (oldRecords[index].key != null)
                     {
                         if (newLength == MaxAsListSize << 1)
-                            insert(oldRecords[index].key, oldRecords[index].value, computeHash(oldRecords[index].key), false);
+                            insert(oldRecords[index].key, oldRecords[index].value, computeHash(oldRecords[index].key), false, false);
                         else
-                            insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false);
+                            insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false, false);
                     }
                 }
             }
@@ -458,7 +461,7 @@ namespace NiL.JS.Core
         {
             lock (_records)
             {
-                insert(key, value, computeHash(key), true);
+                insert(key, value, computeHash(key), true, true);
             }
         }
 
@@ -491,7 +494,7 @@ namespace NiL.JS.Core
             {
                 lock (_records)
                 {
-                    insert(key, value, computeHash(key), false);
+                    insert(key, value, computeHash(key), false, true);
                 }
             }
         }
