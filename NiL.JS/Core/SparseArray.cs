@@ -613,7 +613,8 @@ namespace NiL.JS.Core
             }
 
             _navyData = new _NavyItem[_values.Length];
-            for (var i = 0; i < _values.Length; i++)
+            var count = _values.Length;
+            for (var i = 0; i < count; i++)
                 this[i] = _values[i];
 
             if (_values.Length < len)
