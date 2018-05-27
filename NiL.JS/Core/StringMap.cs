@@ -623,8 +623,8 @@ namespace NiL.JS.Core
             {
                 int index = _existsedIndexes[i];
                 if (_records[index].key != null
-                    && (_records[i].hash >= 0
-                        || !uint.TryParse(_records[i].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out number)))
+                    && (_records[index].hash >= 0
+                        || !uint.TryParse(_records[index].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out number)))
                 {
                     yield return new KeyValuePair<string, TValue>(
                         _records[index].key,
