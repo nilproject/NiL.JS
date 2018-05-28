@@ -303,11 +303,17 @@ namespace NiL.JS.Core
                 throw new ArgumentOutOfRangeException();
             if (Math.Min(_pseudoLength, int.MaxValue) - arrayIndex > array.Length)
                 throw new ArgumentOutOfRangeException();
+
             for (var i = Math.Min(_pseudoLength, int.MaxValue) + arrayIndex; i-- > arrayIndex;)
+            {
                 array[i] = default(TValue);
+            }
+
             foreach (var v in DirectOrder)
+            {
                 if (v.Key >= 0)
                     array[v.Key + arrayIndex] = v.Value;
+            }
         }
 
         int ICollection<TValue>.Count
@@ -509,8 +515,8 @@ namespace NiL.JS.Core
 
                         if (pm >= 0 && _navyData[pm].index >= index)
                         {
-                            yield return new KeyValuePair<int, TValue>((int)pm, _values[pm]);
-                            index = (uint)(pm + 1);
+                            yield return new KeyValuePair<int, TValue>((int)_navyData[pm].index, _values[pm]);
+                            index = (uint)(_navyData[pm].index + 1);
                         }
                     }
                 }

@@ -222,7 +222,7 @@ namespace NiL.JS.Core
                 {
                     c = key[i];
                     c -= (char)((uint)((i - 1) & ~(keyLen - 2)) >> 31);
-                    hash += (hash >> 15) + (hash << 7) + c;
+                    hash += (hash >> 13) + (hash << 7) + c;
                     isNumber &= ('0' - c - 1) & (c - '9' - 1);
                 }
 
