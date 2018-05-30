@@ -27,6 +27,22 @@ namespace NiL.JS.Expressions
         public IEnumerable<Expression> Expressions => expressions;
         public TemplateStringMode Mode { get; private set; }
 
+        protected internal override bool ContextIndependent
+        {
+            get
+            {
+                for (var i = 0; i < expressions.Length; i++)
+                {
+                    if (!expressions[i].ContextIndependent)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
         internal TemplateString(string[] strings, Expression[] expression)
         {
             this.strings = strings;
