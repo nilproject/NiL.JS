@@ -28,11 +28,12 @@ namespace NiL.JS.Core
         private static readonly _NavyItem[] emptyNavyData = new _NavyItem[0]; // data dummy. In cases where instance of current class was created, but not used
         private static readonly TValue[] emptyData = new TValue[0];
 
-        private _NavyItem[] _navyData;
-        private uint _allocatedCount;
-        private TValue[] _values;
-        private uint _pseudoLength;
         private ArrayMode _mode;
+        private uint _pseudoLength;
+        private uint _allocatedCount;
+        private _NavyItem[] _navyData;
+        private TValue[] _values;
+        private bool _zeroExists;
 
         public ArrayMode Mode
         {
@@ -124,24 +125,24 @@ namespace NiL.JS.Core
                 if (_navyData.Length == 0)
                     return default(TValue);
 
-                uint _index = (uint)index;
+                uint unsignedIndex = (uint)index;
                 int bi = 31;
                 uint i = 0;
 
-                if (_index < _allocatedCount)
+                if (unsignedIndex < _allocatedCount)
                 {
-                    if (_navyData[index].index == _index)
+                    if (_navyData[index].index == unsignedIndex)
                         return _values[index];
                 }
 
                 for (; ; bi--)
                 {
-                    i = (_index & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
+                    i = (unsignedIndex & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
                     if (i == 0)
                     {
                         return default(TValue);
                     }
-                    else if (_navyData[i].index == _index)
+                    else if (_navyData[i].index == unsignedIndex)
                     {
                         return _values[i];
                     }
@@ -152,25 +153,25 @@ namespace NiL.JS.Core
                 bool @default = value == null; // структуры мы будем записывать, иначе пришлось бы вызывать тяжелые операции сравнения.
                 //if (navyData.Length <= allocatedCount)
                 //    ensureCapacity(navyData.Length * 2);
-                uint _index = (uint)index;
+                uint unsignedIndex = (uint)index;
                 if (_mode == ArrayMode.Flat)
                 {
                     if (index < 0 || index > _pseudoLength)
                     {
                         if (@default)
                         {
-                            if (_index >= _pseudoLength)
-                                _pseudoLength = _index + 1;
+                            if (unsignedIndex >= _pseudoLength)
+                                _pseudoLength = unsignedIndex + 1;
                             return;
                         }
 
-                        if (_index < 32)
+                        if (unsignedIndex < 32)
                         {
                             // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца.
                             // Кто-то верит, что это должно работать быстрее.
                             // Вот именно из-за таких кусков кода так и может показаться.
                             // Не время для попыток исправить мир
-                            _pseudoLength = _index + 1;
+                            _pseudoLength = unsignedIndex + 1;
                             ensureCapacity((int)_pseudoLength);
                             this[index] = value;
                             return;
@@ -183,7 +184,7 @@ namespace NiL.JS.Core
                         if (_values.Length <= index)
                             ensureCapacity(Math.Max(index + 1, _values.Length * 2));
                         if (_pseudoLength == index)
-                            _pseudoLength = _index + 1;
+                            _pseudoLength = unsignedIndex + 1;
                         _values[index] = value;
                         return;
                     }
@@ -195,13 +196,18 @@ namespace NiL.JS.Core
                     _allocatedCount = 1;
                 }
 
-                if (_index < _allocatedCount)
+                if (unsignedIndex < _allocatedCount)
                 {
-                    if (_navyData[index].index == _index)
+                    if (_navyData[index].index == unsignedIndex)
                     {
-                        _values[index] = value;
+                        if (index == 0)
+                            _zeroExists = true;
+
                         if (_pseudoLength <= index)
-                            _pseudoLength = _index + 1;
+                            _pseudoLength = unsignedIndex + 1;
+
+                        _values[index] = value;
+
                         return;
                     }
                 }
@@ -209,12 +215,12 @@ namespace NiL.JS.Core
                 int bi = 31;
                 for (uint i = 0, ni = 0; ; bi--)
                 {
-                    if (_navyData[i].index > _index)
+                    if (_navyData[i].index > unsignedIndex)
                     {
                         if (@default)
                         {
-                            if (_pseudoLength <= _index)
-                                _pseudoLength = _index + 1; // длина может быть меньше
+                            if (_pseudoLength <= unsignedIndex)
+                                _pseudoLength = unsignedIndex + 1; // длина может быть меньше
                             // уже записанных элементов если эти элементы имеют значение
                             // по-умолчанию и был вызван Trim
                             return;
@@ -222,20 +228,20 @@ namespace NiL.JS.Core
 
                         var oi = _navyData[i].index;
                         var ov = _values[i];
-                        _navyData[i].index = _index;
+                        _navyData[i].index = unsignedIndex;
                         _values[i] = value;
                         if (oi < _pseudoLength)
                             this[(int)oi] = ov;
                         return;
                     }
-                    else if (_navyData[i].index < _index)
+                    else if (_navyData[i].index < unsignedIndex)
                     {
-                        var b = (_index & (1 << bi)) == 0;
+                        var b = (unsignedIndex & (1 << bi)) == 0;
                         ni = b ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
                         if (ni == 0)
                         {
-                            if (_pseudoLength <= _index)
-                                _pseudoLength = _index + 1;
+                            if (_pseudoLength <= unsignedIndex)
+                                _pseudoLength = unsignedIndex + 1;
 
                             if (@default)
                                 return;
@@ -248,7 +254,7 @@ namespace NiL.JS.Core
                             if (_navyData.Length <= _allocatedCount)
                                 ensureCapacity(_navyData.Length * 2);
 
-                            _navyData[ni].index = _index;
+                            _navyData[ni].index = unsignedIndex;
                             _values[ni] = value;
                             return;
                         }
@@ -259,7 +265,7 @@ namespace NiL.JS.Core
                     {
                         _values[i] = value;
                         if (_pseudoLength <= index)
-                            _pseudoLength = _index + 1;
+                            _pseudoLength = unsignedIndex + 1;
                         if (_allocatedCount <= i)
                             _allocatedCount = i + 1;
                         return;
@@ -433,14 +439,16 @@ namespace NiL.JS.Core
         }
 
         public IEnumerable<KeyValuePair<int, TValue>> DirectOrder
-        {
+{
             get
             {
                 var index = 1U;
+                var skipFirst = !_zeroExists;
                 if (_mode == ArrayMode.Flat)
                 {
                     for (var i = 0; i < _pseudoLength; i++)
                     {
+                        skipFirst = true;
                         if (i >= _values.Length) // была насильно установлена длина фиктивным элементом.
                         {
                             yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
@@ -461,7 +469,10 @@ namespace NiL.JS.Core
                 {
                     if (_allocatedCount > 0)
                     {
-                        yield return new KeyValuePair<int, TValue>(0, _values[0]);
+                        if (!skipFirst)
+                        {
+                            yield return new KeyValuePair<int, TValue>(0, _values[0]);
+                        }
                     }
                     else
                     {
@@ -474,24 +485,13 @@ namespace NiL.JS.Core
                         int bi = 31;
                         long i = 0;
                         long pm = -1;
-
-                        if (_navyData[i].index >= index)
-                        {
-                            index = _navyData[0].index;
-                            yield return new KeyValuePair<int, TValue>((int)index, _values[i]);
-                            index++;
-                        }
-
                         for (; bi >= 0; bi--)
                         {
-                            var goToZero = (index & (1 << bi)) == 0;
-                            i = goToZero ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
-                            if (goToZero
-                            && _navyData[i].oneContinue != 0
-                            && (pm == -1 || _navyData[_navyData[i].oneContinue].index >= index))
-                            {
+                            var goToZero = (index & (1U << bi)) == 0;
+                            if (goToZero && _navyData[i].oneContinue != 0)
                                 pm = _navyData[i].oneContinue;
-                            }
+
+                            i = goToZero ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
 
                             if (i == 0)
                             {
@@ -501,7 +501,21 @@ namespace NiL.JS.Core
                                     yield break;
                                 }
 
-                                break;
+                                i = pm;
+                                for (; ; )
+                                {
+                                    if (_navyData[i].zeroContinue != 0)
+                                    {
+                                        i = _navyData[i].zeroContinue;
+                                        continue;
+                                    }
+                                    if (_navyData[i].oneContinue != 0)
+                                    {
+                                        i = _navyData[i].oneContinue;
+                                        continue;
+                                    }
+                                    break;
+                                }
                             }
 
                             if (_navyData[i].index >= index)
@@ -511,12 +525,6 @@ namespace NiL.JS.Core
                                 index++;
                                 break;
                             }
-                        }
-
-                        if (pm >= 0 && _navyData[pm].index >= index)
-                        {
-                            yield return new KeyValuePair<int, TValue>((int)_navyData[pm].index, _values[pm]);
-                            index = (uint)(_navyData[pm].index + 1);
                         }
                     }
                 }
