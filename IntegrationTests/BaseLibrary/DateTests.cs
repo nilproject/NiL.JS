@@ -308,7 +308,7 @@ namespace IntegrationTests.BaseLibrary
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
 
             Assert.AreEqual(-600, (long)d.getTimezoneOffset());
-            d.setTime(0);
+            d.setTime((long)d.valueOf() - 180 * 86400 * 1000L);
             Assert.AreEqual(-660, (long)d.getTimezoneOffset());
         }
 
