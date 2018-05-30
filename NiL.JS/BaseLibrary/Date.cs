@@ -198,7 +198,7 @@ namespace NiL.JS.BaseLibrary
             return offset;
         }
 
-        private void offsetTimeValue(JSValue value, long amort, long mul)
+        private void offsetTimeValue(JSValue value, long amort, long mul, bool correctTimeWithTimezone = true)
         {
             if (value == null
                || !value.Defined
@@ -214,7 +214,10 @@ namespace NiL.JS.BaseLibrary
 
                 var oldTzo = _timeZoneOffset;
                 _timeZoneOffset = getTimeZoneOffset(_time);
-                _time -= _timeZoneOffset - oldTzo;
+                if (correctTimeWithTimezone)
+                {
+                    _time -= _timeZoneOffset - oldTzo;
+                }
             }
         }
 
@@ -254,7 +257,17 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue getYear()
         {
-            return getFullYear();
+            var jsYear = getFullYear();
+            if (jsYear._valueType == JSValueType.Integer)
+            {
+                jsYear._iValue -= 1900;
+            }
+            else if (jsYear._valueType == JSValueType.Double)
+            {
+                jsYear._dValue -= 1900;
+            }
+
+            return jsYear;
         }
 
         [DoNotEnumerate]
@@ -492,20 +505,21 @@ namespace NiL.JS.BaseLibrary
             {
                 _error = true;
                 this._time = 0;
+                this._timeZoneOffset = 0;
             }
             else
             {
-                this.offsetTimeValue(time, _time - _unixTimeBase, 1);
+                this.offsetTimeValue(time, _time - _unixTimeBase, 1, false);
             }
 
-            return getTime();
+            return valueOf();
         }
 
         [DoNotEnumerate]
         public JSValue setMilliseconds(JSValue milliseconds)
         {
             offsetTimeValue(milliseconds, getMillisecondsImpl(), 1);
-            return getMilliseconds();
+            return valueOf();
         }
 
         [DoNotEnumerate]
@@ -541,13 +555,19 @@ namespace NiL.JS.BaseLibrary
             if (!_error)
                 setSeconds(seconds, milliseconds);
 
-            return getMinutes();
+            return valueOf();
         }
 
         [DoNotEnumerate]
         public JSValue setUTCMinutes(JSValue minutes, JSValue seconds, JSValue milliseconds)
         {
-            return setMinutes(minutes, seconds, milliseconds);
+            if (minutes != null && minutes.Exists)
+                offsetTimeValue(minutes, getMinutesImpl(false), _minuteMillisecond);
+
+            if (!_error)
+                setUTCSeconds(seconds, milliseconds);
+
+            return valueOf();
         }
 
         [DoNotEnumerate]
@@ -564,7 +584,12 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue setUTCHours(JSValue hours, JSValue minutes, JSValue seconds, JSValue milliseconds)
         {
-            return setHours(hours, minutes, seconds, milliseconds);
+            if (hours != null && hours.Exists)
+                offsetTimeValue(hours, getHoursImpl(false), _hourMilliseconds);
+
+            setUTCMinutes(minutes, seconds, milliseconds);
+
+            return valueOf();
         }
 
         [DoNotEnumerate]
@@ -679,22 +704,13 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue toLocaleString()
         {
-            var dt = ToDateTime();
-#if !(PORTABLE || NETCORE)
-            return dt.ToLongDateString() + " " + dt.ToLongTimeString();
-#else
-            return dt.ToString();
-#endif
+            return stringifyDate(true, false) + " " + stringifyTime(true, false);
         }
 
         [DoNotEnumerate]
         public JSValue toLocaleTimeString()
         {
-            var res =
-                getHoursImpl(true).ToString("00:")
-                + getMinutesImpl(true).ToString("00:")
-                + getSecondsImpl().ToString("00");
-            return res;
+            return stringifyTime(true, false);
         }
 
         [DoNotEnumerate]
@@ -756,7 +772,7 @@ namespace NiL.JS.BaseLibrary
                 return "Invalid date";
 
             var offset = new TimeSpan(_timeZoneOffset * _timeAccuracy);
-            var timeName = CurrentTimeZone.IsDaylightSavingTime(new DateTimeOffset(_time * _timeAccuracy, offset)) ? TimeZoneInfo.Local.DaylightName : TimeZoneInfo.Local.StandardName;
+            var timeName = CurrentTimeZone.IsDaylightSavingTime(new DateTimeOffset(_time * _timeAccuracy, offset)) ? CurrentTimeZone.DaylightName : CurrentTimeZone.StandardName;
             var res =
                 getHoursImpl(withTzo).ToString("00:")
                 + getMinutesImpl(withTzo).ToString("00:")
@@ -772,7 +788,8 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
-        public JSValue toJSON(JSValue obj)
+        [ArgumentsCount(1)]
+        public JSValue toJSON()
         {
             return toISOString();
         }
@@ -804,20 +821,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public JSValue toLocaleDateString()
         {
-            var y = getYearImpl(true);
-            while (y > 2800)
-                y -= 2800;
-            while (y < 0)
-                y += 2800;
-            var dt = new DateTime(0);
-            dt = dt.AddDays(getDateImpl(true));
-            dt = dt.AddMonths(getMonthImpl(true));
-            dt = dt.AddYears(y);
-#if (PORTABLE || NETCORE)
-            return dt.ToString();
-#else
-            return dt.ToLongDateString();
-#endif
+            return stringifyDate(true, false);
         }
 
         [DoNotEnumerate]
@@ -1271,7 +1275,7 @@ namespace NiL.JS.BaseLibrary
                             if (char.ToLowerInvariant(timeStr[j]) != 't' && !char.IsWhiteSpace(timeStr[j]))
                                 return false;
 
-                            computeTzo = char.ToLowerInvariant(timeStr[j]) != 't';
+                            computeTzo = char.ToLowerInvariant(timeStr[j]) == 't';
 
                             part++;
                             break;
@@ -1330,7 +1334,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var dateTime = DateTime.Parse(timeString);
                 time = dateTime.Ticks / _timeAccuracy;
-                tzo = TimeZoneInfo.Local.GetUtcOffset(dateTime).Ticks / _timeAccuracy;
+                tzo = CurrentTimeZone.GetUtcOffset(dateTime).Ticks / _timeAccuracy;
                 return true;
             }
             catch (FormatException)
