@@ -73,7 +73,7 @@ namespace NiL.JS
                 if (childs != null && childs.TryGetValue(name, out res))
                     return res;
                 string reqname = Namespace + "." + name;
-                var selection = types.StartedWith(reqname).GetEnumerator();
+                var selection = types.StartsWith(reqname).GetEnumerator();
 
                 Type resultType = null;
                 List<Type> ut = null;
@@ -128,7 +128,7 @@ namespace NiL.JS
                 if (resultType != null)
                     return Context.CurrentGlobalContext.GetConstructor(resultType);
 
-                selection = types.StartedWith(reqname).GetEnumerator();
+                selection = types.StartsWith(reqname).GetEnumerator();
                 if (selection.MoveNext() && selection.Current.Key[reqname.Length] == '.')
                 {
                     res = new NamespaceProvider(reqname);
@@ -146,7 +146,7 @@ namespace NiL.JS
 
         public static Type GetType(string name)
         {
-            var selection = types.StartedWith(name).GetEnumerator();
+            var selection = types.StartsWith(name).GetEnumerator();
             if (selection.MoveNext() && selection.Current.Key == name)
                 return selection.Current.Value;
             return null;
@@ -154,7 +154,7 @@ namespace NiL.JS
 
         public static IEnumerable<Type> GetTypesByPrefix(string prefix)
         {
-            foreach (KeyValuePair<string, Type> type in types.StartedWith(prefix))
+            foreach (KeyValuePair<string, Type> type in types.StartsWith(prefix))
                 yield return type.Value;
         }
 

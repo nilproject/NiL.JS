@@ -789,7 +789,7 @@ namespace NiL.JS.Core
                 }
             }
         }
-        
+
         internal IEnumerator<Node> enumerate(Node node)
         {
             if (node != null)
@@ -943,7 +943,7 @@ namespace NiL.JS.Core
         }
 #endif
 
-        public IEnumerable<KeyValuePair<string, TValue>> StartedWith(string prefix)
+        public IEnumerable<KeyValuePair<string, TValue>> StartsWith(string prefix)
         {
             return StartedWith(prefix, false, 0, int.MaxValue);
         }

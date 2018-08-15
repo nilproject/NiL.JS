@@ -675,12 +675,12 @@ namespace NiL.JS.Core
 
             try
             {
-                var context = (suppressScopeCreation || !stats.WithLexicalEnvironment) && !body._strict && !_strict ? this : new Context(this, false, _owner)
+                var context = suppressScopeCreation || (!stats.WithLexicalEnvironment && !body._strict && !_strict) ? this : new Context(this, false, _owner)
                 {
                     _strict = _strict || body._strict
                 };
 
-                if (!_strict && !body._strict)
+                if (suppressScopeCreation || (!_strict && !body._strict))
                 {
                     for (var i = 0; i < body._variables.Length; i++)
                     {
