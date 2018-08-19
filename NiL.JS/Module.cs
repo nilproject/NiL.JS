@@ -228,7 +228,10 @@ namespace NiL.JS
             for (var i = 0; i < __resolveModuleHandlers.Count && e.Module == null; i++)
                 __resolveModuleHandlers[i](this, e);
 
-            if (e.Module != null && e.AddToCache && !__modulesCache.ContainsKey(e.ModulePath))
+            if (e.Module == null)
+                throw new InvalidOperationException("Unable to load module \"" + path + "\"");
+
+            if (e.AddToCache && !__modulesCache.ContainsKey(e.ModulePath))
                 __modulesCache[e.ModulePath] = e.Module;
 
             if (e.Module.FilePath == null)
