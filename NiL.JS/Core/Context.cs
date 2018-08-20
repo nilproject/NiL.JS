@@ -576,19 +576,9 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="code">Code in JavaScript</param>
         /// <returns>Result of last evaluated operation</returns>
-        public JSValue Eval(string code)
-        {
-            return Eval(code, false);
-        }
-
-        public JSValue Eval(string code, bool suppressScopeCreation)
+        public JSValue Eval(string code, bool suppressScopeCreation = false)
         {
             return Eval(code, ThisBind, suppressScopeCreation);
-        }
-
-        public JSValue Eval(string code, JSValue thisBind)
-        {
-            return Eval(code, thisBind, false);
         }
 
         /// <summary>
@@ -597,7 +587,7 @@ namespace NiL.JS.Core
         /// <param name="code">Code in JavaScript</param>
         /// <param name="suppressScopeCreation">If true, scope will not be created. All variables, which will be defined via let, const or class will not be destructed after evalution</param>
         /// <returns>Result of last evaluated operation</returns>
-        public JSValue Eval(string code, JSValue thisBind, bool suppressScopeCreation)
+        public JSValue Eval(string code, JSValue thisBind, bool suppressScopeCreation = false)
         {
             if (_parent == null)
                 throw new InvalidOperationException("Cannot execute script in global context");
@@ -634,7 +624,7 @@ namespace NiL.JS.Core
             }
 
             int index = 0;
-            string c = Tools.removeComments(code, 0);
+            string c = Parser.RemoveComments(code, 0);
             var ps = new ParseInfo(c, code, null)
             {
                 strict = _strict,

@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
             string value = state.Code.Substring(position, i - position);
             position = i;
 
-            state.Code = Tools.removeComments(state.SourceCode, i);
+            state.Code = Parser.RemoveComments(state.SourceCode, i);
             var s = value.LastIndexOf('/') + 1;
             string flags = value.Substring(s);
             try

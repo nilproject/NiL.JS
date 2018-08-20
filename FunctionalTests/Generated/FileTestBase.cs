@@ -26,14 +26,13 @@ namespace NiL.JS.Test.Generated
             using (var f = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             using (var sr = new StreamReader(f))
                 code = sr.ReadToEnd();
-            
+
             var globalContext = new GlobalContext();
 
             try
             {
                 globalContext.ActivateInCurrentThread();
 
-                var negative = false;
                 var output = new StringBuilder();
                 var oldOutput = Console.Out;
                 Console.SetOut(new StringWriter(output));
@@ -44,19 +43,39 @@ namespace NiL.JS.Test.Generated
                 {
                     module = new Module(moduleName, _sta);
                     module.Run();
-
-                    negative = code.IndexOf("@negative") != -1;
                 }
                 else
                 {
                     module = new Module(moduleName, "");
                 }
 
+                var preambleEnd = 0;
+                var preambleEndTemp = 0;
+                do
+                {
+                    preambleEnd = preambleEndTemp;
+                    try
+                    {
+                        preambleEndTemp = Parser.SkipComment(code, preambleEndTemp, true);
+                    }
+                    catch
+                    {
+                        break;
+                    }
+                }
+                while (preambleEnd < preambleEndTemp);
+
+                if (code.IndexOf("@negative") != -1)
+                    System.Diagnostics.Debugger.Break();
+
+                var negative = code.IndexOf("* @negative", 0, preambleEnd) != -1;
+                var strict = code.IndexOf("* @onlyStrict", 0, preambleEnd) != -1;
+
                 try
                 {
                     try
                     {
-                        module.Context.Eval(code, true);
+                        module.Context.Eval(code, !strict);
                     }
                     finally
                     {
