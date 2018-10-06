@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
@@ -572,6 +573,121 @@ namespace NiL.JS.Core
             }
 
             return ValidateNumber(code, ref index);
+        }
+
+        public static int SkipComment(string code, int index, bool skipSpaces)
+        {
+            bool work;
+            do
+            {
+                if (code.Length <= index)
+                    return index;
+
+                work = false;
+                if (code[index] == '/' && index + 1 < code.Length)
+                {
+                    switch (code[index + 1])
+                    {
+                        case '/':
+                            {
+                                index += 2;
+                                while (index < code.Length && !Tools.IsLineTerminator(code[index]))
+                                    index++;
+
+                                work = true;
+                                break;
+                            }
+                        case '*':
+                            {
+                                index += 2;
+                                while (index + 1 < code.Length && (code[index] != '*' || code[index + 1] != '/'))
+                                    index++;
+                                if (index + 1 >= code.Length)
+                                    ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
+                                index += 2;
+                                work = true;
+                                break;
+                            }
+                    }
+                }
+
+                if (Validate(code, "<!--", index))
+                {
+                    while (index < code.Length && !Tools.IsLineTerminator(code[index]))
+                        index++;
+
+                    work = true;
+                }
+            }
+            while (work);
+
+            if (skipSpaces)
+            {
+                while ((index < code.Length) && (Tools.IsWhiteSpace(code[index])))
+                    index++;
+            }
+
+            return index;
+        }
+
+        internal static string RemoveComments(string code, int startPosition)
+        {
+            StringBuilder res = null;
+            for (var index = startPosition; index < code.Length;)
+            {
+                while (index < code.Length && Tools.IsWhiteSpace(code[index]))
+                {
+                    if (res != null)
+                        res.Append(code[index++]);
+                    else
+                        index++;
+                }
+
+                var s = index;
+                index = SkipComment(code, index, false);
+                if (s != index && res == null)
+                {
+                    res = new StringBuilder(code.Length);
+                    for (var j = 0; j < s; j++)
+                        res.Append(code[j]);
+                }
+
+                for (; s < index; s++)
+                {
+                    if (Tools.IsWhiteSpace(code[s]))
+                        res.Append(code[s]);
+                    else
+                        res.Append(' ');
+                }
+
+                if (index >= code.Length)
+                    continue;
+
+                if (Parser.ValidateRegex(code, ref index, false)) // оно путает деление с комментарием в конце строки и regexp.
+                // Посему делаем так: если встретили что-то похожее на regexp - останавливаемся.
+                // Остальные комментарии удалим когда, в процессе разбора, поймём, что же это на самом деле
+                {
+                    if (res != null)
+                        for (; s <= index; s++)
+                            res.Append(code[s]);
+                    break;
+                }
+
+                if (Parser.ValidateString(code, ref index, false))
+                {
+                    if (res != null)
+                    {
+                        for (; s < index; s++)
+                            res.Append(code[s]);
+                    }
+                }
+                else if (res != null)
+                    res.Append(code[index++]);
+                else
+                    index++;
+            }
+
+            return (res as object ?? code).ToString();
         }
 
         public static bool IsOperator(char c)

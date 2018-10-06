@@ -34,6 +34,7 @@ namespace NiL.JS.Statements
             else if (Parser.Validate(state.Code, "default", ref index))
             {
                 reexport = -1;
+                Tools.SkipSpaces(state.Code, ref index);
                 result._map.Add(new KeyValuePair<string, Expression>("", (Expression)ExpressionTree.Parse(state, ref index)));
             }
             else if (state.Code[index] == '{')

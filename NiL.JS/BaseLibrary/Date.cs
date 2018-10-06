@@ -830,7 +830,7 @@ namespace NiL.JS.BaseLibrary
             var time = 0L;
             var tzo = 0L;
             if (tryParse(dateTime, out time, out tzo))
-                return time;
+                return time - _unixTimeBase;
             return double.NaN;
         }
 
@@ -1335,6 +1335,10 @@ namespace NiL.JS.BaseLibrary
                 var dateTime = DateTime.Parse(timeString);
                 time = dateTime.Ticks / _timeAccuracy;
                 tzo = CurrentTimeZone.GetUtcOffset(dateTime).Ticks / _timeAccuracy;
+                if (dateTime.Kind == DateTimeKind.Local)
+                {
+                    time += tzo;
+                }
                 return true;
             }
             catch (FormatException)

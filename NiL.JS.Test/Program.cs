@@ -114,7 +114,10 @@ namespace NiL.JS.Test
         [ToStringTag("It is tag")]
         public class TestIndexer
         {
-            public string Prop
+            /// <summary>
+            /// lkasjdgflksdjhgldsfkjh
+            /// </summary>
+            public string Property
             {
                 get { return "prop"; }
             }
@@ -130,10 +133,31 @@ namespace NiL.JS.Test
 
         private static void testEx()
         {
-            var context = new Context();
-            context.GlobalContext.IndexersSupportMode = IndexersSupportMode.ForceDisable;
-            context.DefineVariable("test").Assign(new TestIndexer());
-            context.Eval("console.log(test['0'])");
+            const string functionName = "negate";
+            string functionCode = @"function negate(value) {
+	return -1 * value;
+};";
+            var context = new Context(true);
+            context.Eval(functionCode, true);
+
+            JSValue functionValue = context.GetVariable(functionName);
+            var function = functionValue.As<Function>();
+            if (function == null)
+            {
+                throw new Exception(
+                    string.Format("The function with the name '{0}' does not exist.", functionName));
+            }
+
+            try
+            {
+                JSValue resultValue = function.Call(new Arguments { 22 });
+                int result = (int)resultValue.Value;
+                Console.WriteLine("result = {0}", result);
+            }
+            catch (JSException e)
+            {
+                Console.Write(e.ToString());
+            }
         }
 
         static void Main(string[] args)
@@ -231,7 +255,7 @@ namespace NiL.JS.Test
                     }
                 case 1:
                     {
-                        runFiles("custom/");
+                        // runFiles("custom/");
                         webkitTests();
                         break;
                     }

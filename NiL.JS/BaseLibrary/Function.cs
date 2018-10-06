@@ -336,7 +336,7 @@ namespace NiL.JS.BaseLibrary
                 argn += args[i] + (i + 1 < len ? "," : "");
             string code = "function (" + argn + "){" + Environment.NewLine + (len == -1 ? "undefined" : args[len]) + Environment.NewLine + "}";
             var func = FunctionDefinition.Parse(
-                new ParseInfo(Tools.removeComments(code, 0), code, null)
+                new ParseInfo(Parser.RemoveComments(code, 0), code, null)
                 {
                     CodeContext = CodeContext.InExpression
                 },
