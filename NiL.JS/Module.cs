@@ -148,7 +148,7 @@ namespace NiL.JS
                 : null as InternalCompilerMessageCallback;
 
             int i = 0;
-            _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Tools.removeComments(code, 0), Code, internalCallback), ref i);
+            _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Parser.RemoveComments(code, 0), Code, internalCallback), ref i);
 
             var stat = new FunctionInfo();
             Parser.Build(ref _root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, internalCallback, stat, options);
