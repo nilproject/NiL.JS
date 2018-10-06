@@ -23,9 +23,9 @@ namespace NiL.JS
 #endif
     public class Module
     {
-        private static readonly char[] __pathSplitChars = new[] { '\\', '/' };
-        private static readonly StringMap<Module> __modulesCache = new StringMap<Module>();
-        private static List<ResolveModuleHandler> __resolveModuleHandlers = new List<ResolveModuleHandler> { defaultModuleResolver };
+        private static readonly char[] _pathSplitChars = new[] { '\\', '/' };
+        private static readonly StringMap<Module> _modulesCache = new StringMap<Module>();
+        private static List<ResolveModuleHandler> _resolveModuleHandlers = new List<ResolveModuleHandler> { defaultModuleResolver };
 
         /// <summary>
         /// Occurs when module not found in cache
@@ -35,13 +35,13 @@ namespace NiL.JS
             add
             {
                 if (value != null)
-                    lock (__resolveModuleHandlers)
-                        __resolveModuleHandlers.Add(value);
+                    lock (_resolveModuleHandlers)
+                        _resolveModuleHandlers.Add(value);
             }
             remove
             {
-                lock (__resolveModuleHandlers)
-                    __resolveModuleHandlers.Remove(value);
+                lock (_resolveModuleHandlers)
+                    _resolveModuleHandlers.Remove(value);
             }
         }
 
@@ -131,10 +131,10 @@ namespace NiL.JS
             Context._module = this;
             if (!string.IsNullOrWhiteSpace(path))
             {
-                lock (__modulesCache)
+                lock (_modulesCache)
                 {
-                    if (!__modulesCache.ContainsKey(path))
-                        __modulesCache[path] = this;
+                    if (!_modulesCache.ContainsKey(path))
+                        _modulesCache[path] = this;
                 }
 
                 FilePath = path;
@@ -225,14 +225,14 @@ namespace NiL.JS
 
             var e = new ResolveModuleEventArgs(path);
 
-            for (var i = 0; i < __resolveModuleHandlers.Count && e.Module == null; i++)
-                __resolveModuleHandlers[i](this, e);
+            for (var i = 0; i < _resolveModuleHandlers.Count && e.Module == null; i++)
+                _resolveModuleHandlers[i](this, e);
 
             if (e.Module == null)
                 throw new InvalidOperationException("Unable to load module \"" + path + "\"");
 
-            if (e.AddToCache && !__modulesCache.ContainsKey(e.ModulePath))
-                __modulesCache[e.ModulePath] = e.Module;
+            if (e.AddToCache && !_modulesCache.ContainsKey(e.ModulePath))
+                _modulesCache[e.ModulePath] = e.Module;
 
             if (e.Module.FilePath == null)
                 e.Module.FilePath = path;
@@ -242,8 +242,8 @@ namespace NiL.JS
 
         private string processPath(string path)
         {
-            var thisName = this.FilePath.Split(__pathSplitChars);
-            var requestedName = path.Split(__pathSplitChars);
+            var thisName = this.FilePath.Split(_pathSplitChars);
+            var requestedName = path.Split(_pathSplitChars);
             var pathTokens = new LinkedList<string>(thisName);
 
             if (requestedName.Length > 0 && requestedName[0] == "")
@@ -282,23 +282,23 @@ namespace NiL.JS
         private static void defaultModuleResolver(Module sender, ResolveModuleEventArgs e)
         {
             Module result;
-            __modulesCache.TryGetValue(e.ModulePath, out result);
+            _modulesCache.TryGetValue(e.ModulePath, out result);
             e.Module = result;
         }
 
         public static void ClearModuleCache()
         {
-            lock (__modulesCache)
+            lock (_modulesCache)
             {
-                __modulesCache.Clear();
+                _modulesCache.Clear();
             }
         }
 
         public static bool RemoveFromModuleCache(string path)
         {
-            lock (__modulesCache)
+            lock (_modulesCache)
             {
-                return __modulesCache.Remove(path);
+                return _modulesCache.Remove(path);
             }
         }
 
