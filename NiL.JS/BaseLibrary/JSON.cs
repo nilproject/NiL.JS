@@ -528,18 +528,16 @@ namespace NiL.JS.BaseLibrary
                         {
                             var prevIndex = int.Parse(prevKey ?? "-1");
 
-                            var capacity = result.Length + ((space != null ? space.Length : 0) + "null,".Length) * (curentIndex - prevIndex);
+                            var capacity = result.Length + "null,".Length * (curentIndex - prevIndex);
                             if (capacity > result.Length) // Может произойти переполнение
                                 result.EnsureCapacity(capacity);
 
                             for (var i = curentIndex - 1; i-- > prevIndex;)
                             {
-                                result.Append(space)
-                                   .Append("null,");
+                                result.Append("null,");
                             }
 
-                            result.Append(space)
-                               .Append(stringValue);
+                            result.Append(stringValue);
 
                             prevKey = member.Key;
                         }
@@ -551,7 +549,7 @@ namespace NiL.JS.BaseLibrary
                             escapeIfNeed(result, member.Key[i]);
 
                         result.Append("\":")
-                           .Append(space ?? "");
+                           .Append(space == null ? string.Empty : " ");
 
                         for (var i = 0; i < stringValue.Length; i++)
                         {
