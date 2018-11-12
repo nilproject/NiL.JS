@@ -1,13 +1,11 @@
-﻿namespace IntegrationTests.BaseLibrary
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NiL.JS.BaseLibrary;
+using NiL.JS.Core;
+
+namespace IntegrationTests.BaseLibrary
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-    using NiL.JS.BaseLibrary;
-    using NiL.JS.Core;
-
     using Array = NiL.JS.BaseLibrary.Array;
 
     [TestClass]
@@ -29,31 +27,39 @@
         [Timeout(1000)]
         public void SpacingWhenStringifying()
         {
-            var obj = JSObject.CreateObject();
-            obj.DefineProperty("test").Assign(123);
-            obj.DefineProperty("array").Assign(new Array(new List<JSValue> { JSValue.Marshal(123), JSValue.Marshal("test") }));
-            var nestedObj = JSObject.CreateObject();
-            nestedObj.DefineProperty("nil").Assign("JS!");
-            nestedObj.DefineProperty("null").Assign(JSValue.Null);
-            obj.DefineProperty("nested").Assign(nestedObj);
+            lock (JSObject.Null)
+            {
+                var obj = JSObject.CreateObject();
+                obj.DefineProperty("test").Assign(123);
+                obj.DefineProperty("array").Assign(new Array { 123, "test" });
+                var nestedObj = JSObject.CreateObject();
+                nestedObj.DefineProperty("nil").Assign("JS!");
+                nestedObj.DefineProperty("null").Assign(JSValue.Null);
+                obj.DefineProperty("nested").Assign(nestedObj);
 
-            var expected3 = new[] { "{", "   \"test\": 123,", "   \"array\": [", "      123,", "      \"test\"", "   ],", "   \"nested\": {", "      \"nil\": \"JS!\"", "   }", "}" };
-            Assert.AreEqual(string.Join(Environment.NewLine, expected3), JSON.stringify(new Arguments { obj, null, 3 }));
+                var expected3 = string.Join(Environment.NewLine, new[] { "{", "   \"test\": 123,", "   \"array\": [", "      123,", "      \"test\"", "   ],", "   \"nested\": {", "      \"nil\": \"JS!\"", "   }", "}" });
+                var stringified = JSON.stringify(new Arguments { obj, null, 3 });
+                Assert.AreEqual(expected3, stringified);
 
-            var expected2 = new[] { "{", "  \"test\": 123,", "  \"array\": [", "    123,", "    \"test\"", "  ],", "  \"nested\": {", "    \"nil\": \"JS!\"", "  }", "}" };
-            Assert.AreEqual(string.Join(Environment.NewLine, expected2), JSON.stringify(new Arguments { obj, null, 2 }));
+                var expected2 = string.Join(Environment.NewLine, new[] { "{", "  \"test\": 123,", "  \"array\": [", "    123,", "    \"test\"", "  ],", "  \"nested\": {", "    \"nil\": \"JS!\"", "  }", "}" });
+                stringified = JSON.stringify(new Arguments { obj, null, 2 });
+                Assert.AreEqual(expected2, stringified);
+            }
         }
 
         [TestMethod]
         [Timeout(1000)]
         public void Max10SpacesWhenStringifying()
         {
-            var obj = JSObject.CreateObject();
-            obj.DefineProperty("test").Assign(123);
-            obj.DefineProperty("array").Assign(new Array(new List<JSValue> { JSValue.Marshal(123), JSValue.Marshal("test") }));
+            lock (JSObject.Null)
+            {
+                var obj = JSObject.CreateObject();
+                obj.DefineProperty("test").Assign(123);
+                obj.DefineProperty("array").Assign(new Array { 123, "test" });
 
-            var expected3 = new[] { "{", "          \"test\": 123,", "          \"array\": [", "                    123,", "                    \"test\"", "          ]", "}" };
-            Assert.AreEqual(string.Join(Environment.NewLine, expected3), JSON.stringify(new Arguments { obj, null, 15 }));
+                var expected3 = new[] { "{", "          \"test\": 123,", "          \"array\": [", "                    123,", "                    \"test\"", "          ]", "}" };
+                Assert.AreEqual(string.Join(Environment.NewLine, expected3), JSON.stringify(new Arguments { obj, null, 15 }));
+            }
         }
     }
 }
