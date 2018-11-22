@@ -182,9 +182,12 @@ namespace NiL.JS.Core.Interop
                         if (method is ConstructorInfo)
                             continue;
 
+                        var parameterTypes = method.GetParameters().Select(x => x.ParameterType).ToArray();
+                        if (parameterTypes.Any(x => x.IsByRef))
+                            continue;
+
                         if (method.IsVirtual && (method.Attributes & MethodAttributes.NewSlot) == 0)
                         {
-                            var parameterTypes = method.GetParameters().Select(x => x.ParameterType).ToArray();
                             var parentMethod = method;
                             while (parentMethod != null && parentMethod.DeclaringType != typeof(object) && (method.Attributes & MethodAttributes.NewSlot) == 0)
                             {
@@ -420,7 +423,10 @@ namespace NiL.JS.Core.Interop
 
                 var cache = new MethodProxy[m.Count];
                 for (int i = 0; i < m.Count; i++)
+                {
                     cache[i] = new MethodProxy(_context, m[i] as MethodBase);
+                }
+
                 r = new MethodGroup(cache);
             }
             else
