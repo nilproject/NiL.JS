@@ -468,6 +468,7 @@ namespace NiL.JS.Core
                 result._iValue = 0;
                 return result;
             }
+
             switch (arg._valueType)
             {
                 case JSValueType.Boolean:
@@ -484,7 +485,7 @@ namespace NiL.JS.Core
                         double x = 0;
                         int ix = 0;
                         string s = (arg._oValue.ToString()).Trim(TrimChars);
-                        if (!Tools.ParseNumber(s, ref ix, out x) || ix < s.Length)
+                        if (!Tools.ParseNumber(s, ref ix, out x, ParseNumberOptions.Default & ~ParseNumberOptions.ProcessOctalLiteralsOldSyntax) || ix < s.Length)
                             x = double.NaN;
                         result._valueType = JSValueType.Double;
                         result._dValue = x;
@@ -922,7 +923,7 @@ namespace NiL.JS.Core
             return ParseNumber(code, ref index, out value, 0, ParseNumberOptions.Default);
         }
 
-        public static bool ParseNumber(string code, int index, out double value, ParseNumberOptions options)
+        public static bool ParseNumber(string code, ref int index, out double value, ParseNumberOptions options)
         {
             return ParseNumber(code, ref index, out value, 0, options);
         }

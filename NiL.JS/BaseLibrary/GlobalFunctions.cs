@@ -27,7 +27,7 @@ namespace NiL.JS.BaseLibrary
             {
                 double d = 0;
                 var i = 0;
-                if (Tools.ParseNumber(r._oValue.ToString(), i, out d, ParseNumberOptions.Default))
+                if (Tools.ParseNumber(r._oValue.ToString(), ref i, out d, ParseNumberOptions.Default))
                     return double.IsNaN(d);
                 return true;
             }
