@@ -155,7 +155,7 @@ namespace NiL.JS.Core.Interop
         {
             if (value == null)
             {
-                result.Append("\"").Append(value ?? "null").Append("\"");
+                result.Append("null");
                 return;
             }
 

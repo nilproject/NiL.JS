@@ -528,18 +528,16 @@ namespace NiL.JS.BaseLibrary
                         {
                             var prevIndex = int.Parse(prevKey ?? "-1");
 
-                            var capacity = result.Length + ((space != null ? space.Length : 0) + "null,".Length) * (curentIndex - prevIndex);
+                            var capacity = result.Length + "null,".Length * (curentIndex - prevIndex);
                             if (capacity > result.Length) // Может произойти переполнение
                                 result.EnsureCapacity(capacity);
 
                             for (var i = curentIndex - 1; i-- > prevIndex;)
                             {
-                                result.Append(space)
-                                   .Append("null,");
+                                result.Append("null,");
                             }
 
-                            result.Append(space)
-                               .Append(stringValue);
+                            result.Append(stringValue);
 
                             prevKey = member.Key;
                         }
@@ -550,13 +548,12 @@ namespace NiL.JS.BaseLibrary
                         for (var i = 0; i < member.Key.Length; i++)
                             escapeIfNeed(result, member.Key[i]);
 
-                        result.Append("\":")
-                           .Append(space ?? "");
+                        result.Append("\":").Append(space == null ? string.Empty : " ");
 
                         for (var i = 0; i < stringValue.Length; i++)
                         {
                             result.Append(stringValue[i]);
-                            if (i >= Environment.NewLine.Length && stringValue.IndexOf(Environment.NewLine, i - 1, Environment.NewLine.Length) != -1)
+                            if (i >= Environment.NewLine.Length && stringValue.IndexOf(Environment.NewLine, i - Environment.NewLine.Length + 1, Environment.NewLine.Length) != -1)
                                 result.Append(space);
                         }
 
@@ -564,8 +561,11 @@ namespace NiL.JS.BaseLibrary
                     }
                 }
 
-                if (prevKey != null && space != null)
-                    result.Append(Environment.NewLine);
+                if (space != null)
+                {
+                    if (prevKey != null)
+                        result.Append(Environment.NewLine);
+                }
 
                 return result.Append(obj is Array ? "]" : "}").ToString();
             }

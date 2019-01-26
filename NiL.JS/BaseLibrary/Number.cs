@@ -164,7 +164,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         double d = 0;
                         int i = 0;
-                        if (Tools.ParseNumber(digits._oValue.ToString(), i, out d, ParseNumberOptions.Default))
+                        if (Tools.ParseNumber(digits._oValue.ToString(), ref i, out d, ParseNumberOptions.Default))
                             dgts = (int)d;
                         break;
                     }
