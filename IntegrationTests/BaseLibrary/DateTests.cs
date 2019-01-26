@@ -60,7 +60,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldCorrectHandleSwitchFromDstToStandardBySetDate_MoscowTime()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 3 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.StandardName.IndexOf("RTZ 2", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(rtzDelegate);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "3/27/2010 08:00" });
@@ -73,13 +73,18 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldCorrectHandleSwitchFromDstToStandardBySetTime_MoscowTime()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 3 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.StandardName.IndexOf("RTZ 2", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(rtzDelegate);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "3/27/2010 08:00" });
             Assert.AreEqual(-180, d.getTimezoneOffset().As<int>());
             d.setTime((long)d.getTime() + 86400 * 1000);
             Assert.AreEqual(-240, d.getTimezoneOffset().As<int>());
+        }
+
+        private static bool rtzDelegate(TimeZoneInfo x)
+        {
+            return x.StandardName.IndexOf("RTZ 2", StringComparison.OrdinalIgnoreCase) != -1 || x.Id.IndexOf("MSK", StringComparison.OrdinalIgnoreCase) != -1 || x.Id.IndexOf("Moscow", StringComparison.OrdinalIgnoreCase) != -1;
         }
 
         [TestMethod]
