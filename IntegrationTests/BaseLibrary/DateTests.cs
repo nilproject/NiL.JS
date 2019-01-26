@@ -44,7 +44,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldCorrectHandleSwitchFromDstToStandard_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var firstDate = new Date(new Arguments { 953996400000 });
@@ -60,7 +60,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldCorrectHandleSwitchFromDstToStandardBySetDate_MoscowTime()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 3 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("MSK", StringComparison.OrdinalIgnoreCase) != -1 || x.Id.IndexOf("Moscow", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.StandardName.IndexOf("RTZ 2", StringComparison.OrdinalIgnoreCase) != -1);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "3/27/2010 08:00" });
@@ -73,7 +73,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldCorrectHandleSwitchFromDstToStandardBySetTime_MoscowTime()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 3 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("MSK", StringComparison.OrdinalIgnoreCase) != -1 || x.Id.IndexOf("Moscow", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.StandardName.IndexOf("RTZ 2", StringComparison.OrdinalIgnoreCase) != -1);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "3/27/2010 08:00" });
@@ -86,7 +86,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldCorrectParseIsoTimeInCurrentTimezone_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -98,7 +98,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldReturnsCorrectUtcDateForParsedIsoTime_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -110,7 +110,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldReturnsCorrectUtcDayForParsedIsoTime_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -122,7 +122,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldReturnsCorrectUtcHoursForParsedIsoTime_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -134,7 +134,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldReturnsCorrectUtcYearForParsedIsoTime_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -146,7 +146,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldReturnsCorrectIsoStringForParsedIsoTime_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -158,7 +158,7 @@ namespace IntegrationTests.BaseLibrary
         public void ShouldReturnsCorrectJsonForParsedIsoTime_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -170,7 +170,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetMonthShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setMonth(5, null);
@@ -182,7 +182,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetUtcMonthShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCMonth(5, null);
@@ -194,7 +194,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetUtcMillisecondsShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCMilliseconds(555);
@@ -206,7 +206,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetUtcHoursShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCHours(4, null, null, null);
@@ -218,7 +218,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetUtcDateShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCDate(15);
@@ -230,7 +230,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetUtcMinutesShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCMinutes(34, null, null);
@@ -242,7 +242,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetMillisecondsShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setMilliseconds(555);
@@ -254,7 +254,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetFullYearShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setFullYear(2005, null, null);
@@ -266,7 +266,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetUtcFullYearShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCFullYear(2004, null, null);
@@ -278,7 +278,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetMinutesShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setMinutes(34, null, null);
@@ -290,7 +290,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetTimeShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setTime(0);
@@ -302,7 +302,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetTimeShouldRecalcTimezoneOffset_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -316,7 +316,7 @@ namespace IntegrationTests.BaseLibrary
         public void SetTimeShouldNotOffsetValueWithTimezone_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setTime(1525898414436);
@@ -328,7 +328,7 @@ namespace IntegrationTests.BaseLibrary
         public void ToLocaleDateStringShouldCorrectFormatValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).toLocaleDateString();
@@ -340,7 +340,7 @@ namespace IntegrationTests.BaseLibrary
         public void ToLocaleTimeStringShouldCorrectFormatValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).toLocaleTimeString();
@@ -353,7 +353,7 @@ namespace IntegrationTests.BaseLibrary
         public void ToStringShouldCorrectFormatValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).toString();
@@ -366,7 +366,7 @@ namespace IntegrationTests.BaseLibrary
         public void ToTimeStringShouldCorrectFormatValue_SidneyTimeZone()
         {
             var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1);
+            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
             Date.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).toTimeString();
