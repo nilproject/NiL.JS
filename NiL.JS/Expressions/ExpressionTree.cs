@@ -112,148 +112,148 @@ namespace NiL.JS.Expressions
             switch (_operationKind)
             {
                 case OperationType.Multiply:
-                    {
-                        return new Multiplication(_left, _right);
-                    }
+                {
+                    return new Multiplication(_left, _right);
+                }
                 case OperationType.None:
-                    {
-                        if (_right == null)
-                            return _left;
+                {
+                    if (_right == null)
+                        return _left;
 
-                        return new Comma(_left, _right);
-                    }
+                    return new Comma(_left, _right);
+                }
                 case OperationType.Assignment:
-                    {
-                        return new Assignment(_left, _right);
-                    }
+                {
+                    return new Assignment(_left, _right);
+                }
                 case OperationType.Less:
-                    {
-                        return new Less(_left, _right);
-                    }
+                {
+                    return new Less(_left, _right);
+                }
                 case OperationType.Incriment:
-                    {
-                        return new Increment(_left ?? _right, _left == null ? IncrimentType.Postincriment : IncrimentType.Preincriment);
-                    }
+                {
+                    return new Increment(_left ?? _right, _left == null ? IncrimentType.Postincriment : IncrimentType.Preincriment);
+                }
                 case OperationType.Call:
-                    {
-                        throw new InvalidOperationException("Call instance mast be created immediatly.");
-                    }
+                {
+                    throw new InvalidOperationException("Call instance mast be created immediatly.");
+                }
                 case OperationType.Decriment:
-                    {
-                        return new Decrement(_left ?? _right, _left == null ? DecrimentType.Postdecriment : DecrimentType.Postdecriment);
-                    }
+                {
+                    return new Decrement(_left ?? _right, _left == null ? DecrimentType.Postdecriment : DecrimentType.Postdecriment);
+                }
                 case OperationType.LessOrEqual:
-                    {
-                        return new LessOrEqual(_left, _right);
-                    }
+                {
+                    return new LessOrEqual(_left, _right);
+                }
                 case OperationType.Addition:
-                    {
-                        return new Addition(_left, _right);
-                    }
+                {
+                    return new Addition(_left, _right);
+                }
                 case OperationType.StrictNotEqual:
-                    {
-                        return new StrictNotEqual(_left, _right);
-                    }
+                {
+                    return new StrictNotEqual(_left, _right);
+                }
                 case OperationType.More:
-                    {
-                        return new More(_left, _right);
-                    }
+                {
+                    return new More(_left, _right);
+                }
                 case OperationType.MoreOrEqual:
-                    {
-                        return new MoreOrEqual(_left, _right);
-                    }
+                {
+                    return new MoreOrEqual(_left, _right);
+                }
                 case OperationType.Division:
-                    {
-                        return new Division(_left, _right);
-                    }
+                {
+                    return new Division(_left, _right);
+                }
                 case OperationType.Equal:
-                    {
-                        return new Equal(_left, _right);
-                    }
+                {
+                    return new Equal(_left, _right);
+                }
                 case OperationType.Substract:
-                    {
-                        return new Substract(_left, _right);
-                    }
+                {
+                    return new Substract(_left, _right);
+                }
                 case OperationType.StrictEqual:
-                    {
-                        return new StrictEqual(_left, _right);
-                    }
+                {
+                    return new StrictEqual(_left, _right);
+                }
                 case OperationType.LogicalOr:
-                    {
-                        return new LogicalDisjunction(_left, _right);
-                    }
+                {
+                    return new LogicalDisjunction(_left, _right);
+                }
                 case OperationType.LogicalAnd:
-                    {
-                        return new LogicalConjunction(_left, _right);
-                    }
+                {
+                    return new LogicalConjunction(_left, _right);
+                }
                 case OperationType.NotEqual:
-                    {
-                        return new NotEqual(_left, _right);
-                    }
+                {
+                    return new NotEqual(_left, _right);
+                }
                 case OperationType.UnsignedShiftRight:
-                    {
-                        return new UnsignedShiftRight(_left, _right);
-                    }
+                {
+                    return new UnsignedShiftRight(_left, _right);
+                }
                 case OperationType.SignedShiftLeft:
-                    {
-                        return new SignedShiftLeft(_left, _right);
-                    }
+                {
+                    return new SignedShiftLeft(_left, _right);
+                }
                 case OperationType.SignedShiftRight:
-                    {
-                        return new SignedShiftRight(_left, _right);
-                    }
+                {
+                    return new SignedShiftRight(_left, _right);
+                }
                 case OperationType.Modulo:
-                    {
-                        return new Modulo(_left, _right);
-                    }
+                {
+                    return new Modulo(_left, _right);
+                }
                 case OperationType.LogicalNot:
-                    {
-                        return new LogicalNegation(_left);
-                    }
+                {
+                    return new LogicalNegation(_left);
+                }
                 case OperationType.Not:
-                    {
-                        return new BitwiseNegation(_left);
-                    }
+                {
+                    return new BitwiseNegation(_left);
+                }
                 case OperationType.Xor:
-                    {
-                        return new BitwiseExclusiveDisjunction(_left, _right);
-                    }
+                {
+                    return new BitwiseExclusiveDisjunction(_left, _right);
+                }
                 case OperationType.Or:
-                    {
-                        return new BitwiseDisjunction(_left, _right);
-                    }
+                {
+                    return new BitwiseDisjunction(_left, _right);
+                }
                 case OperationType.And:
-                    {
-                        return new BitwiseConjunction(_left, _right);
-                    }
+                {
+                    return new BitwiseConjunction(_left, _right);
+                }
                 case OperationType.Conditional:
-                    {
-                        while ((_right is ExpressionTree)
-                            && (_right as ExpressionTree)._operationKind == OperationType.None
-                            && (_right as ExpressionTree)._right == null)
-                            _right = (_right as ExpressionTree)._left;
-                        return new Conditional(_left, (Expression[])_right.Evaluate(null)._oValue);
-                    }
+                {
+                    while ((_right is ExpressionTree)
+                        && (_right as ExpressionTree)._operationKind == OperationType.None
+                        && (_right as ExpressionTree)._right == null)
+                        _right = (_right as ExpressionTree)._left;
+                    return new Conditional(_left, (Expression[])_right.Evaluate(null)._oValue);
+                }
                 case OperationType.TypeOf:
-                    {
-                        return new TypeOf(_left);
-                    }
+                {
+                    return new TypeOf(_left);
+                }
                 case OperationType.New:
-                    {
-                        throw new InvalidOperationException("New instance mast be created immediatly.");
-                    }
+                {
+                    throw new InvalidOperationException("New instance mast be created immediatly.");
+                }
                 case OperationType.Delete:
-                    {
-                        return new Delete(_left);
-                    }
+                {
+                    return new Delete(_left);
+                }
                 case OperationType.InstanceOf:
-                    {
-                        return new InstanceOf(_left, _right);
-                    }
+                {
+                    return new InstanceOf(_left, _right);
+                }
                 case OperationType.In:
-                    {
-                        return new In(_left, _right);
-                    }
+                {
+                    return new In(_left, _right);
+                }
                 default:
                     throw new ArgumentException("invalid operation type");
             }
@@ -377,553 +377,555 @@ namespace NiL.JS.Expressions
                     case ']':
                     case '}':
                     case ':':
+                    {
+                        binary = false;
+                        break;
+                    }
+                    case '!':
+                    {
+                        if (forUnary)
                         {
                             binary = false;
+                            repeat = false;
+                            i = rollbackPos;
                             break;
                         }
-                    case '!':
+                        if (state.Code[i + 1] == '=')
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
+                            i++;
                             if (state.Code[i + 1] == '=')
                             {
                                 i++;
-                                if (state.Code[i + 1] == '=')
-                                {
-                                    i++;
-                                    binary = true;
-                                    kind = OperationType.StrictNotEqual;
-                                }
-                                else
-                                {
-                                    binary = true;
-                                    kind = OperationType.NotEqual;
-                                }
+                                binary = true;
+                                kind = OperationType.StrictNotEqual;
                             }
                             else
-                                throw new ArgumentException("Invalid operator '!'");
-
-                            break;
+                            {
+                                binary = true;
+                                kind = OperationType.NotEqual;
+                            }
                         }
+                        else
+                            throw new ArgumentException("Invalid operator '!'");
+
+                        break;
+                    }
                     case ',':
+                    {
+                        if (forUnary || !processComma)
                         {
-                            if (forUnary || !processComma)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            kind = OperationType.None;
-                            binary = true;
+                            binary = false;
                             repeat = false;
+                            i = rollbackPos;
                             break;
                         }
+                        kind = OperationType.None;
+                        binary = true;
+                        repeat = false;
+                        break;
+                    }
                     case '?':
+                    {
+                        if (forUnary)
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            binary = true;
+                            binary = false;
                             repeat = false;
-                            kind = OperationType.Conditional;
+                            i = rollbackPos;
                             break;
                         }
+                        binary = true;
+                        repeat = false;
+                        kind = OperationType.Conditional;
+                        break;
+                    }
                     case '=':
+                    {
+                        if (forUnary)
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
+                            break;
+                        }
+                        if (state.Code[i + 1] == '=')
+                        {
+                            i++;
                             if (state.Code[i + 1] == '=')
                             {
                                 i++;
-                                if (state.Code[i + 1] == '=')
-                                {
-                                    i++;
-                                    kind = OperationType.StrictEqual;
-                                }
-                                else
-                                    kind = OperationType.Equal;
+                                kind = OperationType.StrictEqual;
                             }
                             else
-                                kind = OperationType.Assignment;
-                            binary = true;
-                            break;
+                                kind = OperationType.Equal;
                         }
+                        else
+                            kind = OperationType.Assignment;
+                        binary = true;
+                        break;
+                    }
                     case '+':
-                        {
+                    {
 
-                            if (state.Code[i + 1] == '+')
+                        if (state.Code[i + 1] == '+')
+                        {
+                            if (rollbackPos != i)
+                                goto default;
+                            if (state.strict)
                             {
-                                if (rollbackPos != i)
-                                    goto default;
-                                if (state.strict)
-                                {
-                                    if ((first is Variable)
-                                        && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
-                                        ExceptionHelper.ThrowSyntaxError("Cannot incriment \"" + (first as Variable).Name + "\" in strict mode.", state.Code, i);
-                                }
-                                first = new Increment(first, IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
-                                repeat = true;
-                                i += 2;
+                                if ((first is Variable)
+                                    && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
+                                    ExceptionHelper.ThrowSyntaxError("Cannot incriment \"" + (first as Variable).Name + "\" in strict mode.", state.Code, i);
                             }
-                            else if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            else
-                            {
-                                binary = true;
-                                kind = OperationType.Addition;
-                                if (state.Code[i + 1] == '=')
-                                {
-                                    assign = true;
-                                    i++;
-                                }
-                            }
+                            first = new Increment(first, IncrimentType.Postincriment) { Position = first.Position, Length = i + 2 - first.Position };
+                            repeat = true;
+                            i += 2;
+                        }
+                        else if (forUnary)
+                        {
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
                             break;
                         }
+                        else
+                        {
+                            binary = true;
+                            kind = OperationType.Addition;
+                            if (state.Code[i + 1] == '=')
+                            {
+                                assign = true;
+                                i++;
+                            }
+                        }
+                        break;
+                    }
                     case '-':
-                        {
+                    {
 
-                            if (state.Code[i + 1] == '-')
+                        if (state.Code[i + 1] == '-')
+                        {
+                            if (rollbackPos != i)
+                                goto default;
+                            if (state.strict)
                             {
-                                if (rollbackPos != i)
-                                    goto default;
-                                if (state.strict)
-                                {
-                                    if ((first is Variable)
-                                        && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
-                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (first as Variable).Name + "\" in strict mode."));
-                                }
-                                first = new Decrement(first, DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
-                                repeat = true;
-                                i += 2;
+                                if ((first is Variable)
+                                    && ((first as Variable).Name == "arguments" || (first as Variable).Name == "eval"))
+                                    ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (first as Variable).Name + "\" in strict mode."));
                             }
-                            else if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            else
-                            {
-                                binary = true;
-                                kind = OperationType.Substract;
-                                if (state.Code[i + 1] == '=')
-                                {
-                                    assign = true;
-                                    i++;
-                                }
-                            }
+                            first = new Decrement(first, DecrimentType.Postdecriment) { Position = first.Position, Length = i + 2 - first.Position };
+                            repeat = true;
+                            i += 2;
+                        }
+                        else if (forUnary)
+                        {
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
                             break;
                         }
+                        else
+                        {
+                            binary = true;
+                            kind = OperationType.Substract;
+                            if (state.Code[i + 1] == '=')
+                            {
+                                assign = true;
+                                i++;
+                            }
+                        }
+                        break;
+                    }
                     case '*':
+                    {
+                        if (forUnary)
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            binary = true;
-                            kind = OperationType.Multiply;
-                            if (state.Code[i + 1] == '=')
-                            {
-                                assign = true;
-                                i++;
-                            }
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
                             break;
                         }
+                        binary = true;
+                        kind = OperationType.Multiply;
+                        if (state.Code[i + 1] == '=')
+                        {
+                            assign = true;
+                            i++;
+                        }
+                        break;
+                    }
                     case '&':
+                    {
+                        if (forUnary)
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            if (state.Code[i + 1] == '&')
-                            {
-                                i++;
-                                binary = true;
-                                assign = false;
-                                kind = OperationType.LogicalAnd;
-                                break;
-                            }
-                            else
-                            {
-                                binary = true;
-                                assign = false;
-                                kind = OperationType.And;
-                                if (state.Code[i + 1] == '=')
-                                {
-                                    assign = true;
-                                    i++;
-                                }
-                                break;
-                            }
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
+                            break;
                         }
+                        if (state.Code[i + 1] == '&')
+                        {
+                            i++;
+                            binary = true;
+                            assign = false;
+                            kind = OperationType.LogicalAnd;
+                            break;
+                        }
+                        else
+                        {
+                            binary = true;
+                            assign = false;
+                            kind = OperationType.And;
+                            if (state.Code[i + 1] == '=')
+                            {
+                                assign = true;
+                                i++;
+                            }
+                            break;
+                        }
+                    }
                     case '|':
+                    {
+                        if (forUnary)
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            if (state.Code[i + 1] == '|')
-                            {
-                                i++;
-                                binary = true;
-                                assign = false;
-                                kind = OperationType.LogicalOr;
-                                break;
-                            }
-                            else
-                            {
-                                binary = true;
-                                assign = false;
-                                kind = OperationType.Or;
-                                if (state.Code[i + 1] == '=')
-                                {
-                                    assign = true;
-                                    i++;
-                                }
-                                break;
-                            }
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
+                            break;
                         }
+                        if (state.Code[i + 1] == '|')
+                        {
+                            i++;
+                            binary = true;
+                            assign = false;
+                            kind = OperationType.LogicalOr;
+                            break;
+                        }
+                        else
+                        {
+                            binary = true;
+                            assign = false;
+                            kind = OperationType.Or;
+                            if (state.Code[i + 1] == '=')
+                            {
+                                assign = true;
+                                i++;
+                            }
+                            break;
+                        }
+                    }
                     case '^':
+                    {
+                        if (forUnary)
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            binary = true;
-                            kind = OperationType.Xor;
-                            if (state.Code[i + 1] == '=')
-                            {
-                                assign = true;
-                                i++;
-                            }
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
                             break;
                         }
+                        binary = true;
+                        kind = OperationType.Xor;
+                        if (state.Code[i + 1] == '=')
+                        {
+                            assign = true;
+                            i++;
+                        }
+                        break;
+                    }
                     case '/':
+                    {
+                        if (forUnary)
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            state.Code = Parser.RemoveComments(state.SourceCode, i + 1);
-                            binary = true;
-                            kind = OperationType.Division;
-                            if (state.Code[i + 1] == '=')
-                            {
-                                assign = true;
-                                i++;
-                            }
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
                             break;
                         }
+                        state.Code = Parser.RemoveComments(state.SourceCode, i + 1);
+                        binary = true;
+                        kind = OperationType.Division;
+                        if (state.Code[i + 1] == '=')
+                        {
+                            assign = true;
+                            i++;
+                        }
+                        break;
+                    }
                     case '%':
+                    {
+                        if (forUnary)
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                break;
-                            }
-                            binary = true;
-                            kind = OperationType.Modulo;
-                            if (state.Code[i + 1] == '=')
-                            {
-                                assign = true;
-                                i++;
-                            }
+                            binary = false;
+                            repeat = false;
                             break;
                         }
+                        binary = true;
+                        kind = OperationType.Modulo;
+                        if (state.Code[i + 1] == '=')
+                        {
+                            assign = true;
+                            i++;
+                        }
+                        break;
+                    }
                     case '<':
+                    {
+                        if (forUnary)
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            binary = true;
-                            if (state.Code[i + 1] == '<')
-                            {
-                                i++;
-                                kind = OperationType.SignedShiftLeft;
-                            }
-                            else
-                            {
-                                kind = OperationType.Less;
-                                if (state.Code[i + 1] == '=')
-                                {
-                                    kind = OperationType.LessOrEqual;
-                                    i++;
-                                }
-                            }
-                            if (state.Code[i + 1] == '=')
-                            {
-                                assign = true;
-                                i++;
-                            }
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
                             break;
                         }
-                    case '>':
+                        binary = true;
+                        if (state.Code[i + 1] == '<')
                         {
-                            if (forUnary)
+                            i++;
+                            kind = OperationType.SignedShiftLeft;
+                        }
+                        else
+                        {
+                            kind = OperationType.Less;
+                            if (state.Code[i + 1] == '=')
                             {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
+                                kind = OperationType.LessOrEqual;
+                                i++;
                             }
-                            binary = true;
+                        }
+                        if (state.Code[i + 1] == '=')
+                        {
+                            assign = true;
+                            i++;
+                        }
+                        break;
+                    }
+                    case '>':
+                    {
+                        if (forUnary)
+                        {
+                            binary = false;
+                            repeat = false;
+                            i = rollbackPos;
+                            break;
+                        }
+                        binary = true;
+                        if (state.Code[i + 1] == '>')
+                        {
+                            i++;
                             if (state.Code[i + 1] == '>')
                             {
+                                kind = OperationType.UnsignedShiftRight;
                                 i++;
-                                if (state.Code[i + 1] == '>')
-                                {
-                                    kind = OperationType.UnsignedShiftRight;
-                                    i++;
-                                }
-                                else
-                                {
-                                    kind = OperationType.SignedShiftRight;
-                                }
                             }
                             else
                             {
-                                kind = OperationType.More;
-                                if (state.Code[i + 1] == '=')
-                                {
-                                    kind = OperationType.MoreOrEqual;
-                                    i++;
-                                }
+                                kind = OperationType.SignedShiftRight;
                             }
+                        }
+                        else
+                        {
+                            kind = OperationType.More;
                             if (state.Code[i + 1] == '=')
                             {
-                                assign = true;
+                                kind = OperationType.MoreOrEqual;
                                 i++;
                             }
-                            break;
                         }
+                        if (state.Code[i + 1] == '=')
+                        {
+                            assign = true;
+                            i++;
+                        }
+                        break;
+                    }
                     case '.':
+                    {
+                        i++;
+                        Tools.SkipSpaces(state.Code, ref i);
+
+                        var s = i;
+                        if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict))
+                            ExceptionHelper.Throw(new SyntaxError(string.Format(Strings.InvalidPropertyName, CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+
+                        string name = state.Code.Substring(s, i - s);
+
+                        JSValue jsname = null;
+                        if (!state.stringConstants.TryGetValue(name, out jsname))
+                            state.stringConstants[name] = jsname = name;
+                        else
+                            name = jsname._oValue.ToString();
+
+                        first = new Property(first, new Constant(name)
                         {
-                            i++;
-                            Tools.SkipSpaces(state.Code, ref i);
+                            Position = s,
+                            Length = i - s
+                        })
+                        {
+                            Position = first.Position,
+                            Length = i - first.Position
+                        };
 
-                            var s = i;
-                            if (!Parser.ValidateName(state.Code, ref i, false, true, state.strict))
-                                ExceptionHelper.Throw(new SyntaxError(string.Format(Strings.InvalidPropertyName, CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-
-                            string name = state.Code.Substring(s, i - s);
-
-                            JSValue jsname = null;
-                            if (!state.stringConstants.TryGetValue(name, out jsname))
-                                state.stringConstants[name] = jsname = name;
-                            else
-                                name = jsname._oValue.ToString();
-
-                            first = new Property(first, new Constant(name)
-                            {
-                                Position = s,
-                                Length = i - s
-                            })
-                            {
-                                Position = first.Position,
-                                Length = i - first.Position
-                            };
-
-                            repeat = true;
-                            canAsign = true;
-                            break;
-                        }
+                        repeat = true;
+                        canAsign = true;
+                        break;
+                    }
                     case '[':
-                        {
-                            Expression mname = null;
-                            do
-                                i++;
-                            while (Tools.IsWhiteSpace(state.Code[i]));
-                            int startPos = i;
-                            mname = (Expression)ExpressionTree.Parse(state, ref i, false, true, false, true, false);
-                            if (mname == null)
-                                ExceptionHelper.Throw((new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
-                            while (Tools.IsWhiteSpace(state.Code[i]))
-                                i++;
-                            if (state.Code[i] != ']')
-                                ExceptionHelper.Throw((new SyntaxError("Expected \"]\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
-                            first = new Property(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
+                    {
+                        Expression mname = null;
+                        do
                             i++;
-                            repeat = true;
-                            canAsign = true;
+                        while (Tools.IsWhiteSpace(state.Code[i]));
+                        int startPos = i;
+                        mname = (Expression)ExpressionTree.Parse(state, ref i, false, true, false, true, false);
+                        if (mname == null)
+                            ExceptionHelper.Throw((new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
+                        while (Tools.IsWhiteSpace(state.Code[i]))
+                            i++;
+                        if (state.Code[i] != ']')
+                            ExceptionHelper.Throw((new SyntaxError("Expected \"]\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
+                        first = new Property(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
+                        i++;
+                        repeat = true;
+                        canAsign = true;
 
-                            if (state.message != null)
-                            {
-                                startPos = 0;
-                                var cname = mname as Constant;
-                                if (cname != null
-                                    && cname.value._valueType == JSValueType.String
-                                    && Parser.ValidateName(cname.value._oValue.ToString(), ref startPos, false)
-                                    && startPos == cname.value._oValue.ToString().Length)
-                                    state.message(MessageLevel.Recomendation, mname.Position, mname.Length, "[\"" + cname.value._oValue + "\"] is better written in dot notation.");
-                            }
-                            break;
+                        if (state.message != null)
+                        {
+                            startPos = 0;
+                            var cname = mname as Constant;
+                            if (cname != null
+                                && cname.value._valueType == JSValueType.String
+                                && Parser.ValidateName(cname.value._oValue.ToString(), ref startPos, false)
+                                && startPos == cname.value._oValue.ToString().Length)
+                                state.message(MessageLevel.Recomendation, mname.Position, mname.Length, "[\"" + cname.value._oValue + "\"] is better written in dot notation.");
                         }
+                        break;
+                    }
                     case '(':
+                    {
+                        var args = new List<Expression>();
+                        i++;
+                        int startPos = i;
+                        bool withSpread = false;
+                        for (; ; )
                         {
-                            var args = new List<Expression>();
-                            i++;
-                            int startPos = i;
-                            bool withSpread = false;
-                            for (;;)
-                            {
-                                Tools.SkipSpaces(state.Code, ref i);
-                                Tools.CheckEndOfInput(state.Code, ref i);
+                            Tools.SkipSpaces(state.Code, ref i);
+                            Tools.CheckEndOfInput(state.Code, ref i);
 
-                                if (state.Code[i] == ')')
+                            if (state.Code[i] == ')')
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                bool commaExists = args.Count == 0;
+                                for (; ; )
                                 {
-                                    break;
-                                }
-                                else
-                                {
-                                    bool commaExists = args.Count == 0;
-                                    for (;;)
+                                    if (state.Code[i] == ',')
                                     {
-                                        if (state.Code[i] == ',')
-                                        {
-                                            if (commaExists)
-                                                ExceptionHelper.ThrowSyntaxError("Missing argument of function call", state.Code, i);
-                                            do
-                                                i++;
-                                            while (Tools.IsWhiteSpace(state.Code[i]));
-                                            commaExists = true;
-                                        }
-                                        else
-                                            break;
+                                        if (commaExists)
+                                            ExceptionHelper.ThrowSyntaxError("Missing argument of function call", state.Code, i);
+                                        do
+                                            i++;
+                                        while (Tools.IsWhiteSpace(state.Code[i]));
+                                        commaExists = true;
                                     }
-                                    if (!commaExists)
-                                        ExceptionHelper.ThrowSyntaxError("Expected ','", state.Code, i);
+                                    else
+                                        break;
                                 }
-                                if (i + 1 == state.Code.Length)
-                                    ExceptionHelper.ThrowSyntaxError("Unexpected end of source", state.Code, i);
-
-                                var spread = Parser.Validate(state.Code, "...", ref i);
-                                args.Add(Parse(state, ref i, false, false));
-                                if (spread)
-                                {
-                                    args[args.Count - 1] = new Spread(args[args.Count - 1]);
-                                    withSpread = true;
-                                }
-                                if (args[args.Count - 1] == null)
-                                    ExceptionHelper.ThrowSyntaxError("Expected \")\"", state.Code, startPos);
+                                if (!commaExists)
+                                    ExceptionHelper.ThrowSyntaxError("Expected ','", state.Code, i);
                             }
+                            if (i + 1 == state.Code.Length)
+                                ExceptionHelper.ThrowSyntaxError("Unexpected end of source", state.Code, i);
 
-                            first = new Call(first, args.ToArray())
+                            var spread = Parser.Validate(state.Code, "...", ref i);
+                            args.Add(Parse(state, ref i, false, false));
+                            if (spread)
                             {
-                                Position = first.Position,
-                                Length = i - first.Position + 1,
-                                withSpread = withSpread
-                            };
-
-                            i++;
-                            repeat = !forNew;
-                            canAsign = false;
-                            binary = false;
-                            break;
+                                args[args.Count - 1] = new Spread(args[args.Count - 1]);
+                                withSpread = true;
+                            }
+                            if (args[args.Count - 1] == null)
+                                ExceptionHelper.ThrowSyntaxError("Expected \")\"", state.Code, startPos);
                         }
+
+                        first = new Call(first, args.ToArray())
+                        {
+                            Position = first.Position,
+                            Length = i - first.Position + 1,
+                            withSpread = withSpread
+                        };
+
+                        i++;
+                        repeat = !forNew;
+                        canAsign = false;
+                        binary = false;
+                        break;
+                    }
                     case '`':
+                    {
+                        var template = TemplateString.Parse(state, ref i, TemplateStringMode.Tag);
+                        first = new Call(first, new Expression[] { template })
                         {
-                            var template = TemplateString.Parse(state, ref i, TemplateStringMode.Tag);
-                            first = new Call(first, new Expression[] { template })
-                            {
-                                Position = first.Position,
-                                Length = i - first.Position + 1,
-                                withSpread = true
-                            };
+                            Position = first.Position,
+                            Length = i - first.Position + 1,
+                            withSpread = true
+                        };
 
-                            repeat = !forNew;
-                            canAsign = false;
+                        repeat = !forNew;
+                        canAsign = false;
+                        binary = false;
+                        break;
+                    }
+                    case 'i':
+                    {
+                        if (forUnary)
+                        {
                             binary = false;
+                            repeat = false;
+                            i = rollbackPos;
                             break;
                         }
-                    case 'i':
+                        if (Parser.Validate(state.Code, "instanceof", ref i))
                         {
-                            if (forUnary)
-                            {
-                                binary = false;
-                                repeat = false;
-                                i = rollbackPos;
-                                break;
-                            }
-                            if (Parser.Validate(state.Code, "instanceof", ref i))
-                            {
-                                kind = OperationType.InstanceOf;
-                                binary = true;
-                                break;
-                            }
-                            else if (Parser.Validate(state.Code, "in", ref i))
-                            {
-                                if (forForLoop)
-                                {
-                                    i = rollbackPos;
-                                    goto case ';';
-                                }
-                                kind = OperationType.In;
-                                binary = true;
-                                break;
-                            }
-                            goto default;
+                            kind = OperationType.InstanceOf;
+                            binary = true;
+                            i--; // this index should pointing at last char of operator
+                            break;
                         }
-                    default:
+                        else if (Parser.Validate(state.Code, "in", ref i))
                         {
-                            if (Tools.IsLineTerminator(state.Code[i]))
-                                goto case '\n';
-
-                            if (i != rollbackPos)
-                            {
-                                i = rollbackPos;
-                                goto case '\n';
-                            }
-
-                            if (state.Code[i] == 'o' && state.Code[i + 1] == 'f')
+                            if (forForLoop)
                             {
                                 i = rollbackPos;
                                 goto case ';';
                             }
-
-                            ExceptionHelper.ThrowSyntaxError("Unexpected token '" + state.Code[i] + "'", state.Code, i);
+                            kind = OperationType.In;
+                            binary = true;
+                            i--;
                             break;
                         }
+                        goto default;
+                    }
+                    default:
+                    {
+                        if (Tools.IsLineTerminator(state.Code[i]))
+                            goto case '\n';
+
+                        if (i != rollbackPos)
+                        {
+                            i = rollbackPos;
+                            goto case '\n';
+                        }
+
+                        if (state.Code[i] == 'o' && state.Code[i + 1] == 'f')
+                        {
+                            i = rollbackPos;
+                            goto case ';';
+                        }
+
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token '" + state.Code[i] + "'", state.Code, i);
+                        break;
+                    }
                 }
             }
             while (repeat);
@@ -1054,40 +1056,40 @@ namespace NiL.JS.Expressions
                 switch (name)
                 {
                     case "super":
-                        {
-                            while (Tools.IsWhiteSpace(state.Code[i]))
-                                i++;
+                    {
+                        while (Tools.IsWhiteSpace(state.Code[i]))
+                            i++;
 
-                            if ((state.CodeContext & CodeContext.InClassDefenition) == 0
-                                || (state.Code[i] != '.'
-                                    && state.Code[i] != '['
-                                    && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0)))
-                                ExceptionHelper.ThrowSyntaxError("super keyword unexpected in this coontext", state.Code, i);
+                        if ((state.CodeContext & CodeContext.InClassDefenition) == 0
+                            || (state.Code[i] != '.'
+                                && state.Code[i] != '['
+                                && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0)))
+                            ExceptionHelper.ThrowSyntaxError("super keyword unexpected in this coontext", state.Code, i);
 
-                            operand = new Super();
-                            break;
-                        }
+                        operand = new Super();
+                        break;
+                    }
                     case "new.target":
-                        {
-                            operand = new NewTarget();
-                            break;
-                        }
+                    {
+                        operand = new NewTarget();
+                        break;
+                    }
                     case "this":
-                        {
-                            operand = new This();
-                            break;
-                        }
+                    {
+                        operand = new This();
+                        break;
+                    }
                     default:
-                        {
-                            JSValue tempStr;
-                            if (state.stringConstants.TryGetValue(name, out tempStr))
-                                name = tempStr._oValue.ToString();
-                            else
-                                state.stringConstants[name] = name;
+                    {
+                        JSValue tempStr;
+                        if (state.stringConstants.TryGetValue(name, out tempStr))
+                            name = tempStr._oValue.ToString();
+                        else
+                            state.stringConstants[name] = name;
 
-                            operand = new Variable(name, state.lexicalScopeLevel);
-                            break;
-                        }
+                        operand = new Variable(name, state.lexicalScopeLevel);
+                        break;
+                    }
                 }
             }
             else
@@ -1182,150 +1184,150 @@ namespace NiL.JS.Expressions
                     switch (state.Code[i])
                     {
                         case '+':
-                            {
-                                i++;
-                                if (state.Code[i] == '+')
-                                {
-                                    do
-                                        i++;
-                                    while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
-                                    if (i >= state.Code.Length)
-                                        ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
-
-                                    operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
-
-                                    if (((operand as Property) as object ?? (operand as Variable)) == null)
-                                    {
-                                        ExceptionHelper.ThrowSyntaxError("Invalid prefix operation. ", state.Code, i);
-                                    }
-
-                                    if (state.strict
-                                        && (operand is Variable)
-                                        && ((operand as Variable).Name == "arguments" || (operand as Variable).Name == "eval"))
-                                    {
-                                        ExceptionHelper.ThrowSyntaxError("Can not incriment \"" + (operand as Variable).Name + "\" in strict mode.", state.Code, i);
-                                    }
-
-                                    operand = new Increment(operand, IncrimentType.Preincriment);
-                                }
-                                else
-                                {
-                                    while (Tools.IsWhiteSpace(state.Code[i]))
-                                        i++;
-                                    var f = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
-                                    operand = new ConvertToNumber(f);
-                                }
-                                break;
-                            }
-                        case '-':
-                            {
-                                i++;
-                                if (state.Code[i] == '-')
-                                {
-                                    do
-                                        i++;
-                                    while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
-                                    if (i >= state.Code.Length)
-                                        ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
-
-                                    operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
-
-                                    if (((operand as Property) as object ?? (operand as Variable)) == null)
-                                    {
-                                        ExceptionHelper.ThrowSyntaxError("Invalid prefix operation.", state.Code, i);
-                                    }
-
-                                    if (state.strict
-                                        && (operand is Variable)
-                                        && ((operand as Variable).Name == "arguments" || (operand as Variable).Name == "eval"))
-                                        ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (operand as Variable).Name + "\" in strict mode."));
-
-                                    operand = new Decrement(operand, DecrimentType.Predecriment);
-                                }
-                                else
-                                {
-                                    while (Tools.IsWhiteSpace(state.Code[i]))
-                                        i++;
-                                    var f = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
-                                    operand = new Negation(f);
-                                }
-                                break;
-                            }
-                        case '!':
+                        {
+                            i++;
+                            if (state.Code[i] == '+')
                             {
                                 do
                                     i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-                                operand = new LogicalNegation((Expression)Parse(state, ref i, true, true, false, true, forForLoop));
-                                if (operand == null)
-                                {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                                }
-                                break;
-                            }
-                        case '~':
-                            {
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
+                                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
+                                if (i >= state.Code.Length)
+                                    ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
+
                                 operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
-                                if (operand == null)
+
+                                if (((operand as Property) as object ?? (operand as Variable)) == null)
                                 {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                                    ExceptionHelper.ThrowSyntaxError("Invalid prefix operation. ", state.Code, i);
                                 }
-                                operand = new BitwiseNegation(operand);
-                                break;
+
+                                if (state.strict
+                                    && (operand is Variable)
+                                    && ((operand as Variable).Name == "arguments" || (operand as Variable).Name == "eval"))
+                                {
+                                    ExceptionHelper.ThrowSyntaxError("Can not incriment \"" + (operand as Variable).Name + "\" in strict mode.", state.Code, i);
+                                }
+
+                                operand = new Increment(operand, IncrimentType.Preincriment);
                             }
+                            else
+                            {
+                                while (Tools.IsWhiteSpace(state.Code[i]))
+                                    i++;
+                                var f = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                                operand = new ConvertToNumber(f);
+                            }
+                            break;
+                        }
+                        case '-':
+                        {
+                            i++;
+                            if (state.Code[i] == '-')
+                            {
+                                do
+                                    i++;
+                                while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
+                                if (i >= state.Code.Length)
+                                    ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
+
+                                operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+
+                                if (((operand as Property) as object ?? (operand as Variable)) == null)
+                                {
+                                    ExceptionHelper.ThrowSyntaxError("Invalid prefix operation.", state.Code, i);
+                                }
+
+                                if (state.strict
+                                    && (operand is Variable)
+                                    && ((operand as Variable).Name == "arguments" || (operand as Variable).Name == "eval"))
+                                    ExceptionHelper.Throw(new SyntaxError("Can not decriment \"" + (operand as Variable).Name + "\" in strict mode."));
+
+                                operand = new Decrement(operand, DecrimentType.Predecriment);
+                            }
+                            else
+                            {
+                                while (Tools.IsWhiteSpace(state.Code[i]))
+                                    i++;
+                                var f = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                                operand = new Negation(f);
+                            }
+                            break;
+                        }
+                        case '!':
+                        {
+                            do
+                                i++;
+                            while (Tools.IsWhiteSpace(state.Code[i]));
+                            operand = new LogicalNegation((Expression)Parse(state, ref i, true, true, false, true, forForLoop));
+                            if (operand == null)
+                            {
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                            }
+                            break;
+                        }
+                        case '~':
+                        {
+                            do
+                                i++;
+                            while (Tools.IsWhiteSpace(state.Code[i]));
+                            operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                            if (operand == null)
+                            {
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
+                            }
+                            operand = new BitwiseNegation(operand);
+                            break;
+                        }
                         case 't':
+                        {
+                            i += 5;
+                            do
+                                i++;
+                            while (Tools.IsWhiteSpace(state.Code[i]));
+                            operand = (Expression)Parse(state, ref i, true, false, false, true, forForLoop);
+                            if (operand == null)
                             {
-                                i += 5;
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-                                operand = (Expression)Parse(state, ref i, true, false, false, true, forForLoop);
-                                if (operand == null)
-                                {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                                }
-                                operand = new TypeOf(operand);
-                                break;
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
                             }
+                            operand = new TypeOf(operand);
+                            break;
+                        }
                         case 'v':
+                        {
+                            i += 3;
+                            do
+                                i++;
+                            while (Tools.IsWhiteSpace(state.Code[i]));
+
+                            operand = new Comma(
+                                (Expression)Parse(state, ref i, true, false, false, true, forForLoop),
+                                new Constant(JSValue.undefined));
+
+                            if (operand == null)
                             {
-                                i += 3;
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-
-                                operand = new Comma(
-                                    (Expression)Parse(state, ref i, true, false, false, true, forForLoop),
-                                    new Constant(JSValue.undefined));
-
-                                if (operand == null)
-                                {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                                }
-                                break;
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
                             }
+                            break;
+                        }
                         case 'd':
+                        {
+                            i += 5;
+                            do
+                                i++;
+                            while (Tools.IsWhiteSpace(state.Code[i]));
+                            operand = (Expression)Parse(state, ref i, true, false, false, true, forForLoop);
+                            if (operand == null)
                             {
-                                i += 5;
-                                do
-                                    i++;
-                                while (Tools.IsWhiteSpace(state.Code[i]));
-                                operand = (Expression)Parse(state, ref i, true, false, false, true, forForLoop);
-                                if (operand == null)
-                                {
-                                    var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
-                                    ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
-                                }
-                                operand = new Expressions.Delete(operand);
-                                break;
+                                var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
+                                ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
                             }
+                            operand = new Expressions.Delete(operand);
+                            break;
+                        }
                     }
                 }
                 else if (state.Code[i] == '(')
