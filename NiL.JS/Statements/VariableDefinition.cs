@@ -186,9 +186,6 @@ namespace NiL.JS.Statements
                 state.Variables.Add(variables[i]);
             }
 
-            if (initializers.Count != variables.Length)
-                throw new InvalidOperationException("initializers.Count != variables.Length");
-
             var pos = index;
             index = position;
             return new VariableDefinition(variables, initializers.ToArray(), mode)
