@@ -357,6 +357,7 @@
     <Compile Include="Extensions\JSValueExtensions.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="ResolveModuleEventArgs.cs" />
+    <Compile Include="Script.cs" />
     <Compile Include="Statements\ExportStatement.cs" />
     <Compile Include="Statements\ImportStatement.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />

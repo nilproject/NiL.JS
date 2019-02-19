@@ -586,6 +586,9 @@
     <Compile Include="..\NiL.JS\ResolveModuleEventArgs.cs">
       <Link>ResolveModuleEventArgs.cs</Link>
     </Compile>
+    <Compile Include="..\NiL.JS\Script.cs">
+      <Link>Script.cs</Link>
+    </Compile>
     <Compile Include="..\NiL.JS\Statements\Break.cs">
       <Link>Statements\Break.cs</Link>
     </Compile>

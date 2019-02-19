@@ -47,16 +47,22 @@ namespace NiL.JS
 
         public ExportTable Exports { get; } = new ExportTable();
 
-        private CodeBlock _root;
         /// <summary>
         /// Root node of AST
         /// </summary>
-        public CodeBlock Root { get { return _root; } }
+        [Obsolete]
+        public CodeBlock Root => Script.Root;
 
         /// <summary>
         /// JavaScript code, used for initialization
         /// </summary>
-        public string Code { get; private set; }
+        [Obsolete]
+        public string Code => Script.Code;
+
+        /// <summary>
+        /// The script of the module
+        /// </summary>
+        public Script Script { get; private set; }
 
         /// <summary>
         /// Root context of module
@@ -97,11 +103,11 @@ namespace NiL.JS
         /// <summary>
         /// Initializes a new Module with specified code and callback for output compiler messages.
         /// </summary>
-        /// <param name="path">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
+        /// <param name="virtualPath">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
         /// <param name="code">JavaScript code.</param>
         /// <param name="messageCallback">Callback used to output compiler messages</param>
-        public Module(string path, string code, CompilerMessageCallback messageCallback)
-            : this(path, code, messageCallback, Options.None)
+        public Module(string virtualPath, string code, CompilerMessageCallback messageCallback)
+            : this(virtualPath, code, messageCallback, Options.None)
         { }
 
         /// <summary>
@@ -117,55 +123,22 @@ namespace NiL.JS
         /// <summary>
         /// Initializes a new Module with specified code, callback for output compiler messages and compiler options.
         /// </summary>
-        /// <param name="path">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
+        /// <param name="virtualPath">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
         /// <param name="code">JavaScript code.</param>
         /// <param name="messageCallback">Callback used to output compiler messages or null</param>
         /// <param name="options">Compiler options</param>
-        public Module(string path, string code, CompilerMessageCallback messageCallback, Options options)
+        public Module(string virtualPath, string code, CompilerMessageCallback messageCallback, Options options)
         {
             if (code == null)
                 throw new ArgumentNullException();
-
-            Code = code;
+            
             Context = new Context(Context.CurrentGlobalContext, true, null);
             Context._module = this;
-            if (!string.IsNullOrWhiteSpace(path))
-            {
-                lock (_modulesCache)
-                {
-                    if (!_modulesCache.ContainsKey(path))
-                        _modulesCache[path] = this;
-                }
-
-                FilePath = path;
-            }
-
-            if (code == "")
-                return;
-
-            var internalCallback = messageCallback != null ? 
-                (level, position, length, message) => messageCallback(level, CodeCoordinates.FromTextPosition(code, position, length), message)
-                : null as InternalCompilerMessageCallback;
-
-            int i = 0;
-            _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Parser.RemoveComments(code, 0), Code, internalCallback), ref i);
-
-            var stat = new FunctionInfo();
-            Parser.Build(ref _root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, internalCallback, stat, options);
-            var body = _root as CodeBlock;
-            body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
             Context._thisBind = new GlobalObject(Context);
-            Context._strict = body._strict;
 
-            var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
-            body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
-            var bd = body as CodeNode;
-            body.Optimize(ref bd, null, internalCallback, options, stat);
-            if (tv != null)
-                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
+            Script = Script.Parse(code, messageCallback, options);
 
-            if (stat.NeedDecompose)
-                body.Decompose(ref bd);
+            Context._strict = Script.Root._strict;
         }
 
         public Module()
@@ -178,18 +151,7 @@ namespace NiL.JS
         /// </summary>
         public void Run()
         {
-            if (Code == "")
-                return;
-            
-            try
-            {
-                Context.Activate();
-                _root.Evaluate(Context);
-            }
-            finally
-            {
-                Context.Deactivate();
-            }
+            Script.Evaluate(Context);
         }
 
         /// <summary>
