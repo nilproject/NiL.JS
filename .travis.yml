@@ -10,5 +10,5 @@ script:
  - cd ../IntegrationTests
  - dotnet test -c Release
  - cd ../FunctionalTests
- - dotnet ./tt4/tiny-t4.dll
+ - dotnet ../Utility/tt4/tiny-t4.dll
  - dotnet test -c Release
