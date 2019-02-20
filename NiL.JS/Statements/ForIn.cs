@@ -70,65 +70,55 @@ namespace NiL.JS.Statements
             try
             {
                 var vStart = i;
-                result._variable = VariableDefinition.Parse(state, ref i, true);
-                if (result._variable == null)
+                var variableName = "";
+                var variableNameStart = 0;
+                var variableDef = VariableDefinition.Parse(state, ref i, true);
+                if (variableDef == null)
                 {
                     if (state.Code[i] == ';')
                         return null;
 
                     Tools.SkipSpaces(state.Code, ref i);
 
-                    int start = i;
-                    string varName;
+                    variableNameStart = i;
                     if (!Parser.ValidateName(state.Code, ref i, state.strict))
-                    {
-                        if (Parser.ValidateValue(state.Code, ref i))
-                        {
-                            while (Tools.IsWhiteSpace(state.Code[i]))
-                                i++;
-                            if (Parser.Validate(state.Code, "in", ref i))
-                                ExceptionHelper.ThrowSyntaxError("Invalid accumulator name at ", state.Code, start, i - start);
-                            else
-                                return null;
-                        }
-                        else
-                            return null;
-                    }
+                        return null;
 
-                    varName = Tools.Unescape(state.Code.Substring(start, i - start), state.strict);
-                    if (state.strict)
-                    {
-                        if (varName == "arguments" || varName == "eval")
-                            ExceptionHelper.ThrowSyntaxError("Parameters name may not be \"arguments\" or \"eval\" in strict mode at ", state.Code, start, i - start);
-                    }
+                    variableName = Tools.Unescape(state.Code.Substring(variableNameStart, i - variableNameStart), state.strict);
 
-                    result._variable = new Variable(varName, state.lexicalScopeLevel) { Position = start, Length = i - start, ScopeLevel = state.lexicalScopeLevel };
+                    variableDef = new Variable(variableName, state.lexicalScopeLevel)
+                    {
+                        Position = variableNameStart,
+                        Length = i - variableNameStart,
+                        ScopeLevel = state.lexicalScopeLevel
+                    };
 
                     Tools.SkipSpaces(state.Code, ref i);
 
                     if (state.Code[i] == '=')
                     {
-                        i++;
                         Tools.SkipSpaces(state.Code, ref i);
 
                         var defVal = ExpressionTree.Parse(state, ref i, false, false, false, true, true);
                         if (defVal == null)
                             return defVal;
 
-                        Expression exp = new AssignmentOperatorCache(result._variable as Variable ?? (result._variable as VariableDefinition)._initializers[0] as Variable);
+                        Expression exp = new AssignmentOperatorCache(variableDef as Variable);
                         exp = new Assignment(exp, defVal)
                         {
                             Position = exp.Position,
                             Length = defVal.EndPosition - exp.Position
                         };
 
-                        if (result._variable == exp._left._left)
-                            result._variable = exp;
-                        else
-                            (result._variable as VariableDefinition)._initializers[0] = exp;
+                        if (variableDef == exp._left._left)
+                            variableDef = exp;
 
                         Tools.SkipSpaces(state.Code, ref i);
                     }
+                }
+                else
+                {
+                    variableName = (variableDef as VariableDefinition)._variables[0].name;
                 }
 
                 if (!Parser.Validate(state.Code, "in", ref i))
@@ -139,20 +129,33 @@ namespace NiL.JS.Statements
                     return null;
                 }
 
+                if (state.strict)
+                {
+                    if (variableName == "arguments" || variableName == "eval")
+                        ExceptionHelper.ThrowSyntaxError(
+                            "Parameters name may not be \"arguments\" or \"eval\" in strict mode at ",
+                            state.Code,
+                            variableDef.Position,
+                            variableDef.Length);
+                }
+
+                if (variableDef is VariableDefinition)
+                {
+                    if ((variableDef as VariableDefinition)._variables.Length > 1)
+                        ExceptionHelper.ThrowSyntaxError("Too many variables in for-of loop", state.Code, i);
+                }
+
+
+                result._variable = variableDef;
+
                 state.LabelsCount = 0;
                 Tools.SkipSpaces(state.Code, ref i);
-
-                if (result._variable is VariableDefinition)
-                {
-                    if ((result._variable as VariableDefinition)._variables.Length > 1)
-                        ExceptionHelper.ThrowSyntaxError("Too many variables in for-in loop", state.Code, i);
-                }
 
                 result._source = Parser.Parse(state, ref i, CodeFragmentType.Expression);
                 Tools.SkipSpaces(state.Code, ref i);
 
                 if (state.Code[i] != ')')
-                    ExceptionHelper.Throw((new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
+                    ExceptionHelper.Throw(new SyntaxError("Expected \")\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0)));
 
                 i++;
                 state.AllowBreak.Push(true);
