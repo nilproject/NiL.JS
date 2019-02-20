@@ -142,7 +142,7 @@ namespace NiL.JS.Statements
                 if (variableDef is VariableDefinition)
                 {
                     if ((variableDef as VariableDefinition)._variables.Length > 1)
-                        ExceptionHelper.ThrowSyntaxError("Too many variables in for-of loop", state.Code, i);
+                        ExceptionHelper.ThrowSyntaxError("Too many variables in for-in loop", state.Code, i);
                 }
 
 
