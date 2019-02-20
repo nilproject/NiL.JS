@@ -12,6 +12,6 @@
     <ProjectReference Include="..\NiL.JS.NetCore\NiL.JS.NetCore.csproj" />
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="dotnet ./tt4/tiny-t4.dll" />
+    <Exec Command="dotnet ../Utility/tt4/tiny-t4.dll" />
   </Target>
 </Project>

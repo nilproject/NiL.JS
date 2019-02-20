@@ -218,6 +218,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\NiL.JS.NetCore\Script.cs">
+      <Link>Script.cs</Link>
+    </Compile>
     <Compile Include="Backward.cs" />
     <Compile Include="BaseLibrary\GeneratorFunction.cs" />
     <Compile Include="BaseLibrary\GlobalFunctions.cs" />
@@ -357,7 +360,6 @@
     <Compile Include="Extensions\JSValueExtensions.cs" />
     <Compile Include="NamespaceProvider.cs" />
     <Compile Include="ResolveModuleEventArgs.cs" />
-    <Compile Include="Script.cs" />
     <Compile Include="Statements\ExportStatement.cs" />
     <Compile Include="Statements\ImportStatement.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />

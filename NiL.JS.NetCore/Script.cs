@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NiL.JS.Core;
 using NiL.JS.Statements;
 
@@ -22,9 +19,15 @@ namespace NiL.JS
         {
             if (code == null)
                 throw new ArgumentNullException();
-            
+
             if (code == "")
-                return new Script();
+            {
+                return new Script
+                {
+                    Root = new CodeBlock(new CodeNode[0]),
+                    Code = ""
+                };
+            }
             
             var internalCallback = messageCallback != null ?
                 (level, position, length, message) => messageCallback(level, CodeCoordinates.FromTextPosition(code, position, length), message)
