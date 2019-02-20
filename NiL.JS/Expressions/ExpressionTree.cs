@@ -1098,7 +1098,7 @@ namespace NiL.JS.Expressions
                 state.CodeContext |= CodeContext.InExpression;
                 try
                 {
-                    operand = (Expression)Parser.Parse(state, ref i, (CodeFragmentType)2, false);
+                    operand = (Expression)Parser.Parse(state, ref i, CodeFragmentType.ExpressionContinuation, false);
                 }
                 finally
                 {

@@ -35,31 +35,43 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "if (", ref i) && !Parser.Validate(state.Code, "if(", ref i))
                 return null;
+
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
+
             var condition = (Expression)ExpressionTree.Parse(state, ref i);
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
+
             if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
+
             do
                 i++;
             while (Tools.IsWhiteSpace(state.Code[i]));
+
+            var combinedBody = state.Code[i] == '{';
+
             CodeNode body = Parser.Parse(state, ref i, 0);
             if (body is FunctionDefinition)
             {
                 if (state.strict)
                     ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, body.Position, body.Length, "Do not declare function in nested blocks.");
+
                 body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
+
             CodeNode elseBody = null;
+
             var pos = i;
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
-            if (i < state.Code.Length && !(body is CodeBlock) && (state.Code[i] == ';'))
+
+            if (i < state.Code.Length && !combinedBody && state.Code[i] == ';')
             {
                 do
                     i++;
@@ -70,19 +82,25 @@ namespace NiL.JS.Statements
             {
                 while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
+
                 elseBody = Parser.Parse(state, ref i, 0);
                 if (elseBody is FunctionDefinition)
                 {
                     if (state.strict)
-                        ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
+                        ExceptionHelper.Throw(new BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function."));
+
                     if (state.message != null)
                         state.message(MessageLevel.CriticalWarning, elseBody.Position, elseBody.Length, "Do not declare function in nested blocks.");
+
                     elseBody = new CodeBlock(new[] { elseBody }); // для того, чтобы не дублировать код по декларации функции, 
                     // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
                 }
             }
             else
+            {
                 i = pos;
+            }
+
             pos = index;
             index = i;
             return new IfElse()

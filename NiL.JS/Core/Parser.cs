@@ -13,7 +13,8 @@ namespace NiL.JS.Core
     public enum CodeFragmentType
     {
         Statement,
-        Expression
+        Expression,
+        ExpressionContinuation
     }
 
     internal class Rule
