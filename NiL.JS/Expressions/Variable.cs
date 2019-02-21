@@ -120,7 +120,7 @@ namespace NiL.JS.Expressions
                                 var code = context.RootContext._owner?._functionDefinition?._body?.Code;
                                 if (code == null)
                                     code = context._module?.Script.Code;
-
+                                
                                 ExceptionHelper.ThrowVariableIsNotDefined(_variableName, code, Position, Length, this);
                             }
                         }

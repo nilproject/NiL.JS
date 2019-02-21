@@ -542,23 +542,16 @@ namespace NiL.JS.BaseLibrary
 
             if (arrayLike._valueType < JSValueType.Object)
                 arrayLike = arrayLike.ToObject();
+            
+            var simpleFunction = false;
+            if (args.Length == 1)
+            {
+                simpleFunction = true;
+            }
 
             Array result = new Array();
 
-            var newArgs = new Arguments();
-            for (var i = 1; i < args.Length; i++)
-            {
-                newArgs.Add(args[i]);
-            }
-
-            var simpleFunction = false;
-            if (newArgs.Length == 0)
-            {
-                simpleFunction = true;
-                newArgs.Add(Function.Empty);
-            }
-
-            var len = iterateImpl(arrayLike, newArgs, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            Func<JSValue, long, JSValue, ICallable, bool> callback = (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -568,9 +561,34 @@ namespace NiL.JS.BaseLibrary
                     result[(int)index] = jsCallback.Call(thisBind, new Arguments { value, index, arrayLike }).CloneImpl(false);
 
                 return true;
-            });
+            };
 
-            result.SetLenght(len);
+            if (arrayLike.IsIterable())
+            {
+                var index = 0;
+                foreach (var item in arrayLike.AsIterable().AsEnumerable())
+                {
+                    callback(item, index++, args[2], simpleFunction ? Function.Empty : args[1].As<ICallable>());
+                }
+
+                result.SetLenght(index);
+            }
+            else
+            {
+                var newArgs = new Arguments();
+                for (var i = 1; i < args.Length; i++)
+                {
+                    newArgs.Add(args[i]);
+                }
+
+                if (simpleFunction)
+                {
+                    newArgs.Add(Function.Empty);
+                }
+
+                var len = iterateImpl(arrayLike, newArgs, undefined, undefined, false, callback);
+                result.SetLenght(len);
+            }
 
             return result;
         }
@@ -644,7 +662,7 @@ namespace NiL.JS.BaseLibrary
             return result != -1L;
         }
 
-        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, JSValue endIndexSrc, bool processMissing, Func<JSValue, long, JSValue, Function, bool> callback)
+        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, JSValue endIndexSrc, bool processMissing, Func<JSValue, long, JSValue, ICallable, bool> callback)
         {
             Array arraySrc = self._oValue as Array;
             bool nativeMode = arraySrc != null;
@@ -666,13 +684,13 @@ namespace NiL.JS.BaseLibrary
             var length = nativeMode ? arraySrc._data.Length : Tools.getLengthOfArraylike(self, false);
             long startIndex = 0;
             long endIndex = 0;
-            Function jsCallback = null;
+            ICallable jsCallback = null;
             JSValue thisBind = null;
 
             if (args != null)
             {
                 // forEach, map, filter, every, some, reduce
-                jsCallback = args[0] == null ? null : args[0]._oValue as Function;
+                jsCallback = args[0] == null ? null : args[0]._oValue as ICallable;
                 if (jsCallback == null)
                     ExceptionHelper.Throw(new TypeError("Callback is not a function."));
 
