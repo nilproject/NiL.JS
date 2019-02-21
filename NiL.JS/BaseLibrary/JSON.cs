@@ -224,7 +224,7 @@ namespace NiL.JS.BaseLibrary
                 if (code.Length <= pos)
                 {
                     if (frame.state != ParseState.End)
-                        ExceptionHelper.Throw(new SyntaxError("Unexpected end of string."));
+                        ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
                     else
                         break;
                 }
@@ -285,13 +285,13 @@ namespace NiL.JS.BaseLibrary
                     pos++;
 
                 if (code.Length <= pos && frame.state != ParseState.End)
-                    ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
+                    ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
             }
 
             if ((stack.Count != 1)
                 || (code.Length > pos)
                 || (stack.Peek().state != ParseState.End))
-                ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
 
             return stack.Pop().value;
         }

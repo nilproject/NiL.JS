@@ -56,7 +56,7 @@ namespace NiL.JS.Statements
             if (body is FunctionDefinition)
             {
                 if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, body.Position, body.Length, "Do not declare function in nested blocks.");
+                    state.message(MessageLevel.CriticalWarning, body.Position, body.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
 
                 body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
@@ -84,7 +84,7 @@ namespace NiL.JS.Statements
                 if (elseBody is FunctionDefinition)
                 {
                     if (state.message != null)
-                        state.message(MessageLevel.CriticalWarning, elseBody.Position, elseBody.Length, "Do not declare function in nested blocks.");
+                        state.message(MessageLevel.CriticalWarning, elseBody.Position, elseBody.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
 
                     elseBody = new CodeBlock(new[] { elseBody }); // для того, чтобы не дублировать код по декларации функции, 
                     // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.

@@ -835,7 +835,7 @@ namespace NiL.JS.Expressions
                                     ExceptionHelper.ThrowSyntaxError("Expected ','", state.Code, i);
                             }
                             if (i + 1 == state.Code.Length)
-                                ExceptionHelper.ThrowSyntaxError("Unexpected end of source", state.Code, i);
+                                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource, state.Code, i);
 
                             var spread = Parser.Validate(state.Code, "...", ref i);
                             args.Add(Parse(state, ref i, false, false));
@@ -1192,7 +1192,7 @@ namespace NiL.JS.Expressions
                                     i++;
                                 while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
-                                    ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
+                                    ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
 
                                 operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
 
@@ -1228,7 +1228,7 @@ namespace NiL.JS.Expressions
                                     i++;
                                 while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
                                 if (i >= state.Code.Length)
-                                    ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
+                                    ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
 
                                 operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
 

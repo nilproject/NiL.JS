@@ -47,7 +47,7 @@ namespace NiL.JS.Statements
             if (body is FunctionDefinition)
             {
                 if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, body.Position, body.Length, "Do not declare function in nested blocks.");
+                    state.message(MessageLevel.CriticalWarning, body.Position, body.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
                 body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
@@ -58,7 +58,7 @@ namespace NiL.JS.Statements
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
-                ExceptionHelper.Throw(new SyntaxError("Unexpected end of source."));
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
             if (!Parser.Validate(state.Code, "while", ref i))
                 ExceptionHelper.Throw((new SyntaxError("Expected \"while\" at + " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             while (Tools.IsWhiteSpace(state.Code[i]))

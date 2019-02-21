@@ -32,7 +32,7 @@ namespace NiL.JS.Statements
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
-                ExceptionHelper.Throw(new SyntaxError("Unexpected end of line."));
+                ExceptionHelper.Throw(new SyntaxError(Strings.UnexpectedEndOfSource));
             if (state.Code[i] != '{')
                 ExceptionHelper.Throw((new SyntaxError("Invalid try statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
             var b = CodeBlock.Parse(state, ref i);
