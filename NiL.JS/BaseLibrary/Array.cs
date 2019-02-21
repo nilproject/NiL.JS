@@ -532,6 +532,50 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        [ArgumentsCount(1)]
+        public static JSValue from(Arguments args)
+        {
+            JSValue arrayLike = args?[0] ?? undefined;
+
+            if (arrayLike == null)
+                arrayLike = undefined;
+
+            if (arrayLike._valueType < JSValueType.Object)
+                arrayLike = arrayLike.ToObject();
+
+            Array result = new Array();
+
+            var newArgs = new Arguments();
+            for (var i = 1; i < args.Length; i++)
+            {
+                newArgs.Add(args[i]);
+            }
+
+            var simpleFunction = false;
+            if (newArgs.Length == 0)
+            {
+                simpleFunction = true;
+                newArgs.Add(Function.Empty);
+            }
+
+            var len = iterateImpl(arrayLike, newArgs, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            {
+                value = value.CloneImpl(false);
+
+                if (simpleFunction)
+                    result[(int)index] = value;
+                else
+                    result[(int)index] = jsCallback.Call(thisBind, new Arguments { value, index, arrayLike }).CloneImpl(false);
+
+                return true;
+            });
+
+            result.SetLenght(len);
+
+            return result;
+        }
+
+        [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
         public static JSValue forEach(JSValue self, Arguments args)
@@ -607,10 +651,15 @@ namespace NiL.JS.BaseLibrary
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
             {
 #if (PORTABLE || NETCORE)
-                ExceptionHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Trying to call method for null or undefined"));
 #else
                 var stackTrace = new System.Diagnostics.StackTrace();
-                ExceptionHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
+                var method = stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod();
+                var fullMethodName = "Array.";
+                if (method.GetCustomAttribute(typeof(InstanceMemberAttribute)) != null)
+                    fullMethodName += "prototype.";
+                fullMethodName += method.Name;
+                ExceptionHelper.Throw(new TypeError("Can not call " + fullMethodName + " for null or undefined"));
 #endif
             }
 
@@ -2124,56 +2173,56 @@ namespace NiL.JS.BaseLibrary
                     switch (key._valueType)
                     {
                         case JSValueType.Integer:
-                            {
-                                isIndex = (key._iValue & int.MinValue) == 0;
-                                index = key._iValue;
-                                break;
-                            }
+                        {
+                            isIndex = (key._iValue & int.MinValue) == 0;
+                            index = key._iValue;
+                            break;
+                        }
                         case JSValueType.Double:
-                            {
-                                isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
-                                if (isIndex)
-                                    index = (int)(uint)key._dValue;
-                                break;
-                            }
+                        {
+                            isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
+                            if (isIndex)
+                                index = (int)(uint)key._dValue;
+                            break;
+                        }
                         case JSValueType.String:
+                        {
+                            if (string.CompareOrdinal("length", key._oValue.ToString()) == 0)
+                                return length;
+
+                            var skey = key._oValue.ToString();
+                            if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
                             {
-                                if (string.CompareOrdinal("length", key._oValue.ToString()) == 0)
+                                var dindex = 0.0;
+                                int si = 0;
+                                if (Tools.ParseNumber(skey, ref si, out dindex)
+                                    && (si == skey.Length)
+                                    && dindex >= 0
+                                    && dindex < uint.MaxValue
+                                    && (long)dindex == dindex)
+                                {
+                                    isIndex = true;
+                                    index = (int)(uint)dindex;
+                                }
+                            }
+
+                            break;
+                        }
+                        default:
+                        {
+                            if (key._valueType >= JSValueType.Object)
+                            {
+                                key = key.ToPrimitiveValue_String_Value();
+                                var keyValue = key.Value;
+                                if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
                                     return length;
 
-                                var skey = key._oValue.ToString();
-                                if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
-                                {
-                                    var dindex = 0.0;
-                                    int si = 0;
-                                    if (Tools.ParseNumber(skey, ref si, out dindex)
-                                        && (si == skey.Length)
-                                        && dindex >= 0
-                                        && dindex < uint.MaxValue
-                                        && (long)dindex == dindex)
-                                    {
-                                        isIndex = true;
-                                        index = (int)(uint)dindex;
-                                    }
-                                }
-
-                                break;
+                                if (key.ValueType < JSValueType.Object)
+                                    repeat = true;
                             }
-                        default:
-                            {
-                                if (key._valueType >= JSValueType.Object)
-                                {
-                                    key = key.ToPrimitiveValue_String_Value();
-                                    var keyValue = key.Value;
-                                    if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
-                                        return length;
 
-                                    if (key.ValueType < JSValueType.Object)
-                                        repeat = true;
-                                }
-
-                                break;
-                            }
+                            break;
+                        }
                     }
                 }
                 while (repeat);
