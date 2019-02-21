@@ -55,9 +55,6 @@ namespace NiL.JS.Statements
             CodeNode body = Parser.Parse(state, ref i, 0);
             if (body is FunctionDefinition)
             {
-                if (state.strict)
-                    ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
-
                 if (state.message != null)
                     state.message(MessageLevel.CriticalWarning, body.Position, body.Length, "Do not declare function in nested blocks.");
 
@@ -86,9 +83,6 @@ namespace NiL.JS.Statements
                 elseBody = Parser.Parse(state, ref i, 0);
                 if (elseBody is FunctionDefinition)
                 {
-                    if (state.strict)
-                        ExceptionHelper.Throw(new BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function."));
-
                     if (state.message != null)
                         state.message(MessageLevel.CriticalWarning, elseBody.Position, elseBody.Length, "Do not declare function in nested blocks.");
 

@@ -600,11 +600,6 @@ namespace NiL.JS.Expressions
                     ExceptionHelper.ThrowSyntaxError("Function must have name", state.Code, index);
                 }
 
-                if (state.strict && state.functionScopeLevel != state.lexicalScopeLevel)
-                {
-                    ExceptionHelper.ThrowSyntaxError("In strict mode code, functions can only be declared at top level or immediately within other function.", state.Code, index);
-                }
-
                 state.Variables.Add(func.reference._descriptor);
             }
 
