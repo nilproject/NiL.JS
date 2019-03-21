@@ -97,9 +97,9 @@ namespace NiL.JS.Core
             this._dynamicValues = dynamicValues;
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
-            return _original.Childs;
+            return _original.Children;
         }
 
         public override JSValue Evaluate(Context context)

@@ -227,7 +227,7 @@ namespace NiL.JS.Statements
             return JSValue.notExists;
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             var res = new List<CodeNode>();
             res.AddRange(_initializers);
@@ -240,13 +240,13 @@ namespace NiL.JS.Statements
             if (_kind > VariableKind.FunctionScope)
                 stats.WithLexicalEnvironment = true;
 
-            int actualChilds = 0;
+            int actualChildren = 0;
             for (int i = 0; i < _initializers.Length; i++)
             {
                 Parser.Build(ref _initializers[i], message != null ? 2 : expressionDepth, variables, codeContext, message, stats, opts);
                 if (_initializers[i] != null)
                 {
-                    actualChilds++;
+                    actualChildren++;
 
                     if (_kind == VariableKind.ConstantInLexicalScope && _initializers[i] is Assignment)
                     {
@@ -259,16 +259,16 @@ namespace NiL.JS.Statements
                 }
             }
 
-            if (actualChilds < _initializers.Length)
+            if (actualChildren < _initializers.Length)
             {
-                if ((opts & Options.SuppressUselessStatementsElimination) == 0 && actualChilds == 0)
+                if ((opts & Options.SuppressUselessStatementsElimination) == 0 && actualChildren == 0)
                 {
                     _this = null;
                     Eliminated = true;
                     return false;
                 }
 
-                var newinits = new Expression[actualChilds];
+                var newinits = new Expression[actualChildren];
                 for (int i = 0, j = 0; i < _initializers.Length; i++)
                     if (_initializers[i] != null)
                         newinits[j++] = _initializers[i];

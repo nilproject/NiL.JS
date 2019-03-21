@@ -130,7 +130,7 @@ namespace NiL.JS.Expressions
             return res;
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             return elements;
         }

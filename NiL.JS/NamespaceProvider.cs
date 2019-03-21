@@ -48,7 +48,7 @@ namespace NiL.JS
             addTypes(args.LoadedAssembly);
         }
 
-        private BinaryTree<JSValue> childs;
+        private BinaryTree<JSValue> children;
 
         /// <summary>
         /// Contract NamespacesProvider
@@ -70,7 +70,7 @@ namespace NiL.JS
             {
                 var name = key.ToString();
                 JSValue res = null;
-                if (childs != null && childs.TryGetValue(name, out res))
+                if (children != null && children.TryGetValue(name, out res))
                     return res;
                 string reqname = Namespace + "." + name;
                 var selection = types.StartsWith(reqname).GetEnumerator();
@@ -118,10 +118,10 @@ namespace NiL.JS
                 {
                     res = Proxy.GetGenericTypeSelector(ut);
 
-                    if (childs == null)
-                        childs = new BinaryTree<JSValue>();
+                    if (children == null)
+                        children = new BinaryTree<JSValue>();
 
-                    childs[name] = res;
+                    children[name] = res;
                     return res;
                 }
 
@@ -133,10 +133,10 @@ namespace NiL.JS
                 {
                     res = new NamespaceProvider(reqname);
 
-                    if (childs == null)
-                        childs = new BinaryTree<JSValue>();
+                    if (children == null)
+                        children = new BinaryTree<JSValue>();
 
-                    childs.Add(name, res);
+                    children.Add(name, res);
                     return res;
                 }
             }

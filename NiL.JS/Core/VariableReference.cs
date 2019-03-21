@@ -78,7 +78,7 @@ namespace NiL.JS.Core
 
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             return null;
         }

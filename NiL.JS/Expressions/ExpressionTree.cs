@@ -1060,7 +1060,7 @@ namespace NiL.JS.Expressions
                         while (Tools.IsWhiteSpace(state.Code[i]))
                             i++;
 
-                        if ((state.CodeContext & CodeContext.InClassDefenition) == 0
+                        if ((state.CodeContext & CodeContext.InClassDefinition) == 0
                             || (state.Code[i] != '.'
                                 && state.Code[i] != '['
                                 && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0)))
@@ -1410,7 +1410,7 @@ namespace NiL.JS.Expressions
             throw new InvalidOperationException();
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             throw new InvalidOperationException();
         }

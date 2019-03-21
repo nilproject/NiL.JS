@@ -131,7 +131,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             var res = new List<CodeNode>()
             {

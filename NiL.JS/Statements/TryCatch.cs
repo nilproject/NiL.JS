@@ -325,7 +325,7 @@ namespace NiL.JS.Statements
                 finallyBody.Optimize(ref finallyBody, owner, message, opts, stats);
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             var res = new List<CodeNode>()
             {

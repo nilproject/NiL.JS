@@ -65,7 +65,7 @@ namespace NiL.JS.Statements
             return JSValue.notExists;
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             if (value != null)
                 return new CodeNode[] { value };

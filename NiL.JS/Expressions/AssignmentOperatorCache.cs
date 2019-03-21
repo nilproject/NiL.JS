@@ -83,9 +83,9 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
-            return _left.Childs;
+            return _left.Children;
         }
 
         public override T Visit<T>(Visitor<T> visitor)

@@ -612,7 +612,7 @@ namespace NiL.JS.Expressions
             return MakeFunction(context);
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             var res = new CodeNode[1 + parameters.Length + (Reference != null ? 1 : 0)];
             for (var i = 0; i < parameters.Length; i++)
@@ -923,7 +923,7 @@ namespace NiL.JS.Expressions
                 if (kind == FunctionKind.Arrow
                     && _body._lines.Length == 1
                     && _body.Position == _body._lines[0].Position)
-                    code.Append(_body._lines[0].Childs[0].ToString());
+                    code.Append(_body._lines[0].Children[0].ToString());
                 else
                     code.Append((object)_body ?? "{ [native code] }");
             }
