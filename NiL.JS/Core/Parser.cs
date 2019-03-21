@@ -177,8 +177,26 @@ namespace NiL.JS.Core
                             if (code.Length == index)
                                 return false;
                         }
+
+                        if (code[index] == '=')
+                        {
+                            index++;
+                            Tools.SkipSpaces(code, ref index);
+                            var balance = 0;
+                            while (balance > 0 || (code[index] != ',' && code[index] != ')'))
+                            {
+                                if (code[index] == '(')
+                                    balance++;
+
+                                if (code[index] == ')')
+                                    balance--;
+
+                                index++;
+                            }
+                        }
                     }
                     while (code[index] == ',');
+
                     if (code[index] != ')')
                         return false;
                 }
