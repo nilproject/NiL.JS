@@ -92,7 +92,7 @@ namespace Examples.Syntax_extensions
 
         public override void Run()
         {
-            typeof(System.Windows.Forms.Form).ToString(); // Hack for loading System.Windows.Forms.Form assembly
+            typeof(System.Windows.Forms.Form).ToString(); // Hack for loading System.Windows.Forms assembly
 
             Parser.DefineCustomCodeFragment(typeof(UsingStatement));
 
