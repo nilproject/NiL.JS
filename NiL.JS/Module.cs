@@ -131,7 +131,9 @@ namespace NiL.JS
         {
             if (code == null)
                 throw new ArgumentNullException();
-            
+
+            this.FilePath = virtualPath;
+
             Context = new Context(Context.CurrentGlobalContext, true, null);
             Context._module = this;
             Context._thisBind = new GlobalObject(Context);

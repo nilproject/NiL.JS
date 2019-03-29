@@ -22,12 +22,11 @@ namespace NiL.JS.Statements
             Tools.SkipSpaces(state.Code, ref index);
 
             var result = new ImportStatement();
-            int start = 0;
 
+            var start = index;
             if (!Parser.ValidateString(state.Code, ref index, true))
             {
                 var onlyDefault = false;
-                start = index;
                 if (Parser.ValidateName(state.Code, ref index))
                 {
                     var defaultAlias = state.Code.Substring(start, index - start);
@@ -72,10 +71,10 @@ namespace NiL.JS.Statements
                 Tools.SkipSpaces(state.Code, ref index);
 
                 start = index;
-            }
 
-            if (!Parser.ValidateString(state.Code, ref index, true))
-                ExceptionHelper.ThrowSyntaxError("Expected module name", state.Code, index);
+                if (!Parser.ValidateString(state.Code, ref index, true))
+                    ExceptionHelper.ThrowSyntaxError("Expected module name", state.Code, index);
+            }
 
             result._moduleName = Tools.Unescape(state.Code.Substring(start + 1, index - start - 2), false);
 

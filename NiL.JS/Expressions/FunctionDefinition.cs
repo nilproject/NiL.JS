@@ -341,9 +341,6 @@ namespace NiL.JS.Expressions
 
                 if (code[position] == '=')
                 {
-//                    if (kind == FunctionKind.Arrow)
-//                        ExceptionHelper.ThrowSyntaxError("Parameters of arrow-function cannot have an initializer", code, position);
-
                     if (rest)
                         ExceptionHelper.ThrowSyntaxError("Rest parameters can not have an initializer", code, position);
                     do
