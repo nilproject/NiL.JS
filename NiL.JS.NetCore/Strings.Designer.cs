@@ -11,6 +11,7 @@
 namespace NiL.JS {
     using System;
     using System.Reflection;
+    using NiL.JS.Backward;
 
 
     /// <summary>
