@@ -20,9 +20,9 @@ namespace NiL.JS
     /// </summary>
     public class Module
     {
-        private static readonly char[] __pathSplitChars = new[] { '\\', '/' };
-        private static readonly StringMap<Module> __modulesCache = new StringMap<Module>();
-        private static List<ResolveModuleHandler> __resolveModuleHandlers = new List<ResolveModuleHandler> { defaultModuleResolver };
+        private static readonly char[] _pathSplitChars = new[] { '\\', '/' };
+        private static readonly StringMap<Module> _modulesCache = new StringMap<Module>();
+        private static List<ResolveModuleHandler> _resolveModuleHandlers = new List<ResolveModuleHandler> { defaultModuleResolver };
 
         /// <summary>
         /// Occurs when module not found in cache
@@ -32,28 +32,34 @@ namespace NiL.JS
             add
             {
                 if (value != null)
-                    lock (__resolveModuleHandlers)
-                        __resolveModuleHandlers.Add(value);
+                    lock (_resolveModuleHandlers)
+                        _resolveModuleHandlers.Add(value);
             }
             remove
             {
-                lock (__resolveModuleHandlers)
-                    __resolveModuleHandlers.Remove(value);
+                lock (_resolveModuleHandlers)
+                    _resolveModuleHandlers.Remove(value);
             }
         }
 
         public ExportTable Exports { get; } = new ExportTable();
 
-        private CodeBlock _root;
         /// <summary>
         /// Root node of AST
         /// </summary>
-        public CodeBlock Root { get { return _root; } }
+        [Obsolete]
+        public CodeBlock Root => Script.Root;
 
         /// <summary>
         /// JavaScript code, used for initialization
         /// </summary>
-        public string Code { get; private set; }
+        [Obsolete]
+        public string Code => Script.Code;
+
+        /// <summary>
+        /// The script of the module
+        /// </summary>
+        public Script Script { get; private set; }
 
         /// <summary>
         /// Root context of module
@@ -94,11 +100,11 @@ namespace NiL.JS
         /// <summary>
         /// Initializes a new Module with specified code and callback for output compiler messages.
         /// </summary>
-        /// <param name="path">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
+        /// <param name="virtualPath">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
         /// <param name="code">JavaScript code.</param>
         /// <param name="messageCallback">Callback used to output compiler messages</param>
-        public Module(string path, string code, CompilerMessageCallback messageCallback)
-            : this(path, code, messageCallback, Options.None)
+        public Module(string virtualPath, string code, CompilerMessageCallback messageCallback)
+            : this(virtualPath, code, messageCallback, Options.None)
         { }
 
         /// <summary>
@@ -114,55 +120,33 @@ namespace NiL.JS
         /// <summary>
         /// Initializes a new Module with specified code, callback for output compiler messages and compiler options.
         /// </summary>
-        /// <param name="path">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
+        /// <param name="virtualPath">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
         /// <param name="code">JavaScript code.</param>
         /// <param name="messageCallback">Callback used to output compiler messages or null</param>
         /// <param name="options">Compiler options</param>
-        public Module(string path, string code, CompilerMessageCallback messageCallback, Options options)
+        public Module(string virtualPath, string code, CompilerMessageCallback messageCallback, Options options)
         {
             if (code == null)
                 throw new ArgumentNullException();
 
-            Code = code;
-            Context = new Context(Context.CurrentGlobalContext, true, null);
-            Context._module = this;
-            if (!string.IsNullOrWhiteSpace(path))
+            if (!string.IsNullOrWhiteSpace(virtualPath))
             {
-                lock (__modulesCache)
+                lock (_modulesCache)
                 {
-                    if (!__modulesCache.ContainsKey(path))
-                        __modulesCache[path] = this;
+                    if (!_modulesCache.ContainsKey(virtualPath))
+                        _modulesCache[virtualPath] = this;
                 }
 
-                FilePath = path;
+                FilePath = virtualPath;
             }
 
-            if (code == "")
-                return;
-
-            var internalCallback = messageCallback != null ?
-                (level, position, length, message) => messageCallback(level, CodeCoordinates.FromTextPosition(code, position, length), message)
-                : null as InternalCompilerMessageCallback;
-
-            int i = 0;
-            _root = (CodeBlock)CodeBlock.Parse(new ParseInfo(Parser.RemoveComments(code, 0), Code, internalCallback), ref i);
-
-            var stat = new FunctionInfo();
-            Parser.Build(ref _root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, internalCallback, stat, options);
-            var body = _root as CodeBlock;
-            body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+            Context = new Context(Context.CurrentGlobalContext, true, null);
+            Context._module = this;
             Context._thisBind = new GlobalObject(Context);
-            Context._strict = body._strict;
 
-            var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
-            body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
-            var bd = body as CodeNode;
-            body.Optimize(ref bd, null, internalCallback, options, stat);
-            if (tv != null)
-                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
+            Script = Script.Parse(code, messageCallback, options);
 
-            if (stat.NeedDecompose)
-                body.Decompose(ref bd);
+            Context._strict = Script.Root._strict;
         }
 
         public Module()
@@ -175,18 +159,7 @@ namespace NiL.JS
         /// </summary>
         public void Run()
         {
-            if (Code == "")
-                return;
-
-            try
-            {
-                Context.Activate();
-                _root.Evaluate(Context);
-            }
-            finally
-            {
-                Context.Deactivate();
-            }
+            Script.Evaluate(Context);
         }
 
         /// <summary>
@@ -222,11 +195,14 @@ namespace NiL.JS
 
             var e = new ResolveModuleEventArgs(path);
 
-            for (var i = 0; i < __resolveModuleHandlers.Count && e.Module == null; i++)
-                __resolveModuleHandlers[i](this, e);
+            for (var i = 0; i < _resolveModuleHandlers.Count && e.Module == null; i++)
+                _resolveModuleHandlers[i](this, e);
 
-            if (e.Module != null && e.AddToCache && !__modulesCache.ContainsKey(e.ModulePath))
-                __modulesCache[e.ModulePath] = e.Module;
+            if (e.Module == null)
+                throw new InvalidOperationException("Unable to load module \"" + path + "\"");
+
+            if (e.AddToCache && !_modulesCache.ContainsKey(e.ModulePath))
+                _modulesCache[e.ModulePath] = e.Module;
 
             if (e.Module.FilePath == null)
                 e.Module.FilePath = path;
@@ -236,8 +212,8 @@ namespace NiL.JS
 
         private string processPath(string path)
         {
-            var thisName = this.FilePath.Split(__pathSplitChars);
-            var requestedName = path.Split(__pathSplitChars);
+            var thisName = this.FilePath.Split(_pathSplitChars);
+            var requestedName = path.Split(_pathSplitChars);
             var pathTokens = new LinkedList<string>(thisName);
 
             if (requestedName.Length > 0 && requestedName[0] == "")
@@ -276,23 +252,23 @@ namespace NiL.JS
         private static void defaultModuleResolver(Module sender, ResolveModuleEventArgs e)
         {
             Module result;
-            __modulesCache.TryGetValue(e.ModulePath, out result);
+            _modulesCache.TryGetValue(e.ModulePath, out result);
             e.Module = result;
         }
 
         public static void ClearModuleCache()
         {
-            lock (__modulesCache)
+            lock (_modulesCache)
             {
-                __modulesCache.Clear();
+                _modulesCache.Clear();
             }
         }
 
         public static bool RemoveFromModuleCache(string path)
         {
-            lock (__modulesCache)
+            lock (_modulesCache)
             {
-                return __modulesCache.Remove(path);
+                return _modulesCache.Remove(path);
             }
         }
     }

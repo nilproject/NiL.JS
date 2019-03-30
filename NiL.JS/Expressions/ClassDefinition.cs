@@ -345,7 +345,7 @@ namespace NiL.JS.Expressions
                         if (flds.ContainsKey(fieldName))
                             ExceptionHelper.Throw(new SyntaxError("Trying to redefinition member \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
 
-                        state.CodeContext |= CodeContext.InClassDefenition;
+                        state.CodeContext |= CodeContext.InClassDefinition;
                         state.CodeContext &= ~CodeContext.InGenerator;
 
                         i = s;
@@ -378,7 +378,7 @@ namespace NiL.JS.Expressions
                         new ParseInfo(ctorCode, ctorCode, null)
                         {
                             strict = true,
-                            CodeContext = CodeContext.InClassConstructor | CodeContext.InClassDefenition
+                            CodeContext = CodeContext.InClassConstructor | CodeContext.InClassDefinition
                         },
                         ref ctorIndex,
                         FunctionKind.Method);
@@ -427,7 +427,7 @@ namespace NiL.JS.Expressions
                 variables[_name] = reference._descriptor;
             }
 
-            Parser.Build(ref _constructor, expressionDepth, variables, codeContext | CodeContext.InClassDefenition | CodeContext.InClassConstructor, message, stats, opts);
+            Parser.Build(ref _constructor, expressionDepth, variables, codeContext | CodeContext.InClassDefinition | CodeContext.InClassConstructor, message, stats, opts);
             Parser.Build(ref _baseClass, expressionDepth, variables, codeContext, message, stats, opts);
 
             for (var i = 0; i < _members.Length; i++)
@@ -437,7 +437,7 @@ namespace NiL.JS.Expressions
                     ref _members[i]._value,
                     expressionDepth,
                     variables,
-                    codeContext | CodeContext.InClassDefenition | (_members[i]._static ? CodeContext.InStaticMember : 0),
+                    codeContext | CodeContext.InClassDefinition | (_members[i]._static ? CodeContext.InStaticMember : 0),
                     message,
                     stats,
                     opts
@@ -574,7 +574,7 @@ namespace NiL.JS.Expressions
             return visitor.Visit(this);
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             var result = new List<CodeNode>();
 

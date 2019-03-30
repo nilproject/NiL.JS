@@ -341,9 +341,6 @@ namespace NiL.JS.Expressions
 
                 if (code[position] == '=')
                 {
-                    if (kind == FunctionKind.Arrow)
-                        ExceptionHelper.ThrowSyntaxError("Parameters of arrow-function cannot have an initializer", code, position);
-
                     if (rest)
                         ExceptionHelper.ThrowSyntaxError("Rest parameters can not have an initializer", code, position);
                     do
@@ -600,11 +597,6 @@ namespace NiL.JS.Expressions
                     ExceptionHelper.ThrowSyntaxError("Function must have name", state.Code, index);
                 }
 
-                if (state.strict && state.functionScopeLevel != state.lexicalScopeLevel)
-                {
-                    ExceptionHelper.ThrowSyntaxError("In strict mode code, functions can only be declared at top level or immediately within other function.", state.Code, index);
-                }
-
                 state.Variables.Add(func.reference._descriptor);
             }
 
@@ -617,7 +609,7 @@ namespace NiL.JS.Expressions
             return MakeFunction(context);
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             var res = new CodeNode[1 + parameters.Length + (Reference != null ? 1 : 0)];
             for (var i = 0; i < parameters.Length; i++)
@@ -928,7 +920,7 @@ namespace NiL.JS.Expressions
                 if (kind == FunctionKind.Arrow
                     && _body._lines.Length == 1
                     && _body.Position == _body._lines[0].Position)
-                    code.Append(_body._lines[0].Childs[0].ToString());
+                    code.Append(_body._lines[0].Children[0].ToString());
                 else
                     code.Append((object)_body ?? "{ [native code] }");
             }

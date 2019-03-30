@@ -404,7 +404,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             return _values;
         }

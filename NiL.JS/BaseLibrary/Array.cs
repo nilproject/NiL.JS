@@ -532,6 +532,68 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        [ArgumentsCount(1)]
+        public static JSValue from(Arguments args)
+        {
+            JSValue arrayLike = args?[0] ?? undefined;
+
+            if (arrayLike == null)
+                arrayLike = undefined;
+
+            if (arrayLike._valueType < JSValueType.Object)
+                arrayLike = arrayLike.ToObject();
+            
+            var simpleFunction = false;
+            if (args.Length == 1)
+            {
+                simpleFunction = true;
+            }
+
+            Array result = new Array();
+
+            Func<JSValue, long, JSValue, ICallable, bool> callback = (value, index, thisBind, jsCallback) =>
+            {
+                value = value.CloneImpl(false);
+
+                if (simpleFunction)
+                    result[(int)index] = value;
+                else
+                    result[(int)index] = jsCallback.Call(thisBind, new Arguments { value, index, arrayLike }).CloneImpl(false);
+
+                return true;
+            };
+
+            if (arrayLike.IsIterable())
+            {
+                var index = 0;
+                foreach (var item in arrayLike.AsIterable().AsEnumerable())
+                {
+                    callback(item, index++, args[2], simpleFunction ? Function.Empty : args[1].As<ICallable>());
+                }
+
+                result.SetLenght(index);
+            }
+            else
+            {
+                var newArgs = new Arguments();
+                for (var i = 1; i < args.Length; i++)
+                {
+                    newArgs.Add(args[i]);
+                }
+
+                if (simpleFunction)
+                {
+                    newArgs.Add(Function.Empty);
+                }
+
+                var len = iterateImpl(arrayLike, newArgs, undefined, undefined, false, callback);
+                result.SetLenght(len);
+            }
+
+            return result;
+        }
+
+        [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
         public static JSValue forEach(JSValue self, Arguments args)
@@ -600,30 +662,35 @@ namespace NiL.JS.BaseLibrary
             return result != -1L;
         }
 
-        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, JSValue endIndexSrc, bool processMissing, Func<JSValue, long, JSValue, Function, bool> callback)
+        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, JSValue endIndexSrc, bool processMissing, Func<JSValue, long, JSValue, ICallable, bool> callback)
         {
             Array arraySrc = self._oValue as Array;
             bool nativeMode = arraySrc != null;
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
             {
 #if (PORTABLE || NETCORE)
-                ExceptionHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Trying to call method for null or undefined"));
 #else
                 var stackTrace = new System.Diagnostics.StackTrace();
-                ExceptionHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
+                var method = stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod();
+                var fullMethodName = "Array.";
+                if (method.GetCustomAttribute(typeof(InstanceMemberAttribute)) != null)
+                    fullMethodName += "prototype.";
+                fullMethodName += method.Name;
+                ExceptionHelper.Throw(new TypeError("Can not call " + fullMethodName + " for null or undefined"));
 #endif
             }
 
             var length = nativeMode ? arraySrc._data.Length : Tools.getLengthOfArraylike(self, false);
             long startIndex = 0;
             long endIndex = 0;
-            Function jsCallback = null;
+            ICallable jsCallback = null;
             JSValue thisBind = null;
 
             if (args != null)
             {
                 // forEach, map, filter, every, some, reduce
-                jsCallback = args[0] == null ? null : args[0]._oValue as Function;
+                jsCallback = args[0] == null ? null : args[0]._oValue as ICallable;
                 if (jsCallback == null)
                     ExceptionHelper.Throw(new TypeError("Callback is not a function."));
 
@@ -2124,56 +2191,56 @@ namespace NiL.JS.BaseLibrary
                     switch (key._valueType)
                     {
                         case JSValueType.Integer:
-                            {
-                                isIndex = (key._iValue & int.MinValue) == 0;
-                                index = key._iValue;
-                                break;
-                            }
+                        {
+                            isIndex = (key._iValue & int.MinValue) == 0;
+                            index = key._iValue;
+                            break;
+                        }
                         case JSValueType.Double:
-                            {
-                                isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
-                                if (isIndex)
-                                    index = (int)(uint)key._dValue;
-                                break;
-                            }
+                        {
+                            isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
+                            if (isIndex)
+                                index = (int)(uint)key._dValue;
+                            break;
+                        }
                         case JSValueType.String:
+                        {
+                            if (string.CompareOrdinal("length", key._oValue.ToString()) == 0)
+                                return length;
+
+                            var skey = key._oValue.ToString();
+                            if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
                             {
-                                if (string.CompareOrdinal("length", key._oValue.ToString()) == 0)
+                                var dindex = 0.0;
+                                int si = 0;
+                                if (Tools.ParseNumber(skey, ref si, out dindex)
+                                    && (si == skey.Length)
+                                    && dindex >= 0
+                                    && dindex < uint.MaxValue
+                                    && (long)dindex == dindex)
+                                {
+                                    isIndex = true;
+                                    index = (int)(uint)dindex;
+                                }
+                            }
+
+                            break;
+                        }
+                        default:
+                        {
+                            if (key._valueType >= JSValueType.Object)
+                            {
+                                key = key.ToPrimitiveValue_String_Value();
+                                var keyValue = key.Value;
+                                if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
                                     return length;
 
-                                var skey = key._oValue.ToString();
-                                if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
-                                {
-                                    var dindex = 0.0;
-                                    int si = 0;
-                                    if (Tools.ParseNumber(skey, ref si, out dindex)
-                                        && (si == skey.Length)
-                                        && dindex >= 0
-                                        && dindex < uint.MaxValue
-                                        && (long)dindex == dindex)
-                                    {
-                                        isIndex = true;
-                                        index = (int)(uint)dindex;
-                                    }
-                                }
-
-                                break;
+                                if (key.ValueType < JSValueType.Object)
+                                    repeat = true;
                             }
-                        default:
-                            {
-                                if (key._valueType >= JSValueType.Object)
-                                {
-                                    key = key.ToPrimitiveValue_String_Value();
-                                    var keyValue = key.Value;
-                                    if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
-                                        return length;
 
-                                    if (key.ValueType < JSValueType.Object)
-                                        repeat = true;
-                                }
-
-                                break;
-                            }
+                            break;
+                        }
                     }
                 }
                 while (repeat);

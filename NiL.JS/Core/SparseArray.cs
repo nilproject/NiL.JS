@@ -439,7 +439,7 @@ namespace NiL.JS.Core
         }
 
         public IEnumerable<KeyValuePair<int, TValue>> DirectOrder
-{
+        {
             get
             {
                 var index = 1U;

@@ -218,6 +218,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\NiL.JS.NetCore\Script.cs">
+      <Link>Script.cs</Link>
+    </Compile>
+    <Compile Include="..\NiL.JS.NetCore\Strings.Designer.cs">
+      <Link>Strings.Designer.cs</Link>
+    </Compile>
     <Compile Include="Backward.cs" />
     <Compile Include="BaseLibrary\GeneratorFunction.cs" />
     <Compile Include="BaseLibrary\GlobalFunctions.cs" />
@@ -425,20 +431,14 @@
     <Compile Include="Statements\With.cs" />
     <Compile Include="Statements\Debugger.cs" />
     <Compile Include="Statements\ForOf.cs" />
-    <Compile Include="Strings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Strings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="keys.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\NiL.JS.NetCore\Strings.resx">
+      <Link>Strings.resx</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

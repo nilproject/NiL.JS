@@ -145,7 +145,12 @@ namespace NiL.JS.Core
         public void ActivateInCurrentThread()
         {
             if (CurrentContext != null)
-                throw new InvalidOperationException();
+            {
+                if (CurrentContext is GlobalContext)
+                    CurrentContext.Deactivate();
+                else
+                    throw new InvalidOperationException();
+            }
 
             if (!Activate())
                 throw new Exception("Unable to activate base context");
@@ -305,182 +310,182 @@ namespace NiL.JS.Core
 #endif
             {
                 case TypeCode.Boolean:
+                {
+                    return new JSValue
                     {
-                        return new JSValue
-                        {
-                            _iValue = (bool)value ? 1 : 0,
-                            _valueType = JSValueType.Boolean
-                        };
-                    }
+                        _iValue = (bool)value ? 1 : 0,
+                        _valueType = JSValueType.Boolean
+                    };
+                }
                 case TypeCode.Byte:
+                {
+                    return new JSValue
                     {
-                        return new JSValue
-                        {
-                            _iValue = (byte)value,
-                            _valueType = JSValueType.Integer
-                        };
-                    }
+                        _iValue = (byte)value,
+                        _valueType = JSValueType.Integer
+                    };
+                }
                 case TypeCode.Char:
+                {
+                    return new JSValue
                     {
-                        return new JSValue
-                        {
-                            _oValue = ((char)value).ToString(),
-                            _valueType = JSValueType.String
-                        };
-                    }
+                        _oValue = ((char)value).ToString(),
+                        _valueType = JSValueType.String
+                    };
+                }
                 case TypeCode.DateTime:
-                    {
-                        var dateTime = (DateTime)value;
-                        return new ObjectWrapper(new Date(dateTime));
-                    }
+                {
+                    var dateTime = (DateTime)value;
+                    return new ObjectWrapper(new Date(dateTime));
+                }
                 case TypeCode.Decimal:
+                {
+                    return new JSValue
                     {
-                        return new JSValue
-                        {
-                            _dValue = (double)(decimal)value,
-                            _valueType = JSValueType.Double
-                        };
-                    }
+                        _dValue = (double)(decimal)value,
+                        _valueType = JSValueType.Double
+                    };
+                }
                 case TypeCode.Double:
+                {
+                    return new JSValue
                     {
-                        return new JSValue
-                        {
-                            _dValue = (double)value,
-                            _valueType = JSValueType.Double
-                        };
-                    }
+                        _dValue = (double)value,
+                        _valueType = JSValueType.Double
+                    };
+                }
                 case TypeCode.Int16:
+                {
+                    return new JSValue
                     {
-                        return new JSValue
-                        {
-                            _iValue = (short)value,
-                            _valueType = JSValueType.Integer
-                        };
-                    }
+                        _iValue = (short)value,
+                        _valueType = JSValueType.Integer
+                    };
+                }
                 case TypeCode.Int32:
+                {
+                    return new JSValue
                     {
-                        return new JSValue
-                        {
-                            _iValue = (int)value,
-                            _valueType = JSValueType.Integer
-                        };
-                    }
+                        _iValue = (int)value,
+                        _valueType = JSValueType.Integer
+                    };
+                }
                 case TypeCode.Int64:
+                {
+                    return new JSValue
                     {
-                        return new JSValue
-                        {
-                            _dValue = (long)value,
-                            _valueType = JSValueType.Double
-                        };
-                    }
+                        _dValue = (long)value,
+                        _valueType = JSValueType.Double
+                    };
+                }
                 case TypeCode.SByte:
+                {
+                    return new JSValue
                     {
-                        return new JSValue
-                        {
-                            _iValue = (sbyte)value,
-                            _valueType = JSValueType.Integer
-                        };
-                    }
+                        _iValue = (sbyte)value,
+                        _valueType = JSValueType.Integer
+                    };
+                }
                 case TypeCode.Single:
+                {
+                    return new JSValue
+                    {
+                        _dValue = (float)value,
+                        _valueType = JSValueType.Double
+                    };
+                }
+                case TypeCode.String:
+                {
+                    return new JSValue
+                    {
+                        _oValue = value,
+                        _valueType = JSValueType.String
+                    };
+                }
+                case TypeCode.UInt16:
+                {
+                    return new JSValue
+                    {
+                        _iValue = (ushort)value,
+                        _valueType = JSValueType.Integer
+                    };
+                }
+                case TypeCode.UInt32:
+                {
+                    var v = (uint)value;
+                    if ((int)v != v)
                     {
                         return new JSValue
                         {
-                            _dValue = (float)value,
+                            _dValue = v,
                             _valueType = JSValueType.Double
                         };
                     }
-                case TypeCode.String:
+                    else
                     {
                         return new JSValue
                         {
-                            _oValue = value,
-                            _valueType = JSValueType.String
-                        };
-                    }
-                case TypeCode.UInt16:
-                    {
-                        return new JSValue
-                        {
-                            _iValue = (ushort)value,
+                            _iValue = (int)v,
                             _valueType = JSValueType.Integer
                         };
                     }
-                case TypeCode.UInt32:
-                    {
-                        var v = (uint)value;
-                        if ((int)v != v)
-                        {
-                            return new JSValue
-                            {
-                                _dValue = v,
-                                _valueType = JSValueType.Double
-                            };
-                        }
-                        else
-                        {
-                            return new JSValue
-                            {
-                                _iValue = (int)v,
-                                _valueType = JSValueType.Integer
-                            };
-                        }
-                    }
+                }
                 case TypeCode.UInt64:
+                {
+                    var v = (long)value;
+                    if ((int)v != v)
                     {
-                        var v = (long)value;
-                        if ((int)v != v)
+                        return new JSValue
                         {
-                            return new JSValue
-                            {
-                                _dValue = v,
-                                _valueType = JSValueType.Double
-                            };
-                        }
-                        else
-                        {
-                            return new JSValue
-                            {
-                                _iValue = (int)v,
-                                _valueType = JSValueType.Integer
-                            };
-                        }
+                            _dValue = v,
+                            _valueType = JSValueType.Double
+                        };
                     }
+                    else
+                    {
+                        return new JSValue
+                        {
+                            _iValue = (int)v,
+                            _valueType = JSValueType.Integer
+                        };
+                    }
+                }
                 default:
+                {
+                    if (value is Delegate)
                     {
-                        if (value is Delegate)
+                        if (value is ExternalFunctionDelegate)
+                            return new ExternalFunction(value as ExternalFunctionDelegate);
+                        return new MethodProxy(this, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
+                    }
+                    else if (value is IList)
+                    {
+                        return new NativeList(value as IList);
+                    }
+                    else if (value is ExpandoObject)
+                    {
+                        return new ExpandoObjectWrapper(value as ExpandoObject);
+                    }
+                    else if (value is Task)
+                    {
+                        Task<JSValue> result;
+                        if (value.GetType().GetTypeInfo().IsGenericType && typeof(Task<>).IsAssignableFrom(value.GetType().GetGenericTypeDefinition()))
                         {
-                            if (value is ExternalFunctionDelegate)
-                                return new ExternalFunction(value as ExternalFunctionDelegate);
-                            return new MethodProxy(this, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
-                        }
-                        else if (value is IList)
-                        {
-                            return new NativeList(value as IList);
-                        }
-                        else if (value is ExpandoObject)
-                        {
-                            return new ExpandoObjectWrapper(value as ExpandoObject);
-                        }
-                        else if (value is Task)
-                        {
-                            Task<JSValue> result;
-                            if (value.GetType().GetTypeInfo().IsGenericType && typeof(Task<>).IsAssignableFrom(value.GetType().GetGenericTypeDefinition()))
-                            {
-                                result = new Task<JSValue>(() => ProxyValue(value.GetType().GetMethod("get_Result", new Type[0]).Invoke(value, null)));
-                            }
-                            else
-                            {
-                                result = new Task<JSValue>(() => JSValue.NotExists);
-                            }
-
-                            (value as Task).ContinueWith(task => result.Start());
-                            return new ObjectWrapper(new Promise(result));
+                            result = new Task<JSValue>(() => ProxyValue(value.GetType().GetMethod("get_Result", new Type[0]).Invoke(value, null)));
                         }
                         else
                         {
-                            return new ObjectWrapper(value);
+                            result = new Task<JSValue>(() => JSValue.NotExists);
                         }
+
+                        (value as Task).ContinueWith(task => result.Start());
+                        return new ObjectWrapper(new Promise(result));
                     }
+                    else
+                    {
+                        return new ObjectWrapper(value);
+                    }
+                }
             }
         }
 

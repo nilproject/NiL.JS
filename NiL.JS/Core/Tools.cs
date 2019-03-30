@@ -864,7 +864,7 @@ namespace NiL.JS.Core
         internal static void CheckEndOfInput(string code, ref int i)
         {
             if (i >= code.Length)
-                ExceptionHelper.ThrowSyntaxError("Unexpected end of line", code, i);
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource, code, i);
         }
 
         private struct IntStringCacheItem
@@ -2111,7 +2111,6 @@ namespace NiL.JS.Core
             return method.GetMethodInfo();
         }
 
-
         public static string GetTypeName(JSValue v)
         {
             if (v == null)
@@ -2201,13 +2200,18 @@ namespace NiL.JS.Core
             switch (v.ValueType)
             {
                 case JSValueType.String:
+                {
                     return "\"" + v.ToString() + "\"";
+                }
                 case JSValueType.Date:
+                {
                     string dstr = v.ToString();
                     if (dstr == "Invalid date")
                         return dstr;
                     return "Date " + dstr;
+                }
                 case JSValueType.Function:
+                {
                     BaseLibrary.Function f = v.Value as BaseLibrary.Function;
                     if (f == null)
                         return v.ToString();
@@ -2216,7 +2220,9 @@ namespace NiL.JS.Core
                     if (recursionDepth == maxRecursionDepth - 1)
                         return f.ToString(true);
                     return f.ToString();
+                }
                 case JSValueType.Object:
+                {
                     if (v._oValue == null)
                         return "null";
 
@@ -2328,7 +2334,9 @@ namespace NiL.JS.Core
 
                         return s.ToString();
                     }
+                }
             }
+
             return v.ToString();
         }
 

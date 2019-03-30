@@ -123,6 +123,9 @@
   <data name="ConstructorCannotBeStatic" xml:space="preserve">
     <value>Constructor cannot be static</value>
   </data>
+  <data name="DoNotDeclareFunctionInNestedBlocks" xml:space="preserve">
+    <value>Do not declare function in nested blocks</value>
+  </data>
   <data name="FunctionInLoop" xml:space="preserve">
     <value>Do not define a function inside a loop</value>
   </data>
@@ -130,7 +133,7 @@
     <value>Identifier "{0}" has already been declared</value>
   </data>
   <data name="IncrementPropertyWOSetter" xml:space="preserve">
-    <value>Can not increment property "{0}" without setter.</value>
+    <value>Can not increment property "{0}" without setter</value>
   </data>
   <data name="IncrementReadonly" xml:space="preserve">
     <value>Can not increment readonly "{0}"</value>
@@ -164,6 +167,9 @@
   </data>
   <data name="TryingToSetProperty" xml:space="preserve">
     <value>Can't set property "{0}" of "{1}"</value>
+  </data>
+  <data name="UnexpectedEndOfSource" xml:space="preserve">
+    <value>Unexpected end of source</value>
   </data>
   <data name="UnexpectedToken" xml:space="preserve">
     <value>Unexpected token</value>

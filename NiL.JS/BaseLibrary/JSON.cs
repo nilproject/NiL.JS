@@ -90,7 +90,7 @@ namespace NiL.JS.BaseLibrary
                 if (Tools.IsDigit(code[start]) || (code[start] == '-' && Tools.IsDigit(code[start + 1])))
                 {
                     if (frame.state != ParseState.Value)
-                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                     double value;
                     if (!Tools.ParseNumber(code, ref pos, out value))
@@ -102,7 +102,7 @@ namespace NiL.JS.BaseLibrary
                 else if (code[start] == '"')
                 {
                     if (!Parser.ValidateString(code, ref pos, true))
-                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                     var value = code.Substring(start + 1, pos - start - 2);
                     for (var i = value.Length; i-- > 0;)
@@ -120,14 +120,14 @@ namespace NiL.JS.BaseLibrary
                             pos++;
 
                         if (code[pos] != ':')
-                            ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                         pos++;
                     }
                     else
                     {
                         if (frame.state != ParseState.Value)
-                            ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                         value = Tools.Unescape(value, false);
 
@@ -139,7 +139,7 @@ namespace NiL.JS.BaseLibrary
                 else if (Parser.Validate(code, "null", ref pos))
                 {
                     if (frame.state != ParseState.Value)
-                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                     var v = frame;
                     v.state = ParseState.End;
@@ -148,7 +148,7 @@ namespace NiL.JS.BaseLibrary
                 else if (Parser.Validate(code, "true", ref pos))
                 {
                     if (frame.state != ParseState.Value)
-                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                     var v = frame;
                     v.state = ParseState.End;
@@ -157,7 +157,7 @@ namespace NiL.JS.BaseLibrary
                 else if (Parser.Validate(code, "false", ref pos))
                 {
                     if (frame.state != ParseState.Value)
-                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                     frame.state = ParseState.End;
                     frame.value = false;
@@ -165,7 +165,7 @@ namespace NiL.JS.BaseLibrary
                 else if (code[pos] == '{')
                 {
                     if (frame.state != ParseState.Value)
-                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                     frame.value = JSObject.CreateObject();
                     frame.state = ParseState.Object;
@@ -175,7 +175,7 @@ namespace NiL.JS.BaseLibrary
                 else if (code[pos] == '[')
                 {
                     if (frame.state != ParseState.Value)
-                        ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                        ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                     frame.value = new Array();
                     frame.state = ParseState.Array;
@@ -183,7 +183,7 @@ namespace NiL.JS.BaseLibrary
                     pos++;
                 }
                 else if (frame.state == ParseState.Value)
-                    ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                    ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                 while (code.Length > pos && isSpace(code[pos]))
                     pos++;
@@ -224,7 +224,7 @@ namespace NiL.JS.BaseLibrary
                 if (code.Length <= pos)
                 {
                     if (frame.state != ParseState.End)
-                        ExceptionHelper.Throw(new SyntaxError("Unexpected end of string."));
+                        ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
                     else
                         break;
                 }
@@ -234,14 +234,14 @@ namespace NiL.JS.BaseLibrary
                     case ',':
                         {
                             if (newObject)
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                             if (frame.state == ParseState.Array)
                                 frame = new StackFrame() { state = ParseState.Value, fieldName = (frame.valuesCount++).ToString(CultureInfo.InvariantCulture), container = frame.value };
                             else if (frame.state == ParseState.Object)
                                 frame = new StackFrame() { state = ParseState.Name, container = frame.value };
                             else
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                             stack.Push(frame);
                             pos++;
@@ -250,7 +250,7 @@ namespace NiL.JS.BaseLibrary
                     case ']':
                         {
                             if (frame.state != ParseState.Array)
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                             frame.state = ParseState.End;
                             pos++;
@@ -259,7 +259,7 @@ namespace NiL.JS.BaseLibrary
                     case '}':
                         {
                             if (frame.state != ParseState.Object)
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                             frame.state = ParseState.End;
                             pos++;
@@ -275,7 +275,7 @@ namespace NiL.JS.BaseLibrary
                             }
 
                             if (frame.state != ParseState.Value)
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token.");
+                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                             break;
                         }
@@ -285,13 +285,13 @@ namespace NiL.JS.BaseLibrary
                     pos++;
 
                 if (code.Length <= pos && frame.state != ParseState.End)
-                    ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
+                    ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
             }
 
             if ((stack.Count != 1)
                 || (code.Length > pos)
                 || (stack.Peek().state != ParseState.End))
-                ExceptionHelper.ThrowSyntaxError("Unexpected end of string.");
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
 
             return stack.Pop().value;
         }

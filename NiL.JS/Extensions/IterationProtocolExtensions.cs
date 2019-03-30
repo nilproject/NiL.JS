@@ -212,6 +212,14 @@ namespace NiL.JS.Extensions
             return source.Value as IIterable ?? new IterableAdapter(source);
         }
 
+        public static bool IsIterable(this JSValue source)
+        {
+            if (source == null)
+                throw new ArgumentNullException("source");
+
+            return source.Value is IIterable || source.GetProperty(Symbol.iterator, false, PropertyScope.Common)._valueType == JSValueType.Function;
+        }
+
         public static IIterable AsIterable(this IEnumerable enumerable)
         {
             return new EnumerableToIterableWrapper(enumerable);

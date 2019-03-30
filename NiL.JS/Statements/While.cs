@@ -35,14 +35,14 @@ namespace NiL.JS.Statements
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
             if (i >= state.Code.Length)
-                ExceptionHelper.Throw(new SyntaxError("Unexpected end of line."));
+                ExceptionHelper.Throw(new SyntaxError(Strings.UnexpectedEndOfSource));
             if (state.Code[i] != ')')
                 throw new ArgumentException("code (" + i + ")");
             do
                 i++;
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]));
             if (i >= state.Code.Length)
-                ExceptionHelper.Throw(new SyntaxError("Unexpected end of line."));
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
             int ccs = state.continiesCount;
@@ -50,10 +50,8 @@ namespace NiL.JS.Statements
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionDefinition)
             {
-                if (state.strict)
-                    ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("In strict mode code, functions can only be declared at top level or immediately within another function.")));
                 if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, body.Position, body.Length, "Do not declare function in nested blocks.");
+                    state.message(MessageLevel.CriticalWarning, body.Position, body.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
                 body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции,
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
@@ -142,7 +140,7 @@ namespace NiL.JS.Statements
             return null;
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             var res = new List<CodeNode>()
             {

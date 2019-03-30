@@ -22,7 +22,7 @@ namespace NiL.JS.Core
         InWith = 16,
         InEval = 32,
         InExpression = 64,
-        InClassDefenition = 128,
+        InClassDefinition = 128,
         InClassConstructor = 256,
         InStaticMember = 512,
         InGenerator = 1024,
@@ -53,15 +53,15 @@ namespace NiL.JS.Core
         public virtual int Length { get; internal set; }
         public int EndPosition { get { return Position + Length; } }
 
-        private CodeNode[] childs;
-        public CodeNode[] Childs { get { return childs ?? (childs = GetChildsImpl() ?? emptyCodeNodeArray); } }
+        private CodeNode[] children;
+        public CodeNode[] Children { get { return children ?? (children = GetChildrenImpl() ?? emptyCodeNodeArray); } }
 
-        protected internal virtual CodeNode[] GetChildsImpl()
+        protected internal virtual CodeNode[] GetChildrenImpl()
         {
             return new CodeNode[0];
         }
 
-        internal protected virtual JSValue EvaluateForWrite(Context context)
+        protected internal virtual JSValue EvaluateForWrite(Context context)
         {
             ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
             return null;

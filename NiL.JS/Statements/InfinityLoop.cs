@@ -51,7 +51,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        protected internal override CodeNode[] GetChildsImpl()
+        protected internal override CodeNode[] GetChildrenImpl()
         {
             return new[] { body };
         }
