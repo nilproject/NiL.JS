@@ -332,5 +332,24 @@ namespace NiL.JS.Backward
             return Delegate.CreateDelegate(delegateType, methodInfo, true);
         }
     }
-#endif
+
+    internal static class MethodBaseExtensions
+    {
+        public static object GetCustomAttribute(this MethodBase _this, Type attributeType)
+        {
+            var t = _this.GetCustomAttributes(attributeType, true);
+            if (t == null || t.Length == 0)
+                return null;
+            return t[0];
+        }
+
+        public static object GetCustomAttribute(this MethodBase _this, Type attributeType, bool inherit)
+        {
+            var t = _this.GetCustomAttributes(attributeType, inherit);
+            if (t == null || t.Length == 0)
+                return null;
+            return t[0];
+        }
     }
+#endif
+}
