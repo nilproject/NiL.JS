@@ -183,7 +183,7 @@ namespace NiL.JS.Core
                             index++;
                             Tools.SkipSpaces(code, ref index);
                             var balance = 0;
-                            while (balance > 0 || (code[index] != ',' && code[index] != ')'))
+                            while (balance >= 0 && (code[index] != ',' && code[index] != ')'))
                             {
                                 if (code[index] == '(')
                                     balance++;
