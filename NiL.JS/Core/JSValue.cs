@@ -98,13 +98,11 @@ namespace NiL.JS.Core
 
     internal sealed class JSObjectDebugView
     {
-        private JSObject _jsObject;
+        private JSValue _jsObject;
 
         public JSObjectDebugView(JSValue jsValue)
         {
-            _jsObject = jsValue as JSObject;
-            if (_jsObject != null && _jsObject._valueType >= JSValueType.Object)
-                _jsObject = (_jsObject._oValue as JSObject) ?? _jsObject;
+            _jsObject = jsValue;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -112,7 +110,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return _jsObject?._fields?.ToArray();
+                return _jsObject == null ? new KeyValuePair<string, JSValue>[0] : _jsObject.ToArray();
             }
         }
     }
@@ -121,7 +119,7 @@ namespace NiL.JS.Core
     [Serializable]
 #endif
     [DebuggerTypeProxy(typeof(JSObjectDebugView))]
-    [DebuggerDisplay("Value = {Value} ({ValueType})")]
+    [DebuggerDisplay("Value = {debugValue()} ({ValueType})")]
     public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<JSValue>
 #if !(PORTABLE || NETCORE)
 , ICloneable
@@ -781,6 +779,20 @@ namespace NiL.JS.Core
             res.Assign(this);
             res._attributes = this._attributes & ~resetMask;
             return res;
+        }
+
+        private object debugValue()
+        {
+            if (_valueType <= JSValueType.Undefined)
+                return JSValueType.Undefined;
+
+            if (_valueType == JSValueType.String)
+                return "\"" + _oValue + "\"";
+
+            if (_valueType < JSValueType.Object)
+                return Value;
+
+            return (_oValue as JSValue ?? this)._valueType;
         }
 
         [Hidden]
