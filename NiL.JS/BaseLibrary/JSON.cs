@@ -96,8 +96,13 @@ namespace NiL.JS.BaseLibrary
                     if (!Tools.ParseNumber(code, ref pos, out value))
                         ExceptionHelper.ThrowSyntaxError("Invalid number definition.");
 
+                    var intValue = (int)value;
+
                     frame.state = ParseState.End;
-                    frame.value = value;
+                    if (intValue == value)
+                        frame.value = intValue;
+                    else
+                        frame.value = value;
                 }
                 else if (code[start] == '"')
                 {
@@ -232,53 +237,53 @@ namespace NiL.JS.BaseLibrary
                 switch (code[pos])
                 {
                     case ',':
-                        {
-                            if (newObject)
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
+                    {
+                        if (newObject)
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
-                            if (frame.state == ParseState.Array)
-                                frame = new StackFrame() { state = ParseState.Value, fieldName = (frame.valuesCount++).ToString(CultureInfo.InvariantCulture), container = frame.value };
-                            else if (frame.state == ParseState.Object)
-                                frame = new StackFrame() { state = ParseState.Name, container = frame.value };
-                            else
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
+                        if (frame.state == ParseState.Array)
+                            frame = new StackFrame() { state = ParseState.Value, fieldName = (frame.valuesCount++).ToString(CultureInfo.InvariantCulture), container = frame.value };
+                        else if (frame.state == ParseState.Object)
+                            frame = new StackFrame() { state = ParseState.Name, container = frame.value };
+                        else
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
-                            stack.Push(frame);
-                            pos++;
-                            break;
-                        }
+                        stack.Push(frame);
+                        pos++;
+                        break;
+                    }
                     case ']':
-                        {
-                            if (frame.state != ParseState.Array)
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
+                    {
+                        if (frame.state != ParseState.Array)
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
-                            frame.state = ParseState.End;
-                            pos++;
-                            break;
-                        }
+                        frame.state = ParseState.End;
+                        pos++;
+                        break;
+                    }
                     case '}':
-                        {
-                            if (frame.state != ParseState.Object)
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
+                    {
+                        if (frame.state != ParseState.Object)
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
-                            frame.state = ParseState.End;
-                            pos++;
-                            break;
-                        }
+                        frame.state = ParseState.End;
+                        pos++;
+                        break;
+                    }
                     default:
+                    {
+                        if (newObject)
                         {
-                            if (newObject)
-                            {
-                                pos--;
-                                newObject = false;
-                                goto case ',';
-                            }
-
-                            if (frame.state != ParseState.Value)
-                                ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
-
-                            break;
+                            pos--;
+                            newObject = false;
+                            goto case ',';
                         }
+
+                        if (frame.state != ParseState.Value)
+                            ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
+
+                        break;
+                    }
                 }
 
                 while (code.Length > pos && isSpace(code[pos]))
@@ -372,45 +377,45 @@ namespace NiL.JS.BaseLibrary
                 switch (c)
                 {
                     case (char)8:
-                        {
-                            sb.Append("\\b");
-                            break;
-                        }
+                    {
+                        sb.Append("\\b");
+                        break;
+                    }
                     case (char)9:
-                        {
-                            sb.Append("\\t");
-                            break;
-                        }
+                    {
+                        sb.Append("\\t");
+                        break;
+                    }
                     case (char)10:
-                        {
-                            sb.Append("\\n");
-                            break;
-                        }
+                    {
+                        sb.Append("\\n");
+                        break;
+                    }
                     case (char)12:
-                        {
-                            sb.Append("\\f");
-                            break;
-                        }
+                    {
+                        sb.Append("\\f");
+                        break;
+                    }
                     case (char)13:
-                        {
-                            sb.Append("\\r");
-                            break;
-                        }
+                    {
+                        sb.Append("\\r");
+                        break;
+                    }
                     case '\\':
-                        {
-                            sb.Append("\\\\");
-                            break;
-                        }
+                    {
+                        sb.Append("\\\\");
+                        break;
+                    }
                     case '"':
-                        {
-                            sb.Append("\\\"");
-                            break;
-                        }
+                    {
+                        sb.Append("\\\"");
+                        break;
+                    }
                     default:
-                        {
-                            sb.Append("\\u").Append(((int)c).ToString("x4"));
-                            break;
-                        }
+                    {
+                        sb.Append("\\u").Append(((int)c).ToString("x4"));
+                        break;
+                    }
                 }
             }
             else
