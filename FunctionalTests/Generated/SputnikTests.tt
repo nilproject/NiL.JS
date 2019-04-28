@@ -54,7 +54,7 @@ namespace NiL.JS.Test.Generated
 			}
 #>	
 		[TestMethod]
-#line 1 "<#= file.Replace('\\','/') #>"
+#line 1 "<#= file.Replace('/','\\') #>"
 		public void <#= testName #>() => RunFile("<#= file.Replace('\\','/') #>");
 <#
 		}

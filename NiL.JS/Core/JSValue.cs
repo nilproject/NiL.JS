@@ -781,10 +781,13 @@ namespace NiL.JS.Core
             return res;
         }
 
-        public object debugValue()
+        private object debugValue()
         {
             if (_valueType <= JSValueType.Undefined)
                 return JSValueType.Undefined;
+
+            if (_valueType == JSValueType.String)
+                return "\"" + _oValue + "\"";
 
             if (_valueType < JSValueType.Object)
                 return Value;
