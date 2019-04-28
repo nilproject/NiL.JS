@@ -164,3 +164,9 @@ $RECYCLE.BIN/
 /keys.snk
 /NiL.JS.Portable/keys.snk
 /NiL.JS/keys.snk
+/NiL.JS.NetCore/Statements
+/NiL.JS.NetCore/Properties
+/NiL.JS.NetCore/Extensions
+/NiL.JS.NetCore/Expressions
+/NiL.JS.NetCore/Core
+/NiL.JS.NetCore/BaseLibrary
