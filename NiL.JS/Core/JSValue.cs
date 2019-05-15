@@ -481,7 +481,7 @@ namespace NiL.JS.Core
                 throw new ArgumentException();
 
             property = DefineProperty(name);
-            if (property.ValueType < JSValueType.Undefined)
+            if (property.ValueType < JSValueType.NotExistsInObject)
                 throw new InvalidOperationException();
 
             property._valueType = JSValueType.Property;
