@@ -16,8 +16,8 @@ namespace Examples.Using_modules
             var mainModule = new Module("fakedir/superscript.js", @"
 import * as Consts from ""somelib/consts""
 
-console.log(`PI equal ${Consts.Pi}`);
-console.log(`E equal ${Consts.E}`);
+console.log(`PI equals ${Consts.Pi}`);
+console.log(`E equals ${Consts.E}`);
 console.log(`Gravitational acceleration on Earth approximately ${Consts.g} m/s^2`);
 ");
 
