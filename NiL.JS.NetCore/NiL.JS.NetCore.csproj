@@ -28,6 +28,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\NiL.JS\Properties\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
     <PackageReference Include="System.Resources.ResourceManager" Version="4.0.1" />
