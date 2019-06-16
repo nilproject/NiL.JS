@@ -13,6 +13,7 @@ namespace IntegrationTests.BaseLibrary
         [TestMethod]
         public void ShouldParseUSformat()
         {
+            Date.CurrentTimeZone = TimeZoneInfo.Local;
             var date = new Date(new Arguments { "10/31/2010 08:00" });
             Assert.AreEqual(DateTime.Parse("2010-10-31 08:00").ToUniversalTime(), date.ToDateTime().ToUniversalTime());
         }
