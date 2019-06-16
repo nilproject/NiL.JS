@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
@@ -85,10 +86,10 @@ namespace NiL.JS.Core.Functions
                 _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 #if (PORTABLE || NETCORE)
-            var ctors = System.Linq.Enumerable.ToArray(staticProxy._hostedType.GetTypeInfo().DeclaredConstructors);
+            var ctors = staticProxy._hostedType.GetTypeInfo().DeclaredConstructors.Where(x => x.IsPublic).ToArray();
             var ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.GetTypeInfo().IsValueType ? 1 : 0));
 #else
-            var ctors = staticProxy._hostedType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            var ctors = staticProxy._hostedType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
             var ctorsL = new List<MethodProxy>(ctors.Length + (staticProxy._hostedType.IsValueType ? 1 : 0));
 #endif
             for (int i = 0; i < ctors.Length; i++)
@@ -181,22 +182,22 @@ namespace NiL.JS.Core.Functions
                                 obj = new BaseLibrary.Array();
                                 break;
                             case 1:
+                            {
+                                var a0 = arguments[0];
+                                switch (a0._valueType)
                                 {
-                                    var a0 = arguments[0];
-                                    switch (a0._valueType)
-                                    {
-                                        case JSValueType.Integer:
-                                            obj = new BaseLibrary.Array(a0._iValue);
-                                            break;
-                                        case JSValueType.Double:
-                                            obj = new BaseLibrary.Array(a0._dValue);
-                                            break;
-                                        default:
-                                            obj = new BaseLibrary.Array(arguments);
-                                            break;
-                                    }
-                                    break;
+                                    case JSValueType.Integer:
+                                        obj = new BaseLibrary.Array(a0._iValue);
+                                        break;
+                                    case JSValueType.Double:
+                                        obj = new BaseLibrary.Array(a0._dValue);
+                                        break;
+                                    default:
+                                        obj = new BaseLibrary.Array(arguments);
+                                        break;
                                 }
+                                break;
+                            }
                             default:
                                 obj = new BaseLibrary.Array(arguments);
                                 break;
