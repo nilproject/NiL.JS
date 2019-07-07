@@ -118,7 +118,8 @@ namespace NiL.JS.Expressions
             else if (func == null)
             {
                 checkStack();
-                Context.CurrentGlobalContext._callDepth++;
+                var currentGlobalContext = Context.CurrentGlobalContext;
+                currentGlobalContext._callDepth++;
                 try
                 {
                     switch (_callMode)
@@ -136,8 +137,8 @@ namespace NiL.JS.Expressions
                     }
                 }
                 finally
-                {
-                    Context.CurrentGlobalContext._callDepth--;
+                {                    
+                    currentGlobalContext._callDepth--;
                 }
             }
             else
@@ -158,7 +159,8 @@ namespace NiL.JS.Expressions
                     context._objectSource = null;
 
                 checkStack();
-                Context.CurrentGlobalContext._callDepth++;
+                var currentGlobalContext = Context.CurrentGlobalContext;
+                currentGlobalContext._callDepth++;
                 try
                 {
                     if (_callMode == CallMode.Construct)
@@ -171,7 +173,7 @@ namespace NiL.JS.Expressions
                 }
                 finally
                 {
-                    Context.CurrentGlobalContext._callDepth--;
+                    currentGlobalContext._callDepth--;
                 }
             }
         }
