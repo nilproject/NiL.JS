@@ -30,9 +30,10 @@ namespace NiL.JS.Expressions
         Bit = 0xa0,
         Arithmetic0 = 0xb0,
         Arithmetic1 = 0xc0,
-        Unary0 = 0xd0,
-        Unary1 = 0xe0,
-        Special = 0xF0
+        Power = 0xd0,
+        Unary0 = 0xe0,
+        Unary1 = 0xf0,
+        Special = 0xFF0
     }
 
 #if !(PORTABLE || NETCORE)
@@ -68,9 +69,12 @@ namespace NiL.JS.Expressions
 
         Addition = OperationTypeGroups.Arithmetic0 + 0,
         Substract = OperationTypeGroups.Arithmetic0 + 1,
+
         Multiply = OperationTypeGroups.Arithmetic1 + 0,
         Modulo = OperationTypeGroups.Arithmetic1 + 1,
         Division = OperationTypeGroups.Arithmetic1 + 2,
+
+        Power = OperationTypeGroups.Power + 0,
 
         Negative = OperationTypeGroups.Unary0 + 0,
         Positive = OperationTypeGroups.Unary0 + 1,
@@ -254,6 +258,10 @@ namespace NiL.JS.Expressions
                 {
                     return new In(_left, _right);
                 }
+                case OperationType.Power:
+                {
+                    return new Power(_left, _right);
+                }
                 default:
                     throw new ArgumentException("invalid operation type");
             }
@@ -263,9 +271,11 @@ namespace NiL.JS.Expressions
         {
             if (statement == null)
                 return null;
+
             ExpressionTree cur = statement._right as ExpressionTree;
             if (cur == null)
                 return statement;
+
             Stack<Expression> stats = new Stack<Expression>();
             Stack<Expression> types = new Stack<Expression>();
             types.Push(statement);
@@ -296,6 +306,7 @@ namespace NiL.JS.Expressions
                     stats.Push(cur._right);
                 cur = cur._right as ExpressionTree;
             }
+
             while (stats.Count > 1)
             {
                 var stat = types.Pop() as Expression;
@@ -305,6 +316,7 @@ namespace NiL.JS.Expressions
                 stat.Length = (stat._right ?? stat._left ?? stat).Length + (stat._right ?? stat._left ?? stat).Position - stat.Position;
                 stats.Push(stat);
             }
+
             return stats.Peek();
         }
 
@@ -544,13 +556,23 @@ namespace NiL.JS.Expressions
                             i = rollbackPos;
                             break;
                         }
+
                         binary = true;
-                        kind = OperationType.Multiply;
-                        if (state.Code[i + 1] == '=')
+                        if (state.Code[i + 1] == '*')
                         {
-                            assign = true;
+                            kind = OperationType.Power;
                             i++;
                         }
+                        else
+                        {
+                            kind = OperationType.Multiply;
+                            if (state.Code[i + 1] == '=')
+                            {
+                                assign = true;
+                                i++;
+                            }
+                        }
+
                         break;
                     }
                     case '&':
