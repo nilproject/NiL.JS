@@ -566,11 +566,12 @@ namespace NiL.JS.Expressions
                         else
                         {
                             kind = OperationType.Multiply;
-                            if (state.Code[i + 1] == '=')
-                            {
-                                assign = true;
-                                i++;
-                            }
+                        }
+
+                        if (state.Code[i + 1] == '=')
+                        {
+                            assign = true;
+                            i++;
                         }
 
                         break;
