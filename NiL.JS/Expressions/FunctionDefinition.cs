@@ -181,69 +181,80 @@ namespace NiL.JS.Expressions
             int position = index;
             switch (kind)
             {
+                case FunctionKind.AsyncAnonymousFunction:
                 case FunctionKind.AnonymousFunction:
                 case FunctionKind.AnonymousGenerator:
-                    {
-                        break;
-                    }
+                {
+                    break;
+                }
                 case FunctionKind.Function:
+                {
+                    if (!Parser.Validate(code, "function", ref position))
+                        return null;
+
+                    if (code[position] == '*')
                     {
-                        if (!Parser.Validate(code, "function", ref position))
-                            return null;
-
-                        if (code[position] == '*')
-                        {
-                            kind = FunctionKind.Generator;
-                            position++;
-                        }
-                        else if ((code[position] != '(') && (!Tools.IsWhiteSpace(code[position])))
-                            return null;
-
-                        break;
+                        kind = FunctionKind.Generator;
+                        position++;
                     }
+                    else if ((code[position] != '(') && (!Tools.IsWhiteSpace(code[position])))
+                        return null;
+
+                    break;
+                }
                 case FunctionKind.Getter:
-                    {
-                        if (!Parser.Validate(code, "get ", ref position))
-                            return null;
+                {
+                    if (!Parser.Validate(code, "get ", ref position))
+                        return null;
 
-                        break;
-                    }
+                    break;
+                }
                 case FunctionKind.Setter:
-                    {
-                        if (!Parser.Validate(code, "set ", ref position))
-                            return null;
+                {
+                    if (!Parser.Validate(code, "set ", ref position))
+                        return null;
 
-                        break;
-                    }
+                    break;
+                }
                 case FunctionKind.MethodGenerator:
                 case FunctionKind.Method:
-                    {
-                        if (code[position] == '*')
-                        {
-                            kind = FunctionKind.MethodGenerator;
-                            position++;
-                        }
-                        else if (kind == FunctionKind.MethodGenerator)
-                            throw new ArgumentException("mode");
+                {
+                    if (Parser.Validate(code, "async", ref position))
+                        kind = FunctionKind.AsyncMethod;
 
-                        break;
+                    if (code[position] == '*')
+                    {
+                        kind = FunctionKind.MethodGenerator;
+                        position++;
                     }
+                    else if (kind == FunctionKind.MethodGenerator)
+                        throw new ArgumentException("mode");
+
+                    break;
+                }
+                case FunctionKind.AsyncArrow:
+                {
+                    if (!Parser.Validate(code, "async", ref position))
+                        return null;
+
+                    break;
+                }
                 case FunctionKind.Arrow:
-                    {
-                        break;
-                    }
+                {
+                    break;
+                }
                 case FunctionKind.AsyncFunction:
-                    {
-                        if (!Parser.Validate(code, "async", ref position))
-                            return null;
+                {
+                    if (!Parser.Validate(code, "async", ref position))
+                        return null;
 
-                        Tools.SkipSpaces(code, ref position);
+                    Tools.SkipSpaces(code, ref position);
 
-                        if (!Parser.Validate(code, "function", ref position))
-                            return null;
+                    if (!Parser.Validate(code, "function", ref position))
+                        return null;
 
-                        break;
-                    }
+                    break;
+                }
                 default:
                     throw new NotImplementedException(kind.ToString());
             }
@@ -253,7 +264,7 @@ namespace NiL.JS.Expressions
             var parameters = new List<ParameterDescriptor>();
             CodeBlock body = null;
             string name = null;
-            bool arrowWithSunglePrm = false;
+            bool arrowWithSinglePrm = false;
             int nameStartPos = 0;
             bool containsDestructuringPrms = false;
 
@@ -278,14 +289,14 @@ namespace NiL.JS.Expressions
                 }
                 else if (kind == FunctionKind.Getter || kind == FunctionKind.Setter)
                     ExceptionHelper.ThrowSyntaxError("Getter and Setter must have name", code, index);
-                else if (kind == FunctionKind.Method || kind == FunctionKind.MethodGenerator)
-                    ExceptionHelper.ThrowSyntaxError("Method must have name", code, index);
+                else if (kind == FunctionKind.Method || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AsyncMethod)
+                    ExceptionHelper.ThrowSyntaxError("Method must has name", code, index);
 
                 position++;
             }
             else if (code[position] != '(')
             {
-                arrowWithSunglePrm = true;
+                arrowWithSinglePrm = true;
             }
             else
             {
@@ -321,10 +332,10 @@ namespace NiL.JS.Expressions
 
                 var pname = Tools.Unescape(code.Substring(n, position - n), state.strict);
                 var reference = new ParameterReference(pname, rest, state.lexicalScopeLevel + 1)
-                                    {
-                                        Position = n,
-                                        Length = position - n
-                                    };
+                {
+                    Position = n,
+                    Length = position - n
+                };
                 var desc = reference.Descriptor as ParameterDescriptor;
 
                 if (destructor != null)
@@ -333,7 +344,7 @@ namespace NiL.JS.Expressions
                 parameters.Add(desc);
 
                 Tools.SkipSpaces(state.Code, ref position);
-                if (arrowWithSunglePrm)
+                if (arrowWithSinglePrm)
                 {
                     position--;
                     break;
@@ -362,13 +373,13 @@ namespace NiL.JS.Expressions
             if (kind == FunctionKind.Setter)
             {
                 if (parameters.Count != 1)
-                    ExceptionHelper.ThrowSyntaxError("Setter must have only one argument", code, index);
+                    ExceptionHelper.ThrowSyntaxError("Setter must has only one argument", code, index);
             }
 
             position++;
             Tools.SkipSpaces(code, ref position);
 
-            if (kind == FunctionKind.Arrow)
+            if (kind == FunctionKind.Arrow || kind == FunctionKind.AsyncArrow)
             {
                 if (!Parser.Validate(code, "=>", ref position))
                     ExceptionHelper.ThrowSyntaxError("Expected \"=>\"", code, position);
@@ -382,7 +393,7 @@ namespace NiL.JS.Expressions
 
                 try
                 {
-                    if (kind == FunctionKind.Arrow)
+                    if (kind == FunctionKind.Arrow || kind == FunctionKind.AsyncArrow)
                     {
                         body = new CodeBlock(new CodeNode[]
                         {
@@ -410,7 +421,7 @@ namespace NiL.JS.Expressions
                 state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional | CodeContext.InEval);
                 if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
                     state.CodeContext |= CodeContext.InGenerator;
-                else if (kind == FunctionKind.AsyncFunction)
+                else if (kind == FunctionKind.AsyncFunction || kind == FunctionKind.AsyncMethod || kind == FunctionKind.AsyncAnonymousFunction || kind == FunctionKind.AsyncArrow)
                     state.CodeContext |= CodeContext.InAsync;
                 state.CodeContext |= CodeContext.InFunction;
 
@@ -562,7 +573,7 @@ namespace NiL.JS.Expressions
                 {
                     var args = new List<Expression>();
                     position++;
-                    for (;;)
+                    for (; ; )
                     {
                         while (Tools.IsWhiteSpace(code[position]))
                             position++;
@@ -594,7 +605,7 @@ namespace NiL.JS.Expressions
             {
                 if (string.IsNullOrEmpty(name))
                 {
-                    ExceptionHelper.ThrowSyntaxError("Function must have name", state.Code, index);
+                    ExceptionHelper.ThrowSyntaxError("Function must has name", state.Code, index);
                 }
 
                 state.Variables.Add(func.reference._descriptor);
@@ -642,7 +653,7 @@ namespace NiL.JS.Expressions
             if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
                 return new GeneratorFunction(context, this);
 
-            if (kind == FunctionKind.AsyncFunction || kind == FunctionKind.AsyncAnonymousFunction || kind == FunctionKind.AsyncArrow)
+            if (kind == FunctionKind.AsyncFunction || kind == FunctionKind.AsyncAnonymousFunction || kind == FunctionKind.AsyncArrow || kind == FunctionKind.AsyncMethod)
                 return new AsyncFunction(context, this);
 
             if (_body != null)
@@ -867,38 +878,39 @@ namespace NiL.JS.Expressions
             switch (kind)
             {
                 case FunctionKind.Generator:
-                    {
-                        code.Append("functions* ");
-                        break;
-                    }
+                {
+                    code.Append("functions* ");
+                    break;
+                }
                 case FunctionKind.Method:
-                    {
-                        break;
-                    }
+                {
+                    break;
+                }
                 case FunctionKind.Getter:
-                    {
-                        code.Append("get ");
-                        break;
-                    }
+                {
+                    code.Append("get ");
+                    break;
+                }
                 case FunctionKind.Setter:
-                    {
-                        code.Append("set ");
-                        break;
-                    }
+                {
+                    code.Append("set ");
+                    break;
+                }
                 case FunctionKind.Arrow:
-                    {
-                        break;
-                    }
+                {
+                    break;
+                }
+                case FunctionKind.AsyncMethod:
                 case FunctionKind.AsyncFunction:
-                    {
-                        code.Append("async ");
-                        goto default;
-                    }
+                {
+                    code.Append("async ");
+                    goto default;
+                }
                 default:
-                    {
-                        code.Append("function ");
-                        break;
-                    }
+                {
+                    code.Append("function ");
+                    break;
+                }
             }
 
             code.Append(_name)

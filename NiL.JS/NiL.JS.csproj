@@ -28,6 +28,7 @@
     </SccAuxPath>
     <SccProvider>
     </SccProvider>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -275,6 +276,7 @@
     <Compile Include="Expressions\ObjectDesctructor.cs" />
     <Compile Include="Expressions\PropertyPair.cs" />
     <Compile Include="Expressions\NewTarget.cs" />
+    <Compile Include="Expressions\Power.cs" />
     <Compile Include="Expressions\SuspendableExpression.cs" />
     <Compile Include="Expressions\TemplateString.cs" />
     <Compile Include="Expressions\This.cs" />

@@ -95,9 +95,9 @@ namespace NiL.JS.Core.Interop
             _hostedType = type;
 
 #if (PORTABLE || NETCORE)
-            _instanceCtor = _hostedType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
+            _instanceCtor = _hostedType.GetTypeInfo().DeclaredConstructors.Where(x => x.IsPublic).FirstOrDefault(x => x.GetParameters().Length == 0 && !x.IsStatic);
 #else
-            _instanceCtor = _hostedType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
+            _instanceCtor = _hostedType.GetConstructor(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy, null, Type.EmptyTypes, null);
 #endif
         }
 

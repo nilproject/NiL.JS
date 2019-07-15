@@ -118,7 +118,8 @@ namespace NiL.JS.Expressions
             else if (func == null)
             {
                 checkStack();
-                Context.CurrentGlobalContext._callDepth++;
+                var currentGlobalContext = Context.CurrentGlobalContext;
+                currentGlobalContext.СallDepth++;
                 try
                 {
                     switch (_callMode)
@@ -136,8 +137,8 @@ namespace NiL.JS.Expressions
                     }
                 }
                 finally
-                {
-                    Context.CurrentGlobalContext._callDepth--;
+                {                    
+                    currentGlobalContext.СallDepth--;
                 }
             }
             else
@@ -158,7 +159,8 @@ namespace NiL.JS.Expressions
                     context._objectSource = null;
 
                 checkStack();
-                Context.CurrentGlobalContext._callDepth++;
+                var currentGlobalContext = Context.CurrentGlobalContext;
+                currentGlobalContext.СallDepth++;
                 try
                 {
                     if (_callMode == CallMode.Construct)
@@ -171,7 +173,7 @@ namespace NiL.JS.Expressions
                 }
                 finally
                 {
-                    Context.CurrentGlobalContext._callDepth--;
+                    currentGlobalContext.СallDepth--;
                 }
             }
         }
@@ -214,7 +216,7 @@ namespace NiL.JS.Expressions
 
         private static void checkStack()
         {
-            if (Context.CurrentGlobalContext._callDepth >= 1000)
+            if (Context.CurrentGlobalContext.СallDepth >= 1000)
                 throw new JSException(new RangeError("Stack overflow."));
         }
 

@@ -351,7 +351,7 @@ namespace NiL.JS.Expressions
                         i = s;
                         var method = FunctionDefinition.Parse(state, ref i, FunctionKind.Method) as FunctionDefinition;
                         if (method == null)
-                            ExceptionHelper.ThrowSyntaxError("Unable to parse constructor", state.Code, i);
+                            ExceptionHelper.ThrowSyntaxError("Unable to parse method", state.Code, i);
 
                         if (fieldName == "constructor")
                         {

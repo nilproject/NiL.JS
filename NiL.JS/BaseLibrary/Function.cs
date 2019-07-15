@@ -34,7 +34,8 @@ namespace NiL.JS.BaseLibrary
         Arrow,
         AsyncFunction,
         AsyncAnonymousFunction,
-        AsyncArrow
+        AsyncArrow,
+        AsyncMethod,
     }
 
 #if !(PORTABLE || NETCORE)

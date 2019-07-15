@@ -90,6 +90,13 @@ namespace NiL.JS.Expressions
                 var asterisk = state.Code[i] == '*';
                 Tools.SkipSpaces(state.Code, ref i);
 
+                var async = false;
+                if (!asterisk)
+                {
+                    async = Parser.Validate(state.Code, "async", ref i);
+                    Tools.SkipSpaces(state.Code, ref i);
+                }
+
                 if (Parser.Validate(state.Code, "[", ref i))
                 {
                     var name = ExpressionTree.Parse(state, ref i, false, false, false, true, false);
@@ -102,20 +109,15 @@ namespace NiL.JS.Expressions
                     while (Tools.IsWhiteSpace(state.Code[i]));
 
                     Tools.SkipSpaces(state.Code, ref i);
-                    if (state.Code[s] != 'g' && state.Code[s] != 's')
-                    {
-                        if (!Parser.Validate(state.Code, ":", ref i))
-                            ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
-                        Tools.SkipSpaces(state.Code, ref i);
-                    }
-
                     CodeNode initializer;
                     if (state.Code[i] == '(')
                     {
-                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionKind.AnonymousGenerator : FunctionKind.AnonymousFunction);
+                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionKind.AnonymousGenerator : async ? FunctionKind.AsyncAnonymousFunction : FunctionKind.AnonymousFunction);
                     }
                     else
                     {
+                        if (!Parser.Validate(state.Code, ":", ref i))
+                            ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
                         initializer = ExpressionTree.Parse(state, ref i);
                     }
 
@@ -223,11 +225,11 @@ namespace NiL.JS.Expressions
                     if (state.Code[i] == '(')
                     {
                         i = s;
-                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionKind.MethodGenerator : FunctionKind.Method);
+                        initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionKind.MethodGenerator : async ? FunctionKind.AsyncMethod : FunctionKind.Method);
                     }
                     else
                     {
-                        if (asterisk)
+                        if (asterisk || async)
                             ExceptionHelper.ThrowSyntaxError("Unexpected token", state.Code, i);
 
                         if (state.Code[i] != ':' && state.Code[i] != ',' && state.Code[i] != '}')

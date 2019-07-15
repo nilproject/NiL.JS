@@ -84,6 +84,16 @@ namespace NiL.JS
         /// </summary>
         /// <param name="path">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
         /// <param name="code">JavaScript code.</param>
+        /// <param name="globalContext">Global context</param>
+        public Module(string path, string code, GlobalContext globalContext)
+            : this(path, code, null, Options.None, globalContext)
+        { }
+
+        /// <summary>
+        /// Initializes a new Module with specified code.
+        /// </summary>
+        /// <param name="path">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
+        /// <param name="code">JavaScript code.</param>
         public Module(string path, string code)
             : this(path, code, null, Options.None)
         { }
@@ -120,27 +130,29 @@ namespace NiL.JS
         /// <summary>
         /// Initializes a new Module with specified code, callback for output compiler messages and compiler options.
         /// </summary>
+        /// <param name="code">JavaScript code.</param>
+        /// <param name="messageCallback">Callback used to output compiler messages or null</param>
+        /// <param name="options">Compiler options</param>
+        /// <param name="globalContext">Global context</param>
+        public Module(string code, CompilerMessageCallback messageCallback, Options options, GlobalContext globalContext)
+            : this(null, code, messageCallback, options, globalContext)
+        { }
+
+        /// <summary>
+        /// Initializes a new Module with specified code, callback for output compiler messages and compiler options.
+        /// </summary>
         /// <param name="virtualPath">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
         /// <param name="code">JavaScript code.</param>
         /// <param name="messageCallback">Callback used to output compiler messages or null</param>
         /// <param name="options">Compiler options</param>
-        public Module(string virtualPath, string code, CompilerMessageCallback messageCallback, Options options)
+        public Module(string virtualPath, string code, CompilerMessageCallback messageCallback = null, Options options = Options.None, GlobalContext globalContext = null)
         {
             if (code == null)
                 throw new ArgumentNullException();
 
-            if (!string.IsNullOrWhiteSpace(virtualPath))
-            {
-                lock (_modulesCache)
-                {
-                    if (!_modulesCache.ContainsKey(virtualPath))
-                        _modulesCache[virtualPath] = this;
-                }
+            this.FilePath = virtualPath;
 
-                FilePath = virtualPath;
-            }
-
-            Context = new Context(Context.CurrentGlobalContext, true, null);
+            Context = new Context(globalContext ?? Context.CurrentGlobalContext, true, null);
             Context._module = this;
             Context._thisBind = new GlobalObject(Context);
 

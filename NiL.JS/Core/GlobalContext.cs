@@ -22,7 +22,7 @@ namespace NiL.JS.Core
 
     public sealed class GlobalContext : Context
     {
-        internal int _callDepth;
+        internal int СallDepth;
         internal JSObject _globalPrototype;
         private readonly Dictionary<Type, JSObject> _proxies;
 

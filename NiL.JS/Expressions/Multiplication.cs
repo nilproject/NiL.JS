@@ -106,6 +106,7 @@ namespace NiL.JS.Expressions
                     _this = new ConvertToNumber(_right);
                     return true;
                 }
+
                 exp = _right as Constant;
                 if (exp != null
                     && Tools.JSObjectToDouble(exp.Evaluate(null)) == 1.0)

@@ -104,7 +104,7 @@ namespace NiL.JS.Core.Interop
             if (deserializedJson._valueType < JSValueType.Object)
                 return deserializedJson.Value;
 #if PORTABLE
-            var result = resultContainer ?? TargetType.GetTypeInfo().DeclaredConstructors.First(x=>x.GetParameters().Length == 0).Invoke(new object[0]);
+            var result = resultContainer ?? TargetType.GetTypeInfo().DeclaredConstructors.Where(x => x.IsPublic).First(x=>x.GetParameters().Length == 0).Invoke(new object[0]);
 #else
             var result = resultContainer ?? TargetType.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);
 #endif

@@ -62,6 +62,7 @@ namespace NiL.JS.Core
                 new Rule("with", With.Parse),
                 new Rule("do", DoWhile.Parse),
                 new Rule(ValidateArrow, FunctionDefinition.ParseFunction(FunctionKind.Arrow)),
+                new Rule(ValidateAsyncArrow, FunctionDefinition.ParseFunction(FunctionKind.AsyncArrow)),
                 new Rule("(", ExpressionTree.Parse),
                 new Rule("+", ExpressionTree.Parse),
                 new Rule("-", ExpressionTree.Parse),
@@ -98,6 +99,7 @@ namespace NiL.JS.Core
                 new Rule("function", ExpressionTree.Parse),
                 new Rule("class", ExpressionTree.Parse),
                 new Rule(ValidateArrow, FunctionDefinition.ParseFunction(FunctionKind.Arrow)),
+                new Rule(ValidateAsyncArrow, FunctionDefinition.ParseFunction(FunctionKind.AsyncArrow)),
                 new Rule("(", ExpressionTree.Parse),
                 new Rule("+", ExpressionTree.Parse),
                 new Rule("-", ExpressionTree.Parse),
@@ -128,9 +130,21 @@ namespace NiL.JS.Core
                 new Rule("new", New.Parse),
                 new Rule("yield", Yield.Parse),
                 new Rule(ValidateArrow, FunctionDefinition.ParseFunction(FunctionKind.Arrow)),
+                new Rule(ValidateAsyncArrow, FunctionDefinition.ParseFunction(FunctionKind.AsyncArrow)),
                 new Rule(ValidateRegex, RegExpExpression.Parse),
             }
         };
+
+        private static bool ValidateAsyncArrow(string code, int index)
+        {
+            if (Validate(code, "async", ref index))
+            {
+                Tools.SkipSpaces(code, ref index);
+                return ValidateArrow(code, index);
+            }
+
+            return false;
+        }
 
         private static bool ValidateArrow(string code, int index)
         {
