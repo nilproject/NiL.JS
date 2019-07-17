@@ -16,6 +16,7 @@
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '12.0' ">v4.5.1</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '14.0' ">v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '15.0' ">v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '16.0' ">v4.6.1</TargetFrameworkVersion>
     <BaseIntermediateOutputPath>obj\$(TargetFrameworkVersion)\</BaseIntermediateOutputPath>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
@@ -28,7 +29,6 @@
     </SccAuxPath>
     <SccProvider>
     </SccProvider>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
