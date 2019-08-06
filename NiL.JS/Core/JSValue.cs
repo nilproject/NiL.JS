@@ -142,6 +142,29 @@ namespace NiL.JS.Core
          * новый объект, которым следует заменить значение свойства в объекте.
          */
 
+        [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue, AllowMultiple = false, Inherited = false)]
+        protected sealed class ProtoConverter : ConvertValueAttribute
+        {
+            public override object From(object source)
+            {
+                if (source is JSValue jsVal)
+                {
+                    if (jsVal.ValueType < JSValueType.Object)
+                        return new JSObject { _valueType = JSValueType.Undefined };
+                }
+
+                return source;
+            }
+
+            public override object To(JSValue source)
+            {
+                if (source.ValueType < JSValueType.Object)
+                    return new JSObject { _valueType = JSValueType.Undefined };
+
+                return source;
+            }
+        }
+
         internal const int publicAttributesMask = 0x1f | (int)JSValueAttributesInternal.Reassign;
 
         internal static readonly JSValue numberString = "number";
@@ -226,11 +249,11 @@ namespace NiL.JS.Core
                     case JSValueType.Property:
                     case JSValueType.SpreadOperatorResult:
                     case JSValueType.Date:
-                        {
-                            if (_oValue != this && _oValue is JSObject)
-                                return (_oValue as JSObject).Value;
-                            return _oValue;
-                        }
+                    {
+                        if (_oValue != this && _oValue is JSObject)
+                            return (_oValue as JSObject).Value;
+                        return _oValue;
+                    }
                     default:
                         return null;
                 }
@@ -240,33 +263,33 @@ namespace NiL.JS.Core
                 switch (_valueType)
                 {
                     case JSValueType.Boolean:
-                        {
-                            _iValue = (bool)value ? 1 : 0;
-                            break;
-                        }
+                    {
+                        _iValue = (bool)value ? 1 : 0;
+                        break;
+                    }
                     case JSValueType.Integer:
-                        {
-                            _iValue = (int)value;
-                            break;
-                        }
+                    {
+                        _iValue = (int)value;
+                        break;
+                    }
                     case JSValueType.Double:
-                        {
-                            _dValue = (double)value;
-                            break;
-                        }
+                    {
+                        _dValue = (double)value;
+                        break;
+                    }
                     case JSValueType.String:
-                        {
-                            _oValue = (string)value;
-                            break;
-                        }
+                    {
+                        _oValue = (string)value;
+                        break;
+                    }
                     case JSValueType.Object:
                     case JSValueType.Function:
                     case JSValueType.Property:
                     case JSValueType.Date:
-                        {
-                            _oValue = value;
-                            break;
-                        }
+                    {
+                        _oValue = value;
+                        break;
+                    }
                     default:
                         throw new InvalidOperationException();
                 }
@@ -318,6 +341,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public virtual JSObject __proto__
         {
+            [return: ProtoConverter]
             [Hidden]
             get
             {
@@ -331,6 +355,7 @@ namespace NiL.JS.Core
 
                 return GetDefaultPrototype();
             }
+            [param: ProtoConverter]
             [Hidden]
             set
             {
@@ -527,42 +552,42 @@ namespace NiL.JS.Core
             switch (_valueType)
             {
                 case JSValueType.Boolean:
-                    {
-                        if (propertyScope == PropertyScope.Own)
-                            return notExists;
-                        forWrite = false;
-                        return Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Common);
-                    }
+                {
+                    if (propertyScope == PropertyScope.Own)
+                        return notExists;
+                    forWrite = false;
+                    return Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Common);
+                }
                 case JSValueType.Integer:
                 case JSValueType.Double:
-                    {
-                        if (propertyScope == PropertyScope.Own)
-                            return notExists;
-                        forWrite = false;
-                        return Context.CurrentGlobalContext.GetPrototype(typeof(Number)).GetProperty(key, false, PropertyScope.Common);
-                    }
+                {
+                    if (propertyScope == PropertyScope.Own)
+                        return notExists;
+                    forWrite = false;
+                    return Context.CurrentGlobalContext.GetPrototype(typeof(Number)).GetProperty(key, false, PropertyScope.Common);
+                }
                 case JSValueType.String:
-                    {
-                        return stringGetProperty(key, forWrite, propertyScope);
-                    }
+                {
+                    return stringGetProperty(key, forWrite, propertyScope);
+                }
                 case JSValueType.Undefined:
                 case JSValueType.NotExists:
                 case JSValueType.NotExistsInObject:
-                    {
-                        ExceptionHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, key, "undefined"));
-                        return null;
-                    }
+                {
+                    ExceptionHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, key, "undefined"));
+                    return null;
+                }
                 default:
-                    {
-                        if (_oValue == this)
-                            break;
-                        if (_oValue == null)
-                            ExceptionHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, key, "null"));
-                        var inObj = _oValue as JSObject;
-                        if (inObj != null)
-                            return inObj.GetProperty(key, forWrite, propertyScope);
+                {
+                    if (_oValue == this)
                         break;
-                    }
+                    if (_oValue == null)
+                        ExceptionHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, key, "null"));
+                    var inObj = _oValue as JSObject;
+                    if (inObj != null)
+                        return inObj.GetProperty(key, forWrite, propertyScope);
+                    break;
+                }
             }
             ExceptionHelper.Throw(new InvalidOperationException("Method GetProperty(...) of custom types must be overridden"));
             return null;
@@ -999,82 +1024,82 @@ namespace NiL.JS.Core
             {
                 case JSValueType.Integer:
                 case JSValueType.Double:
-                    {
-                        return "[object Number]";
-                    }
+                {
+                    return "[object Number]";
+                }
                 case JSValueType.Undefined:
-                    {
-                        return "[object Undefined]";
-                    }
+                {
+                    return "[object Undefined]";
+                }
                 case JSValueType.String:
-                    {
-                        return "[object String]";
-                    }
+                {
+                    return "[object String]";
+                }
                 case JSValueType.Boolean:
-                    {
-                        return "[object Boolean]";
-                    }
+                {
+                    return "[object Boolean]";
+                }
                 case JSValueType.Function:
-                    {
-                        return "[object Function]";
-                    }
+                {
+                    return "[object Function]";
+                }
                 case JSValueType.Date:
                 case JSValueType.Object:
+                {
+                    if (self._oValue == null)
+                        return "[object Null]";
+
+                    if (self._oValue is GlobalObject)
+                        return self._oValue.ToString();
+
+                    var tag = self.GetProperty(Symbol.toStringTag, false, PropertyScope.Common);
+                    if (tag.Defined)
                     {
-                        if (self._oValue == null)
-                            return "[object Null]";
+                        return $"[object {Tools.InvokeGetter(tag, self)}]";
+                    }
 
-                        if (self._oValue is GlobalObject)
-                            return self._oValue.ToString();
+                    if (self._oValue is Proxy)
+                    {
+                        var hostedType = (self._oValue as Proxy)._hostedType;
 
-                        var tag = self.GetProperty(Symbol.toStringTag, false, PropertyScope.Common);
-                        if (tag.Defined)
-                        {
-                            return $"[object {Tools.InvokeGetter(tag, self)}]";
-                        }
-
-                        if (self._oValue is Proxy)
-                        {
-                            var hostedType = (self._oValue as Proxy)._hostedType;
-
-                            if (hostedType == typeof(JSObject))
-                            {
-                                return "[object Object]";
-                            }
-
-                            return $"[object {hostedType.Name}]";
-                        }
-
-                        if (self.Value.GetType() == typeof(JSObject))
+                        if (hostedType == typeof(JSObject))
                         {
                             return "[object Object]";
                         }
 
-                        return $"[object {self.Value.GetType().Name}]";
-
-                        //if (self._oValue is Proxy)
-                        //{
-                        //    var hostedType = (self._oValue as Proxy)._hostedType;
-                        //    var tag = hostedType.GetCustomAttribute<ToStringTagAttribute>();
-                        //    if (tag != null)
-                        //    {
-                        //        return $"[object {tag.Tag}]";
-                        //    }
-
-                        //    return $"[object {hostedType.Name}]";
-                        //}
-                        //else
-                        //{
-                        //    var type = self.Value.GetType();
-                        //    var tag = type.GetCustomAttribute<ToStringTagAttribute>();
-                        //    if (tag != null)
-                        //    {
-                        //        return $"[object {tag.Tag}]";
-                        //    }
-
-                        //    return "[object " + type.Name + "]";
-                        //}
+                        return $"[object {hostedType.Name}]";
                     }
+
+                    if (self.Value.GetType() == typeof(JSObject))
+                    {
+                        return "[object Object]";
+                    }
+
+                    return $"[object {self.Value.GetType().Name}]";
+
+                    //if (self._oValue is Proxy)
+                    //{
+                    //    var hostedType = (self._oValue as Proxy)._hostedType;
+                    //    var tag = hostedType.GetCustomAttribute<ToStringTagAttribute>();
+                    //    if (tag != null)
+                    //    {
+                    //        return $"[object {tag.Tag}]";
+                    //    }
+
+                    //    return $"[object {hostedType.Name}]";
+                    //}
+                    //else
+                    //{
+                    //    var type = self.Value.GetType();
+                    //    var tag = type.GetCustomAttribute<ToStringTagAttribute>();
+                    //    if (tag != null)
+                    //    {
+                    //        return $"[object {tag.Tag}]";
+                    //    }
+
+                    //    return "[object " + type.Name + "]";
+                    //}
+                }
                 default:
                     throw new NotImplementedException();
             }
