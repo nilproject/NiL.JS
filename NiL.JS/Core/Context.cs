@@ -229,7 +229,7 @@ namespace NiL.JS.Core
 
         internal Context(Context prototype, bool createFields, Function owner)
         {
-            _callDepth = prototype._callDepth;
+            _callDepth = prototype == null ? 0 : prototype._callDepth;
             _owner = owner;
             if (prototype != null)
             {
