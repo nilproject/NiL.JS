@@ -480,7 +480,7 @@ namespace NiL.JS.BaseLibrary
             for (;;) // tail recursion catcher
             {
                 var internalContext = new Context(_initialContext, ceocw, this);
-                internalContext._callDepth++;
+                internalContext._callDepth = (Context.CurrentContext?._callDepth ?? 0) + 1;
                 internalContext._definedVariables = body._variables;
                 internalContext.Activate();
 

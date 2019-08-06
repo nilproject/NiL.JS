@@ -196,6 +196,7 @@ namespace NiL.JS.Expressions
             context._executionInfo = arguments;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void checkStack(Context context)
         {
             if (context._callDepth >= 1000)
