@@ -97,6 +97,7 @@ namespace NiL.JS.Core
         internal VariableDescriptor[] _definedVariables;
         internal Module _module;
         private Dictionary<CodeNode, object> _suspendData;
+        internal int _callDepth;
 
         public Context RootContext
         {
@@ -228,6 +229,7 @@ namespace NiL.JS.Core
 
         internal Context(Context prototype, bool createFields, Function owner)
         {
+            _callDepth = prototype._callDepth;
             _owner = owner;
             if (prototype != null)
             {

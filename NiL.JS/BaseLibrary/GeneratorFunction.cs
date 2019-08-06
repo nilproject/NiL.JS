@@ -96,6 +96,7 @@ namespace NiL.JS.BaseLibrary
         private void initContext()
         {
             _generatorContext = new Context(_initialContext, true, _generator);
+            _generatorContext._callDepth++;
             _generatorContext._definedVariables = _generator._functionDefinition._body._variables;
             _generator.initParameters(_initialArgs, _generatorContext);
             _generator.initContext(_targetObject, _initialArgs, true, _generatorContext);

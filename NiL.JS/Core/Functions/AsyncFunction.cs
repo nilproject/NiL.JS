@@ -92,6 +92,7 @@ namespace NiL.JS.Core.Functions
                 arguments = new Arguments(Context.CurrentContext);
 
             var internalContext = new Context(_initialContext, true, this);
+            internalContext._callDepth++;
             internalContext._definedVariables = Body._variables;
 
             initContext(targetObject, arguments, true, internalContext);

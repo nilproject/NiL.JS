@@ -56,6 +56,7 @@ namespace NiL.JS.Core.Functions
             for (;;)
             {
                 var internalContext = new Context(_initialContext, false, this);
+                internalContext._callDepth++;
 
                 if (_functionDefinition.kind == FunctionKind.Arrow)
                     internalContext._thisBind = _initialContext._thisBind;
