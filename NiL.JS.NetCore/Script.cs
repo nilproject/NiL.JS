@@ -62,7 +62,7 @@ namespace NiL.JS
             try
             {
                 context.Activate();
-                return Root.Evaluate(context);
+                return Root.Evaluate(context) ?? context._lastResult ?? JSValue.notExists;
             }
             finally
             {
