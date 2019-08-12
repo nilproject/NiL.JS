@@ -25,7 +25,7 @@ namespace NiL.JS
     {
         private static readonly char[] _pathSplitChars = new[] { '\\', '/' };
         private static readonly StringMap<Module> _modulesCache = new StringMap<Module>();
-        private static List<ResolveModuleHandler> _resolveModuleHandlers = new List<ResolveModuleHandler> { defaultModuleResolver };
+        private static List<ResolveModuleHandler> _resolveModuleHandlers = new List<ResolveModuleHandler> { DefaultModuleResolver };
 
         /// <summary>
         /// Occurs when module not found in cache
@@ -264,7 +264,7 @@ namespace NiL.JS
             return path;
         }
 
-        private static void defaultModuleResolver(Module sender, ResolveModuleEventArgs e)
+        public static void DefaultModuleResolver(Module sender, ResolveModuleEventArgs e)
         {
             Module result;
             _modulesCache.TryGetValue(e.ModulePath, out result);
