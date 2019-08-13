@@ -25,7 +25,11 @@ namespace NiL.JS
     {
         private static readonly char[] _pathSplitChars = new[] { '\\', '/' };
         private static readonly StringMap<Module> _modulesCache = new StringMap<Module>();
-        private static List<ResolveModuleHandler> _resolveModuleHandlers = new List<ResolveModuleHandler> { DefaultModuleResolver };
+        private static List<ResolveModuleHandler> _resolveModuleHandlers = new List<ResolveModuleHandler>
+        {
+            DefaultModulePathResolver,
+            DefaultModuleCacheResolver
+        };
 
         /// <summary>
         /// Occurs when module not found in cache
@@ -206,29 +210,27 @@ namespace NiL.JS
 
         internal Module Import(string path)
         {
-            path = processPath(path);
-
             var e = new ResolveModuleEventArgs(path);
 
             for (var i = 0; i < _resolveModuleHandlers.Count && e.Module == null; i++)
                 _resolveModuleHandlers[i](this, e);
 
             if (e.Module == null)
-                throw new InvalidOperationException("Unable to load module \"" + path + "\"");
+                throw new InvalidOperationException("Unable to load module \"" + e.ModulePath + "\"");
 
             if (e.AddToCache && !_modulesCache.ContainsKey(e.ModulePath))
                 _modulesCache[e.ModulePath] = e.Module;
 
             if (e.Module.FilePath == null)
-                e.Module.FilePath = path;
+                e.Module.FilePath = e.ModulePath;
 
             return e.Module;
         }
 
-        private string processPath(string path)
+        public static void DefaultModulePathResolver(Module sender, ResolveModuleEventArgs e)
         {
-            var thisName = this.FilePath.Split(_pathSplitChars);
-            var requestedName = path.Split(_pathSplitChars);
+            var thisName = sender.FilePath.Split(_pathSplitChars);
+            var requestedName = e.ModulePath.Split(_pathSplitChars);
             var pathTokens = new LinkedList<string>(thisName);
 
             if (requestedName.Length > 0 && requestedName[0] == "")
@@ -260,11 +262,11 @@ namespace NiL.JS
                 pathTokens.Last.Value = pathTokens.Last.Value + ".js";
 
             pathTokens.AddFirst("");
-            path = string.Join("/", pathTokens);
-            return path;
+
+            e.ModulePath = string.Join("/", pathTokens);
         }
 
-        public static void DefaultModuleResolver(Module sender, ResolveModuleEventArgs e)
+        public static void DefaultModuleCacheResolver(Module sender, ResolveModuleEventArgs e)
         {
             Module result;
             _modulesCache.TryGetValue(e.ModulePath, out result);
