@@ -96,7 +96,6 @@ namespace NiL.JS.Test.Generated
                 }
                 finally
                 {
-                    Module.RemoveFromModuleCache(moduleName);
                     Console.SetOut(oldOutput);
                 }
 
