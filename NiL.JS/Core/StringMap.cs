@@ -111,7 +111,7 @@ namespace NiL.JS.Core
                     if (string.CompareOrdinal(_records[i].key, key) == 0)
                     {
                         if (@throw)
-                            ExceptionHelper.Throw(new InvalidOperationException("Item already Exists"));
+                            ExceptionHelper.Throw(new InvalidOperationException("Item already exists"));
 
                         _records[i].value = value;
                         return;

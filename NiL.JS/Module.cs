@@ -15,6 +15,14 @@ namespace NiL.JS
         SuppressConstantPropogation = 4,
     }
 
+    public enum ModuleEvaluationState
+    {
+        Default = 0,
+        Evaluating,
+        Evaluated,
+        Fail,
+    }
+
     /// <summary>
     /// Represents and manages JavaScript module
     /// </summary>
@@ -24,32 +32,12 @@ namespace NiL.JS
     public class Module
     {
         private static readonly char[] _pathSplitChars = new[] { '\\', '/' };
-        private static readonly StringMap<Module> _modulesCache = new StringMap<Module>();
-        private static List<ResolveModuleHandler> _resolveModuleHandlers = new List<ResolveModuleHandler>
-        {
-            DefaultModulePathResolver,
-            DefaultModuleCacheResolver
-        };
-
-        /// <summary>
-        /// Occurs when module not found in cache
-        /// </summary>
-        public static event ResolveModuleHandler ResolveModule
-        {
-            add
-            {
-                if (value != null)
-                    lock (_resolveModuleHandlers)
-                        _resolveModuleHandlers.Add(value);
-            }
-            remove
-            {
-                lock (_resolveModuleHandlers)
-                    _resolveModuleHandlers.Remove(value);
-            }
-        }
 
         public ExportTable Exports { get; } = new ExportTable();
+
+        public List<IModuleResolver> ModuleResolversChain { get; } = new List<IModuleResolver>();
+
+        public ModuleEvaluationState EvaluationState { get; private set; }
 
         /// <summary>
         /// Root node of AST
@@ -199,7 +187,14 @@ namespace NiL.JS
 
             try
             {
+                EvaluationState = ModuleEvaluationState.Evaluating;
                 Run();
+                EvaluationState = ModuleEvaluationState.Evaluated;
+            }
+            catch
+            {
+                EvaluationState = ModuleEvaluationState.Fail;
+                throw;
             }
             finally
             {
@@ -208,29 +203,37 @@ namespace NiL.JS
             }
         }
 
-        internal Module Import(string path)
+        internal Module Import(string importArg)
         {
-            var e = new ResolveModuleEventArgs(path);
+            var request = new ModuleRequest(this, importArg, makeAbsolutePath(this, importArg));
+            Module module = null;
+            for (var i = 0; i < ModuleResolversChain.Count; i++)
+            {
+                if (ModuleResolversChain[i].TryGetModule(request, out module))
+                    break;
 
-            for (var i = 0; i < _resolveModuleHandlers.Count && e.Module == null; i++)
-                _resolveModuleHandlers[i](this, e);
+                module = null;
+            }
 
-            if (e.Module == null)
-                throw new InvalidOperationException("Unable to load module \"" + e.ModulePath + "\"");
+            if (module == null)
+                throw new InvalidOperationException("Unable to load module \"" + request.AbsolutePath + "\"");
 
-            if (e.AddToCache && !_modulesCache.ContainsKey(e.ModulePath))
-                _modulesCache[e.ModulePath] = e.Module;
+            if (module.FilePath == null)
+                module.FilePath = request.AbsolutePath;
 
-            if (e.Module.FilePath == null)
-                e.Module.FilePath = e.ModulePath;
+            if (module.EvaluationState == ModuleEvaluationState.Default)
+            {
+                module.ModuleResolversChain.AddRange(ModuleResolversChain);
+                module.Run();
+            }
 
-            return e.Module;
+            return module;
         }
 
-        public static void DefaultModulePathResolver(Module sender, ResolveModuleEventArgs e)
+        private static string makeAbsolutePath(Module initiator, string path)
         {
-            var thisName = sender.FilePath.Split(_pathSplitChars);
-            var requestedName = e.ModulePath.Split(_pathSplitChars);
+            var thisName = initiator.FilePath.Split(_pathSplitChars);
+            var requestedName = path.Split(_pathSplitChars);
             var pathTokens = new LinkedList<string>(thisName);
 
             if (requestedName.Length > 0 && requestedName[0] == "")
@@ -263,30 +266,7 @@ namespace NiL.JS
 
             pathTokens.AddFirst("");
 
-            e.ModulePath = string.Join("/", pathTokens);
-        }
-
-        public static void DefaultModuleCacheResolver(Module sender, ResolveModuleEventArgs e)
-        {
-            Module result;
-            _modulesCache.TryGetValue(e.ModulePath, out result);
-            e.Module = result;
-        }
-
-        public static void ClearModuleCache()
-        {
-            lock (_modulesCache)
-            {
-                _modulesCache.Clear();
-            }
-        }
-
-        public static bool RemoveFromModuleCache(string path)
-        {
-            lock (_modulesCache)
-            {
-                return _modulesCache.Remove(path);
-            }
+            return string.Join("/", pathTokens);
         }
 
 #if !PORTABLE

@@ -133,30 +133,47 @@ namespace NiL.JS.Test
 
         private static void testEx()
         {
-            const string functionName = "negate";
-            string functionCode = @"function negate(value) {
-	return -1 * value;
-};";
-            var context = new Context(true);
-            context.Eval(functionCode, true);
+            var module0 = new Module("/src/m/main.js", @"
+import '/module0.js'
+import 'module1.js'
+import './module2.js'
+import '../module3.js'
+console.log('----------');
+import '/module0.js'
+import 'module1.js'
+import './module2.js'
+import '../module3.js'
+");
 
-            JSValue functionValue = context.GetVariable(functionName);
-            var function = functionValue.As<Function>();
-            if (function == null)
-            {
-                throw new Exception(
-                    string.Format("The function with the name '{0}' does not exist.", functionName));
-            }
+            module0.ModuleResolversChain.Add(new MyTestModuleResolver());
 
-            try
+            module0.Run();
+        }
+
+        private sealed class MyTestModuleResolver : CachedModuleResolverBase
+        {
+            public override bool TryGetModule(ModuleRequest moduleRequest, out Module result)
             {
-                JSValue resultValue = function.Call(new Arguments { 22 });
-                int result = (int)resultValue.Value;
-                Console.WriteLine("result = {0}", result);
+                result = new Module(moduleRequest.AbsolutePath, $"console.log('{moduleRequest.CmdArgument} => {moduleRequest.AbsolutePath}')");
+                return true;
             }
-            catch (JSException e)
+        }
+
+        private sealed class ModuleResolver : CachedModuleResolverBase
+        {
+            public override bool TryGetModule(ModuleRequest request, out Module result)
             {
-                Console.Write(e.ToString());
+                var currentDir = Directory.GetCurrentDirectory();
+                if (File.Exists(currentDir + request.AbsolutePath))
+                {
+                    result = new Module(request.AbsolutePath, File.ReadAllText(currentDir + request.AbsolutePath));
+                    result.ModuleResolversChain.AddRange(result.ModuleResolversChain);
+                    result.Run();
+                    return true;
+                }
+
+                result = null;
+                return false;
             }
         }
 
@@ -164,8 +181,6 @@ namespace NiL.JS.Test
         {
             //Parser.DefineCustomCodeFragment(typeof(NiL.JS.Test.SyntaxExtensions.UsingStatement));
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
-
-            Module.ResolveModule += Module_ResolveModule;
 
             Context.DefaultGlobalContext.DebuggerCallback += (sender, e) => Debugger.Break();
             Context.DefaultGlobalContext.DefineVariable("$").Assign(JSValue.Wrap(
@@ -207,223 +222,223 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 2
+            int mode = 3
                     ;
             switch (mode)
             {
                 case -5:
-                    {
-                        staticAnalyzer("modules/ftest.js");
-                        break;
-                    }
+                {
+                    staticAnalyzer("modules/ftest.js");
+                    break;
+                }
                 case -3:
-                    {
-                        runFiles("custom/");
-                        break;
-                    }
+                {
+                    runFiles("custom/");
+                    break;
+                }
                 case -1:
-                    {
-                        //var currentTimeZone = TimeZone.CurrentTimeZone;
-                        //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                        //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
-                        //runFiles("custom/");
-                        sputnikTests(@"tests\sputnik\ch15\15.1\");
-                        sputnikTests(@"tests\sputnik\ch15\15.2\");
-                        sputnikTests(@"tests\sputnik\ch15\15.3\");
-                        sputnikTests(@"tests\sputnik\ch15\15.4\");
-                        sputnikTests(@"tests\sputnik\ch15\15.5\"); // with some errors due double.toString() (8)
-                        sputnikTests(@"tests\sputnik\ch15\15.6\");
-                        sputnikTests(@"tests\sputnik\ch15\15.7\");
-                        sputnikTests(@"tests\sputnik\ch15\15.8\"); // with some errors due accuracy comparison
-                        sputnikTests(@"tests\sputnik\ch15\15.9\");
-                        sputnikTests(@"tests\sputnik\ch15\15.10\"); // with 17 asserts
-                        sputnikTests(@"tests\sputnik\ch15\15.11\");
-                        sputnikTests(@"tests\sputnik\ch15\15.12\");
-                        break;
-                    }
+                {
+                    //var currentTimeZone = TimeZone.CurrentTimeZone;
+                    //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                    //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
+                    //runFiles("custom/");
+                    sputnikTests(@"tests\sputnik\ch15\15.1\");
+                    sputnikTests(@"tests\sputnik\ch15\15.2\");
+                    sputnikTests(@"tests\sputnik\ch15\15.3\");
+                    sputnikTests(@"tests\sputnik\ch15\15.4\");
+                    sputnikTests(@"tests\sputnik\ch15\15.5\"); // with some errors due double.toString() (8)
+                    sputnikTests(@"tests\sputnik\ch15\15.6\");
+                    sputnikTests(@"tests\sputnik\ch15\15.7\");
+                    sputnikTests(@"tests\sputnik\ch15\15.8\"); // with some errors due accuracy comparison
+                    sputnikTests(@"tests\sputnik\ch15\15.9\");
+                    sputnikTests(@"tests\sputnik\ch15\15.10\"); // with 17 asserts
+                    sputnikTests(@"tests\sputnik\ch15\15.11\");
+                    sputnikTests(@"tests\sputnik\ch15\15.12\");
+                    break;
+                }
                 case 0:
-                    {
-                        // В текущем процессе часовой пояс будет -8:00:00. 
-                        // Создатели sputnik'a не удосужились в своих тестах учитывать временную зону 
-                        // и от всех требуют пребывания в указаном часовом поясе.
-                        var currentTimeZone = TimeZone.CurrentTimeZone;
-                        var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                        offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
-                        //runFiles("custom/");
-                        sputnikTests();
-                        break;
-                    }
+                {
+                    // В текущем процессе часовой пояс будет -8:00:00. 
+                    // Создатели sputnik'a не удосужились в своих тестах учитывать временную зону 
+                    // и от всех требуют пребывания в указаном часовом поясе.
+                    var currentTimeZone = TimeZone.CurrentTimeZone;
+                    var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                    offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
+                    //runFiles("custom/");
+                    sputnikTests();
+                    break;
+                }
                 case 1:
-                    {
-                        // runFiles("custom/");
-                        webkitTests();
-                        break;
-                    }
+                {
+                    // runFiles("custom/");
+                    webkitTests();
+                    break;
+                }
                 case 2:
-                    {
-                        //var currentTimeZone = TimeZone.CurrentTimeZone;
-                        //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                        //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
-                        runFile(@"modules/ftest.js");
-                        break;
-                    }
+                {
+                    //var currentTimeZone = TimeZone.CurrentTimeZone;
+                    //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                    //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
+                    runFile(@"modules/ftest.js");
+                    break;
+                }
                 case 3:
-                    {
-                        testEx();
-                        break;
-                    }
+                {
+                    testEx();
+                    break;
+                }
                 case 4:
-                    {
-                        compileTest();
-                        break;
-                    }
+                {
+                    compileTest();
+                    break;
+                }
                 case 5:
-                    {
-                        runFile("uglifyjs.js");
-                        runFile("coffee-script.js");
-                        runFile("linq.js");
-                        runFile("arraytests.js");
-                        runFile("d3.min.js");
-                        runFile("knockout-3.3.0.js");
-                        runFile("aes.js");
-                        runFile("handlebars-v2.0.0.js");
-                        break;
-                    }
+                {
+                    runFile("uglifyjs.js");
+                    runFile("coffee-script.js");
+                    runFile("linq.js");
+                    runFile("arraytests.js");
+                    runFile("d3.min.js");
+                    runFile("knockout-3.3.0.js");
+                    runFile("aes.js");
+                    runFile("handlebars-v2.0.0.js");
+                    break;
+                }
                 case 6:
-                    {
-                        runFile("pbkdf.js");
-                        break;
-                    }
+                {
+                    runFile("pbkdf.js");
+                    break;
+                }
                 case 8:
-                    {
-                        runFile("acorn_interpreter.js");
-                        break;
-                    }
+                {
+                    runFile("acorn_interpreter.js");
+                    break;
+                }
                 case 9:
-                    {
-                        runFile("d3.min.js");
-                        break;
-                    }
+                {
+                    runFile("d3.min.js");
+                    break;
+                }
                 case 10:
-                    {
-                        runFile("knockout-3.3.0.js");
-                        break;
-                    }
+                {
+                    runFile("knockout-3.3.0.js");
+                    break;
+                }
                 case 11:
-                    {
-                        runFile("sunspider-regexp-dna.js");
-                        break;
-                    }
+                {
+                    runFile("sunspider-regexp-dna.js");
+                    break;
+                }
                 case 151:
-                    {
-                        // Global
-                        sputnikTests(@"tests\sputnik\ch15\15.1\");
-                        break;
-                    }
+                {
+                    // Global
+                    sputnikTests(@"tests\sputnik\ch15\15.1\");
+                    break;
+                }
                 case 152:
-                    {
-                        // Object
-                        sputnikTests(@"tests\sputnik\ch15\15.2\");
-                        break;
-                    }
+                {
+                    // Object
+                    sputnikTests(@"tests\sputnik\ch15\15.2\");
+                    break;
+                }
                 case 153:
-                    {
-                        // Function
-                        sputnikTests(@"tests\sputnik\ch15\15.3\");
-                        break;
-                    }
+                {
+                    // Function
+                    sputnikTests(@"tests\sputnik\ch15\15.3\");
+                    break;
+                }
                 case 154:
-                    {
-                        // Array
-                        sputnikTests(@"tests\sputnik\ch15\15.4\");
-                        break;
-                    }
+                {
+                    // Array
+                    sputnikTests(@"tests\sputnik\ch15\15.4\");
+                    break;
+                }
                 case 155:
-                    {
-                        // String
-                        sputnikTests(@"tests\sputnik\ch15\15.5\");
-                        break;
-                    }
+                {
+                    // String
+                    sputnikTests(@"tests\sputnik\ch15\15.5\");
+                    break;
+                }
                 case 156:
-                    {
-                        // Boolean
-                        sputnikTests(@"tests\sputnik\ch15\15.6\");
-                        break;
-                    }
+                {
+                    // Boolean
+                    sputnikTests(@"tests\sputnik\ch15\15.6\");
+                    break;
+                }
                 case 157:
-                    {
-                        // Number
-                        sputnikTests(@"tests\sputnik\ch15\15.7\");
-                        break;
-                    }
+                {
+                    // Number
+                    sputnikTests(@"tests\sputnik\ch15\15.7\");
+                    break;
+                }
                 case 158:
-                    {
-                        // Math
-                        sputnikTests(@"tests\sputnik\ch15\15.8\");
-                        break;
-                    }
+                {
+                    // Math
+                    sputnikTests(@"tests\sputnik\ch15\15.8\");
+                    break;
+                }
                 case 159:
-                    {
-                        //var currentTimeZone = TimeZone.CurrentTimeZone;
-                        //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                        //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
-                        // Date
-                        sputnikTests(@"tests\sputnik\ch15\15.9\");
-                        break;
-                    }
+                {
+                    //var currentTimeZone = TimeZone.CurrentTimeZone;
+                    //var offset = currentTimeZone.GetType().GetField("m_ticksOffset", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                    //offset.SetValue(currentTimeZone, new TimeSpan(-8, 0, 0).Ticks);
+                    // Date
+                    sputnikTests(@"tests\sputnik\ch15\15.9\");
+                    break;
+                }
                 case 1510:
-                    {
-                        // RegExp
-                        sputnikTests(@"tests\sputnik\ch15\15.10\");
-                        break;
-                    }
+                {
+                    // RegExp
+                    sputnikTests(@"tests\sputnik\ch15\15.10\");
+                    break;
+                }
                 case 1511:
-                    {
-                        // Error
-                        sputnikTests(@"tests\sputnik\ch15\15.11\");
-                        break;
-                    }
+                {
+                    // Error
+                    sputnikTests(@"tests\sputnik\ch15\15.11\");
+                    break;
+                }
                 case 1512:
-                    {
-                        // JSON
-                        sputnikTests(@"tests\sputnik\ch15\15.12\");
-                        break;
-                    }
+                {
+                    // JSON
+                    sputnikTests(@"tests\sputnik\ch15\15.12\");
+                    break;
+                }
                 case 100:
+                {
+                    Context.DefaultGlobalContext.DefineVariable("load").Assign(new ExternalFunction((_th, e) =>
                     {
-                        Context.DefaultGlobalContext.DefineVariable("load").Assign(new ExternalFunction((_th, e) =>
+                        using (var f = new FileStream("v8\\" + e["0"], FileMode.Open, FileAccess.Read))
                         {
-                            using (var f = new FileStream("v8\\" + e["0"], FileMode.Open, FileAccess.Read))
-                            {
-                                using (var sr = new StreamReader(f))
-                                    Context.CurrentContext.Eval(sr.ReadToEnd(), true);
-                            }
-                            return null;
-                        }));
+                            using (var sr = new StreamReader(f))
+                                Context.CurrentContext.Eval(sr.ReadToEnd(), true);
+                        }
+                        return null;
+                    }));
 
-                        runFile(@"v8\run.js");
-                        break;
-                    }
+                    runFile(@"v8\run.js");
+                    break;
+                }
                 case 101:
-                    {
-                        sunspider();
-                        break;
-                    }
+                {
+                    sunspider();
+                    break;
+                }
                 case 102:
-                    {
-                        dromaeoTests();
-                        break;
-                    }
+                {
+                    dromaeoTests();
+                    break;
+                }
                 case 103:
-                    {
-                        kraken();
-                        break;
-                    }
+                {
+                    kraken();
+                    break;
+                }
                 case 104:
-                    {
-                        cryptojs();
-                        break;
-                    }
+                {
+                    cryptojs();
+                    break;
+                }
             }
 
             GC.Collect(0);
@@ -445,27 +460,6 @@ namespace NiL.JS.Test
             }
             else if (Debugger.IsAttached)
                 Console.ReadKey();
-        }
-
-        private static void Module_ResolveModule(Module sender, ResolveModuleEventArgs e)
-        {
-            /*
-            if (e.ModulePath.StartsWith("/clr/"))
-            {
-                e.Module = Module.ClrNamespace(e.ModulePath.Substring(5, e.ModulePath.Length - 5 - 3).Replace('/', '.'));
-            }
-            else
-            */
-            {
-                var currentDir = Directory.GetCurrentDirectory();
-                if (File.Exists(currentDir + e.ModulePath))
-                {
-                    e.Module = new Module(e.ModulePath, File.ReadAllText(currentDir + e.ModulePath));
-                }
-            }
-
-            if (e.Module != null)
-                e.Module.Run();
         }
 
         private static void dromaeoTests()
@@ -725,9 +719,9 @@ namespace NiL.JS.Test
             switch (@case)
             {
                 case 0:
-                    {
-                        s = new Module(
-            @"
+                {
+                    s = new Module(
+        @"
 function fib(x)
 {
     if (x < 2)
@@ -736,28 +730,28 @@ function fib(x)
 }// 420 // 485 // 525 // 600 // 650
 for (var i = 0; i < 700; i++) fib(20);
 ");
-                        break;
-                    }
+                    break;
+                }
                 case 1:
-                    {
-                        s = new Module(
-            @"
+                {
+                    s = new Module(
+        @"
 for (var i = 0; i < 24000000; i++) Math.abs(i);
 ");
-                        break;
-                    }
+                    break;
+                }
                 case 2:
-                    {
-                        s = new Module(
-            @"
+                {
+                    s = new Module(
+        @"
 function abs(x)
 {
     return x < 0 ? -x : x;
 }
 for (var i = 0; i < 10000000; i++) abs(i * (1 - 2 * (i & 1)));
 ");
-                        break;
-                    }
+                    break;
+                }
             }
             s.Run();
             GC.Collect(0);

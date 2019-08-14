@@ -16,6 +16,7 @@
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '12.0' ">v4.5.1</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '14.0' ">v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '15.0' ">v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(VisualStudioVersion)' == '16.0' ">v4.6.1</TargetFrameworkVersion>
     <BaseIntermediateOutputPath>obj\$(TargetFrameworkVersion)\</BaseIntermediateOutputPath>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
@@ -231,6 +232,7 @@
     <Compile Include="BaseLibrary\Map.cs" />
     <Compile Include="BaseLibrary\Promise.cs" />
     <Compile Include="BaseLibrary\Symbol.cs" />
+    <Compile Include="CachedModuleResolverBase.cs" />
     <Compile Include="CompilerNotification.cs" />
     <Compile Include="Core\Arguments.cs" />
     <Compile Include="BaseLibrary\Array.cs" />
@@ -362,8 +364,9 @@
     <Compile Include="Expressions\ConvertToInteger.cs" />
     <Compile Include="Expressions\Yield.cs" />
     <Compile Include="Extensions\JSValueExtensions.cs" />
+    <Compile Include="IModuleResolver.cs" />
+    <Compile Include="ModuleRequest.cs" />
     <Compile Include="NamespaceProvider.cs" />
-    <Compile Include="ResolveModuleEventArgs.cs" />
     <Compile Include="Statements\ExportStatement.cs" />
     <Compile Include="Statements\ImportStatement.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />
