@@ -213,7 +213,7 @@ namespace NiL.JS
             }
 
             if (module == null)
-                throw new InvalidOperationException("Unable to load module \"" + request.AbsolutePath + "\"");
+                throw new InvalidOperationException("Unable to load module \"" + request.CmdArgument + "\"");
 
             if (module.FilePath == null)
                 module.FilePath = request.AbsolutePath;
@@ -233,7 +233,7 @@ namespace NiL.JS
             var requestedName = path.Split(_pathSplitChars);
             var pathTokens = new LinkedList<string>(thisName);
 
-            if (requestedName.Length > 0 && requestedName[0] == "")
+            if (requestedName.Length > 0 && requestedName[0] == "" || requestedName[0].EndsWith(":"))
                 pathTokens.Clear();
             else
                 pathTokens.RemoveLast();
@@ -243,7 +243,7 @@ namespace NiL.JS
 
             for (var node = pathTokens.First; node != null;)
             {
-                if (node.Value == "." || node.Value == "")
+                if (node.Value == "." || (node.Value == "" && node.Previous != pathTokens.First))
                 {
                     node = node.Next;
                     pathTokens.Remove(node.Previous);
@@ -261,7 +261,8 @@ namespace NiL.JS
             if (pathTokens.Last.Value.IndexOf('.') == -1)
                 pathTokens.Last.Value = pathTokens.Last.Value + ".js";
 
-            pathTokens.AddFirst("");
+            if (pathTokens.Count == 0 || !pathTokens.First.Value.EndsWith(":"))
+                pathTokens.AddFirst("");
 
             return string.Join("/", pathTokens);
         }

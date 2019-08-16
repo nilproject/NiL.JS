@@ -8,12 +8,14 @@ namespace NiL.JS
 
         bool IModuleResolver.TryGetModule(ModuleRequest moduleRequest, out Module result)
         {
-            if (_modulesCache.TryGetValue(moduleRequest.AbsolutePath, out result))
+            var cacheKey = GetCacheKey(moduleRequest);
+
+            if (_modulesCache.TryGetValue(cacheKey, out result))
                 return true;
 
             if (TryGetModule(moduleRequest, out result))
             {
-                _modulesCache.Add(moduleRequest.AbsolutePath, result);
+                _modulesCache.Add(cacheKey, result);
                 return true;
             }
 
@@ -21,5 +23,20 @@ namespace NiL.JS
         }
 
         public abstract bool TryGetModule(ModuleRequest moduleRequest, out Module result);
+
+        public virtual string GetCacheKey(ModuleRequest moduleRequest)
+        {
+            return moduleRequest.AbsolutePath;
+        }
+
+        public void RemoveFromCache(string key)
+        {
+            _modulesCache.Remove(key);
+        }
+
+        public void ClearCache()
+        {
+            _modulesCache.Clear();
+        }
     }
 }
