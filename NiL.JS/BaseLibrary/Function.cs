@@ -554,9 +554,9 @@ namespace NiL.JS.BaseLibrary
             {
                 var args = new Arguments()
                 {
-                    caller = oldContext != null ? oldContext._owner : null,
-                    callee = this,
-                    length = _functionDefinition.parameters.Length
+                    _caller = oldContext != null ? oldContext._owner : null,
+                    _callee = this,
+                    _iValue = _functionDefinition.parameters.Length
                 };
 
                 for (var i = 0; i < _functionDefinition.parameters.Length; i++)
@@ -596,12 +596,12 @@ namespace NiL.JS.BaseLibrary
                 if (_functionDefinition._body._strict)
                 {
                     arguments._attributes |= JSValueAttributesInternal.ReadOnly;
-                    arguments.callee = propertiesDummySM;
-                    arguments.caller = propertiesDummySM;
+                    arguments._callee = propertiesDummySM;
+                    arguments._caller = propertiesDummySM;
                 }
                 else
                 {
-                    arguments.callee = this;
+                    arguments._callee = this;
                 }
             }
         }
@@ -609,7 +609,7 @@ namespace NiL.JS.BaseLibrary
         internal void initParameters(Arguments args, Context internalContext)
         {
             var ceaw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsArguments || _functionDefinition._functionInfo.ContainsWith;
-            int min = System.Math.Min(args.length, _functionDefinition.parameters.Length - (_functionDefinition._functionInfo.ContainsRestParameters ? 1 : 0));
+            int min = System.Math.Min(args._iValue, _functionDefinition.parameters.Length - (_functionDefinition._functionInfo.ContainsRestParameters ? 1 : 0));
 
             JSValue[] defaultValues = null;
             Array restArray = null;
@@ -679,7 +679,7 @@ namespace NiL.JS.BaseLibrary
                     internalContext._arguments = t;
             }
 
-            for (var i = min; i < args.length; i++)
+            for (var i = min; i < args._iValue; i++)
             {
                 JSValue t = args[i];
                 if (ceaw)
@@ -828,13 +828,13 @@ namespace NiL.JS.BaseLibrary
         public JSValue call(Arguments args)
         {
             var newThis = args[0];
-            var prmlen = args.length - 1;
+            var prmlen = args._iValue - 1;
             if (prmlen >= 0)
             {
                 for (var i = 0; i <= prmlen; i++)
                     args[i] = args[i + 1];
                 args[prmlen] = null;
-                args.length = prmlen;
+                args._iValue = prmlen;
             }
             else
                 args[0] = null;
@@ -858,10 +858,10 @@ namespace NiL.JS.BaseLibrary
                 var len = argsSource["length"];
                 if (len._valueType == JSValueType.Property)
                     len = (len._oValue as Core.PropertyPair).getter.Call(argsSource, null);
-                nargs.length = Tools.JSObjectToInt32(len);
-                if (nargs.length >= 50000)
+                nargs._iValue = Tools.JSObjectToInt32(len);
+                if (nargs._iValue >= 50000)
                     ExceptionHelper.Throw(new RangeError("Too many arguments."));
-                for (var i = nargs.length; i-- > 0;)
+                for (var i = nargs._iValue; i-- > 0;)
                     nargs[i] = argsSource[Tools.Int32ToString(i)];
             }
             return Call(self, nargs);

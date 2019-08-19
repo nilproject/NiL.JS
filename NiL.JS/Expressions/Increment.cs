@@ -186,7 +186,7 @@ namespace NiL.JS.Expressions
             }
             if (setter != null)
             {
-                args.length = 1;
+                args._iValue = 1;
                 args[0] = val;
                 setter.Call(context._objectSource, args);
             }

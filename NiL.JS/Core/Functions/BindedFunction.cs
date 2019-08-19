@@ -65,16 +65,16 @@ namespace NiL.JS.Core.Functions
             this.original = proto;
             this._thisBind = args[0];
             this.bindedArguments = args;
-            if (args.length > 0)
+            if (args._iValue > 0)
             {
-                args.length--;
-                for (var i = 0; i < args.length; i++)
+                args._iValue--;
+                for (var i = 0; i < args._iValue; i++)
                     args[i] = args[i + 1];
-                _length._iValue -= args.length;
+                _length._iValue -= args._iValue;
                 if (_length._iValue < 0)
                     _length._iValue = 0;
-                args[args.length] = null;
-                if (args.length == 0)
+                args[args._iValue] = null;
+                if (args._iValue == 0)
                     bindedArguments = null;
             }
             else
@@ -90,10 +90,10 @@ namespace NiL.JS.Core.Functions
                 if (arguments == null)
                     arguments = new Arguments();
 
-                arguments.length += bindedArguments.length;
-                for (var i = arguments.length; i-- > bindedArguments.length; )
-                    arguments[i] = arguments[i - bindedArguments.length];
-                for (var i = bindedArguments.length; i-- > 0; )
+                arguments._iValue += bindedArguments._iValue;
+                for (var i = arguments._iValue; i-- > bindedArguments._iValue; )
+                    arguments[i] = arguments[i - bindedArguments._iValue];
+                for (var i = bindedArguments._iValue; i-- > 0; )
                     arguments[i] = bindedArguments[i];
             }
             if ((construct || _thisBind == null || _thisBind.IsNull || !_thisBind.Defined) && (targetObject != null && targetObject.Defined))

@@ -192,7 +192,7 @@ namespace NiL.JS.Expressions
                 arguments.Add(Tools.EvalExpressionSafe(context, _arguments[i]));
             context._objectSource = null;
 
-            arguments.callee = func;
+            arguments._callee = func;
             context._executionInfo = arguments;
         }
 

@@ -71,7 +71,7 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            int len = arguments == null ? 0 : arguments.length;
+            int len = arguments == null ? 0 : arguments._iValue;
             object[] args = null;
 
             for (int pass = 0; pass < PassesCount; pass++)

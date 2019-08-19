@@ -69,7 +69,7 @@ namespace NiL.JS.BaseLibrary
 
         internal void LogArguments(LogLevel level, Arguments args, int argsStart)
         {
-            if (args == null || args.length == 0 || args.length <= argsStart)
+            if (args == null || args._iValue == 0 || args._iValue <= argsStart)
                 return;
 
             LogMessage(level, Tools.FormatArgs(args.Skip(argsStart)));
@@ -148,7 +148,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue count(Arguments args)
         {
             string label = "";
-            if (args.length > 0)
+            if (args._iValue > 0)
                 label = (args[0] ?? "null").ToString();
 
             if (!_counters.ContainsKey(label))
@@ -399,7 +399,7 @@ namespace NiL.JS.BaseLibrary
                 c = c._parent;
             }
 
-            if (args != null && args.length > 0)
+            if (args != null && args._iValue > 0)
             {
                 group(args);
                 LogMessage(LogLevel.Log, s.ToString());
@@ -468,7 +468,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue time(Arguments args)
         {
             string label = "";
-            if (args.length > 0)
+            if (args._iValue > 0)
                 label = (args[0] ?? "null").ToString();
 
             if (_timers.ContainsKey(label))
@@ -482,7 +482,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue timeEnd(Arguments args)
         {
             string label = "";
-            if (args.length > 0)
+            if (args._iValue > 0)
                 label = (args[0] ?? "null").ToString();
 
             double elapsed = 0.0;

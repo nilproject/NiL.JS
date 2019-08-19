@@ -526,14 +526,14 @@ namespace NiL.JS.BaseLibrary
                             match._oValue = m.Value;
                             match._valueType = JSValueType.String;
 
-                            fArgs.length = m.Groups.Count + 2;
+                            fArgs._iValue = m.Groups.Count + 2;
                             fArgs[0] = match;
 
                             for (int i = 1; i < m.Groups.Count; i++)
                                 fArgs[i] = m.Groups[i].Value;
 
-                            fArgs[fArgs.length - 2] = m.Index;
-                            fArgs[fArgs.length - 1] = str;
+                            fArgs[fArgs._iValue - 2] = m.Index;
+                            fArgs[fArgs._iValue - 1] = str;
 
                             return f.Call(fArgs).ToString();
                         },
@@ -554,7 +554,7 @@ namespace NiL.JS.BaseLibrary
                     if (index == -1)
                         return selfStr;
 
-                    var fArgs = new Arguments(Context.CurrentContext) { length = 3 };
+                    var fArgs = new Arguments(Context.CurrentContext) { _iValue = 3 };
                     fArgs[0] = pattern;
                     fArgs[1] = index;
                     fArgs[2] = self;

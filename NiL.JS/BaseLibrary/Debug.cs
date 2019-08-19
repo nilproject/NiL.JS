@@ -6,14 +6,14 @@ namespace NiL.JS.BaseLibrary
     {
         public static void writeln(Arguments args)
         {
-            for (var i = 0; i < args.length; i++)
+            for (var i = 0; i < args._iValue; i++)
             {
 #if !(PORTABLE || NETCORE)
-                if (i < args.length)
+                if (i < args._iValue)
                     System.Diagnostics.Debug.Write(args[0]);
                 else
 #endif
-                    System.Diagnostics.Debug.WriteLine(args[args.length - 1]);
+                    System.Diagnostics.Debug.WriteLine(args[args._iValue - 1]);
             }
         }
 
@@ -23,7 +23,7 @@ namespace NiL.JS.BaseLibrary
             for (var i = 0; i < args.length; i++)
                 System.Diagnostics.Debug.WriteLine(args[0]);
 #else
-            for (var i = 0; i < args.length; i++)
+            for (var i = 0; i < args._iValue; i++)
                 System.Diagnostics.Debug.Write(args[0]);
 #endif
         }

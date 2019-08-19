@@ -2048,7 +2048,7 @@ namespace NiL.JS.Core
                 }
             }
 
-            argumentsObject.length = targetIndex;
+            argumentsObject._iValue = targetIndex;
             return argumentsObject;
         }
 

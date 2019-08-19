@@ -190,7 +190,7 @@ namespace NiL.JS.Expressions
             if (setter != null)
             {
                 var args = new Arguments(context);
-                args.length = 1;
+                args._iValue = 1;
                 args[0] = val;
                 setter.Call(context._objectSource, args);
             }

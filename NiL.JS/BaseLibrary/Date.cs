@@ -73,7 +73,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(7)]
         public Date(Arguments args)
         {
-            if (args.length == 1)
+            if (args._iValue == 1)
             {
                 var arg = args[0];
                 if (arg._valueType >= JSValueType.Object)
@@ -168,7 +168,7 @@ namespace NiL.JS.BaseLibrary
                     _error = true;
                     return;
                 }
-                for (var i = 7; i < System.Math.Min(8, args.length); i++)
+                for (var i = 7; i < System.Math.Min(8, args._iValue); i++)
                 {
                     var t = Tools.JSObjectToInt64(args[i], 0, true);
                     if (t == long.MaxValue

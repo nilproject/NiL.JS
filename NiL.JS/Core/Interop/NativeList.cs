@@ -227,7 +227,7 @@ namespace NiL.JS.Core.Interop
 
         public void push(Arguments args)
         {
-            for (var i = 0; i < args.length; i++)
+            for (var i = 0; i < args._iValue; i++)
                 data.Add(Tools.convertJStoObj(args[i], elementType, true));
         }
 

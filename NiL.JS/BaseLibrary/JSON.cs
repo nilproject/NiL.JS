@@ -33,7 +33,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(2)]
         public static JSValue parse(Arguments args)
         {
-            var length = Tools.JSObjectToInt32(args.length);
+            var length = Tools.JSObjectToInt32(args._iValue);
             var code = args[0].ToString();
             Function reviewer = length > 1 ? args[1]._oValue as Function : null;
             return parse(code, reviewer);
@@ -76,7 +76,7 @@ namespace NiL.JS.BaseLibrary
         {
             var stack = new Stack<StackFrame>();
             var pos = 0;
-            var revargs = reviewer != null ? new Arguments() { length = 2 } : null;
+            var revargs = reviewer != null ? new Arguments() { _iValue = 2 } : null;
             stack.Push(new StackFrame() { container = null, value = null, state = ParseState.Value });
 
             while (code.Length > pos && isSpace(code[pos]))
@@ -311,11 +311,11 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(3)]
         public static JSValue stringify(Arguments args)
         {
-            var length = args.length;
+            var length = args._iValue;
             var replacer = length > 1 ? args[1]._oValue as Function : null;
             var keys = length > 1 ? args[1]._oValue as Array : null;
             string space = null;
-            if (args.length > 2)
+            if (args._iValue > 2)
             {
                 var sa = args[2];
                 if (sa._valueType >= JSValueType.Object)
@@ -429,7 +429,7 @@ namespace NiL.JS.BaseLibrary
                 args[0] = "";
                 args[0]._oValue = key;
                 args[1] = obj;
-                args.length = 2;
+                args._iValue = 2;
                 var t = replacer.Call(args);
                 if (t._valueType >= JSValueType.Object && t._oValue == null)
                     return "null";
