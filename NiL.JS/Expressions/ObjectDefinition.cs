@@ -229,7 +229,7 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
-                        if (asterisk || async)
+                        if (asterisk || (async && state.Code[i] != ':'))
                             ExceptionHelper.ThrowSyntaxError("Unexpected token", state.Code, i);
 
                         if (state.Code[i] != ':' && state.Code[i] != ',' && state.Code[i] != '}')
