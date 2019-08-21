@@ -227,9 +227,9 @@ if (isNaN.__proto__ != Function.__proto__)
 
 [...new Date()];
 
-console.asserta(() => Error.constructor == Function.constructor);
-console.asserta(() => Error.constructor().__proto__ == Function.prototype);
-console.asserta(() => Object.call(Error).__proto__ == Object.prototype);
+Debug.asserta(() => Error.constructor == Function.constructor);
+Debug.asserta(() => Error.constructor().__proto__ == Function.prototype);
+Debug.asserta(() => Object.call(Error).__proto__ == Object.prototype);
 
 if ((function(a = 5) { return a })() != 5)
     throw new 'Something wrong with default parameter value';
@@ -248,11 +248,11 @@ Math.random(_should_be_changed_ += '2');
 if (_should_be_changed_ !== '12')
     throw "Incorrect arguments processing in MethodProxy";
 
-console.asserta(() => (new class {}).toString(), {}.toString());
+Debug.asserta(() => (new class {}).toString(), {}.toString());
 
-console.asserta(() => 0b11, 3);
-console.asserta(() => 0o11, 9);
-console.asserta(() => 0x11, 17);
+Debug.asserta(() => 0b11, 3);
+Debug.asserta(() => 0o11, 9);
+Debug.asserta(() => 0x11, 17);
 
 for (let i = 0; i < 1; i++) {
     let i = NaN;
@@ -283,7 +283,7 @@ for (let i = 0; i < 1; i++) {
     }
 })();
 
-console.asserta(() => 1..__proto__, Number.prototype);
+Debug.asserta(() => 1..__proto__, Number.prototype);
 
 (function () {
     function f({ a } = { a: 1 }, c = f({ a: 1 }, 2)) {
@@ -293,7 +293,7 @@ console.asserta(() => 1..__proto__, Number.prototype);
     f();
 })();
 
-console.asserta(() => JSON.stringify({ 1: 1, 2: { 1: 1 } }, [1]), "{\"1\":1}")
+Debug.asserta(() => JSON.stringify({ 1: 1, 2: { 1: 1 } }, [1]), "{\"1\":1}")
 
 var o = {};
 JSON.stringify([o, o]);
