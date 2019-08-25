@@ -1135,7 +1135,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
-        public static JSValue push(JSValue self, Arguments args)
+        public static JSValue push(JSValue self, params JSValue[] args)
         {
             notExists._valueType = JSValueType.NotExistsInObject;
             var selfa = self as Array;
@@ -1143,7 +1143,7 @@ namespace NiL.JS.BaseLibrary
             {
                 if (args != null)
                 {
-                    for (var i = 0; i < args._iValue; i++)
+                    for (var i = 0; i < args.Length; i++)
                     {
                         if (selfa._data.Length == uint.MaxValue)
                         {
@@ -1164,7 +1164,7 @@ namespace NiL.JS.BaseLibrary
                 if (args != null)
                 {
                     var index = length;
-                    length += args._iValue;
+                    length += args.Length;
                     self["length"] = length;
                     for (var j = 0; index < length; index++, j++)
                         self[index.ToString()] = args[j].CloneImpl(false);
