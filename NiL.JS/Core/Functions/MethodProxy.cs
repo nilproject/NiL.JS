@@ -220,10 +220,17 @@ namespace NiL.JS.Core.Functions
 
             if (_parameters.Length == 0)
             {
-                if (methodInfo.IsStatic)
-                    tree = Expression.Call(methodInfo);
+                if (_forceInstance)
+                {
+                    tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSValue)));
+                }
                 else
-                    tree = Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo);
+                {
+                    if (methodInfo.IsStatic)
+                        tree = Expression.Call(methodInfo);
+                    else
+                        tree = Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo);
+                }
             }
             else
             {
