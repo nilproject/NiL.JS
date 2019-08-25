@@ -261,6 +261,7 @@
     <Compile Include="Core\ICallable.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
+    <Compile Include="Core\Interop\InliningAttribute.cs" />
     <Compile Include="Core\Interop\ExpandoObjectWrapper.cs" />
     <Compile Include="Core\Interop\JavaScriptAliasAttribute.cs" />
     <Compile Include="Core\Interop\JsonSerializer.cs" />
@@ -281,6 +282,7 @@
     <Compile Include="Expressions\SuspendableExpression.cs" />
     <Compile Include="Expressions\TemplateString.cs" />
     <Compile Include="Expressions\This.cs" />
+    <Compile Include="Extensions\ContextExtensions.cs" />
     <Compile Include="Extensions\IterationProtocolExtensions.cs" />
     <Compile Include="Core\JSValue.cs" />
     <Compile Include="Core\Interop\ConvertValueAttribute.cs" />

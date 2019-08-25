@@ -78,7 +78,7 @@ namespace NiL.JS.Core.Functions
             {
                 for (var i = 0; i < _methods.Length; i++)
                 {
-                    if (_methods[i]._parameters.Length == 1 && _methods[i]._raw)
+                    if (_methods[i]._parameters.Length == 1 && _methods[i]._parameters[0].ParameterType == typeof(Arguments))
                         return Context.GlobalContext.ProxyValue(_methods[i].Call(targetObject, arguments));
 
                     if (pass == 2 || _methods[i]._parameters.Length == len)

@@ -408,8 +408,7 @@ namespace NiL.JS.Core
 
         public virtual JSValue DefineVariable(string name, bool deletable = false)
         {
-            JSValue res = null;
-            if (_variables == null || !_variables.TryGetValue(name, out res))
+            if (_variables == null || !_variables.TryGetValue(name, out var res))
             {
                 if (_variables == null)
                     _variables = JSObject.getFieldsContainer();
@@ -419,14 +418,14 @@ namespace NiL.JS.Core
 
                 if (!deletable)
                     res._attributes = JSValueAttributesInternal.DoNotDelete;
+
+                res._valueType = JSValueType.Undefined;
             }
             else if (res.NeedClone)
             {
                 res = res.CloneImpl(false);
                 _variables[name] = res;
             }
-
-            res._valueType |= JSValueType.Undefined;
 
             return res;
         }

@@ -23,6 +23,7 @@ namespace NiL.JS.Core.Functions
     internal sealed class MethodProxy : Function
     {
         private delegate object WrapperDelegate(object target, Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject);
+        private delegate object RestPrmsConverter(Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject);
 
         private static readonly Dictionary<MethodBase, WrapperDelegate> WrapperCache = new Dictionary<MethodBase, WrapperDelegate>();
         private static readonly MethodInfo ArgumentsGetItemMethod = typeof(Arguments).GetMethod("get_Item", new[] { typeof(int) });
@@ -30,42 +31,20 @@ namespace NiL.JS.Core.Functions
         private readonly WrapperDelegate _fastWrapper;
         private readonly bool _forceInstance;
         private readonly bool _strictConversion;
+        private readonly RestPrmsConverter _restPrmsArrayCreator;
         private readonly ConvertValueAttribute[] _paramsConverters;
         private readonly string _name;
 
         internal readonly ParameterInfo[] _parameters;
-        internal readonly bool _raw;
         internal readonly MethodBase _method;
         internal readonly object _hardTarget;
         internal readonly ConvertValueAttribute _returnConverter;
 
-        public ParameterInfo[] Parameters
-        {
-            get
-            {
-                return _parameters;
-            }
-        }
+        public ParameterInfo[] Parameters => _parameters;
 
-        public override string name
-        {
-            get
-            {
-                return _name;
-            }
-        }
+        public override string name => _name;
 
-        public override JSValue prototype
-        {
-            get
-            {
-                return null;
-            }
-            set
-            {
-
-            }
-        }
+        public override JSValue prototype { get => null; set { } }
 
         public MethodProxy(Context context, MethodBase methodBase)
             : this(context, methodBase, null)
@@ -127,15 +106,10 @@ namespace NiL.JS.Core.Functions
                         || (_parameters[0].ParameterType != typeof(JSValue))
                         || (_parameters.Length > 1 && _parameters[1].ParameterType != typeof(Arguments)))
                         throw new ArgumentException("Force-instance method \"" + methodBase + "\" has invalid signature");
-
-                    _raw = true;
                 }
 
                 if (!WrapperCache.TryGetValue(methodBase, out _fastWrapper))
                     WrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodInfo);
-
-                _raw |= _parameters.Length == 0
-                    || (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments));
 
                 RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
             }
@@ -143,24 +117,93 @@ namespace NiL.JS.Core.Functions
             {
                 if (!WrapperCache.TryGetValue(methodBase, out _fastWrapper))
                     WrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodBase as ConstructorInfo);
-
-                _raw |= _parameters.Length == 0
-                    || (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments));
             }
             else
                 throw new NotImplementedException();
+
+            if (_parameters.Length > 0 && _parameters.Last().CustomAttributes.Any(x => x.AttributeType == typeof(ParamArrayAttribute)))
+            {
+                _restPrmsArrayCreator = makeRestPrmsArrayCreator();
+            }
         }
 
-        private MethodProxy(Context context, bool raw, object hardTarget, MethodBase method, ParameterInfo[] parameters, WrapperDelegate fastWrapper, bool forceInstance)
+        private MethodProxy(Context context, object hardTarget, MethodBase method, ParameterInfo[] parameters, WrapperDelegate fastWrapper, bool forceInstance)
             : base(context)
         {
-            _raw = raw;
             _hardTarget = hardTarget;
             _method = method;
             _parameters = parameters;
             _fastWrapper = fastWrapper;
             _forceInstance = forceInstance;
             RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
+        }
+
+        private RestPrmsConverter makeRestPrmsArrayCreator()
+        {
+            var convertArg = ((Func<int, JSValue, object>)convertArgument).GetMethodInfo();
+            var processArg = ((Func<Expressions.Expression[], Context, int, object>)processArgument).GetMethodInfo();
+
+            var context = Expression.Parameter(typeof(Context), "context");
+            var arguments = Expression.Parameter(typeof(Expressions.Expression[]), "arguments");
+            var argumentsObjectPrm = Expression.Parameter(typeof(Arguments), "argumentsObject");
+            var restItemType = _parameters.Last().ParameterType.GetElementType();
+            var returnLabel = Expression.Label("return");
+
+            var argumentIndex = Expression.Variable(typeof(int), "argumentIndex");
+            var resultArray = Expression.Variable(_parameters.Last().ParameterType, "resultArray");
+            var resultArrayIndex = Expression.Variable(typeof(int), "resultArrayIndex");
+            var tempValue = Expression.Variable(typeof(object), "temp");
+
+            var resultArrayCtor = resultArray.Type.GetConstructor(new[] { typeof(int) });
+
+            var convertedValueArgObj = Expression.Call(Expression.Constant(this), convertArg, argumentIndex, Expression.Call(argumentsObjectPrm, ArgumentsGetItemMethod, Expression.PostIncrementAssign(argumentIndex)));
+            var conditionArgObj = Expression.GreaterThanOrEqual(argumentIndex, Expression.PropertyOrField(argumentsObjectPrm, nameof(Arguments.Length)));
+            var arrayAssignArgObj = Expression.Assign(Expression.ArrayAccess(resultArray, Expression.PostIncrementAssign(resultArrayIndex)), Expression.Convert(convertedValueArgObj, restItemType));
+
+            var conditionExp = Expression.GreaterThanOrEqual(argumentIndex, Expression.ArrayLength(arguments));
+            var getValueExp = Expression.Call(
+                                Expression.Constant(this),
+                                processArg,
+                                arguments,
+                                context,
+                                argumentIndex);
+            var arrayAssignExp = Expression.Assign(Expression.ArrayAccess(resultArray, Expression.PostIncrementAssign(resultArrayIndex)), Expression.Convert(getValueExp, restItemType));
+
+            // Expression.Condition(Expression.And(Expression.Equal(Expression.ArrayLength(resultArray), Expression.Constant(1)), Expression.TypeIs(Expression.ArrayAccess(resultArray, Expression.Constant(0)), typeof(BaseLibrary.Array)))
+
+            var tree = new List<Expression>();
+            tree.Add(Expression.Assign(argumentIndex, Expression.Constant(_parameters.Length - 1)));
+            tree.Add(Expression.Assign(resultArrayIndex, Expression.Constant(0)));
+            tree.Add(Expression.IfThenElse(
+                Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
+                Expression.Block(
+                    Expression.IfThen(
+                        Expression.Equal(Expression.PropertyOrField(argumentsObjectPrm, nameof(Arguments.Length)), Expression.Constant(_parameters.Length)),
+                        Expression.Block(
+                            Expression.Assign(tempValue, Expression.Call(Expression.Constant(this), convertArg, argumentIndex, Expression.Call(argumentsObjectPrm, ArgumentsGetItemMethod, argumentIndex))),
+                            Expression.IfThen(Expression.NotEqual(tempValue, Expression.Constant(null)), Expression.Return(returnLabel, tempValue)))),
+                    Expression.Assign(resultArray, Expression.New(resultArrayCtor, Expression.Subtract(Expression.PropertyOrField(argumentsObjectPrm, nameof(Arguments.Length)), argumentIndex))),
+                    Expression.Loop(
+                        Expression.IfThenElse(conditionArgObj,
+                            Expression.Return(returnLabel, Expression.Assign(tempValue, resultArray)),
+                            arrayAssignArgObj))),
+                Expression.Block(
+                    Expression.IfThen(
+                        Expression.Equal(Expression.ArrayLength(arguments), Expression.Constant(_parameters.Length)),
+                        Expression.Block(
+                            Expression.Assign(tempValue, getValueExp),
+                            Expression.IfThen(Expression.NotEqual(tempValue, Expression.Constant(null)), Expression.Return(returnLabel, tempValue)))),
+                    Expression.Assign(resultArray, Expression.New(resultArrayCtor, Expression.Subtract(Expression.ArrayLength(arguments), argumentIndex))),
+                    Expression.Loop(
+                            Expression.IfThenElse(conditionExp,
+                                Expression.Return(returnLabel, Expression.Assign(tempValue, resultArray)),
+                                Expression.Block(arrayAssignExp, Expression.PostIncrementAssign(argumentIndex)))))));
+            tree.Add(Expression.Label(returnLabel));
+            tree.Add(tempValue);
+
+            var lambda = Expression.Lambda<RestPrmsConverter>(Expression.Block(new ParameterExpression[] { argumentIndex, resultArray, resultArrayIndex, tempValue }, tree), context, arguments, argumentsObjectPrm);
+
+            return lambda.Compile();
         }
 
         private WrapperDelegate makeFastWrapper(MethodInfo methodInfo)
@@ -177,7 +220,7 @@ namespace NiL.JS.Core.Functions
 
             if (_forceInstance)
             {
-                for (;;)
+                for (; ; )
                 {
                     if (methodInfo.IsStatic && _parameters[0].ParameterType == typeof(JSValue))
                     {
@@ -425,12 +468,19 @@ namespace NiL.JS.Core.Functions
 
         private object processArgumentsTail(Expressions.Expression[] arguments, Context context, int index)
         {
-            var result = processArgument(arguments, context, index);
+            if (_restPrmsArrayCreator != null)
+            {
+                return _restPrmsArrayCreator(context, arguments, null);
+            }
+            else
+            {
+                var result = processArgument(arguments, context, index);
 
-            while (++index < arguments.Length)
-                arguments[index].Evaluate(context);
+                while (++index < arguments.Length)
+                    arguments[index].Evaluate(context);
 
-            return result;
+                return result;
+            }
         }
 
         internal object GetTargetObject(JSValue targetValue, object hardTarget)
@@ -508,20 +558,22 @@ namespace NiL.JS.Core.Functions
                 return _paramsConverters[index].To(value);
 
             var strictConversion = options.HasFlag(ConvertArgsOptions.StrictConversion);
-            var parameterInfo = _parameters[index];
+            var processRest = _restPrmsArrayCreator != null && index >= _parameters.Length - 1 && (value.ValueType != JSValueType.Object || !(value.Value is BaseLibrary.Array));
+            var parameterInfo = processRest ? _parameters[_parameters.Length - 1] : _parameters[index];
+            var parameterType = processRest ? parameterInfo.ParameterType.GetElementType() : parameterInfo.ParameterType;
             object result = null;
 
-            if (value.IsNull && parameterInfo.ParameterType.GetTypeInfo().IsClass)
+            if (value.IsNull && parameterType.GetTypeInfo().IsClass)
             {
                 return null;
             }
             else if (value.Defined)
             {
-                result = Tools.convertJStoObj(value, parameterInfo.ParameterType, !strictConversion);
+                result = Tools.convertJStoObj(value, parameterType, !strictConversion);
                 if (strictConversion && result == null)
                 {
                     if (options.HasFlag(ConvertArgsOptions.ThrowOnError))
-                        ExceptionHelper.ThrowTypeError("Unable to convert " + value + " to type " + parameterInfo.ParameterType);
+                        ExceptionHelper.ThrowTypeError("Unable to convert " + value + " to type " + parameterType);
 
                     if (!options.HasFlag(ConvertArgsOptions.DummyValues))
                         return null;
@@ -529,12 +581,11 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                if (parameterInfo.ParameterType.IsAssignableFrom(value.GetType()))
+                if (parameterType.IsAssignableFrom(value.GetType()))
                     return value;
             }
 
-            if (result == null
-                && (options.HasFlag(ConvertArgsOptions.DummyValues) || parameterInfo.Attributes.HasFlag(ParameterAttributes.HasDefault)))
+            if (result == null && _restPrmsArrayCreator == null && (options.HasFlag(ConvertArgsOptions.DummyValues) || parameterInfo.Attributes.HasFlag(ParameterAttributes.HasDefault)))
             {
                 result = parameterInfo.DefaultValue;
 
@@ -546,10 +597,10 @@ namespace NiL.JS.Core.Functions
                 {
 #endif
                     if (strictConversion && options.HasFlag(ConvertArgsOptions.ThrowOnError))
-                        ExceptionHelper.ThrowTypeError("Unable to convert " + value + " to type " + parameterInfo.ParameterType);
+                        ExceptionHelper.ThrowTypeError("Unable to convert " + value + " to type " + parameterType);
 
-                    if (parameterInfo.ParameterType.GetTypeInfo().IsValueType)
-                        result = Activator.CreateInstance(parameterInfo.ParameterType);
+                    if (parameterType.GetTypeInfo().IsValueType)
+                        result = Activator.CreateInstance(parameterType);
                     else
                         result = null;
                 }
@@ -606,7 +657,6 @@ namespace NiL.JS.Core.Functions
 
             return new MethodProxy(
                 Context,
-                _raw,
                 convertTargetObject(args[0], _method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
                 _method,
                 _parameters,

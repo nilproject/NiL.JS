@@ -97,65 +97,53 @@ namespace NiL.JS.Test
 
     public class Program
     {
-        public class A : IDynamicMetaObjectProvider
+        public sealed class ClassWithTwoMethods
         {
-            public DynamicMetaObject GetMetaObject(Expression parameter)
+            public void Method1(int prm0, params int[] prms)
             {
-                return null;
+                Console.WriteLine(nameof(Method1));
+                Console.WriteLine(prm0);
+                Console.WriteLine(prms == null ? "<NULL>" : string.Join(", ", prms));
             }
-        }
 
-        public class B : DynamicObject
-        {
-
-        }
-
-        [UseIndexers]
-        [ToStringTag("It is tag")]
-        public class TestIndexer
-        {
-            /// <summary>
-            /// lkasjdgflksdjhgldsfkjh
-            /// </summary>
-            public string Property
+            public void Method2(int prm0, int[] prms)
             {
-                get { return "prop"; }
-            }
-            public string this[int key]
-            {
-                get { return "integer: " + key; }
-            }
-            public string this[object key]
-            {
-                get { return "object: [" + (key == null ? "null" : key.GetType().Name) + "] " + key; }
+                Console.WriteLine(nameof(Method2));
+                Console.WriteLine(prm0);
+                Console.WriteLine(prms == null ? "<NULL>" : string.Join(", ", prms));
             }
         }
 
         private static void testEx()
         {
-            var module0 = new Module("/src/m/main.js", @"
-import '/module0.js'
-import 'module1.js'
-import './module2.js'
-import '../module3.js'
-console.log('----------');
-import '/module0.js'
-import 'module1.js'
-import './module2.js'
-import '../module3.js'
+            var context = new Context
+            {
+                { "test", new ClassWithTwoMethods() }
+            };
+            context.Eval(@"
+test.Method1(1777, 1, 2, 3);
+test.Method1(2777, [1, 2, 3]);
+test.Method2(3777, 1, 2, 3);
+test.Method2(4777, [1, 2, 3]);
 ");
-
-            module0.ModuleResolversChain.Add(new MyTestModuleResolver());
-
-            module0.Run();
         }
 
-        private sealed class MyTestModuleResolver : CachedModuleResolverBase
+        public sealed class MyTestModuleResolver : CachedModuleResolverBase
         {
             public override bool TryGetModule(ModuleRequest moduleRequest, out Module result)
             {
-                result = new Module(moduleRequest.AbsolutePath, $"console.log('{moduleRequest.CmdArgument} => {moduleRequest.AbsolutePath}')");
-                return true;
+                if (moduleRequest.CmdArgument == "http://somesite.com/modules/arithmetic.js")
+                {
+                    var module = new Module(moduleRequest.CmdArgument, @"export function add(num1, num2) {
+    return num1 + num2;
+}");
+
+                    result = module;
+                    return true;
+                }
+
+                result = null;
+                return false;
             }
         }
 

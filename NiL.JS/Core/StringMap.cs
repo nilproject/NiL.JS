@@ -215,15 +215,15 @@ namespace NiL.JS.Core
                 int hash;
                 var keyLen = key.Length;
                 int isNumber = int.MinValue & (-keyLen);
+                int redKey = keyLen - 2;
                 char c;
                 hash = (int)((uint)keyLen * 0x33) ^ 0xb7b7b7;
-
                 for (var i = 0; i < keyLen; i++)
                 {
                     c = key[i];
-                    c -= (char)((uint)((i - 1) & ~(keyLen - 2)) >> 31);
+                    c -= (char)((uint)((i - 1) & ~redKey) >> 31);
                     hash += (hash >> 13) + (hash << 7) + c;
-                    isNumber &= ('0' - c - 1) & (c - '9' - 1);
+                    isNumber &= ('0' - 1 - c) & (c - '9' - 1);
                 }
 
                 hash &= int.MaxValue;
@@ -443,12 +443,13 @@ namespace NiL.JS.Core
                 for (; i < c; i++)
                 {
                     var index = _existsedIndexes[i];
-                    if (oldRecords[index].key != null)
+                    Record record = oldRecords[index];
+                    if (record.key != null)
                     {
                         if (newLength == MaxAsListSize << 1)
-                            insert(oldRecords[index].key, oldRecords[index].value, computeHash(oldRecords[index].key), false, false);
+                            insert(record.key, record.value, computeHash(record.key), false, false);
                         else
-                            insert(oldRecords[index].key, oldRecords[index].value, oldRecords[index].hash, false, false);
+                            insert(record.key, record.value, record.hash, false, false);
                     }
                 }
             }
@@ -559,7 +560,7 @@ namespace NiL.JS.Core
             uint number;
             uint foundNumber;
             uint exprected = 0;
-            bool repeat = false;
+            bool repeat;
             do
             {
                 repeat = false;
