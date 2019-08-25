@@ -102,10 +102,17 @@ namespace NiL.JS.Core.Functions
                 {
                     if (!methodInfo.IsStatic
                         || (_parameters.Length == 0)
-                        || (_parameters.Length > 2)
-                        || (_parameters[0].ParameterType != typeof(JSValue))
-                        || (_parameters.Length > 1 && _parameters[1].ParameterType != typeof(Arguments)))
+                        || (_parameters[0].ParameterType != typeof(JSValue)))
                         throw new ArgumentException("Force-instance method \"" + methodBase + "\" has invalid signature");
+
+                    _parameters = _parameters.Skip(1).ToArray();
+                    if (_paramsConverters != null)
+                        _paramsConverters = _paramsConverters.Skip(1).ToArray();
+                }
+
+                if (_parameters.Length > 0 && _parameters.Last().CustomAttributes.Any(x => x.AttributeType == typeof(ParamArrayAttribute)))
+                {
+                    _restPrmsArrayCreator = makeRestPrmsArrayCreator();
                 }
 
                 if (!WrapperCache.TryGetValue(methodBase, out _fastWrapper))
@@ -117,14 +124,14 @@ namespace NiL.JS.Core.Functions
             {
                 if (!WrapperCache.TryGetValue(methodBase, out _fastWrapper))
                     WrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodBase as ConstructorInfo);
+
+                if (_parameters.Length > 0 && _parameters.Last().CustomAttributes.Any(x => x.AttributeType == typeof(ParamArrayAttribute)))
+                {
+                    _restPrmsArrayCreator = makeRestPrmsArrayCreator();
+                }
             }
             else
                 throw new NotImplementedException();
-
-            if (_parameters.Length > 0 && _parameters.Last().CustomAttributes.Any(x => x.AttributeType == typeof(ParamArrayAttribute)))
-            {
-                _restPrmsArrayCreator = makeRestPrmsArrayCreator();
-            }
         }
 
         private MethodProxy(Context context, object hardTarget, MethodBase method, ParameterInfo[] parameters, WrapperDelegate fastWrapper, bool forceInstance)
@@ -168,8 +175,6 @@ namespace NiL.JS.Core.Functions
                                 context,
                                 argumentIndex);
             var arrayAssignExp = Expression.Assign(Expression.ArrayAccess(resultArray, Expression.PostIncrementAssign(resultArrayIndex)), Expression.Convert(getValueExp, restItemType));
-
-            // Expression.Condition(Expression.And(Expression.Equal(Expression.ArrayLength(resultArray), Expression.Constant(1)), Expression.TypeIs(Expression.ArrayAccess(resultArray, Expression.Constant(0)), typeof(BaseLibrary.Array)))
 
             var tree = new List<Expression>();
             tree.Add(Expression.Assign(argumentIndex, Expression.Constant(_parameters.Length - 1)));
@@ -218,31 +223,7 @@ namespace NiL.JS.Core.Functions
                 argumentsObjectPrm,
                 Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(), arguments, context)));
 
-            if (_forceInstance)
-            {
-                for (; ; )
-                {
-                    if (methodInfo.IsStatic && _parameters[0].ParameterType == typeof(JSValue))
-                    {
-                        if (_parameters.Length == 1)
-                        {
-                            tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSValue)));
-                            break;
-                        }
-                        else if (_parameters.Length == 2 && _parameters[1].ParameterType == typeof(Arguments))
-                        {
-                            tree = Expression.Call(
-                                methodInfo,
-                                Expression.Convert(target, typeof(JSValue)),
-                                argumentsObject);
-                            break;
-                        }
-                    }
-
-                    throw new ArgumentException("Invalid method signature");
-                }
-            }
-            else if (_parameters.Length == 0)
+            if (_parameters.Length == 0)
             {
                 if (methodInfo.IsStatic)
                     tree = Expression.Call(methodInfo);
@@ -251,12 +232,19 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                if (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments))
+                if ((_parameters.Length == 1 || (_parameters.Length == 2 && _forceInstance)) && _parameters.Last().ParameterType == typeof(Arguments))
                 {
-                    if (methodInfo.IsStatic)
-                        tree = Expression.Call(methodInfo, argumentsObject);
+                    if (_forceInstance)
+                    {
+                        tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSValue)), argumentsObject);
+                    }
                     else
-                        tree = Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, argumentsObject);
+                    {
+                        if (methodInfo.IsStatic)
+                            tree = Expression.Call(methodInfo, argumentsObject);
+                        else
+                            tree = Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, argumentsObject);
+                    }
                 }
                 else
                 {
@@ -264,13 +252,33 @@ namespace NiL.JS.Core.Functions
                     var processArgTail = ((Func<Expressions.Expression[], Context, int, object>)processArgumentsTail).GetMethodInfo();
                     var convertArg = ((Func<int, JSValue, object>)convertArgument).GetMethodInfo();
 
-                    var prms = new Expression[_parameters.Length];
-                    for (var i = 0; i < prms.Length; i++)
+                    var prms = new Expression[_parameters.Length + (_forceInstance ? 1 : 0)];
+
+                    if (_restPrmsArrayCreator != null)
                     {
-                        prms[i] = Expression.Convert(
+                        prms[prms.Length - 1] =
+                            Expression.Convert(
+                                Expression.Call(
+                                    Expression.Constant(this),
+                                    ((Func<Context, Expressions.Expression[], Arguments, object>)callRestPrmsConverter).Method,
+                                    context,
+                                    arguments,
+                                    argumentsObjectPrm),
+                            _parameters[_parameters.Length - 1].ParameterType);
+                    }
+
+                    var targetPrmIndex = 0;
+                    if (_forceInstance)
+                        prms[targetPrmIndex++] = Expression.Convert(target, typeof(JSValue));
+                    for (var i = 0; targetPrmIndex < prms.Length; i++, targetPrmIndex++)
+                    {
+                        if (targetPrmIndex == prms.Length - 1 && _restPrmsArrayCreator != null)
+                            continue;
+
+                        prms[targetPrmIndex] = Expression.Convert(
                             Expression.Call(
                                 Expression.Constant(this),
-                                i + 1 < prms.Length ? processArg : processArgTail,
+                                targetPrmIndex + 1 < prms.Length ? processArg : processArgTail,
                                 arguments,
                                 context,
                                 Expression.Constant(i)),
@@ -282,9 +290,15 @@ namespace NiL.JS.Core.Functions
                     else
                         tree = Expression.Call(Expression.Convert(target, methodInfo.DeclaringType), methodInfo, prms);
 
-                    for (var i = 0; i < prms.Length; i++)
+                    targetPrmIndex = 0;
+                    if (_forceInstance)
+                        targetPrmIndex++;
+                    for (var i = 0; targetPrmIndex < prms.Length; i++, targetPrmIndex++)
                     {
-                        prms[i] = Expression.Convert(
+                        if (targetPrmIndex == prms.Length - 1 && _restPrmsArrayCreator != null)
+                            continue;
+
+                        prms[targetPrmIndex] = Expression.Convert(
                             Expression.Call(
                                 Expression.Constant(this),
                                 convertArg,
@@ -413,6 +427,11 @@ namespace NiL.JS.Core.Functions
             }
         }
 
+        private object callRestPrmsConverter(Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject)
+        {
+            return _restPrmsArrayCreator(initiator, arguments, argumentsObject);
+        }
+
         internal override JSValue InternalInvoke(JSValue targetValue, Expressions.Expression[] argumentsSource, Context initiator, bool withSpread, bool withNew)
         {
             if (withNew)
@@ -468,19 +487,12 @@ namespace NiL.JS.Core.Functions
 
         private object processArgumentsTail(Expressions.Expression[] arguments, Context context, int index)
         {
-            if (_restPrmsArrayCreator != null)
-            {
-                return _restPrmsArrayCreator(context, arguments, null);
-            }
-            else
-            {
-                var result = processArgument(arguments, context, index);
+            var result = processArgument(arguments, context, index);
 
-                while (++index < arguments.Length)
-                    arguments[index].Evaluate(context);
+            while (++index < arguments.Length)
+                arguments[index].Evaluate(context);
 
-                return result;
-            }
+            return result;
         }
 
         internal object GetTargetObject(JSValue targetValue, object hardTarget)
