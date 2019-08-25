@@ -193,11 +193,6 @@ namespace NiL.JS.Core.Functions
                             Expression.Return(returnLabel, Expression.Assign(tempValue, resultArray)),
                             arrayAssignArgObj))),
                 Expression.Block(
-                    Expression.IfThen(
-                        Expression.Equal(Expression.ArrayLength(arguments), Expression.Constant(_parameters.Length)),
-                        Expression.Block(
-                            Expression.Assign(tempValue, getValueExp),
-                            Expression.IfThen(Expression.NotEqual(tempValue, Expression.Constant(null)), Expression.Return(returnLabel, tempValue)))),
                     Expression.Assign(resultArray, Expression.New(resultArrayCtor, Expression.Subtract(Expression.ArrayLength(arguments), argumentIndex))),
                     Expression.Loop(
                             Expression.IfThenElse(conditionExp,
@@ -570,7 +565,7 @@ namespace NiL.JS.Core.Functions
                 return _paramsConverters[index].To(value);
 
             var strictConversion = options.HasFlag(ConvertArgsOptions.StrictConversion);
-            var processRest = _restPrmsArrayCreator != null && index >= _parameters.Length - 1 && (value.ValueType != JSValueType.Object || !(value.Value is BaseLibrary.Array));
+            var processRest = _restPrmsArrayCreator != null && index >= _parameters.Length - 1 && (index >= _parameters.Length || value.ValueType != JSValueType.Object || !(value.Value is BaseLibrary.Array));
             var parameterInfo = processRest ? _parameters[_parameters.Length - 1] : _parameters[index];
             var parameterType = processRest ? parameterInfo.ParameterType.GetElementType() : parameterInfo.ParameterType;
             object result = null;
