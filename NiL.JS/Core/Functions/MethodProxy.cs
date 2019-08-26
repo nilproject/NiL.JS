@@ -262,7 +262,7 @@ namespace NiL.JS.Core.Functions
                             Expression.Convert(
                                 Expression.Call(
                                     Expression.Constant(this),
-                                    ((Func<Context, Expressions.Expression[], Arguments, object>)callRestPrmsConverter).Method,
+                                    ((Func<Context, Expressions.Expression[], Arguments, object>)callRestPrmsConverter).GetMethodInfo(),
                                     context,
                                     arguments,
                                     argumentsObjectPrm),
