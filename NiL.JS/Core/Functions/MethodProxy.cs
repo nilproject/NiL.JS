@@ -193,6 +193,13 @@ namespace NiL.JS.Core.Functions
                             Expression.Return(returnLabel, Expression.Assign(tempValue, resultArray)),
                             arrayAssignArgObj))),
                 Expression.Block(
+                    Expression.IfThen(
+                        Expression.Equal(Expression.ArrayLength(arguments), Expression.Constant(_parameters.Length)),
+                        Expression.Block(
+                            Expression.Assign(tempValue, getValueExp),
+                            Expression.IfThen(Expression.TypeIs(tempValue, typeof(System.Array)), Expression.Return(returnLabel, tempValue)),
+                            Expression.Assign(resultArray, Expression.NewArrayInit(restItemType, Expression.Convert(tempValue, restItemType))),
+                            Expression.Return(returnLabel, tempValue))),
                     Expression.Assign(resultArray, Expression.New(resultArrayCtor, Expression.Subtract(Expression.ArrayLength(arguments), argumentIndex))),
                     Expression.Loop(
                             Expression.IfThenElse(conditionExp,
