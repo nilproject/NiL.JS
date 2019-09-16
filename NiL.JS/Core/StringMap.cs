@@ -53,13 +53,11 @@ namespace NiL.JS.Core
         private const int InitialSize = 2;
         private const int MaxAsListSize = 4;
 
-        private static readonly Record[] emptyRecords = new Record[0];
-
         private int _count;
         private int _eicount;
         private int _previousIndex;
 
-        private Record[] _records = emptyRecords;
+        private Record[] _records = Array.Empty<Record>();
         private int[] _existsedIndexes;
 
         private bool _emptyKeyValueExists = false;

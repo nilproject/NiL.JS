@@ -110,7 +110,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return _jsObject == null ? new KeyValuePair<string, JSValue>[0] : _jsObject.ToArray();
+                return _jsObject == null ? System.Array.Empty<KeyValuePair<string, JSValue>>() : _jsObject.ToArray();
             }
         }
     }
@@ -143,7 +143,7 @@ namespace NiL.JS.Core
          */
 
         [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue, AllowMultiple = false, Inherited = false)]
-        protected sealed class ProtoConverter : ConvertValueAttribute
+        protected sealed class ProtoConverterAttribute : ConvertValueAttribute
         {
             public override object From(object source)
             {
@@ -339,9 +339,11 @@ namespace NiL.JS.Core
         [DoNotEnumerate]
         [NotConfigurable]
         [CLSCompliant(false)]
+#pragma warning disable CA1707 // Идентификаторы не должны содержать символы подчеркивания
         public virtual JSObject __proto__
+#pragma warning restore CA1707 // Идентификаторы не должны содержать символы подчеркивания
         {
-            [return: ProtoConverter]
+            [return: ProtoConverterAttribute]
             [Hidden]
             get
             {
@@ -355,7 +357,7 @@ namespace NiL.JS.Core
 
                 return GetDefaultPrototype();
             }
-            [param: ProtoConverter]
+            [param: ProtoConverterAttribute]
             [Hidden]
             set
             {

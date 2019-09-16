@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
@@ -262,7 +263,7 @@ namespace NiL.JS.Core.Functions
                             Expression.Convert(
                                 Expression.Call(
                                     Expression.Constant(this),
-                                    ((Func<Context, Expressions.Expression[], Arguments, object>)callRestPrmsConverter).Method,
+                                    ((Func<Context, Expressions.Expression[], Arguments, object>)callRestPrmsConverter).GetMethodInfo(),
                                     context,
                                     arguments,
                                     argumentsObjectPrm),
@@ -547,6 +548,7 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private object processArgument(Expressions.Expression[] arguments, Context initiator, int index)
         {
             var value = arguments.Length > index ? Tools.EvalExpressionSafe(initiator, arguments[index]) : notExists;
@@ -554,6 +556,7 @@ namespace NiL.JS.Core.Functions
             return convertArgument(index, value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private object convertArgument(int index, JSValue value)
         {
             var cvtArgs = ConvertArgsOptions.ThrowOnError;
@@ -568,20 +571,20 @@ namespace NiL.JS.Core.Functions
 
         private object convertArgument(int index, JSValue value, ConvertArgsOptions options)
         {
-            if (_paramsConverters?[index] != null)
+            if (_paramsConverters != null && _paramsConverters[index] != null)
                 return _paramsConverters[index].To(value);
 
-            var strictConversion = options.HasFlag(ConvertArgsOptions.StrictConversion);
+            var strictConversion = (options & ConvertArgsOptions.StrictConversion) == ConvertArgsOptions.StrictConversion;
             var processRest = _restPrmsArrayCreator != null && index >= _parameters.Length - 1 && (index >= _parameters.Length || value.ValueType != JSValueType.Object || !(value.Value is BaseLibrary.Array));
             var parameterInfo = processRest ? _parameters[_parameters.Length - 1] : _parameters[index];
             var parameterType = processRest ? parameterInfo.ParameterType.GetElementType() : parameterInfo.ParameterType;
             object result = null;
 
-            if (value.IsNull && parameterType.GetTypeInfo().IsClass)
+            if (value._valueType >= JSValueType.Object && value._oValue == null && parameterType.GetTypeInfo().IsClass)
             {
                 return null;
             }
-            else if (value.Defined)
+            else if (value._valueType > JSValueType.Undefined)
             {
                 result = Tools.convertJStoObj(value, parameterType, !strictConversion);
                 if (strictConversion && result == null)
