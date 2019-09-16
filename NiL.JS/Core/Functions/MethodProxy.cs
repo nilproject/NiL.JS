@@ -111,7 +111,7 @@ namespace NiL.JS.Core.Functions
                         _paramsConverters = _paramsConverters.Skip(1).ToArray();
                 }
 
-                if (_parameters.Length > 0 && _parameters.Last().CustomAttributes.Any(x => x.AttributeType == typeof(ParamArrayAttribute)))
+                if (_parameters.Length > 0 && _parameters.Last().GetCustomAttribute(typeof(ParamArrayAttribute), false) != null)
                 {
                     _restPrmsArrayCreator = makeRestPrmsArrayCreator();
                 }
@@ -126,7 +126,7 @@ namespace NiL.JS.Core.Functions
                 if (!WrapperCache.TryGetValue(methodBase, out _fastWrapper))
                     WrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodBase as ConstructorInfo);
 
-                if (_parameters.Length > 0 && _parameters.Last().CustomAttributes.Any(x => x.AttributeType == typeof(ParamArrayAttribute)))
+                if (_parameters.Length > 0 && _parameters.Last().GetCustomAttribute(typeof(ParamArrayAttribute), false) != null)
                 {
                     _restPrmsArrayCreator = makeRestPrmsArrayCreator();
                 }
@@ -568,7 +568,9 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
+#if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         private object processArgument(Expressions.Expression[] arguments, Context initiator, int index)
         {
             var value = arguments.Length > index ? Tools.EvalExpressionSafe(initiator, arguments[index]) : notExists;
@@ -576,7 +578,9 @@ namespace NiL.JS.Core.Functions
             return convertArgument(index, value);
         }
 
+#if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         private object convertArgument(int index, JSValue value)
         {
             var cvtArgs = ConvertArgsOptions.ThrowOnError;
