@@ -177,33 +177,53 @@ namespace NiL.JS.Core.Functions
                                 argumentIndex);
             var arrayAssignExp = Expression.Assign(Expression.ArrayAccess(resultArray, Expression.PostIncrementAssign(resultArrayIndex)), Expression.Convert(getValueExp, restItemType));
 
-            var tree = new List<Expression>();
-            tree.Add(Expression.Assign(argumentIndex, Expression.Constant(_parameters.Length - 1)));
-            tree.Add(Expression.Assign(resultArrayIndex, Expression.Constant(0)));
-            tree.Add(Expression.IfThenElse(
-                Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
-                Expression.Block(
-                    Expression.IfThen(
-                        Expression.Equal(Expression.PropertyOrField(argumentsObjectPrm, nameof(Arguments.Length)), Expression.Constant(_parameters.Length)),
-                        Expression.Block(
-                            Expression.Assign(tempValue, Expression.Call(Expression.Constant(this), convertArg, argumentIndex, Expression.Call(argumentsObjectPrm, ArgumentsGetItemMethod, argumentIndex))),
-                            Expression.IfThen(Expression.NotEqual(tempValue, Expression.Constant(null)), Expression.Return(returnLabel, tempValue)))),
-                    Expression.Assign(resultArray, Expression.New(resultArrayCtor, Expression.Subtract(Expression.PropertyOrField(argumentsObjectPrm, nameof(Arguments.Length)), argumentIndex))),
-                    Expression.Loop(
-                        Expression.IfThenElse(conditionArgObj,
-                            Expression.Return(returnLabel, Expression.Assign(tempValue, resultArray)),
-                            arrayAssignArgObj))),
-                Expression.Block(
-                    Expression.Assign(resultArray, Expression.New(resultArrayCtor, Expression.Subtract(Expression.ArrayLength(arguments), argumentIndex))),
-                    Expression.Loop(
+            var tree = new Expression[]
+            {
+                Expression.Assign(argumentIndex, Expression.Constant(_parameters.Length - 1)),
+                Expression.Assign(resultArrayIndex, Expression.Constant(0)),
+                Expression.IfThenElse(
+                    Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
+                    Expression.Block(
+                        Expression.IfThen(
+                            Expression.Equal(Expression.PropertyOrField(argumentsObjectPrm, nameof(Arguments.Length)),
+                                Expression.Constant(_parameters.Length)),
+                            Expression.Block(
+                                Expression.Assign(tempValue,
+                                    Expression.Call(Expression.Constant(this), convertArg, argumentIndex, Expression.Call(argumentsObjectPrm, ArgumentsGetItemMethod, argumentIndex))),
+                                Expression.IfThen(Expression.NotEqual(tempValue, Expression.Constant(null)),
+                                    Expression.Return(returnLabel, tempValue)))),
+                        Expression.Assign(resultArray,
+                            Expression.New(resultArrayCtor, Expression.Subtract(Expression.PropertyOrField(argumentsObjectPrm, nameof(Arguments.Length)),argumentIndex))),
+                        Expression.Loop(
+                            Expression.IfThenElse(conditionArgObj,
+                                Expression.Return(returnLabel, Expression.Assign(tempValue, resultArray)),
+                                arrayAssignArgObj))),
+                    Expression.Block(
+                        Expression.IfThen(
+                            Expression.Equal(Expression.ArrayLength(arguments),
+                                Expression.Constant(_parameters.Length)),
+                            Expression.Block(
+                                Expression.Assign(tempValue, getValueExp),
+                                Expression.IfThen(
+                                    Expression.TypeIs(tempValue, _parameters.Last().ParameterType),
+                                    Expression.Return(returnLabel, tempValue)),
+                                Expression.Assign(tempValue, Expression.NewArrayInit(restItemType, Expression.Convert(tempValue, restItemType))),
+                                Expression.Return(returnLabel, tempValue))),
+                        Expression.Assign(resultArray,
+                            Expression.New(resultArrayCtor,
+                                Expression.Subtract(Expression.ArrayLength(arguments), argumentIndex))),
+                        Expression.Loop(
                             Expression.IfThenElse(conditionExp,
                                 Expression.Return(returnLabel, Expression.Assign(tempValue, resultArray)),
-                                Expression.Block(arrayAssignExp, Expression.PostIncrementAssign(argumentIndex)))))));
-            tree.Add(Expression.Label(returnLabel));
-            tree.Add(tempValue);
+                                Expression.Block(arrayAssignExp, Expression.PostIncrementAssign(argumentIndex)))))),
+                Expression.Label(returnLabel),
+                tempValue
+            };
 
-            var lambda = Expression.Lambda<RestPrmsConverter>(Expression.Block(new ParameterExpression[] { argumentIndex, resultArray, resultArrayIndex, tempValue }, tree), context, arguments, argumentsObjectPrm);
-
+            var lambda = Expression.Lambda<RestPrmsConverter>(
+                Expression.Block(new[] { argumentIndex, resultArray, resultArrayIndex, tempValue }, tree), 
+                context, arguments, argumentsObjectPrm);
+            
             return lambda.Compile();
         }
 

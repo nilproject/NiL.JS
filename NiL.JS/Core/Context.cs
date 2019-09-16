@@ -413,18 +413,23 @@ namespace NiL.JS.Core
                 if (_variables == null)
                     _variables = JSObject.getFieldsContainer();
 
-                res = new JSValue();
+                res = new JSValue
+                {
+                    _valueType = JSValueType.Undefined
+                };
                 _variables[name] = res;
 
                 if (!deletable)
                     res._attributes = JSValueAttributesInternal.DoNotDelete;
-
-                res._valueType = JSValueType.Undefined;
             }
             else if (res.NeedClone)
             {
                 res = res.CloneImpl(false);
                 _variables[name] = res;
+            }
+            else
+            {
+                res._valueType |= JSValueType.Undefined;
             }
 
             return res;
