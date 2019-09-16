@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.5.1372 - 17 September 2019
+* Fix backward compatibility
+
 ## 2.5.1371 - 17 September 2019
 * Introduced changelog ¯\\\_(ツ)_/¯
 * Implemented: support of `ParamsArrayAttribute` (**`params`** keyword)
