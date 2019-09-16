@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
@@ -110,7 +111,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return _jsObject == null ? System.Array.Empty<KeyValuePair<string, JSValue>>() : _jsObject.ToArray();
+                return _jsObject == null ? EmpryArrayHelper.Empty<KeyValuePair<string, JSValue>>() : _jsObject.ToArray();
             }
         }
     }

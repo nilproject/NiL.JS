@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using NiL.JS.Backward;
 
 namespace NiL.JS.Core
 {
@@ -57,7 +58,7 @@ namespace NiL.JS.Core
         private int _eicount;
         private int _previousIndex;
 
-        private Record[] _records = Array.Empty<Record>();
+        private Record[] _records = EmpryArrayHelper.Empty<Record>();
         private int[] _existsedIndexes;
 
         private bool _emptyKeyValueExists = false;

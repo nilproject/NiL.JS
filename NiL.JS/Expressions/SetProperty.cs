@@ -66,7 +66,9 @@ namespace NiL.JS.Expressions
             }
         }
 
+#if INLINE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         private static JSValue safeGet(JSValue temp, CodeNode source, Context context)
         {
             temp.Assign(source.Evaluate(context));

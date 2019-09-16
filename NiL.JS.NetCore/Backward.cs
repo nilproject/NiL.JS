@@ -7,6 +7,19 @@ using System.Threading.Tasks;
 
 namespace NiL.JS.Backward
 {
+    internal static class EmpryArrayHelper
+    {
+        private static class EmptyArrayContainer<T>
+        {
+            public static readonly T[] EmptyArray = new T[0];
+        }
+
+        public static T[] Empty<T>()
+        {
+            return EmptyArrayContainer<T>.EmptyArray;
+        }
+    }
+
     internal enum MemberTypes
     {
         Constructor = 1,
