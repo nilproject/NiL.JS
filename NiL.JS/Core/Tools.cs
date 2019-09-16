@@ -1839,7 +1839,7 @@ namespace NiL.JS.Core
             if (reassignLen)
             {
                 if (length._valueType == JSValueType.Property)
-                    ((length._oValue as PropertyPair).setter ?? Function.Empty).Call(src, new Arguments() { result });
+                    ((length._oValue as PropertyPair).setter ?? Function.Empty).Call(src, new Arguments { result });
                 else
                     length.Assign(result);
             }
@@ -2048,7 +2048,7 @@ namespace NiL.JS.Core
                 }
             }
 
-            argumentsObject.length = targetIndex;
+            argumentsObject._iValue = targetIndex;
             return argumentsObject;
         }
 

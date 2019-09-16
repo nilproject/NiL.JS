@@ -31,7 +31,7 @@ namespace NiL.JS.Core.Functions
             if (nestedValue != null && (nestedValue._attributes & JSValueAttributesInternal.ConstructingObject) == 0)
                 nestedValue = null;
 
-            if (arguments != null && arguments.length > 0)
+            if (arguments != null && arguments._iValue > 0)
                 nestedValue = arguments[0];
 
             if (nestedValue == null)

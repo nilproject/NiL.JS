@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
@@ -9,37 +10,28 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class SetProperty : Expression
     {
-        private JSValue tempContainer1;
-        private JSValue tempContainer2;
-        private JSValue cachedMemberName;
-        private Expression value;
+        private JSValue _tempContainer1;
+        private JSValue _tempContainer2;
+        private JSValue _cachedMemberName;
+        private Expression _value;
 
-        public Expression Source { get { return _left; } }
-        public Expression FieldName { get { return _right; } }
-        public Expression Value { get { return value; } }
+        public Expression Source => _left;
+        public Expression FieldName => _right;
+        public Expression Value => _value;
 
-        protected internal override bool ContextIndependent
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected internal override bool ContextIndependent => false;
 
-        internal override bool ResultInTempContainer
-        {
-            get { return true; }
-        }
+        internal override bool ResultInTempContainer => true;
 
         internal SetProperty(Expression obj, Expression fieldName, Expression value)
             : base(obj, fieldName, true)
         {
             if (fieldName is Constant)
-                cachedMemberName = fieldName.Evaluate(null);
+                _cachedMemberName = fieldName.Evaluate(null);
             else
-                tempContainer1 = new JSValue();
-            this.value = value;
-            tempContainer2 = new JSValue();
+                _tempContainer1 = new JSValue();
+            this._value = value;
+            _tempContainer2 = new JSValue();
         }
 
         public override JSValue Evaluate(Context context)
@@ -60,13 +52,13 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    tempContainer2.Assign(source);
-                    source = tempContainer2;
+                    _tempContainer2.Assign(source);
+                    source = _tempContainer2;
                 }
 
                 source.SetProperty(
-                    cachedMemberName ?? safeGet(tempContainer1, _right, context),
-                    safeGet(_tempContainer, value, context),
+                    _cachedMemberName ?? safeGet(_tempContainer1, _right, context),
+                    safeGet(_tempContainer, _value, context),
                     context._strict);
 
                 context._objectSource = null;
@@ -74,6 +66,7 @@ namespace NiL.JS.Expressions
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static JSValue safeGet(JSValue temp, CodeNode source, Context context)
         {
             temp.Assign(source.Evaluate(context));
@@ -88,9 +81,9 @@ namespace NiL.JS.Expressions
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            var cn = value as CodeNode;
-            value.Optimize(ref cn, owner, message, opts, stats);
-            value = cn as Expression;
+            var cn = _value as CodeNode;
+            _value.Optimize(ref cn, owner, message, opts, stats);
+            _value = cn as Expression;
             base.Optimize(ref _this, owner, message, opts, stats);
         }
 
@@ -98,7 +91,7 @@ namespace NiL.JS.Expressions
         {
             base.RebuildScope(functionInfo, transferedVariables, scopeBias);
 
-            value.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _value.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -108,7 +101,7 @@ namespace NiL.JS.Expressions
 
         protected internal override CodeNode[] GetChildrenImpl()
         {
-            return new CodeNode[] { _left, _right, value };
+            return new CodeNode[] { _left, _right, _value };
         }
 
         public override string ToString()
@@ -122,7 +115,7 @@ namespace NiL.JS.Expressions
                 res += "." + cn.value;
             else
                 res += "[" + _right + "]";
-            return res + " = " + value;
+            return res + " = " + _value;
         }
     }
 }

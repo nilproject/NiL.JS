@@ -81,7 +81,7 @@ namespace NiL.JS.BaseLibrary
             _data = new SparseArray<JSValue>();
             _attributes |= JSValueAttributesInternal.SystemObject;
 
-            for (var i = 0; i < args.length; i++)
+            for (var i = 0; i < args._iValue; i++)
                 _data[i] = args[i].CloneImpl(false);
         }
 
@@ -204,7 +204,7 @@ namespace NiL.JS.BaseLibrary
 
             if (args != null)
             {
-                for (var i = 0; i < args.length; i++)
+                for (var i = 0; i < args._iValue; i++)
                 {
                     var v = args[i];
                     var varr = v._oValue as Array;
@@ -1003,7 +1003,7 @@ namespace NiL.JS.BaseLibrary
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("Array.prototype.join called for null or undefined"));
 
-            return joinImpl(self, args == null || args.length == 0 || !args[0].Defined ? "," : args[0].ToString(), false);
+            return joinImpl(self, args == null || args._iValue == 0 || !args[0].Defined ? "," : args[0].ToString(), false);
         }
 
         private static string joinImpl(JSValue self, string separator, bool locale)
@@ -1138,12 +1138,11 @@ namespace NiL.JS.BaseLibrary
         public static JSValue push(JSValue self, Arguments args)
         {
             notExists._valueType = JSValueType.NotExistsInObject;
-            var selfa = self as Array;
-            if (selfa != null)
+            if (self is Array selfa)
             {
                 if (args != null)
                 {
-                    for (var i = 0; i < args.length; i++)
+                    for (var i = 0; i < args.Length; i++)
                     {
                         if (selfa._data.Length == uint.MaxValue)
                         {
@@ -1158,20 +1157,18 @@ namespace NiL.JS.BaseLibrary
 
                 return selfa.length;
             }
-            else
-            {
-                var length = (long)Tools.getLengthOfArraylike(self, false);
-                if (args != null)
-                {
-                    var index = length;
-                    length += args.length;
-                    self["length"] = length;
-                    for (var j = 0; index < length; index++, j++)
-                        self[index.ToString()] = args[j].CloneImpl(false);
-                }
 
-                return length;
+            var length = (long)Tools.getLengthOfArraylike(self, false);
+            if (args != null)
+            {
+                var index = length;
+                length += args.Length;
+                self["length"] = length;
+                for (var j = 0; index < length; index++, j++)
+                    self[index.ToString()] = args[j].CloneImpl(false);
             }
+
+            return length;
         }
 
         [DoNotEnumerate]
@@ -1204,7 +1201,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (args == null)
                             args = new Arguments();
-                        args.length = 1;
+                        args._iValue = 1;
                         args[0] = item1;
                         ((item0._oValue as PropertyPair).setter ?? Function.Empty).Call(self, args);
                     }
@@ -1217,7 +1214,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (args == null)
                             args = new Arguments();
-                        args.length = 1;
+                        args._iValue = 1;
                         args[0] = item0;
                         ((item1._oValue as PropertyPair).setter ?? Function.Empty).Call(self, args);
                     }
@@ -1252,7 +1249,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (args == null)
                             args = new Arguments();
-                        args.length = 1;
+                        args._iValue = 1;
                         args[0] = value1;
                         ((item0._oValue as PropertyPair).setter ?? Function.Empty).Call(self, args);
                     }
@@ -1271,7 +1268,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (args == null)
                             args = new Arguments();
-                        args.length = 1;
+                        args._iValue = 1;
                         args[0] = value0;
                         ((item1._oValue as PropertyPair).setter ?? Function.Empty).Call(self, args);
                     }
@@ -1302,12 +1299,12 @@ namespace NiL.JS.BaseLibrary
             var result = undefined;
             bool skip = true;
 
-            if (args.length > 1)
+            if (args._iValue > 1)
             {
                 skip = false;
                 result = args[1];
                 args[1] = null;
-                args.length = 1;
+                args._iValue = 1;
             }
 
             var len = (skip ? 0 : 1) + iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
@@ -1347,12 +1344,12 @@ namespace NiL.JS.BaseLibrary
             var result = undefined;
             bool skip = true;
 
-            if (args.length > 1)
+            if (args._iValue > 1)
             {
                 skip = false;
                 result = args[1];
                 args[1] = null;
-                args.length = 1;
+                args._iValue = 1;
             }
 
             var len = (skip ? 0 : 1) + reverseIterateImpl(self, args, undefined, (value, index, thisBind, jsCallback) =>
@@ -1619,13 +1616,13 @@ namespace NiL.JS.BaseLibrary
                     pos0 = 0;
                 if (pos1 < 0)
                     pos1 = 0;
-                if (pos1 == 0 && args.length <= 2)
+                if (pos1 == 0 && args._iValue <= 2)
                     return needResult ? new Array() : null;
                 pos0 = (uint)System.Math.Min(pos0, _length);
                 pos1 += pos0;
                 pos1 = (uint)System.Math.Min(pos1, _length);
                 var res = needResult ? new Array((int)(pos1 - pos0)) : null;
-                var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
+                var delta = System.Math.Max(0, args._iValue - 2) - (pos1 - pos0);
                 foreach (var node in (delta > 0 ? selfa._data.ReversOrder : selfa._data.DirectOrder))
                 {
                     if (node.Key < pos0)
@@ -1670,7 +1667,7 @@ namespace NiL.JS.BaseLibrary
                         selfa._data.RemoveAt((int)(selfa._data.Length - 1));
                     while (++delta < 0);
                 }
-                for (var i = 2; i < args.length; i++)
+                for (var i = 2; i < args._iValue; i++)
                 {
                     if (args[i].Exists)
                     {
@@ -1708,7 +1705,7 @@ namespace NiL.JS.BaseLibrary
                 if (pos1 < 0)
                     pos1 = 0;
 
-                if (pos1 == 0 && args.length <= 2)
+                if (pos1 == 0 && args._iValue <= 2)
                 {
                     var lenobj = self.GetProperty("length", true, PropertyScope.Common);
                     if (lenobj._valueType == JSValueType.Property)
@@ -1726,7 +1723,7 @@ namespace NiL.JS.BaseLibrary
                 pos0 = (uint)System.Math.Min(pos0, _length);
                 pos1 += pos0;
                 pos1 = (uint)System.Math.Min(pos1, _length);
-                var delta = System.Math.Max(0, args.length - 2) - (pos1 - pos0);
+                var delta = System.Math.Max(0, args._iValue - 2) - (pos1 - pos0);
                 var res = needResult ? new Array() : null;
                 long prewKey = -1;
                 foreach (var keyS in Tools.EnumerateArraylike(_length, self))
@@ -1877,7 +1874,7 @@ namespace NiL.JS.BaseLibrary
                         }
                     }
                 }
-                for (var i = 2; i < args.length; i++)
+                for (var i = 2; i < args._iValue; i++)
                 {
                     if ((i - 2 + pos0) <= int.MaxValue)
                     {
@@ -1930,7 +1927,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     var second = new JSValue();
                     var first = new JSValue();
-                    args.length = 2;
+                    args._iValue = 2;
                     args[0] = first;
                     args[1] = second;
 
@@ -1989,7 +1986,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     var second = new JSValue();
                     var first = new JSValue();
-                    args.length = 2;
+                    args._iValue = 2;
                     args[0] = first;
                     args[1] = second;
 
@@ -2073,9 +2070,9 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(1)]
         public static JSValue unshift(JSValue self, Arguments args)
         {
-            for (var i = args.length; i-- > 0;)
+            for (var i = args._iValue; i-- > 0;)
                 args[i + 2] = args[i];
-            args.length += 2;
+            args._iValue += 2;
             args[0] = 0;
             args[1] = args[0];
             spliceImpl(self, args, false);

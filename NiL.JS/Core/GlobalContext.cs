@@ -22,7 +22,6 @@ namespace NiL.JS.Core
 
     public sealed class GlobalContext : Context
     {
-        internal int СallDepth;
         internal JSObject _globalPrototype;
         private readonly Dictionary<Type, JSObject> _proxies;
 
@@ -266,7 +265,7 @@ namespace NiL.JS.Core
 
                 for (var i = 0; i < types.Count; i++)
                 {
-                    if (types[i].GetGenericArguments().Length == args.length)
+                    if (types[i].GetGenericArguments().Length == args._iValue)
                     {
                         type = types[i];
                         break;
@@ -276,11 +275,11 @@ namespace NiL.JS.Core
                 if (type == null)
                     ExceptionHelper.ThrowTypeError("Invalid arguments count for generic constructor");
 
-                if (args.length == 0)
+                if (args._iValue == 0)
                     return GetConstructor(type);
 
-                var parameters = new Type[args.length];
-                for (var i = 0; i < args.length; i++)
+                var parameters = new Type[args._iValue];
+                for (var i = 0; i < args._iValue; i++)
                 {
                     parameters[i] = args[i].As<Type>();
                     if (parameters[i] == null)

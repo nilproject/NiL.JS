@@ -232,6 +232,7 @@
     <Compile Include="BaseLibrary\Map.cs" />
     <Compile Include="BaseLibrary\Promise.cs" />
     <Compile Include="BaseLibrary\Symbol.cs" />
+    <Compile Include="CachedModuleResolverBase.cs" />
     <Compile Include="CompilerNotification.cs" />
     <Compile Include="Core\Arguments.cs" />
     <Compile Include="BaseLibrary\Array.cs" />
@@ -260,6 +261,7 @@
     <Compile Include="Core\ICallable.cs" />
     <Compile Include="Core\IIterable.cs" />
     <Compile Include="Core\IIteratorResult.cs" />
+    <Compile Include="Core\Interop\InliningAttribute.cs" />
     <Compile Include="Core\Interop\ExpandoObjectWrapper.cs" />
     <Compile Include="Core\Interop\JavaScriptAliasAttribute.cs" />
     <Compile Include="Core\Interop\JsonSerializer.cs" />
@@ -280,6 +282,7 @@
     <Compile Include="Expressions\SuspendableExpression.cs" />
     <Compile Include="Expressions\TemplateString.cs" />
     <Compile Include="Expressions\This.cs" />
+    <Compile Include="Extensions\ContextExtensions.cs" />
     <Compile Include="Extensions\IterationProtocolExtensions.cs" />
     <Compile Include="Core\JSValue.cs" />
     <Compile Include="Core\Interop\ConvertValueAttribute.cs" />
@@ -363,8 +366,9 @@
     <Compile Include="Expressions\ConvertToInteger.cs" />
     <Compile Include="Expressions\Yield.cs" />
     <Compile Include="Extensions\JSValueExtensions.cs" />
+    <Compile Include="IModuleResolver.cs" />
+    <Compile Include="ModuleRequest.cs" />
     <Compile Include="NamespaceProvider.cs" />
-    <Compile Include="ResolveModuleEventArgs.cs" />
     <Compile Include="Statements\ExportStatement.cs" />
     <Compile Include="Statements\ImportStatement.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />

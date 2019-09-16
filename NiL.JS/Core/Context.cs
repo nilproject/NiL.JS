@@ -97,6 +97,7 @@ namespace NiL.JS.Core
         internal VariableDescriptor[] _definedVariables;
         internal Module _module;
         private Dictionary<CodeNode, object> _suspendData;
+        internal int _callDepth;
 
         public Context RootContext
         {
@@ -228,6 +229,7 @@ namespace NiL.JS.Core
 
         internal Context(Context prototype, bool createFields, Function owner)
         {
+            _callDepth = prototype == null ? 0 : prototype._callDepth;
             _owner = owner;
             if (prototype != null)
             {
@@ -406,13 +408,15 @@ namespace NiL.JS.Core
 
         public virtual JSValue DefineVariable(string name, bool deletable = false)
         {
-            JSValue res = null;
-            if (_variables == null || !_variables.TryGetValue(name, out res))
+            if (_variables == null || !_variables.TryGetValue(name, out var res))
             {
                 if (_variables == null)
                     _variables = JSObject.getFieldsContainer();
 
-                res = new JSValue();
+                res = new JSValue
+                {
+                    _valueType = JSValueType.Undefined
+                };
                 _variables[name] = res;
 
                 if (!deletable)
@@ -423,8 +427,10 @@ namespace NiL.JS.Core
                 res = res.CloneImpl(false);
                 _variables[name] = res;
             }
-
-            res._valueType |= JSValueType.Undefined;
+            else
+            {
+                res._valueType |= JSValueType.Undefined;
+            }
 
             return res;
         }

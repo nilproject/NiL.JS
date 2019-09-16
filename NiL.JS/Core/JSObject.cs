@@ -703,7 +703,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public void __defineGetter__(Arguments args)
         {
-            if (args.length < 2)
+            if (args._iValue < 2)
                 ExceptionHelper.Throw(new TypeError("Missed parameters"));
             if (args[1]._valueType != JSValueType.Function)
                 ExceptionHelper.Throw(new TypeError("Expecting function as second parameter"));
@@ -731,7 +731,7 @@ namespace NiL.JS.Core
         [CLSCompliant(false)]
         public void __defineSetter__(Arguments args)
         {
-            if (args.length < 2)
+            if (args._iValue < 2)
                 ExceptionHelper.Throw(new TypeError("Missed parameters"));
             if (args[1]._valueType != JSValueType.Function)
                 ExceptionHelper.Throw(new TypeError("Expecting function as second parameter"));
@@ -1014,11 +1014,11 @@ namespace NiL.JS.Core
         [JavaScriptName("assign")]
         public static JSValue JSAssign(Arguments args)
         {
-            if (args.length == 0 || !args[0].Defined)
+            if (args._iValue == 0 || !args[0].Defined)
                 ExceptionHelper.ThrowTypeError("Cannot convert undefined or null to object");
 
             var target = args[0].ToObject();
-            for (var i = 1; i < args.length; i++)
+            for (var i = 1; i < args._iValue; i++)
             {
                 var enumerator = args[i].GetEnumerator(true, EnumerationMode.RequireValues);
                 while (enumerator.MoveNext())

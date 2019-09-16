@@ -22,7 +22,7 @@ namespace NiL.JS.Statements
 #endif
     public sealed class VariableDefinition : CodeNode
     {
-        private VariableKind _kind;
+        private readonly VariableKind _kind;
 
         internal readonly VariableDescriptor[] _variables;
         internal Expression[] _initializers;
@@ -207,7 +207,7 @@ namespace NiL.JS.Statements
             {
                 if (context._executionMode == ExecutionMode.None && _kind > VariableKind.FunctionScope && _variables[i].lexicalScope)
                 {
-                    JSValue f = context.DefineVariable(_variables[i].name, false);
+                    var f = context.DefineVariable(_variables[i].name, false);
 
                     _variables[i].cacheRes = f;
                     _variables[i].cacheContext = context;

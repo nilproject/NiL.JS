@@ -71,14 +71,14 @@ namespace NiL.JS.Core.Functions
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            int len = arguments == null ? 0 : arguments.length;
+            int len = arguments == null ? 0 : arguments._iValue;
             object[] args = null;
 
             for (int pass = 0; pass < PassesCount; pass++)
             {
                 for (var i = 0; i < _methods.Length; i++)
                 {
-                    if (_methods[i]._parameters.Length == 1 && _methods[i]._raw)
+                    if (_methods[i]._parameters.Length == 1 && _methods[i]._parameters[0].ParameterType == typeof(Arguments))
                         return Context.GlobalContext.ProxyValue(_methods[i].Call(targetObject, arguments));
 
                     if (pass == 2 || _methods[i]._parameters.Length == len)

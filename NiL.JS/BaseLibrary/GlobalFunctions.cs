@@ -93,7 +93,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (args == null)
                 return null;
-            var argsCount = args.length;
+            var argsCount = args._iValue;
             var threadsCount = 1;
             if (argsCount == 0)
                 return null;
@@ -109,7 +109,7 @@ namespace NiL.JS.BaseLibrary
                     (threads[i] = new Thread((o) =>
                     {
                         var targs = new Arguments();
-                        targs.length = 1;
+                        targs._iValue = 1;
                         targs[0] = (int)o;
                         function.Call(null, targs);
                     }) { Name = "NiL.JS __pinvoke thread (" + __pinvokeCallCount + ":" + i + ")" }).Start(i);
@@ -123,7 +123,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (threads == null)
                         return false;
-                    argsCount = Tools.JSObjectToInt32(arg.length);
+                    argsCount = Tools.JSObjectToInt32(arg._iValue);
                     if (argsCount == 0)
                     {
                         for (var i = 0; i < threads.Length; i++)

@@ -176,7 +176,7 @@ namespace NiL.JS.Core.Functions
                     }
                     else
                     {
-                        switch (arguments.length)
+                        switch (arguments._iValue)
                         {
                             case 0:
                                 obj = new BaseLibrary.Array();
@@ -206,7 +206,7 @@ namespace NiL.JS.Core.Functions
                 }
                 else
                 {
-                    if ((arguments == null || arguments.length == 0)
+                    if ((arguments == null || arguments._iValue == 0)
 #if (PORTABLE || NETCORE)
  && _staticProxy._hostedType.GetTypeInfo().IsValueType)
 #else
@@ -307,12 +307,12 @@ namespace NiL.JS.Core.Functions
         private MethodProxy findConstructor(Arguments arguments, ref object[] args)
         {
             args = null;
-            var len = arguments == null ? 0 : arguments.length;
+            var len = arguments == null ? 0 : arguments._iValue;
             for (var pass = 0; pass < passesCount; pass++)
             {
                 for (int i = 0; i < constructors.Length; i++)
                 {
-                    if (constructors[i]._parameters.Length == 1 && constructors[i]._raw)
+                    if (constructors[i]._parameters.Length == 1 && constructors[i]._parameters[0].ParameterType == typeof(Arguments))
                         return constructors[i];
 
                     if (pass == 1 || constructors[i]._parameters.Length == len)
