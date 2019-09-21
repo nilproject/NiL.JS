@@ -244,7 +244,12 @@ namespace NiL.JS.Statements
             while (context._executionMode >= ExecutionMode.Resume || !iteratorResult.done)
             {
                 if (context._executionMode != ExecutionMode.Resume)
+                {
+                    var tempAttr = variable._attributes;
+                    variable._attributes &= ~JSValueAttributesInternal.ReadOnly;
                     variable.Assign(iteratorResult.value);
+                    variable._attributes = tempAttr;
+                }
 
                 _body.Evaluate(context);
 
