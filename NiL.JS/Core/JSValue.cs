@@ -160,9 +160,11 @@ namespace NiL.JS.Core
             public override object To(JSValue source)
             {
                 if (source.ValueType < JSValueType.Object)
+                {
                     return new JSObject { _valueType = JSValueType.Undefined };
+                }
 
-                return source;
+                return source._oValue as JSObject ?? source;
             }
         }
 
