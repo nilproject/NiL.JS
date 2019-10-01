@@ -70,6 +70,13 @@ namespace NiL.JS.BaseLibrary
         }
 
         [DoNotEnumerate]
+        public Date(DateTimeOffset dateTimeOffset)
+        {
+            _time = dateTimeOffset.UtcTicks / 10000;
+            _timeZoneOffset = dateTimeOffset.Offset.Ticks / 10000;
+        }
+
+        [DoNotEnumerate]
         [ArgumentsCount(7)]
         public Date(Arguments args)
         {
