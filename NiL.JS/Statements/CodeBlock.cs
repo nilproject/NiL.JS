@@ -708,8 +708,12 @@ namespace NiL.JS.Statements
 
         internal void initVariables(Context context)
         {
-            var stats = context._owner?._functionDefinition?._functionInfo;
-            var cew = stats == null || stats.ContainsEval || stats.ContainsWith || stats.NeedDecompose;
+            var functionInfo = context._owner?._functionDefinition?._functionInfo;
+            var cew = functionInfo == null 
+                || functionInfo.ContainsEval 
+                || functionInfo.ContainsWith 
+                || functionInfo.NeedDecompose 
+                || functionInfo.ContainsDebugger;
             for (var i = 0; i < _variables.Length; i++)
             {
                 var v = _variables[i];
@@ -724,7 +728,7 @@ namespace NiL.JS.Statements
                 if (v.lexicalScope)
                     continue;
 
-                var isArg = stats != null && string.CompareOrdinal(v.name, "arguments") == 0;
+                var isArg = functionInfo != null && string.CompareOrdinal(v.name, "arguments") == 0;
                 if (isArg && v.initializer == null)
                     continue;
 
