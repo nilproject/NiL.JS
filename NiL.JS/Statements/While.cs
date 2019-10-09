@@ -156,7 +156,7 @@ namespace NiL.JS.Statements
             expressionDepth = System.Math.Max(1, expressionDepth);
             Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
             Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
-            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ConvertToBoolean)
+            if ((opts & Options.SuppressUselessStatementsElimination) == 0 && condition is ConvertToBoolean)
             {
                 if (message != null)
                     message(MessageLevel.Warning, condition.Position, 2, "Useless conversion. Remove double negation in condition");
@@ -169,7 +169,7 @@ namespace NiL.JS.Statements
                     Eliminated = true;
                     if ((bool)condition.Evaluate(null))
                     {
-                        if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && body != null)
+                        if ((opts & Options.SuppressUselessStatementsElimination) == 0 && body != null)
                             _this = new InfinityLoop(body, labels);
                     }
                     else if ((opts & Options.SuppressUselessStatementsElimination) == 0)
@@ -180,7 +180,7 @@ namespace NiL.JS.Statements
                     }
                     condition.Eliminated = true;
                 }
-                else if ((opts & Options.SuppressUselessExpressionsElimination) == 0
+                else if ((opts & Options.SuppressUselessStatementsElimination) == 0
                         && ((this.condition is Expressions.ObjectDefinition && (this.condition as Expressions.ObjectDefinition).FieldNames.Length == 0)
                             || (this.condition is ArrayDefinition && (this.condition as ArrayDefinition).Elements.Length == 0)))
                 {

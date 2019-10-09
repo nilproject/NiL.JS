@@ -126,12 +126,15 @@ namespace NiL.JS.Statements
 
             if (conditionResult)
             {
-                if (context._debugging && !(then is CodeBlock))
-                    context.raiseDebugger(then);
+                if (then != null)
+                {
+                    if (context._debugging && !(then is CodeBlock))
+                        context.raiseDebugger(then);
 
-                var temp = then.Evaluate(context);
-                if (temp != null)
-                    context._lastResult = temp;
+                    var temp = then.Evaluate(context);
+                    if (temp != null)
+                        context._lastResult = temp;
+                }
             }
             else if (@else != null)
             {
@@ -142,8 +145,10 @@ namespace NiL.JS.Statements
                 if (temp != null)
                     context._lastResult = temp;
             }
+
             if (context._executionMode == ExecutionMode.Suspend)
                 context.SuspendData[this] = conditionResult;
+
             return null;
         }
 
@@ -165,7 +170,7 @@ namespace NiL.JS.Statements
             Parser.Build(ref then, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
             Parser.Build(ref @else, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
 
-            if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && condition is ConvertToBoolean)
+            if ((opts & Options.SuppressUselessStatementsElimination) == 0 && condition is ConvertToBoolean)
             {
                 if (message != null)
                     message(MessageLevel.Warning, condition.Position, 2, "Useless conversion. Remove double negation in condition");
@@ -173,7 +178,7 @@ namespace NiL.JS.Statements
             }
             try
             {
-                if ((opts & Options.SuppressUselessExpressionsElimination) == 0
+                if ((opts & Options.SuppressUselessStatementsElimination) == 0
                     && (condition is Constant || (condition.ContextIndependent)))
                 {
                     if ((bool)condition.Evaluate(null))
@@ -200,12 +205,16 @@ namespace NiL.JS.Statements
             var cc = condition as CodeNode;
             condition.Optimize(ref cc, owner, message, opts, stats);
             condition = (Expression)cc;
-            if (then != null)
-                then.Optimize(ref then, owner, message, opts, stats);
-            if (@else != null)
-                @else.Optimize(ref @else, owner, message, opts, stats);
-            if (then == null && @else == null)
-                _this = condition;
+
+            if ((opts & Options.SuppressUselessStatementsElimination) == 0)
+            {
+                if (then != null)
+                    then.Optimize(ref then, owner, message, opts, stats);
+                if (@else != null)
+                    @else.Optimize(ref @else, owner, message, opts, stats);
+                if (then == null && @else == null)
+                    _this = new Comma(condition, new Constant(JSValue.undefined));
+            }
         }
 
         public override void Decompose(ref CodeNode self)

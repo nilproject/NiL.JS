@@ -445,18 +445,22 @@ namespace NiL.JS.Statements
                         ref _variables[i].initializer,
                         System.Math.Max(2, expressionDepth),
                         variables,
-                        codeContext | (this._strict ? CodeContext.Strict : CodeContext.None),
+                        codeContext | (_strict ? CodeContext.Strict : CodeContext.None),
                         message,
                         stats,
                         opts);
                 }
             }
 
+            var lastRealExp = 0;
+
             for (var i = 0; i < _lines.Length; i++)
             {
                 var ed = _lines[i] as EntityDefinition;
                 if (ed != null && ed.Hoist)
                     _lines[i] = null;
+                else
+                    lastRealExp = i;
             }
 
             bool unreachable = false;
@@ -470,12 +474,22 @@ namespace NiL.JS.Statements
                     {
                         if (unreachable && message != null)
                             message(MessageLevel.CriticalWarning, _lines[i].Position, _lines[i].Length, "Unreachable code detected.");
+
                         var cn = _lines[i];
-                        Parser.Build(ref cn, (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth), variables, codeContext | (this._strict ? CodeContext.Strict : CodeContext.None), message, stats, opts);
+
+                        Parser.Build(
+                            ref cn,
+                            (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth),
+                            variables, codeContext | (_strict ? CodeContext.Strict : CodeContext.None),
+                            message,
+                            stats,
+                            opts | (!unreachable && i == lastRealExp ? Options.SuppressUselessExpressionsElimination | Options.SuppressUselessStatementsElimination : Options.None));
+
                         if (cn is Empty)
                             _lines[i] = null;
                         else
                             _lines[i] = cn;
+
                         unreachable |= cn is Return || cn is Break || cn is Continue || cn is Throw;
                     }
                 }
@@ -578,7 +592,12 @@ namespace NiL.JS.Statements
             for (int i = 0; i < _lines.Length; i++)
             {
                 var cn = _lines[i] as CodeNode;
-                cn.Optimize(ref cn, owner, message, opts, stats);
+                cn.Optimize(
+                    ref cn, 
+                    owner, 
+                    message, 
+                    opts | (i == _lines.Length - 1 ? Options.SuppressUselessExpressionsElimination | Options.SuppressUselessStatementsElimination : Options.None), 
+                    stats);
                 _lines[i] = cn;
             }
 
