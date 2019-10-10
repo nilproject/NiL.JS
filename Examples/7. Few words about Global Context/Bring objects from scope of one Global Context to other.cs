@@ -17,7 +17,7 @@ namespace Examples._7.Few_words_about_Global_Context
          * from another Global Context (the Second), at short time (while function is executing)
          * in callee thread will be active Global Context, which is parent for Context of called function (Second).
          * All global variables and type proxies will be stored in the Second Global Context.
-         * Full isolation.
+         * Сomplete isolation.
          */
 
         public override void Run()
