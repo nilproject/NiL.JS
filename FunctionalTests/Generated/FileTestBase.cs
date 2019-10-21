@@ -11,6 +11,16 @@ namespace NiL.JS.Test.Generated
 {
     public abstract class FileTestBase
     {
+        public sealed class MyTestModuleResolver : CachedModuleResolverBase
+        {
+            public override bool TryGetModule(ModuleRequest moduleRequest, out Module result)
+            {
+                var module = new Module(moduleRequest.CmdArgument, File.ReadAllText(moduleRequest.AbsolutePath));
+                result = module;
+                return true;
+            }
+        }
+
         private string _sta;
 
         protected void LoadSta(string path)
@@ -38,16 +48,17 @@ namespace NiL.JS.Test.Generated
                 Console.SetOut(new StringWriter(output));
                 var pass = true;
                 Module module;
-                var moduleName = fileName.Split(new[] { '/', '\\' }).Last();
                 if (!string.IsNullOrEmpty(_sta))
                 {
-                    module = new Module(moduleName, _sta);
+                    module = new Module(fileName, _sta);
                     module.Run();
                 }
                 else
                 {
-                    module = new Module(moduleName, "");
+                    module = new Module(fileName, "");
                 }
+
+                module.ModuleResolversChain.Add(new MyTestModuleResolver());
 
                 var preambleEnd = 0;
                 var preambleEndTemp = 0;
