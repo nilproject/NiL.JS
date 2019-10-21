@@ -10,13 +10,9 @@ namespace NiL.JS.BaseLibrary
 #endif
     public sealed class Date
     {
-        private static TimeZoneInfo s_currentTimeZone = TimeZoneInfo.Local;
+        [Obsolete("Use GlobalContext.CurrentTimeZone instead")]
         [Hidden]
-        public static TimeZoneInfo CurrentTimeZone
-        {
-            get => s_currentTimeZone;
-            set => s_currentTimeZone = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        public static TimeZoneInfo CurrentTimeZone => Context.CurrentGlobalContext.CurrentTimeZone;
 
         private const long _timeAccuracy = TimeSpan.TicksPerMillisecond;
         private const long _unixTimeBase = 62135596800000;
