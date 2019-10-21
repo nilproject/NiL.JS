@@ -66,10 +66,14 @@ namespace NiL.JS.Expressions
                         _sourceTempContainer = null;
                     }
 
-                    if (_propertyNameTempContainer == null)
-                        _propertyNameTempContainer = new JSValue();
-                    var propertyName = _cachedMemberName ?? safeGet(_propertyNameTempContainer, _right, context);
-                    _propertyNameTempContainer = null;
+                    var propertyName = _cachedMemberName;
+                    if (propertyName == null)
+                    {
+                        if (_propertyNameTempContainer == null)
+                            _propertyNameTempContainer = new JSValue();
+                        propertyName = safeGet(_propertyNameTempContainer, _right, context);
+                        _propertyNameTempContainer = null;
+                    }
 
                     if (_tempContainer == null)
                         _tempContainer = new JSValue();
