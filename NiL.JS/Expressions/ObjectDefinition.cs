@@ -68,6 +68,7 @@ namespace NiL.JS.Expressions
         {
             if (state.Code[index] != '{')
                 throw new ArgumentException("Invalid JSON definition");
+
             var flds = new Dictionary<string, Expression>();
             var computedProperties = new List<KeyValuePair<Expression, Expression>>();
             int i = index;

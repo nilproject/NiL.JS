@@ -1,6 +1,7 @@
 using System;
 using NiL.JS.Core.Interop;
 using NiL.JS.Core;
+using System.Runtime.CompilerServices;
 
 namespace NiL.JS.BaseLibrary
 {
@@ -266,6 +267,9 @@ namespace NiL.JS.BaseLibrary
             return res;
         }
 
+#if INLINE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         private static ulong shr(ulong x, int y)
         {
             if (y > 63)
@@ -738,7 +742,7 @@ namespace NiL.JS.BaseLibrary
             return res;
         }
 
-        #region Exclusives
+#region Exclusives
 
         [DoNotEnumerate]
         [DoNotDelete]
@@ -748,6 +752,6 @@ namespace NiL.JS.BaseLibrary
             return System.Math.IEEERemainder(Tools.JSObjectToDouble(a), Tools.JSObjectToDouble(b));
         }
 
-        #endregion
+#endregion
     }
 }

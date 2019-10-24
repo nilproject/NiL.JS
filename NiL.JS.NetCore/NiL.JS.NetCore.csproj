@@ -6,7 +6,7 @@
     <VersionPrefix>2.5.1204</VersionPrefix>
     <Authors>NiLProject</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
-    <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
+    <DefineConstants>TRACE;NETCORE;INLINE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>NiL.JS</AssemblyName>

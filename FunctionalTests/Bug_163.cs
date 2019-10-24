@@ -26,9 +26,7 @@ function cr(n, t, i, r, u) {
     return i
 }";
             var context = new Context(true);
-
-
-            var result = context.Eval(code);
+            context.Eval(code);
         }
     }
 }

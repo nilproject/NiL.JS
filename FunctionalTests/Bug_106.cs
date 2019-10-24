@@ -16,7 +16,7 @@ namespace FunctionalTests
             oo["test"] = false;
             var ro = SetField91_p(oo, "+1", 1);
 
-            Assert.AreEqual<int>(1, (int)ro["+1"]);  // pass
+            Assert.AreEqual(1, (int)ro["+1"]);  // pass
 
             bool pass = false;
             foreach (var kv in ro)
