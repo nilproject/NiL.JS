@@ -10,11 +10,6 @@ using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
-using NiL.JS.Extensions;
-
-#if !(PORTABLE || NETCORE)
-using NiL.JS.Backward;
-#endif
 
 namespace NiL.JS.Core
 {
