@@ -2,8 +2,7 @@
 
   <PropertyGroup>
     <Description>ECMAScript 6 (ES2015) engine</Description>
-    <AssemblyTitle>NiL.JS NET Core</AssemblyTitle>
-    <VersionPrefix>2.5.1204</VersionPrefix>
+    <AssemblyTitle>NiL.JS NET Core</AssemblyTitle>  
     <Authors>NiLProject</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <DefineConstants>TRACE;NETCORE;INLINE</DefineConstants>
@@ -25,6 +24,9 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VersionPrefix)' == ''">
+    <VersionPrefix>2.5</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>

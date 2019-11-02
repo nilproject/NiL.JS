@@ -19,8 +19,3 @@ using System.Runtime.InteropServices;
 #if !PORTABLE && !NETCORE
 [assembly: Guid("a70afe5a-2b29-49fd-afbf-28794042ea21")]
 #endif
-
-internal static class InternalInfo
-{
-    internal const string Version = "2.5.1070";
-}

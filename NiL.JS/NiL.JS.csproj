@@ -369,6 +369,7 @@
     <Compile Include="IModuleResolver.cs" />
     <Compile Include="ModuleRequest.cs" />
     <Compile Include="NamespaceProvider.cs" />
+    <Compile Include="Properties\InternalInfo.cs" />
     <Compile Include="Statements\ExportStatement.cs" />
     <Compile Include="Statements\ImportStatement.cs" />
     <Compile Include="Statements\LabeledStatement.cs" />

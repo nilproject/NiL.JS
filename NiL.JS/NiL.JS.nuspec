@@ -15,8 +15,6 @@
     <tags>ecmascript js javascript engine nil</tags>
   </metadata>
   <files>
-    <file src="..\NiL.JS.Portable\bin\Release\NiL.JS.dll" target="lib\portable-net45+win+wpa81+wp80" />
-    <file src="..\NiL.JS.Portable\bin\Release\NiL.JS.pdb" target="lib\portable-net45+win+wpa81+wp80" />
     <file src="..\net461\nil.js.dll" target="lib\net461" />
     <file src="..\net461\nil.js.pdb" target="lib\net461" />
     <file src="..\net45\nil.js.dll" target="lib\net45" />
