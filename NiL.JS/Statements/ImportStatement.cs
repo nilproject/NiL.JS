@@ -150,30 +150,40 @@ namespace NiL.JS.Statements
             if (module == null)
                 return null;
 
-            for (var i = 0; i < _map.Count; i++)
+            if (_map.Count > 0)
             {
-                JSValue value = null;
-
-                switch (_map[i].Key)
+                for (var i = 0; i < _map.Count; i++)
                 {
-                    case "":
+                    JSValue value = null;
+
+                    switch (_map[i].Key)
+                    {
+                        case "":
                         {
                             value = module.Exports.Default;
                             break;
                         }
-                    case "*":
+                        case "*":
                         {
                             value = module.Exports.CreateExportList();
                             break;
                         }
-                    default:
+                        default:
                         {
                             value = module.Exports[_map[i].Key];
                             break;
                         }
-                }
+                    }
 
-                context._variables[_map[i].Value] = value;
+                    context._variables[_map[i].Value] = value;
+                }
+            }
+            else
+            {
+                foreach (var variable in module.Context._variables)
+                {
+                    context._variables[variable.Key] = variable.Value;
+                }
             }
 
             return null;

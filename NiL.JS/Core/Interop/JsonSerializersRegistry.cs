@@ -47,13 +47,15 @@ namespace NiL.JS.Core.Interop
             if (index < 0)
                 return null;
 
-            while (index < _serializers.Count && !_serializers[index].CanSerialize(value))
+            while (index < _serializers.Count)
+            {
+                if (_serializers[index].CanSerialize(value))
+                    return _serializers[index];
+
                 index++;
+            }
 
-            if (index >= _serializers.Count)
-                return null;
-
-            return _serializers[index];
+            return null;
         }
 
         public bool RemoveJsonSerializer(Type targetType)
@@ -95,7 +97,7 @@ namespace NiL.JS.Core.Interop
 
             if (skipTypeCheck)
             {
-                if (weight == _serializers[indexMore].Weight)
+                if (weight >= _serializers[indexMore].Weight)
                     return indexMore;
 
                 return indexLess;

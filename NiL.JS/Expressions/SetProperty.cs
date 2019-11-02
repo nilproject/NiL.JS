@@ -10,8 +10,8 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class SetProperty : Expression
     {
-        private JSValue _tempContainer1;
-        private JSValue _tempContainer2;
+        private JSValue _propertyNameTempContainer;
+        private JSValue _sourceTempContainer;
         private JSValue _cachedMemberName;
         private Expression _value;
 
@@ -29,9 +29,9 @@ namespace NiL.JS.Expressions
             if (fieldName is Constant)
                 _cachedMemberName = fieldName.Evaluate(null);
             else
-                _tempContainer1 = new JSValue();
-            this._value = value;
-            _tempContainer2 = new JSValue();
+                _propertyNameTempContainer = new JSValue();
+            _value = value;
+            _sourceTempContainer = new JSValue();
         }
 
         public override JSValue Evaluate(Context context)
@@ -40,29 +40,60 @@ namespace NiL.JS.Expressions
             {
                 JSValue sjso = null;
                 JSValue source = null;
-                source = _left.Evaluate(context);
-                if (source._valueType >= JSValueType.Object
-                    && source._oValue != null
-                    && source._oValue != source
-                    && (sjso = source._oValue as JSValue) != null
-                    && sjso._valueType >= JSValueType.Object)
-                {
-                    source = sjso;
-                    sjso = null;
-                }
-                else
-                {
-                    _tempContainer2.Assign(source);
-                    source = _tempContainer2;
-                }
+                
+                var tc = _tempContainer;
+                var pntc = _propertyNameTempContainer;
+                var stc = _sourceTempContainer;
 
-                source.SetProperty(
-                    _cachedMemberName ?? safeGet(_tempContainer1, _right, context),
-                    safeGet(_tempContainer, _value, context),
-                    context._strict);
+                try
+                {
+                    source = _left.Evaluate(context);
+                    if (source._valueType >= JSValueType.Object
+                        && source._oValue != null
+                        && source._oValue != source
+                        && (sjso = source._oValue as JSValue) != null
+                        && sjso._valueType >= JSValueType.Object)
+                    {
+                        source = sjso;
+                    }
+                    else
+                    {
+                        if (_sourceTempContainer == null)
+                            _sourceTempContainer = new JSValue();
 
-                context._objectSource = null;
-                return _tempContainer;
+                        _sourceTempContainer.Assign(source);
+                        source = _sourceTempContainer;
+                        _sourceTempContainer = null;
+                    }
+
+                    var propertyName = _cachedMemberName;
+                    if (propertyName == null)
+                    {
+                        if (_propertyNameTempContainer == null)
+                            _propertyNameTempContainer = new JSValue();
+                        propertyName = safeGet(_propertyNameTempContainer, _right, context);
+                        _propertyNameTempContainer = null;
+                    }
+
+                    if (_tempContainer == null)
+                        _tempContainer = new JSValue();
+                    var value = safeGet(_tempContainer, _value, context);
+                    _tempContainer = null;
+
+                    source.SetProperty(
+                        propertyName,
+                        value,
+                        context._strict);
+
+                    context._objectSource = null;
+                    return value;
+                }
+                finally
+                {
+                    _tempContainer = tc;
+                    _propertyNameTempContainer = pntc;
+                    _sourceTempContainer = stc;
+                }
             }
         }
 
@@ -77,7 +108,7 @@ namespace NiL.JS.Expressions
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            this._codeContext = codeContext;
+            _codeContext = codeContext;
             return false;
         }
 

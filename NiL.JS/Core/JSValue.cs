@@ -10,11 +10,6 @@ using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
-using NiL.JS.Extensions;
-
-#if !(PORTABLE || NETCORE)
-using NiL.JS.Backward;
-#endif
 
 namespace NiL.JS.Core
 {
@@ -160,9 +155,11 @@ namespace NiL.JS.Core
             public override object To(JSValue source)
             {
                 if (source.ValueType < JSValueType.Object)
+                {
                     return new JSObject { _valueType = JSValueType.Undefined };
+                }
 
-                return source;
+                return source._oValue as JSObject ?? source;
             }
         }
 

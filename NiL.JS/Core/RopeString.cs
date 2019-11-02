@@ -11,45 +11,45 @@ namespace NiL.JS.Core
     public sealed class RopeString : IEnumerable<char>, IEnumerable, IEquatable<string>
     {
         private int _length;
-        private object _firstSource;
-        private object _secondSource;
-        private string firstSource
+        private object _firstPart;
+        private object _secondPart;
+        private string firstPart
         {
             get
             {
-                if (_firstSource == null)
+                if (_firstPart == null)
                     return null;
 
-                return _firstSource as string ?? (_firstSource = _firstSource.ToString()) as string;
+                return _firstPart as string ?? (_firstPart = _firstPart.ToString()) as string;
             }
         }
-        private string secondSource
+        private string secondPart
         {
             get
             {
-                if (_secondSource == null)
+                if (_secondPart == null)
                     return null;
 
-                return _secondSource as string ?? (_secondSource = _secondSource.ToString()) as string;
+                return _secondPart as string ?? (_secondPart = _secondPart.ToString()) as string;
             }
         }
 
         public RopeString()
         {
-            _firstSource = "";
-            _secondSource = "";
+            _firstPart = "";
+            _secondPart = "";
         }
 
         public RopeString(object source)
         {
-            _firstSource = source ?? "" as object;
-            _secondSource = "";
+            _firstPart = source ?? "" as object;
+            _secondPart = "";
         }
 
         public RopeString(object firstSource, object secondSource)
         {
-            _firstSource = firstSource ?? "" as object;
-            _secondSource = secondSource ?? "" as object;
+            _firstPart = firstSource ?? "" as object;
+            _secondPart = secondSource ?? "" as object;
 
             _length = calcLength();
 
@@ -61,23 +61,23 @@ namespace NiL.JS.Core
         {
             get
             {
-                if (_firstSource != null)
+                if (_firstPart != null)
                 {
-                    if ((_firstSource is RopeString) && (_firstSource as RopeString).Length < index)
-                        return (_firstSource as RopeString)[index];
-                    if ((_firstSource is StringBuilder) && (_firstSource as StringBuilder).Length < index)
-                        return (_firstSource as StringBuilder)[index];
-                    if (firstSource.Length < index)
-                        return firstSource[index];
+                    if ((_firstPart is RopeString) && (_firstPart as RopeString).Length < index)
+                        return (_firstPart as RopeString)[index];
+                    if ((_firstPart is StringBuilder) && (_firstPart as StringBuilder).Length < index)
+                        return (_firstPart as StringBuilder)[index];
+                    if (firstPart.Length < index)
+                        return firstPart[index];
                 }
 
-                if (_secondSource != null)
+                if (_secondPart != null)
                 {
-                    if (_secondSource is RopeString)
-                        return (_secondSource as RopeString)[index];
-                    if (_secondSource is StringBuilder)
-                        return (_secondSource as StringBuilder)[index];
-                    return secondSource[index];
+                    if (_secondPart is RopeString)
+                        return (_secondPart as RopeString)[index];
+                    if (_secondPart is StringBuilder)
+                        return (_secondPart as StringBuilder)[index];
+                    return secondPart[index];
                 }
 
                 throw new ArgumentOutOfRangeException();
@@ -94,7 +94,7 @@ namespace NiL.JS.Core
 
         public object Clone()
         {
-            return new RopeString(_firstSource, _secondSource);
+            return new RopeString(_firstPart, _secondPart);
         }
         public int CompareTo(string strB)
         {
@@ -134,65 +134,65 @@ namespace NiL.JS.Core
         }
         public int IndexOf(char value)
         {
-            var r = firstSource.IndexOf(value);
+            var r = firstPart.IndexOf(value);
             if (r == -1)
-                return secondSource.IndexOf(value);
+                return secondPart.IndexOf(value);
             return r;
         }
         public int IndexOf(string value)
         {
-            var r = firstSource.IndexOf(value);
+            var r = firstPart.IndexOf(value);
             if (r == -1)
-                return secondSource.IndexOf(value);
+                return secondPart.IndexOf(value);
             return r;
         }
         public int IndexOf(char value, int startIndex)
         {
-            var r = firstSource.IndexOf(value, startIndex);
+            var r = firstPart.IndexOf(value, startIndex);
             if (r == -1)
-                return secondSource.IndexOf(value, startIndex);
+                return secondPart.IndexOf(value, startIndex);
             return r;
         }
         public int IndexOf(string value, int startIndex)
         {
-            var r = firstSource.IndexOf(value, startIndex);
+            var r = firstPart.IndexOf(value, startIndex);
             if (r == -1)
-                return secondSource.IndexOf(value, startIndex);
+                return secondPart.IndexOf(value, startIndex);
             return r;
         }
         public int IndexOf(string value, StringComparison comparisonType)
         {
-            var r = firstSource.IndexOf(value, comparisonType);
+            var r = firstPart.IndexOf(value, comparisonType);
             if (r == -1)
-                return secondSource.IndexOf(value, comparisonType);
+                return secondPart.IndexOf(value, comparisonType);
             return r;
         }
         public int IndexOf(char value, int startIndex, int count)
         {
-            var r = firstSource.IndexOf(value, startIndex, count);
+            var r = firstPart.IndexOf(value, startIndex, count);
             if (r == -1)
-                return secondSource.IndexOf(value, startIndex, count);
+                return secondPart.IndexOf(value, startIndex, count);
             return r;
         }
         public int IndexOf(string value, int startIndex, int count)
         {
-            var r = firstSource.IndexOf(value, startIndex, count);
+            var r = firstPart.IndexOf(value, startIndex, count);
             if (r == -1)
-                return secondSource.IndexOf(value, startIndex, count);
+                return secondPart.IndexOf(value, startIndex, count);
             return r;
         }
         public int IndexOf(string value, int startIndex, StringComparison comparisonType)
         {
-            var r = firstSource.IndexOf(value, startIndex, comparisonType);
+            var r = firstPart.IndexOf(value, startIndex, comparisonType);
             if (r == -1)
-                return secondSource.IndexOf(value, startIndex, comparisonType);
+                return secondPart.IndexOf(value, startIndex, comparisonType);
             return r;
         }
         public int IndexOf(string value, int startIndex, int count, StringComparison comparisonType)
         {
-            var r = firstSource.IndexOf(value, startIndex, count, comparisonType);
+            var r = firstPart.IndexOf(value, startIndex, count, comparisonType);
             if (r == -1)
-                return secondSource.IndexOf(value, startIndex, count, comparisonType);
+                return secondPart.IndexOf(value, startIndex, count, comparisonType);
             return r;
         }
         public int IndexOfAny(char[] anyOf)
@@ -213,65 +213,65 @@ namespace NiL.JS.Core
         }
         public int LastIndexOf(char value)
         {
-            var r = firstSource.LastIndexOf(value);
+            var r = firstPart.LastIndexOf(value);
             if (r == -1)
-                return secondSource.LastIndexOf(value);
+                return secondPart.LastIndexOf(value);
             return r;
         }
         public int LastIndexOf(string value)
         {
-            var r = firstSource.LastIndexOf(value);
+            var r = firstPart.LastIndexOf(value);
             if (r == -1)
-                return secondSource.LastIndexOf(value);
+                return secondPart.LastIndexOf(value);
             return r;
         }
         public int LastIndexOf(char value, int startIndex)
         {
-            var r = firstSource.LastIndexOf(value, startIndex);
+            var r = firstPart.LastIndexOf(value, startIndex);
             if (r == -1)
-                return secondSource.LastIndexOf(value, startIndex);
+                return secondPart.LastIndexOf(value, startIndex);
             return r;
         }
         public int LastIndexOf(string value, int startIndex)
         {
-            var r = firstSource.LastIndexOf(value, startIndex);
+            var r = firstPart.LastIndexOf(value, startIndex);
             if (r == -1)
-                return secondSource.LastIndexOf(value, startIndex);
+                return secondPart.LastIndexOf(value, startIndex);
             return r;
         }
         public int LastIndexOf(string value, StringComparison comparisonType)
         {
-            var r = firstSource.LastIndexOf(value, comparisonType);
+            var r = firstPart.LastIndexOf(value, comparisonType);
             if (r == -1)
-                return secondSource.LastIndexOf(value, comparisonType);
+                return secondPart.LastIndexOf(value, comparisonType);
             return r;
         }
         public int LastIndexOf(char value, int startIndex, int count)
         {
-            var r = firstSource.LastIndexOf(value, startIndex, count);
+            var r = firstPart.LastIndexOf(value, startIndex, count);
             if (r == -1)
-                return secondSource.LastIndexOf(value, startIndex, count);
+                return secondPart.LastIndexOf(value, startIndex, count);
             return r;
         }
         public int LastIndexOf(string value, int startIndex, int count)
         {
-            var r = firstSource.LastIndexOf(value, startIndex, count);
+            var r = firstPart.LastIndexOf(value, startIndex, count);
             if (r == -1)
-                return secondSource.LastIndexOf(value, startIndex, count);
+                return secondPart.LastIndexOf(value, startIndex, count);
             return r;
         }
         public int LastIndexOf(string value, int startIndex, StringComparison comparisonType)
         {
-            var r = firstSource.LastIndexOf(value, startIndex, comparisonType);
+            var r = firstPart.LastIndexOf(value, startIndex, comparisonType);
             if (r == -1)
-                return secondSource.LastIndexOf(value, startIndex, comparisonType);
+                return secondPart.LastIndexOf(value, startIndex, comparisonType);
             return r;
         }
         public int LastIndexOf(string value, int startIndex, int count, StringComparison comparisonType)
         {
-            var r = firstSource.LastIndexOf(value, startIndex, count, comparisonType);
+            var r = firstPart.LastIndexOf(value, startIndex, count, comparisonType);
             if (r == -1)
-                return secondSource.LastIndexOf(value, startIndex, count, comparisonType);
+                return secondPart.LastIndexOf(value, startIndex, count, comparisonType);
             return r;
         }
         public int LastIndexOfAny(char[] anyOf)
@@ -390,13 +390,13 @@ namespace NiL.JS.Core
 
         public override string ToString()
         {
-            if (_secondSource != null)
+            if (_secondPart != null)
             {
-                if (!(_firstSource is RopeString)
-                    && !(_secondSource is RopeString))
+                if (!(_firstPart is RopeString)
+                    && !(_secondPart is RopeString))
                 {
-                    _firstSource = firstSource + secondSource;
-                    _secondSource = null;
+                    _firstPart = firstPart + secondPart;
+                    _secondPart = null;
                 }
                 else
                 {
@@ -409,9 +409,9 @@ namespace NiL.JS.Core
                     {
                         if (step.Peek() < 1)
                         {
-                            if (stack.Peek()._firstSource is RopeString)
+                            if (stack.Peek()._firstPart is RopeString)
                             {
-                                var child = stack.Peek()._firstSource as RopeString;
+                                var child = stack.Peek()._firstPart as RopeString;
                                 stack.Push(child);
                                 step.Pop();
                                 step.Push(1);
@@ -420,7 +420,7 @@ namespace NiL.JS.Core
                             }
                             else
                             {
-                                _append(res, stack.Peek().firstSource ?? "");
+                                _append(res, stack.Peek().firstPart ?? "");
                                 step.Pop();
                                 step.Push(1);
                             }
@@ -428,9 +428,9 @@ namespace NiL.JS.Core
 
                         if (step.Peek() < 2)
                         {
-                            if (stack.Peek()._secondSource is RopeString)
+                            if (stack.Peek()._secondPart is RopeString)
                             {
-                                var child = stack.Peek()._secondSource as RopeString;
+                                var child = stack.Peek()._secondPart as RopeString;
                                 stack.Push(child);
                                 step.Pop();
                                 step.Push(2);
@@ -439,7 +439,7 @@ namespace NiL.JS.Core
                             }
                             else
                             {
-                                _append(res, stack.Peek().secondSource ?? "");
+                                _append(res, stack.Peek().secondPart ?? "");
                                 step.Pop();
                                 step.Push(2);
                             }
@@ -449,11 +449,11 @@ namespace NiL.JS.Core
                         step.Pop();
                     }
 
-                    _firstSource = res.ToString();
-                    _secondSource = null;
+                    _firstPart = res.ToString();
+                    _secondPart = null;
                 }
             }
-            return firstSource;
+            return firstPart;
         }
         public string ToString(IFormatProvider provider)
         {
@@ -539,37 +539,37 @@ namespace NiL.JS.Core
             //return ToString().Length;
 
             int res = 0;
-            if (_firstSource != null)
+            if (_firstPart != null)
             {
-                var rs = _firstSource as RopeString;
+                var rs = _firstPart as RopeString;
                 if (rs != null)
                 {
                     res = rs.Length;
                 }
                 else
                 {
-                    var sb = _firstSource as StringBuilder;
+                    var sb = _firstPart as StringBuilder;
                     if (sb != null)
                         res = sb.Length;
                     else
-                        res = firstSource.Length;
+                        res = firstPart.Length;
                 }
             }
 
-            if (_secondSource != null)
+            if (_secondPart != null)
             {
-                var rs = _secondSource as RopeString;
+                var rs = _secondPart as RopeString;
                 if (rs != null)
                 {
                     res += rs.Length;
                 }
                 else
                 {
-                    var sb = _secondSource as StringBuilder;
+                    var sb = _secondPart as StringBuilder;
                     if (sb != null)
                         res += sb.Length;
                     else
-                        res += secondSource.Length;
+                        res += secondPart.Length;
                 }
             }
 

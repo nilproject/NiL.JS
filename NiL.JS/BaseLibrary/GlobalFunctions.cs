@@ -162,6 +162,7 @@ namespace NiL.JS.BaseLibrary
 
             if (string.IsNullOrEmpty(str))
                 return str;
+
             var res = new StringBuilder(str.Length);
             for (var k = 0; k < str.Length; k++)
             {

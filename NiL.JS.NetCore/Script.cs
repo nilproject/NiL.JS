@@ -41,6 +41,9 @@ namespace NiL.JS
             var body = root as CodeBlock;
             body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
+            for (var vi = 0; vi < body._variables.Length; vi++)
+                body._variables[vi].captured = true;
+
             var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
             var bd = body as CodeNode;

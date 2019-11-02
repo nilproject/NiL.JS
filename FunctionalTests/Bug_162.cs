@@ -21,7 +21,7 @@ if (arr.length > 1)
             var context = new Context(true);
 
 
-            var result = context.Eval(code);
+            context.Eval(code);
         }
     }
 }

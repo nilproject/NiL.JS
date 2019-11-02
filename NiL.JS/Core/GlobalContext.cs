@@ -28,6 +28,7 @@ namespace NiL.JS.Core
         public string Name { get; private set; }
         public IndexersSupport IndexersSupport { get; set; }
         public JsonSerializersRegistry JsonSerializersRegistry { get; set; }
+        public TimeZoneInfo CurrentTimeZone { get; set; }
 
         public GlobalContext()
             : this("")
@@ -139,6 +140,8 @@ namespace NiL.JS.Core
             {
                 Deactivate();
             }
+
+            CurrentTimeZone = TimeZoneInfo.Local;
         }
 
         public void ActivateInCurrentThread()

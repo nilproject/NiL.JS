@@ -317,7 +317,8 @@ namespace NiL.JS.Statements
             {
                 _condition = new Constant(BaseLibrary.Boolean.True);
             }
-            else if ((_condition is Expression)
+            else if (((opts & Options.SuppressUselessStatementsElimination) == 0)
+                  && (_condition is Expression)
                   && (_condition as Expression).ContextIndependent
                   && !(bool)_condition.Evaluate(null))
             {
@@ -374,15 +375,18 @@ namespace NiL.JS.Statements
                                     _post.Eliminated = true;
                                     _condition.Eliminated = true;
 
-                                    if (!Less.Check(vvalue, lvalue))
+                                    if ((opts & Options.SuppressUselessStatementsElimination) == 0)
                                     {
+                                        if (!Less.Check(vvalue, lvalue))
+                                        {
 
-                                        _this = _initializer;
-                                        return false;
+                                            _this = _initializer;
+                                            return false;
+                                        }
+
+                                        _this = new CodeBlock(new[] { _initializer, new Assignment(variable, limit) });
+                                        return true;
                                     }
-
-                                    _this = new CodeBlock(new[] { _initializer, new Assignment(variable, limit) });
-                                    return true;
                                 }
                             }
                         }

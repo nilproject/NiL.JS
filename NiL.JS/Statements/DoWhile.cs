@@ -150,7 +150,7 @@ namespace NiL.JS.Statements
             try
             {
                 if (allowRemove
-                    && (opts & Options.SuppressUselessExpressionsElimination) == 0
+                    && (opts & Options.SuppressUselessStatementsElimination) == 0
                     && (condition is Constant || (condition as Expressions.Expression).ContextIndependent))
                 {
                     if ((bool)condition.Evaluate(null))

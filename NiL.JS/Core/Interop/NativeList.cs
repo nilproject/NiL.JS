@@ -37,137 +37,137 @@ namespace NiL.JS.Core.Interop
 #endif
                         {
                             case TypeCode.Boolean:
-                                {
-                                    _iValue = (bool)value ? 1 : 0;
-                                    _valueType = JSValueType.Boolean;
-                                    break;
-                                }
+                            {
+                                _iValue = (bool)value ? 1 : 0;
+                                _valueType = JSValueType.Boolean;
+                                break;
+                            }
                             case TypeCode.Byte:
-                                {
-                                    _iValue = (byte)value;
-                                    _valueType = JSValueType.Integer;
-                                    break;
-                                }
+                            {
+                                _iValue = (byte)value;
+                                _valueType = JSValueType.Integer;
+                                break;
+                            }
                             case TypeCode.Char:
-                                {
-                                    _oValue = ((char)value).ToString();
-                                    _valueType = JSValueType.String;
-                                    break;
-                                }
+                            {
+                                _oValue = ((char)value).ToString();
+                                _valueType = JSValueType.String;
+                                break;
+                            }
                             case TypeCode.DateTime:
-                                {
-                                    var dateTime = (DateTime)value;
-                                    base.Assign(new ObjectWrapper(new Date(dateTime)));
-                                    break;
-                                }
+                            {
+                                var dateTime = (DateTime)value;
+                                base.Assign(new ObjectWrapper(new Date(dateTime)));
+                                break;
+                            }
                             case TypeCode.Decimal:
-                                {
-                                    _dValue = (double)(decimal)value;
-                                    _valueType = JSValueType.Double;
-                                    break;
-                                }
+                            {
+                                _dValue = (double)(decimal)value;
+                                _valueType = JSValueType.Double;
+                                break;
+                            }
                             case TypeCode.Double:
-                                {
-                                    _dValue = (double)value;
-                                    _valueType = JSValueType.Double;
-                                    break;
-                                }
+                            {
+                                _dValue = (double)value;
+                                _valueType = JSValueType.Double;
+                                break;
+                            }
                             case TypeCode.Int16:
-                                {
-                                    _iValue = (short)value;
-                                    _valueType = JSValueType.Integer;
-                                    break;
-                                }
+                            {
+                                _iValue = (short)value;
+                                _valueType = JSValueType.Integer;
+                                break;
+                            }
                             case TypeCode.Int32:
-                                {
-                                    _iValue = (int)value;
-                                    _valueType = JSValueType.Integer;
-                                    break;
-                                }
+                            {
+                                _iValue = (int)value;
+                                _valueType = JSValueType.Integer;
+                                break;
+                            }
                             case TypeCode.Int64:
-                                {
-                                    _dValue = (long)value;
-                                    _valueType = JSValueType.Double;
-                                    break;
-                                }
+                            {
+                                _dValue = (long)value;
+                                _valueType = JSValueType.Double;
+                                break;
+                            }
                             case TypeCode.SByte:
-                                {
-                                    _iValue = (sbyte)value;
-                                    _valueType = JSValueType.Integer;
-                                    break;
-                                }
+                            {
+                                _iValue = (sbyte)value;
+                                _valueType = JSValueType.Integer;
+                                break;
+                            }
                             case TypeCode.Single:
-                                {
-                                    _dValue = (float)value;
-                                    _valueType = JSValueType.Double;
-                                    break;
-                                }
+                            {
+                                _dValue = (float)value;
+                                _valueType = JSValueType.Double;
+                                break;
+                            }
                             case TypeCode.String:
-                                {
-                                    _oValue = value;
-                                    _valueType = JSValueType.String;
-                                    break;
-                                }
+                            {
+                                _oValue = value;
+                                _valueType = JSValueType.String;
+                                break;
+                            }
                             case TypeCode.UInt16:
-                                {
-                                    _iValue = (ushort)value;
-                                    _valueType = JSValueType.Integer;
-                                    break;
-                                }
+                            {
+                                _iValue = (ushort)value;
+                                _valueType = JSValueType.Integer;
+                                break;
+                            }
                             case TypeCode.UInt32:
+                            {
+                                var v = (uint)value;
+                                if (v > int.MaxValue)
                                 {
-                                    var v = (uint)value;
-                                    if (v > int.MaxValue)
-                                    {
-                                        _dValue = v;
-                                        _valueType = JSValueType.Double;
-                                    }
-                                    else
-                                    {
-                                        _iValue = (int)v;
-                                        _valueType = JSValueType.Integer;
-                                    }
-                                    break;
+                                    _dValue = v;
+                                    _valueType = JSValueType.Double;
                                 }
+                                else
+                                {
+                                    _iValue = (int)v;
+                                    _valueType = JSValueType.Integer;
+                                }
+                                break;
+                            }
                             case TypeCode.UInt64:
+                            {
+                                var v = (long)value;
+                                if (v > int.MaxValue)
                                 {
-                                    var v = (long)value;
-                                    if (v > int.MaxValue)
-                                    {
-                                        _dValue = v;
-                                        _valueType = JSValueType.Double;
-                                    }
-                                    else
-                                    {
-                                        _iValue = (int)v;
-                                        _valueType = JSValueType.Integer;
-                                    }
-                                    break;
+                                    _dValue = v;
+                                    _valueType = JSValueType.Double;
                                 }
-                            default:
+                                else
                                 {
-                                    if (value is Delegate)
-                                    {
-                                        var context = Context.CurrentGlobalContext;
+                                    _iValue = (int)v;
+                                    _valueType = JSValueType.Integer;
+                                }
+                                break;
+                            }
+                            default:
+                            {
+                                if (value is Delegate)
+                                {
+                                    var context = Context.CurrentGlobalContext;
 #if (PORTABLE || NETCORE)
                                         _oValue = new MethodProxy(context, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
 #else
-                                        _oValue = new MethodProxy(context, ((Delegate)value).Method, ((Delegate)value).Target);
+                                    _oValue = new MethodProxy(context, ((Delegate)value).Method, ((Delegate)value).Target);
 #endif
-                                        _valueType = JSValueType.Function;
-                                    }
-                                    else if (value is IList)
-                                    {
-                                        _oValue = new NativeList(value as IList);
-                                        _valueType = JSValueType.Object;
-                                    }
-                                    else
-                                    {
-                                        _oValue = Marshal(value);
-                                        _valueType = JSValueType.Object;
-                                    }
-                                    break;
+                                    _valueType = JSValueType.Function;
                                 }
+                                else if (value is IList)
+                                {
+                                    _oValue = new NativeList(value as IList);
+                                    _valueType = JSValueType.Object;
+                                }
+                                else
+                                {
+                                    _oValue = Marshal(value);
+                                    _valueType = JSValueType.Object;
+                                }
+                                break;
+                            }
                         }
                     }
                 }
@@ -256,29 +256,34 @@ namespace NiL.JS.Core.Interop
                     lenObj._iValue = data.Count;
                     return lenObj;
                 }
+
                 bool isIndex = false;
                 int index = 0;
                 JSValue tname = key;
                 if (tname._valueType >= JSValueType.Object)
                     tname = tname.ToPrimitiveValue_String_Value();
+
                 switch (tname._valueType)
                 {
                     case JSValueType.Integer:
-                        {
-                            isIndex = tname._iValue >= 0;
-                            index = tname._iValue;
-                            break;
-                        }
+                    {
+                        isIndex = tname._iValue >= 0;
+                        index = tname._iValue;
+                        break;
+                    }
                     case JSValueType.Double:
-                        {
-                            isIndex = tname._dValue >= 0 && tname._dValue < uint.MaxValue && (long)tname._dValue == tname._dValue;
-                            if (isIndex)
-                                index = (int)(uint)tname._dValue;
-                            break;
-                        }
+                    {
+                        isIndex = tname._dValue >= 0 && tname._dValue < uint.MaxValue && (long)tname._dValue == tname._dValue;
+                        if (isIndex)
+                            index = (int)(uint)tname._dValue;
+                        break;
+                    }
                     case JSValueType.String:
+                    {
+                        var str = tname._oValue.ToString();
+                        if (str.Length > 0)
                         {
-                            var fc = tname._oValue.ToString()[0];
+                            var fc = str[0];
                             if ('0' <= fc && '9' >= fc)
                             {
                                 var dindex = 0.0;
@@ -293,9 +298,11 @@ namespace NiL.JS.Core.Interop
                                     index = (int)(uint)dindex;
                                 }
                             }
-                            break;
                         }
+                        break;
+                    }
                 }
+
                 if (isIndex)
                 {
                     notExists._valueType = JSValueType.NotExistsInObject;
@@ -304,6 +311,7 @@ namespace NiL.JS.Core.Interop
                     return new Element(this, index);
                 }
             }
+
             return base.GetProperty(key, forWrite, memberScope);
         }
 
@@ -313,29 +321,34 @@ namespace NiL.JS.Core.Interop
             {
                 if (key._valueType == JSValueType.String && string.CompareOrdinal("length", key._oValue.ToString()) == 0)
                     return;
+
                 bool isIndex = false;
                 int index = 0;
                 JSValue tname = key;
                 if (tname._valueType >= JSValueType.Object)
                     tname = tname.ToPrimitiveValue_String_Value();
+
                 switch (tname._valueType)
                 {
                     case JSValueType.Integer:
-                        {
-                            isIndex = tname._iValue >= 0;
-                            index = tname._iValue;
-                            break;
-                        }
+                    {
+                        isIndex = tname._iValue >= 0;
+                        index = tname._iValue;
+                        break;
+                    }
                     case JSValueType.Double:
-                        {
-                            isIndex = tname._dValue >= 0 && tname._dValue < uint.MaxValue && (long)tname._dValue == tname._dValue;
-                            if (isIndex)
-                                index = (int)(uint)tname._dValue;
-                            break;
-                        }
+                    {
+                        isIndex = tname._dValue >= 0 && tname._dValue < uint.MaxValue && (long)tname._dValue == tname._dValue;
+                        if (isIndex)
+                            index = (int)(uint)tname._dValue;
+                        break;
+                    }
                     case JSValueType.String:
+                    {
+                        var str = tname._oValue.ToString();
+                        if (str.Length > 0)
                         {
-                            var fc = tname._oValue.ToString()[0];
+                            var fc = str[0];
                             if ('0' <= fc && '9' >= fc)
                             {
                                 var dindex = 0.0;
@@ -350,14 +363,17 @@ namespace NiL.JS.Core.Interop
                                     index = (int)(uint)dindex;
                                 }
                             }
-                            break;
                         }
+                        break;
+                    }
                 }
+
                 if (isIndex)
                 {
                     notExists._valueType = JSValueType.NotExistsInObject;
                     if (index < 0 || index > data.Count)
                         return;
+
                     data[index] = value.Value;
                     return;
                 }

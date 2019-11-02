@@ -2,11 +2,10 @@
 
   <PropertyGroup>
     <Description>ECMAScript 6 (ES2015) engine</Description>
-    <AssemblyTitle>NiL.JS NET Core</AssemblyTitle>
-    <VersionPrefix>2.5.1204</VersionPrefix>
+    <AssemblyTitle>NiL.JS NET Core</AssemblyTitle>  
     <Authors>NiLProject</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
-    <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
+    <DefineConstants>TRACE;NETCORE;INLINE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>NiL.JS</AssemblyName>
@@ -31,6 +30,9 @@
     <RepositoryType>git</RepositoryType>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../keys.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VersionPrefix)' == ''">
+    <VersionPrefix>2.5</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>

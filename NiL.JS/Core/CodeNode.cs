@@ -16,18 +16,18 @@ namespace NiL.JS.Core
     {
         None = 0,
         Strict = 1,
-        //ForAssign = 2,
-        Conditional = 4,
-        InLoop = 8,
-        InWith = 16,
-        InEval = 32,
-        InExpression = 64,
-        InClassDefinition = 128,
-        InClassConstructor = 256,
-        InStaticMember = 512,
-        InGenerator = 1024,
-        InFunction = 2048,
-        InAsync = 4096
+        //ForAssign = 1 << 1,
+        Conditional = 1 << 2,
+        InLoop = 1 << 3,
+        InWith = 1 << 4,
+        InEval = 1 << 5,
+        InExpression = 1 << 6,
+        InClassDefinition = 1 << 7,
+        InClassConstructor = 1 << 8,
+        InStaticMember = 1 << 9,
+        InGenerator = 1 << 10,
+        InFunction = 1 << 11,
+        InAsync = 1 << 12
     }
 
 #if !(PORTABLE || NETCORE)

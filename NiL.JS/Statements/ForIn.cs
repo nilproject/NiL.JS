@@ -246,11 +246,13 @@ namespace NiL.JS.Statements
                     if (context._executionMode != ExecutionMode.Resume)
                     {
                         var key = keys.Current.Key;
-                        variable._valueType = JSValueType.String;
-                        variable._oValue = key;
                         if (processedKeys.Contains(key))
                             continue;
                         processedKeys.Add(key);
+
+                        variable._valueType = JSValueType.String;
+                        variable._oValue = key;
+                        
                         if ((keys.Current.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
                             continue;
 

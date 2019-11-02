@@ -10,13 +10,9 @@ namespace NiL.JS.BaseLibrary
 #endif
     public sealed class Date
     {
-        private static TimeZoneInfo s_currentTimeZone = TimeZoneInfo.Local;
+        [Obsolete("Use GlobalContext.CurrentTimeZone instead")]
         [Hidden]
-        public static TimeZoneInfo CurrentTimeZone
-        {
-            get => s_currentTimeZone;
-            set => s_currentTimeZone = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        public static TimeZoneInfo CurrentTimeZone => Context.CurrentGlobalContext.CurrentTimeZone;
 
         private const long _timeAccuracy = TimeSpan.TicksPerMillisecond;
         private const long _unixTimeBase = 62135596800000;
@@ -56,7 +52,7 @@ namespace NiL.JS.BaseLibrary
         public Date()
         {
             _time = DateTime.Now.Ticks / 10000;
-            _timeZoneOffset = CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+            _timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
             _time -= _timeZoneOffset;
         }
 
@@ -64,7 +60,7 @@ namespace NiL.JS.BaseLibrary
         public Date(DateTime dateTime)
         {
             _time = dateTime.Ticks / 10000;
-            _timeZoneOffset = CurrentTimeZone.GetUtcOffset(dateTime).Ticks / 10000;
+            _timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(dateTime).Ticks / 10000;
             if (dateTime.Kind != DateTimeKind.Utc)
                 _time -= _timeZoneOffset;
         }
@@ -194,7 +190,7 @@ namespace NiL.JS.BaseLibrary
         private static long getTimeZoneOffset(long time)
         {
             var dateTime = new DateTime(System.Math.Min(System.Math.Max(time * _timeAccuracy, DateTime.MinValue.Ticks), DateTime.MaxValue.Ticks), DateTimeKind.Utc);
-            var offset = CurrentTimeZone.GetUtcOffset(dateTime).Ticks / _timeAccuracy;
+            var offset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(dateTime).Ticks / _timeAccuracy;
             return offset;
         }
 
@@ -240,7 +236,7 @@ namespace NiL.JS.BaseLibrary
         public static JSValue now()
         {
             var time = DateTime.Now.Ticks / 10000;
-            var timeZoneOffset = CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+            var timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
             return time - timeZoneOffset - _unixTimeBase;
         }
 
@@ -772,7 +768,7 @@ namespace NiL.JS.BaseLibrary
                 return "Invalid date";
 
             var offset = new TimeSpan(_timeZoneOffset * _timeAccuracy);
-            var timeName = CurrentTimeZone.IsDaylightSavingTime(new DateTimeOffset(_time * _timeAccuracy, offset)) ? CurrentTimeZone.DaylightName : CurrentTimeZone.StandardName;
+            var timeName = Context.CurrentGlobalContext.CurrentTimeZone.IsDaylightSavingTime(new DateTimeOffset(_time * _timeAccuracy, offset)) ? Context.CurrentGlobalContext.CurrentTimeZone.DaylightName : Context.CurrentGlobalContext.CurrentTimeZone.StandardName;
             var res =
                 getHoursImpl(withTzo).ToString("00:")
                 + getMinutesImpl(withTzo).ToString("00:")
@@ -1126,7 +1122,7 @@ namespace NiL.JS.BaseLibrary
                 if (pm)
                     time += _hourMilliseconds * 12;
 
-                timeZoneOffset = CurrentTimeZone.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
+                timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
 
                 if (!wasTZ)
                     time -= timeZoneOffset;
@@ -1364,7 +1360,7 @@ namespace NiL.JS.BaseLibrary
 
             if (computeTzo)
             {
-                timeZoneOffset = CurrentTimeZone.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
+                timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(new DateTime(time * _timeAccuracy)).Ticks / 10000;
                 if (j >= timeStr.Length)
                     time -= timeZoneOffset;
             }
@@ -1378,7 +1374,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var dateTime = DateTime.Parse(timeString);
                 time = dateTime.Ticks / _timeAccuracy;
-                tzo = CurrentTimeZone.GetUtcOffset(dateTime).Ticks / _timeAccuracy;
+                tzo = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(dateTime).Ticks / _timeAccuracy;
                 if (dateTime.Kind == DateTimeKind.Local)
                 {
                     time += tzo;

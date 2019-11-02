@@ -44,7 +44,8 @@ namespace NiL.JS.BaseLibrary
         public static string keyFor(Symbol symbol)
         {
             if (symbol == null)
-                ExceptionHelper.Throw(new TypeError("Invalid argument"));
+                ExceptionHelper.ThrowTypeError("Invalid argument");
+
             return symbol.Description;
         }
 
@@ -63,6 +64,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (forWrite)
                 return undefined;
+
             return base.GetProperty(name, false, memberScope);
         }
     }
