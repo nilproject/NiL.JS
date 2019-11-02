@@ -1,6 +1,6 @@
 
-<image src="https://raw.githubusercontent.com/nilproject/NiL.JS/5b0c4730e1e0a23adb95fdc147376065676d8e2c/nil.js%20logo%20small.png" width="48px;" style="margin-bottom:-5px"></image> <strong>NiL.JS</strong> [![Build Status](https://travis-ci.org/nilproject/NiL.JS.svg?branch=develop)](https://travis-ci.org/nilproject/NiL.JS)
-    
+<image src="https://raw.githubusercontent.com/nilproject/NiL.JS/5b0c4730e1e0a23adb95fdc147376065676d8e2c/nil.js%20logo%20small.png" width="48px;"></image> NiL.JS [![Build Status](https://travis-ci.org/nilproject/NiL.JS.svg?branch=develop)](https://travis-ci.org/nilproject/NiL.JS)
+=====
 Open source ECMAScript 6.0 (ES2015) (JavaScript) engine.
 Licensed under BSD 3-Clause License.
 
