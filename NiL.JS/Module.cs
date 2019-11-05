@@ -141,17 +141,27 @@ namespace NiL.JS
         /// <param name="messageCallback">Callback used to output compiler messages or null</param>
         /// <param name="options">Compiler options</param>
         public Module(string virtualPath, string code, CompilerMessageCallback messageCallback = null, Options options = Options.None, GlobalContext globalContext = null)
+            : this(virtualPath, Script.Parse(code, messageCallback, options), globalContext)
+        { }
+
+        /// <summary>
+        /// Initializes a new Module with a script.
+        /// </summary>
+        /// <param name="virtualPath">Path to file with script. Used for resolving paths to other modules for importing via import directive. Can be null or empty</param>
+        /// <param name="script">The module script</param>
+        /// <param name="globalContext">Global context</param>
+        public Module(string virtualPath, Script script, GlobalContext globalContext = null)
         {
-            if (code == null)
+            if (script == null)
                 throw new ArgumentNullException();
 
-            this.FilePath = virtualPath;
+            FilePath = virtualPath;
 
             Context = new Context(globalContext ?? Context.CurrentGlobalContext, true, null);
             Context._module = this;
             Context._thisBind = new GlobalObject(Context);
 
-            Script = Script.Parse(code, messageCallback, options);
+            Script = script;
 
             Context._strict = Script.Root._strict;
         }
