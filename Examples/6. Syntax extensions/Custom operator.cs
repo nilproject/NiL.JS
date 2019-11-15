@@ -38,7 +38,7 @@ namespace Examples.Syntax_extensions
 
             public override JSValue Evaluate(Context context)
             {
-                return JSObject.getOwnPropertyNames(new Arguments { FirstOperand.Evaluate(context) });
+                return JSObject.getOwnPropertyNames(new Arguments { LeftOperand.Evaluate(context) });
             }
         }
 

@@ -21,28 +21,34 @@ console.log(`E equals ${Consts.E}`);
 console.log(`Gravitational acceleration on Earth approximately ${Consts.g} m/s^2`);
 ");
 
-            Module.ResolveModule += MyModuleResolver;
+            mainModule.ModuleResolversChain.Add(new MyTestModuleResolver());
 
             mainModule.Run();
         }
 
-        private void MyModuleResolver(Module sender, ResolveModuleEventArgs e)
+        public sealed class MyTestModuleResolver : CachedModuleResolverBase
         {
-            if (e.ModulePath == "/math consts.js")
+            public override bool TryGetModule(ModuleRequest moduleRequest, out Module result)
             {
-                e.Module = new Module(e.ModulePath, @"
+                if (moduleRequest.AbsolutePath == "/math consts.js")
+                {
+                    result = new Module(moduleRequest.AbsolutePath, @"
 export const Pi = Math.PI, E = Math.E;
 ");
-            }
-            else if (e.ModulePath == "/fakedir/somelib/consts.js")
-            {
-                e.Module = new Module(e.ModulePath, @"
+                    return true;
+                }
+                else if (moduleRequest.AbsolutePath == "/fakedir/somelib/consts.js")
+                {
+                    result = new Module(moduleRequest.AbsolutePath, @"
 export * from ""/math consts.js"";
 export const g = 9.8;
 ");
-            }
+                    return true;
+                }
 
-            e.Module.Run(); // It's necessary
+                result = null;
+                return false;
+            }
         }
     }
 }
