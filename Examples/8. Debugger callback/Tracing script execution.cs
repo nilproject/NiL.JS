@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ExamplesFramework;
 using NiL.JS;
+using NiL.JS.Core;
 
 namespace Examples._8.Debugger_callback
 {
@@ -28,7 +29,7 @@ console.log(c);
             module.Run();
         }
 
-        private void Context_DebuggerCallback(NiL.JS.Core.Context sender, NiL.JS.Core.DebuggerCallbackEventArgs e)
+        private void Context_DebuggerCallback(Context sender, DebuggerCallbackEventArgs e)
         {
             Console.Clear();
             for (var i = 0; i < _code.Length; i++)
@@ -45,7 +46,15 @@ console.log(c);
                 Console.Write(_code[i]);
             }
 
-            Console.Write($"a = {sender.GetVariable("a")}; b = {sender.GetVariable("b")}; c = {sender.GetVariable("c")}");
+            Console.WriteLine();
+
+            //Console.Write($"a = {sender.GetVariable("a")}; b = {sender.GetVariable("b")}; c = {sender.GetVariable("c")}");
+
+            Console.WriteLine("Variables:");
+            Console.WriteLine(string.Join(Environment.NewLine, new ContextDebuggerProxy(sender).Variables.Select(x => x.Key + ": " + x.Value)));
+
+            Console.WriteLine();
+            Console.WriteLine("Output:");
 
             while (Console.ReadKey().Key != ConsoleKey.Spacebar) ;
         }
