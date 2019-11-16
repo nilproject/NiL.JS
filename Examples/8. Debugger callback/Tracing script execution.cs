@@ -45,6 +45,8 @@ console.log(c);
                 Console.Write(_code[i]);
             }
 
+            Console.Write($"a = {sender.GetVariable("a")}; b = {sender.GetVariable("b")}; c = {sender.GetVariable("c")}");
+
             while (Console.ReadKey().Key != ConsoleKey.Spacebar) ;
         }
     }
