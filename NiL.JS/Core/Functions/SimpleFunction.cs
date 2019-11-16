@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
-using NiL.JS.Statements;
 
 namespace NiL.JS.Core.Functions
 {
@@ -53,7 +48,7 @@ namespace NiL.JS.Core.Functions
             JSValue res = null;
             Arguments args = null;
             bool tailCall = false;
-            for (;;)
+            for (; ; )
             {
                 var internalContext = new Context(_initialContext, false, this);
                 internalContext._callDepth = (Context.CurrentContext?._callDepth ?? 0) + 1;
@@ -64,7 +59,16 @@ namespace NiL.JS.Core.Functions
                     internalContext._thisBind = targetObject;
 
                 if (tailCall)
-                    initParameters(args, internalContext);
+                {
+                    initParameters(
+                        args,
+                        _functionDefinition._functionInfo.ContainsEval
+                        || _functionDefinition._functionInfo.ContainsWith
+                        || _functionDefinition._functionInfo.ContainsDebugger
+                        || _functionDefinition._functionInfo.NeedDecompose
+                        || internalContext.Debugging,
+                        internalContext);
+                }
                 else
                     initParametersFast(arguments, initiator, internalContext);
 

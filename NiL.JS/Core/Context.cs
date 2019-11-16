@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using NiL.JS.BaseLibrary;
@@ -29,12 +30,37 @@ namespace NiL.JS.Core
         ResumeThrow
     }
 
+    public sealed class ContextDebuggerProxy
+    {
+        private readonly Context _context;
+
+        public ContextDebuggerProxy(Context context)
+        {
+            _context = context;
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public IEnumerable<KeyValuePair<string, JSValue>> Variables
+        {
+            get
+            {
+                var result = new List<KeyValuePair<string, JSValue>>();
+                foreach (var key in _context)
+                {
+                    result.Add(new KeyValuePair<string, JSValue>(key, _context.GetVariable(key, false)));
+                }
+                return result.ToArray();
+            }
+        }
+    }
+
     /// <summary>
     /// Контекст выполнения скрипта. Хранит состояние выполнения сценария.
     /// </summary>
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
+    [DebuggerTypeProxy(typeof(ContextDebuggerProxy))]
     public class Context : IEnumerable<string>
     {
 #if (PORTABLE || NETCORE)
@@ -540,6 +566,7 @@ namespace NiL.JS.Core
                 }
                 p = p._parent;
             }
+
             if (System.Diagnostics.Debugger.IsAttached)
                 System.Diagnostics.Debugger.Break();
         }

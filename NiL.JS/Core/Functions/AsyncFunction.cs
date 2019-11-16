@@ -95,8 +95,20 @@ namespace NiL.JS.Core.Functions
             internalContext._callDepth = (Context.CurrentContext?._callDepth ?? 0) + 1;
             internalContext._definedVariables = Body._variables;
 
-            initContext(targetObject, arguments, true, internalContext);
-            initParameters(arguments, internalContext);
+            initContext(
+                targetObject,
+                arguments,
+                _functionDefinition._functionInfo.ContainsArguments,
+                internalContext);
+
+            initParameters(
+                arguments,
+                _functionDefinition._functionInfo.ContainsEval
+                || _functionDefinition._functionInfo.ContainsWith
+                || _functionDefinition._functionInfo.ContainsDebugger
+                || _functionDefinition._functionInfo.NeedDecompose
+                || internalContext.Debugging,
+                internalContext);
 
             var result = run(internalContext);
 

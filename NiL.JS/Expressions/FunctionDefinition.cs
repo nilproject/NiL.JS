@@ -676,7 +676,8 @@ namespace NiL.JS.Expressions
             if (!_functionInfo.ContainsArguments
                 && !_functionInfo.ContainsRestParameters
                 && !_functionInfo.ContainsEval
-                && !_functionInfo.ContainsWith)
+                && !_functionInfo.ContainsWith
+                && !_functionInfo.ContainsDebugger)
             {
                 return new SimpleFunction(context, this);
             }
