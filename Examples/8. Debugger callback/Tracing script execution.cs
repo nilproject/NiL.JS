@@ -48,8 +48,6 @@ console.log(c);
 
             Console.WriteLine();
 
-            //Console.Write($"a = {sender.GetVariable("a")}; b = {sender.GetVariable("b")}; c = {sender.GetVariable("c")}");
-
             Console.WriteLine("Variables:");
             Console.WriteLine(string.Join(Environment.NewLine, new ContextDebuggerProxy(sender).Variables.Select(x => x.Key + ": " + x.Value)));
 
