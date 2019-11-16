@@ -467,7 +467,7 @@ namespace NiL.JS.BaseLibrary
             }
 
             var currentContext = Context.CurrentContext;
-            var ceocw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsWith || _functionDefinition._functionInfo.NeedDecompose || currentContext.Debugging;
+            var ceocw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsWith || _functionDefinition._functionInfo.NeedDecompose || (currentContext?._debugging ?? false);
             if (_functionDefinition.recursionDepth > _functionDefinition.parametersStored) // рекурсивный вызов.
             {
                 if (!ceocw)

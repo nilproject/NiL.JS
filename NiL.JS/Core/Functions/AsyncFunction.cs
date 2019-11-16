@@ -107,7 +107,7 @@ namespace NiL.JS.Core.Functions
                 || _functionDefinition._functionInfo.ContainsWith
                 || _functionDefinition._functionInfo.ContainsDebugger
                 || _functionDefinition._functionInfo.NeedDecompose
-                || internalContext.Debugging,
+                || (internalContext?._debugging ?? false),
                 internalContext);
 
             var result = run(internalContext);
