@@ -30,7 +30,7 @@ namespace NiL.JS.Core
         ResumeThrow
     }
 
-    internal sealed class ContextDebuggerProxy
+    public sealed class ContextDebuggerProxy
     {
         private readonly Context _context;
 
@@ -40,7 +40,7 @@ namespace NiL.JS.Core
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public IEnumerable<KeyValuePair<string, JSValue>> Keys
+        public IEnumerable<KeyValuePair<string, JSValue>> Variables
         {
             get
             {
