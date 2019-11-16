@@ -4,7 +4,7 @@ namespace NiL.JS
 {
     public abstract class CachedModuleResolverBase : IModuleResolver
     {
-        private static StringMap<Module> _modulesCache = new StringMap<Module>();
+        private StringMap<Module> _modulesCache = new StringMap<Module>();
 
         bool IModuleResolver.TryGetModule(ModuleRequest moduleRequest, out Module result)
         {
