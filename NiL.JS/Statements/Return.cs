@@ -41,15 +41,18 @@ namespace NiL.JS.Statements
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i]))
                 i++;
 
-            var body = state.Code[i] == ';' || Tools.IsLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, CodeFragmentType.Expression);
-            var pos = index;
-            index = i;
-            return new Return()
+            using (state.WithCodeContext(CodeContext.InExpression))
             {
-                value = (Expression)body,
-                Position = pos,
-                Length = index - pos
-            };
+                var body = state.Code[i] == ';' || Tools.IsLineTerminator(state.Code[i]) ? null : Parser.Parse(state, ref i, CodeFragmentType.Expression);
+                var pos = index;
+                index = i;
+                return new Return()
+                {
+                    value = (Expression)body,
+                    Position = pos,
+                    Length = index - pos
+                };
+            }
         }
 
         public override JSValue Evaluate(Context context)

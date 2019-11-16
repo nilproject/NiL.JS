@@ -208,7 +208,7 @@ namespace NiL.JS.Expressions
                 if (!stats.ContainsEval && !stats.ContainsWith)
                 {
                     if (owner != null // не будем это применять в корневом узле. Только в функциях.
-                                      // Иначе это может задумываться как настройка контекста для последующего использования в Eval
+                                      // Иначе это может использоваться как настройка контекста для последующего использования в Eval
                         && (opts & Options.SuppressUselessExpressionsElimination) == 0
                         && (_codeContext & CodeContext.InLoop) == 0)
                     {

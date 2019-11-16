@@ -466,7 +466,8 @@ namespace NiL.JS.BaseLibrary
                 return notExists;
             }
 
-            var ceocw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsWith || _functionDefinition._functionInfo.NeedDecompose;
+            var currentContext = Context.CurrentContext;
+            var ceocw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsWith || _functionDefinition._functionInfo.NeedDecompose || currentContext.Debugging;
             if (_functionDefinition.recursionDepth > _functionDefinition.parametersStored) // рекурсивный вызов.
             {
                 if (!ceocw)
@@ -475,19 +476,19 @@ namespace NiL.JS.BaseLibrary
             }
 
             if (arguments == null)
-                arguments = new Arguments(Context.CurrentContext);
+                arguments = new Arguments(currentContext);
 
             for (;;) // tail recursion catcher
             {
                 var internalContext = new Context(_initialContext, ceocw, this);
-                internalContext._callDepth = (Context.CurrentContext?._callDepth ?? 0) + 1;
+                internalContext._callDepth = (currentContext?._callDepth ?? 0) + 1;
                 internalContext._definedVariables = body._variables;
                 internalContext.Activate();
 
                 try
                 {
                     initContext(targetObject, arguments, ceocw, internalContext);
-                    initParameters(arguments, internalContext);
+                    initParameters(arguments, ceocw, internalContext);
                     _functionDefinition.recursionDepth++;
                     result = evaluateBody(internalContext);
                 }
@@ -571,7 +572,7 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        internal void initContext(JSValue targetObject, Arguments arguments, bool storeArguments, Context internalContext)
+        internal void initContext(JSValue targetObject, Arguments arguments, bool storeArgumentsObject, Context internalContext)
         {
             if (_functionDefinition.reference._descriptor != null && _functionDefinition.reference._descriptor.cacheRes == null)
             {
@@ -590,7 +591,7 @@ namespace NiL.JS.BaseLibrary
             {
                 internalContext._arguments = arguments;
 
-                if (storeArguments)
+                if (storeArgumentsObject)
                     internalContext._variables["arguments"] = arguments;
 
                 if (_functionDefinition._body._strict)
@@ -606,9 +607,9 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        internal void initParameters(Arguments args, Context internalContext)
+        internal void initParameters(Arguments args, bool storeVariablesIntoContext, Context internalContext)
         {
-            var ceaw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsArguments || _functionDefinition._functionInfo.ContainsWith;
+            storeVariablesIntoContext |= _functionDefinition._functionInfo.ContainsArguments;
             int min = System.Math.Min(args._iValue, _functionDefinition.parameters.Length - (_functionDefinition._functionInfo.ContainsRestParameters ? 1 : 0));
 
             JSValue[] defaultValues = null;
@@ -647,7 +648,7 @@ namespace NiL.JS.BaseLibrary
 
                 if (_functionDefinition._body._strict)
                 {
-                    if (ceaw)
+                    if (storeVariablesIntoContext)
                     {
                         args[i] = t.CloneImpl(false);
                         t = t.CloneImpl(false);
@@ -661,7 +662,7 @@ namespace NiL.JS.BaseLibrary
                 else
                 {
                     if (prm.assignments != null
-                        || ceaw
+                        || storeVariablesIntoContext
                         || (t._attributes & JSValueAttributesInternal.Temporary) != 0)
                     {
                         t = t.CloneImpl(false);
@@ -671,7 +672,7 @@ namespace NiL.JS.BaseLibrary
                 }
 
                 t._attributes &= ~JSValueAttributesInternal.Cloned;
-                if (prm.captured || ceaw)
+                if (prm.captured || storeVariablesIntoContext)
                     (internalContext._variables ?? (internalContext._variables = getFieldsContainer()))[prm.Name] = t;
                 prm.cacheContext = internalContext;
                 prm.cacheRes = t;
@@ -682,7 +683,7 @@ namespace NiL.JS.BaseLibrary
             for (var i = min; i < args._iValue; i++)
             {
                 JSValue t = args[i];
-                if (ceaw)
+                if (storeVariablesIntoContext)
                     args[i] = t = t.CloneImpl(false);
                 t._attributes |= JSValueAttributesInternal.Argument;
 
@@ -697,7 +698,7 @@ namespace NiL.JS.BaseLibrary
                 var parameter = _functionDefinition.parameters[i];
                 if (parameter.initializer != null)
                 {
-                    if (ceaw || parameter.assignments != null)
+                    if (storeVariablesIntoContext || parameter.assignments != null)
                     {
                         parameter.cacheRes = (defaultValues?[i] ?? undefined).CloneImpl(false);
                     }
@@ -710,7 +711,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 else
                 {
-                    if (ceaw || parameter.assignments != null)
+                    if (storeVariablesIntoContext || parameter.assignments != null)
                     {
                         if (i == min && restArray != null)
                             parameter.cacheRes = restArray.CloneImpl(false);
@@ -728,7 +729,7 @@ namespace NiL.JS.BaseLibrary
                 }
 
                 parameter.cacheContext = internalContext;
-                if (parameter.Destructor == null && (parameter.captured || ceaw))
+                if (parameter.Destructor == null && (parameter.captured || storeVariablesIntoContext))
                 {
                     if (internalContext._variables == null)
                         internalContext._variables = getFieldsContainer();

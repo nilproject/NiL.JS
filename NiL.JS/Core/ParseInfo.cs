@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace NiL.JS.Core
 {
@@ -55,6 +56,30 @@ namespace NiL.JS.Core
             {
                 return intConstants[value];
             }
+        }
+
+        private struct ContextReseter : IDisposable
+        {
+            private readonly ParseInfo _parseInfo;
+            private readonly CodeContext _oldCodeContext;
+
+            public ContextReseter(ParseInfo parseInfo, CodeContext oldCodeContext)
+            {
+                _parseInfo = parseInfo;
+                _oldCodeContext = oldCodeContext;
+            }
+
+            public void Dispose()
+            {
+                _parseInfo.CodeContext = _oldCodeContext;
+            }
+        }
+
+        public IDisposable WithCodeContext(CodeContext codeContext)
+        {
+            var result = new ContextReseter(this, CodeContext);
+            CodeContext |= codeContext;
+            return result;
         }
     }
 
