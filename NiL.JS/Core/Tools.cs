@@ -820,12 +820,7 @@ namespace NiL.JS.Core
         public static string DoubleToString(double d)
         {
             if (d == 0.0)
-            {
-                if (Tools.IsNegativeZero(d))
-                    return "-0";
                 return "0";
-            }
-
             if (double.IsPositiveInfinity(d))
                 return "Infinity";
             if (double.IsNegativeInfinity(d))
