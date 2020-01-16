@@ -216,7 +216,7 @@ namespace NiL.JS.Statements
                 context._lastResult = lines[lineIndex].Evaluate(context) ?? context._lastResult;
                 if (context._executionMode != ExecutionMode.None)
                 {
-                    if (context._executionMode == ExecutionMode.Break)
+                    if (context._executionMode == ExecutionMode.Break && context._executionInfo == null)
                     {
                         context._executionMode = ExecutionMode.None;
                     }

@@ -478,7 +478,7 @@ namespace NiL.JS.BaseLibrary
             if (arguments == null)
                 arguments = new Arguments(currentContext);
 
-            for (;;) // tail recursion catcher
+            for (; ; ) // tail recursion catcher
             {
                 var internalContext = new Context(_initialContext, ceocw, this);
                 internalContext._callDepth = (currentContext?._callDepth ?? 0) + 1;
@@ -572,7 +572,7 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        internal void initContext(JSValue targetObject, Arguments arguments, bool storeArgumentsObject, Context internalContext)
+        internal void initContext(JSValue targetObject, Arguments arguments, bool storeValuesInContext, Context internalContext)
         {
             if (_functionDefinition.reference._descriptor != null && _functionDefinition.reference._descriptor.cacheRes == null)
             {
@@ -591,8 +591,13 @@ namespace NiL.JS.BaseLibrary
             {
                 internalContext._arguments = arguments;
 
-                if (storeArgumentsObject)
+                if (storeValuesInContext)
+                {
                     internalContext._variables["arguments"] = arguments;
+
+                    if (!string.IsNullOrEmpty(name) && (Kind == FunctionKind.Function || Kind == FunctionKind.Generator))
+                        internalContext._variables[name] = this;
+                }
 
                 if (_functionDefinition._body._strict)
                 {

@@ -255,12 +255,13 @@ namespace NiL.JS.Core
             {
                 for (var i = 0; i < records.Length; i++)
                 {
-                    if (records[i].key == null)
+                    var record = records[i];
+                    if (record.key == null)
                         break;
 
-                    if (string.CompareOrdinal(records[i].key, key) == 0)
+                    if (string.CompareOrdinal(record.key, key) == 0)
                     {
-                        value = records[i].value;
+                        value = record.value;
                         return true;
                     }
                 }

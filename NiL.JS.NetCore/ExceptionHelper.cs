@@ -61,9 +61,18 @@ namespace NiL.JS
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
-        internal static void ThrowVariableIsNotDefined(string variableName, string code, int position, int length, CodeNode exceptionMaker)
+        internal static void ThrowVariableIsNotDefined(string variableName, Context context, CodeNode exceptionMaker)
         {
+            var code = GetCode(context);
             Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, code);
+        }
+
+        private static string GetCode(Context context)
+        {
+            var code = context.RootContext._owner?._functionDefinition?._body?.Code;
+            if (code == null)
+                code = context._module?.Script.Code;
+            return code;
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
@@ -161,6 +170,15 @@ namespace NiL.JS
         internal static void ThrowReferenceError(string message)
         {
             Throw(new ReferenceError(message));
+        }
+
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
+        [DebuggerStepThrough]
+        internal static void ThrowTypeError(string message, CodeNode exceptionMaker, Context context)
+        {
+            var code = GetCode(context);
+            Throw(new TypeError(message), exceptionMaker, code);
         }
 
         /// <exception cref="NiL.JS.Core.JSException">

@@ -710,7 +710,7 @@ namespace NiL.JS.Expressions
             }
 
             VariableDescriptor descriptorToRestore = null;
-            if (!string.IsNullOrEmpty(_name))
+            if (!string.IsNullOrEmpty(_name) && (kind == FunctionKind.Function || kind == FunctionKind.Generator))
             {
                 variables.TryGetValue(_name, out descriptorToRestore);
                 variables[_name] = reference._descriptor;
@@ -762,7 +762,7 @@ namespace NiL.JS.Expressions
             {
                 variables[descriptorToRestore.name] = descriptorToRestore;
             }
-            else if (!string.IsNullOrEmpty(_name))
+            else if (!string.IsNullOrEmpty(_name) && (kind == FunctionKind.Function || kind == FunctionKind.Generator))
             {
                 variables.Remove(_name);
             }

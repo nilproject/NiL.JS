@@ -293,10 +293,10 @@ namespace NiL.JS.Expressions
                 var val = _values[i].Evaluate(context);
                 val = val.CloneImpl(false);
                 val._attributes = JSValueAttributesInternal.None;
-                if (this._fieldNames[i] == "__proto__")
+                if (_fieldNames[i] == "__proto__")
                     res.__proto__ = val._oValue as JSObject;
                 else
-                    res._fields[this._fieldNames[i]] = val;
+                    res._fields[_fieldNames[i]] = val;
             }
 
             for (var i = 0; i < _computedProperties.Length; i++)
