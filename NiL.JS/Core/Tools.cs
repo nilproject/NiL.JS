@@ -844,7 +844,7 @@ namespace NiL.JS.Core
                     res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
                 else
                 {
-                    int neg = (d < 0.0 || (d == -0.0 && double.IsNegativeInfinity(1.0 / d))) ? 1 : 0;
+                    int neg = (d < 0.0 || (d == -0.0 && Tools.IsNegativeZero(d))) ? 1 : 0;
 
                     if (abs >= 1e+18)
                     {
@@ -1313,6 +1313,14 @@ namespace NiL.JS.Core
                 index = i;
                 return true;
             }
+        }
+
+#if INLINE
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static bool IsNegativeZero(double d)
+        {
+            return (((ulong)BitConverter.DoubleToInt64Bits(d)) & 0x800F_FFFF_FFFF_FFFF) == 0x8000_0000_0000_0000;
         }
 
 #if INLINE

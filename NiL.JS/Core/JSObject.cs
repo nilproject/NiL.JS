@@ -1008,7 +1008,7 @@ namespace NiL.JS.Core
 
         public static BaseLibrary.Array getOwnPropertySymbols(JSObject obj)
         {
-            return new BaseLibrary.Array(obj?._symbols.Keys ?? new Symbol[0]);
+            return new BaseLibrary.Array(obj?._symbols?.Keys ?? new Symbol[0]);
         }
 
         [JavaScriptName("assign")]

@@ -829,7 +829,7 @@ namespace NiL.JS.Core
         protected internal string BaseToString()
         {
             if (_valueType == JSValueType.String)
-                return _oValue.ToString();
+                return _oValue as string ?? _oValue.ToString();
             if (_valueType <= JSValueType.Undefined)
                 return "undefined";
 
@@ -1200,7 +1200,7 @@ namespace NiL.JS.Core
             return res.Exists;
         }
 
-        #region Члены IConvertible
+#region Члены IConvertible
 #if !(PORTABLE)
         TypeCode IConvertible.GetTypeCode()
         {
@@ -1292,9 +1292,9 @@ namespace NiL.JS.Core
             return (ulong)Tools.JSObjectToInt64(this);
         }
 #endif
-        #endregion
+#endregion
 
-        #region Члены IComparable<JSValue>
+#region Члены IComparable<JSValue>
 
         [Hidden]
         public virtual int CompareTo(JSValue other)
@@ -1322,7 +1322,7 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Type mismatch");
         }
 
-        #endregion
+#endregion
 
         public static JSValue Marshal(object value)
         {

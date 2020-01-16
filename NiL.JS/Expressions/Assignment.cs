@@ -27,7 +27,7 @@ namespace NiL.JS.Expressions
             else
             {
                 if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
-                    throwReadOnlyError();
+                    throwReadOnlyError(context);
             }
             temp = _right.Evaluate(context);
             var oldAttributes = field._attributes;
@@ -84,7 +84,7 @@ namespace NiL.JS.Expressions
             else
             {
                 if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
-                    throwReadOnlyError();
+                    throwReadOnlyError(context);
             }
 
             temp = _right.Evaluate(context);
@@ -93,9 +93,9 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
-        protected void throwReadOnlyError()
+        protected void throwReadOnlyError(Context context)
         {
-            ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, _left));
+            ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, _left), this, context);
         }
 
         protected JSValue setProperty(Context context, JSValue field)
@@ -128,7 +128,7 @@ namespace NiL.JS.Expressions
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (context._strict)
-                    throwReadOnlyError();
+                    throwReadOnlyError(context);
 
                 if (_saveResult)
                     _tempContainer = temp;

@@ -96,7 +96,7 @@ namespace NiL.JS.Expressions
                 {
                     var res = this.Evaluate(null);
                     if (res._valueType == JSValueType.Double
-                        && !double.IsNegativeInfinity(1.0 / res._dValue)
+                        && !Tools.IsNegativeZero(res._dValue)
                         && res._dValue == (double)(int)res._dValue)
                     {
                         res._iValue = (int)res._dValue;

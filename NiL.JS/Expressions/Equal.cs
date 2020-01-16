@@ -117,7 +117,7 @@ namespace NiL.JS.Expressions
                                         goto case JSValueType.String;
                                     if (tjso._valueType >= JSValueType.Object) // null
                                     {
-                                        return tdouble == 0 && double.IsPositiveInfinity(1.0 / tdouble);
+                                        return tdouble == 0 && !Tools.IsNegativeZero(tdouble);
                                     }
                                     throw new NotImplementedException();
                                 }

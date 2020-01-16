@@ -1174,7 +1174,7 @@ namespace NiL.JS.Expressions
                             double d = 0;
                             if (Tools.ParseNumber(state.Code, ref start, out d, 0, ParseNumberOptions.Default | (state.strict ? ParseNumberOptions.RaiseIfOctal : ParseNumberOptions.None)))
                             {
-                                if ((n = (int)d) == d && !double.IsNegativeInfinity(1.0 / d))
+                                if ((n = (int)d) == d && !Tools.IsNegativeZero(d))
                                 {
                                     if (state.intConstants.ContainsKey(n))
                                         operand = new Constant(state.intConstants[n]) { Position = start, Length = i - start };
