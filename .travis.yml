@@ -2,7 +2,7 @@ language: csharp
 mono: none
 dotnet: 2.0.0
 script:
- - cd ./NiL.JS.NetCore
+ - cd ./NiL.JS
  - source makeSymLinks.sh
  - dotnet clean
  - dotnet restore
