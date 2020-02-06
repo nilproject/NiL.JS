@@ -10,9 +10,7 @@ namespace NiL.JS
     /// <summary>
     /// Provides access to a CLR-namespace
     /// </summary>
-#if !PORTABLE
-    [Serializable]
-#endif
+#if !NETCORE
     public class NamespaceProvider : CustomType
     {
         private static BinaryTree<Type> types = new BinaryTree<Type>();
@@ -163,4 +161,5 @@ namespace NiL.JS
             yield break;
         }
     }
+#endif
 }

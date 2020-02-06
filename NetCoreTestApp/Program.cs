@@ -54,11 +54,12 @@ namespace NetCoreTestApp
         static void Main(string[] args)
         {
             new Module(File.ReadAllText("tests/modules/ftest.js")).Run();
+            //sunspider();
         }
 
         private static void sunspider()
         {
-            var folderPath = "tests/sunspider-0.9.1";
+            var folderPath = "sunspider-0.9.1";
 
             Action<string> _ = Console.WriteLine;
             var sw = new Stopwatch();

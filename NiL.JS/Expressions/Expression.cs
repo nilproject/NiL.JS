@@ -5,7 +5,7 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
-#if !(PORTABLE || NETCORE)
+#if !NETCORE
     [Serializable]
 #endif
     public abstract class Expression : CodeNode

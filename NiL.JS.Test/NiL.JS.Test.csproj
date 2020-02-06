@@ -183,7 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NiL.JS\NiL.JS.csproj">
-      <Project>{f703d739-bcfa-4515-a963-c95651cb1ec4}</Project>
+      <Project>{7a650d15-c6cc-44c3-a04d-bb56c58d2acd}</Project>
       <Name>NiL.JS</Name>
     </ProjectReference>
   </ItemGroup>

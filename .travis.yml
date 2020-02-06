@@ -2,8 +2,7 @@ language: csharp
 mono: none
 dotnet: 2.0.0
 script:
- - cd ./NiL.JS.NetCore
- - source makeSymLinks.sh
+ - cd ./NiL.JS
  - dotnet clean
  - dotnet restore
- - dotnet build -c Release
+ - dotnet build -c Release -property:TargetFrameworks=netstandard1.6

@@ -120,7 +120,7 @@ namespace NiL.JS.Statements
             value?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
-#if !PORTABLE && !NET35
+#if !NETCORE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var b = value.TryCompile(false, false, null, dynamicValues);

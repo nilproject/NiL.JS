@@ -83,6 +83,9 @@ namespace NiL.JS.Core
         }
     }
 
+#if !NETCORE
+    [Serializable]
+#endif
     public sealed class FunctionInfo
     {
         public bool UseGetMember;

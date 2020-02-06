@@ -114,18 +114,75 @@ namespace NiL.JS.Test
             }
         }
 
+        public class Sample
+        {
+        }
+
+        public class SampleObject : CustomType
+        {
+            public Sample Sample => (Sample)Value;
+
+            public SampleObject(Sample sample)
+            {
+                Value = sample;
+            }
+
+            protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope propertyScope)
+            {
+                if (key.Value is string propertyName)
+                {
+                    switch (propertyName)
+                    {
+                        case "registerId": return "value of registerId";
+                        case "unitId": return "value of unitId";
+                    }
+                }
+
+                return NotExistsInObject;
+            }
+        }
+
+        private sealed class InteropJsonSerializer : JsonSerializer
+        {
+            public InteropJsonSerializer(Type targetType)
+                : base(targetType)
+            {
+            }
+        }
+
         private static void testEx()
         {
             var context = new Context
             {
-                { "test", new ClassWithTwoMethods() }
+                { "sample", new SampleObject(null) }
             };
+
             context.Eval(@"
-test.Method1(1777, 1, 2, 3);
-test.Method1(2777, [1, 2, 3]);
-test.Method2(3777, 1, 2, 3);
-test.Method2(4777, [1, 2, 3]);
+
 ");
+
+            /*var list = new[] { 1, 2, 3, 4, 5 };
+            var context = new Context
+            {
+                { "sample", new SampleObject(null) }
+            };
+            context.GlobalContext.JsonSerializersRegistry = new JsonSerializersRegistry();
+            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(string)));
+            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(int?)));
+            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(object)));
+            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(SampleObject)));
+            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(JSValue)));
+            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(SampleObject)));
+            var s = context.GlobalContext.JsonSerializersRegistry.GetSuitableJsonSerializer(new InteropJsonSerializer(typeof(void)));
+            //new InteropJsonSerializer(typeof(SampleObject)), // Weight 1
+            //new InteropJsonSerializer(typeof(SampleObject)), // Weight 1
+            //new InteropJsonSerializer(typeof(SampleObject)), // Weight 1
+            //new InteropJsonSerializer(typeof(SampleObject)), // Weight 4
+            //new InteropJsonSerializer(typeof(SampleObject))  // Weight 4
+            context.Eval(@"
+  var o = {toJSON(){ return {toValue(){ return ""1234""}}}};
+  console.log(JSON.stringify(o));
+");*/
         }
 
         public sealed class MyTestModuleResolver : CachedModuleResolverBase
@@ -210,7 +267,7 @@ test.Method2(4777, [1, 2, 3]);
             }));
 #endif
 
-            int mode = 3
+            int mode = 101
                     ;
             switch (mode)
             {
@@ -221,7 +278,7 @@ test.Method2(4777, [1, 2, 3]);
                 }
                 case -3:
                 {
-                    runFiles("custom/");
+                    runFile("brain-browser.js");
                     break;
                 }
                 case -1:
@@ -315,6 +372,11 @@ test.Method2(4777, [1, 2, 3]);
                 case 11:
                 {
                     runFile("sunspider-regexp-dna.js");
+                    break;
+                }
+                case 12:
+                {
+                    runTestFile(@"tests\sputnik\ch15\15.1\15.1.3\15.1.3.2\S15.1.3.2_A2.5_T1.js");
                     break;
                 }
                 case 151:
@@ -1008,22 +1070,25 @@ for (var i = 0; i < 10000000; )
             string staCode = "";
             using (var staFile = new FileStream("sta.js", FileMode.Open, FileAccess.Read))
                 staCode = new StreamReader(staFile).ReadToEnd();
-            Console.WriteLine("Processing file: " + filename);
+            Console.WriteLine("Start processing file: " + filename);
             var f = new FileStream(filename, FileMode.Open, FileAccess.Read);
             var sr = new StreamReader(f);
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
             var s = new Module(staCode);
             sw.Stop();
-            Console.WriteLine("Compile time: " + sw.Elapsed);
+            Console.WriteLine("Sta compile time: " + sw.Elapsed);
             sw.Restart();
             s.Run();
             sw.Stop();
-            Console.WriteLine("Init time: " + sw.Elapsed);
+            Console.WriteLine("Sta init time: " + sw.Elapsed);
+            Console.WriteLine("Start evaluation of the file");
             Console.WriteLine("-------------------------------------");
+            sw.Restart();
             s.Context.Eval(sr.ReadToEnd(), true);
+            sw.Stop();
             Console.WriteLine("-------------------------------------");
-            Console.WriteLine("Complite.");
+            Console.WriteLine("Complite within " + sw.Elapsed);
             sr.Dispose();
             f.Dispose();
         }

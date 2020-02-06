@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCORE
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -6,10 +7,7 @@ using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Core
 {
-#if !NET35
-#if !PORTABLE && !NETCORE
     [Serializable]
-#endif
     public sealed class CompiledNode : Expressions.Expression
     {
         private static readonly MethodInfo wrapMethod = typeof(JITHelpers).GetMethod("wrap", BindingFlags.Static | BindingFlags.NonPublic);
@@ -26,6 +24,7 @@ namespace NiL.JS.Core
         private CodeNode[] _dynamicValues;
         private CodeNode _original;
         private Func<Context, CodeNode[], JSValue, JSValue> _compiledTree;
+        [NonSerialized]
         private Expression _tree;
 
         public CodeNode Original { get { return _original; } }
@@ -175,5 +174,6 @@ namespace NiL.JS.Core
             return _original.ToString();
         }
     }
-#endif
 }
+#endif
+

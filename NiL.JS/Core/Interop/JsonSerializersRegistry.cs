@@ -1,10 +1,13 @@
-using NiL.JS.Backward;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using NiL.JS.Backward;
 
 namespace NiL.JS.Core.Interop
 {
+#if !NETCORE
+    [Serializable]
+#endif
     public class JsonSerializersRegistry
     {
         private readonly List<JsonSerializer> _serializers;

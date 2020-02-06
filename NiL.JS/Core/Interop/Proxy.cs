@@ -9,13 +9,13 @@ using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core.Interop
 {
-#if !(PORTABLE || NETCORE)
+#if !NETCORE
     [Serializable]
 #endif
     internal abstract class Proxy : JSObject
     {
         internal Type _hostedType;
-#if !(PORTABLE || NETCORE)
+#if !NETCORE
         [NonSerialized]
 #endif
         internal StringMap<IList<MemberInfo>> _members;
@@ -192,7 +192,7 @@ namespace NiL.JS.Core.Interop
                             while (parentMethod != null && parentMethod.DeclaringType != typeof(object) && (method.Attributes & MethodAttributes.NewSlot) == 0)
                             {
                                 method = parentMethod;
-#if (PORTABLE || NETCORE)
+#if NETCORE
                                 parentMethod = method.DeclaringType.GetTypeInfo().BaseType?.GetMethod(method.Name, parameterTypes);
 #else
                                 parentMethod = method.DeclaringType.BaseType?.GetMethod(method.Name, BindingFlags.Public | BindingFlags.Instance, null, parameterTypes, null);

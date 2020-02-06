@@ -19,7 +19,7 @@ namespace NiL.JS.Core.Interop
         public JsonSerializer(Type targetType)
         {
             TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
-#if PORTABLE
+#if NETSTANDARD1_3
             _properties = targetType.GetRuntimeProperties().ToArray();
             _fields = targetType.GetRuntimeFields().ToArray();
 #else
@@ -103,7 +103,7 @@ namespace NiL.JS.Core.Interop
 
             if (deserializedJson._valueType < JSValueType.Object)
                 return deserializedJson.Value;
-#if PORTABLE
+#if NETSTANDARD1_3
             var result = resultContainer ?? TargetType.GetTypeInfo().DeclaredConstructors.Where(x => x.IsPublic).First(x=>x.GetParameters().Length == 0).Invoke(new object[0]);
 #else
             var result = resultContainer ?? TargetType.GetConstructor(Type.EmptyTypes).Invoke(new object[0]);

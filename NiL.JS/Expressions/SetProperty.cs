@@ -97,7 +97,7 @@ namespace NiL.JS.Expressions
             }
         }
 
-#if INLINE
+#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static JSValue safeGet(JSValue temp, CodeNode source, Context context)

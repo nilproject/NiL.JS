@@ -138,13 +138,13 @@ namespace NiL.JS
         [DebuggerStepThrough]
         internal static void ThrowSyntaxError(string message, string code, int position, int length)
         {
-            var cord = CodeCoordinates.FromTextPosition(code, position, 0);
+            var cord = CodeCoordinates.FromTextPosition(code, position, length);
             Throw(new SyntaxError(message + " " + cord));
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
-#if INLINE
+#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [DebuggerStepThrough]

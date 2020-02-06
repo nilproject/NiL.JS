@@ -10,7 +10,7 @@ using NiL.JS.Statements;
 
 namespace NiL.JS.Expressions
 {
-#if !(PORTABLE || NETCORE)
+#if !NETCORE
     [Serializable]
 #endif
     public sealed class ParameterDescriptor : VariableDescriptor
@@ -33,7 +33,7 @@ namespace NiL.JS.Expressions
         }
     }
 
-#if !(PORTABLE || NETCORE)
+#if !NETCORE
     [Serializable]
 #endif
     public sealed class ParameterReference : VariableReference

@@ -462,7 +462,7 @@ namespace NiL.JS.Core
                 }
             }
         }
-#if INLINE
+#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public bool TryGetValue(TKey key, out TValue value)

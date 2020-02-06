@@ -1,7 +1,11 @@
-﻿using NiL.JS.BaseLibrary;
+﻿using System;
+using NiL.JS.BaseLibrary;
 
 namespace NiL.JS.Core
 {
+#if !NETCORE
+    [Serializable]
+#endif
     public sealed class PropertyPair
     {
         internal Function getter;

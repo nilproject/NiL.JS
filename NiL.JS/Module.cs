@@ -26,9 +26,6 @@ namespace NiL.JS
     /// <summary>
     /// Represents and manages JavaScript module
     /// </summary>
-#if !PORTABLE
-    [Serializable]
-#endif
     public class Module
     {
         private static readonly char[] _pathSplitChars = new[] { '\\', '/' };
@@ -280,7 +277,7 @@ namespace NiL.JS
             return string.Join("/", pathTokens);
         }
 
-#if !PORTABLE
+#if !NETCORE
         /// <summary>
         /// Returns module, which provides access to clr-namespace
         /// </summary>

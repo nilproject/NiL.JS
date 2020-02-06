@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NiL.JS.NetCore\NiL.JS.NetCore.csproj" />
+    <None Include="..\Tests\Modules\ftest.js" Link="ftest.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NiL.JS\NiL.JS.csproj" />
   </ItemGroup>
 </Project>
