@@ -4,9 +4,9 @@
     <Description>ECMAScript 6 (ES2015) engine</Description>
     <AssemblyTitle>NiL.JS NET Core</AssemblyTitle>  
     <Authors>NiLProject</Authors>
-    <TargetFrameworks>netstandard1.3;net461;net45;net40;</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard1.6;net461;net45;net40;</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' == 'netstandard1.3'">$(DefineConstants);NETCORE</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.6'">$(DefineConstants);NETCORE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>NiL.JS</AssemblyName>
@@ -31,7 +31,7 @@
     <VersionPrefix>2.5</VersionPrefix>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.6'">
     <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
   </ItemGroup>

@@ -5,9 +5,9 @@ script:
  - cd ./NiL.JS
  - dotnet clean
  - dotnet restore
- - dotnet build -c Release -property:TargetFrameworks=netstandard1.3
+ - dotnet build -c Release -property:TargetFrameworks=netstandard1.6
  - cd ../IntegrationTests
- - dotnet test -c Release -property:TargetFrameworks=netstandard1.3
+ - dotnet test -c Release -property:TargetFrameworks=netstandard1.6
  - cd ../FunctionalTests
  - dotnet ../Utility/tt4/tiny-t4.dll
- - dotnet test -c Release -property:TargetFrameworks=netstandard1.3
+ - dotnet test -c Release -property:TargetFrameworks=netstandard1.6

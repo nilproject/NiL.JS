@@ -10,7 +10,7 @@ namespace NiL.JS
     /// <summary>
     /// Provides access to a CLR-namespace
     /// </summary>
-#if !NETSTANDARD1_3
+#if !NETSTANDARD
     public class NamespaceProvider : CustomType
     {
         private static BinaryTree<Type> types = new BinaryTree<Type>();
