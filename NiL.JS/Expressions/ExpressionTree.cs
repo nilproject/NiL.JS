@@ -334,20 +334,20 @@ namespace NiL.JS.Expressions
         {
             int i = index;
 
-            var first = parseOperand(state, ref i, forNew, forForLoop);
-            if (first == null)
+            var result = parseOperand(state, ref i, forNew, forForLoop);
+            if (result == null)
                 return null;
 
-            var res = parseContinuation(state, first, index, ref i, ref root, forUnary, processComma, forNew, forForLoop);
+            result = parseContinuation(state, result, index, ref i, ref root, forUnary, processComma, forNew, forForLoop);
 
             if (root)
-                res = deicstra(res as ExpressionTree) ?? res;
+                result = deicstra(result as ExpressionTree) ?? result;
 
             if (!forForLoop && processComma && !forUnary && i < state.Code.Length && state.Code[i] == ';')
                 i++;
 
             index = i;
-            return res;
+            return result;
         }
 
         private static Expression parseContinuation(ParseInfo state, Expression first, int startIndex, ref int i, ref bool root, bool forUnary, bool processComma, bool forNew, bool forForLoop)
@@ -998,7 +998,7 @@ namespace NiL.JS.Expressions
                         second = parseContinuation(state, parseTernaryBranches(state, forForLoop, ref i), startIndex, ref i, ref proot, forUnary, processComma, false, forForLoop);
                     }
                     else
-                        second = ExpressionTree.Parse(state, ref i, false, processComma, false, false, forForLoop);
+                        second = Parse(state, ref i, false, processComma, false, false, forForLoop);
                 }
                 else
                 {

@@ -9,6 +9,9 @@ using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
 {
+#if !(PORTABLE || NETCORE)
+    [Serializable]
+#endif
     public class JSObject : JSValue
     {
         internal IDictionary<string, JSValue> _fields;
@@ -335,7 +338,7 @@ namespace NiL.JS.Core
             }
         }
 
-#if INLINE
+#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         internal static IDictionary<string, JSValue> getFieldsContainer()

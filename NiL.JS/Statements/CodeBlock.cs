@@ -34,7 +34,7 @@ namespace NiL.JS.Statements
         internal static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];
 
         private string code;
-#if (NET40 || INLINE) && JIT
+#if (NET40 || !NETSTANDARD1_3 && !NET40) && JIT
         internal Func<Context, JSObject> compiledVersion;
 #endif
 #if DEBUG
@@ -531,7 +531,7 @@ namespace NiL.JS.Statements
                             break;
                     }
                 }
-#if (NET40 || INLINE) && JIT
+#if (NET40 || !NETSTANDARD1_3 && !NET40) && JIT
                 compiledVersion = JITHelpers.compile(this, depth >= 0);
 #endif
             }

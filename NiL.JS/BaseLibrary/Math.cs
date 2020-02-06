@@ -267,7 +267,7 @@ namespace NiL.JS.BaseLibrary
             return res;
         }
 
-#if INLINE
+#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static ulong shr(ulong x, int y)

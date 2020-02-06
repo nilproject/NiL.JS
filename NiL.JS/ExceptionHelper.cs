@@ -144,7 +144,7 @@ namespace NiL.JS
 
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
-#if INLINE
+#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         [DebuggerStepThrough]

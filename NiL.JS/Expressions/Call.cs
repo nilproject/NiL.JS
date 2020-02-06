@@ -196,7 +196,7 @@ namespace NiL.JS.Expressions
             context._executionInfo = arguments;
         }
 
-#if INLINE
+#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private static void checkStack(Context context)

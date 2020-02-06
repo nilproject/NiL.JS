@@ -72,7 +72,7 @@ namespace NiL.JS.BaseLibrary
             _attributes |= JSValueAttributesInternal.SystemObject;
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         [Hidden]

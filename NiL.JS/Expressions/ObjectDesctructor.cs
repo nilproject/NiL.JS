@@ -4,6 +4,9 @@ using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
+#if !NETCORE
+    [Serializable]
+#endif
     public sealed class ObjectDesctructor : Expression
     {
         private sealed class DestructuringAcceptor : JSValue

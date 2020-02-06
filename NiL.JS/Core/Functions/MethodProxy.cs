@@ -568,7 +568,7 @@ namespace NiL.JS.Core.Functions
             return res;
         }
 
-#if INLINE
+#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private object processArgument(Expressions.Expression[] arguments, Context initiator, int index)
@@ -578,7 +578,7 @@ namespace NiL.JS.Core.Functions
             return convertArgument(index, value);
         }
 
-#if INLINE
+#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         private object convertArgument(int index, JSValue value)

@@ -375,7 +375,7 @@ namespace NiL.JS.Core
         public bool Exists
         {
             [Hidden]
-#if INLINE
+#if !NET40
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get
@@ -386,7 +386,7 @@ namespace NiL.JS.Core
         public bool Defined
         {
             [Hidden]
-#if INLINE
+#if !NET40
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get
@@ -399,7 +399,7 @@ namespace NiL.JS.Core
         public bool IsNull
         {
             [Hidden]
-#if INLINE
+#if !NET40
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get
@@ -412,7 +412,7 @@ namespace NiL.JS.Core
         public bool IsNumber
         {
             [Hidden]
-#if INLINE
+#if !NET40
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get
@@ -421,7 +421,7 @@ namespace NiL.JS.Core
 
         internal bool NeedClone
         {
-#if INLINE
+#if !NET40
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get
@@ -432,7 +432,7 @@ namespace NiL.JS.Core
 
         internal bool IsBox
         {
-#if INLINE
+#if !NET40
             [MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
             get
@@ -693,7 +693,7 @@ namespace NiL.JS.Core
         }
         #endregion
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         [Hidden]

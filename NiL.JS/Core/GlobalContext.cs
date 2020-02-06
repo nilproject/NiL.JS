@@ -20,6 +20,9 @@ namespace NiL.JS.Core
         ForceDisable
     }
 
+#if !NETCORE
+    [Serializable]
+#endif
     public sealed class GlobalContext : Context
     {
         internal JSObject _globalPrototype;

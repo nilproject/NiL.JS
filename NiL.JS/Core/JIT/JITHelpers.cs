@@ -7,7 +7,7 @@ using NiL.JS.Backward;
 
 namespace NiL.JS.Core.JIT
 {
-#if !NET35
+#if !NETCORE
     internal static class JITHelpers
     {
         public static readonly FieldInfo _items = typeof(List<CodeNode>).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic);

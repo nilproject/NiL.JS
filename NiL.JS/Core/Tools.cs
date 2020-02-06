@@ -195,7 +195,7 @@ namespace NiL.JS.Core
             #endregion
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static double JSObjectToDouble(JSValue arg)
@@ -254,7 +254,7 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static int JSObjectToInt32(JSValue arg)
@@ -276,7 +276,7 @@ namespace NiL.JS.Core
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <param name="nullOrUndefinedOrNan">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static int JSObjectToInt32(JSValue arg, int nullOrUndefinedOrNan)
@@ -290,7 +290,7 @@ namespace NiL.JS.Core
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <param name="alternateInfinity">Если истина, для значений +Infinity и -Infinity будут возвращены значения int.MaxValue и int.MinValue соответственно.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static int JSObjectToInt32(JSValue arg, bool alternateInfinity)
@@ -372,7 +372,7 @@ namespace NiL.JS.Core
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <param name="nullOrUndef">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static long JSObjectToInt64(JSValue arg)
@@ -386,7 +386,7 @@ namespace NiL.JS.Core
         /// <param name="arg">JSObject, значение которого нужно преобразовать.</param>
         /// <param name="nullOrUndefinedOrNan">Значение, которое будет возвращено, если значение arg null или undefined.</param>
         /// <returns>Целочисленное значение, представленное в объекте arg.</returns>
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static long JSObjectToInt64(JSValue arg, long nullOrUndefinedOrNan)
@@ -453,7 +453,7 @@ namespace NiL.JS.Core
             }
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static JSValue JSObjectToNumber(JSValue arg)
@@ -1315,7 +1315,7 @@ namespace NiL.JS.Core
             }
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         internal static bool IsNegativeZero(double d)
@@ -1323,7 +1323,7 @@ namespace NiL.JS.Core
             return (((ulong)BitConverter.DoubleToInt64Bits(d)) & 0x800F_FFFF_FFFF_FFFF) == 0x8000_0000_0000_0000;
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static string Unescape(string code, bool strict)
@@ -1331,7 +1331,7 @@ namespace NiL.JS.Core
             return Unescape(code, strict, true, false, true);
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static string Unescape(string code, bool strict, bool processUnknown, bool processRegexComp)
@@ -1541,7 +1541,7 @@ namespace NiL.JS.Core
             return (res as object ?? code).ToString();
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static string UnescapeNextChar(string code, int index, out int processedChars, bool strict)
@@ -1549,7 +1549,7 @@ namespace NiL.JS.Core
             return UnescapeNextChar(code, index, out processedChars, strict, true, false, true);
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         public static string UnescapeNextChar(string code, int index, out int processedChars, bool strict, bool processUnknown, bool processRegexComp)
@@ -1785,7 +1785,7 @@ namespace NiL.JS.Core
             return str[i];
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         internal static bool IsSurrogatePair(string str, int i)
@@ -1807,7 +1807,7 @@ namespace NiL.JS.Core
             return h.ToString() + l.ToString();
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         internal static bool IsLineTerminator(char c)
@@ -1815,7 +1815,7 @@ namespace NiL.JS.Core
             return (c == '\u000A') || (c == '\u000D') || (c == '\u2028') || (c == '\u2029');
         }
 
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         internal static bool isHex(char p)
@@ -1831,7 +1831,7 @@ namespace NiL.JS.Core
         /// </summary>
         /// <param name="p"></param>
         /// <returns></returns>
-#if INLINE
+#if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
         internal static int hexCharToInt(char p)

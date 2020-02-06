@@ -136,7 +136,7 @@ namespace NiL.JS.Expressions
             return _variableName;
         }
 
-#if !NET35 && !PORTABLE
+#if !NETCORE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             dynamicValues.Add(this);

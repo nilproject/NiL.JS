@@ -105,7 +105,7 @@ namespace NiL.JS.Expressions
             }
             return _tempContainer;
         }
-#if !PORTABLE && !NET35
+#if !NETCORE
         internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
         {
             var ft = _left.TryCompile(false, false, null, dynamicValues);
