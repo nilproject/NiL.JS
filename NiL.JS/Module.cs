@@ -277,7 +277,7 @@ namespace NiL.JS
             return string.Join("/", pathTokens);
         }
 
-#if !NETSTANDARD
+#if !NETCORE
         /// <summary>
         /// Returns module, which provides access to clr-namespace
         /// </summary>
