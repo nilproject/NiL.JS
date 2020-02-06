@@ -41,11 +41,7 @@ namespace NiL.JS {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-#if NETCORE
-                    var packageName = "NiL.JS.NetCore";
-#else
                     var packageName = "NiL.JS";
-#endif
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager(packageName + ".Strings", typeof(Strings).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
