@@ -1,9 +1,8 @@
 language: csharp
 mono: none
-dotnet: 3.1.0
+dotnet: 3.1
 script:
  - cd ./NiL.JS
- - source makeSymLinks.sh
  - dotnet clean
  - dotnet restore
  - dotnet build -c Release
