@@ -17,22 +17,23 @@ namespace NiL.JS.Expressions
 #endif
     internal enum OperationTypeGroups
     {
-        None = 0x0,
-        Assign = 0x10,
-        Choice = 0x20,
-        LOr = 0x30,
-        LAnd = 0x40,
-        Or = 0x50,
-        Xor = 0x60,
-        And = 0x70,
-        Logic1 = 0x80,
-        Logic2 = 0x90,
-        Bit = 0xa0,
-        Arithmetic0 = 0xb0,
-        Arithmetic1 = 0xc0,
-        Power = 0xd0,
-        Unary0 = 0xe0,
-        Unary1 = 0xf0,
+        None = 0x00,
+        Assign = 0x010,
+        Choice = 0x020,
+        LogicalOr = 0x030,
+        LogicalAnd = 0x040,
+        NullishCoalescing = 0x050,
+        BitwiseOr = 0x060,
+        BitwiseXor = 0x070,
+        BitwiseAnd = 0x080,
+        Logic1 = 0x090,
+        Logic2 = 0x0a0,
+        Bit = 0x0b0,
+        Arithmetic0 = 0x0c0,
+        Arithmetic1 = 0x0d0,
+        Power = 0x0e0,
+        Unary0 = 0x0f0,
+        Unary1 = 0x100,
         Special = 0xFF0
     }
 
@@ -45,11 +46,14 @@ namespace NiL.JS.Expressions
         Assignment = OperationTypeGroups.Assign + 0,
         Conditional = OperationTypeGroups.Choice + 0,
 
-        LogicalOr = OperationTypeGroups.LOr,
-        LogicalAnd = OperationTypeGroups.LAnd,
-        Or = OperationTypeGroups.Or,
-        Xor = OperationTypeGroups.Xor,
-        And = OperationTypeGroups.And,
+        LogicalOr = OperationTypeGroups.LogicalOr,
+        LogicalAnd = OperationTypeGroups.LogicalAnd,
+
+        NullishCoalescing = OperationTypeGroups.NullishCoalescing,
+
+        Or = OperationTypeGroups.BitwiseOr,
+        Xor = OperationTypeGroups.BitwiseXor,
+        And = OperationTypeGroups.BitwiseAnd,
 
         Equal = OperationTypeGroups.Logic1 + 0,
         NotEqual = OperationTypeGroups.Logic1 + 1,
@@ -262,6 +266,10 @@ namespace NiL.JS.Expressions
                 {
                     return new Power(_left, _right);
                 }
+                case OperationType.NullishCoalescing:
+                {
+                    return new NullishCoalescing(_left, _right);
+                }
                 default:
                     throw new ArgumentException("invalid operation type");
             }
@@ -445,6 +453,15 @@ namespace NiL.JS.Expressions
                             i = rollbackPos;
                             break;
                         }
+
+                        if (state.Code[i + 1] == '?')
+                        {
+                            i++;
+                            binary = true;
+                            kind = OperationType.NullishCoalescing;
+                            break;
+                        }
+
                         binary = true;
                         repeat = false;
                         kind = OperationType.Conditional;
@@ -1051,7 +1068,27 @@ namespace NiL.JS.Expressions
                     if (forUnary && (kind == OperationType.None) && (first is ExpressionTree))
                         res = first as Expression;
                     else
+                    {
+                        if (kind == OperationType.NullishCoalescing)
+                        {
+                            if ((second is ExpressionTree tree)
+                                && (tree._operationKind == OperationType.LogicalAnd || tree._operationKind == OperationType.LogicalOr))
+                            {
+                                ExceptionHelper.ThrowSyntaxError(Strings.LogicalNullishCoalescing, state.Code, startIndex, i - startIndex);
+                            }
+                        }
+
+                        if (kind == OperationType.LogicalAnd || kind == OperationType.LogicalOr)
+                        {
+                            if ((second is ExpressionTree tree)
+                                && (tree._operationKind == OperationType.NullishCoalescing))
+                            {
+                                ExceptionHelper.ThrowSyntaxError(Strings.LogicalNullishCoalescing, state.Code, startIndex, i - startIndex);
+                            }
+                        }
+
                         res = new ExpressionTree() { _left = first, _right = second, _operationKind = kind, Position = startIndex, Length = i - startIndex };
+                    }
                 }
                 else
                     res = first;

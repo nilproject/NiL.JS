@@ -159,6 +159,9 @@
   <data name="InvalidTryToCreateWithoutNew" xml:space="preserve">
     <value>Type "{0}" can not be created without new keyword</value>
   </data>
+  <data name="LogicalNullishCoalescing" xml:space="preserve">
+    <value>It is not possible to combine both the AND (&amp;&amp;) and OR operators (||) directly with ??</value>
+  </data>
   <data name="TooManyArgumentsForFunction" xml:space="preserve">
     <value>Too many arguments for function "{0}"</value>
   </data>

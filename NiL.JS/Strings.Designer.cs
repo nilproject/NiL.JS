@@ -242,13 +242,26 @@ namespace NiL.JS {
                 return ResourceManager.GetString("UnknowIdentifier", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Variable &quot;{0}&quot; is not defined.
         /// </summary>
-        internal static string VariableNotDefined {
-            get {
+        internal static string VariableNotDefined
+        {
+            get
+            {
                 return ResourceManager.GetString("VariableNotDefined", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Variable &quot;{0}&quot; is not defined.
+        /// </summary>
+        internal static string LogicalNullishCoalescing
+        {
+            get
+            {
+                return ResourceManager.GetString("LogicalNullishCoalescing", resourceCulture);
             }
         }
     }
