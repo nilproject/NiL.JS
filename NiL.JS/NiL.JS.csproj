@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ECMAScript 6 (ES2015) engine</Description>
-    <AssemblyTitle>NiL.JS NET Core</AssemblyTitle>  
+    <AssemblyTitle>NiL.JS</AssemblyTitle>  
     <Authors>NiLProject</Authors>
     <TargetFrameworks>netstandard1.3;netstandard1.6;net461;net45;net40;</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>

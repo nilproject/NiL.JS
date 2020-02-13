@@ -2,10 +2,6 @@
 echo $(
 rd nil.js\bin -Force -Recurse -erroraction 'silentlycontinue'
 rd nil.js\obj -Force -Recurse -erroraction 'silentlycontinue'
-rd nil.js.NetCore\bin -Force -Recurse -erroraction 'silentlycontinue'
-rd nil.js.NetCore\obj -Force -Recurse -erroraction 'silentlycontinue'
-rd NiL.JS.Portable\bin -Force -Recurse -erroraction 'silentlycontinue'
-rd NiL.JS.Portable\obj -Force -Recurse -erroraction 'silentlycontinue'
 mkdir nuget -erroraction 'silentlycontinue'
 ) > $null
 [System.IO.File]::WriteAllText("$(get-location)\\NiL.JS\\Properties\\InternalInfo.cs","internal static class InternalInfo
