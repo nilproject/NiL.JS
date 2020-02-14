@@ -781,7 +781,11 @@ namespace NiL.JS.Core
 
         public IEnumerator<string> GetEnumerator()
         {
-            return _variables.Keys.GetEnumerator();
+#if NETCORE
+            return (_variables?.Keys ?? System.Array.Empty<string>()).GetEnumerator();
+#else
+            return (_variables?.Keys ?? new string[0]).GetEnumerator();
+#endif
         }
 
         IEnumerator IEnumerable.GetEnumerator()
