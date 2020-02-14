@@ -4,6 +4,8 @@
 Open source ECMAScript 6.0 (ES2015) (JavaScript) engine.
 Licensed under BSD 3-Clause License.
 
+> [NuGet Package](https://www.nuget.org/packages/NiL.JS)
+
 ```C#
  var context = new Context(); 
  context.Eval(@"console.log( 
@@ -12,6 +14,3 @@ Licensed under BSD 3-Clause License.
  ```
 > [What is Isolated Global Context?](https://github.com/nilproject/NiL.JS/blob/version-2.5/Examples/7.%20Few%20words%20about%20Global%20Context/What%20it%20is.cs)  
 > [Other Examples](https://github.com/nilproject/NiL.JS/tree/version-2.5/Examples)  
-
-> [NuGet Package for .NET 4, .NET 4.5](https://www.nuget.org/packages/NiL.JS)  
-> [NuGet Package for .NET Core](https://www.nuget.org/packages/NiL.JS.NetCore/)  
