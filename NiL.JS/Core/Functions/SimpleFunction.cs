@@ -75,11 +75,7 @@ namespace NiL.JS.Core.Functions
                 // Эта строка обязательно должна находиться после инициализации параметров
                 _functionDefinition.recursionDepth++;
 
-                if (this._functionDefinition.reference._descriptor != null && _functionDefinition.reference._descriptor.cacheRes == null)
-                {
-                    _functionDefinition.reference._descriptor.cacheContext = internalContext._parent;
-                    _functionDefinition.reference._descriptor.cacheRes = this;
-                }
+                initCachedReference(internalContext);
 
                 internalContext._strict |= body._strict;
                 internalContext.Activate();

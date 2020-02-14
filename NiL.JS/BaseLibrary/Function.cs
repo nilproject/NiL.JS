@@ -572,13 +572,26 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
+        internal void initCachedReference(Context internalContext)
+        {
+            var descriptor = _functionDefinition.reference._descriptor;
+            if (descriptor != null && descriptor.name != null && descriptor.cacheContext != internalContext._parent)
+            {
+                if (descriptor.cacheContext != null)
+                {
+                    var variable = descriptor.cacheContext.DefineVariable(descriptor.name);
+                    variable.Assign(descriptor.cacheRes);
+                    variable._attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly;
+                }
+
+                descriptor.cacheContext = internalContext._parent;
+                descriptor.cacheRes = this;
+            }
+        }
+
         internal void initContext(JSValue targetObject, Arguments arguments, bool storeValuesInContext, Context internalContext)
         {
-            if (_functionDefinition.reference._descriptor != null && _functionDefinition.reference._descriptor.cacheRes == null)
-            {
-                _functionDefinition.reference._descriptor.cacheContext = internalContext._parent;
-                _functionDefinition.reference._descriptor.cacheRes = this;
-            }
+            initCachedReference(internalContext);
 
             internalContext._thisBind = targetObject;
             internalContext._strict |= _functionDefinition._body._strict;
