@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.5.1427 - 14 February 2020
+Fixes:
+* Arrow function as return value of other function
+* System.DivideByZeroException on same platforms while parsing
+* Processing of typescript.js
+* ContextDebuggerProxy for empty contexts
+Added:
+* NullishCoalescing
+* ContextDebuggerProxy now public public
+
 ## 2.5.1388 - 03 November 2019
 Fixes:
 * Variable in "for (const .. of)" is undefined
