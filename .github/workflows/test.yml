@@ -14,9 +14,9 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Setup .NET Core 2.1.804
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 2.1.804
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.804
 
     - name: Setup .NET Core 3.1.102
       uses: actions/setup-dotnet@v1
