@@ -12,9 +12,19 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        framework: [netcoreapp2.1]
+        include:
+          - os: windows-latest
+          framework: net472
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Setup .NET Core 2.1.202
+      if: matrix.os != 'windows-latest'
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.202
 
     - name: Setup .NET Core 2.1.804
       if: matrix.os != 'windows-latest'
@@ -31,6 +41,7 @@ jobs:
     - name: Setup side by side .NET SDKs on *nix
       if: matrix.os != 'windows-latest'
       run: |
+        rsync -a ${DOTNET_ROOT/3.1.102/2.1.202}/* $DOTNET_ROOT/
         rsync -a ${DOTNET_ROOT/3.1.102/2.1.804}/* $DOTNET_ROOT/
 
     - run: dotnet --info
@@ -47,7 +58,9 @@ jobs:
       run: |
         dotnet build --no-restore ./Tests.sln
 
-    - name: Test
-      run: |
-        dotnet test --no-build ./IntegrationTests
-        dotnet test --no-build ./FunctionalTests
+    - name: IntegrationTests
+      run: dotnet test --no-build -f ${{ matrix.framework }} ./IntegrationTests
+
+    - name: FunctionalTests
+      run: dotnet test --no-build -f ${{ matrix.framework }} ./FunctionalTests
+  
