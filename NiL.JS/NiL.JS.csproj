@@ -7,7 +7,7 @@
     <TargetFrameworks>netstandard1.3;netstandard1.6;netstandard2.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461;net45;net40;</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.6'">$(DefineConstants);NETCORE</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.6' OR '$(TargetFramework)' == 'netstandard2.0'">$(DefineConstants);NETCORE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>NiL.JS</AssemblyName>
@@ -19,6 +19,7 @@
     <PackageIconUrl>https://github.com/nilproject/NiL.JS/blob/develop/nil.js%20logo%20small.png</PackageIconUrl>
     <PackageLicenseUrl>https://github.com/nilproject/NiL.JS/blob/develop/License</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/nilproject/NiL.JS</RepositoryUrl>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -33,9 +34,9 @@
     <VersionPrefix>2.5</VersionPrefix>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.6'">
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.0.11" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.6' OR '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
   </ItemGroup>
 
 </Project>
