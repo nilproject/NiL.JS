@@ -11,23 +11,40 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Setup .NET Core
+    - name: Setup .NET Core 2.1.804
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.102
+          dotnet-version: 2.1.804
 
-      - run: dotnet --info
+    - name: Setup .NET Core 3.1.102
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.102
 
-      - name: Restore
-        run: |
-          dotnet restore ./Tests.sln
+    - name: Setup side by side .NET SDKs on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        SET DOTNET_21_ROOT=%DOTNET_ROOT:3.1.102=2.1.804%
+        xcopy /s /y /d %DOTNET_31_ROOT% %DOTNET_ROOT%
+      shell: cmd
 
-      - name: Build
-        run: |
-          dotnet build --no-restore ./Tests.sln
+    - name: Setup side by side .NET SDKs on *nix
+      if: matrix.os != 'windows-latest'
+      run: |
+        rsync -a ${DOTNET_ROOT/3.1.102/2.1.804}/* $DOTNET_ROOT/
 
-      - name: Test
-        run: |
-          dotnet test --no-build ./Tests.sln
+    - run: dotnet --info
+
+    - name: Restore
+      run: |
+        dotnet restore ./Tests.sln
+
+    - name: Build
+      run: |
+        dotnet build --no-restore ./Tests.sln
+
+    - name: Test
+      run: |
+        dotnet test --no-build ./Tests.sln
