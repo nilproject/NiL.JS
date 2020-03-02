@@ -1,0 +1,30 @@
+name: .NET Core
+
+on: [push]
+
+jobs:
+  test-linux:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        dotnet: ["2.2.103", "3.1.100"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+        - uses: actions/checkout@v2
+
+        - name: Setup .NET Core ${{ matrix.dotnet }}
+            uses: actions/setup-dotnet@v1
+            with:
+            dotnet-version: ${{ matrix.dotnet }}
+
+        - name: Test
+            run: |
+                dotnet test test.sln -c Release -f netcoreapp2.0 -property:SignAssembly=false -property:PublicSign=false
+        
+        - name: Test
+            if: matrix.os == 'windows-latest'
+            run: |
+                dotnet test test.sln -c Release -f net472 -property:SignAssembly=false -property:PublicSign=false
+
