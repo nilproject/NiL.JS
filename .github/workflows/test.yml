@@ -61,8 +61,10 @@ jobs:
         dotnet build --no-restore ./Tests.sln
 
     - name: IntegrationTests
+      continue-on-error: true
       run: dotnet test --no-build -f ${{ matrix.framework }} ./IntegrationTests
 
     - name: FunctionalTests
+      continue-on-error: true
       run: dotnet test --no-build -f ${{ matrix.framework }} ./FunctionalTests
   
