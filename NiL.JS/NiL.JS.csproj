@@ -4,7 +4,8 @@
     <Description>ECMAScript 6 (ES2015) engine</Description>
     <AssemblyTitle>NiL.JS</AssemblyTitle>  
     <Authors>NiLProject</Authors>
-    <TargetFrameworks>netstandard1.3;netstandard1.6;net461;net45;net40;</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461;net45;net40;</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
     <DefineConstants Condition="'$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.6'">$(DefineConstants);NETCORE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
