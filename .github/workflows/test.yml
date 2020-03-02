@@ -2,6 +2,9 @@ name: .NET Core
 
 on: [push]
 
+env:
+  CI: true
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
