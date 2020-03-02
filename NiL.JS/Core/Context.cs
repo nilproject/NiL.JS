@@ -201,7 +201,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return GetCurrectContextStack().Contains(this);
+                return GetCurrectContextStack()?.Contains(this) == true;
             }
         }
 
@@ -410,6 +410,9 @@ namespace NiL.JS.Core
                 return null;
 
             var stack = GetCurrectContextStack();
+
+            if (stack == null)
+                return null;
 
             for (var i = stack.Count; i-- > 0;)
             {
