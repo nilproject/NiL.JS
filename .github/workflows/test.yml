@@ -18,9 +18,16 @@ jobs:
         with:
           dotnet-version: 3.1.102
 
+      - run: dotnet --info
+
+      - name: Restore
+        run: |
+          dotnet restore ./Tests.sln
+
+      - name: Build
+        run: |
+          dotnet build --no-restore ./Tests.sln
+
       - name: Test
         run: |
-          dotnet test ./Tests.sln
-      
-      
-
+          dotnet test --no-build ./Tests.sln
