@@ -1,6 +1,6 @@
 language: csharp
 mono: none
-dotnet: 2.1.804
+dotnet: 2.1
 script:
  - cd ./NiL.JS
  - dotnet clean
