@@ -15,7 +15,7 @@ jobs:
         framework: [netcoreapp2.1]
         include:
           - os: windows-latest
-          framework: net472
+            framework: net472
 
     steps:
     - uses: actions/checkout@v2
