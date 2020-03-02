@@ -49,4 +49,5 @@ jobs:
 
     - name: Test
       run: |
-        dotnet test --no-build ./Tests.sln
+        dotnet test --no-build ./IntegrationTests
+        dotnet test --no-build ./FunctionalTests
