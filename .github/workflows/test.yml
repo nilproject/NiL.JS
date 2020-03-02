@@ -20,7 +20,7 @@ jobs:
 
       - name: Test
         run: |
-          dotnet test tests.sln -property:SignAssembly=false -property:PublicSign=false
+          dotnet test ./Tests.sln
       
       
 

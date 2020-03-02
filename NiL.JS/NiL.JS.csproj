@@ -4,7 +4,7 @@
     <Description>ECMAScript 6 (ES2015) engine</Description>
     <AssemblyTitle>NiL.JS</AssemblyTitle>  
     <Authors>NiLProject</Authors>
-    <TargetFrameworks>netstandard1.3;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;netstandard1.6;netstandard2.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461;net45;net40;</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
     <DefineConstants Condition="'$(TargetFramework)' == 'netstandard1.3' OR '$(TargetFramework)' == 'netstandard1.6'">$(DefineConstants);NETCORE</DefineConstants>
@@ -12,7 +12,7 @@
     <DebugType>portable</DebugType>
     <AssemblyName>NiL.JS</AssemblyName>
     <AssemblyOriginatorKeyFile>keys.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly Condition="Exists('$(AssemblyOriginatorKeyFile)')">true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>NiL.JS</PackageId>
     <PackageTags>js;javascript;java;script;ecma;ecmascript;es2015;v8;niljs;nil;nilproject</PackageTags>

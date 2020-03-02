@@ -9,6 +9,11 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.0" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.0" />
   </ItemGroup>
+    
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+        <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    </ItemGroup>
+    
   <ItemGroup>
     <ProjectReference Include="..\NiL.JS\NiL.JS.csproj" />
   </ItemGroup>
