@@ -37,6 +37,10 @@ jobs:
       run: |
         dotnet restore ./Tests.sln
 
+    - name: Generate tests
+      working-directory: ./FunctionalTests
+      run: dotnet ../Utility/tt4/tiny-t4.dll
+
     - name: Build
       run: |
         dotnet build --no-restore ./Tests.sln
