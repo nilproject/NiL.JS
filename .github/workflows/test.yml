@@ -12,9 +12,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        framework: [netcoreapp2.1]
-        include:
-          - os: windows-latest
+        framework: [netcoreapp2.1, net472]
+        exclude:
+          - os: ubuntu-latest
+            framework: net472
+          - os: macos-latest
             framework: net472
 
     steps:
