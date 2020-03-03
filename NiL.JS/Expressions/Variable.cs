@@ -46,9 +46,9 @@ namespace NiL.JS.Expressions
 #endif
     public class Variable : VariableReference
     {
-        private string _variableName;
-        internal bool _SuspendThrow;
-        internal bool _ForceThrow;
+        internal string _variableName;
+        internal bool _suspendThrow;
+        internal bool _forceThrow;
 
         public override string Name { get { return _variableName; } }
 
@@ -62,8 +62,7 @@ namespace NiL.JS.Expressions
 
         internal Variable(string name, int scopeLevel)
         {
-            int fake = 0;
-            if (!Parser.ValidateName(name, fake, true, true, false))
+            if (!Parser.ValidateName(name, 0, true, true, false))
                 throw new ArgumentException("Invalid variable name");
 
             ScopeLevel = scopeLevel;
@@ -74,9 +73,9 @@ namespace NiL.JS.Expressions
         {
             var result = _descriptor.Get(context, true, _scopeLevel);
 
-            if (context._strict || _ForceThrow)
+            if (context._strict || _forceThrow)
             {
-                if (result._valueType < JSValueType.Undefined && (!_SuspendThrow || _ForceThrow))
+                if (result._valueType < JSValueType.Undefined && (!_suspendThrow || _forceThrow))
                 {
                     if ((_codeContext & CodeContext.InEval) != 0)
                     {
@@ -105,7 +104,7 @@ namespace NiL.JS.Expressions
             {
                 case JSValueType.NotExists:
                     {
-                        if (!_SuspendThrow)
+                        if (!_suspendThrow)
                         {
                             if ((_codeContext & CodeContext.InEval) != 0)
                             {
@@ -183,7 +182,7 @@ namespace NiL.JS.Expressions
                 desc.definitionScopeLevel = -Math.Abs(desc.definitionScopeLevel);
             }
 
-            _ForceThrow |= desc.lexicalScope; // ����� TDZ
+            _forceThrow |= desc.lexicalScope;
 
             if (expressionDepth >= 0 && expressionDepth < 2 && desc.IsDefined && !desc.lexicalScope && (opts & Options.SuppressUselessExpressionsElimination) == 0)
             {

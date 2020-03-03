@@ -164,7 +164,7 @@ namespace NiL.JS.Statements
                 {
                     if (state.Variables[j].name == names[i] && state.Variables[j].definitionScopeLevel >= level)
                     {
-                        if (state.Variables[j].lexicalScope && mode > VariableKind.FunctionScope)
+                        if (state.Variables[j].lexicalScope)
                             ExceptionHelper.ThrowSyntaxError(string.Format(Strings.IdentifierAlreadyDeclared, names[i]), state.Code, index);
 
                         skip = true;
