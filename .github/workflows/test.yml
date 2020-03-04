@@ -50,7 +50,7 @@ jobs:
 
     - name: Restore
       run: |
-        dotnet restore ./Tests.sln
+        dotnet restore
 
     - name: Generate tests
       working-directory: ./FunctionalTests
@@ -58,7 +58,7 @@ jobs:
 
     - name: Build
       run: |
-        dotnet build --no-restore ./Tests.sln
+        dotnet build --no-restore
 
     - name: IntegrationTests
       continue-on-error: true
