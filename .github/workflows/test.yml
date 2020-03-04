@@ -72,5 +72,10 @@ jobs:
 
     - name: FunctionalTests
       continue-on-error: true
-      run: dotnet test --no-build -f ${{ matrix.framework }} ./FunctionalTests
+      run: dotnet test --no-build -f ${{ matrix.framework }} --blame ./FunctionalTests
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: test-blame
+        path: Sequence.xml
   
