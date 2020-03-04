@@ -1,13 +1,19 @@
 language: csharp
 mono: none
 dotnet: 2.1
+os:
+ - windows
+ - linux
+ - osx
+env:
+ - CONFIGURATION=Release
 script:
  - cd ./NiL.JS
  - dotnet clean
  - dotnet restore
- - dotnet build -c Release -property:TargetFrameworks=netstandard1.6 -property:SignAssembly=false -property:PublicSign=false
+ - dotnet build
  - cd ../IntegrationTests
- - dotnet test -c Release -property:TargetFramework=netcoreapp2.1 -property:SignAssembly=false -property:PublicSign=false
+ - dotnet test 
  - cd ../FunctionalTests
  - dotnet ../Utility/tt4/tiny-t4.dll
- - dotnet test -c Release -property:TargetFramework=netcoreapp2.1 -property:SignAssembly=false -property:PublicSign=false
+ - dotnet test 
