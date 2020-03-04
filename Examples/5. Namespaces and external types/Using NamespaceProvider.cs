@@ -9,6 +9,7 @@ namespace Examples.Namespaces_and_external_types
         {
             typeof(System.Windows.Forms.Form).ToString(); // This line causes load of assembly "System.Windows.Form.dll"
 
+            
             var namespaceProvider = new NamespaceProvider("System.Windows.Forms");
             var context = new Context();
 
