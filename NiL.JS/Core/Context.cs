@@ -63,7 +63,6 @@ namespace NiL.JS.Core
     [DebuggerTypeProxy(typeof(ContextDebuggerProxy))]
     public class Context : IEnumerable<string>
     {
-#if (PORTABLE || NETCORE)
         [ThreadStatic]
         internal static List<Context> currentContextStack;
 
@@ -74,27 +73,7 @@ namespace NiL.JS.Core
 
             return currentContextStack;
         }
-#else
-        internal const int MaxConcurentContexts = 65535;
-        internal static readonly List<Context>[] RunningContexts = new List<Context>[MaxConcurentContexts];
-        private static readonly int[] _ThreadIds = new int[MaxConcurentContexts];
 
-        internal static List<Context> GetCurrectContextStack()
-        {
-            int threadId = Thread.CurrentThread.ManagedThreadId;
-
-            for (var i = 0; i < MaxConcurentContexts; i++)
-            {
-                if (_ThreadIds[i] == 0)
-                    break;
-
-                if (_ThreadIds[i] == threadId)
-                    return RunningContexts[i];
-            }
-
-            return null;
-        }
-#endif
         public static Context CurrentContext
         {
             get
@@ -281,7 +260,6 @@ namespace NiL.JS.Core
 
         internal bool Activate()
         {
-#if (PORTABLE || NETCORE)
             if (currentContextStack == null)
                 currentContextStack = new List<Context>();
 
@@ -290,110 +268,15 @@ namespace NiL.JS.Core
 
             currentContextStack.Add(this);
             return true;
-#else
-            int threadId = Thread.CurrentThread.ManagedThreadId;
-            var firstEmptyIndex = -1;
-            var i = 0;
-            bool entered = false;
-            do
-            {
-                if (_ThreadIds[i] == threadId)
-                {
-                    if (RunningContexts[i].Count > 0 && RunningContexts[i][RunningContexts[i].Count - 1] == this)
-                    {
-                        if (entered)
-                            Monitor.Exit(RunningContexts);
-
-                        return false;
-                    }
-
-                    // Бьёт по производительности
-                    //if (RunnedContexts[i].Contains(this))
-                    //    ExceptionsHelper.Throw(new ApplicationException("Try to reactivate context"));
-
-                    RunningContexts[i].Add(this);
-
-                    if (entered)
-                        Monitor.Exit(RunningContexts);
-
-                    return true;
-                }
-
-                if (!entered)
-                {
-                    Monitor.Enter(RunningContexts);
-                    entered = true;
-                }
-
-                if (_ThreadIds[i] == 0)
-                {
-                    if (firstEmptyIndex == -1)
-                        firstEmptyIndex = i;
-
-                    break;
-                }
-                else if (_ThreadIds[i] == -1 && firstEmptyIndex == -1)
-                {
-                    firstEmptyIndex = i;
-                }
-
-                i++;
-            }
-            while (i < MaxConcurentContexts);
-
-            if (firstEmptyIndex != -1)
-            {
-                if (RunningContexts[firstEmptyIndex] == null)
-                    RunningContexts[firstEmptyIndex] = new List<Context>();
-
-                _ThreadIds[firstEmptyIndex] = threadId;
-                RunningContexts[firstEmptyIndex].Add(this);
-
-                Monitor.Exit(RunningContexts);
-                return true;
-            }
-
-            Monitor.Exit(RunningContexts);
-
-            ExceptionHelper.Throw(new InvalidOperationException("Too many concurrent contexts."));
-
-            return false;
-#endif
         }
 
         internal Context Deactivate()
         {
-#if (PORTABLE || NETCORE)
             if (currentContextStack[currentContextStack.Count - 1] != this)
                 throw new InvalidOperationException("Context is not running");
 
             currentContextStack.RemoveAt(currentContextStack.Count - 1);
             return CurrentContext;
-#else
-            int threadId = Thread.CurrentThread.ManagedThreadId;
-
-            var i = 0;
-            for (; i < MaxConcurentContexts; i++)
-            {
-                if (_ThreadIds[i] == 0)
-                    throw new InvalidOperationException("Context is not running");
-
-                if (_ThreadIds[i] == threadId)
-                {
-                    if (RunningContexts[i][RunningContexts[i].Count - 1] != this)
-                        throw new InvalidOperationException("Context is not running");
-
-                    _module = null;
-                    RunningContexts[i].RemoveAt(RunningContexts[i].Count - 1);
-                    if (RunningContexts[i].Count == 0)
-                        _ThreadIds[i] = -1;
-
-                    break;
-                }
-            }
-
-            return RunningContexts[i].Count > 0 ? RunningContexts[i][RunningContexts[i].Count - 1] : null;
-#endif
         }
 
         internal Context GetRunningContextFor(Function function)

@@ -73,7 +73,7 @@ namespace NiL.JS.Expressions
             {
                 if ((codeContext & CodeContext.Strict) != 0)
                     ExceptionHelper.Throw(new SyntaxError("Can not delete variable in strict mode"));
-                (_left as Variable)._SuspendThrow = true;
+                (_left as Variable)._suspendThrow = true;
             }
             var gme = _left as Property;
             if (gme != null)

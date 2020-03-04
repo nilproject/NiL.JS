@@ -72,7 +72,7 @@ namespace NiL.JS.Expressions
         {
             base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
             if (_left is Variable)
-                (_left as Variable)._SuspendThrow = true;
+                (_left as Variable)._suspendThrow = true;
             return false;
         }
 

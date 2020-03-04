@@ -333,7 +333,7 @@ namespace NiL.JS.Core
             if ((_attributes & JSValueAttributesInternal.ReadOnly) == 0)
             {
                 if (this is GlobalObject)
-                    ExceptionHelper.Throw(new NiL.JS.BaseLibrary.ReferenceError("Invalid left-hand side"));
+                    ExceptionHelper.Throw(new ReferenceError("Invalid left-hand side"));
                 throw new InvalidOperationException("Try to assign to a non-primitive value");
             }
         }

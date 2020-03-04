@@ -110,7 +110,7 @@ namespace NiL.JS.Expressions
 
             var res = _left.Build(ref _this, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
             if (!res && _left is Variable)
-                (_left as Variable)._ForceThrow = true;
+                (_left as Variable)._forceThrow = true;
             return res;
         }
     }

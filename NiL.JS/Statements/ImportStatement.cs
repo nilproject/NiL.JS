@@ -1,5 +1,6 @@
 ﻿using NiL.JS.Backward;
 using NiL.JS.Core;
+using NiL.JS.Expressions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,10 +9,10 @@ namespace NiL.JS.Statements
 {
     public sealed class ImportStatement : CodeNode
     {
-        private readonly List<KeyValuePair<string, string>> _map = new List<KeyValuePair<string, string>>();
+        private readonly List<KeyValuePair<string, Variable>> _map = new List<KeyValuePair<string, Variable>>();
         private string _moduleName;
 
-        public IList<KeyValuePair<string, string>> ImportMap => _map.AsReadOnly();
+        public IList<KeyValuePair<string, Variable>> ImportMap => _map.AsReadOnly();
         public string SourceModuleName => _moduleName;
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
@@ -30,7 +31,13 @@ namespace NiL.JS.Statements
                 if (Parser.ValidateName(state.Code, ref index))
                 {
                     var defaultAlias = state.Code.Substring(start, index - start);
-                    result._map.Add(new KeyValuePair<string, string>("", defaultAlias));
+                    result._map.Add(new KeyValuePair<string, Variable>(
+                        string.Empty,
+                        new Variable(defaultAlias, state.lexicalScopeLevel)
+                        {
+                            Position = start,
+                            Length = defaultAlias.Length
+                        }));
 
                     onlyDefault = true;
                     Tools.SkipSpaces(state.Code, ref index);
@@ -48,19 +55,37 @@ namespace NiL.JS.Statements
                     {
                         index++;
                         Tools.SkipSpaces(state.Code, ref index);
+
                         var alias = parseAlias(state.Code, ref index);
                         if (alias == null)
                             ExceptionHelper.ThrowSyntaxError("Expected identifier", state.Code, index);
-                        result._map.Add(new KeyValuePair<string, string>("*", alias));
+
+                        var aliasVariable = new Variable(alias, state.lexicalScopeLevel)
+                        {
+                            Position = index - alias.Length - 1,
+                            Length = alias.Length
+                        };
+                        result._map.Add(new KeyValuePair<string, Variable>("*", aliasVariable));
                     }
                     else if (state.Code[index] == '{')
                     {
-                        parseImportMap(result, state.Code, ref index);
+                        parseImportMap(result, state.Code, ref index, state);
                     }
                     else
                     {
                         ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
                     }
+                }
+
+                for (var i = 0; i < result._map.Count; i++)
+                {
+                    state.Variables.Add(new VariableDescriptor(
+                        result._map[i].Value,
+                        state.lexicalScopeLevel)
+                    {
+                        lexicalScope = true,
+                        isReadOnly = true
+                    });
                 }
 
                 Tools.SkipSpaces(state.Code, ref index);
@@ -81,7 +106,7 @@ namespace NiL.JS.Statements
             return result;
         }
 
-        private static void parseImportMap(ImportStatement import, string code, ref int index)
+        private static void parseImportMap(ImportStatement import, string code, ref int index, ParseInfo state)
         {
             index++;
             Tools.SkipSpaces(code, ref index);
@@ -95,11 +120,9 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(code, ref index))
                     ExceptionHelper.ThrowSyntaxError("Invalid import name", code, index);
                 var name = code.Substring(start, index - start);
-                var alias = name;
-
                 Tools.SkipSpaces(code, ref index);
 
-                alias = parseAlias(code, ref index) ?? name;
+                var alias = parseAlias(code, ref index) ?? name;
 
                 for (var i = 0; i < import._map.Count; i++)
                 {
@@ -107,7 +130,11 @@ namespace NiL.JS.Statements
                         ExceptionHelper.ThrowSyntaxError("Duplicate import", code, index);
                 }
 
-                import._map.Add(new KeyValuePair<string, string>(name, alias));
+                import._map.Add(new KeyValuePair<string, Variable>(name, new Variable(alias, state.lexicalScopeLevel)
+                {
+                    Position = start,
+                    Length = name.Length
+                }));
 
                 if (Parser.Validate(code, ",", ref index))
                     Tools.SkipSpaces(code, ref index);
@@ -175,7 +202,7 @@ namespace NiL.JS.Statements
                         }
                     }
 
-                    context._variables[_map[i].Value] = value;
+                    context._variables[_map[i].Value._variableName] = value;
                 }
             }
             else
@@ -214,13 +241,13 @@ namespace NiL.JS.Statements
             {
                 result.Append("{ ");
 
-                for (;;)
+                for (; ; )
                 {
                     var item = _map[i];
 
                     result.Append(item.Key);
 
-                    if (item.Key != item.Value)
+                    if (item.Key != item.Value._variableName)
                     {
                         result
                             .Append(" as ")
@@ -238,12 +265,21 @@ namespace NiL.JS.Statements
                 result.Append(" }");
             }
 
-            result
-                .Append(" from \"")
+            result.Append(" from \"")
                 .Append(_moduleName)
                 .Append("\"");
 
             return result.ToString();
+        }
+
+        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+        {
+            for (var i = 0; i < _map.Count; i++)
+            {
+                var v = _map[i].Value;
+                Parser.Build(ref v, 1, variables, codeContext, message, stats, opts);
+            }
+            return false;
         }
     }
 }

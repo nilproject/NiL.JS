@@ -121,10 +121,10 @@ namespace NiL.JS.Core
 
         internal VariableDescriptor(string name, int definitionScopeLevel)
         {
-            this.isDefined = true;
+            isDefined = true;
             this.definitionScopeLevel = definitionScopeLevel;
             this.name = name;
-            this.references = new List<VariableReference>();
+            references = new List<VariableReference>();
         }
 
         internal VariableDescriptor(VariableReference proto, int definitionDepth)
@@ -132,9 +132,9 @@ namespace NiL.JS.Core
             if (proto._descriptor != null)
                 throw new ArgumentException("proto");
 
-            this.definitionScopeLevel = definitionDepth;
-            this.name = proto.Name;
-            this.references = new List<VariableReference>() { proto };
+            definitionScopeLevel = definitionDepth;
+            name = proto.Name;
+            references = new List<VariableReference>() { proto };
             proto._descriptor = this;
         }
 
