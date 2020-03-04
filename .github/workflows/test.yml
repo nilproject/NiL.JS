@@ -63,7 +63,8 @@ jobs:
 
     - name: Build
       run: |
-        dotnet build --no-restore
+        dotnet build --no-restore ./IntegrationTests
+        dotnet build --no-restore ./FunctionalTests
 
     - name: IntegrationTests
       continue-on-error: true
