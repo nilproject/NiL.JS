@@ -4,6 +4,7 @@ on: [push]
 
 env:
   CI: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 
 jobs:
   test:
@@ -46,7 +47,10 @@ jobs:
         rsync -a ${DOTNET_ROOT/3.1.102/2.1.202}/* $DOTNET_ROOT/
         rsync -a ${DOTNET_ROOT/3.1.102/2.1.804}/* $DOTNET_ROOT/
 
-    - run: dotnet --info
+    - run: |
+        dotnet --info
+        touch "$HOME"/.dotnet/"$(dotnet --version)".dotnetFirstUseSentinel
+      shell: bash
 
     - name: Restore
       run: |
