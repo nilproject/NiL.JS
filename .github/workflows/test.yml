@@ -49,6 +49,7 @@ jobs:
 
     - run: |
         dotnet --info
+        mkdir -p "$HOME"/.dotnet
         touch "$HOME"/.dotnet/"$(dotnet --version)".dotnetFirstUseSentinel
       shell: bash
 
