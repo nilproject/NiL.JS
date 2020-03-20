@@ -95,7 +95,9 @@ namespace NiL.JS.Statements
             Tools.SkipSpaces(state.Code, ref position);
 
             var body = new List<CodeNode>();
+#if DEBUG
             HashSet<string> directives = null;
+#endif
 
             var oldFunctionScopeLevel = state.FunctionScopeLevel;
             state.LexicalScopeLevel++;
