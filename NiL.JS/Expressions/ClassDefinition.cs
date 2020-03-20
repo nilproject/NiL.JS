@@ -133,30 +133,31 @@ namespace NiL.JS.Expressions
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
-            string code = state.Code;
             int i = index;
-            if (!Parser.Validate(code, "class", ref i))
+
+            if (!Parser.Validate(state.Code, "class", ref i))
                 return null;
-            while (Tools.IsWhiteSpace(code[i]))
-                i++;
+
+            Tools.SkipSpaces(state.Code, ref i);
+
             string name = null;
             Expression baseType = null;
-            if (!Parser.Validate(code, "extends ", i))
+            if (!Parser.Validate(state.Code, "extends ", i))
             {
                 var n = i;
-                if (Parser.ValidateName(code, ref i, true))
-                    name = code.Substring(n, i - n);
+                if (Parser.ValidateName(state.Code, ref i, true))
+                    name = state.Code.Substring(n, i - n);
 
-                while (Tools.IsWhiteSpace(code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
             }
-            if (Parser.Validate(code, "extends ", ref i))
+            if (Parser.Validate(state.Code, "extends ", ref i))
             {
                 var n = i;
-                if (!Parser.ValidateName(code, ref i, true) && !Parser.Validate(code, "null", ref i))
+                if (!Parser.ValidateName(state.Code, ref i, true) && !Parser.Validate(state.Code, "null", ref i))
                     ExceptionHelper.ThrowSyntaxError("Invalid base class name", state.Code, i);
 
-                var baseClassName = code.Substring(n, i - n);
+                var baseClassName = state.Code.Substring(n, i - n);
                 if (baseClassName == "null")
                     baseType = new Constant(JSValue.@null);
                 else
@@ -165,23 +166,24 @@ namespace NiL.JS.Expressions
                 baseType.Position = n;
                 baseType.Length = i - n;
 
-                while (Tools.IsWhiteSpace(code[i]))
+                while (Tools.IsWhiteSpace(state.Code[i]))
                     i++;
             }
-            if (code[i] != '{')
-                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, code, i);
+
+            if (state.Code[i] != '{')
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
 
             FunctionDefinition ctor = null;
             ClassDefinition result = null;
-            using (state.WithCodeContext(state.CodeContext | CodeContext.Strict))
-            {
-                var flds = new Dictionary<string, MemberDescriptor>();
-                var computedProperties = new List<MemberDescriptor>();
-                state.CodeContext |= CodeContext.InExpression;
 
-                while (code[i] != '}')
+            var flds = new Dictionary<string, MemberDescriptor>();
+            var computedProperties = new List<MemberDescriptor>();
+
+            while (state.Code[i] != '}')
+            {
+                using (state.WithCodeContext(state.CodeContext | CodeContext.Strict | CodeContext.InExpression))
                 {
-                    do i++; while (Tools.IsWhiteSpace(code[i]) || code[i] == ';');
+                    do i++; while (Tools.IsWhiteSpace(state.Code[i]) || state.Code[i] == ';');
 
                     int s = i;
                     if (state.Code[i] == '}')
@@ -309,7 +311,7 @@ namespace NiL.JS.Expressions
                         {
                             do
                                 i++;
-                            while (Tools.IsWhiteSpace(code[i]));
+                            while (Tools.IsWhiteSpace(state.Code[i]));
                         }
 
                         if (Parser.ValidateName(state.Code, ref i, false, true, state.Strict))
@@ -351,8 +353,11 @@ namespace NiL.JS.Expressions
                         state.CodeContext |= CodeContext.InClassDefinition;
                         state.CodeContext &= ~CodeContext.InGenerator;
 
+                        if (async)
+                            state.CodeContext |= CodeContext.InAsync;
+
                         i = s;
-                        var method = FunctionDefinition.Parse(state, ref i, FunctionKind.Method) as FunctionDefinition;
+                        var method = FunctionDefinition.Parse(state, ref i, async ? FunctionKind.AsyncMethod : FunctionKind.Method) as FunctionDefinition;
                         if (method == null)
                             ExceptionHelper.ThrowSyntaxError("Unable to parse method", state.Code, i);
 
@@ -365,8 +370,6 @@ namespace NiL.JS.Expressions
                             flds[fieldName] = new MemberDescriptor(new Constant(method._name), method, @static);
                         }
                     }
-
-                    code = state.Code;
                 }
 
                 if (ctor == null)

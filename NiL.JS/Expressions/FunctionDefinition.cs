@@ -216,12 +216,13 @@ namespace NiL.JS.Expressions
 
                     break;
                 }
+                case FunctionKind.AsyncMethod:
+                {
+                    break;
+                }
                 case FunctionKind.MethodGenerator:
                 case FunctionKind.Method:
                 {
-                    if (Parser.Validate(code, "async", ref position))
-                        kind = FunctionKind.AsyncMethod;
-
                     if (code[position] == '*')
                     {
                         kind = FunctionKind.MethodGenerator;
@@ -290,7 +291,7 @@ namespace NiL.JS.Expressions
                 else if (kind == FunctionKind.Getter || kind == FunctionKind.Setter)
                     ExceptionHelper.ThrowSyntaxError("Getter and Setter must have name", code, index);
                 else if (kind == FunctionKind.Method || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AsyncMethod)
-                    ExceptionHelper.ThrowSyntaxError("Method must has name", code, index);
+                    ExceptionHelper.ThrowSyntaxError("Method must have name", code, index);
 
                 position++;
             }
@@ -417,16 +418,17 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                var oldCodeContext = state.CodeContext;
-                state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional | CodeContext.InEval);
+                using var _ = state.WithNewLabelsScope();
+                using var __ = state.WithCodeContext();
+
                 if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
                     state.CodeContext |= CodeContext.InGenerator;
                 else if (kind == FunctionKind.AsyncFunction || kind == FunctionKind.AsyncMethod || kind == FunctionKind.AsyncAnonymousFunction || kind == FunctionKind.AsyncArrow)
                     state.CodeContext |= CodeContext.InAsync;
-                state.CodeContext |= CodeContext.InFunction;
 
-                using var _ = state.WithNewLabelsScope();
-                using var __ = state.WithCodeContext(state.CodeContext | CodeContext.AllowDirectives);
+                state.CodeContext |= CodeContext.InFunction;
+                state.CodeContext |= CodeContext.AllowDirectives;
+                state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional | CodeContext.InEval);
 
                 state.AllowReturn++;
                 try
@@ -460,7 +462,6 @@ namespace NiL.JS.Expressions
                 }
                 finally
                 {
-                    state.CodeContext = oldCodeContext;
                     state.AllowBreak.Pop();
                     state.AllowContinue.Pop();
                     state.AllowReturn--;
@@ -663,8 +664,7 @@ namespace NiL.JS.Expressions
                 else if (_body._lines.Length == 1)
                 {
                     var ret = _body._lines[0] as Return;
-                    if (ret != null
-                    && (ret.Value == null || ret.Value.ContextIndependent))
+                    if (ret != null && (ret.Value == null || ret.Value.ContextIndependent))
                     {
                         return new ConstantFunction(ret.Value?.Evaluate(null) ?? JSValue.undefined, this);
                     }
@@ -900,6 +900,10 @@ namespace NiL.JS.Expressions
                     break;
                 }
                 case FunctionKind.AsyncMethod:
+                {
+                    code.Append("async ");
+                    break;
+                }
                 case FunctionKind.AsyncFunction:
                 {
                     code.Append("async ");

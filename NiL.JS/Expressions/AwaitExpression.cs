@@ -8,6 +8,8 @@ namespace NiL.JS.Expressions
 {
     public sealed class AwaitExpression : Expression
     {
+        protected internal override bool ContextIndependent => false;
+
         protected internal override bool NeedDecompose
         {
             get
