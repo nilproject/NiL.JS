@@ -118,11 +118,13 @@ namespace NiL.JS.Statements
                     if (allowDirectives)
                     {
                         int start = position;
+                        var hasDirectives = false;
                         do
                         {
                             var s = position;
                             if (position >= state.Code.Length)
                                 break;
+
                             if (Parser.ValidateValue(state.Code, ref position))
                             {
                                 while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]))
@@ -134,6 +136,7 @@ namespace NiL.JS.Statements
                                     position = s;
                                     break;
                                 }
+
                                 var t = s;
                                 if (Parser.ValidateString(state.Code, ref t, true))
                                 {
@@ -142,6 +145,8 @@ namespace NiL.JS.Statements
                                     {
                                         state.CodeContext |= CodeContext.Strict;
                                     }
+
+                                    hasDirectives = true;
 #if DEBUG
                                     if (directives == null)
                                         directives = new HashSet<string>();
@@ -157,10 +162,8 @@ namespace NiL.JS.Statements
                             }
                             else if (state.Code[position] == ';')
                             {
-#if DEBUG
-                                if (directives == null)
+                                if (!hasDirectives)
                                     break;
-#endif
 
                                 do position++; while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]));
                             }
