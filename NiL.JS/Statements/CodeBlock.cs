@@ -214,24 +214,24 @@ namespace NiL.JS.Statements
                     state.FunctionScopeLevel = oldFunctionScopeLevel;
                     state.LexicalScopeLevel--;
                 }
-            }
 
-            if (!sroot)
-                position++;
+                if (!sroot)
+                    position++;
 
-            int startPos = index;
-            index = position;
-            return new CodeBlock(body.ToArray())
-            {
-                _strict = state.Strict,
-                _variables = variables ?? emptyVariables,
-                Position = startPos,
-                code = state.SourceCode,
-                Length = position - startPos,
+                int startPos = index;
+                index = position;
+                return new CodeBlock(body.ToArray())
+                {
+                    _strict = state.Strict,
+                    _variables = variables ?? emptyVariables,
+                    Position = startPos,
+                    code = state.SourceCode,
+                    Length = position - startPos,
 #if DEBUG
-                directives = directives
+                    directives = directives
 #endif
-            };
+                };
+            }
         }
 
         internal static VariableDescriptor[] extractVariables(ParseInfo state, int oldVariablesCount)
