@@ -95,7 +95,6 @@ namespace NiL.JS.Statements
             Tools.SkipSpaces(state.Code, ref position);
 
             var body = new List<CodeNode>();
-            var strict = false;
             HashSet<string> directives = null;
 
             var oldFunctionScopeLevel = state.FunctionScopeLevel;
@@ -108,7 +107,8 @@ namespace NiL.JS.Statements
             state.LabelsCount = 0;
 
             var allowDirectives = state.AllowDirectives;
-            using var _ = state.WithCodeContext(state.CodeContext & ~CodeContext.AllowDirectives);
+            using var _ = state.WithCodeContext();
+            state.CodeContext &= ~CodeContext.AllowDirectives;
 
             try
             {
@@ -138,7 +138,6 @@ namespace NiL.JS.Statements
                                 if (str == "use strict")
                                 {
                                     state.CodeContext |= CodeContext.Strict;
-                                    strict = true;
                                 }
 #if DEBUG
                                 if (directives == null)
@@ -220,7 +219,7 @@ namespace NiL.JS.Statements
             index = position;
             return new CodeBlock(body.ToArray())
             {
-                _strict = strict,
+                _strict = state.Strict,
                 _variables = variables ?? emptyVariables,
                 Position = startPos,
                 code = state.SourceCode,

@@ -10,13 +10,7 @@ namespace NiL.JS.Expressions
     {
         protected internal override bool ContextIndependent => false;
 
-        protected internal override bool NeedDecompose
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected internal override bool NeedDecompose => true;
 
         public AwaitExpression(Expression source)
             : base(source, null, false)

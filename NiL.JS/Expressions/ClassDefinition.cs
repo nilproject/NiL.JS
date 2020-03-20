@@ -181,7 +181,7 @@ namespace NiL.JS.Expressions
 
             while (state.Code[i] != '}')
             {
-                using (state.WithCodeContext(state.CodeContext | CodeContext.Strict | CodeContext.InExpression))
+                using (state.WithCodeContext(CodeContext.Strict | CodeContext.InExpression))
                 {
                     do i++; while (Tools.IsWhiteSpace(state.Code[i]) || state.Code[i] == ';');
 
@@ -371,23 +371,23 @@ namespace NiL.JS.Expressions
                         }
                     }
                 }
-
-                if (ctor == null)
-                {
-                    string ctorCode;
-                    int ctorIndex = 0;
-                    if (baseType != null && !(baseType is Constant))
-                        ctorCode = "constructor(...args) { super(...args); }";
-                    else
-                        ctorCode = "constructor(...args) { }";
-
-                    var nestedParseInfo = state.AlternateCode(ctorCode);
-                    using var _ = nestedParseInfo.WithCodeContext(state.CodeContext | CodeContext.InClassConstructor | CodeContext.InClassDefinition);
-                    ctor = (FunctionDefinition)FunctionDefinition.Parse(nestedParseInfo, ref ctorIndex, FunctionKind.Method);
-                }
-
-                result = new ClassDefinition(name, baseType, new List<MemberDescriptor>(flds.Values).ToArray(), ctor as FunctionDefinition, computedProperties.ToArray());
             }
+
+            if (ctor == null)
+            {
+                string ctorCode;
+                int ctorIndex = 0;
+                if (baseType != null && !(baseType is Constant))
+                    ctorCode = "constructor(...args) { super(...args); }";
+                else
+                    ctorCode = "constructor(...args) { }";
+
+                var nestedParseInfo = state.AlternateCode(ctorCode);
+                using var _ = nestedParseInfo.WithCodeContext(CodeContext.InClassConstructor | CodeContext.InClassDefinition);
+                ctor = (FunctionDefinition)FunctionDefinition.Parse(nestedParseInfo, ref ctorIndex, FunctionKind.Method);
+            }
+
+            result = new ClassDefinition(name, baseType, new List<MemberDescriptor>(flds.Values).ToArray(), ctor as FunctionDefinition, computedProperties.ToArray());
 
             if ((state.CodeContext & CodeContext.InExpression) == 0)
             {

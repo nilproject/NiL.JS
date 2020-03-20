@@ -40,8 +40,7 @@ namespace NiL.JS.Statements
             VariableDescriptor[] vars = null;
             var oldVariablesCount = state.Variables.Count;
             state.LexicalScopeLevel++;
-            var oldCodeContext = state.CodeContext;
-            state.CodeContext |= CodeContext.InWith;
+            using var _ = state.WithCodeContext(CodeContext.InWith);
             try
             {
                 body = Parser.Parse(state, ref i, 0);
@@ -56,7 +55,6 @@ namespace NiL.JS.Statements
             finally
             {
                 state.LexicalScopeLevel--;
-                state.CodeContext = oldCodeContext;
             }
 
             var pos = index;
