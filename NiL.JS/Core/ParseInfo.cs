@@ -109,7 +109,7 @@ namespace NiL.JS.Core
             }
         }
 
-        public IDisposable WithCodeContext(CodeContext codeContext = default)
+        public IDisposable WithCodeContext(CodeContext codeContext = default(CodeContext))
         {
             var result = new ContextReseter(this, CodeContext);
             CodeContext |= codeContext;
