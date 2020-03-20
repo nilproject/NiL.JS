@@ -40,21 +40,23 @@ namespace NiL.JS.Statements
             VariableDescriptor[] vars = null;
             var oldVariablesCount = state.Variables.Count;
             state.LexicalScopeLevel++;
-            using var _ = state.WithCodeContext(CodeContext.InWith);
-            try
+            using (state.WithCodeContext(CodeContext.InWith))
             {
-                body = Parser.Parse(state, ref i, 0);
-                vars = CodeBlock.extractVariables(state, oldVariablesCount);
-                body = new CodeBlock(new[] { body })
+                try
                 {
-                    _variables = vars,
-                    Position = body.Position,
-                    Length = body.Length
-                };
-            }
-            finally
-            {
-                state.LexicalScopeLevel--;
+                    body = Parser.Parse(state, ref i, 0);
+                    vars = CodeBlock.extractVariables(state, oldVariablesCount);
+                    body = new CodeBlock(new[] { body })
+                    {
+                        _variables = vars,
+                        Position = body.Position,
+                        Length = body.Length
+                    };
+                }
+                finally
+                {
+                    state.LexicalScopeLevel--;
+                }
             }
 
             var pos = index;

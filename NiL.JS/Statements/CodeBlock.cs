@@ -107,109 +107,111 @@ namespace NiL.JS.Statements
             state.LabelsCount = 0;
 
             var allowDirectives = state.AllowDirectives;
-            using var _ = state.WithCodeContext();
-            state.CodeContext &= ~CodeContext.AllowDirectives;
-
-            try
+            using (state.WithCodeContext())
             {
-                if (allowDirectives)
+                state.CodeContext &= ~CodeContext.AllowDirectives;
+
+                try
                 {
-                    int start = position;
-                    do
+                    if (allowDirectives)
                     {
-                        var s = position;
-                        if (position >= state.Code.Length)
-                            break;
-                        if (Parser.ValidateValue(state.Code, ref position))
+                        int start = position;
+                        do
                         {
-                            while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]))
-                                position++;
-                            if (position < state.Code.Length && (Parser.IsOperator(state.Code[position])
-                                || Parser.Validate(state.Code, "instanceof", position)
-                                || Parser.Validate(state.Code, "in", position)))
-                            {
-                                position = s;
+                            var s = position;
+                            if (position >= state.Code.Length)
                                 break;
-                            }
-                            var t = s;
-                            if (Parser.ValidateString(state.Code, ref t, true))
+                            if (Parser.ValidateValue(state.Code, ref position))
                             {
-                                var str = state.Code.Substring(s + 1, t - s - 2);
-                                if (str == "use strict")
+                                while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]))
+                                    position++;
+                                if (position < state.Code.Length && (Parser.IsOperator(state.Code[position])
+                                    || Parser.Validate(state.Code, "instanceof", position)
+                                    || Parser.Validate(state.Code, "in", position)))
                                 {
-                                    state.CodeContext |= CodeContext.Strict;
+                                    position = s;
+                                    break;
                                 }
+                                var t = s;
+                                if (Parser.ValidateString(state.Code, ref t, true))
+                                {
+                                    var str = state.Code.Substring(s + 1, t - s - 2);
+                                    if (str == "use strict")
+                                    {
+                                        state.CodeContext |= CodeContext.Strict;
+                                    }
+#if DEBUG
+                                    if (directives == null)
+                                        directives = new HashSet<string>();
+
+                                    directives.Add(str);
+#endif
+                                }
+                                else
+                                {
+                                    position = s;
+                                    break;
+                                }
+                            }
+                            else if (state.Code[position] == ';')
+                            {
 #if DEBUG
                                 if (directives == null)
-                                    directives = new HashSet<string>();
-
-                                directives.Add(str);
+                                    break;
 #endif
+
+                                do position++; while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]));
                             }
                             else
-                            {
-                                position = s;
                                 break;
-                            }
                         }
-                        else if (state.Code[position] == ';')
-                        {
-#if DEBUG
-                            if (directives == null)
-                                break;
-#endif
-
-                            do position++; while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]));
-                        }
-                        else
-                            break;
+                        while (true);
+                        position = start;
                     }
-                    while (true);
-                    position = start;
-                }
 
-                for (var j = body.Count; j-- > 0;)
-                    (body[j] as Constant).value._oValue = Tools.Unescape((body[j] as Constant).value._oValue.ToString(), state.Strict);
+                    for (var j = body.Count; j-- > 0;)
+                        (body[j] as Constant).value._oValue = Tools.Unescape((body[j] as Constant).value._oValue.ToString(), state.Strict);
 
-                bool expectSemicolon = false;
-                while ((sroot && position < state.Code.Length) || (!sroot && state.Code[position] != '}'))
-                {
-                    var t = Parser.Parse(state, ref position, 0);
-                    if (t == null)
+                    bool expectSemicolon = false;
+                    while ((sroot && position < state.Code.Length) || (!sroot && state.Code[position] != '}'))
                     {
-                        if (position < state.Code.Length)
+                        var t = Parser.Parse(state, ref position, 0);
+                        if (t == null)
                         {
-                            if (sroot && state.Code[position] == '}')
-                                ExceptionHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
-
-                            if ((state.Code[position] == ';' || state.Code[position] == ','))
+                            if (position < state.Code.Length)
                             {
-                                if (state.Message != null && !expectSemicolon)
-                                    state.Message(MessageLevel.Warning, position, 1, "Unnecessary semicolon.");
+                                if (sroot && state.Code[position] == '}')
+                                    ExceptionHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
 
-                                position++;
+                                if ((state.Code[position] == ';' || state.Code[position] == ','))
+                                {
+                                    if (state.Message != null && !expectSemicolon)
+                                        state.Message(MessageLevel.Warning, position, 1, "Unnecessary semicolon.");
+
+                                    position++;
+                                }
+
+                                expectSemicolon = false;
                             }
 
-                            expectSemicolon = false;
+                            continue;
                         }
 
-                        continue;
+                        expectSemicolon = !(t is EntityDefinition);
+
+                        body.Add(t);
+                    }
+                }
+                finally
+                {
+                    if (oldVariablesCount != state.Variables.Count)
+                    {
+                        variables = extractVariables(state, oldVariablesCount);
                     }
 
-                    expectSemicolon = !(t is EntityDefinition);
-
-                    body.Add(t);
+                    state.FunctionScopeLevel = oldFunctionScopeLevel;
+                    state.LexicalScopeLevel--;
                 }
-            }
-            finally
-            {
-                if (oldVariablesCount != state.Variables.Count)
-                {
-                    variables = extractVariables(state, oldVariablesCount);
-                }
-
-                state.FunctionScopeLevel = oldFunctionScopeLevel;
-                state.LexicalScopeLevel--;
             }
 
             if (!sroot)

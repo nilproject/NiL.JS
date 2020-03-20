@@ -383,8 +383,8 @@ namespace NiL.JS.Expressions
                     ctorCode = "constructor(...args) { }";
 
                 var nestedParseInfo = state.AlternateCode(ctorCode);
-                using var _ = nestedParseInfo.WithCodeContext(CodeContext.InClassConstructor | CodeContext.InClassDefinition);
-                ctor = (FunctionDefinition)FunctionDefinition.Parse(nestedParseInfo, ref ctorIndex, FunctionKind.Method);
+                using (nestedParseInfo.WithCodeContext(CodeContext.InClassConstructor | CodeContext.InClassDefinition))
+                    ctor = (FunctionDefinition)FunctionDefinition.Parse(nestedParseInfo, ref ctorIndex, FunctionKind.Method);
             }
 
             result = new ClassDefinition(name, baseType, new List<MemberDescriptor>(flds.Values).ToArray(), ctor as FunctionDefinition, computedProperties.ToArray());

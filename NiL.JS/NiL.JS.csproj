@@ -28,7 +28,6 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
-    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(VersionPrefix)' == ''">
