@@ -58,7 +58,7 @@ namespace NiL.JS.Statements
             else
                 return null;
 
-            var level = mode <= VariableKind.FunctionScope ? state.functionScopeLevel : state.lexicalScopeLevel;
+            var level = mode <= VariableKind.FunctionScope ? state.FunctionScopeLevel : state.LexicalScopeLevel;
             var initializers = new List<Expression>();
             var names = new List<string>();
             int s = position;
@@ -66,10 +66,10 @@ namespace NiL.JS.Statements
             {
                 Tools.SkipSpaces(state.Code, ref position);
 
-                if (state.Code[position] != '[' && state.Code[position] != '{' && !Parser.ValidateName(state.Code, position, state.strict))
+                if (state.Code[position] != '[' && state.Code[position] != '{' && !Parser.ValidateName(state.Code, position, state.Strict))
                 {
-                    if (Parser.ValidateName(state.Code, ref position, false, true, state.strict))
-                        ExceptionHelper.ThrowSyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.strict) + "\" is a reserved word, but used as a variable. " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
+                    if (Parser.ValidateName(state.Code, ref position, false, true, state.Strict))
+                        ExceptionHelper.ThrowSyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.Strict) + "\" is a reserved word, but used as a variable. " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
                     ExceptionHelper.ThrowSyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
                 }
 
@@ -77,7 +77,7 @@ namespace NiL.JS.Statements
                 if (expression is VariableReference)
                 {
                     var name = expression.ToString();
-                    if (state.strict)
+                    if (state.Strict)
                     {
                         if (name == "arguments" || name == "eval")
                             ExceptionHelper.ThrowSyntaxError("Varible name cannot be \"arguments\" or \"eval\" in strict mode", state.Code, s, position - s);

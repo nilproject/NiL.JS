@@ -273,12 +273,12 @@ namespace NiL.JS.Expressions
                 if (code[position] != '(')
                 {
                     nameStartPos = position;
-                    if (Parser.ValidateName(code, ref position, false, true, state.strict))
-                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.strict);
+                    if (Parser.ValidateName(code, ref position, false, true, state.Strict))
+                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.Strict);
                     else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateString(code, ref position, false))
-                        name = Tools.Unescape(code.Substring(nameStartPos + 1, position - nameStartPos - 2), state.strict);
+                        name = Tools.Unescape(code.Substring(nameStartPos + 1, position - nameStartPos - 2), state.Strict);
                     else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateNumber(code, ref position))
-                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.strict);
+                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.Strict);
                     else
                         ExceptionHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, position - nameStartPos);
 
@@ -317,7 +317,7 @@ namespace NiL.JS.Expressions
 
                 Expression destructor = null;
                 int n = position;
-                if (!Parser.ValidateName(code, ref position, state.strict))
+                if (!Parser.ValidateName(code, ref position, state.Strict))
                 {
                     if (code[position] == '{')
                         destructor = (Expression)ObjectDefinition.Parse(state, ref position);
@@ -330,8 +330,8 @@ namespace NiL.JS.Expressions
                     containsDestructuringPrms = true;
                 }
 
-                var pname = Tools.Unescape(code.Substring(n, position - n), state.strict);
-                var reference = new ParameterReference(pname, rest, state.lexicalScopeLevel + 1)
+                var pname = Tools.Unescape(code.Substring(n, position - n), state.Strict);
+                var reference = new ParameterReference(pname, rest, state.LexicalScopeLevel + 1)
                 {
                     Position = n,
                     Length = position - n
@@ -388,8 +388,8 @@ namespace NiL.JS.Expressions
 
             if (code[position] != '{')
             {
-                var oldFunctionScopeLevel = state.functionScopeLevel;
-                state.functionScopeLevel = ++state.lexicalScopeLevel;
+                var oldFunctionScopeLevel = state.FunctionScopeLevel;
+                state.FunctionScopeLevel = ++state.LexicalScopeLevel;
 
                 try
                 {
@@ -411,8 +411,8 @@ namespace NiL.JS.Expressions
                 }
                 finally
                 {
-                    state.functionScopeLevel = oldFunctionScopeLevel;
-                    state.lexicalScopeLevel--;
+                    state.FunctionScopeLevel = oldFunctionScopeLevel;
+                    state.LexicalScopeLevel--;
                 }
             }
             else
@@ -425,14 +425,14 @@ namespace NiL.JS.Expressions
                     state.CodeContext |= CodeContext.InAsync;
                 state.CodeContext |= CodeContext.InFunction;
 
-                var labels = state.Labels;
-                state.Labels = new List<string>();
+                using var _ = state.WithNewLabelsScope();
+                using var __ = state.WithCodeContext(state.CodeContext | CodeContext.AllowDirectives);
+
                 state.AllowReturn++;
                 try
                 {
                     state.AllowBreak.Push(false);
                     state.AllowContinue.Push(false);
-                    state.AllowDirectives = true;
                     body = CodeBlock.Parse(state, ref position) as CodeBlock;
                     if (containsDestructuringPrms)
                     {
@@ -445,7 +445,7 @@ namespace NiL.JS.Expressions
                                 var targets = parameters[i].Destructor.GetTargetVariables();
                                 for (var j = 0; j < targets.Count; j++)
                                 {
-                                    destructuringTargets.Add(new VariableDescriptor(targets[j].Name, state.functionScopeLevel));
+                                    destructuringTargets.Add(new VariableDescriptor(targets[j].Name, state.FunctionScopeLevel));
                                 }
 
                                 assignments.Add(new Assignment(parameters[i].Destructor, parameters[i].references[0]));
@@ -463,8 +463,6 @@ namespace NiL.JS.Expressions
                     state.CodeContext = oldCodeContext;
                     state.AllowBreak.Pop();
                     state.AllowContinue.Pop();
-                    state.AllowDirectives = false;
-                    state.Labels = labels;
                     state.AllowReturn--;
                 }
 
@@ -503,7 +501,7 @@ namespace NiL.JS.Expressions
 
             if (!string.IsNullOrEmpty(name))
             {
-                func.Reference.ScopeLevel = state.lexicalScopeLevel;
+                func.Reference.ScopeLevel = state.LexicalScopeLevel;
                 func.Reference.Position = nameStartPos;
                 func.Reference.Length = name.Length;
 

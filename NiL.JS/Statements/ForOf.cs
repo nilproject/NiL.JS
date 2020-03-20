@@ -63,7 +63,7 @@ namespace NiL.JS.Statements
 
             VariableDescriptor[] vars = null;
             var oldVariablesCount = state.Variables.Count;
-            state.lexicalScopeLevel++;
+            state.LexicalScopeLevel++;
             try
             {
                 var vStart = i;
@@ -78,16 +78,16 @@ namespace NiL.JS.Statements
                     Tools.SkipSpaces(state.Code, ref i);
 
                     variableNameStart = i;
-                    if (!Parser.ValidateName(state.Code, ref i, state.strict))
+                    if (!Parser.ValidateName(state.Code, ref i, state.Strict))
                         return null;
 
-                    variableName = Tools.Unescape(state.Code.Substring(variableNameStart, i - variableNameStart), state.strict);                    
+                    variableName = Tools.Unescape(state.Code.Substring(variableNameStart, i - variableNameStart), state.Strict);                    
 
-                    variableDef = new Variable(variableName, state.lexicalScopeLevel)
+                    variableDef = new Variable(variableName, state.LexicalScopeLevel)
                     {
                         Position = variableNameStart,
                         Length = i - variableNameStart,
-                        ScopeLevel = state.lexicalScopeLevel
+                        ScopeLevel = state.LexicalScopeLevel
                     };
 
                     Tools.SkipSpaces(state.Code, ref i);
@@ -126,7 +126,7 @@ namespace NiL.JS.Statements
                     return null;
                 }
 
-                if (state.strict)
+                if (state.Strict)
                 {
                     if (variableName == "arguments" || variableName == "eval")
                         ExceptionHelper.ThrowSyntaxError(
@@ -167,7 +167,7 @@ namespace NiL.JS.Statements
             }
             finally
             {
-                state.lexicalScopeLevel--;
+                state.LexicalScopeLevel--;
             }
 
             return new CodeBlock(new[] { result })

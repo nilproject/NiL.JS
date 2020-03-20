@@ -339,7 +339,7 @@ namespace NiL.JS.BaseLibrary
             var func = FunctionDefinition.Parse(
                 new ParseInfo(Parser.RemoveComments(code, 0), code, null)
                 {
-                    CodeContext = CodeContext.InExpression
+                    CodeContext = CodeContext.InExpression | CodeContext.AllowDirectives
                 },
                 ref index,
                 FunctionKind.Function);

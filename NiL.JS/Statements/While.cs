@@ -45,13 +45,13 @@ namespace NiL.JS.Statements
                 ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
             state.AllowBreak.Push(true);
             state.AllowContinue.Push(true);
-            int ccs = state.continiesCount;
-            int cbs = state.breaksCount;
+            int ccs = state.ContiniesCount;
+            int cbs = state.BreaksCount;
             var body = Parser.Parse(state, ref i, 0);
             if (body is FunctionDefinition)
             {
-                if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, body.Position, body.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
+                if (state.Message != null)
+                    state.Message(MessageLevel.CriticalWarning, body.Position, body.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
                 body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции,
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
             }
@@ -61,7 +61,7 @@ namespace NiL.JS.Statements
             index = i;
             return new While()
             {
-                allowRemove = ccs == state.continiesCount && cbs == state.breaksCount,
+                allowRemove = ccs == state.ContiniesCount && cbs == state.BreaksCount,
                 body = body,
                 condition = condition,
                 labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),

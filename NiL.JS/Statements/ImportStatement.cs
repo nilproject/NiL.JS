@@ -33,7 +33,7 @@ namespace NiL.JS.Statements
                     var defaultAlias = state.Code.Substring(start, index - start);
                     result._map.Add(new KeyValuePair<string, Variable>(
                         string.Empty,
-                        new Variable(defaultAlias, state.lexicalScopeLevel)
+                        new Variable(defaultAlias, state.LexicalScopeLevel)
                         {
                             Position = start,
                             Length = defaultAlias.Length
@@ -60,7 +60,7 @@ namespace NiL.JS.Statements
                         if (alias == null)
                             ExceptionHelper.ThrowSyntaxError("Expected identifier", state.Code, index);
 
-                        var aliasVariable = new Variable(alias, state.lexicalScopeLevel)
+                        var aliasVariable = new Variable(alias, state.LexicalScopeLevel)
                         {
                             Position = index - alias.Length - 1,
                             Length = alias.Length
@@ -81,7 +81,7 @@ namespace NiL.JS.Statements
                 {
                     state.Variables.Add(new VariableDescriptor(
                         result._map[i].Value,
-                        state.lexicalScopeLevel)
+                        state.LexicalScopeLevel)
                     {
                         lexicalScope = true,
                         isReadOnly = true
@@ -130,7 +130,7 @@ namespace NiL.JS.Statements
                         ExceptionHelper.ThrowSyntaxError("Duplicate import", code, index);
                 }
 
-                import._map.Add(new KeyValuePair<string, Variable>(name, new Variable(alias, state.lexicalScopeLevel)
+                import._map.Add(new KeyValuePair<string, Variable>(name, new Variable(alias, state.LexicalScopeLevel)
                 {
                     Position = start,
                     Length = name.Length

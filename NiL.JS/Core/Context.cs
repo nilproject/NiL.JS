@@ -541,12 +541,8 @@ namespace NiL.JS.Core
 
             int index = 0;
             string c = Parser.RemoveComments(code, 0);
-            var ps = new ParseInfo(c, code, null)
-            {
-                strict = _strict,
-                AllowDirectives = true,
-                CodeContext = CodeContext.InEval
-            };
+            var ps = new ParseInfo(c, code, null);
+            ps.CodeContext |= (_strict ? CodeContext.Strict : default) | CodeContext.InEval;
 
             var body = CodeBlock.Parse(ps, ref index) as CodeBlock;
             if (index < c.Length)

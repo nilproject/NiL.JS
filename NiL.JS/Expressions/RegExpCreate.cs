@@ -58,8 +58,8 @@ namespace NiL.JS.Expressions
             }
             catch (Exception e)
             {
-                if (state.message != null)
-                    state.message(MessageLevel.Error, i - value.Length, value.Length, string.Format(Strings.InvalidRegExp, value));
+                if (state.Message != null)
+                    state.Message(MessageLevel.Error, i - value.Length, value.Length, string.Format(Strings.InvalidRegExp, value));
                 return new ExpressionWrapper(new Throw(e));
             }
         }

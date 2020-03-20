@@ -81,7 +81,7 @@ namespace NiL.JS.Statements
             var labelsCount = state.LabelsCount;
             var oldVariablesCount = state.Variables.Count;
             state.LabelsCount = 0;
-            state.lexicalScopeLevel++;
+            state.LexicalScopeLevel++;
             try
             {
                 init = VariableDefinition.Parse(state, ref i, true);
@@ -124,8 +124,8 @@ namespace NiL.JS.Statements
                             ExceptionHelper.ThrowSyntaxError("Block scope variables can not be declared in for-loop directly", state.Code, body.Position);
                         }
 
-                        if (state.message != null)
-                            state.message(MessageLevel.Warning, body.Position, body.Length, "Do not declare variables in for-loop directly");
+                        if (state.Message != null)
+                            state.Message(MessageLevel.Warning, body.Position, body.Length, "Do not declare variables in for-loop directly");
                     }
                 }
                 finally
@@ -153,7 +153,7 @@ namespace NiL.JS.Statements
             }
             finally
             {
-                state.lexicalScopeLevel--;
+                state.LexicalScopeLevel--;
             }
 
             return result;

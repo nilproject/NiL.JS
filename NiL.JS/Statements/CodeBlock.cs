@@ -95,19 +95,21 @@ namespace NiL.JS.Statements
             Tools.SkipSpaces(state.Code, ref position);
 
             var body = new List<CodeNode>();
-            bool strictSwitch = false;
-            bool allowDirectives = state.AllowDirectives;
+            var strict = false;
             HashSet<string> directives = null;
-            state.AllowDirectives = false;
 
-            var oldFunctionScopeLevel = state.functionScopeLevel;
-            state.lexicalScopeLevel++;
-            if (allowDirectives)
-                state.functionScopeLevel = state.lexicalScopeLevel;
+            var oldFunctionScopeLevel = state.FunctionScopeLevel;
+            state.LexicalScopeLevel++;
+            if (state.AllowDirectives)
+                state.FunctionScopeLevel = state.LexicalScopeLevel;
 
             var oldVariablesCount = state.Variables.Count;
             VariableDescriptor[] variables = null;
             state.LabelsCount = 0;
+
+            var allowDirectives = state.AllowDirectives;
+            using var _ = state.WithCodeContext(state.CodeContext & ~CodeContext.AllowDirectives);
+
             try
             {
                 if (allowDirectives)
@@ -133,14 +135,17 @@ namespace NiL.JS.Statements
                             if (Parser.ValidateString(state.Code, ref t, true))
                             {
                                 var str = state.Code.Substring(s + 1, t - s - 2);
-                                if (!strictSwitch && str == "use strict" && !state.strict)
+                                if (str == "use strict")
                                 {
-                                    state.strict = true;
-                                    strictSwitch = true;
+                                    state.CodeContext |= CodeContext.Strict;
+                                    strict = true;
                                 }
+#if DEBUG
                                 if (directives == null)
                                     directives = new HashSet<string>();
+
                                 directives.Add(str);
+#endif
                             }
                             else
                             {
@@ -150,11 +155,12 @@ namespace NiL.JS.Statements
                         }
                         else if (state.Code[position] == ';')
                         {
+#if DEBUG
                             if (directives == null)
                                 break;
-                            do
-                                position++;
-                            while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]));
+#endif
+
+                            do position++; while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]));
                         }
                         else
                             break;
@@ -164,7 +170,7 @@ namespace NiL.JS.Statements
                 }
 
                 for (var j = body.Count; j-- > 0;)
-                    (body[j] as Constant).value._oValue = Tools.Unescape((body[j] as Constant).value._oValue.ToString(), state.strict);
+                    (body[j] as Constant).value._oValue = Tools.Unescape((body[j] as Constant).value._oValue.ToString(), state.Strict);
 
                 bool expectSemicolon = false;
                 while ((sroot && position < state.Code.Length) || (!sroot && state.Code[position] != '}'))
@@ -179,8 +185,8 @@ namespace NiL.JS.Statements
 
                             if ((state.Code[position] == ';' || state.Code[position] == ','))
                             {
-                                if (state.message != null && !expectSemicolon)
-                                    state.message(MessageLevel.Warning, position, 1, "Unnecessary semicolon.");
+                                if (state.Message != null && !expectSemicolon)
+                                    state.Message(MessageLevel.Warning, position, 1, "Unnecessary semicolon.");
 
                                 position++;
                             }
@@ -203,8 +209,8 @@ namespace NiL.JS.Statements
                     variables = extractVariables(state, oldVariablesCount);
                 }
 
-                state.functionScopeLevel = oldFunctionScopeLevel;
-                state.lexicalScopeLevel--;
+                state.FunctionScopeLevel = oldFunctionScopeLevel;
+                state.LexicalScopeLevel--;
             }
 
             if (!sroot)
@@ -214,7 +220,7 @@ namespace NiL.JS.Statements
             index = position;
             return new CodeBlock(body.ToArray())
             {
-                _strict = (state.strict ^= strictSwitch) || strictSwitch,
+                _strict = strict,
                 _variables = variables ?? emptyVariables,
                 Position = startPos,
                 code = state.SourceCode,
@@ -231,7 +237,7 @@ namespace NiL.JS.Statements
             var count = 0;
             for (var i = oldVariablesCount; i < state.Variables.Count; i++)
             {
-                if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
+                if (state.Variables[i].definitionScopeLevel == state.LexicalScopeLevel)
                     count++;
             }
 
@@ -239,12 +245,12 @@ namespace NiL.JS.Statements
             {
                 variables = new VariableDescriptor[count];
                 HashSet<string> declaredVariables = null;
-                if (state.lexicalScopeLevel != state.functionScopeLevel)
+                if (state.LexicalScopeLevel != state.FunctionScopeLevel)
                     declaredVariables = new HashSet<string>();
 
                 for (int i = oldVariablesCount, targetIndex = 0; i < state.Variables.Count; i++)
                 {
-                    if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
+                    if (state.Variables[i].definitionScopeLevel == state.LexicalScopeLevel)
                     {
                         variables[targetIndex] = state.Variables[i];
                         if (declaredVariables != null)
@@ -593,10 +599,10 @@ namespace NiL.JS.Statements
             {
                 var cn = _lines[i] as CodeNode;
                 cn.Optimize(
-                    ref cn, 
-                    owner, 
-                    message, 
-                    opts | (i == _lines.Length - 1 ? Options.SuppressUselessExpressionsElimination | Options.SuppressUselessStatementsElimination : Options.None), 
+                    ref cn,
+                    owner,
+                    message,
+                    opts | (i == _lines.Length - 1 ? Options.SuppressUselessExpressionsElimination | Options.SuppressUselessStatementsElimination : Options.None),
                     stats);
                 _lines[i] = cn;
             }
@@ -709,10 +715,10 @@ namespace NiL.JS.Statements
         internal void initVariables(Context context)
         {
             var functionInfo = context._owner?._functionDefinition?._functionInfo;
-            var cew = functionInfo == null 
-                || functionInfo.ContainsEval 
-                || functionInfo.ContainsWith 
-                || functionInfo.NeedDecompose 
+            var cew = functionInfo == null
+                || functionInfo.ContainsEval
+                || functionInfo.ContainsWith
+                || functionInfo.NeedDecompose
                 || functionInfo.ContainsDebugger;
             for (var i = 0; i < _variables.Length; i++)
             {
