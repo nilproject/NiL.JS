@@ -203,7 +203,7 @@ namespace NiL.JS.Statements
                 i = (int)context.SuspendData[this];
             }
 
-            if (context._executionMode == ExecutionMode.None)
+            if (context._executionMode == ExecutionMode.Regular)
             {
                 for (var v = 0; v < _variables.Length; v++)
                 {

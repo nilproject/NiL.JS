@@ -386,7 +386,7 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
-                if (context._executionMode != ExecutionMode.None)
+                if (context._executionMode != ExecutionMode.Regular)
                 {
                     if (context._executionMode == ExecutionMode.Suspend)
                     {

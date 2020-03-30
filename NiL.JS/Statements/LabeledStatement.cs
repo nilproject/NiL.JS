@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
             var res = statement.Evaluate(context);
             if ((context._executionMode == ExecutionMode.Break) && (context._executionInfo != null) && (context._executionInfo._oValue as string == label))
             {
-                context._executionMode = ExecutionMode.None;
+                context._executionMode = ExecutionMode.Regular;
                 context._executionInfo = JSValue.notExists;
             }
             return res;

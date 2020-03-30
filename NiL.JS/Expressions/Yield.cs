@@ -89,14 +89,14 @@ namespace NiL.JS.Expressions
             if (context._executionMode == ExecutionMode.ResumeThrow)
             {
                 context.SuspendData.Clear();
-                context._executionMode = ExecutionMode.None;
+                context._executionMode = ExecutionMode.Regular;
                 var exceptionData = context._executionInfo;
                 ExceptionHelper.Throw(exceptionData);
             }
 
             if (_reiterate)
             {
-                if (context._executionMode == ExecutionMode.None)
+                if (context._executionMode == ExecutionMode.Regular)
                 {
                     var iterator = _left.Evaluate(context).AsIterable().iterator();
                     var iteratorResult = iterator.next();
@@ -118,7 +118,7 @@ namespace NiL.JS.Expressions
 
                     if (iteratorResult.done)
                     {
-                        context._executionMode = ExecutionMode.None;
+                        context._executionMode = ExecutionMode.Regular;
                         return iteratorResult.value;
                     }
                     else
@@ -131,7 +131,7 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                if (context._executionMode == ExecutionMode.None)
+                if (context._executionMode == ExecutionMode.Regular)
                 {
                     context._executionInfo = _left.Evaluate(context);
                     context._executionMode = ExecutionMode.Suspend;
@@ -139,7 +139,7 @@ namespace NiL.JS.Expressions
                 }
                 else if (context._executionMode == ExecutionMode.Resume)
                 {
-                    context._executionMode = ExecutionMode.None;
+                    context._executionMode = ExecutionMode.Regular;
                     var result = context._executionInfo;
                     context._executionInfo = null;
                     return result;

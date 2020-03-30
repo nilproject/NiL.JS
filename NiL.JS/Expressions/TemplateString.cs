@@ -141,7 +141,7 @@ namespace NiL.JS.Expressions
                 if (i > 0)
                 {
                     var temp = expressions[i - 1].Evaluate(context);
-                    if (context != null && context._executionMode != ExecutionMode.None)
+                    if (context != null && context._executionMode != ExecutionMode.Regular)
                     {
                         if (context._executionMode == ExecutionMode.Suspend)
                         {

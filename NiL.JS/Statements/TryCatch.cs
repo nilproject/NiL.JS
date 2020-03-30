@@ -170,14 +170,14 @@ namespace NiL.JS.Statements
                     ainfo = JSValue.Undefined;
             }
 
-            context._executionMode = ExecutionMode.None;
+            context._executionMode = ExecutionMode.Regular;
             context._executionInfo = JSValue.undefined;
 
             Action<Context> finallyAction = null;
             finallyAction = (c) =>
             {
                 c._lastResult = finallyBody.Evaluate(c) ?? context._lastResult;
-                if (c._executionMode == ExecutionMode.None)
+                if (c._executionMode == ExecutionMode.Regular)
                 {
                     c._executionMode = abort;
                     c._executionInfo = ainfo;

@@ -98,7 +98,7 @@ namespace NiL.JS.Statements
                         context.raiseDebugger(body);
 
                     context._lastResult = body.Evaluate(context) ?? context._lastResult;
-                    if (context._executionMode != ExecutionMode.None)
+                    if (context._executionMode != ExecutionMode.Regular)
                     {
                         if (context._executionMode < ExecutionMode.Return)
                         {
@@ -106,7 +106,7 @@ namespace NiL.JS.Statements
                             var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                             if (me)
                             {
-                                context._executionMode = ExecutionMode.None;
+                                context._executionMode = ExecutionMode.Regular;
                                 context._executionInfo = JSValue.notExists;
                             }
                             if (_break)

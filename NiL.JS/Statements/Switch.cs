@@ -214,11 +214,11 @@ namespace NiL.JS.Statements
                     continue;
 
                 context._lastResult = lines[lineIndex].Evaluate(context) ?? context._lastResult;
-                if (context._executionMode != ExecutionMode.None)
+                if (context._executionMode != ExecutionMode.Regular)
                 {
                     if (context._executionMode == ExecutionMode.Break && context._executionInfo == null)
                     {
-                        context._executionMode = ExecutionMode.None;
+                        context._executionMode = ExecutionMode.Regular;
                     }
                     else if (context._executionMode == ExecutionMode.Suspend)
                     {

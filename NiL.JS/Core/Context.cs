@@ -19,7 +19,7 @@ namespace NiL.JS.Core
 #endif
     public enum ExecutionMode
     {
-        None = 0,
+        Regular = 0,
         Continue,
         Break,
         Return,

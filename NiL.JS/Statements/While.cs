@@ -102,7 +102,7 @@ namespace NiL.JS.Statements
                     var temp = body.Evaluate(context);
                     if (temp != null)
                         context._lastResult = temp;
-                    if (context._executionMode != ExecutionMode.None)
+                    if (context._executionMode != ExecutionMode.Regular)
                     {
                         if (context._executionMode < ExecutionMode.Return)
                         {
@@ -110,7 +110,7 @@ namespace NiL.JS.Statements
                             var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                             if (me)
                             {
-                                context._executionMode = ExecutionMode.None;
+                                context._executionMode = ExecutionMode.Regular;
                                 context._executionInfo = null;
                             }
                             if (_break)
