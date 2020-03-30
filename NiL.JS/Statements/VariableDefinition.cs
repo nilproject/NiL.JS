@@ -203,19 +203,25 @@ namespace NiL.JS.Statements
                 i = (int)context.SuspendData[this];
             }
 
+            if (context._executionMode == ExecutionMode.None)
+            {
+                for (var v = 0; v < _variables.Length; v++)
+                {
+                    if (context._executionMode == ExecutionMode.Regular && _kind > VariableKind.FunctionScope && _variables[v].lexicalScope)
+                    {
+                        var f = context.DefineVariable(_variables[v].name, false);
+
+                        _variables[v].cacheRes = f;
+                        _variables[v].cacheContext = context;
+
+                        if (_kind == VariableKind.ConstantInLexicalScope)
+                            f._attributes |= JSValueAttributesInternal.ReadOnly;
+                    }
+                }
+            }
+
             for (; i < _initializers.Length; i++)
             {
-                if (context._executionMode == ExecutionMode.None && _kind > VariableKind.FunctionScope && _variables[i].lexicalScope)
-                {
-                    var f = context.DefineVariable(_variables[i].name, false);
-
-                    _variables[i].cacheRes = f;
-                    _variables[i].cacheContext = context;
-
-                    if (_kind == VariableKind.ConstantInLexicalScope)
-                        f._attributes |= JSValueAttributesInternal.ReadOnly;
-                }
-
                 _initializers[i].Evaluate(context);
 
                 if (context._executionMode == ExecutionMode.Suspend)
@@ -224,6 +230,7 @@ namespace NiL.JS.Statements
                     return null;
                 }
             }
+
             return JSValue.notExists;
         }
 
