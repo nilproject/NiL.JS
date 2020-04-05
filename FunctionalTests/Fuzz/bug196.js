@@ -1,4 +1,4 @@
-﻿import 'handlebars.js';
+﻿import '../Libs/handlebars.js';
 
 var template = Handlebars.compile('{{#* inline \'treeNodes\'}}\n' +
 	    '{{#each nodes}}\n' +

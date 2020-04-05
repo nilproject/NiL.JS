@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.Core;
 
-namespace FunctionalTests
+namespace FunctionalTests.Fuzz
 {
     [TestClass]
     public class Bug_163

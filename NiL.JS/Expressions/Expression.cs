@@ -15,28 +15,15 @@ namespace NiL.JS.Expressions
         internal JSValue _tempContainer;
         internal CodeContext _codeContext;
 
-        internal protected virtual PredictedType ResultType
-        {
-            get
-            {
-                return PredictedType.Unknown;
-            }
-        }
-
-        internal virtual bool ResultInTempContainer
-        {
-            get { return false; }
-        }
+        internal protected virtual PredictedType ResultType => PredictedType.Unknown;
+        internal virtual bool ResultInTempContainer => false;
 
         public Expression LeftOperand { get { return _left; } }
         public Expression RightOperand { get { return _right; } }
 
         public override bool Eliminated
         {
-            get
-            {
-                return base.Eliminated;
-            }
+            get => base.Eliminated;
             internal set
             {
                 if (_left != null)
@@ -74,8 +61,8 @@ namespace NiL.JS.Expressions
 
         protected Expression(Expression first, Expression second, bool createTempContainer)
         {
-            this._left = first;
-            this._right = second;
+            _left = first;
+            _right = second;
             if (createTempContainer)
                 _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
         }

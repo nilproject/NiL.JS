@@ -3,7 +3,7 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using System.Linq;
 
-namespace FunctionalTests
+namespace FunctionalTests.Fuzz
 {
     [TestClass]
     public class Bug_106
