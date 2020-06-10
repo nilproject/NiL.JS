@@ -4,6 +4,8 @@ namespace NiL.JS.Expressions
 {
     public sealed class SuspendableExpression : Expression
     {
+        protected internal override bool ContextIndependent => false;
+
         private Expression _prototype;
         private CodeNode[] _parts;
 

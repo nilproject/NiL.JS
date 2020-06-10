@@ -12,12 +12,14 @@ namespace NiL.JS.Expressions
         private sealed class DestructuringAcceptor : JSValue
         {
             private readonly Context _context;
+            private readonly bool _force;
             private readonly Expression _definition;
 
-            public DestructuringAcceptor(Expression definition, Context context)
+            public DestructuringAcceptor(Expression definition, Context context, bool force)
             {
                 _definition = definition;
                 _context = context;
+                _force = force;
             }
 
             public override void Assign(JSValue value)
@@ -47,7 +49,7 @@ namespace NiL.JS.Expressions
                     else
                     {
                         var target = targetMap.Elements[i].EvaluateForWrite(_context);
-                        setterArgs = assign(target, values[i], setterArgs);
+                        setterArgs = assign(target, values[i], targetMap.Elements[i], setterArgs);
                     }
                 }
             }
@@ -76,7 +78,7 @@ namespace NiL.JS.Expressions
                     else
                     {
                         var target = targetMap.Values[i].EvaluateForWrite(_context);
-                        setterArgs = assign(target, values[j], setterArgs);
+                        setterArgs = assign(target, values[j], targetMap.FieldNames[i], setterArgs);
                     }
                 }
 
@@ -90,12 +92,12 @@ namespace NiL.JS.Expressions
                     else
                     {
                         var target = targetMap.ComputedProperties[i].Value.EvaluateForWrite(_context);
-                        setterArgs = assign(target, values[j], setterArgs);
+                        setterArgs = assign(target, values[j], targetMap.ComputedProperties[i].Value, setterArgs);
                     }
                 }
             }
 
-            private Arguments assign(JSValue target, JSValue value, Arguments setterArgs)
+            private Arguments assign(JSValue target, JSValue value, object targetName, Arguments setterArgs)
             {
                 if (target._valueType == JSValueType.Property)
                 {
@@ -111,14 +113,23 @@ namespace NiL.JS.Expressions
                     if (setter != null)
                         setter.Call(fieldSource, setterArgs);
                     else if (_context._strict)
-                        ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, value));
+                        ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, targetName));
                 }
                 else
                 {
-                    if ((target._attributes & JSValueAttributesInternal.ReadOnly) != 0 && _context._strict)
-                        ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, value));
-
-                    target.Assign(value);
+                    if ((target._attributes & JSValueAttributesInternal.ReadOnly) != 0)
+                    {
+                        if (_force)
+                        {
+                            target._attributes &= ~JSValueAttributesInternal.ReadOnly;
+                            target.Assign(value);
+                            target._attributes |= JSValueAttributesInternal.ReadOnly;
+                        }
+                        else if (_context._strict)
+                            ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, targetName));
+                    }
+                    else
+                        target.Assign(value);
                 }
 
                 return setterArgs;
@@ -127,21 +138,11 @@ namespace NiL.JS.Expressions
 
         private readonly Expression _definition;
 
-        protected internal override bool ContextIndependent
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected internal override bool ContextIndependent => false;
 
-        protected internal override PredictedType ResultType
-        {
-            get
-            {
-                return PredictedType.Object;
-            }
-        }
+        protected internal override PredictedType ResultType => PredictedType.Object;
+
+        public bool Force { get; internal set; }
 
         public ObjectDesctructor(Expression definition)
         {
@@ -207,7 +208,7 @@ namespace NiL.JS.Expressions
 
         protected internal override JSValue EvaluateForWrite(Context context)
         {
-            return new DestructuringAcceptor(_definition, context);
+            return new DestructuringAcceptor(_definition, context, Force);
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)

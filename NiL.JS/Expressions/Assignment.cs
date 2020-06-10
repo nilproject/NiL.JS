@@ -1,43 +1,9 @@
 using System;
 using NiL.JS.Core;
-using NiL.JS.BaseLibrary;
-using NiL.JS.Statements;
 using System.Collections.Generic;
 
 namespace NiL.JS.Expressions
 {
-#if !(PORTABLE || NETCORE)
-    [Serializable]
-#endif
-    internal sealed class ForceAssignmentOperator : Assignment
-    {
-        public ForceAssignmentOperator(Expression first, Expression second)
-            : base(first, second)
-        {
-        }
-
-        public override JSValue Evaluate(Context context)
-        {
-            JSValue temp;
-            JSValue field = _left.EvaluateForWrite(context);
-            if (field._valueType == JSValueType.Property)
-            {
-                return setProperty(context, field);
-            }
-            else
-            {
-                if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
-                    throwReadOnlyError(context);
-            }
-            temp = _right.Evaluate(context);
-            var oldAttributes = field._attributes;
-            field._attributes &= ~JSValueAttributesInternal.ReadOnly;
-            field.Assign(temp);
-            field._attributes = oldAttributes;
-            return temp;
-        }
-    }
-
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
@@ -46,26 +12,13 @@ namespace NiL.JS.Expressions
         private Arguments _setterArgs;
         private bool _saveResult;
 
-        protected internal override bool ContextIndependent
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected internal override bool ContextIndependent => false;
 
-        internal override bool ResultInTempContainer
-        {
-            get { return false; }
-        }
+        internal override bool ResultInTempContainer => false;
 
-        protected internal override bool LValueModifier
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected internal override bool LValueModifier => true;
+
+        public bool Force { get; internal set; }
 
         public Assignment(Expression left, Expression right)
             : base(left, right, false)
@@ -74,21 +27,30 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            JSValue temp;
+            var field = _left.EvaluateForWrite(context);
+            var temp = _right.Evaluate(context);
 
-            JSValue field = _left.EvaluateForWrite(context);
             if (field._valueType == JSValueType.Property)
             {
-                return setProperty(context, field);
+                return setProperty(context, field, temp);
+            }
+
+            if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0)
+            {
+                if (Force)
+                {
+                    var oldAttrs = field._attributes;
+                    field._attributes = oldAttrs & ~JSValueAttributesInternal.ReadOnly;
+                    field.Assign(temp);
+                    field._attributes = oldAttrs;
+                }
+                else if (context._strict)
+                    throwReadOnlyError(context);
             }
             else
             {
-                if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0 && context._strict)
-                    throwReadOnlyError(context);
+                field.Assign(temp);
             }
-
-            temp = _right.Evaluate(context);
-            field.Assign(temp);
 
             return temp;
         }
@@ -98,9 +60,8 @@ namespace NiL.JS.Expressions
             ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, _left), this, context);
         }
 
-        protected JSValue setProperty(Context context, JSValue field)
+        protected JSValue setProperty(Context context, JSValue field, JSValue value)
         {
-            JSValue temp;
             lock (this)
             {
                 var setterArgs = _setterArgs;
@@ -109,14 +70,15 @@ namespace NiL.JS.Expressions
                     setterArgs = new Arguments();
 
                 var fieldSource = context._objectSource;
-                temp = _right.Evaluate(context);
+
+                var temp = value;
 
                 if (_saveResult)
                 {
                     if (_tempContainer == null)
                         _tempContainer = new JSValue();
 
-                    _tempContainer.Assign(temp);
+                    _tempContainer.Assign(value);
                     temp = _tempContainer;
                     _tempContainer = null;
                 }

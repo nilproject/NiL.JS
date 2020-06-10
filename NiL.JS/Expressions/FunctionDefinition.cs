@@ -216,12 +216,13 @@ namespace NiL.JS.Expressions
 
                     break;
                 }
+                case FunctionKind.AsyncMethod:
+                {
+                    break;
+                }
                 case FunctionKind.MethodGenerator:
                 case FunctionKind.Method:
                 {
-                    if (Parser.Validate(code, "async", ref position))
-                        kind = FunctionKind.AsyncMethod;
-
                     if (code[position] == '*')
                     {
                         kind = FunctionKind.MethodGenerator;
@@ -273,12 +274,12 @@ namespace NiL.JS.Expressions
                 if (code[position] != '(')
                 {
                     nameStartPos = position;
-                    if (Parser.ValidateName(code, ref position, false, true, state.strict))
-                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.strict);
+                    if (Parser.ValidateName(code, ref position, false, true, state.Strict))
+                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.Strict);
                     else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateString(code, ref position, false))
-                        name = Tools.Unescape(code.Substring(nameStartPos + 1, position - nameStartPos - 2), state.strict);
+                        name = Tools.Unescape(code.Substring(nameStartPos + 1, position - nameStartPos - 2), state.Strict);
                     else if ((kind == FunctionKind.Getter || kind == FunctionKind.Setter) && Parser.ValidateNumber(code, ref position))
-                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.strict);
+                        name = Tools.Unescape(code.Substring(nameStartPos, position - nameStartPos), state.Strict);
                     else
                         ExceptionHelper.ThrowSyntaxError("Invalid function name", code, nameStartPos, position - nameStartPos);
 
@@ -290,7 +291,7 @@ namespace NiL.JS.Expressions
                 else if (kind == FunctionKind.Getter || kind == FunctionKind.Setter)
                     ExceptionHelper.ThrowSyntaxError("Getter and Setter must have name", code, index);
                 else if (kind == FunctionKind.Method || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AsyncMethod)
-                    ExceptionHelper.ThrowSyntaxError("Method must has name", code, index);
+                    ExceptionHelper.ThrowSyntaxError("Method must have name", code, index);
 
                 position++;
             }
@@ -317,7 +318,7 @@ namespace NiL.JS.Expressions
 
                 Expression destructor = null;
                 int n = position;
-                if (!Parser.ValidateName(code, ref position, state.strict))
+                if (!Parser.ValidateName(code, ref position, state.Strict))
                 {
                     if (code[position] == '{')
                         destructor = (Expression)ObjectDefinition.Parse(state, ref position);
@@ -330,8 +331,8 @@ namespace NiL.JS.Expressions
                     containsDestructuringPrms = true;
                 }
 
-                var pname = Tools.Unescape(code.Substring(n, position - n), state.strict);
-                var reference = new ParameterReference(pname, rest, state.lexicalScopeLevel + 1)
+                var pname = Tools.Unescape(code.Substring(n, position - n), state.Strict);
+                var reference = new ParameterReference(pname, rest, state.LexicalScopeLevel + 1)
                 {
                     Position = n,
                     Length = position - n
@@ -388,8 +389,8 @@ namespace NiL.JS.Expressions
 
             if (code[position] != '{')
             {
-                var oldFunctionScopeLevel = state.functionScopeLevel;
-                state.functionScopeLevel = ++state.lexicalScopeLevel;
+                var oldFunctionScopeLevel = state.FunctionScopeLevel;
+                state.FunctionScopeLevel = ++state.LexicalScopeLevel;
 
                 try
                 {
@@ -411,65 +412,66 @@ namespace NiL.JS.Expressions
                 }
                 finally
                 {
-                    state.functionScopeLevel = oldFunctionScopeLevel;
-                    state.lexicalScopeLevel--;
+                    state.FunctionScopeLevel = oldFunctionScopeLevel;
+                    state.LexicalScopeLevel--;
                 }
             }
             else
             {
-                var oldCodeContext = state.CodeContext;
-                state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional | CodeContext.InEval);
-                if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
-                    state.CodeContext |= CodeContext.InGenerator;
-                else if (kind == FunctionKind.AsyncFunction || kind == FunctionKind.AsyncMethod || kind == FunctionKind.AsyncAnonymousFunction || kind == FunctionKind.AsyncArrow)
-                    state.CodeContext |= CodeContext.InAsync;
-                state.CodeContext |= CodeContext.InFunction;
-
-                var labels = state.Labels;
-                state.Labels = new List<string>();
-                state.AllowReturn++;
-                try
+                using (state.WithNewLabelsScope())
+                using (state.WithCodeContext())
                 {
-                    state.AllowBreak.Push(false);
-                    state.AllowContinue.Push(false);
-                    state.AllowDirectives = true;
-                    body = CodeBlock.Parse(state, ref position) as CodeBlock;
-                    if (containsDestructuringPrms)
+
+
+                    if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
+                        state.CodeContext |= CodeContext.InGenerator;
+                    else if (kind == FunctionKind.AsyncFunction || kind == FunctionKind.AsyncMethod || kind == FunctionKind.AsyncAnonymousFunction || kind == FunctionKind.AsyncArrow)
+                        state.CodeContext |= CodeContext.InAsync;
+
+                    state.CodeContext |= CodeContext.InFunction;
+                    state.CodeContext |= CodeContext.AllowDirectives;
+                    state.CodeContext &= ~(CodeContext.InExpression | CodeContext.Conditional | CodeContext.InEval);
+
+                    state.AllowReturn++;
+                    try
                     {
-                        var destructuringTargets = new List<VariableDescriptor>();
-                        var assignments = new List<Expression>();
-                        for (var i = 0; i < parameters.Count; i++)
+                        state.AllowBreak.Push(false);
+                        state.AllowContinue.Push(false);
+                        body = CodeBlock.Parse(state, ref position) as CodeBlock;
+                        if (containsDestructuringPrms)
                         {
-                            if (parameters[i].Destructor != null)
+                            var destructuringTargets = new List<VariableDescriptor>();
+                            var assignments = new List<Expression>();
+                            for (var i = 0; i < parameters.Count; i++)
                             {
-                                var targets = parameters[i].Destructor.GetTargetVariables();
-                                for (var j = 0; j < targets.Count; j++)
+                                if (parameters[i].Destructor != null)
                                 {
-                                    destructuringTargets.Add(new VariableDescriptor(targets[j].Name, state.functionScopeLevel));
+                                    var targets = parameters[i].Destructor.GetTargetVariables();
+                                    for (var j = 0; j < targets.Count; j++)
+                                    {
+                                        destructuringTargets.Add(new VariableDescriptor(targets[j].Name, state.FunctionScopeLevel));
+                                    }
+
+                                    assignments.Add(new Assignment(parameters[i].Destructor, parameters[i].references[0]));
                                 }
-
-                                assignments.Add(new Assignment(parameters[i].Destructor, parameters[i].references[0]));
                             }
+
+                            var newLines = new CodeNode[body._lines.Length + 1];
+                            System.Array.Copy(body._lines, 0, newLines, 1, body._lines.Length);
+                            newLines[0] = new VariableDefinition(destructuringTargets.ToArray(), assignments.ToArray(), VariableKind.AutoGeneratedParameters);
+                            body._lines = newLines;
                         }
-
-                        var newLines = new CodeNode[body._lines.Length + 1];
-                        System.Array.Copy(body._lines, 0, newLines, 1, body._lines.Length);
-                        newLines[0] = new VariableDefinition(destructuringTargets.ToArray(), assignments.ToArray(), VariableKind.AutoGeneratedParameters);
-                        body._lines = newLines;
                     }
-                }
-                finally
-                {
-                    state.CodeContext = oldCodeContext;
-                    state.AllowBreak.Pop();
-                    state.AllowContinue.Pop();
-                    state.AllowDirectives = false;
-                    state.Labels = labels;
-                    state.AllowReturn--;
-                }
+                    finally
+                    {
+                        state.AllowBreak.Pop();
+                        state.AllowContinue.Pop();
+                        state.AllowReturn--;
+                    }
 
-                if (kind == FunctionKind.Function && string.IsNullOrEmpty(name))
-                    kind = FunctionKind.AnonymousFunction;
+                    if (kind == FunctionKind.Function && string.IsNullOrEmpty(name))
+                        kind = FunctionKind.AnonymousFunction;
+                }
             }
 
             if (body._strict || (parameters.Count > 0 && parameters[parameters.Count - 1].IsRest) || kind == FunctionKind.Arrow)
@@ -503,7 +505,7 @@ namespace NiL.JS.Expressions
 
             if (!string.IsNullOrEmpty(name))
             {
-                func.Reference.ScopeLevel = state.lexicalScopeLevel;
+                func.Reference.ScopeLevel = state.LexicalScopeLevel;
                 func.Reference.Position = nameStartPos;
                 func.Reference.Length = name.Length;
 
@@ -665,8 +667,7 @@ namespace NiL.JS.Expressions
                 else if (_body._lines.Length == 1)
                 {
                     var ret = _body._lines[0] as Return;
-                    if (ret != null
-                    && (ret.Value == null || ret.Value.ContextIndependent))
+                    if (ret != null && (ret.Value == null || ret.Value.ContextIndependent))
                     {
                         return new ConstantFunction(ret.Value?.Evaluate(null) ?? JSValue.undefined, this);
                     }
@@ -902,6 +903,10 @@ namespace NiL.JS.Expressions
                     break;
                 }
                 case FunctionKind.AsyncMethod:
+                {
+                    code.Append("async ");
+                    break;
+                }
                 case FunctionKind.AsyncFunction:
                 {
                     code.Append("async ");

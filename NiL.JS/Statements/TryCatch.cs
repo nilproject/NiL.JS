@@ -45,11 +45,11 @@ namespace NiL.JS.Statements
                 Tools.SkipSpaces(state.Code, ref i);
 
                 int s = i;
-                if (!Parser.ValidateName(state.Code, ref i, state.strict))
+                if (!Parser.ValidateName(state.Code, ref i, state.Strict))
                     ExceptionHelper.Throw((new SyntaxError("Catch block must contain variable name " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
 
-                exptn = Tools.Unescape(state.Code.Substring(s, i - s), state.strict);
-                if (state.strict)
+                exptn = Tools.Unescape(state.Code.Substring(s, i - s), state.Strict);
+                if (state.Strict)
                 {
                     if (exptn == "arguments" || exptn == "eval")
                         ExceptionHelper.Throw((new SyntaxError("Varible name can not be \"arguments\" or \"eval\" in strict mode at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
@@ -63,14 +63,14 @@ namespace NiL.JS.Statements
                     i++;
                 if (state.Code[i] != '{')
                     ExceptionHelper.Throw((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-                state.lexicalScopeLevel++;
+                state.LexicalScopeLevel++;
                 try
                 {
                     cb = CodeBlock.Parse(state, ref i);
                 }
                 finally
                 {
-                    state.lexicalScopeLevel--;
+                    state.LexicalScopeLevel--;
                 }
                 while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                     i++;
@@ -95,7 +95,7 @@ namespace NiL.JS.Statements
                 body = (CodeBlock)b,
                 catchBody = (CodeBlock)cb,
                 finallyBody = (CodeBlock)f,
-                catchVariableDesc = new VariableDescriptor(exptn, state.lexicalScopeLevel + 1),
+                catchVariableDesc = new VariableDescriptor(exptn, state.LexicalScopeLevel + 1),
                 Position = pos,
                 Length = index - pos
             };
@@ -170,14 +170,14 @@ namespace NiL.JS.Statements
                     ainfo = JSValue.Undefined;
             }
 
-            context._executionMode = ExecutionMode.None;
+            context._executionMode = ExecutionMode.Regular;
             context._executionInfo = JSValue.undefined;
 
             Action<Context> finallyAction = null;
             finallyAction = (c) =>
             {
                 c._lastResult = finallyBody.Evaluate(c) ?? context._lastResult;
-                if (c._executionMode == ExecutionMode.None)
+                if (c._executionMode == ExecutionMode.Regular)
                 {
                     c._executionMode = abort;
                     c._executionInfo = ainfo;

@@ -63,7 +63,7 @@ namespace NiL.JS.Statements
             state.AllowBreak.Push(true);
             var oldVariablesCount = state.Variables.Count;
             VariableDescriptor[] vars = null;
-            state.lexicalScopeLevel++;
+            state.LexicalScopeLevel++;
             try
             {
                 var image = ExpressionTree.Parse(state, ref i);
@@ -141,7 +141,7 @@ namespace NiL.JS.Statements
             }
             finally
             {
-                state.lexicalScopeLevel--;
+                state.LexicalScopeLevel--;
             }
 
             return new CodeBlock(new[] { result })
@@ -214,11 +214,11 @@ namespace NiL.JS.Statements
                     continue;
 
                 context._lastResult = lines[lineIndex].Evaluate(context) ?? context._lastResult;
-                if (context._executionMode != ExecutionMode.None)
+                if (context._executionMode != ExecutionMode.Regular)
                 {
                     if (context._executionMode == ExecutionMode.Break && context._executionInfo == null)
                     {
-                        context._executionMode = ExecutionMode.None;
+                        context._executionMode = ExecutionMode.Regular;
                     }
                     else if (context._executionMode == ExecutionMode.Suspend)
                     {

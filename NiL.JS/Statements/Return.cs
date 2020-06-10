@@ -58,7 +58,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var result = value != null ? value.Evaluate(context) : null;
-            if (context._executionMode == ExecutionMode.None)
+            if (context._executionMode == ExecutionMode.Regular)
             {
                 context._executionInfo = result;
                 if (context._executionMode < ExecutionMode.Return)

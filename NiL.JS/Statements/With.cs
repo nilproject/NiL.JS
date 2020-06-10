@@ -21,11 +21,11 @@ namespace NiL.JS.Statements
             int i = index;
             if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
                 return null;
-            if (state.strict)
+            if (state.Strict)
                 ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
 
-            if (state.message != null)
-                state.message(MessageLevel.CriticalWarning, index, 4, "Do not use \"with\".");
+            if (state.Message != null)
+                state.Message(MessageLevel.CriticalWarning, index, 4, "Do not use \"with\".");
 
             var obj = Parser.Parse(state, ref i, CodeFragmentType.Expression);
             while (Tools.IsWhiteSpace(state.Code[i]))
@@ -39,24 +39,24 @@ namespace NiL.JS.Statements
             CodeNode body = null;
             VariableDescriptor[] vars = null;
             var oldVariablesCount = state.Variables.Count;
-            state.lexicalScopeLevel++;
-            var oldCodeContext = state.CodeContext;
-            state.CodeContext |= CodeContext.InWith;
-            try
+            state.LexicalScopeLevel++;
+            using (state.WithCodeContext(CodeContext.InWith))
             {
-                body = Parser.Parse(state, ref i, 0);
-                vars = CodeBlock.extractVariables(state, oldVariablesCount);
-                body = new CodeBlock(new[] { body })
+                try
                 {
-                    _variables = vars,
-                    Position = body.Position,
-                    Length = body.Length
-                };
-            }
-            finally
-            {
-                state.lexicalScopeLevel--;
-                state.CodeContext = oldCodeContext;
+                    body = Parser.Parse(state, ref i, 0);
+                    vars = CodeBlock.extractVariables(state, oldVariablesCount);
+                    body = new CodeBlock(new[] { body })
+                    {
+                        _variables = vars,
+                        Position = body.Position,
+                        Length = body.Length
+                    };
+                }
+                finally
+                {
+                    state.LexicalScopeLevel--;
+                }
             }
 
             var pos = index;

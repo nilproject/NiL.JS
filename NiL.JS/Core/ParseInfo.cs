@@ -9,56 +9,90 @@ namespace NiL.JS.Core
         public readonly Stack<bool> AllowBreak;
         public readonly Stack<bool> AllowContinue;
         public readonly List<VariableDescriptor> Variables;
-        public readonly Dictionary<string, JSValue> stringConstants;
-        public readonly Dictionary<int, JSValue> intConstants;
-        public readonly Dictionary<double, JSValue> doubleConstants;
+        public readonly Dictionary<string, JSValue> StringConstants;
+        public readonly Dictionary<int, JSValue> IntConstants;
+        public readonly Dictionary<double, JSValue> DoubleConstants;
+        public readonly InternalCompilerMessageCallback Message;
 
-        public List<string> Labels;
+        public List<string> Labels { get; private set; }
+
+        public string Code;
+
         public int LabelsCount;
         public int AllowReturn;
-        public int lexicalScopeLevel;
-        public int functionScopeLevel;
+        public int LexicalScopeLevel;
+        public int FunctionScopeLevel;
         public CodeContext CodeContext;
-        public bool strict;
-        public string Code;
-        public bool AllowDirectives;
-        public int breaksCount;
-        public int continiesCount;
+        public int BreaksCount;
+        public int ContiniesCount;
 
-        public readonly InternalCompilerMessageCallback message;
+        public bool Strict => (CodeContext & CodeContext.Strict) != 0;
+        public bool AllowDirectives => (CodeContext & CodeContext.AllowDirectives) != 0;
 
-        public ParseInfo(string code, string sourceCode, InternalCompilerMessageCallback message)
+        private ParseInfo(
+            string codeWithoutComments,
+            List<string> labels,
+            Stack<bool> allowBreak,
+            Stack<bool> allowContinue,
+            Dictionary<string, JSValue> stringConstants,
+            Dictionary<int, JSValue> intConstants,
+            Dictionary<double, JSValue> doubleConstants,
+            List<VariableDescriptor> variables)
         {
-            Code = code;
+            Code = codeWithoutComments;
+            SourceCode = codeWithoutComments;
+            Labels = labels;
+            AllowBreak = allowBreak;
+            AllowContinue = allowContinue;
+            StringConstants = stringConstants;
+            IntConstants = intConstants;
+            DoubleConstants = doubleConstants;
+            Variables = variables;
+        }
+
+        public ParseInfo(string codeWithoutComments, string sourceCode, InternalCompilerMessageCallback message)
+        {
+            Code = codeWithoutComments;
             SourceCode = sourceCode;
+            Message = message;
+
+            CodeContext |= CodeContext.AllowDirectives;
+
             Labels = new List<string>();
-            AllowDirectives = true;
             AllowBreak = new Stack<bool>();
-            AllowBreak.Push(false);
             AllowContinue = new Stack<bool>();
-            AllowContinue.Push(false);
-            this.message = message;
-            stringConstants = new Dictionary<string, JSValue>();
-            intConstants = new Dictionary<int, JSValue>();
-            doubleConstants = new Dictionary<double, JSValue>();
+
+            StringConstants = new Dictionary<string, JSValue>();
+            IntConstants = new Dictionary<int, JSValue>();
+            DoubleConstants = new Dictionary<double, JSValue>();
+
             Variables = new List<VariableDescriptor>();
+
+            AllowContinue.Push(false);
+            AllowBreak.Push(false);
         }
 
         internal JSValue GetCachedValue(int value)
         {
-            if (!intConstants.ContainsKey(value))
+            if (!IntConstants.ContainsKey(value))
             {
                 JSValue jsvalue = value;
-                intConstants[value] = jsvalue;
+                IntConstants[value] = jsvalue;
                 return jsvalue;
             }
             else
             {
-                return intConstants[value];
+                return IntConstants[value];
             }
         }
 
-        private struct ContextReseter : IDisposable
+        public ParseInfo AlternateCode(string code)
+        {
+            var result = new ParseInfo(code, Labels, AllowBreak, AllowContinue, StringConstants, IntConstants, DoubleConstants, Variables);
+            return result;
+        }
+
+        private class ContextReseter : IDisposable
         {
             private readonly ParseInfo _parseInfo;
             private readonly CodeContext _oldCodeContext;
@@ -75,10 +109,34 @@ namespace NiL.JS.Core
             }
         }
 
-        public IDisposable WithCodeContext(CodeContext codeContext)
+        public IDisposable WithCodeContext(CodeContext codeContext = default(CodeContext))
         {
             var result = new ContextReseter(this, CodeContext);
             CodeContext |= codeContext;
+            return result;
+        }
+
+        private class LabelsReseter : IDisposable
+        {
+            private readonly ParseInfo _parseInfo;
+            private readonly List<string> _oldLabels;
+
+            public LabelsReseter(ParseInfo parseInfo, List<string> oldLabels)
+            {
+                _parseInfo = parseInfo;
+                _oldLabels = oldLabels;
+            }
+
+            public void Dispose()
+            {
+                _parseInfo.Labels = _oldLabels;
+            }
+        }
+
+        public IDisposable WithNewLabelsScope()
+        {
+            var result = new LabelsReseter(this, Labels);
+            this.Labels = new List<string>();
             return result;
         }
     }

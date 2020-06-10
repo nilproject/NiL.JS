@@ -22,20 +22,18 @@ namespace NiL.JS.Statements
 #endif
     public sealed class VariableDefinition : CodeNode
     {
-        private readonly VariableKind _kind;
-
         internal readonly VariableDescriptor[] _variables;
         internal Expression[] _initializers;
 
         public CodeNode[] Initializers { get { return _initializers; } }
         public VariableDescriptor[] Variables { get { return _variables; } }
-        public VariableKind Kind { get { return _kind; } }
+        public VariableKind Kind { get; private set; }
 
         internal VariableDefinition(VariableDescriptor[] variables, Expression[] initializers, VariableKind kind)
         {
             _initializers = initializers;
             _variables = variables;
-            _kind = kind;
+            Kind = kind;
         }
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
@@ -48,7 +46,7 @@ namespace NiL.JS.Statements
             int position = index;
             Tools.SkipSpaces(state.Code, ref position);
 
-            var mode = VariableKind.FunctionScope;
+            VariableKind mode;
             if (Parser.Validate(state.Code, "var ", ref position))
                 mode = VariableKind.FunctionScope;
             else if (Parser.Validate(state.Code, "let ", ref position))
@@ -58,7 +56,7 @@ namespace NiL.JS.Statements
             else
                 return null;
 
-            var level = mode <= VariableKind.FunctionScope ? state.functionScopeLevel : state.lexicalScopeLevel;
+            var level = mode <= VariableKind.FunctionScope ? state.FunctionScopeLevel : state.LexicalScopeLevel;
             var initializers = new List<Expression>();
             var names = new List<string>();
             int s = position;
@@ -66,10 +64,10 @@ namespace NiL.JS.Statements
             {
                 Tools.SkipSpaces(state.Code, ref position);
 
-                if (state.Code[position] != '[' && state.Code[position] != '{' && !Parser.ValidateName(state.Code, position, state.strict))
+                if (state.Code[position] != '[' && state.Code[position] != '{' && !Parser.ValidateName(state.Code, position, state.Strict))
                 {
-                    if (Parser.ValidateName(state.Code, ref position, false, true, state.strict))
-                        ExceptionHelper.ThrowSyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.strict) + "\" is a reserved word, but used as a variable. " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
+                    if (Parser.ValidateName(state.Code, ref position, false, true, state.Strict))
+                        ExceptionHelper.ThrowSyntaxError('\"' + Tools.Unescape(state.Code.Substring(s, position - s), state.Strict) + "\" is a reserved word, but used as a variable. " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
                     ExceptionHelper.ThrowSyntaxError("Invalid variable definition at " + CodeCoordinates.FromTextPosition(state.Code, s, position - s));
                 }
 
@@ -77,7 +75,7 @@ namespace NiL.JS.Statements
                 if (expression is VariableReference)
                 {
                     var name = expression.ToString();
-                    if (state.strict)
+                    if (state.Strict)
                     {
                         if (name == "arguments" || name == "eval")
                             ExceptionHelper.ThrowSyntaxError("Varible name cannot be \"arguments\" or \"eval\" in strict mode", state.Code, s, position - s);
@@ -88,7 +86,7 @@ namespace NiL.JS.Statements
                 }
                 else
                 {
-                    bool valid = false;
+                    var valid = false;
                     var expr = expression as ExpressionTree;
                     if (expr != null)
                     {
@@ -164,7 +162,7 @@ namespace NiL.JS.Statements
                 {
                     if (state.Variables[j].name == names[i] && state.Variables[j].definitionScopeLevel >= level)
                     {
-                        if (state.Variables[j].lexicalScope)
+                        if (state.Variables[j].lexicalScope || mode > VariableKind.FunctionScope)
                             ExceptionHelper.ThrowSyntaxError(string.Format(Strings.IdentifierAlreadyDeclared, names[i]), state.Code, index);
 
                         skip = true;
@@ -203,19 +201,25 @@ namespace NiL.JS.Statements
                 i = (int)context.SuspendData[this];
             }
 
+            if (context._executionMode == ExecutionMode.Regular)
+            {
+                for (var v = 0; v < _variables.Length; v++)
+                {
+                    if (context._executionMode == ExecutionMode.Regular && Kind > VariableKind.FunctionScope && _variables[v].lexicalScope)
+                    {
+                        var f = context.DefineVariable(_variables[v].name, false);
+
+                        _variables[v].cacheRes = f;
+                        _variables[v].cacheContext = context;
+
+                        if (Kind == VariableKind.ConstantInLexicalScope)
+                            f._attributes |= JSValueAttributesInternal.ReadOnly;
+                    }
+                }
+            }
+
             for (; i < _initializers.Length; i++)
             {
-                if (context._executionMode == ExecutionMode.None && _kind > VariableKind.FunctionScope && _variables[i].lexicalScope)
-                {
-                    var f = context.DefineVariable(_variables[i].name, false);
-
-                    _variables[i].cacheRes = f;
-                    _variables[i].cacheContext = context;
-
-                    if (_kind == VariableKind.ConstantInLexicalScope)
-                        f._attributes |= JSValueAttributesInternal.ReadOnly;
-                }
-
                 _initializers[i].Evaluate(context);
 
                 if (context._executionMode == ExecutionMode.Suspend)
@@ -224,6 +228,7 @@ namespace NiL.JS.Statements
                     return null;
                 }
             }
+
             return JSValue.notExists;
         }
 
@@ -237,7 +242,7 @@ namespace NiL.JS.Statements
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (_kind > VariableKind.FunctionScope)
+            if (Kind > VariableKind.FunctionScope)
                 stats.WithLexicalEnvironment = true;
 
             int actualChildren = 0;
@@ -248,13 +253,14 @@ namespace NiL.JS.Statements
                 {
                     actualChildren++;
 
-                    if (_kind == VariableKind.ConstantInLexicalScope && _initializers[i] is Assignment)
+                    if (Kind == VariableKind.ConstantInLexicalScope)
                     {
-                        _initializers[i] = new ForceAssignmentOperator(_initializers[i]._left, _initializers[i]._right)
+                        if (_initializers[i] is Assignment assignment)
                         {
-                            Position = _initializers[i].Position,
-                            Length = _initializers[i].Length
-                        };
+                            assignment.Force = true;
+                            if (assignment.LeftOperand is ObjectDesctructor objectDesctructor)
+                                objectDesctructor.Force = true;
+                        }
                     }
                 }
             }
@@ -293,13 +299,13 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            if (_kind == VariableKind.AutoGeneratedParameters)
+            if (Kind == VariableKind.AutoGeneratedParameters)
                 return "";
 
             var res = "";
-            if (_kind == VariableKind.ConstantInLexicalScope)
+            if (Kind == VariableKind.ConstantInLexicalScope)
                 res = "const ";
-            else if (_kind == VariableKind.LexicalScope)
+            else if (Kind == VariableKind.LexicalScope)
                 res = "let ";
             else
                 res = "var ";

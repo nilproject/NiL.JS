@@ -75,7 +75,7 @@ namespace NiL.JS.Expressions
 
                 var tempStr = state.Code.Substring(startPos, pos - startPos);
                 if (mode == TemplateStringMode.Regular)
-                    tempStr = Tools.Unescape(tempStr, state.strict);
+                    tempStr = Tools.Unescape(tempStr, state.Strict);
                 strings.Add(tempStr);
 
                 if (state.Code[pos] == '$')
@@ -141,7 +141,7 @@ namespace NiL.JS.Expressions
                 if (i > 0)
                 {
                     var temp = expressions[i - 1].Evaluate(context);
-                    if (context != null && context._executionMode != ExecutionMode.None)
+                    if (context != null && context._executionMode != ExecutionMode.Regular)
                     {
                         if (context._executionMode == ExecutionMode.Suspend)
                         {

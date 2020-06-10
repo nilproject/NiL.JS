@@ -55,8 +55,8 @@ namespace NiL.JS.Statements
             CodeNode body = Parser.Parse(state, ref i, 0);
             if (body is FunctionDefinition)
             {
-                if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, body.Position, body.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
+                if (state.Message != null)
+                    state.Message(MessageLevel.CriticalWarning, body.Position, body.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
 
                 body = new CodeBlock(new[] { body }); // для того, чтобы не дублировать код по декларации функции, 
                 // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.
@@ -83,8 +83,8 @@ namespace NiL.JS.Statements
                 elseBody = Parser.Parse(state, ref i, 0);
                 if (elseBody is FunctionDefinition)
                 {
-                    if (state.message != null)
-                        state.message(MessageLevel.CriticalWarning, elseBody.Position, elseBody.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
+                    if (state.Message != null)
+                        state.Message(MessageLevel.CriticalWarning, elseBody.Position, elseBody.Length, Strings.DoNotDeclareFunctionInNestedBlocks);
 
                     elseBody = new CodeBlock(new[] { elseBody }); // для того, чтобы не дублировать код по декларации функции, 
                     // она оборачивается в блок, который сделает самовыпил на втором этапе, но перед этим корректно объявит функцию.

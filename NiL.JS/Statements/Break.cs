@@ -22,9 +22,9 @@ namespace NiL.JS.Statements
                 i++;
             int sl = i;
             JSValue label = null;
-            if (Parser.ValidateName(state.Code, ref i, state.strict))
+            if (Parser.ValidateName(state.Code, ref i, state.Strict))
             {
-                label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict);
+                label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.Strict);
                 if (!state.Labels.Contains(label._oValue.ToString()))
                     ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Try to break to undefined label.")));
             }
@@ -32,7 +32,7 @@ namespace NiL.JS.Statements
                 ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid use of break statement")));
             var pos = index;
             index = i;
-            state.breaksCount++;
+            state.BreaksCount++;
             return new Break()
             {
                 label = label,

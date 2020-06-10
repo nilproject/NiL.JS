@@ -56,8 +56,8 @@ namespace NiL.JS.Expressions
                 result = new New(result as Call) { Position = index, Length = i - index };
             else
             {
-                if (state.message != null)
-                    state.message(MessageLevel.Warning, index, 0, "Missed brackets in a constructor invocation.");
+                if (state.Message != null)
+                    state.Message(MessageLevel.Warning, index, 0, "Missed brackets in a constructor invocation.");
                 result = new Expressions.New(new Call(result, new Expression[0]) { Position = result.Position, Length = result.Length }) { Position = index, Length = i - index };
             }
             index = i;

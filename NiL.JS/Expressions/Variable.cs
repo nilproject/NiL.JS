@@ -50,15 +50,9 @@ namespace NiL.JS.Expressions
         internal bool _suspendThrow;
         internal bool _forceThrow;
 
-        public override string Name { get { return _variableName; } }
+        public override string Name => _variableName;
 
-        protected internal override bool ContextIndependent
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected internal override bool ContextIndependent => false;
 
         internal Variable(string name, int scopeLevel)
         {
@@ -103,24 +97,24 @@ namespace NiL.JS.Expressions
             switch (res._valueType)
             {
                 case JSValueType.NotExists:
+                {
+                    if (!_suspendThrow)
                     {
-                        if (!_suspendThrow)
+                        if ((_codeContext & CodeContext.InEval) != 0)
                         {
-                            if ((_codeContext & CodeContext.InEval) != 0)
-                            {
-                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
-                            }
-                            else
-                            {                                
-                                ExceptionHelper.ThrowVariableIsNotDefined(_variableName, context, this);
-                            }
+                            ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
                         }
-                        break;
+                        else
+                        {
+                            ExceptionHelper.ThrowVariableIsNotDefined(_variableName, context, this);
+                        }
                     }
+                    break;
+                }
                 case JSValueType.Property:
-                    {
-                        return Tools.InvokeGetter(res, context._objectSource);
-                    }
+                {
+                    return Tools.InvokeGetter(res, context._objectSource);
+                }
             }
             return res;
         }
@@ -232,14 +226,11 @@ namespace NiL.JS.Expressions
                             }
                             continue;
                         }
-
-                        if (_descriptor.isReadOnly)
+                        
+                        if (_descriptor.isReadOnly && (assigns[i] is Assignment assignment) && assignment.Force)
                         {
-                            if (assigns[i] is ForceAssignmentOperator)
-                            {
-                                lastAssign = assigns[i];
-                                break;
-                            }
+                            lastAssign = assigns[i];
+                            break;
                         }
                         else if (lastAssign == null || assigns[i].Position > lastAssign.Position)
                         {

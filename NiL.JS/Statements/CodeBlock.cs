@@ -95,134 +95,146 @@ namespace NiL.JS.Statements
             Tools.SkipSpaces(state.Code, ref position);
 
             var body = new List<CodeNode>();
-            bool strictSwitch = false;
-            bool allowDirectives = state.AllowDirectives;
+#if DEBUG
             HashSet<string> directives = null;
-            state.AllowDirectives = false;
+#endif
 
-            var oldFunctionScopeLevel = state.functionScopeLevel;
-            state.lexicalScopeLevel++;
-            if (allowDirectives)
-                state.functionScopeLevel = state.lexicalScopeLevel;
+            var oldFunctionScopeLevel = state.FunctionScopeLevel;
+            state.LexicalScopeLevel++;
+            if (state.AllowDirectives)
+                state.FunctionScopeLevel = state.LexicalScopeLevel;
 
             var oldVariablesCount = state.Variables.Count;
             VariableDescriptor[] variables = null;
             state.LabelsCount = 0;
-            try
+
+            var allowDirectives = state.AllowDirectives;
+            using (state.WithCodeContext())
             {
-                if (allowDirectives)
+                state.CodeContext &= ~CodeContext.AllowDirectives;
+
+                try
                 {
-                    int start = position;
-                    do
+                    if (allowDirectives)
                     {
-                        var s = position;
-                        if (position >= state.Code.Length)
-                            break;
-                        if (Parser.ValidateValue(state.Code, ref position))
+                        int start = position;
+                        var hasDirectives = false;
+                        do
                         {
-                            while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]))
-                                position++;
-                            if (position < state.Code.Length && (Parser.IsOperator(state.Code[position])
-                                || Parser.Validate(state.Code, "instanceof", position)
-                                || Parser.Validate(state.Code, "in", position)))
-                            {
-                                position = s;
+                            var s = position;
+                            if (position >= state.Code.Length)
                                 break;
-                            }
-                            var t = s;
-                            if (Parser.ValidateString(state.Code, ref t, true))
+
+                            if (Parser.ValidateValue(state.Code, ref position))
                             {
-                                var str = state.Code.Substring(s + 1, t - s - 2);
-                                if (!strictSwitch && str == "use strict" && !state.strict)
+                                while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]))
+                                    position++;
+                                if (position < state.Code.Length && (Parser.IsOperator(state.Code[position])
+                                    || Parser.Validate(state.Code, "instanceof", position)
+                                    || Parser.Validate(state.Code, "in", position)))
                                 {
-                                    state.strict = true;
-                                    strictSwitch = true;
+                                    position = s;
+                                    break;
                                 }
-                                if (directives == null)
-                                    directives = new HashSet<string>();
-                                directives.Add(str);
+
+                                var t = s;
+                                if (Parser.ValidateString(state.Code, ref t, true))
+                                {
+                                    var str = state.Code.Substring(s + 1, t - s - 2);
+                                    if (str == "use strict")
+                                    {
+                                        state.CodeContext |= CodeContext.Strict;
+                                    }
+
+                                    hasDirectives = true;
+#if DEBUG
+                                    if (directives == null)
+                                        directives = new HashSet<string>();
+
+                                    directives.Add(str);
+#endif
+                                }
+                                else
+                                {
+                                    position = s;
+                                    break;
+                                }
+                            }
+                            else if (state.Code[position] == ';')
+                            {
+                                if (!hasDirectives)
+                                    break;
+
+                                do position++; while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]));
                             }
                             else
-                            {
-                                position = s;
                                 break;
-                            }
                         }
-                        else if (state.Code[position] == ';')
-                        {
-                            if (directives == null)
-                                break;
-                            do
-                                position++;
-                            while (position < state.Code.Length && Tools.IsWhiteSpace(state.Code[position]));
-                        }
-                        else
-                            break;
+                        while (true);
+                        position = start;
                     }
-                    while (true);
-                    position = start;
-                }
 
-                for (var j = body.Count; j-- > 0;)
-                    (body[j] as Constant).value._oValue = Tools.Unescape((body[j] as Constant).value._oValue.ToString(), state.strict);
+                    for (var j = body.Count; j-- > 0;)
+                        (body[j] as Constant).value._oValue = Tools.Unescape((body[j] as Constant).value._oValue.ToString(), state.Strict);
 
-                bool expectSemicolon = false;
-                while ((sroot && position < state.Code.Length) || (!sroot && state.Code[position] != '}'))
-                {
-                    var t = Parser.Parse(state, ref position, 0);
-                    if (t == null)
+                    bool expectSemicolon = false;
+                    while ((sroot && position < state.Code.Length) || (!sroot && state.Code[position] != '}'))
                     {
-                        if (position < state.Code.Length)
+                        var t = Parser.Parse(state, ref position, 0);
+                        if (t == null)
                         {
-                            if (sroot && state.Code[position] == '}')
-                                ExceptionHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
-
-                            if ((state.Code[position] == ';' || state.Code[position] == ','))
+                            if (position < state.Code.Length)
                             {
-                                if (state.message != null && !expectSemicolon)
-                                    state.message(MessageLevel.Warning, position, 1, "Unnecessary semicolon.");
+                                if (sroot && state.Code[position] == '}')
+                                    ExceptionHelper.Throw(new SyntaxError("Unexpected symbol \"}\" at " + CodeCoordinates.FromTextPosition(state.Code, position, 0)));
 
-                                position++;
+                                if ((state.Code[position] == ';' || state.Code[position] == ','))
+                                {
+                                    if (state.Message != null && !expectSemicolon)
+                                        state.Message(MessageLevel.Warning, position, 1, "Unnecessary semicolon.");
+
+                                    position++;
+                                }
+
+                                expectSemicolon = false;
                             }
 
-                            expectSemicolon = false;
+                            continue;
                         }
 
-                        continue;
+                        expectSemicolon = !(t is EntityDefinition);
+
+                        body.Add(t);
+                    }
+                }
+                finally
+                {
+                    if (oldVariablesCount != state.Variables.Count)
+                    {
+                        variables = extractVariables(state, oldVariablesCount);
                     }
 
-                    expectSemicolon = !(t is EntityDefinition);
-
-                    body.Add(t);
+                    state.FunctionScopeLevel = oldFunctionScopeLevel;
+                    state.LexicalScopeLevel--;
                 }
-            }
-            finally
-            {
-                if (oldVariablesCount != state.Variables.Count)
+
+                if (!sroot)
+                    position++;
+
+                int startPos = index;
+                index = position;
+                return new CodeBlock(body.ToArray())
                 {
-                    variables = extractVariables(state, oldVariablesCount);
-                }
-
-                state.functionScopeLevel = oldFunctionScopeLevel;
-                state.lexicalScopeLevel--;
-            }
-
-            if (!sroot)
-                position++;
-
-            int startPos = index;
-            index = position;
-            return new CodeBlock(body.ToArray())
-            {
-                _strict = (state.strict ^= strictSwitch) || strictSwitch,
-                _variables = variables ?? emptyVariables,
-                Position = startPos,
-                code = state.SourceCode,
-                Length = position - startPos,
+                    _strict = state.Strict,
+                    _variables = variables ?? emptyVariables,
+                    Position = startPos,
+                    code = state.SourceCode,
+                    Length = position - startPos,
 #if DEBUG
-                directives = directives
+                    directives = directives
 #endif
-            };
+                };
+            }
         }
 
         internal static VariableDescriptor[] extractVariables(ParseInfo state, int oldVariablesCount)
@@ -231,7 +243,7 @@ namespace NiL.JS.Statements
             var count = 0;
             for (var i = oldVariablesCount; i < state.Variables.Count; i++)
             {
-                if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
+                if (state.Variables[i].definitionScopeLevel == state.LexicalScopeLevel)
                     count++;
             }
 
@@ -239,12 +251,12 @@ namespace NiL.JS.Statements
             {
                 variables = new VariableDescriptor[count];
                 HashSet<string> declaredVariables = null;
-                if (state.lexicalScopeLevel != state.functionScopeLevel)
+                if (state.LexicalScopeLevel != state.FunctionScopeLevel)
                     declaredVariables = new HashSet<string>();
 
                 for (int i = oldVariablesCount, targetIndex = 0; i < state.Variables.Count; i++)
                 {
-                    if (state.Variables[i].definitionScopeLevel == state.lexicalScopeLevel)
+                    if (state.Variables[i].definitionScopeLevel == state.LexicalScopeLevel)
                     {
                         variables[targetIndex] = state.Variables[i];
                         if (declaredVariables != null)
@@ -374,7 +386,7 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
-                if (context._executionMode != ExecutionMode.None)
+                if (context._executionMode != ExecutionMode.Regular)
                 {
                     if (context._executionMode == ExecutionMode.Suspend)
                     {
@@ -593,10 +605,10 @@ namespace NiL.JS.Statements
             {
                 var cn = _lines[i] as CodeNode;
                 cn.Optimize(
-                    ref cn, 
-                    owner, 
-                    message, 
-                    opts | (i == _lines.Length - 1 ? Options.SuppressUselessExpressionsElimination | Options.SuppressUselessStatementsElimination : Options.None), 
+                    ref cn,
+                    owner,
+                    message,
+                    opts | (i == _lines.Length - 1 ? Options.SuppressUselessExpressionsElimination | Options.SuppressUselessStatementsElimination : Options.None),
                     stats);
                 _lines[i] = cn;
             }
@@ -709,10 +721,10 @@ namespace NiL.JS.Statements
         internal void initVariables(Context context)
         {
             var functionInfo = context._owner?._functionDefinition?._functionInfo;
-            var cew = functionInfo == null 
-                || functionInfo.ContainsEval 
-                || functionInfo.ContainsWith 
-                || functionInfo.NeedDecompose 
+            var cew = functionInfo == null
+                || functionInfo.ContainsEval
+                || functionInfo.ContainsWith
+                || functionInfo.NeedDecompose
                 || functionInfo.ContainsDebugger;
             for (var i = 0; i < _variables.Length; i++)
             {

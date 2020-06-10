@@ -23,15 +23,15 @@ namespace NiL.JS.Statements
             while (Tools.IsWhiteSpace(state.Code[i]) && !Tools.IsLineTerminator(state.Code[i])) i++;
             int sl = i;
             JSValue label = null;
-            if (Parser.ValidateName(state.Code, ref i, state.strict))
+            if (Parser.ValidateName(state.Code, ref i, state.Strict))
             {
-                label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.strict);
+                label = Tools.Unescape(state.Code.Substring(sl, i - sl), state.Strict);
                 if (!state.Labels.Contains(label._oValue.ToString()))
                     ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Try to continue to undefined label.")));
             }
             int pos = index;
             index = i;
-            state.continiesCount++;
+            state.ContiniesCount++;
             return new Continue()
             {
                 label = label,

@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS;
 using NiL.JS.Core;
 
-namespace FunctionalTests
+namespace FunctionalTests.Fuzz
 {
     [TestClass]
     public class JsFunfuzz

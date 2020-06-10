@@ -19,7 +19,7 @@ namespace NiL.JS.Statements
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
             int i = index;
-            if (!Parser.ValidateName(state.Code, ref i, state.strict))
+            if (!Parser.ValidateName(state.Code, ref i, state.Strict))
                 return null;
             int l = i;
             if (i >= state.Code.Length || (!Parser.Validate(state.Code, " :", ref i) && state.Code[i++] != ':'))
@@ -34,8 +34,8 @@ namespace NiL.JS.Statements
             state.LabelsCount = oldlc;
             if (stat is FunctionDefinition)
             {
-                if (state.message != null)
-                    state.message(MessageLevel.CriticalWarning, stat.Position, stat.Length, "Labeled function. Are you sure?");
+                if (state.Message != null)
+                    state.Message(MessageLevel.CriticalWarning, stat.Position, stat.Length, "Labeled function. Are you sure?");
             }
             var pos = index;
             index = i;
@@ -53,7 +53,7 @@ namespace NiL.JS.Statements
             var res = statement.Evaluate(context);
             if ((context._executionMode == ExecutionMode.Break) && (context._executionInfo != null) && (context._executionInfo._oValue as string == label))
             {
-                context._executionMode = ExecutionMode.None;
+                context._executionMode = ExecutionMode.Regular;
                 context._executionInfo = JSValue.notExists;
             }
             return res;

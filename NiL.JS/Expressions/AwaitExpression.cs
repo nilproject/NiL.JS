@@ -8,13 +8,9 @@ namespace NiL.JS.Expressions
 {
     public sealed class AwaitExpression : Expression
     {
-        protected internal override bool NeedDecompose
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected internal override bool ContextIndependent => false;
+
+        protected internal override bool NeedDecompose => true;
 
         public AwaitExpression(Expression source)
             : base(source, null, false)
@@ -27,7 +23,7 @@ namespace NiL.JS.Expressions
             {
                 if ((bool)context.SuspendData[this])
                 {
-                    context._executionMode = ExecutionMode.None;
+                    context._executionMode = ExecutionMode.Regular;
                     throw new JSException(context._executionInfo);
                 }
             }
@@ -35,14 +31,14 @@ namespace NiL.JS.Expressions
             {
                 if ((bool)context.SuspendData[this])
                 {
-                    context._executionMode = ExecutionMode.None;
+                    context._executionMode = ExecutionMode.Regular;
                     return context._executionInfo;
                 }
             }
 
             var result = _left.Evaluate(context);
 
-            if (context._executionMode != ExecutionMode.None)
+            if (context._executionMode != ExecutionMode.Regular)
             {
                 if (context._executionMode == ExecutionMode.Suspend)
                     context.SuspendData[this] = false;

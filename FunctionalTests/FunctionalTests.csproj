@@ -5,6 +5,12 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Fuzz\ConstLiteral.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Fuzz\ConstLiteral.js" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.0" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.0" />
