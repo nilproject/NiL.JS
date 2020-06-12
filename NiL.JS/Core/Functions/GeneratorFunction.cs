@@ -1,8 +1,8 @@
-﻿using NiL.JS.Core;
+﻿using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 
-namespace NiL.JS.BaseLibrary
+namespace NiL.JS.Core.Functions
 {
     [Prototype(typeof(Function), true)]
     internal sealed class GeneratorFunction : Function
@@ -18,7 +18,7 @@ namespace NiL.JS.BaseLibrary
 
             }
         }
-        
+
         public GeneratorFunction(Context context, FunctionDefinition generator)
             : base(context, generator)
         {
@@ -64,14 +64,14 @@ namespace NiL.JS.BaseLibrary
                 switch (_generatorContext._executionMode)
                 {
                     case ExecutionMode.Suspend:
-                        {
-                            _generatorContext._executionMode = ExecutionMode.Resume;
-                            break;
-                        }
+                    {
+                        _generatorContext._executionMode = ExecutionMode.Resume;
+                        break;
+                    }
                     case ExecutionMode.ResumeThrow:
-                        {
-                            break;
-                        }
+                    {
+                        break;
+                    }
                     default:
                         return new GeneratorResult(JSValue.undefined, true);
                 };
