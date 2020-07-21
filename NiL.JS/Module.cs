@@ -173,7 +173,9 @@ namespace NiL.JS
         /// </summary>
         public void Run()
         {
+            EvaluationState = ModuleEvaluationState.Evaluating;
             Script.Evaluate(Context);
+            EvaluationState = ModuleEvaluationState.Evaluated;
         }
 
         /// <summary>
@@ -194,9 +196,7 @@ namespace NiL.JS
 
             try
             {
-                EvaluationState = ModuleEvaluationState.Evaluating;
                 Run();
-                EvaluationState = ModuleEvaluationState.Evaluated;
             }
             catch
             {
