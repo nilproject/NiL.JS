@@ -16,88 +16,47 @@ namespace IntegrationTests
     public class AsyncFunctionTests
     {
         [TestMethod]
-        public async Task Echo()
+        public async Task ResolvedPromiseShouldBeReturnedAsCompletedTask()
         {
-            var asyncModule = new Module("/async-module.js", "");
+            var context = new Context();
 
-            asyncModule.Context.DefineVariable("test").Assign(JSValue.Marshal(new Func<string, Task<string>>(async (input) =>
+            context.DefineVariable("testAwaitable").Assign(JSValue.Marshal(new Func<string, Task<string>>((input) =>
             {
-                await Task.Delay(500);
+                var task = new Task<string>(() =>
+                {
+                    return input;
+                });
 
-                return input;
+                task.Start();
+
+                return task;
             })));
 
-            asyncModule.Context.Eval("export { test };");
+            context.Eval("async function testAsync() { return await testAwaitable('test'); }");
 
-            var entryModule = new Module("/entry-module.js", "import * as am from 'async-module'; let result = null; async function entryTest() { result = await am.test('test'); }");
-            var resolver = new _ModuleResolver();
+            var result = await context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
 
-            resolver.Modules.Add(asyncModule);
-
-            entryModule.ModuleResolversChain.Clear();
-            entryModule.ModuleResolversChain.Add(resolver);
-
-            entryModule.Run();
-
-            var args = new Arguments();
-
-            args[0] = JSValue.Marshal("test");
-
-            var fn = entryModule.Context.GetVariable("entryTest").As<Function>();
-
-            await fn.Call(args).As<Promise>().Task;
-
-            var result = entryModule.Context.GetVariable("result").ToString();
-
-            Assert.AreEqual("test", result);
+            Assert.AreEqual("test", result.ToString());
         }
 
         [TestMethod]
-        public async Task ExceptionsBubbleUpToCaller()
+        public async Task RejectedPromiseShouldBeReturnedAsFaultedTask()
         {
-            var asyncModule = new Module("/async-module.js", "");
+            var context = new Context();
 
-            asyncModule.Context.DefineVariable("test").Assign(JSValue.Marshal(new Func<string, Task<string>>(async (input) =>
+            context.DefineVariable("testAwaitable").Assign(JSValue.Marshal(new Func<string, Task<string>>(async (input) =>
             {
                 await Task.Delay(500);
 
-                throw new Exception("test");
+                throw new Exception();
             })));
 
-            asyncModule.Context.Eval("export { test };");
-
-            var entryModule = new Module("/entry-module.js", "import * as am from 'async-module'; let result = null; async function entryTest() { result = await am.test('test'); }");
-            var resolver = new _ModuleResolver();
-
-            resolver.Modules.Add(asyncModule);
-
-            entryModule.ModuleResolversChain.Clear();
-            entryModule.ModuleResolversChain.Add(resolver);
-
-            entryModule.Run();
-
-            var args = new Arguments();
-
-            args[0] = JSValue.Marshal("test");
+            context.Eval("let result = null; async function testAsync() { result = await testAwaitable('test'); }");
 
             await Assert.ThrowsExceptionAsync<AggregateException>(async () =>
             {
-                var fn = entryModule.Context.GetVariable("entryTest").As<Function>();
-
-                await fn.Call(args).As<Promise>().Task;
+                var result = await context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
             });
-        }
-
-        private class _ModuleResolver : IModuleResolver
-        {
-            public List<Module> Modules { get; } = new List<Module>();
-
-            public bool TryGetModule(ModuleRequest moduleRequest, out Module result)
-            {
-                result = Modules.FirstOrDefault(m => m.FilePath == moduleRequest.AbsolutePath);
-
-                return (result != null);
-            }
         }
     }
 }
