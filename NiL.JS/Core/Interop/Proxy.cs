@@ -39,35 +39,35 @@ namespace NiL.JS.Core.Interop
                     try
                     {
 #endif
-                        if (_instanceCtor != null)
+                    if (_instanceCtor != null)
+                    {
+                        if (_hostedType == typeof(JSObject))
                         {
-                            if (_hostedType == typeof(JSObject))
-                            {
-                                _prototypeInstance = CreateObject();
-                                _prototypeInstance._objectPrototype = @null;
-                                _prototypeInstance._fields = _fields;
-                                _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
-                            }
-                            else if (typeof(JSObject).IsAssignableFrom(_hostedType))
-                            {
-                                _prototypeInstance = _instanceCtor.Invoke(null) as JSObject;
-                                _prototypeInstance._objectPrototype = __proto__;
-                                _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
-                                _prototypeInstance._fields = _fields;
-                                //_prototypeInstance.valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
-                                _valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance._valueType);
-                            }
-                            else
-                            {
-                                var instance = _instanceCtor.Invoke(null);
-                                _prototypeInstance = new ObjectWrapper(instance, this)
-                                {
-                                    _attributes = _attributes | JSValueAttributesInternal.ProxyPrototype,
-                                    _fields = _fields,
-                                    _objectPrototype = _context.GlobalContext._globalPrototype
-                                };
-                            }
+                            _prototypeInstance = CreateObject();
+                            _prototypeInstance._objectPrototype = @null;
+                            _prototypeInstance._fields = _fields;
+                            _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
                         }
+                        else if (typeof(JSObject).IsAssignableFrom(_hostedType))
+                        {
+                            _prototypeInstance = _instanceCtor.Invoke(null) as JSObject;
+                            _prototypeInstance._objectPrototype = __proto__;
+                            _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
+                            _prototypeInstance._fields = _fields;
+                            //_prototypeInstance.valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
+                            _valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance._valueType);
+                        }
+                        else
+                        {
+                            var instance = _instanceCtor.Invoke(null);
+                            _prototypeInstance = new ObjectWrapper(instance, this)
+                            {
+                                _attributes = _attributes | JSValueAttributesInternal.ProxyPrototype,
+                                _fields = _fields,
+                                _objectPrototype = _context.GlobalContext._globalPrototype
+                            };
+                        }
+                    }
 #if !(PORTABLE || NETCORE)
                     }
                     catch (COMException)
@@ -113,11 +113,11 @@ namespace NiL.JS.Core.Interop
                 IList<MemberInfo> temp = null;
                 bool instanceAttribute = false;
 #if (PORTABLE || NETCORE)
-                    var members = _hostedType.GetTypeInfo().DeclaredMembers
-                         .Union(_hostedType.GetRuntimeMethods())
-                         .Union(_hostedType.GetRuntimeProperties())
-                         .Union(_hostedType.GetRuntimeFields())
-                         .Union(_hostedType.GetRuntimeEvents()).ToArray();
+                var members = _hostedType.GetTypeInfo().DeclaredMembers
+                     .Union(_hostedType.GetRuntimeMethods())
+                     .Union(_hostedType.GetRuntimeProperties())
+                     .Union(_hostedType.GetRuntimeFields())
+                     .Union(_hostedType.GetRuntimeEvents()).ToArray();
 #else
                 var members = _hostedType.GetMembers();
 #endif
@@ -141,17 +141,26 @@ namespace NiL.JS.Core.Interop
                             && (property.GetGetMethod(true) == null || !property.GetGetMethod(true).IsPublic))
                             continue;
 
-                        var parentProperty = property;
-                        while (parentProperty != null
-                            && parentProperty.DeclaringType != typeof(object)
-                            && ((property.GetGetMethod() ?? property.GetSetMethod()).Attributes & MethodAttributes.NewSlot) == 0)
+                        try
                         {
-                            property = parentProperty;
+                            var parentProperty = property;
+                            while (parentProperty != null
+                                && parentProperty.DeclaringType != typeof(object)
+                                && ((property.GetGetMethod() ?? property.GetSetMethod()).Attributes & MethodAttributes.NewSlot) == 0)
+                            {
+                                property = parentProperty;
 #if (PORTABLE || NETCORE)
-                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType?.GetRuntimeProperty(property.Name);
+                                parentProperty = property.DeclaringType.GetTypeInfo().BaseType?.GetRuntimeProperty(property.Name);
 #else
                             parentProperty = property.DeclaringType.GetTypeInfo().BaseType?.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
 #endif
+                            }
+                        }
+                        catch (AmbiguousMatchException)
+                        {
+                            // can happen if there are multiple indexer on parent type
+                            // we simply ignore this property
+                            continue;
                         }
 
                         member = property;
