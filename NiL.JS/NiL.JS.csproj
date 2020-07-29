@@ -10,9 +10,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>NiL.JS</AssemblyName>
-    <AssemblyOriginatorKeyFile>keys.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">false</PublicSign>
     <PackageId>NiL.JS</PackageId>
     <PackageTags>js;javascript;java;script;ecma;ecmascript;es2015;v8;niljs;nil;nilproject</PackageTags>
     <PackageIconUrl>https://github.com/nilproject/NiL.JS/blob/develop/nil.js%20logo%20small.png</PackageIconUrl>
