@@ -11,6 +11,20 @@ namespace IntegrationTests.BaseLibrary
     [TestClass]
     public sealed class JsonTests
     {
+        abstract class Base
+        {
+            public abstract object this[string key] { get; set; }
+            public abstract Dummy this[Guid key] { get; }
+
+        }
+        private class Dummy: Base
+        {
+            public string Title => "title";
+
+            public override object this[string key] { get => key; set { } }
+            public override Dummy this[Guid key] => null;
+        }
+
         [TestMethod]
         [ExpectedException(typeof(JSException))]
         [Timeout(1000)]
@@ -59,6 +73,26 @@ namespace IntegrationTests.BaseLibrary
 
                 var expected3 = new[] { "{", "          \"test\": 123,", "          \"array\": [", "                    123,", "                    \"test\"", "          ]", "}" };
                 Assert.AreEqual(string.Join(Environment.NewLine, expected3), JSON.stringify(new Arguments { obj, null, 15 }));
+            }
+        }
+
+        [TestMethod]
+        [Timeout(1000)]
+        public void CustomSerializer()
+        {
+            var ctx = new GlobalContext();
+
+            JSValue obj = JSValue.Marshal(new Dummy());
+
+            ctx.ActivateInCurrentThread();
+
+            try
+            {
+                Assert.IsNotNull(JSON.stringify(obj));
+            }
+            finally
+            {
+                ctx.Deactivate();
             }
         }
     }
