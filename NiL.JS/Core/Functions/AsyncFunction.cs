@@ -142,6 +142,10 @@ namespace NiL.JS.Core.Functions
             {
                 result = evaluateBody(internalContext);
             }
+            catch (JSException ex)
+            {
+                throw ex;
+            }
             finally
             {
                 internalContext.Deactivate();

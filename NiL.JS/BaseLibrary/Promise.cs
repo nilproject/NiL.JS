@@ -268,7 +268,17 @@ namespace NiL.JS.BaseLibrary
             if (thenTask != null)
             {
                 if (catchTask != null)
-                    return new Promise(whenAny(thenTask, catchTask).ContinueWith(x => x.Result.Result));
+                {
+                    return new Promise(whenAny(thenTask, catchTask).ContinueWith(x =>
+                    {
+                        if (x.IsFaulted)
+                        {
+                            throw x.Exception;
+                        }
+
+                        return x.Result.Result;
+                    }));
+                }
 
                 return new Promise(thenTask);
             }
@@ -294,7 +304,7 @@ namespace NiL.JS.BaseLibrary
 
             for (var i = 0; i < tasks.Length; i++)
             {
-                tasks[i].ContinueWith(contination, TaskContinuationOptions.OnlyOnRanToCompletion);
+                tasks[i].ContinueWith(contination, TaskContinuationOptions.NotOnCanceled);
             }
 
             return task;
