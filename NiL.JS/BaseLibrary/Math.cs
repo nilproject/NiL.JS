@@ -2,13 +2,28 @@ using System;
 using NiL.JS.Core.Interop;
 using NiL.JS.Core;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace NiL.JS.BaseLibrary
 {
     public static class Math
     {
+        /// <summary>
+        /// Seed value for random instance
+        /// </summary>
         [Hidden]
-        internal readonly static Random randomInstance = new Random((int)DateTime.Now.Ticks);
+        private static int _randomSeed = Environment.TickCount;
+        
+        /// <summary>
+        /// Random instance 
+        /// </summary>
+        /// <remarks>
+        /// ThreadLocal allows us to make a different version of static variable for each thread.
+        /// Since we usually use a thread pool redundant instances would not be created.
+        /// ThreadLocal allows us not to do lock, while being faster and thread-safe
+        /// </remarks>
+        [Hidden]
+        internal static readonly ThreadLocal<Random> randomInstance = new ThreadLocal<Random>(() => new Random(Interlocked.Increment(ref _randomSeed)));
 
         [DoNotDelete]
         [DoNotEnumerate]
@@ -559,7 +574,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotDelete]
         public static JSValue random()
         {
-            return randomInstance.NextDouble();
+            return randomInstance.Value.NextDouble();
         }
 
         [DoNotDelete]
