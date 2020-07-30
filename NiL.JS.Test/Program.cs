@@ -52,6 +52,12 @@ namespace NiL.JS.Test
 
     public sealed class ExpandoObjectWrapper : JSObject
     {
+        public int MyProperty
+        {
+            get;
+            set;
+        }
+
         private readonly IDictionary<string, object> _expandoObject;
 
         public ExpandoObjectWrapper(ExpandoObject expandoObject)
@@ -152,14 +158,22 @@ namespace NiL.JS.Test
 
         private static void testEx()
         {
-            var context = new Context
-            {
-                { "sample", new SampleObject(null) }
-            };
+            var context = new Context();
 
-            context.Eval(@"
+context.Eval(@"function f(...args) { return args.length }");
 
-");
+var f = context.GetVariable("f").As<Function>();
+
+var myFoo = new Func<JSValue[], JSValue>((args) =>
+{
+    var argsObj = new Arguments();
+    foreach (var v in args)
+        argsObj.Add(args);
+
+    return f.Call(argsObj);
+});
+
+var value = myFoo(new JSValue[] { 1, 2, 3, 4, 5, 6 }).As<int>();
 
             /*var list = new[] { 1, 2, 3, 4, 5 };
             var context = new Context
@@ -212,8 +226,6 @@ namespace NiL.JS.Test
                 if (File.Exists(currentDir + request.AbsolutePath))
                 {
                     result = new Module(request.AbsolutePath, File.ReadAllText(currentDir + request.AbsolutePath));
-                    result.ModuleResolversChain.AddRange(result.ModuleResolversChain);
-                    result.Run();
                     return true;
                 }
 
@@ -267,7 +279,7 @@ namespace NiL.JS.Test
             }));
 #endif
 
-            int mode = 101
+            int mode = 2
                     ;
             switch (mode)
             {
@@ -1051,6 +1063,7 @@ for (var i = 0; i < 10000000; )
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
             var s = new Module(filename, sr.ReadToEnd());
+            s.ModuleResolversChain.Add(new ModuleResolver());
             sr.Dispose();
             f.Dispose();
             sw.Stop();
