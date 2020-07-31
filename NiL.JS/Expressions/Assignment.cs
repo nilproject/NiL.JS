@@ -28,11 +28,12 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var field = _left.EvaluateForWrite(context);
+            var source = context._objectSource;
             var temp = _right.Evaluate(context);
 
             if (field._valueType == JSValueType.Property)
             {
-                return setProperty(context, field, temp);
+                return setProperty(context, source, field, temp);
             }
 
             if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0)
@@ -60,7 +61,7 @@ namespace NiL.JS.Expressions
             ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, _left), this, context);
         }
 
-        protected JSValue setProperty(Context context, JSValue field, JSValue value)
+        protected JSValue setProperty(Context context, JSValue fieldSource, JSValue field, JSValue value)
         {
             lock (this)
             {
@@ -68,8 +69,6 @@ namespace NiL.JS.Expressions
                 _setterArgs = null;
                 if (setterArgs == null)
                     setterArgs = new Arguments();
-
-                var fieldSource = context._objectSource;
 
                 var temp = value;
 
