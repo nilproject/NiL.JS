@@ -177,8 +177,7 @@ namespace NiL.JS.Core
 
         public JSObject GetConstructor(Type type)
         {
-            JSObject constructor = null;
-            if (!_proxies.TryGetValue(type, out constructor))
+            if (!_proxies.TryGetValue(type, out JSObject constructor))
             {
                 lock (_proxies)
                 {
@@ -246,7 +245,7 @@ namespace NiL.JS.Core
                     {
                         if (dynamicProxy._objectPrototype == null)
                             dynamicProxy._objectPrototype = _globalPrototype ?? JSValue.@null;
-                        var fake = (dynamicProxy as PrototypeProxy).PrototypeInstance;
+                        _ = (dynamicProxy as PrototypeProxy).PrototypeInstance;
                     }
                 }
             }

@@ -37,13 +37,11 @@ namespace FunctionalTests.Fuzz
             context.Eval(@"
 var t = Q;
 t.outputColumnTemplateOVN = '1234';
-debugger;
 t.flags = Flags.Flag1;
-debugger;
 t.flags |= Flags.Flag2;
 ");
 
-            Assert.AreEqual(1, q.flags);
+            Assert.AreEqual(Flags.Flag1 | Flags.Flag2, q.flags);
             Assert.AreEqual("1234", q.outputColumnTemplateOVN);
         }
     }

@@ -200,7 +200,7 @@ namespace NiL.JS.Statements
             else
                 source = suspendData.source;
 
-            JSValue variable = null;
+            JSValue variable;
             if (suspendData == null || suspendData.variable == null)
             {
                 if (context._debugging && !(_variable is CodeBlock))

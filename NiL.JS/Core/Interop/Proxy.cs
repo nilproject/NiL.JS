@@ -170,7 +170,7 @@ namespace NiL.JS.Core.Interop
                         && (!(member as EventInfo).GetAddMethod(true).IsPublic || (member as EventInfo).GetAddMethod(true).IsStatic != !IsInstancePrototype))
                         continue;
 
-                    if (member is FieldInfo && (!(member as FieldInfo).IsPublic || (member as FieldInfo).IsStatic != !IsInstancePrototype))
+                    if (member is FieldInfo fieldInfo && (!fieldInfo.IsPublic || fieldInfo.IsStatic != !IsInstancePrototype))
                         continue;
 #if (PORTABLE || NETCORE)
                     if ((members[i] is TypeInfo) && !(members[i] as TypeInfo).IsPublic)
@@ -184,12 +184,18 @@ namespace NiL.JS.Core.Interop
                     {
                         if (method.IsStatic != !(IsInstancePrototype ^ instanceAttribute))
                             continue;
-                        if (!method.IsPublic)
+                        if (!method.IsPublic && !(method.DeclaringType == typeof(Enum) && method.Name == "GetValue"))
                             continue;
                         if (method.DeclaringType == typeof(object) && member.Name == "GetType")
                             continue;
                         if (method is ConstructorInfo)
                             continue;
+
+                        if (method.DeclaringType == typeof(Enum) && method.Name == "GetValue")
+                        {
+                            tempMembers.Add("valueOf", new[] { member });
+                            continue;
+                        }
 
                         var parameterTypes = method.GetParameters().Select(x => x.ParameterType).ToArray();
                         if (parameterTypes.Any(x => x.IsByRef))
@@ -447,96 +453,96 @@ namespace NiL.JS.Core.Interop
 #endif
                 {
                     case MemberTypes.Method:
-                        {
-                            var method = (MethodInfo)m[0];
-                            r = new MethodProxy(_context, method);
-                            r._attributes &= ~(JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotEnumerate);
-                            break;
-                        }
+                    {
+                        var method = (MethodInfo)m[0];
+                        r = new MethodProxy(_context, method);
+                        r._attributes &= ~(JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.DoNotEnumerate);
+                        break;
+                    }
                     case MemberTypes.Field:
+                    {
+                        var field = (m[0] as FieldInfo);
+                        if ((field.Attributes & (FieldAttributes.Literal | FieldAttributes.InitOnly)) != 0
+                            && (field.Attributes & FieldAttributes.Static) != 0)
                         {
-                            var field = (m[0] as FieldInfo);
-                            if ((field.Attributes & (FieldAttributes.Literal | FieldAttributes.InitOnly)) != 0
-                                && (field.Attributes & FieldAttributes.Static) != 0)
-                            {
-                                r = _context.ProxyValue(field.GetValue(null));
-                                r._attributes |= JSValueAttributesInternal.ReadOnly;
-                            }
-                            else
-                            {
-                                r = new JSValue()
-                                {
-                                    _valueType = JSValueType.Property,
-                                    _oValue = new PropertyPair
-                                    (
-                                        new ExternalFunction((thisBind, a) => _context.ProxyValue(field.GetValue(field.IsStatic ? null : thisBind.Value))),
-                                        !m[0].IsDefined(typeof(ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
-                                        {
-                                            field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);
-                                            return null;
-                                        }) : null
-                                    )
-                                };
-
-                                r._attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
-                                if ((r._oValue as PropertyPair).setter == null)
-                                    r._attributes |= JSValueAttributesInternal.ReadOnly;
-
-                            }
-                            break;
+                            r = _context.ProxyValue(field.GetValue(null));
+                            r._attributes |= JSValueAttributesInternal.ReadOnly;
                         }
-                    case MemberTypes.Property:
+                        else
                         {
-                            var pinfo = (PropertyInfo)m[0];
-                            r = new JSValue()
-                            {
-                                _valueType = JSValueType.Property,
-                                _oValue = new PropertyPair
-                                    (
-#if (PORTABLE || NETCORE)
-                                        pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(_context, pinfo.GetMethod) : null,
-                                        pinfo.CanWrite && pinfo.SetMethod != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(_context, pinfo.SetMethod) : null
-#else
-                                        pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(_context, pinfo.GetGetMethod(false)) : null,
-                                        pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(_context, pinfo.GetSetMethod(false)) : null
-#endif
-)
-                            };
-
-                            r._attributes = JSValueAttributesInternal.Immutable;
-
-                            if ((r._oValue as PropertyPair).setter == null)
-                                r._attributes |= JSValueAttributesInternal.ReadOnly;
-
-                            if (pinfo.IsDefined(typeof(FieldAttribute), false))
-                                r._attributes |= JSValueAttributesInternal.Field;
-
-                            break;
-                        }
-                    case MemberTypes.Event:
-                        {
-                            var pinfo = (EventInfo)m[0];
                             r = new JSValue()
                             {
                                 _valueType = JSValueType.Property,
                                 _oValue = new PropertyPair
                                 (
-                                    null,
+                                    new ExternalFunction((thisBind, a) => _context.ProxyValue(field.GetValue(field.IsStatic ? null : thisBind.Value))),
+                                    !m[0].IsDefined(typeof(ReadOnlyAttribute), false) ? new ExternalFunction((thisBind, a) =>
+                                    {
+                                        field.SetValue(field.IsStatic ? null : thisBind.Value, a[0].Value);
+                                        return null;
+                                    }) : null
+                                )
+                            };
+
+                            r._attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
+                            if ((r._oValue as PropertyPair).setter == null)
+                                r._attributes |= JSValueAttributesInternal.ReadOnly;
+
+                        }
+                        break;
+                    }
+                    case MemberTypes.Property:
+                    {
+                        var pinfo = (PropertyInfo)m[0];
+                        r = new JSValue()
+                        {
+                            _valueType = JSValueType.Property,
+                            _oValue = new PropertyPair
+                                (
+#if (PORTABLE || NETCORE)
+                                        pinfo.CanRead && pinfo.GetMethod != null ? new MethodProxy(_context, pinfo.GetMethod) : null,
+                                    pinfo.CanWrite && pinfo.SetMethod != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(_context, pinfo.SetMethod) : null
+#else
+                                        pinfo.CanRead && pinfo.GetGetMethod(false) != null ? new MethodProxy(_context, pinfo.GetGetMethod(false)) : null,
+                                        pinfo.CanWrite && pinfo.GetSetMethod(false) != null && !pinfo.IsDefined(typeof(ReadOnlyAttribute), false) ? new MethodProxy(_context, pinfo.GetSetMethod(false)) : null
+#endif
+)
+                        };
+
+                        r._attributes = JSValueAttributesInternal.Immutable;
+
+                        if ((r._oValue as PropertyPair).setter == null)
+                            r._attributes |= JSValueAttributesInternal.ReadOnly;
+
+                        if (pinfo.IsDefined(typeof(FieldAttribute), false))
+                            r._attributes |= JSValueAttributesInternal.Field;
+
+                        break;
+                    }
+                    case MemberTypes.Event:
+                    {
+                        var pinfo = (EventInfo)m[0];
+                        r = new JSValue()
+                        {
+                            _valueType = JSValueType.Property,
+                            _oValue = new PropertyPair
+                            (
+                                null,
 #if (PORTABLE || NETCORE)
  new MethodProxy(_context, pinfo.AddMethod)
 #else
  new MethodProxy(_context, pinfo.GetAddMethod())
 #endif
 )
-                            };
-                            break;
-                        }
+                        };
+                        break;
+                    }
                     case MemberTypes.TypeInfo:
 #if (PORTABLE || NETCORE)
-                        {
-                            r = GetConstructor((m[0] as TypeInfo).AsType());
-                            break;
-                        }
+                    {
+                        r = GetConstructor((m[0] as TypeInfo).AsType());
+                        break;
+                    }
 #else
                     case MemberTypes.NestedType:
                         {
@@ -657,18 +663,18 @@ namespace NiL.JS.Core.Interop
                         switch (enumerationMode)
                         {
                             case EnumerationMode.KeysOnly:
-                                {
-                                    yield return new KeyValuePair<string, JSValue>(item.Key, null);
-                                    break;
-                                }
+                            {
+                                yield return new KeyValuePair<string, JSValue>(item.Key, null);
+                                break;
+                            }
                             case EnumerationMode.RequireValues:
                             case EnumerationMode.RequireValuesForWrite:
-                                {
-                                    yield return new KeyValuePair<string, JSValue>(
-                                        item.Key,
-                                        _fields[item.Key] = proxyMember(enumerationMode == EnumerationMode.RequireValuesForWrite, item.Value));
-                                    break;
-                                }
+                            {
+                                yield return new KeyValuePair<string, JSValue>(
+                                    item.Key,
+                                    _fields[item.Key] = proxyMember(enumerationMode == EnumerationMode.RequireValuesForWrite, item.Value));
+                                break;
+                            }
                         }
                         break;
                     }
