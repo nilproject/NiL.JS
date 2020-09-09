@@ -23,7 +23,7 @@ function add(a,b,c){
     return d;
 }
 var d=add(a,b);
-console.log(c);
+console.log(d);
 ";
 
         public override void Run()
@@ -79,17 +79,15 @@ console.log(c);
                 Console.WriteLine("Variables:");
                 var variables = debugger.LocalVariables;
                 foreach (var item in variables) {
-                    Console.WriteLine($"{item.Name}: {item.Value}");
+                    Console.WriteLine($"{item.Name}: {item.Value} ({item.ValueType})");
                 }
             } else {
                 Console.WriteLine("Variables:");
-                Console.WriteLine(string.Join(Environment.NewLine, new ContextDebuggerProxy(sender).Variables.Select(x => x.Key + ": " + x.Value)));
-
+                var variables = debugger.Variables;
+                foreach (var item in variables) {
+                    Console.WriteLine($"{item.Key}: {item.Value.Value} ({item.Value.ValueType})");
+                }
             }
-
-
-
-
 
             Console.WriteLine();
             Console.WriteLine("Output:");
