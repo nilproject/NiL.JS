@@ -17,6 +17,13 @@ var a = 1;
 var b = 2;
 var c = a + b;
 console.log(c);
+
+function add(a,b,c){
+    var d=a+b;
+    return d;
+}
+var d=add(a,b);
+console.log(c);
 ";
 
         public override void Run()
@@ -48,8 +55,41 @@ console.log(c);
 
             Console.WriteLine();
 
-            Console.WriteLine("Variables:");
-            Console.WriteLine(string.Join(Environment.NewLine, new ContextDebuggerProxy(sender).Variables.Select(x => x.Key + ": " + x.Value)));
+            var debugger = new ContextDebuggerProxy(sender);
+            if (debugger.CurrFunction.Name!="") {
+                Console.WriteLine("Current Function:" + debugger.CurrFunction.Name);
+                var ps = debugger.CurrFunction.ParamNames;
+                var args = debugger.CurrFunction.RunArguments;
+
+                Console.WriteLine("Current Function ParamNames:");
+                var index = 0;
+                foreach (var item in args) {
+                    var name = "";
+                    if (ps.Count> index) {
+                        name = ps[index];
+                    }
+                    Console.WriteLine($"[{index}] {name}: {item.Value.Value} ({item.Value.ValueType})");
+                    index++;
+                }
+                while (index<ps.Count) {
+                   var name = ps[index];
+                    Console.WriteLine($"[{index}] {name}:  (Undefined) ");
+                    index++;
+                }
+                Console.WriteLine("Variables:");
+                var variables = debugger.LocalVariables;
+                foreach (var item in variables) {
+                    Console.WriteLine($"{item.Name}: {item.Value}");
+                }
+            } else {
+                Console.WriteLine("Variables:");
+                Console.WriteLine(string.Join(Environment.NewLine, new ContextDebuggerProxy(sender).Variables.Select(x => x.Key + ": " + x.Value)));
+
+            }
+
+
+
+
 
             Console.WriteLine();
             Console.WriteLine("Output:");

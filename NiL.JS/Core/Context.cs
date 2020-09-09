@@ -40,18 +40,66 @@ namespace NiL.JS.Core
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public IEnumerable<KeyValuePair<string, JSValue>> Variables
-        {
-            get
-            {
+        public IEnumerable<KeyValuePair<string, JSValue>> Variables {
+            get {
                 var result = new List<KeyValuePair<string, JSValue>>();
-                foreach (var key in _context)
-                {
+                foreach (var key in _context) {
                     result.Add(new KeyValuePair<string, JSValue>(key, _context.GetVariable(key, false)));
                 }
                 return result.ToArray();
             }
         }
+        public int CallDepth { get { return _context._callDepth; } }
+
+
+        public List<VariableDebuggerProxy> LocalVariables {
+            get {
+                List<VariableDebuggerProxy> list = new List<VariableDebuggerProxy>();
+                foreach (var item in _context._definedVariables) {
+                    list.Add(new VariableDebuggerProxy(item));
+                }
+                return list;
+            }
+        }
+
+        public FunctionDebuggerProxy CurrFunction { get { return new FunctionDebuggerProxy(_context); } }
+
+    }
+    public sealed class FunctionDebuggerProxy
+    {
+        private readonly Context _context;
+
+        public FunctionDebuggerProxy(Context context)
+        {
+            _context = context;
+        }
+        public string Name { get { return _context._owner?.name ?? ""; } }
+        public List<string> ParamNames {
+            get {
+                List<string> list = new List<string>();
+                var ps = _context._owner?._functionDefinition?.parameters;
+                if (ps != null) {
+                    foreach (var item in ps) {
+                        list.Add(item.Name);
+                    }
+                }
+                return list;
+            }
+        }
+
+        public JSValue RunArguments { get { return _context._owner?.arguments; } }
+    }
+    public sealed class VariableDebuggerProxy
+    {
+        private VariableDescriptor _variable;
+        public VariableDebuggerProxy(VariableDescriptor variableDescriptor)
+        {
+            _variable = variableDescriptor;
+        }
+
+        public JSValueType ValueType { get { return _variable.cacheRes.ValueType; } }
+        public string Name { get { return _variable.Name; } }
+        public object Value { get { return _variable.cacheRes.Value; } }
     }
 
     /// <summary>
