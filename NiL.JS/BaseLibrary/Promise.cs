@@ -344,7 +344,7 @@ namespace NiL.JS.BaseLibrary
 
                 result[index] = t.Result;
 
-                if (Interlocked.Decrement(ref count) == 0)
+                if (tasks.All(it => it.IsCompleted))
                     task.Start();
             };
 
