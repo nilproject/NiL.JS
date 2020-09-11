@@ -334,7 +334,7 @@ namespace NiL.JS.BaseLibrary
         {
             JSValue[] result = new JSValue[tasks.Length];
             var task = new Task<JSValue[]>(() => result);
-            var count = tasks.Length - 1;
+            var count = tasks.Length;
 
             Action<Task<JSValue>> contination = t =>
             {
@@ -344,7 +344,7 @@ namespace NiL.JS.BaseLibrary
 
                 result[index] = t.Result;
 
-                if (tasks.All(it => it.IsCompleted))
+                if (Interlocked.Decrement(ref count) == 0)
                     task.Start();
             };
 
