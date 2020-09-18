@@ -214,14 +214,17 @@ namespace NiL.JS.Core
                 int hash;
                 var keyLen = key.Length;
                 int isNumber = int.MinValue & (-keyLen);
-                int redKey = keyLen - 2;
                 char c;
-                hash = (int)((uint)keyLen * 0x33) ^ 0xb7b7b7;
+                hash = (int)((uint)keyLen * 0x30303) ^ 0xb7b7b7;
                 for (var i = 0; i < keyLen; i++)
                 {
                     c = key[i];
-                    c -= (char)((uint)((i - 1) & ~redKey) >> 31);
-                    hash += (hash >> 13) + (hash << 7) + c;
+
+                    var o = hash;
+                    hash >>= 3;
+                    hash ^= o * 0x0151_0131;
+                    hash ^= c * 0x34d8_4881;
+
                     isNumber &= ('0' - 1 - c) & (c - '9' - 1);
                 }
 
@@ -502,7 +505,7 @@ namespace NiL.JS.Core
 
         public virtual void Add(KeyValuePair<string, TValue> item)
         {
-            throw new NotImplementedException();
+            Add(item.Key, item.Value);
         }
 
         public void Clear()
