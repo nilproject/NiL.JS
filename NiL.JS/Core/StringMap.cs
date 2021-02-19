@@ -619,9 +619,9 @@ namespace NiL.JS.Core
 
                     for (var ni = 0; ni < numbers.Count && prevVersion == _version; ni++)
                     {
-                        if (numbers[ni].Key >= exprected)
+                        if (numbers[ni].Key >= exprected && TryGetValue(numbers[ni].Value, out var item))
                         {
-                            yield return new KeyValuePair<string, TValue>(numbers[ni].Value, this[numbers[ni].Value]);
+                            yield return new KeyValuePair<string, TValue>(numbers[ni].Value, item);
                             exprected = numbers[ni].Key + 1;
                         }
                     }
