@@ -579,11 +579,13 @@ namespace NiL.JS.Core
 
             List<KeyValuePair<uint, string>> numbers = null;
             uint exprected = 0;
-            var i = 0;
-            var prevVersion = _version;
             var forceCheckNum = _records.Length <= MaxAsListSize;
+
+            var i = 0;
             while (i < _eicount)
             {
+                var prevVersion = _version;
+
                 for (; i < _records.Length; i++)
                 {
                     int index = i;// _existsedIndexes[i];
@@ -604,6 +606,11 @@ namespace NiL.JS.Core
                             numbers.Add(new KeyValuePair<uint, string>(number, _records[i].key));
                         }
                     }
+                }
+
+                if (prevVersion != _version)
+                {
+                    i = 0;
                 }
 
                 if (numbers != null)
