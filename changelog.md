@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.5.1475 - 19 February 2021
+* Fix enumeration of object properties
+
 ## 2.5.1427 - 14 February 2020
 Fixes:
 * Arrow function as return value of other function
