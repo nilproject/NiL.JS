@@ -219,6 +219,7 @@ namespace NiL.JS.Statements
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
+
                 if (context._executionMode == ExecutionMode.Suspend)
                 {
                     if (suspendData == null)
@@ -298,6 +299,7 @@ namespace NiL.JS.Statements
                 if (source == JSValue.@null || !source.Defined || (source._valueType >= JSValueType.Object && source._oValue == null))
                     break;
             }
+
             return null;
         }
 

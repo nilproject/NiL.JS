@@ -268,7 +268,6 @@ namespace NiL.JS.BaseLibrary
                 return self.ToObject();
 
             var direction = System.Math.Sign(start - target);
-            var fromIndex = System.Math.Min(start * direction, target * direction) * direction;
             var count = System.Math.Min(end - start, length - target);
             var modifier = (count - 1) * (-(direction - 1) / 2);
 

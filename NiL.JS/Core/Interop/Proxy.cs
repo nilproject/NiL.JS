@@ -653,6 +653,7 @@ namespace NiL.JS.Core.Interop
             {
                 if (_fields.ContainsKey(item.Key))
                     continue;
+
                 for (var i = item.Value.Count; i-- > 0;)
                 {
                     if (item.Value[i].IsDefined(typeof(HiddenAttribute), false))

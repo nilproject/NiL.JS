@@ -33,12 +33,15 @@ namespace NiL.JS.Expressions
             bool res;
             if (_tempContainer == null)
                 _tempContainer = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+            
             _tempContainer.Assign(_left.Evaluate(context));
             var temp = _tempContainer;
             _tempContainer = null;
             var source = _right.Evaluate(context);
+            
             if (source._valueType < JSValueType.Object)
                 ExceptionHelper.Throw(new TypeError("Right-hand value of operator in is not an object."));
+            
             if (temp._valueType == JSValueType.Integer)
             {
                 var array = source._oValue as BaseLibrary.Array;
@@ -49,6 +52,7 @@ namespace NiL.JS.Expressions
                     return res;
                 }
             }
+
             var t = source.GetProperty(temp, false, PropertyScope.Common);
             _tempContainer = temp;
             return t.Exists;

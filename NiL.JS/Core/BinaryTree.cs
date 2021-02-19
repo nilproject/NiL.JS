@@ -851,7 +851,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                for (var e = enumerate(root); e.MoveNext(); )
+                for (var e = enumerate(root); e.MoveNext();)
                     yield return e.Current;
             }
         }
@@ -860,7 +860,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                for (var e = enumerateReversed(root); e.MoveNext(); )
+                for (var e = enumerateReversed(root); e.MoveNext();)
                     yield return new KeyValuePair<TKey, TValue>(e.Current.key, e.Current.value);
             }
         }
@@ -915,7 +915,7 @@ namespace NiL.JS.Core
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            for (var e = enumerate(root); e.MoveNext(); )
+            for (var e = enumerate(root); e.MoveNext();)
                 yield return new KeyValuePair<TKey, TValue>(e.Current.key, e.Current.value);
         }
 

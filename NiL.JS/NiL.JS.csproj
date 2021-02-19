@@ -28,6 +28,7 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(VersionPrefix)' == ''">
