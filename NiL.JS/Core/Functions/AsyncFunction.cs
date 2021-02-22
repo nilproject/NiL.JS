@@ -142,9 +142,9 @@ namespace NiL.JS.Core.Functions
             {
                 result = evaluateBody(internalContext);
             }
-            catch (JSException ex)
+            catch (JSException)
             {
-                throw ex;
+                throw;
             }
             finally
             {

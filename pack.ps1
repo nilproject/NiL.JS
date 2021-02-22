@@ -7,6 +7,7 @@ mkdir nuget -erroraction 'silentlycontinue'
 [System.IO.File]::WriteAllText("$(get-location)\\NiL.JS\\Properties\\InternalInfo.cs","internal static class InternalInfo
 {
     internal const string Version = ""2.5.$(git rev-list --count develop)"";
+    internal const string Year = ""$(get-date -Format yyyy)"";
 }")
 cd NiL.JS
 dotnet build -c Release -property:VersionPrefix=2.5.$(git rev-list --count develop)
