@@ -138,7 +138,12 @@ namespace NiL.JS.Core
                 if (forWrite || _fields != null)
                     name = key.ToString();
 
-                fromProto = (propertyScope >= PropertyScope.Super || _fields == null || !_fields.TryGetValue(name, out res) || res._valueType < JSValueType.Undefined) && ((proto = __proto__)._oValue != null);
+                fromProto = 
+                    (propertyScope >= PropertyScope.Super 
+                        || _fields == null 
+                        || !_fields.TryGetValue(name, out res) 
+                        || res._valueType < JSValueType.Undefined) 
+                    && ((proto = __proto__)._oValue != null);
 
                 if (fromProto)
                 {
