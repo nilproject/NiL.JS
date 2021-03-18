@@ -11,7 +11,7 @@
     <DebugType>portable</DebugType>
     <AssemblyName>NiL.JS</AssemblyName>
     <AssemblyOriginatorKeyFile>keys.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly Condition="Exists('$(AssemblyOriginatorKeyFile)')">true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>NiL.JS</PackageId>
     <PackageTags>js;javascript;java;script;ecma;ecmascript;es2015;v8;niljs;nil;nilproject</PackageTags>
