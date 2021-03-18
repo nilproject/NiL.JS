@@ -798,18 +798,20 @@ namespace NiL.JS.BaseLibrary
         {
             if (memberScope < PropertyScope.Super && nameObj._valueType != JSValueType.Symbol)
             {
-                string name = nameObj.ToString();
+                var name = nameObj.ToString();
+                if (nameObj._valueType != JSValueType.String)
+                    nameObj = name;
 
                 if (_functionDefinition._body._strict && (name == "caller" || name == "arguments"))
                     return propertiesDummySM;
 
-                if ((!forWrite || (_attributes & JSValueAttributesInternal.ProxyPrototype) != 0) && name == "prototype")
+                if (name == "prototype")
                 {
+                    if (forWrite)
+                        _prototype = prototype.CloneImpl(true);
+
                     return prototype;
                 }
-
-                if (nameObj._valueType != JSValueType.String)
-                    nameObj = name;
             }
 
             return base.GetProperty(nameObj, forWrite, memberScope);
