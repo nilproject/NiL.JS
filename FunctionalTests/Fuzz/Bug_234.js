@@ -8,8 +8,6 @@
 
 const v = run();
 
-console.dir(v);
-
 var assert = (x, message) => {
     if (!x)
         throw message;
