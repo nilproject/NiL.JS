@@ -76,7 +76,7 @@ namespace NiL.JS.Expressions
             {
                 i++;
                 Tools.SkipSpaces(state.Code, ref i);
-                int s = i;
+                int start = i;
                 if (state.Code[i] == '}')
                     break;
 
@@ -85,7 +85,7 @@ namespace NiL.JS.Expressions
                 if (getOrSet && state.Code[i] == '(')  // function with name 'get' or 'set'
                 {
                     getOrSet = false;
-                    i = s;
+                    i = start;
                 }
 
                 var asterisk = state.Code[i] == '*';
@@ -122,7 +122,7 @@ namespace NiL.JS.Expressions
                         initializer = ExpressionTree.Parse(state, ref i);
                     }
 
-                    switch (state.Code[s])
+                    switch (state.Code[start])
                     {
                         case 'g':
                             {
@@ -143,7 +143,7 @@ namespace NiL.JS.Expressions
                 }
                 else if (getOrSet && state.Code[i] != ':')
                 {
-                    i = s;
+                    i = start;
                     var mode = state.Code[i] == 's' ? FunctionKind.Setter : FunctionKind.Getter;
                     var propertyAccessor = FunctionDefinition.Parse(state, ref i, mode) as FunctionDefinition;
                     var accessorName = propertyAccessor._name;
@@ -161,7 +161,7 @@ namespace NiL.JS.Expressions
                         var vle = flds[accessorName] as PropertyPair;
 
                         if (vle == null)
-                            ExceptionHelper.ThrowSyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field", state.Code, s);
+                            ExceptionHelper.ThrowSyntaxError("Try to define " + mode.ToString().ToLowerInvariant() + " for defined field", state.Code, start);
 
                         do
                         {
@@ -182,7 +182,7 @@ namespace NiL.JS.Expressions
                                 }
                             }
 
-                            ExceptionHelper.ThrowSyntaxError("Try to redefine " + mode.ToString().ToLowerInvariant() + " of " + propertyAccessor.Name, state.Code, s);
+                            ExceptionHelper.ThrowSyntaxError("Try to redefine " + mode.ToString().ToLowerInvariant() + " of " + propertyAccessor.Name, state.Code, start);
                         }
                         while (false);
                     }
@@ -196,36 +196,37 @@ namespace NiL.JS.Expressions
                         while (Tools.IsWhiteSpace(state.Code[i]));
                     }
 
-                    i = s;
+                    i = start;
                     var fieldName = "";
                     if (Parser.ValidateName(state.Code, ref i, false, true, state.Strict))
-                        fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.Strict);
+                    {
+                        fieldName = Tools.Unescape(state.Code.Substring(start, i - start), state.Strict);
+                    }
                     else if (Parser.ValidateValue(state.Code, ref i))
                     {
-                        if (state.Code[s] == '-')
-                            ExceptionHelper.Throw(new SyntaxError("Invalid char \"-\" at " + CodeCoordinates.FromTextPosition(state.Code, s, 1)));
-                        double d = 0.0;
-                        int n = s;
-                        if (Tools.ParseNumber(state.Code, ref n, out d))
+                        if (state.Code[start] == '-')
+                            ExceptionHelper.Throw(new SyntaxError("Invalid char \"-\" at " + CodeCoordinates.FromTextPosition(state.Code, start, 1)));
+
+                        int n = start;
+                        if (Tools.ParseNumber(state.Code, ref n, out double d))
                             fieldName = Tools.DoubleToString(d);
-                        else if (state.Code[s] == '\'' || state.Code[s] == '"')
-                            fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.Strict);
+                        else if (state.Code[start] == '\'' || state.Code[start] == '"')
+                            fieldName = Tools.Unescape(state.Code.Substring(start + 1, i - start - 2), state.Strict);
                         else if (flds.Count != 0)
-                            ExceptionHelper.Throw((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s))));
+                            ExceptionHelper.Throw((new SyntaxError("Invalid field name at " + CodeCoordinates.FromTextPosition(state.Code, start, i - start))));
                         else
                             return null;
                     }
                     else
                         return null;
 
-                    while (Tools.IsWhiteSpace(state.Code[i]))
-                        i++;
+                    Tools.SkipSpaces(state.Code, ref i);
 
                     Expression initializer = null;
 
                     if (state.Code[i] == '(')
                     {
-                        i = s;
+                        i = start;
                         initializer = FunctionDefinition.Parse(state, ref i, asterisk ? FunctionKind.MethodGenerator : async ? FunctionKind.AsyncMethod : FunctionKind.Method);
                     }
                     else
@@ -236,11 +237,10 @@ namespace NiL.JS.Expressions
                         if (state.Code[i] != ':' && state.Code[i] != ',' && state.Code[i] != '}')
                             ExceptionHelper.ThrowSyntaxError("Expected ',', ';' or '}'", state.Code, i);
 
-                        Expression aei = null;
-                        if (flds.TryGetValue(fieldName, out aei))
+                        if (flds.TryGetValue(fieldName, out Expression aei))
                         {
-                            if (state.Strict ? (!(aei is Constant) || (aei as Constant).value != JSValue.undefined) : aei is PropertyPair)
-                                ExceptionHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, s, i - s);
+                            if (state.Strict ? (!(aei is Constant constant) || constant.value != JSValue.undefined) : aei is PropertyPair)
+                                ExceptionHelper.ThrowSyntaxError("Try to redefine field \"" + fieldName + "\"", state.Code, start, i - start);
 
                             if (state.Message != null)
                                 state.Message(MessageLevel.Warning, i, 0, "Duplicate key \"" + fieldName + "\"");
@@ -251,16 +251,23 @@ namespace NiL.JS.Expressions
                             if (!Parser.ValidateName(fieldName, 0))
                                 ExceptionHelper.ThrowSyntaxError("Invalid variable name", state.Code, i);
 
-                            initializer = new Variable(fieldName, state.LexicalScopeLevel);
+                            var variable = new Variable(fieldName, state.LexicalScopeLevel)
+                            {
+                                Position = start,
+                                Length = fieldName.Length,
+                            };
+
+                            initializer = variable;
                         }
                         else
                         {
-                            do
-                                i++;
-                            while (Tools.IsWhiteSpace(state.Code[i]));
+                            i++;
+                            Tools.SkipSpaces(state.Code, ref i);
+
                             initializer = ExpressionTree.Parse(state, ref i, false, false);
                         }
                     }
+
                     flds[fieldName] = initializer;
                 }
 
