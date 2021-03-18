@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.5.1480 - 12 March 2021
+## 2.5.1486 - 12 March 2021
 * Fix #235 "TypeScript inheritance of classes do not work correctly"
 
 ## 2.5.1480 - 12 March 2021
