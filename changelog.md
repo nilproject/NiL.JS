@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.1480 - 19 February 2021
+* Fix bug #234 about short object definitions and variables
+* Enable support of .NET 5.0
+
 ## 2.5.1475 - 19 February 2021
 * Fix enumeration of object properties
 
