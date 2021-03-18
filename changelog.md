@@ -1,6 +1,9 @@
 # Changelog
 
-## 2.5.1480 - 19 February 2021
+## 2.5.1480 - 12 March 2021
+* Fix #235 "TypeScript inheritance of classes do not work correctly"
+
+## 2.5.1480 - 12 March 2021
 * Fix bug #234 about short object definitions and variables
 * Enable support of .NET 5.0
 
