@@ -58,5 +58,57 @@ namespace IntegrationTests
                 var result = await context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
             });
         }
+
+
+        [TestMethod]
+        public async Task AsyncMethodShouldReturnValue()
+        {
+            // Arrange
+            var request = "value";
+
+            var script = $@"
+async function script() {{
+    async function demo() {{
+        let request = '{request}';
+        let response = await fetch(request);
+        check(response);
+        return response;
+    }}
+
+    let result = await demo();
+    check(result);
+    return result;
+}}
+";
+            Module module = new Module(script);
+
+            module.Context
+                .GlobalContext
+                .DefineVariable("fetch")
+                .Assign(JSValue.Marshal(new Func<string, Task<string>>(FetchAsync)));
+
+            module.Context
+                .GlobalContext
+                .DefineVariable("check")
+                .Assign(JSValue.Marshal(new Action<string>((value) => { Assert.AreEqual(request, value); })));
+
+            module.Run();
+
+            // Act
+            var result = await module.Context.RootContext.GetVariable("script")
+                .As<Function>()
+                .Call(new Arguments())
+                .As<Promise>()
+                .Task;
+
+            // Assert
+            Assert.AreEqual(request, result.Value);
+        }
+
+        private async Task<string> FetchAsync(string jsRequest)
+        {
+            await Task.Delay(10);
+            return jsRequest;
+        }
     }
 }
