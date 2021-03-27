@@ -59,7 +59,6 @@ namespace IntegrationTests
             });
         }
 
-
         [TestMethod]
         public async Task AsyncMethodShouldReturnValue()
         {

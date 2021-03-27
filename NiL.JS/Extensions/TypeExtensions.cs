@@ -14,7 +14,7 @@ namespace NiL.JS.Extensions
         /// <returns></returns>
         public static bool IsTaskOf(this Type type)
         {
-            var typeInfo = type.GetTypeInfo();
+            var typeInfo = type?.GetTypeInfo();
             if (typeInfo == null)
             {
                 return false;
