@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using NiL.JS;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Extensions;
@@ -79,22 +74,20 @@ async function script() {{
     return result;
 }}
 ";
-            Module module = new Module(script);
+            var context = new Context();
 
-            module.Context
-                .GlobalContext
+            context
                 .DefineVariable("fetch")
                 .Assign(JSValue.Marshal(new Func<string, Task<string>>(FetchAsync)));
 
-            module.Context
-                .GlobalContext
+            context
                 .DefineVariable("check")
                 .Assign(JSValue.Marshal(new Action<string>((value) => { Assert.AreEqual(request, value); })));
 
-            module.Run();
+            context.Eval(script);
 
             // Act
-            var result = await module.Context.RootContext.GetVariable("script")
+            var result = await context.GetVariable("script")
                 .As<Function>()
                 .Call(new Arguments())
                 .As<Promise>()
