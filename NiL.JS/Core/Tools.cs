@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
@@ -2585,5 +2586,26 @@ namespace NiL.JS.Core
             return s.ToString();
         }
 
+        /// <summary>
+        /// Determines if the given type matches Task<>
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool IsTaskOfT(Type type)
+        {
+            var typeInfo = type?.GetTypeInfo();
+            if (typeInfo == null)
+            {
+                return false;
+            }
+
+            if (typeInfo.IsGenericType
+                && typeInfo.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                return true;
+            }
+
+            return IsTaskOfT(typeInfo.BaseType);
+        }
     }
 }
