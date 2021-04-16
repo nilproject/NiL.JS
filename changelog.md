@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.5.1493 - 17 April 2021
+* Fix InvalidOperationException when export statement is used
+
 ## 2.5.1486 - 12 March 2021
 * Fix #235 "TypeScript inheritance of classes do not work correctly"
 
