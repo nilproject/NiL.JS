@@ -28,8 +28,10 @@ namespace NiL.JS.Expressions
             {
                 if (_left != null)
                     _left.Eliminated = true;
+
                 if (_right != null)
                     _right.Eliminated = true;
+                
                 base.Eliminated = value;
             }
         }

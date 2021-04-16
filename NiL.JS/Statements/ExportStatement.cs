@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using NiL.JS.Backward;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
 
@@ -90,12 +89,9 @@ namespace NiL.JS.Statements
                 if (!Parser.ValidateName(state.Code, ref index))
                     ExceptionHelper.ThrowSyntaxError("Invalid export name", state.Code, index);
                 var name = state.Code.Substring(start, index - start);
-                var alias = name;
-
                 Tools.SkipSpaces(state.Code, ref index);
 
-                alias = parseAlias(state.Code, ref index) ?? name;
-
+                string alias = parseAlias(state.Code, ref index) ?? name;
                 for (var i = 0; i < export._map.Count; i++)
                 {
                     if (export._map[i].Key == name)
@@ -142,7 +138,6 @@ namespace NiL.JS.Statements
 
         public override void Decompose(ref CodeNode self)
         {
-            throw new InvalidOperationException();
         }
 
         public override JSValue Evaluate(Context context)

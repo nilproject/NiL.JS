@@ -4,9 +4,11 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Fuzz\Bug_213.js" />
     <None Remove="Fuzz\ConstLiteral.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Fuzz\Bug_213.js" />
     <EmbeddedResource Include="Fuzz\ConstLiteral.js" />
   </ItemGroup>
   <ItemGroup>
