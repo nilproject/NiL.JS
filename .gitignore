@@ -156,6 +156,9 @@ $RECYCLE.BIN/
 .DS_Store
 
 # My
+/.vs
+/.vscode
+/nuget
 /Tests/Modules/clr
 /NiL.JS/nuget
 /NiL.JS/pack.bat

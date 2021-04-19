@@ -73,13 +73,13 @@
     <Compile Include="2. Pass values into JavaScript environment\Primitive values via data conversion.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExamplesFramework\ExamplesFramework.csproj">
-      <Project>{21C2EFE5-3935-4E00-9C34-C1E6BA3643AF}</Project>
-      <Name>ExamplesFramework</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NiL.JS\NiL.JS.csproj">
       <Project>{f703d739-bcfa-4515-a963-c95651cb1ec4}</Project>
       <Name>NiL.JS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utility\ExamplesFramework\ExamplesFramework.csproj">
+      <Project>{21c2efe5-3935-4e00-9c34-c1e6ba3643af}</Project>
+      <Name>ExamplesFramework</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
