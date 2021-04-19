@@ -1,0 +1,64 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.IO" #>
+<#@ output extension=".cs" #>
+<# 
+	var testsRoot = Directory.GetParent(Host.TemplateFile).Parent.Parent.FullName.ToString().Replace("\\","/") + "/TestSets/"; 
+	var sputnikTests = testsRoot + "tests/sputnik/";
+	var staPath = testsRoot + "sta.js";
+	var chapters = Directory.EnumerateDirectories(sputnikTests);
+#>
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace Tests.Generated
+{
+<#  foreach (var chapter in chapters)
+	{
+		var files = Directory.EnumerateFiles(chapter, "*.js", SearchOption.AllDirectories);
+
+		#>	[TestClass]
+	public sealed class SputnikTests_<#= chapter.Split('/').Last() #> : FileTestBase
+	{	
+		[TestInitialize]
+		public void Initialize() => LoadSta("<#= staPath #>");
+<#
+		var tests = new HashSet<string>();
+
+		foreach (var file in files)
+		{
+			var testName = file.Split('/', '\\').Last();
+			if (testName.EndsWith(".js"))
+				testName = testName.Substring(0, testName.Length - 3);
+			testName = testName.Replace('.', '_').Replace('-','_');
+			if (char.IsDigit(testName[0]))
+				testName = "S" + testName;
+
+			var originalName = testName;
+			var index = 1;
+			while (tests.Contains(testName))
+				testName = originalName + "_" + (index++);
+
+			tests.Add(testName);
+			var code = File.ReadAllText(file);
+			var descStart = code.IndexOf("/*");
+			var desc = code.Substring(descStart, code.IndexOf("*/") - descStart);
+			if (desc.Contains("* @ignore")) 
+			{#>
+		[Ignore]<#
+			}
+#>	
+		[TestMethod]
+#line 1 "<#= file.Replace('/','\\') #>"
+		public void <#= testName #>() => RunFile("<#= file.Replace('\\','/') #>");
+<#
+		}
+#>
+	}
+
+<#
+	}
+#>
+}

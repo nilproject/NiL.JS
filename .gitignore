@@ -154,13 +154,14 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+
+# My
 /Tests/Modules/clr
 /NiL.JS/nuget
 /NiL.JS/pack.bat
 /NiL.JS/NuGet.exe
-/FunctionalTests/Generated/SputnikTests.cs
-/FunctionalTests/Generated/Embedded.cs
-/FunctionalTests/Generated/Custom.cs
+/Tests/Generated/SputnikTests.cs
+/Tests/Generated/Embedded.cs
 /keys.snk
 /NiL.JS.Portable/keys.snk
 /NiL.JS/keys.snk

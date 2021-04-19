@@ -160,43 +160,18 @@ namespace NiL.JS.Test
         {
             var context = new Context();
 
-context.Eval(@"function f(...args) { return args.length }");
+            var array = new int[10];
+            array[2] = 2;
 
-var f = context.GetVariable("f").As<Function>();
+            context.DefineVariable("test").Assign(new { array = array });
 
-var myFoo = new Func<JSValue[], JSValue>((args) =>
-{
-    var argsObj = new Arguments();
-    foreach (var v in args)
-        argsObj.Add(args);
-
-    return f.Call(argsObj);
-});
-
-var value = myFoo(new JSValue[] { 1, 2, 3, 4, 5, 6 }).As<int>();
-
-            /*var list = new[] { 1, 2, 3, 4, 5 };
-            var context = new Context
-            {
-                { "sample", new SampleObject(null) }
-            };
-            context.GlobalContext.JsonSerializersRegistry = new JsonSerializersRegistry();
-            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(string)));
-            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(int?)));
-            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(object)));
-            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(SampleObject)));
-            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(JSValue)));
-            context.GlobalContext.JsonSerializersRegistry.AddJsonSerializer(new InteropJsonSerializer(typeof(SampleObject)));
-            var s = context.GlobalContext.JsonSerializersRegistry.GetSuitableJsonSerializer(new InteropJsonSerializer(typeof(void)));
-            //new InteropJsonSerializer(typeof(SampleObject)), // Weight 1
-            //new InteropJsonSerializer(typeof(SampleObject)), // Weight 1
-            //new InteropJsonSerializer(typeof(SampleObject)), // Weight 1
-            //new InteropJsonSerializer(typeof(SampleObject)), // Weight 4
-            //new InteropJsonSerializer(typeof(SampleObject))  // Weight 4
             context.Eval(@"
-  var o = {toJSON(){ return {toValue(){ return ""1234""}}}};
-  console.log(JSON.stringify(o));
-");*/
+test.array[0] = 1;
+test.array[1] = 2;
+test.array[2] = 3;
+");
+
+            Console.WriteLine(string.Join(", ", array));
         }
 
         public sealed class MyTestModuleResolver : CachedModuleResolverBase
