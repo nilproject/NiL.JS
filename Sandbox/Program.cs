@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Linq.Expressions;
 using NiL.JS.Core.Functions;
@@ -12,11 +11,10 @@ using NiL.JS.Core.Interop;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Extensions;
 using System.Collections.Generic;
-using System.Collections;
 using System.Threading.Tasks;
 using System.Dynamic;
 
-namespace NiL.JS.Test
+namespace Sandbox
 {
     public class TestCallable : ICallable
     {
