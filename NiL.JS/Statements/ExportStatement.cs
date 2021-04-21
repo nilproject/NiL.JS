@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
@@ -138,6 +137,14 @@ namespace NiL.JS.Statements
 
         public override void Decompose(ref CodeNode self)
         {
+            _internalDefinition?.Decompose(ref _internalDefinition);
+
+            for (var i = 0; i < _map.Count; i++)
+            {
+                var value = _map[i].Value;
+                value.Decompose(ref value);
+                _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, value);
+            }
         }
 
         public override JSValue Evaluate(Context context)
@@ -277,7 +284,7 @@ namespace NiL.JS.Statements
             {
                 result.Append("{ ");
 
-                for (;;)
+                for (; ; )
                 {
                     var item = _map[i];
 
