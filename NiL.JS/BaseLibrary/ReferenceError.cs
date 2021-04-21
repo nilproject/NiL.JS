@@ -14,13 +14,11 @@ namespace NiL.JS.BaseLibrary
         public ReferenceError(Arguments args)
             : base(args[0].ToString())
         {
-
         }
 
         [DoNotEnumerate]
         public ReferenceError()
         {
-
         }
 
         [DoNotEnumerate]

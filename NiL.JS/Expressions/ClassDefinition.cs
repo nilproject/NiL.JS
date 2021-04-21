@@ -113,12 +113,12 @@ namespace NiL.JS.Expressions
         private MemberDescriptor[] _members;
         private Expression _baseClass;
         private FunctionDefinition _constructor;
-        private MemberDescriptor[] computedProperties;
+        private MemberDescriptor[] _computedProperties;
 
         public IEnumerable<MemberDescriptor> Members { get { return _members; } }
         public Expression BaseClass { get { return _baseClass; } }
         public FunctionDefinition Constructor { get { return _constructor; } }
-        public IEnumerable<MemberDescriptor> ComputedProperties { get { return computedProperties; } }
+        public IEnumerable<MemberDescriptor> ComputedProperties { get { return _computedProperties; } }
 
         public override bool Hoist { get { return false; } }
 
@@ -128,7 +128,7 @@ namespace NiL.JS.Expressions
             this._baseClass = baseType;
             this._constructor = ctor;
             this._members = fields;
-            this.computedProperties = computedProperties;
+            this._computedProperties = computedProperties;
         }
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
@@ -242,17 +242,17 @@ namespace NiL.JS.Expressions
                         {
                             case 'g':
                             {
-                                computedProperties.Add(new MemberDescriptor((Expression)propertyName, new PropertyPair((Expression)initializer, null), @static));
+                                computedProperties.Add(new MemberDescriptor(propertyName, new PropertyPair((Expression)initializer, null), @static));
                                 break;
                             }
                             case 's':
                             {
-                                computedProperties.Add(new MemberDescriptor((Expression)propertyName, new PropertyPair(null, (Expression)initializer), @static));
+                                computedProperties.Add(new MemberDescriptor(propertyName, new PropertyPair(null, (Expression)initializer), @static));
                                 break;
                             }
                             default:
                             {
-                                computedProperties.Add(new MemberDescriptor((Expression)propertyName, (Expression)initializer, @static));
+                                computedProperties.Add(new MemberDescriptor(propertyName, (Expression)initializer, @static));
                                 break;
                             }
                         }
@@ -347,6 +347,7 @@ namespace NiL.JS.Expressions
                             fieldName = "static " + fieldName;
                             state.CodeContext |= CodeContext.InStaticMember;
                         }
+
                         if (flds.ContainsKey(fieldName))
                             ExceptionHelper.Throw(new SyntaxError("Trying to redefinition member \"" + fieldName + "\" at " + CodeCoordinates.FromTextPosition(state.Code, s, i - s)));
 
@@ -391,17 +392,22 @@ namespace NiL.JS.Expressions
 
             if ((state.CodeContext & CodeContext.InExpression) == 0)
             {
-                if (string.IsNullOrEmpty(name))
+                if ((state.CodeContext & CodeContext.InExport) == 0 || !string.IsNullOrEmpty(name))
                 {
-                    ExceptionHelper.ThrowSyntaxError("Class must have name", state.Code, index);
-                }
-                if (state.Strict && state.FunctionScopeLevel != state.LexicalScopeLevel)
-                {
-                    ExceptionHelper.ThrowSyntaxError("In strict mode code, class can only be declared at top level or immediately within other function.", state.Code, index);
-                }
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        ExceptionHelper.ThrowSyntaxError("Class must have a name", state.Code, index);
+                    }
 
-                state.Variables.Add(result.reference._descriptor);
+                    if (state.Strict && state.FunctionScopeLevel != state.LexicalScopeLevel)
+                    {
+                        ExceptionHelper.ThrowSyntaxError("In strict mode code, class can only be declared at top level or immediately within other function.", state.Code, index);
+                    }
+
+                    state.Variables.Add(result.reference._descriptor);
+                }
             }
+
             index = i + 1;
             return result;
         }
@@ -441,10 +447,10 @@ namespace NiL.JS.Expressions
                 );
             }
 
-            for (var i = 0; i < computedProperties.Length; i++)
+            for (var i = 0; i < _computedProperties.Length; i++)
             {
-                Parser.Build(ref computedProperties[i]._name, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-                Parser.Build(ref computedProperties[i]._value, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref _computedProperties[i]._name, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+                Parser.Build(ref _computedProperties[i]._value, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
             }
 
             if (descriptorToRestore != null)
@@ -462,18 +468,17 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             JSValue variable = null;
-            if ((_codeContext & CodeContext.InExpression) == 0)
+            if ((_codeContext & CodeContext.InExpression) == 0 && !string.IsNullOrEmpty(_name))
             {
                 variable = context.DefineVariable(_name, false);
             }
 
-            var ctor = new ClassConstructor(context, this._constructor, this);
+            var ctor = new ClassConstructor(context, _constructor, this);
             ctor.RequireNewKeywordLevel = RequireNewKeywordLevel.WithNewOnly;
 
-            JSValue baseProto = context.GlobalContext._globalPrototype;
-            if (this._baseClass != null)
+            if (_baseClass != null)
             {
-                baseProto = _baseClass.Evaluate(context)._oValue as JSObject;
+                var baseProto = _baseClass.Evaluate(context)._oValue as JSObject;
                 if (baseProto == null)
                 {
                     ctor.prototype.__proto__ = null;
@@ -482,6 +487,7 @@ namespace NiL.JS.Expressions
                 {
                     ctor.prototype.__proto__ = Tools.InvokeGetter(baseProto.GetProperty("prototype"), baseProto)._oValue as JSObject;
                 }
+
                 ctor.__proto__ = baseProto as JSObject;
             }
 
@@ -502,9 +508,9 @@ namespace NiL.JS.Expressions
                 target.SetProperty(member.Name.Evaluate(null), value, true);
             }
 
-            for (var i = 0; i < computedProperties.Length; i++)
+            for (var i = 0; i < _computedProperties.Length; i++)
             {
-                var member = computedProperties[i];
+                var member = _computedProperties[i];
 
                 JSObject target = null;
                 if (member.Static)
@@ -561,8 +567,8 @@ namespace NiL.JS.Expressions
                 }
             }
 
-            if ((_codeContext & CodeContext.InExpression) == 0)
-                variable.Assign(ctor);
+            variable?.Assign(ctor);
+
             return ctor;
         }
 
@@ -580,10 +586,10 @@ namespace NiL.JS.Expressions
                 result.Add(_members[i]._value);
             }
 
-            for (var i = 0; i < computedProperties.Length; i++)
+            for (var i = 0; i < _computedProperties.Length; i++)
             {
-                result.Add(computedProperties[i].Name);
-                result.Add(computedProperties[i].Value);
+                result.Add(_computedProperties[i].Name);
+                result.Add(_computedProperties[i].Value);
             }
 
             if (_baseClass != null)
@@ -624,11 +630,11 @@ namespace NiL.JS.Expressions
 #endif
             }
 
-            for (var i = 0; i < computedProperties.Length; i++)
+            for (var i = 0; i < _computedProperties.Length; i++)
             {
-                computedProperties[i]._name.Decompose(ref computedProperties[i]._name, result);
+                _computedProperties[i]._name.Decompose(ref _computedProperties[i]._name, result);
 
-                computedProperties[i]._value.Decompose(ref computedProperties[i]._value, result);
+                _computedProperties[i]._value.Decompose(ref _computedProperties[i]._value, result);
 
 #if DEBUG
                 System.Diagnostics.Debug.Assert(result.Count == 0, "Decompose: results not empty");
@@ -645,10 +651,10 @@ namespace NiL.JS.Expressions
                 _members[i]._value.Optimize(ref _members[i]._value, owner, message, opts, stats);
             }
 
-            for (var i = 0; i < computedProperties.Length; i++)
+            for (var i = 0; i < _computedProperties.Length; i++)
             {
-                computedProperties[i]._name.Optimize(ref computedProperties[i]._name, owner, message, opts, stats);
-                computedProperties[i]._value.Optimize(ref computedProperties[i]._value, owner, message, opts, stats);
+                _computedProperties[i]._name.Optimize(ref _computedProperties[i]._name, owner, message, opts, stats);
+                _computedProperties[i]._value.Optimize(ref _computedProperties[i]._value, owner, message, opts, stats);
             }
         }
 
@@ -658,10 +664,10 @@ namespace NiL.JS.Expressions
 
             _baseClass?.RebuildScope(functionInfo, null, scopeBias);
             _constructor.RebuildScope(functionInfo, null, scopeBias);
-            for (var i = 0; i < computedProperties.Length; i++)
+            for (var i = 0; i < _computedProperties.Length; i++)
             {
-                computedProperties[i].Name.RebuildScope(functionInfo, null, scopeBias);
-                computedProperties[i].Value.RebuildScope(functionInfo, null, scopeBias);
+                _computedProperties[i].Name.RebuildScope(functionInfo, null, scopeBias);
+                _computedProperties[i].Value.RebuildScope(functionInfo, null, scopeBias);
             }
             for (var i = 0; i < _members.Length; i++)
             {

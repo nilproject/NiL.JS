@@ -28,7 +28,8 @@ namespace NiL.JS.Core
         InGenerator = 1 << 10,
         InFunction = 1 << 11,
         InAsync = 1 << 12,
-        AllowDirectives = 1 << 13,
+        InExport = 1 << 13,
+        AllowDirectives = 1 << 14,
     }
 
 #if !(PORTABLE || NETCORE)

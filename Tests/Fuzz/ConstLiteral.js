@@ -39,20 +39,3 @@
 	if (s != 's')
 		throw "ACHTUNG #4!!!"
 })();
-
-(function(){
-	try
-	{
-	 (class{
-		foo() {
-			const that = this;
-		}
-	 })
-	}
-	catch (e)
-	{
-		return;
-	}
-
-	throw "ACHTUNG #5!!!"
-})();

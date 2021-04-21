@@ -245,6 +245,7 @@ namespace NiL.JS.Core
                 _parent = prototype;
                 _thisBind = prototype._thisBind;
                 _debugging = prototype._debugging;
+                _module = prototype._module;
             }
 
             if (createFields)

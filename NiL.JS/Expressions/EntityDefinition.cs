@@ -48,11 +48,6 @@ namespace NiL.JS.Expressions
         }
     }
 
-    /// <summary>
-    /// Базовый тип для ClassNotation и FunctionNotation.
-    /// 
-    /// Base type fot ClassNotation and FunctionNotation.
-    /// </summary>
     public abstract class EntityDefinition : Expression
     {
         [CLSCompliant(false)]

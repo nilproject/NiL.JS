@@ -421,8 +421,6 @@ namespace NiL.JS.Expressions
                 using (state.WithNewLabelsScope())
                 using (state.WithCodeContext())
                 {
-
-
                     if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
                         state.CodeContext |= CodeContext.InGenerator;
                     else if (kind == FunctionKind.AsyncFunction || kind == FunctionKind.AsyncMethod || kind == FunctionKind.AsyncAnonymousFunction || kind == FunctionKind.AsyncArrow)
@@ -605,12 +603,18 @@ namespace NiL.JS.Expressions
             if ((state.CodeContext & CodeContext.InExpression) == 0
                 && (kind != FunctionKind.Arrow || (state.CodeContext & CodeContext.InEval) == 0))
             {
-                if (string.IsNullOrEmpty(name))
+                if ((state.CodeContext & CodeContext.InExport) == 0 || !string.IsNullOrEmpty(name))
                 {
-                    ExceptionHelper.ThrowSyntaxError("Function must has name", state.Code, index);
-                }
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        ExceptionHelper.ThrowSyntaxError("Function must has name", state.Code, index);
+                    }
 
-                state.Variables.Add(func.reference._descriptor);
+                    if (kind != FunctionKind.Arrow && kind != FunctionKind.Method)
+                    {
+                        state.Variables.Add(func.reference._descriptor);
+                    }
+                }
             }
 
             index = position;

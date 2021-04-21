@@ -37,13 +37,14 @@ namespace Tests.Generated
 
             var globalContext = new GlobalContext();
 
+            var output = new StringBuilder();
+            var oldOutput = Console.Out;
+            Console.SetOut(new StringWriter(output));
+
             try
             {
                 globalContext.ActivateInCurrentThread();
 
-                var output = new StringBuilder();
-                var oldOutput = Console.Out;
-                Console.SetOut(new StringWriter(output));
                 var pass = true;
                 Module module;
                 if (!string.IsNullOrEmpty(_sta))
@@ -58,8 +59,9 @@ namespace Tests.Generated
 
                 module.ModuleResolversChain.Add(new MyTestModuleResolver());
 
-                var preambleEnd = 0;
                 var preambleEndTemp = 0;
+                int preambleEnd;
+
                 do
                 {
                     preambleEnd = preambleEndTemp;
@@ -80,11 +82,13 @@ namespace Tests.Generated
                 var negative = code.IndexOf("* @negative", 0, preambleEnd) != -1;
                 var strict = code.IndexOf("* @onlyStrict", 0, preambleEnd) != -1;
 
+                var context = module.Context;
+
                 try
                 {
                     try
                     {
-                        module.Context.Eval(code, !strict);
+                        context.Eval(code, !strict);
                     }
                     finally
                     {
@@ -103,10 +107,6 @@ namespace Tests.Generated
                     output.Append(e);
                     pass = false;
                 }
-                finally
-                {
-                    Console.SetOut(oldOutput);
-                }
 
                 Assert.IsTrue(pass, output.ToString());
                 Assert.AreEqual(string.Empty, output.ToString().Trim());
@@ -114,6 +114,7 @@ namespace Tests.Generated
             finally
             {
                 globalContext.Deactivate();
+                Console.SetOut(oldOutput);
             }
         }
     }

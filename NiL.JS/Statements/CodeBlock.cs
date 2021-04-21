@@ -457,7 +457,7 @@ namespace NiL.JS.Statements
                         ref _variables[i].initializer,
                         System.Math.Max(2, expressionDepth),
                         variables,
-                        codeContext | (_strict ? CodeContext.Strict : CodeContext.None),
+                        (codeContext | (_strict ? CodeContext.Strict : CodeContext.None)) & ~CodeContext.InExpression,
                         message,
                         stats,
                         opts);

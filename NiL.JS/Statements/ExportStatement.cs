@@ -33,7 +33,22 @@ namespace NiL.JS.Statements
             {
                 reexport = -1;
                 Tools.SkipSpaces(state.Code, ref index);
-                result._map.Add(new KeyValuePair<string, Expression>("", (Expression)ExpressionTree.Parse(state, ref index)));
+
+                using (state.WithCodeContext(CodeContext.InExport))
+                {
+                    var variables = VariableDefinition.Parse(state, ref index);
+
+                    if (variables != null)
+                        result._internalDefinition = variables;
+                    else
+                    {
+                        var expression = ClassDefinition.Parse(state, ref index)
+                            ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function)
+                            ?? ExpressionTree.Parse(state, ref index);
+
+                        result._map.Add(new KeyValuePair<string, Expression>("", (Expression)expression));
+                    }
+                }
             }
             else if (state.Code[index] == '{')
             {
@@ -41,16 +56,19 @@ namespace NiL.JS.Statements
             }
             else
             {
-                reexport = -1;
-                var definition =
-                    VariableDefinition.Parse(state, ref index)
-                    ?? ClassDefinition.Parse(state, ref index)
-                    ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function);
+                using (state.WithCodeContext(CodeContext.InExport))
+                {
+                    reexport = -1;
+                    var definition =
+                        VariableDefinition.Parse(state, ref index)
+                        ?? ClassDefinition.Parse(state, ref index)
+                        ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function);
 
-                if (definition == null)
-                    ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
+                    if (definition == null)
+                        ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
 
-                result._internalDefinition = definition;
+                    result._internalDefinition = definition;
+                }
             }
 
             Tools.SkipSpaces(state.Code, ref index);
@@ -176,10 +194,9 @@ namespace NiL.JS.Statements
             }
             else if (_internalDefinition != null)
             {
-                _internalDefinition.Evaluate(context);
+                var value = _internalDefinition.Evaluate(context);
 
-                var variableDef = _internalDefinition as VariableDefinition;
-                if (variableDef != null)
+                if (_internalDefinition is VariableDefinition variableDef)
                 {
                     for (var i = 0; i < variableDef._variables.Length; i++)
                     {
@@ -190,7 +207,7 @@ namespace NiL.JS.Statements
                 {
                     var entityDef = _internalDefinition as EntityDefinition;
 
-                    context._module.Exports[entityDef.Name] = entityDef.reference.Descriptor.Get(context, false, 1);
+                    context._module.Exports[entityDef.Name] = value;
                 }
             }
             else
@@ -209,6 +226,9 @@ namespace NiL.JS.Statements
             if (_reexportSourceModuleName != null)
                 return false;
 
+            codeContext &= ~CodeContext.InExpression;
+            codeContext |= CodeContext.InExport;
+            
             if (_internalDefinition != null)
             {
                 Parser.Build(ref _internalDefinition, expressionDepth, variables, codeContext, message, stats, opts | Options.SuppressUselessStatementsElimination);

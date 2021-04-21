@@ -1,5 +1,5 @@
 ﻿if (!this.$ERROR)
-    this.$ERROR = console.log;
+    this.$ERROR = console.log.bind(console);
 
 var x = 1;
 function f0() {

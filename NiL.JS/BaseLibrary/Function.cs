@@ -346,7 +346,14 @@ namespace NiL.JS.BaseLibrary
 
             if (func != null && code.Length == index)
             {
-                Parser.Build(ref func, 0, new Dictionary<string, VariableDescriptor>(), _initialContext._strict ? CodeContext.Strict : CodeContext.None, null, null, Options.None);
+                Parser.Build(
+                    ref func,
+                    0,
+                    new Dictionary<string, VariableDescriptor>(),
+                    (_initialContext._strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InExpression,
+                    null,
+                    null,
+                    Options.None);
 
                 func.RebuildScope(null, null, 0);
                 func.Optimize(ref func, null, null, Options.None, null);
