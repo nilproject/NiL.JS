@@ -4,13 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
-using NiL.JS.Core.Interop;
 using NiL.JS.Backward;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Core.Interop
 {
     [Prototype(typeof(BaseLibrary.Array))]
-    public sealed class NativeList : CustomType
+    public sealed class NativeList : CustomType, IIterable
     {
         private sealed class Element : JSValue
         {
@@ -150,7 +150,7 @@ namespace NiL.JS.Core.Interop
                                 {
                                     var context = Context.CurrentGlobalContext;
 #if (PORTABLE || NETCORE)
-                                        _oValue = new MethodProxy(context, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
+                                    _oValue = new MethodProxy(context, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
 #else
                                     _oValue = new MethodProxy(context, ((Delegate)value).Method, ((Delegate)value).Target);
 #endif
@@ -389,6 +389,11 @@ namespace NiL.JS.Core.Interop
 
             for (var e = base.GetEnumerator(hideNonEnumerable, enumerationMode); e.MoveNext();)
                 yield return e.Current;
+        }
+
+        public IIterator iterator()
+        {
+            return data.GetEnumerator().AsIterator();
         }
     }
 }
