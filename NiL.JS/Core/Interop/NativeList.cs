@@ -306,8 +306,9 @@ namespace NiL.JS.Core.Interop
                 if (isIndex)
                 {
                     notExists._valueType = JSValueType.NotExistsInObject;
-                    if (index < 0 || index > data.Count)
+                    if (index < 0 || index >= data.Count)
                         return notExists;
+
                     return new Element(this, index);
                 }
             }
