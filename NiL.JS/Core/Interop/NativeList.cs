@@ -14,15 +14,15 @@ namespace NiL.JS.Core.Interop
     {
         private sealed class Element : JSValue
         {
-            private readonly NativeList owner;
-            private int index;
+            private readonly NativeList _owner;
+            private int _index;
 
             public Element(NativeList owner, int index)
             {
-                this.owner = owner;
-                this.index = index;
+                this._owner = owner;
+                this._index = index;
                 _attributes |= JSValueAttributesInternal.Reassign;
-                var value = owner.data[index];
+                var value = owner._data[index];
                 _valueType = JSValueType.Undefined;
                 if (value != null)
                 {
@@ -175,41 +175,34 @@ namespace NiL.JS.Core.Interop
 
             public override void Assign(JSValue value)
             {
-                owner.data[index] = value.Value;
+                _owner._data[_index] = value.Value;
             }
         }
 
-        private readonly Number lenObj;
-        private readonly IList data;
-        private readonly Type elementType;
+        private readonly Number _lenObj;
+        private readonly IList _data;
+        private readonly Type _elementType;
 
         public override object Value
         {
-            get
-            {
-                return data;
-            }
-
-            protected set
-            {
-
-            }
+            get => _data;
+            protected set { }
         }
 
         [Hidden]
         public NativeList()
         {
-            this.data = new List<object>();
-            elementType = typeof(object);
-            lenObj = new Number(0);
+            _data = new List<object>();
+            _elementType = typeof(object);
+            _lenObj = new Number(0);
         }
 
         [Hidden]
         public NativeList(IList data)
         {
-            this.data = data;
-            this.elementType = data.GetType().GetElementType();
-            if (elementType == null)
+            _data = data;
+            _elementType = data.GetType().GetElementType();
+            if (_elementType == null)
             {
 #if PORTABLE || NETCORE
                 var @interface = data.GetType().GetInterface(typeof(IList<>).Name);
@@ -217,29 +210,30 @@ namespace NiL.JS.Core.Interop
                 var @interface = data.GetType().GetTypeInfo().GetInterface(typeof(IList<>).Name);
 #endif
                 if (@interface != null)
-                    elementType = @interface.GetGenericArguments()[0];
+                    _elementType = @interface.GetGenericArguments()[0];
                 else
-                    elementType = typeof(object);
+                    _elementType = typeof(object);
             }
 
-            lenObj = new Number(data.Count);
+            _lenObj = new Number(data.Count);
         }
 
         public void push(Arguments args)
         {
             for (var i = 0; i < args._iValue; i++)
-                data.Add(Tools.convertJStoObj(args[i], elementType, true));
+                _data.Add(Tools.convertJStoObj(args[i], _elementType, true));
         }
 
         public JSValue pop()
         {
-            if (data.Count == 0)
+            if (_data.Count == 0)
             {
                 notExists._valueType = JSValueType.NotExistsInObject;
                 return notExists;
             }
-            var result = data[data.Count - 1];
-            data.RemoveAt(data.Count - 1);
+
+            var result = _data[_data.Count - 1];
+            _data.RemoveAt(_data.Count - 1);
             if (result is IList)
                 return new NativeList(result as IList);
             else
@@ -253,8 +247,8 @@ namespace NiL.JS.Core.Interop
                 forWrite &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
                 if (key._valueType == JSValueType.String && string.CompareOrdinal("length", key._oValue.ToString()) == 0)
                 {
-                    lenObj._iValue = data.Count;
-                    return lenObj;
+                    _lenObj._iValue = _data.Count;
+                    return _lenObj;
                 }
 
                 bool isIndex = false;
@@ -286,8 +280,8 @@ namespace NiL.JS.Core.Interop
                             var fc = str[0];
                             if ('0' <= fc && '9' >= fc)
                             {
-                                var dindex = 0.0;
                                 int si = 0;
+                                double dindex;
                                 if (Tools.ParseNumber(tname._oValue.ToString(), ref si, out dindex)
                                     && (si == tname._oValue.ToString().Length)
                                     && dindex >= 0
@@ -306,7 +300,7 @@ namespace NiL.JS.Core.Interop
                 if (isIndex)
                 {
                     notExists._valueType = JSValueType.NotExistsInObject;
-                    if (index < 0 || index >= data.Count)
+                    if (index < 0 || index >= _data.Count)
                         return notExists;
 
                     return new Element(this, index);
@@ -372,10 +366,10 @@ namespace NiL.JS.Core.Interop
                 if (isIndex)
                 {
                     notExists._valueType = JSValueType.NotExistsInObject;
-                    if (index < 0 || index > data.Count)
+                    if (index < 0 || index > _data.Count)
                         return;
 
-                    data[index] = value.Value;
+                    _data[index] = value.Value;
                     return;
                 }
             }
@@ -385,7 +379,7 @@ namespace NiL.JS.Core.Interop
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
         {
-            for (var i = 0; i < data.Count; i++)
+            for (var i = 0; i < _data.Count; i++)
                 yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumerationMode > 0 ? new Element(this, i) : null);
 
             for (var e = base.GetEnumerator(hideNonEnumerable, enumerationMode); e.MoveNext();)
@@ -394,7 +388,7 @@ namespace NiL.JS.Core.Interop
 
         public IIterator iterator()
         {
-            return data.GetEnumerator().AsIterator();
+            return _data.GetEnumerator().AsIterator();
         }
     }
 }
