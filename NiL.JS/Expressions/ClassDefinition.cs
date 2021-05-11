@@ -203,10 +203,18 @@ namespace NiL.JS.Expressions
                         s = i;
                     }
 
-                    bool getOrSet = Parser.Validate(state.Code, "get", ref i) || Parser.Validate(state.Code, "set", ref i);
+                    bool getOrSet = Parser.Validate(state.Code, "get", ref i)
+                                 || Parser.Validate(state.Code, "set", ref i);
+
                     if (getOrSet)
                     {
                         Tools.SkipSpaces(state.Code, ref i);
+
+                        if (state.Code[i] == '(')
+                        {
+                            i = s;
+                            getOrSet = false;
+                        }
                     }
 
                     var asterisk = state.Code[i] == '*';
@@ -316,6 +324,7 @@ namespace NiL.JS.Expressions
 
                         if (Parser.ValidateName(state.Code, ref i, false, true, state.Strict))
                             fieldName = Tools.Unescape(state.Code.Substring(s, i - s), state.Strict);
+
                         else if (Parser.ValidateValue(state.Code, ref i))
                         {
                             double d = 0.0;
