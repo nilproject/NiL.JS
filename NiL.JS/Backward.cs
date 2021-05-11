@@ -37,6 +37,13 @@ namespace NiL.JS.Backward
 
     internal static class Backward
     {
+#if NETSTANDARD1_3
+        internal static ConstructorInfo[] GetConstructors<T>(this Type self)
+        {
+            return self.GetTypeInfo().DeclaredConstructors.ToArray();
+        }
+#endif
+
         internal static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> self)
         {
             return new ReadOnlyCollection<T>(self);
@@ -135,7 +142,13 @@ namespace NiL.JS.Backward
 #if !NET40
         internal static Type GetInterface(this Type type, string name)
         {
-            return type.GetTypeInfo().ImplementedInterfaces.First(x => x.Name == name);
+            foreach (var i in type.GetTypeInfo().ImplementedInterfaces)
+            {
+                if (i.FullName.Contains(name))
+                    return i;
+            }
+
+            return null;
         }
 #endif
     }

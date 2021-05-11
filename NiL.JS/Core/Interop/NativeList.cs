@@ -19,8 +19,8 @@ namespace NiL.JS.Core.Interop
 
             public Element(NativeList owner, int index)
             {
-                this._owner = owner;
-                this._index = index;
+                _owner = owner;
+                _index = index;
                 _attributes |= JSValueAttributesInternal.Reassign;
                 var value = owner._data[index];
                 _valueType = JSValueType.Undefined;
@@ -146,19 +146,19 @@ namespace NiL.JS.Core.Interop
                             }
                             default:
                             {
-                                if (value is Delegate)
+                                if (value is Delegate @delegate)
                                 {
                                     var context = Context.CurrentGlobalContext;
 #if (PORTABLE || NETCORE)
                                     _oValue = new MethodProxy(context, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
 #else
-                                    _oValue = new MethodProxy(context, ((Delegate)value).Method, ((Delegate)value).Target);
+                                    _oValue = new MethodProxy(context, @delegate.Method, @delegate.Target);
 #endif
                                     _valueType = JSValueType.Function;
                                 }
-                                else if (value is IList)
+                                else if (value is IList list)
                                 {
-                                    _oValue = new NativeList(value as IList);
+                                    _oValue = new NativeList(list);
                                     _valueType = JSValueType.Object;
                                 }
                                 else
@@ -267,9 +267,13 @@ namespace NiL.JS.Core.Interop
                     }
                     case JSValueType.Double:
                     {
-                        isIndex = tname._dValue >= 0 && tname._dValue < uint.MaxValue && (long)tname._dValue == tname._dValue;
+                        isIndex = tname._dValue >= 0
+                            && tname._dValue < uint.MaxValue
+                            && (long)tname._dValue == tname._dValue;
+
                         if (isIndex)
                             index = (int)(uint)tname._dValue;
+
                         break;
                     }
                     case JSValueType.String:
@@ -280,9 +284,8 @@ namespace NiL.JS.Core.Interop
                             var fc = str[0];
                             if ('0' <= fc && '9' >= fc)
                             {
-                                int si = 0;
-                                double dindex;
-                                if (Tools.ParseNumber(tname._oValue.ToString(), ref si, out dindex)
+                                var si = 0;
+                                if (Tools.ParseNumber(tname._oValue.ToString(), ref si, out double dindex)
                                     && (si == tname._oValue.ToString().Length)
                                     && dindex >= 0
                                     && dindex < uint.MaxValue
@@ -297,12 +300,8 @@ namespace NiL.JS.Core.Interop
                     }
                 }
 
-                if (isIndex)
+                if (isIndex && index >= 0 && index < _data.Count)
                 {
-                    notExists._valueType = JSValueType.NotExistsInObject;
-                    if (index < 0 || index >= _data.Count)
-                        return notExists;
-
                     return new Element(this, index);
                 }
             }

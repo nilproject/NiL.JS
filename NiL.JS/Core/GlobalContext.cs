@@ -485,6 +485,12 @@ namespace NiL.JS.Core
                         (value as Task).ContinueWith(task => result.Start());
                         return new ObjectWrapper(new Promise(result));
                     }
+#if !NET40
+                    else if (value is IEnumerable && NativeReadOnlyListCtors.IsReadOnlyList(value))
+                    {
+                        return NativeReadOnlyListCtors.Create(value);
+                    }
+#endif
                     else
                     {
                         return new ObjectWrapper(value);

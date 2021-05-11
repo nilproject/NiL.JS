@@ -2180,7 +2180,7 @@ namespace NiL.JS.BaseLibrary
             {
                 var isIndex = false;
                 var index = 0;
-                var repeat = false;
+                bool repeat;
                 do
                 {
                     repeat = false;
@@ -2207,9 +2207,8 @@ namespace NiL.JS.BaseLibrary
                             var skey = key._oValue.ToString();
                             if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
                             {
-                                var dindex = 0.0;
                                 int si = 0;
-                                if (Tools.ParseNumber(skey, ref si, out dindex)
+                                if (Tools.ParseNumber(skey, ref si, out double dindex)
                                     && (si == skey.Length)
                                     && dindex >= 0
                                     && dindex < uint.MaxValue
@@ -2250,6 +2249,7 @@ namespace NiL.JS.BaseLibrary
                         {
                             if (memberScope == PropertyScope.Own)
                                 ExceptionHelper.Throw(new TypeError("Can not add item into fixed size array"));
+
                             return notExists;
                         }
 
