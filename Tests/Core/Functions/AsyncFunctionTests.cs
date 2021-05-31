@@ -11,7 +11,7 @@ namespace Tests
     public class AsyncFunctionTests
     {
         [TestMethod]
-        public Task ResolvedPromiseShouldBeReturnedAsCompletedTask()
+        public void ResolvedPromiseShouldBeReturnedAsCompletedTask()
         {
             var context = new Context();
 
