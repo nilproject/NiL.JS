@@ -373,7 +373,19 @@ namespace NiL.JS.Core.Interop
                 }
             }
 
-            base.SetProperty(key, value, strict);
+            SetProperty(key, value, strict);
+        }
+
+        public BaseLibrary.Array toJSON()
+        {
+            var context = Context.CurrentGlobalContext;
+            var result = new BaseLibrary.Array();
+            for (var i = 0; i < _data.Count; i++)
+            {
+                result[i] = context.ProxyValue(_data[i]);
+            }
+
+            return result;
         }
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)

@@ -442,6 +442,7 @@ namespace NiL.JS.BaseLibrary
 
             if (processed.Contains(obj))
                 ExceptionHelper.Throw(new TypeError("Unable to convert circular structure to JSON."));
+
             processed.Add(obj);
 
             try
@@ -471,6 +472,7 @@ namespace NiL.JS.BaseLibrary
 
                 if (obj.Value == null)
                     return null;
+
                 if (obj._valueType == JSValueType.Function)
                     return null;
 

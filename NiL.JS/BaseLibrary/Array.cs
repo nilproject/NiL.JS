@@ -2161,7 +2161,10 @@ namespace NiL.JS.BaseLibrary
                     _data[index] = res;
                 }
                 else if ((res._attributes & JSValueAttributesInternal.SystemObject) != 0)
+                {
                     _data[index] = res = res.CloneImpl(false);
+                }
+
                 if (res._valueType == JSValueType.Property)
                 {
                     var setter = (res._oValue as PropertyPair).setter;
@@ -2169,6 +2172,7 @@ namespace NiL.JS.BaseLibrary
                         setter.Call(this, new Arguments { value });
                     return;
                 }
+
                 res.Assign(value);
             }
         }
@@ -2388,13 +2392,13 @@ namespace NiL.JS.BaseLibrary
                 array = owner;
                 if ((int)array._data.Length == array._data.Length)
                 {
-                    this._iValue = (int)array._data.Length;
-                    this._valueType = JSValueType.Integer;
+                    _iValue = (int)array._data.Length;
+                    _valueType = JSValueType.Integer;
                 }
                 else
                 {
-                    this._dValue = array._data.Length;
-                    this._valueType = JSValueType.Double;
+                    _dValue = array._data.Length;
+                    _valueType = JSValueType.Double;
                 }
             }
 
@@ -2402,20 +2406,24 @@ namespace NiL.JS.BaseLibrary
             {
                 var nlenD = Tools.JSObjectToDouble(value);
                 var nlen = (uint)nlenD;
+                
                 if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
                     ExceptionHelper.Throw(new RangeError("Invalid array length"));
+                
                 if ((_attributes & JSValueAttributesInternal.ReadOnly) != 0)
                     return;
+
                 array.SetLenght(nlen);
+                
                 if ((int)array._data.Length == array._data.Length)
                 {
-                    this._iValue = (int)array._data.Length;
-                    this._valueType = JSValueType.Integer;
+                    _iValue = (int)array._data.Length;
+                    _valueType = JSValueType.Integer;
                 }
                 else
                 {
-                    this._dValue = array._data.Length;
-                    this._valueType = JSValueType.Double;
+                    _dValue = array._data.Length;
+                    _valueType = JSValueType.Double;
                 }
             }
         }
