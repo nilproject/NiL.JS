@@ -7,7 +7,7 @@ on:
     branches: [ develop ]
 
 jobs:
-  Tests on .NET Core 3.1:
+  Tests_on_NET_Core_31:
 
     runs-on: ubuntu-latest
 
@@ -35,7 +35,7 @@ jobs:
         dotnet test -c Release -property:TargetFramework=netcoreapp3.1 -property:SignAssembly=false -property:PublicSign=false
         cd ..
 
-  Tests on .NET Core 5.0:
+  Tests_on_NET_Core_50:
 
     runs-on: ubuntu-latest
 
