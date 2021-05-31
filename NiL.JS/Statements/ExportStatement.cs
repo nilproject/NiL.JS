@@ -103,8 +103,9 @@ namespace NiL.JS.Statements
             while (state.Code[index] != '}')
             {
                 var start = index;
-                if (!Parser.ValidateName(state.Code, ref index))
+                if (!Parser.ValidateName(state.Code, ref index, false, true, false))
                     ExceptionHelper.ThrowSyntaxError("Invalid export name", state.Code, index);
+
                 var name = state.Code.Substring(start, index - start);
                 Tools.SkipSpaces(state.Code, ref index);
 
@@ -118,7 +119,7 @@ namespace NiL.JS.Statements
                 export._map.Add(
                     new KeyValuePair<string, Expression>(
                         alias,
-                        new Variable(name, state.LexicalScopeLevel)
+                        new Variable(name, state.LexicalScopeLevel, false)
                         {
                             Position = start,
                             Length = name.Length
@@ -139,7 +140,7 @@ namespace NiL.JS.Statements
                 Tools.SkipSpaces(code, ref index);
 
                 var start = index;
-                if (!Parser.ValidateName(code, ref index) && !Parser.Validate(code, "default", ref index))
+                if (!Parser.ValidateName(code, ref index, false, true, false))
                     ExceptionHelper.ThrowSyntaxError("Invalid export alias", code, index);
 
                 alias = code.Substring(start, index - start);

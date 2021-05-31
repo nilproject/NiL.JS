@@ -54,9 +54,9 @@ namespace NiL.JS.Expressions
 
         protected internal override bool ContextIndependent => false;
 
-        internal Variable(string name, int scopeLevel)
+        internal Variable(string name, int scopeLevel, bool reserveControl = true, bool allowEscape = true)
         {
-            if (!Parser.ValidateName(name, 0, true, true, false))
+            if (!Parser.ValidateName(name, 0, reserveControl, allowEscape, false))
                 throw new ArgumentException("Invalid variable name");
 
             ScopeLevel = scopeLevel;

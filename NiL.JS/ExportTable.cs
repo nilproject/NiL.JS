@@ -13,7 +13,7 @@ namespace NiL.JS
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(key) || !Parser.ValidateName(key))
+                if (string.IsNullOrWhiteSpace(key) || !Parser.ValidateName(key, 0, false, true, false))
                     ExceptionHelper.Throw(new ArgumentException());
 
                 var result = JSValue.undefined;
