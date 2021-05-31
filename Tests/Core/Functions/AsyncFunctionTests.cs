@@ -11,27 +11,20 @@ namespace Tests
     public class AsyncFunctionTests
     {
         [TestMethod]
-        public async Task ResolvedPromiseShouldBeReturnedAsCompletedTask()
+        public Task ResolvedPromiseShouldBeReturnedAsCompletedTask()
         {
             var context = new Context();
 
             context.DefineVariable("testAwaitable").Assign(JSValue.Marshal(new Func<string, Task<string>>((input) =>
             {
-                var task = new Task<string>(() =>
-                {
-                    return input;
-                });
-
-                task.Start();
-
-                return task;
+                return Task.FromResult(input);
             })));
 
             context.Eval("async function testAsync() { return await testAwaitable('test'); }");
 
-            var result = await context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
+            var task = context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
 
-            Assert.AreEqual("test", result.ToString());
+            Assert.AreEqual("test", task.Result.ToString());
         }
 
         [TestMethod]
