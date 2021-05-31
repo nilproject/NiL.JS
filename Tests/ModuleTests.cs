@@ -98,6 +98,62 @@ import '../module3.js'
         }
 
         [TestMethod]
+        public void DynamicImportOperatorShouldImportItem()
+        {
+            var module1 = new Module("");
+            var itemProperty = module1.Exports.GetType().GetProperty("Item");
+            itemProperty.SetValue(module1.Exports, JSValue.Marshal(0x777), new object[] { "a" });
+
+            var module2 = new Module("module2", "var m = null; import(\"another module\").then(x => m = x)");
+            module2.ModuleResolversChain.Add(new DelegateModuleResolver((ModuleRequest request, out Module result) =>
+            {
+                if (request.CmdArgument != "another module")
+                {
+                    result = null;
+                    return false;
+                }
+
+                result = module1;
+                return true;
+            }));
+
+            module2.Run();
+
+            Thread.Sleep(10);
+
+            var imported = module2.Context.GetVariable("m");
+            Assert.AreEqual(0x777, imported["a"].Value);
+        }
+
+        [TestMethod]
+        public void DynamicImportOperatorShouldImportDefaultItem()
+        {
+            var module1 = new Module("");
+            var itemProperty = module1.Exports.GetType().GetProperty("Item");
+            itemProperty.SetValue(module1.Exports, JSValue.Marshal(0x777), new object[] { string.Empty });
+
+            var module2 = new Module("module2", "var m = null; import(\"another module\").then(x => m = x)");
+            module2.ModuleResolversChain.Add(new DelegateModuleResolver((ModuleRequest request, out Module result) =>
+            {
+                if (request.CmdArgument != "another module")
+                {
+                    result = null;
+                    return false;
+                }
+
+                result = module1;
+                return true;
+            }));
+
+            module2.Run();
+
+            Thread.Sleep(10);
+
+            var imported = module2.Context.GetVariable("m");
+            Assert.AreEqual(0x777, imported["default"].Value);
+        }
+
+        [TestMethod]
         [Timeout(2000)]
         public void ExecutionWithTimeout()
         {

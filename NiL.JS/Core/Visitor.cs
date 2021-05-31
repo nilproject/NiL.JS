@@ -105,6 +105,11 @@ namespace NiL.JS.Core
             return Visit(node as Expression);
         }
 
+        internal protected virtual T Visit(Import node)
+        {
+            return Visit(node as Expression);
+        }
+
         internal protected virtual T Visit(Increment node)
         {
             return Visit(node as Expression);
