@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.5.1510 - 31 May 2021
+* Fix native list stringification
+* Fix "'Invalid export name' when exporting default"
+* Dynamic import implemented
+* Support IReadonyList
+* NullReferenceException when parsing class code (#244)
+* Fix IndexOutOfBounds in NativeList 
+* Fix Iterating simple int array passed to function throws
+* Fix NullReferenceException when assigning result of awaited promise to variable
+* Fixes for several bugs in modules
+
 ## 2.5.1493 - 17 April 2021
 * Fix InvalidOperationException when export statement is used
 
