@@ -98,6 +98,7 @@ import '../module3.js'
         }
 
         [TestMethod]
+        [Timeout(2000)]
         public void DynamicImportOperatorShouldImportItem()
         {
             var module1 = new Module("");
@@ -119,13 +120,20 @@ import '../module3.js'
 
             module2.Run();
 
-            Thread.Sleep(10);
+            for (; ; )
+            {
+                Thread.Sleep(1);
+                var imported = module2.Context.GetVariable("m");
+                if (!imported.Defined)
+                    continue;
 
-            var imported = module2.Context.GetVariable("m");
-            Assert.AreEqual(0x777, imported["a"].Value);
+                if (Equals(imported["a"].Value, 0x777))
+                    return;
+            }
         }
 
         [TestMethod]
+        [Timeout(2000)]
         public void DynamicImportOperatorShouldImportDefaultItem()
         {
             var module1 = new Module("");
@@ -147,10 +155,16 @@ import '../module3.js'
 
             module2.Run();
 
-            Thread.Sleep(10);
+            for (; ; )
+            {
+                Thread.Sleep(1);
+                var imported = module2.Context.GetVariable("m");
+                if (!imported.Defined)
+                    continue;
 
-            var imported = module2.Context.GetVariable("m");
-            Assert.AreEqual(0x777, imported["default"].Value);
+                if (Equals(imported["default"].Value, 0x777))
+                    return;
+            }
         }
 
         [TestMethod]

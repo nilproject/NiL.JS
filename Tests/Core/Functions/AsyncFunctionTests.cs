@@ -11,7 +11,7 @@ namespace Tests
     public class AsyncFunctionTests
     {
         [TestMethod]
-        public void ResolvedPromiseShouldBeReturnedAsCompletedTask()
+        public void CompletedTaskShouldBeReturnedAsResolvedPromise()
         {
             var context = new Context();
 
@@ -20,11 +20,11 @@ namespace Tests
                 return Task.FromResult(input);
             })));
 
-            context.Eval("async function testAsync() { return await testAwaitable('test'); }");
+            context.Eval("function testAsync() { return testAwaitable('test'); }");
 
             var task = context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
 
-            Assert.AreEqual("test", task.Result.ToString());
+            Assert.AreEqual("test", task.GetAwaiter().GetResult().ToString());
         }
 
         [TestMethod]
@@ -43,7 +43,7 @@ namespace Tests
 
             await Assert.ThrowsExceptionAsync<AggregateException>(async () =>
             {
-                var result = await context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
+                await context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
             });
         }
 
