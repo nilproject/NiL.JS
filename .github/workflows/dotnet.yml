@@ -1,0 +1,36 @@
+name: .NET
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Restore dependencies
+      run: |
+        cd ./NiL.JS
+        dotnet clean
+        dotnet restore
+        cd ..
+    - name: Build
+      run: |
+        cd ./NiL.JS
+        dotnet build --no-restore -c Release -property:TargetFrameworks=netcoreapp3.1 -property:SignAssembly=false -property:PublicSign=false
+        cd ..
+    - name: Test
+      run: |
+        cd Tests
+        dotnet ../Utility/tt4/tiny-t4.dll
+        dotnet test -c Release -property:TargetFramework=netcoreapp3.1 -property:SignAssembly=false -property:PublicSign=false
+        cd ..
