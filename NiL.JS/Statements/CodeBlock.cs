@@ -288,6 +288,8 @@ namespace NiL.JS.Statements
             if (context._executionMode >= ExecutionMode.Resume)
             {
                 var suspendData = context.SuspendData[this] as SuspendData;
+                suspendData.Context._executionMode = context._executionMode;
+                suspendData.Context._executionInfo = context._executionInfo;
                 context = suspendData.Context;
                 i = suspendData.LineIndex;
                 clearSuspendData = true;

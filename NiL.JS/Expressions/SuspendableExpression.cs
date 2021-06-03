@@ -6,12 +6,12 @@ namespace NiL.JS.Expressions
     {
         protected internal override bool ContextIndependent => false;
 
-        private Expression _prototype;
+        private Expression _original;
         private CodeNode[] _parts;
 
         internal SuspendableExpression(Expression prototype, CodeNode[] parts)
         {
-            _prototype = prototype;
+            _original = prototype;
             _parts = parts;
         }
 
@@ -34,7 +34,7 @@ namespace NiL.JS.Expressions
                 }
             }
 
-            var result = _prototype.Evaluate(context);
+            var result = _original.Evaluate(context);
             if (context._executionMode == ExecutionMode.Suspend)
             {
                 context.SuspendData[this] = i;
@@ -46,7 +46,7 @@ namespace NiL.JS.Expressions
 
         public override string ToString()
         {
-            return _prototype.ToString();
+            return _original.ToString();
         }
     }
 }

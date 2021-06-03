@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NiL.JS;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Extensions;
@@ -45,6 +46,28 @@ namespace Tests
             {
                 await context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
             });
+        }
+
+        [TestMethod]
+        public void AsyncFunctionWithNestedLiteralContextsShouldWorkAsExpected()
+        {
+            var script = Script.Parse(@"
+async function test() {
+    const a = await Promise.resolve(123);
+    if (true) {
+        const b = await Promise.resolve(456);
+        return b + a;
+    }
+}
+");
+            var context = new Context();
+            script.Evaluate(context);
+
+            var promiseValue = context.Eval("test()");
+            var promise = promiseValue.Value as Promise;
+            promise.Task.Wait();
+
+            Assert.AreEqual(579, promise.Task.Result);
         }
 
         [TestMethod]
