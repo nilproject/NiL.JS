@@ -124,7 +124,7 @@ import '../module3.js'
             {
                 Thread.Sleep(1);
                 var imported = module2.Context.GetVariable("m");
-                if (!imported.Defined)
+                if (!imported.Defined || imported.Value == null)
                     continue;
 
                 if (Equals(imported["a"].Value, 0x777))

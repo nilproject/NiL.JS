@@ -65,9 +65,8 @@ async function test() {
 
             var promiseValue = context.Eval("test()");
             var promise = promiseValue.Value as Promise;
-            promise.Task.Wait();
 
-            Assert.AreEqual(579, promise.Task.Result);
+            Assert.AreEqual(579, promise.Task.GetAwaiter().GetResult());
         }
 
         [TestMethod]
