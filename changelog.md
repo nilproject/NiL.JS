@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.5.1514 - 3 June 2021
+* Fix Infinite task wait for promises with control flow (#248)
+
 ## 2.5.1510 - 31 May 2021
 * Fix native list stringification
 * Fix "'Invalid export name' when exporting default"
