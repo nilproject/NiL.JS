@@ -62,7 +62,8 @@ namespace NiL.JS.BaseLibrary
                 _data[(int)((uint)length - 1)] = null;
         }
 
-        internal Array(JSValue[] data)
+        [DoNotEnumerate]
+        public Array(JSValue[] data)
         {
             _oValue = this;
             _valueType = JSValueType.Object;
