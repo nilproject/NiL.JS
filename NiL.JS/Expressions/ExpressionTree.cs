@@ -284,26 +284,27 @@ namespace NiL.JS.Expressions
             if (cur == null)
                 return statement;
 
-            Stack<Expression> stats = new Stack<Expression>();
+            Stack<Expression> expStack = new Stack<Expression>();
             Stack<Expression> types = new Stack<Expression>();
             types.Push(statement);
-            stats.Push(statement._left);
+            expStack.Push(statement._left);
             while (cur != null)
             {
-                stats.Push(cur._left);
+                expStack.Push(cur._left);
                 for (; types.Count > 0;)
                 {
                     var topType = (int)(types.Peek() as ExpressionTree)._operationKind;
                     if (((topType & (int)OperationTypeGroups.Special) > ((int)cur._operationKind & (int)OperationTypeGroups.Special))
                         || (((topType & (int)OperationTypeGroups.Special) == ((int)cur._operationKind & (int)OperationTypeGroups.Special))
-                            && (((int)cur._operationKind & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)))
+                            && (((int)cur._operationKind & (int)OperationTypeGroups.Special) > (int)OperationTypeGroups.Choice)
+                            && (cur._operationKind != OperationType.Power)))
                     {
-                        var stat = types.Pop() as ExpressionTree;
-                        stat._right = stats.Pop();
-                        stat._left = stats.Pop();
-                        stat.Position = (stat._left ?? stat).Position;
-                        stat.Length = (stat._right ?? stat._left ?? stat).Length + (stat._right ?? stat._left ?? stat).Position - stat.Position;
-                        stats.Push(stat);
+                        var expr = types.Pop();
+                        expr._right = expStack.Pop();
+                        expr._left = expStack.Pop();
+                        expr.Position = (expr._left ?? expr).Position;
+                        expr.Length = (expr._right ?? expr._left ?? expr).Length + (expr._right ?? expr._left ?? expr).Position - expr.Position;
+                        expStack.Push(expr);
                     }
                     else
                         break;
@@ -311,21 +312,21 @@ namespace NiL.JS.Expressions
 
                 types.Push(cur);
                 if (!(cur._right is ExpressionTree))
-                    stats.Push(cur._right);
+                    expStack.Push(cur._right);
                 cur = cur._right as ExpressionTree;
             }
 
-            while (stats.Count > 1)
+            while (expStack.Count > 1)
             {
-                var stat = types.Pop() as Expression;
-                stat._right = stats.Pop();
-                stat._left = stats.Pop();
-                stat.Position = (stat._left ?? stat).Position;
-                stat.Length = (stat._right ?? stat._left ?? stat).Length + (stat._right ?? stat._left ?? stat).Position - stat.Position;
-                stats.Push(stat);
+                var expr = types.Pop();
+                expr._right = expStack.Pop();
+                expr._left = expStack.Pop();
+                expr.Position = (expr._left ?? expr).Position;
+                expr.Length = (expr._right ?? expr._left ?? expr).Length + (expr._right ?? expr._left ?? expr).Position - expr.Position;
+                expStack.Push(expr);
             }
 
-            return stats.Peek();
+            return expStack.Peek();
         }
 
         public static CodeNode Parse(ParseInfo state, ref int index)
