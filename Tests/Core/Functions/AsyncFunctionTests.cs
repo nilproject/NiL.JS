@@ -42,9 +42,10 @@ namespace Tests
 
             context.Eval("let result = null; async function testAsync() { result = await testAwaitable('test'); }");
 
+            var task = context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
             await Assert.ThrowsExceptionAsync<AggregateException>(async () =>
             {
-                await context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
+                await task;
             });
         }
 

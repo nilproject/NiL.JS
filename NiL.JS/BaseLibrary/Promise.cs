@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,12 +20,9 @@ namespace NiL.JS.BaseLibrary
 
     public sealed class Promise
     {
-        private readonly object _sync = new object();
-
         private Task _innerTask;
         private Function _callback;
-        private Task<JSValue> _task;
-        private JSValue _innerResult;
+        private TaskCompletionSource<JSValue> _outerTask;
 
         [Hidden]
         public PromiseState State
@@ -34,21 +32,17 @@ namespace NiL.JS.BaseLibrary
                 if (!Task.IsCompleted)
                     return PromiseState.Pending;
 
-                return statusToState(_task.Status);
+                return statusToState(_outerTask.Task.Status);
             }
         }
 
         [Hidden]
-        public Task<JSValue> Task => _task;
-
-        [Obsolete]
-        [Hidden]
-        public bool Complited => Completed;
+        public Task<JSValue> Task => _outerTask.Task;
 
         [Hidden]
-        public bool Completed
+        public bool Complited
         {
-            get { return _task.IsCompleted; }
+            get { return _outerTask.Task.IsCompleted; }
         }
 
         [Hidden]
@@ -77,30 +71,7 @@ namespace NiL.JS.BaseLibrary
 
         private Promise()
         {
-            _task = new Task<JSValue>(() =>
-            {
-                if (_innerTask == null)
-                {
-                    return JSValue.undefined;
-                }
-
-                try
-                {
-                    _innerTask.Wait();
-                }
-                catch
-                { }
-
-                switch (statusToState(_innerTask.Status))
-                {
-                    case PromiseState.Fulfilled:
-                        return _innerResult;
-                    case PromiseState.Rejected:
-                        throw _innerTask.Exception;
-                    default:
-                        return JSValue.undefined;
-                }
-            });
+            _outerTask = new TaskCompletionSource<JSValue>();
         }
 
         internal Promise(Task<JSValue> task)
@@ -114,12 +85,24 @@ namespace NiL.JS.BaseLibrary
                 }
                 else if (t.Status == TaskStatus.Faulted)
                 {
-                    _task.Start();
-                    throw t.Exception.GetBaseException();
+                    _outerTask.SetException(t.Exception);
                 }
                 else
                 {
-                    _task.Start();
+                    switch (statusToState(_innerTask.Status))
+                    {
+                        case PromiseState.Fulfilled:
+                            _outerTask.SetResult(t.Result);
+                            break;
+
+                        case PromiseState.Rejected:
+                            _outerTask.SetException(_innerTask.Exception);
+                            break;
+
+                        default:
+                            _outerTask.SetResult(JSValue.undefined);
+                            break;
+                    }
                 }
             });
 
@@ -138,15 +121,13 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                _innerResult = value;
-                _task.Start();
+                _outerTask.SetResult(value);
             }
         }
 
         private void callbackInvoke()
         {
-            var statusSeted = false;
-            var reject = false;
+            var statusSet = false;
 
             try
             {
@@ -154,21 +135,21 @@ namespace NiL.JS.BaseLibrary
                 {
                     new ExternalFunction((self, args)=>
                     {
-                        if (!statusSeted)
+                        if (!statusSet)
                         {
-                            statusSeted = true;
+                            statusSet = true;
 
                             handlePromiseCascade(args[0]);
                         }
 
                         return null;
                     }),
+
                     new ExternalFunction((self, args)=>
                     {
-                        if (!statusSeted)
+                        if (!statusSet)
                         {
-                            reject = true;
-                            statusSeted = true;
+                            statusSet = true;
 
                             handlePromiseCascade(args[0]);
                         }
@@ -179,28 +160,21 @@ namespace NiL.JS.BaseLibrary
             }
             catch (JSException e)
             {
-                _innerResult = e.Error;
-
-                if (!statusSeted)
-                    _task.Start();
+                if (!statusSet)
+                    _outerTask.SetException(e);
 
                 throw;
             }
             catch
             {
-                _innerResult = JSValue.Wrap(new Error("Unknown error"));
-
-                if (!statusSeted)
-                    _task.Start();
+                if (!statusSet)
+                    _outerTask.SetException(new JSException(new Error("Unknown error")));
 
                 throw;
             }
 
-            if (!statusSeted)
-                _task.Start();
-
-            if (reject)
-                throw new JSException(_innerResult);
+            if (!statusSet)
+                _outerTask.SetResult(JSValue.undefined);
         }
 
         public static Promise resolve(JSValue data)
@@ -213,7 +187,7 @@ namespace NiL.JS.BaseLibrary
             if (promises == null)
                 return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.race(...)"))));
 
-            return new Promise(whenAny(promises.AsEnumerable().Select(convertToTask).ToArray()).ContinueWith(x => x.Result.Result));
+            return new Promise(whenAny(promises.AsEnumerable().Select(convertToTask).ToArray()));
         }
 
         public static Promise all(IIterable promises)
@@ -247,10 +221,10 @@ namespace NiL.JS.BaseLibrary
             if (onFulfilment == null && onRejection == null)
                 return resolve(JSValue.undefined);
 
-            var thenTask = onFulfilment == null ? null : _task.ContinueWith(task => onFulfilment(Result), TaskContinuationOptions.OnlyOnRanToCompletion);
+            var thenTask = onFulfilment == null ? null : _outerTask.Task.ContinueWith(task => onFulfilment(Result), TaskContinuationOptions.OnlyOnRanToCompletion);
 
-            var catchTask = onRejection == null ? null : 
-                _task.ContinueWith(task =>
+            var catchTask = onRejection == null ? null :
+                _outerTask.Task.ContinueWith(task =>
                 {
                     Exception ex = task.Exception;
                     while (ex.InnerException != null)
@@ -263,25 +237,15 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        return onRejection(JSValue.Wrap(task.Exception));
+                        return onRejection(JSValue.Wrap(task.Exception.GetBaseException()));
                     }
-                }, 
+                },
                 TaskContinuationOptions.NotOnRanToCompletion);
 
             if (thenTask != null)
             {
                 if (catchTask != null)
-                {
-                    return new Promise(whenAny(thenTask, catchTask).ContinueWith(x =>
-                    {
-                        if (x.IsFaulted)
-                        {
-                            throw x.Exception;
-                        }
-
-                        return x.Result.Result;
-                    }));
-                }
+                    return new Promise(whenAny(thenTask, catchTask));
 
                 return new Promise(thenTask);
             }
@@ -289,10 +253,10 @@ namespace NiL.JS.BaseLibrary
             return new Promise(catchTask);
         }
 
-        private static Task<Task<JSValue>> whenAny(params Task<JSValue>[] tasks)
+        private static Task<JSValue> whenAny(params Task<JSValue>[] tasks)
         {
             Task<JSValue> result = null;
-            var task = new Task<Task<JSValue>>(() => result);
+            var task = new TaskCompletionSource<JSValue>();
             Action<Task<JSValue>> contination = t =>
             {
                 lock (task)
@@ -300,7 +264,10 @@ namespace NiL.JS.BaseLibrary
                     if (result == null)
                     {
                         result = t;
-                        task.Start();
+                        if (!t.IsFaulted)
+                            task.SetResult(t.Result);
+                        else
+                            task.SetException(t.Exception);
                     }
                 }
             };
@@ -310,7 +277,7 @@ namespace NiL.JS.BaseLibrary
                 tasks[i].ContinueWith(contination, TaskContinuationOptions.NotOnCanceled);
             }
 
-            return task;
+            return task.Task;
         }
 
         private static PromiseState statusToState(TaskStatus status)
@@ -336,7 +303,7 @@ namespace NiL.JS.BaseLibrary
         private static Task<JSValue[]> whenAll(Task<JSValue>[] tasks)
         {
             JSValue[] result = new JSValue[tasks.Length];
-            var task = new Task<JSValue[]>(() => result);
+            var task = new TaskCompletionSource<JSValue[]>();
             var count = tasks.Length;
 
             Action<Task<JSValue>> contination = t =>
@@ -348,15 +315,15 @@ namespace NiL.JS.BaseLibrary
                 result[index] = t.Result;
 
                 if (Interlocked.Decrement(ref count) == 0)
-                    task.Start();
+                    task.SetResult(result);
             };
 
             for (var i = 0; i < tasks.Length; i++)
             {
-                tasks[i].ContinueWith(contination, TaskContinuationOptions.OnlyOnRanToCompletion);
+                tasks[i].ContinueWith(contination, TaskContinuationOptions.NotOnCanceled);
             }
 
-            return task;
+            return task.Task;
         }
 
         private static Task<JSValue> fromException(Exception exception)

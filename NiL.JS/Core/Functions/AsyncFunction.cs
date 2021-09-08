@@ -33,7 +33,9 @@ namespace NiL.JS.Core.Functions
                 if (p == null)
                     return promiseOrValue;
 
-                return Marshal(p.then(then, fail));
+                var result = p.then(then, fail);
+
+                return Marshal(result);
             }
 
             private JSValue fail(JSValue arg)
