@@ -164,3 +164,8 @@ $RECYCLE.BIN/
 /keys.snk
 /NiL.JS.Portable/keys.snk
 /NiL.JS/keys.snk
+/Tests/Generated/SputnikTests.cs
+/Tests/Generated/Embedded.cs
+/nuget
+/.vscode
+/.vs
