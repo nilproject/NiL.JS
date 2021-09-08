@@ -5,9 +5,4 @@ script:
  - cd ./NiL.JS
  - dotnet clean
  - dotnet restore
- - dotnet build -c Release -property:TargetFrameworks=netstandard1.6 -property:SignAssembly=false -property:PublicSign=false
- - cd ../IntegrationTests
- - dotnet test -c Release -property:TargetFramework=netcoreapp2.0 -property:SignAssembly=false -property:PublicSign=false
- - cd ../FunctionalTests
- - dotnet ../Utility/tt4/tiny-t4.dll
- - dotnet test -c Release -property:TargetFramework=netcoreapp2.0 -property:SignAssembly=false -property:PublicSign=false
+ - dotnet build -c Release -property:TargetFrameworks=netstandard1.6
