@@ -41,8 +41,12 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public Task<JSValue> Task => _task;
 
+        [Obsolete]
         [Hidden]
-        public bool Complited
+        public bool Complited => Completed;
+
+        [Hidden]
+        public bool Completed
         {
             get { return _task.IsCompleted; }
         }
