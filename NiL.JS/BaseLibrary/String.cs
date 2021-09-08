@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.BaseLibrary
 {
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
-    public sealed class String : JSObject
+    public sealed class String : JSObject, IIterable
     {
         [DoNotEnumerate]
         public static JSValue fromCharCode(Arguments args)
@@ -987,6 +988,15 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
+        public IIterator iterator()
+        {
+#if !NETSTANDARD
+            return _oValue.ToString().GetEnumerator().AsIterator();
+#else
+            return _oValue.ToString().ToCharArray().GetEnumerator().AsIterator();
+#endif
+        }
+
         public static JSValue raw(Arguments args)
         {
             var result = new StringBuilder();
@@ -1005,7 +1015,7 @@ namespace NiL.JS.BaseLibrary
             return result.ToString();
         }
 
-        #region HTML Wrapping
+#region HTML Wrapping
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue anchor(JSValue self, Arguments arg)
@@ -1135,7 +1145,7 @@ namespace NiL.JS.BaseLibrary
 
             return "<sup>" + self.ToString() + "</sup>";
         }
-        #endregion
+#endregion
 
         [Hidden]
         public static implicit operator String(string val)

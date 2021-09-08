@@ -41,5 +41,32 @@ foo();";
             Assert.AreEqual(JSValueType.String, result.ValueType);
             Assert.AreEqual("st", result.Value);
         }
+
+        [TestMethod]
+        public void StringIterator()
+        {
+            var value = "12345678";
+            var str = new NiL.JS.BaseLibrary.String(value);
+
+            var iterator = str.iterator();
+            var index = 0;
+            for (var item = iterator.next(); !item.done; item = iterator.next(), index++)
+            {
+                Assert.AreEqual(value[index].ToString(), item.value.ToString());
+            }
+        }
+
+        [TestMethod]
+        public void StringIteratorInCode()
+        {
+            var context = new Context();
+            var script = NiL.JS.Script.Parse(@"let x = 0;
+for (var codePoint of 'foo') {
+  x++;
+}
+x;");
+            var value = script.Evaluate(context);
+            Assert.AreEqual(3, value);
+        }
     }
 }
