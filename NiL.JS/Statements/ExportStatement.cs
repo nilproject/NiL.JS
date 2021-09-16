@@ -62,7 +62,8 @@ namespace NiL.JS.Statements
                     var definition =
                         VariableDefinition.Parse(state, ref index)
                         ?? ClassDefinition.Parse(state, ref index)
-                        ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function);
+                        ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function)
+                        ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.AsyncFunction);
 
                     if (definition == null)
                         ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
@@ -229,7 +230,7 @@ namespace NiL.JS.Statements
 
             codeContext &= ~CodeContext.InExpression;
             codeContext |= CodeContext.InExport;
-            
+
             if (_internalDefinition != null)
             {
                 Parser.Build(ref _internalDefinition, expressionDepth, variables, codeContext, message, stats, opts | Options.SuppressUselessStatementsElimination);

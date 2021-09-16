@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NiL.JS;
 using NiL.JS.Core;
 
 namespace Tests.Core
@@ -21,6 +22,17 @@ namespace Tests.Core
 
             Assert.IsFalse(result);
             Assert.AreEqual(0, index);
+        }
+
+        [TestMethod]
+        public void ExportAsyncFunctionTest()
+        {
+            var code = @"
+export async function a(x){
+    return x + await test(x);
+}";
+
+            Script.Parse(code);
         }
     }
 }
