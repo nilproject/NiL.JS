@@ -298,3 +298,7 @@ Debug.asserta(() => JSON.stringify({ 1: 1, 2: { 1: 1 } }, [1]), "{\"1\":1}")
 var o = {};
 JSON.stringify([o, o]);
 JSON.stringify([o, [o]]);
+
+Date.prototype.valueOf = () => 1;
+if (typeof (1 + (new Date())) == "number")
+    throw "Priority in ToPrimitiveValue for addition with Date";
