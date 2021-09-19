@@ -65,6 +65,7 @@ namespace NiL.JS
             try
             {
                 context.Activate();
+                context.Code = Code;
                 return Root.Evaluate(context) ?? context._lastResult ?? JSValue.notExists;
             }
             finally

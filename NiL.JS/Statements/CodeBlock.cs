@@ -349,7 +349,11 @@ namespace NiL.JS.Statements
             {
                 if (context._debugging)
                     context.raiseDebugger(_lines[i]);
-                var t = ls[i].Evaluate(context);
+
+                var node = ls[i];
+                context.CodeNode = node;
+                JSValue t = node.Evaluate(context);
+
                 if (t != null)
                     context._lastResult = t;
 #if DEBUG && !(PORTABLE || NETCORE)

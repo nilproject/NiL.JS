@@ -137,6 +137,8 @@ namespace NiL.JS.Core
                 return result;
             }
         }
+        public string Code { get; set; }
+        public CodeNode CodeNode { get; set; }
 
         public static GlobalContext CurrentGlobalContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
 

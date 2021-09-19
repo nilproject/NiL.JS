@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="0. Run script\Get callstack.cs" />
     <Compile Include="1. Using modules\Execution time limit.cs" />
     <Compile Include="1. Using modules\Custom module resolver.cs" />
     <Compile Include="3. Get values from JavaScript environment\Determine type of value.cs" />

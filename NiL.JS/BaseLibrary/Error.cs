@@ -1,4 +1,4 @@
-﻿//#define CALLSTACKTOSTRING
+﻿#define CALLSTACKTOSTRING
 
 using System;
 using System.Text;
@@ -27,7 +27,7 @@ namespace NiL.JS.BaseLibrary
             set;
         }
 #if CALLSTACKTOSTRING
-        public JSObject callstack
+        public JSValue callstack
         {
             get;
             private set;
@@ -66,13 +66,54 @@ namespace NiL.JS.BaseLibrary
         private void makeCallStack()
         {
             StringBuilder res = new StringBuilder();
-            var context = Context.CurrentContext;
-            while (context != null)
+            var currentContext = Context.CurrentContext;
+            var contexts = Context.GetCurrectContextStack();
+            res.Append("    at ").AppendLine(currentContext.CodeNode?.ToString() ?? string.Empty);
+            for (int i = contexts.Count - 1; i > 0; i--)
             {
-                res.Append("in ").AppendLine(context.caller == null ? "" : (context.caller.name ?? "<anonymous method>"));
-                context = context.oldContext;
+                var context = contexts[i];
+                if (context != null)
+                {
+                    var line = FromTextPosition(context.RootContext.Code, context.CodeNode.Position);
+                    res.Append("    at ").AppendLine($"{context._owner.name ?? "<anonymous method>"}({context._module?.FilePath ?? "<anonymous>"}:{line})");
+                }
             }
-            callstack = res.ToString();
+            callstack = Context.CurrentGlobalContext.ProxyValue(res.ToString());
+        }
+
+        public static int FromTextPosition(string text, int position)
+        {
+            if (text == null)
+                throw new ArgumentNullException("text");
+
+            if (position < 0)
+                throw new ArgumentOutOfRangeException("position");
+
+            int line = 1;
+            int column = 1;
+            for (int i = 0; i < position; i++)
+            {
+                if (i >= text.Length)
+                {
+                    return -1;
+                }
+                if (text[i] == '\n')
+                {
+                    column = 0;
+                    line++;
+                    if (text.Length > i + 1 && text[i + 1] == '\r')
+                        i++;
+                }
+                else if (text[i] == '\r')
+                {
+                    column = 0;
+                    line++;
+                    if (text.Length > i + 1 && text[i + 1] == '\n')
+                        i++;
+                }
+                column++;
+            }
+            return line;
         }
 #endif
         [Hidden]
