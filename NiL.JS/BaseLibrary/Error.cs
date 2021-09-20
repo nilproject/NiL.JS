@@ -75,7 +75,7 @@ namespace NiL.JS.BaseLibrary
                 if (context != null)
                 {
                     var line = FromTextPosition(context.RootContext.Code, context.CodeNode.Position);
-                    res.Append("    at ").AppendLine($"{context._owner.name ?? "<anonymous method>"}({context._module?.FilePath ?? "<anonymous>"}:{line})");
+                    res.Append("    at ").AppendLine($"{context._owner?.name ?? "<anonymous method>"}({context._module?.FilePath ?? "<anonymous>"}:{line})");
                 }
             }
             callstack = Context.CurrentGlobalContext.ProxyValue(res.ToString());

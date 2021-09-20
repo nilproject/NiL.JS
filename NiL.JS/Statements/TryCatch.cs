@@ -228,7 +228,6 @@ namespace NiL.JS.Statements
                     catchContext._executionMode = c._executionMode;
                     catchContext._executionInfo = c._executionInfo;
                     catchContext.Activate();
-                    catchContext.CodeNode = catchBody;
                     catchContext._lastResult = catchBody.Evaluate(catchContext) ?? catchContext._lastResult;
                 }
                 finally

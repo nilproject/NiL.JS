@@ -45,8 +45,9 @@ catch (e) {
 ";
         public override void Run()
         {
-
-            Script.Parse(_code).Evaluate(new NiL.JS.Core.Context());
+           
+            Module main = new Module("main.js", _code);
+            main.Run();
         }
     }
 }
