@@ -66,7 +66,7 @@ namespace NiL.JS.Core
         [ThreadStatic]
         internal static List<Context> currentContextStack;
 
-        internal static List<Context> GetCurrectContextStack()
+        internal static List<Context> GetCurrentContextStack()
         {
             if (currentContextStack == null)
                 currentContextStack = new List<Context> { DefaultGlobalContext };
@@ -78,7 +78,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                var stack = GetCurrectContextStack();
+                var stack = GetCurrentContextStack();
                 if (stack == null || stack.Count == 0)
                     return null;
 
@@ -138,6 +138,11 @@ namespace NiL.JS.Core
             }
         }
 
+        internal string _code { get; set; }
+
+        internal int _currentPosition { get; set; }
+
+
         public static GlobalContext CurrentGlobalContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
 
         public JSValue ThisBind
@@ -180,7 +185,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return GetCurrectContextStack().Contains(this);
+                return GetCurrentContextStack().Contains(this);
             }
         }
 
@@ -293,7 +298,7 @@ namespace NiL.JS.Core
             if (function == null)
                 return null;
 
-            var stack = GetCurrectContextStack();
+            var stack = GetCurrentContextStack();
 
             for (var i = stack.Count; i-- > 0;)
             {
@@ -531,7 +536,7 @@ namespace NiL.JS.Core
              */
 
             var mainFunctionContext = this;
-            var stack = GetCurrectContextStack();
+            var stack = GetCurrentContextStack();
             while (stack != null
                 && stack.Count > 1
                 && stack[stack.Count - 2] == mainFunctionContext._parent

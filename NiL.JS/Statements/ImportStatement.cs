@@ -103,6 +103,7 @@ namespace NiL.JS.Statements
 
             result._moduleName = Tools.Unescape(state.Code.Substring(start + 1, index - start - 2), false);
 
+            result.Position = start;
             return result;
         }
 
@@ -168,6 +169,7 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
+            context._currentPosition = this.Position;
             if (context._module == null)
                 ExceptionHelper.Throw(new BaseLibrary.Error("Module undefined"));
             if (string.IsNullOrEmpty(context._module.FilePath))

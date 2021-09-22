@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
         {
             if (context._thisBind != null && (context._thisBind._attributes & JSValueAttributesInternal.ConstructingObject) != 0)
             {
-                var stack = Context.GetCurrectContextStack();
+                var stack = Context.GetCurrentContextStack();
 
                 var i = 2;
                 while (stack.Count >= i && stack[stack.Count - i]._thisBind == context._thisBind)

@@ -1,6 +1,6 @@
-﻿//#define CALLSTACKTOSTRING
-
+﻿
 using System;
+using System.Collections.Generic;
 using System.Text;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
@@ -26,21 +26,17 @@ namespace NiL.JS.BaseLibrary
             get;
             set;
         }
-#if CALLSTACKTOSTRING
-        public JSObject callstack
+        public JSValue callstack
         {
             get;
             private set;
         }
-#endif
+
         [DoNotEnumerate]
         public Error()
         {
             name = this.GetType().Name;
             message = "";
-#if CALLSTACKTOSTRING
-            makeCallStack();
-#endif
         }
 
         [DoNotEnumerate]
@@ -48,9 +44,6 @@ namespace NiL.JS.BaseLibrary
         {
             name = this.GetType().Name;
             message = args[0].ToString();
-#if CALLSTACKTOSTRING
-            makeCallStack();
-#endif
         }
 
         [DoNotEnumerate]
@@ -58,23 +51,56 @@ namespace NiL.JS.BaseLibrary
         {
             name = this.GetType().Name;
             this.message = message;
-#if CALLSTACKTOSTRING
-            makeCallStack();
-#endif
         }
-#if CALLSTACKTOSTRING
-        private void makeCallStack()
+        internal void MakeCallStack(CodeNode exceptionMaker)
         {
             StringBuilder res = new StringBuilder();
-            var context = Context.CurrentContext;
-            while (context != null)
+
+            Context currentContext = Context.CurrentContext;
+            CodeCoordinates currentCodeCoordinates = CodeCoordinates.FromTextPosition(currentContext.RootContext._code, exceptionMaker.Position);
+            res.Append("    at ").AppendLine($"{currentCodeCoordinates.Code ?? string.Empty}");
+            res.Append("    at ").AppendLine($"{currentContext._owner?.name ?? "<anonymous method>"}({currentContext._module?.FilePath ?? "<anonymous>"}:{currentCodeCoordinates.Line}:{currentCodeCoordinates.Column})");
+
+
+            List<Context> contexts = Context.GetCurrentContextStack();
+
+            for (int i = contexts.Count - 2; i > 0; i--)
             {
-                res.Append("in ").AppendLine(context.caller == null ? "" : (context.caller.name ?? "<anonymous method>"));
-                context = context.oldContext;
+                Context context = contexts[i];
+                if (context != null)
+                {
+                    CodeCoordinates codeCoordinates = CodeCoordinates.FromTextPosition(context.RootContext._code, context._currentPosition);
+                    res.Append("    at ").AppendLine($"{context._owner?.name ?? "<anonymous method>"}({context._module?.FilePath ?? "<anonymous>"}:{codeCoordinates.Line}:{codeCoordinates.Column})");
+                }
             }
-            callstack = res.ToString();
+            callstack = Context.CurrentGlobalContext.ProxyValue(res.ToString());
         }
-#endif
+
+        internal void MakeCallStack()
+        {
+            StringBuilder res = new StringBuilder();
+
+            List<Context> contexts = Context.GetCurrentContextStack();
+            if (contexts.Count > 0)
+            {
+                Context currentContext = contexts[contexts.Count - 1];
+                CodeCoordinates currentCodeCoordinates = CodeCoordinates.FromTextPosition(currentContext.RootContext._code, currentContext._currentPosition);
+                res.Append("    at ").AppendLine($"{currentCodeCoordinates.Code ?? string.Empty}");
+                res.Append("    at ").AppendLine($"{currentContext._owner?.name ?? "<anonymous method>"}({currentContext._module?.FilePath ?? "<anonymous>"}:{currentCodeCoordinates.Line}:{currentCodeCoordinates.Column})");
+            }
+
+            for (int i = contexts.Count - 2; i > 0; i--)
+            {
+                Context context = contexts[i];
+                if (context != null)
+                {
+                    CodeCoordinates codeCoordinates = CodeCoordinates.FromTextPosition(context.RootContext._code, context._currentPosition);
+                    res.Append("    at ").AppendLine($"{context._owner?.name ?? "<anonymous method>"}({context._module?.FilePath ?? "<anonymous>"}:{codeCoordinates.Line}:{codeCoordinates.Column})");
+                }
+            }
+            callstack = Context.CurrentGlobalContext.ProxyValue(res.ToString());
+        }
+
         [Hidden]
         public override string ToString()
         {
@@ -84,22 +110,17 @@ namespace NiL.JS.BaseLibrary
                 || message._valueType <= JSValueType.Undefined
                 || string.IsNullOrEmpty((mstring = message.ToString())))
                 return name.ToString()
-#if CALLSTACKTOSTRING
+
  + Environment.NewLine + callstack
-#endif
 ;
             if (name == null
                 || name._valueType <= JSValueType.Undefined
                 || string.IsNullOrEmpty((nstring = name.ToString())))
                 return mstring
-#if CALLSTACKTOSTRING
  + Environment.NewLine + callstack
-#endif
 ;
             return nstring + ": " + mstring
-#if CALLSTACKTOSTRING
  + Environment.NewLine + callstack
-#endif
 ;
         }
 

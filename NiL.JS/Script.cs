@@ -62,6 +62,8 @@ namespace NiL.JS
             if (Code == "")
                 return JSValue.Undefined;
 
+            context._code = Code;
+
             try
             {
                 context.Activate();

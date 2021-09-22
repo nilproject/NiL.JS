@@ -73,6 +73,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
+            context._currentPosition = this.Position;
             var temp = _left.Evaluate(context);
             JSValue targetObject = context._objectSource;
             ICallable callable = null;

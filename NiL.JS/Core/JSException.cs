@@ -20,6 +20,7 @@ namespace NiL.JS.Core
         public JSException(Error data)
         {
             Error = Context.CurrentGlobalContext.ProxyValue(data);
+            data.MakeCallStack();
         }
 
         public JSException(Error data, CodeNode exceptionMaker, string code)
@@ -30,23 +31,27 @@ namespace NiL.JS.Core
             if (code != null) {
                 CodeCoordinates = CodeCoordinates.FromTextPosition(code, exceptionMaker.Position, exceptionMaker.Length);
             }
+            data.MakeCallStack(exceptionMaker);
         }
 
         public JSException(JSValue data)
         {
             Error = data;
+            (data.Value as Error)?.MakeCallStack();
         }
 
         public JSException(JSValue data, Exception innerException)
             : base("External error", innerException)
         {
             Error = data;
+            (data.Value as Error)?.MakeCallStack();
         }
 
         public JSException(Error avatar, Exception innerException)
             : base("", innerException)
         {
             Error = Context.CurrentGlobalContext.ProxyValue(avatar);
+            avatar.MakeCallStack();
         }
 
         public override string Message
