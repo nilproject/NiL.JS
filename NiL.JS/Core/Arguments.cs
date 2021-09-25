@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Core
 {
@@ -10,7 +12,7 @@ namespace NiL.JS.Core
     [Serializable]
 #endif
     [Prototype(typeof(JSObject), true)]
-    public sealed class Arguments : JSObject, IEnumerable
+    public sealed class Arguments : JSObject, IEnumerable, IIterable
     {
         private sealed class _LengthContainer : JSValue
         {
@@ -214,6 +216,9 @@ namespace NiL.JS.Core
 
             return base.GetProperty(key, forWrite, memberScope);
         }
+
+        public IIterator iterator()
+            => this.Select(x => x.Value).GetEnumerator().AsIterator();
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
         {
