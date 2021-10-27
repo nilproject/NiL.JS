@@ -31,17 +31,38 @@ namespace Tests.Core
                 new KeyValuePair<double, string>(1664158979.1109629, "1664158979.11096290000000000000"),
                 new KeyValuePair<double, string>(0.00021140449751288852, "0.00021140449751288852"),
                 new KeyValuePair<double, string>(34.970703125, "34.970703125"),
-                new KeyValuePair<double, string>(1.7158203125, "1.7158203125"),
-                new KeyValuePair<double, string>(0.6, "0.6")
+                new KeyValuePair<double, string>(1.7158203125, "1.7158203125")
             };
 
             foreach (var number in numbers)
             {
-                var parsedNumber = 0.0;
-                var result = Tools.ParseNumber(number.Value, out parsedNumber, 0);
+                var result = Tools.ParseNumber(number.Value, out double parsedNumber, 0);
 
                 Assert.IsTrue(result);
                 Assert.AreEqual(number.Key, parsedNumber);
+            }
+        }
+
+        [TestMethod]
+        public void DoubleToString()
+        {
+            var numbers = new KeyValuePair<double, string>[]
+            {
+                new KeyValuePair<double, string>(69.85, "69.85"),
+                new KeyValuePair<double, string>(10.2, "10.2"),
+                new KeyValuePair<double, string>(12.34, "12.34"),
+                new KeyValuePair<double, string>(1.3, "1.3"),
+                new KeyValuePair<double, string>(20.20, "20.2"),
+                new KeyValuePair<double, string>(0.00021140449751288852, "0.000211404497513"),
+                new KeyValuePair<double, string>(34.970703125, "34.970703125"),
+                new KeyValuePair<double, string>(1.7158203125, "1.7158203125")
+            };
+
+            foreach (var (number, expected) in numbers)
+            {
+                var parsedNumber = Tools.DoubleToString(number);
+
+                Assert.AreEqual(expected, parsedNumber);
             }
         }
 

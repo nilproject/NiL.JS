@@ -856,10 +856,10 @@ namespace NiL.JS.Core
                         ulong absIntPart = (abs < 1.0) ? 0L : (ulong)(abs);
                         res = (absIntPart == 0 ? "0" : absIntPart.ToString(CultureInfo.InvariantCulture));
 
-                        abs %= 1.0;
-                        if (abs != 0 && res.Length <= 15)
+                        var decimalPart = Convert.ToDecimal(abs) % 1.0m;
+                        if (decimalPart != 0 && res.Length <= 15)
                         {
-                            string fracPart = abs.ToString(divFormats[15 - res.Length], CultureInfo.InvariantCulture);
+                            string fracPart = decimalPart.ToString(divFormats[15 - res.Length], CultureInfo.InvariantCulture);
                             if (fracPart == "1")
                                 res = (absIntPart + 1).ToString(CultureInfo.InvariantCulture);
                             else
