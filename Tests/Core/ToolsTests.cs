@@ -31,7 +31,8 @@ namespace Tests.Core
                 new KeyValuePair<double, string>(1664158979.1109629, "1664158979.11096290000000000000"),
                 new KeyValuePair<double, string>(0.00021140449751288852, "0.00021140449751288852"),
                 new KeyValuePair<double, string>(34.970703125, "34.970703125"),
-                new KeyValuePair<double, string>(1.7158203125, "1.7158203125")
+                new KeyValuePair<double, string>(1.7158203125, "1.7158203125"),
+                new KeyValuePair<double, string>(0.6, "0.6")
             };
 
             foreach (var number in numbers)
