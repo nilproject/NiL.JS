@@ -105,24 +105,6 @@ namespace NiL.JS.Core
 
         private static readonly DoubleStringCacheItem[] cachedDoubleString = new DoubleStringCacheItem[8];
         private static int cachedDoubleStringsIndex = 0;
-        private static readonly string[] divFormats =
-            {
-                ".#",
-                ".##",
-                ".###",
-                ".####",
-                ".#####",
-                ".######",
-                ".#######",
-                ".########",
-                ".#########",
-                ".##########",
-                ".###########",
-                ".############",
-                ".#############",
-                ".##############",
-                ".###############"
-            };
 
         private static readonly decimal[] powersOf10 = new[]
             {
@@ -829,7 +811,7 @@ namespace NiL.JS.Core
             if (double.IsNaN(d))
                 return "NaN";
 
-            string res = null;
+            string res;
             lock (cachedDoubleString)
             {
                 for (var i = 8; i-- > 0;)
@@ -853,18 +835,130 @@ namespace NiL.JS.Core
                     }
                     else
                     {
-                        ulong absIntPart = (abs < 1.0) ? 0L : (ulong)(abs);
-                        res = (absIntPart == 0 ? "0" : absIntPart.ToString(CultureInfo.InvariantCulture));
+                        var highestBit = 1UL << 52;
+                        var raw = BitConverter.DoubleToInt64Bits(abs);
+                        ulong m = ((ulong)raw & ((1UL << 52) - 1)) | highestBit;
+                        long sign = (raw >> 63) | 1L;
+                        int e = (int)((raw & long.MaxValue) >> 52);
+                        e = 52 - e + 1023;
 
-                        abs %= 1.0;
-                        if (abs != 0 && res.Length <= 15)
+                        var intPart = e > 63 ? 0 : e <= 0 ? m : m >> e;
+                        var fracPart = e < 0 ? 0 : e >= 63 ? m : (m & ((1ul << e) - 1));
+                        var fracSize = 0;
+
+                        var str = new ulong[] { 1 };
+                        var temp = new ulong[] { 1 };
+                        var intBuffer = new ulong[] { 0 };
+                        var fracBuffer = new ulong[] { 0 };
+
+                        if (intPart != 0)
                         {
-                            string fracPart = abs.ToString(divFormats[15 - res.Length], CultureInfo.InvariantCulture);
-                            if (fracPart == "1")
-                                res = (absIntPart + 1).ToString(CultureInfo.InvariantCulture);
-                            else
-                                res += fracPart;
+                            var curDeg = e < 0 ? e : 0;
+                            var curBit = 0;
+                            for (var b = 0; b < 53 && intPart != 0; b++, curBit++)
+                            {
+                                if ((intPart & 1) != 0)
+                                {
+                                    while (curDeg < curBit)
+                                    {
+                                        numStrSum(str, str, ref str);
+                                        curDeg++;
+                                    }
+
+                                    numStrSum(intBuffer, str, ref intBuffer);
+                                }
+
+                                intPart >>= 1;
+                            }
+
+                            if (fracPart != 0)
+                            {
+                                System.Array.Clear(str, 0, str.Length);
+                                str[str.Length - 1] = 1;
+                            }
                         }
+
+                        if (fracPart != 0)
+                        {
+                            var curDeg = e > 52 ? e - 52 : 0;
+                            var curBit = 1;
+                            fracPart <<= 1;
+                            if (((fracPart >> 1) & 1) == 0)
+                                fracPart |= 1;
+
+                            if (e < 52 && e > 40)
+                                fracPart <<= 52 - e;
+
+                            for (var b = 0; b < 63 && fracPart != 0; b++, curBit++)
+                            {
+                                if ((fracPart & highestBit) != 0)
+                                {
+                                    //var d1 = string.Concat(str.Reverse().Select(x => x.ToString("X16")));
+
+                                    while (curDeg < curBit)
+                                    {
+                                        numStrSum(str, str, ref temp);
+                                        numStrSum(temp, temp, ref temp);
+                                        numStrSum(str, temp, ref str);
+
+                                        //d1 = string.Concat(str.Reverse().Select(x => x.ToString("X16")));
+
+                                        numStrMul10(fracBuffer, ref fracBuffer);
+
+                                        fracSize++;
+                                        curDeg++;
+                                    }
+
+                                    //var d0 = string.Concat(fracBuffer.Reverse().Select(x => x.ToString("X16")));
+
+                                    numStrSum(fracBuffer, str, ref fracBuffer);
+
+                                    //var d2 = string.Concat(fracBuffer.Reverse().Select(x => x.ToString("X16")));
+                                }
+
+                                fracPart &= highestBit - 1;
+                                fracPart <<= 1;
+                            }
+                        }
+
+                        var buffer = new char[2 + intBuffer.Length * 16 + fracBuffer.Length * 16];
+                        var bufferPos = 0;
+
+                        var write = false;
+                        for (var i = 0; i < intBuffer.Length * 16; i++)
+                        {
+                            var v = (intBuffer[i / 16] >> 4 * (15 - i)) & 0xf;
+                            if (v != 0 || write)
+                            {
+                                write = true;
+                                buffer[bufferPos++] = (char)((char)v + '0');
+                            }
+                        }
+
+                        if (bufferPos == 0)
+                            buffer[bufferPos++] = '0';
+
+                        if (fracSize != 0)
+                        {
+                            var lastRealSign = bufferPos;
+                            buffer[bufferPos++] = '.';
+                            for (var i = fracSize; i-- > 0;)
+                            {
+                                var v = (fracBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
+                                buffer[bufferPos++] = (char)((char)v + '0');
+
+                                if (v != 0)
+                                    lastRealSign = bufferPos;
+
+                                if (bufferPos == 17 || bufferPos == buffer.Length)
+                                    break;
+                            }
+
+                            if (lastRealSign < buffer.Length)
+                                buffer[lastRealSign] = '\0';
+                        }
+
+                        res = new string(buffer, 0, System.Array.IndexOf(buffer, '\0'));
                     }
 
                     if (neg == 1)
@@ -877,6 +971,118 @@ namespace NiL.JS.Core
             }
 
             return res;
+        }
+
+        private static int digitsCount(ulong x)
+        {
+            var res = 0;
+
+            if ((x >> 32) != 0)
+            {
+                res += 8;
+                x >>= 32;
+            }
+
+            if ((x >> 16) != 0)
+            {
+                res += 4;
+                x >>= 16;
+            }
+
+            if ((x >> 8) != 0)
+            {
+                res += 2;
+                x >>= 8;
+            }
+
+            if ((x >> 4) != 0)
+            {
+                res += 1;
+            }
+
+            return res;
+        }
+
+        private static void numStrMul10(ulong[] x, ref ulong[] output)
+        {
+            if (x.Length == 0)
+            {
+                System.Array.Clear(output, 0, output.Length);
+                return;
+            }
+
+            var size = 0;
+            for (var i = x.Length; i-- > 0;)
+            {
+                if (x[i] != 0)
+                {
+                    size = i + 1;
+
+                    if ((x[i] & (0xful << 60)) != 0)
+                    {
+                        size++;
+                    }
+
+                    break;
+                }
+            }
+
+            if (size > output.Length)
+            {
+                output = new ulong[size];
+            }
+
+            var o = 0ul;
+            for (var i = 0; i < output.Length; i++)
+            {
+                var v = i >= x.Length ? 0 : x[i];
+                output[i] = (v << 4) | o;
+                o = (v & (0xful << 60)) >> 60;
+            }
+        }
+
+        private static void numStrSum(ulong[] left, ulong[] rigth, ref ulong[] output)
+        {
+            var len = System.Math.Max(left.Length, rigth.Length);
+            if (output.Length < len)
+                output = new ulong[len];
+
+            var go = 0u;
+            for (var i = 0; i < output.Length; i++)
+            {
+                var l = i < left.Length ? left[i] : 0;
+                var r = i < rigth.Length ? rigth[i] : 0;
+
+                l += go;
+                go = 0;
+
+                do
+                {
+                    var el = l & 0x8888_8888_8888_8888;
+                    var er = r & 0x8888_8888_8888_8888;
+                    l += r;
+                    var o = ((el | er) & ~l) >> 3;
+                    r = o * 6;
+                    go |= (uint)(o >> 60);
+                    for (; ; )
+                    {
+                        o = l & (l << 1 | l << 2) & 0x8888888888888888;
+                        if (o == 0)
+                            break;
+                        o >>= 3;
+
+                        l -= o * 10;
+                        l += o << 4;
+                        go |= (uint)(o >> 60);
+                    }
+                }
+                while (r != 0);
+
+                output[i] = l;
+
+                if (i + 1 == output.Length && go != 0)
+                    System.Array.Resize(ref output, output.Length * 2);
+            }
         }
 
         internal static void CheckEndOfInput(string code, ref int i)
@@ -1631,7 +1837,7 @@ namespace NiL.JS.Core
                         {
                             string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
                             ushort chc = 0;
-                            if (ushort.TryParse(c, System.Globalization.NumberStyles.HexNumber, null, out chc))
+                            if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
                             {
                                 processedChars += c.Length;
                                 char ch = (char)chc;
