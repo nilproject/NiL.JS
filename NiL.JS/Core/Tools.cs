@@ -880,16 +880,19 @@ namespace NiL.JS.Core
 
                         if (fracPart != 0)
                         {
-                            var curDeg = e > 52 ? e - 52 : 0;
+                            var curDeg = e > 53 ? 53 - e : 0;
                             var curBit = 1;
-                            fracPart <<= 1;
-                            if (((fracPart >> 1) & 1) == 0)
-                                fracPart |= 1;
+                            var supplimented = false;
+                            if (e < 53 && e > 40)
+                            {
+                                fracPart <<= 1;
+                                //if (((fracPart >> 1) & 1) == 0)
+                                //    fracPart |= 1;
 
-                            if (e < 52 && e > 40)
                                 fracPart <<= 52 - e;
+                            }
 
-                            for (var b = 0; b < 63 && fracPart != 0; b++, curBit++)
+                            for (var b = 0; b <= 53; b++, curBit++)
                             {
                                 if ((fracPart & highestBit) != 0)
                                 {
@@ -916,13 +919,27 @@ namespace NiL.JS.Core
                                     //var d2 = string.Concat(fracBuffer.Reverse().Select(x => x.ToString("X16")));
                                 }
 
-                                fracPart &= highestBit - 1;
+                                if (b == 52)
+                                {
+                                    var test = m % 10;
+
+                                    var needSupply = ((fracPart >> 1) & highestBit) != 0
+                                                  || (((~fracPart >> 1) & fracPart) & highestBit) == 0
+                                                  || (((fracPart >> 2) & (~fracPart >> 1) & fracPart) & highestBit) != 0;
+                                    if (supplimented || !needSupply)
+                                        break;
+
+                                    fracPart |= highestBit >> 1;
+                                    supplimented = true;
+                                }
+
                                 fracPart <<= 1;
                             }
                         }
 
                         var buffer = new char[2 + intBuffer.Length * 16 + fracBuffer.Length * 16];
                         var bufferPos = 0;
+                        var signDigits = 0;
 
                         var write = false;
                         for (var i = 0; i < intBuffer.Length * 16; i++)
@@ -932,15 +949,20 @@ namespace NiL.JS.Core
                             {
                                 write = true;
                                 buffer[bufferPos++] = (char)((char)v + '0');
+                                signDigits++;
                             }
                         }
 
                         if (bufferPos == 0)
                             buffer[bufferPos++] = '0';
 
+                        var lastRealSign = bufferPos;
+
                         if (fracSize != 0)
                         {
-                            var lastRealSign = bufferPos;
+                            if (write)
+                                signDigits++;
+
                             buffer[bufferPos++] = '.';
                             for (var i = fracSize; i-- > 0;)
                             {
@@ -948,9 +970,15 @@ namespace NiL.JS.Core
                                 buffer[bufferPos++] = (char)((char)v + '0');
 
                                 if (v != 0)
+                                {
+                                    write = true;
                                     lastRealSign = bufferPos;
+                                }
 
-                                if (bufferPos == 17 || bufferPos == buffer.Length)
+                                if (write)
+                                    signDigits++;
+
+                                if (signDigits == 17 || bufferPos == buffer.Length)
                                     break;
                             }
 
@@ -958,7 +986,7 @@ namespace NiL.JS.Core
                                 buffer[lastRealSign] = '\0';
                         }
 
-                        res = new string(buffer, 0, System.Array.IndexOf(buffer, '\0'));
+                        res = new string(buffer, 0, lastRealSign);
                     }
 
                     if (neg == 1)
@@ -1383,9 +1411,9 @@ namespace NiL.JS.Core
                         else
                         {
                             var frac = temp;
-                            temp = temp / (ulong)powersOf10[-deg + 18];
-                            frac -= (temp * (ulong)powersOf10[-deg + 18]);
                             var mask = (ulong)powersOf10[-deg + 18];
+                            temp = temp / mask;
+                            frac -= temp * mask;
 
                             int e = 0;
 
@@ -1462,10 +1490,15 @@ namespace NiL.JS.Core
                             value *= 1e-323;
                             value *= 0.1;
                         }
-                        else
+                        else if (deg > 0)
                         {
                             var exp = System.Math.Pow(10.0, deg);
                             value *= exp;
+                        }
+                        else
+                        {
+                            var exp = System.Math.Pow(10.0, -deg);
+                            value /= exp;
                         }
                     }
                 }
@@ -1480,7 +1513,7 @@ namespace NiL.JS.Core
             {
                 if (radix == 0)
                     radix = 10;
-                value = 0;
+
                 bool extended = false;
                 double doubleTemp = 0.0;
                 ulong temp = 0;
@@ -1506,15 +1539,19 @@ namespace NiL.JS.Core
                                 doubleTemp = temp;
                             }
                         }
+
                         result = true;
                     }
+
                     i++;
                 }
+
                 if (!result)
                 {
                     value = double.NaN;
                     return false;
                 }
+                
                 value = extended ? doubleTemp : temp;
                 value *= sign;
                 index = i;
