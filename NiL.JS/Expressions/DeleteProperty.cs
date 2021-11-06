@@ -36,8 +36,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            JSValue source = null;
-            source = _left.Evaluate(context);
+            var source = _left.Evaluate(context);
             if (source._valueType < JSValueType.Object)
                 source = source.CloneImpl(false);
             else
@@ -45,8 +44,10 @@ namespace NiL.JS.Expressions
 
             var res = source.DeleteProperty(cachedMemberName ?? _right.Evaluate(context));
             context._objectSource = null;
+
             if (!res && context._strict)
                 ExceptionHelper.ThrowTypeError("Cannot delete property \"" + _left + "\".");
+
             return res;
         }
 

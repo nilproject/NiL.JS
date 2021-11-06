@@ -1171,7 +1171,7 @@ namespace NiL.JS.BaseLibrary
                         if (part != 0)
                             return false;
 
-                        if (!Tools.IsDigit(timeStr[j]))
+                        if (!NumberUtils.IsDigit(timeStr[j]))
                             return false;
 
                         year = year * 10 + timeStr[j] - '0';
@@ -1180,7 +1180,7 @@ namespace NiL.JS.BaseLibrary
 
                     case 'm':
                     {
-                        if (!Tools.IsDigit(timeStr[j]))
+                        if (!NumberUtils.IsDigit(timeStr[j]))
                             return false;
                         switch (part)
                         {
@@ -1207,7 +1207,7 @@ namespace NiL.JS.BaseLibrary
                         if (part != 0)
                             return false;
 
-                        if (!Tools.IsDigit(timeStr[j]))
+                        if (!NumberUtils.IsDigit(timeStr[j]))
                             return false;
 
                         if (day == int.MinValue)
@@ -1222,7 +1222,7 @@ namespace NiL.JS.BaseLibrary
                         if (part != 1)
                             return false;
 
-                        if (!Tools.IsDigit(timeStr[j]))
+                        if (!NumberUtils.IsDigit(timeStr[j]))
                             return false;
 
                         hour = hour * 10 + timeStr[j] - '0';
@@ -1234,7 +1234,7 @@ namespace NiL.JS.BaseLibrary
                         if (part < 1)
                             return false;
 
-                        if (!Tools.IsDigit(timeStr[j]))
+                        if (!NumberUtils.IsDigit(timeStr[j]))
                         {
                             if (inManyLoop)
                             {

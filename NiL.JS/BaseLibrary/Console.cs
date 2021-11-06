@@ -481,7 +481,7 @@ namespace NiL.JS.BaseLibrary
 
             if (label != "")
                 label += ": ";
-            LogMessage(LogLevel.Info, label + Tools.DoubleToString(System.Math.Round(elapsed, 10)) + "ms");
+            LogMessage(LogLevel.Info, label + NumberUtils.DoubleToString(System.Math.Round(elapsed, 10)) + "ms");
 
             return JSValue.undefined;
         }

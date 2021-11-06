@@ -99,7 +99,7 @@ namespace NiL.JS.BaseLibrary
             _valueType = JSValueType.Double;
             double d = 0;
             int i = 0;
-            if (value.Length != 0 && Tools.ParseNumber(value, ref i, out d, 0, ParseNumberOptions.Default | (Context.CurrentContext._strict ? ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
+            if (value.Length != 0 && Tools.ParseJsNumber(value, ref i, out d, 0, ParseNumberOptions.Default | (Context.CurrentContext._strict ? ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
                 _dValue = d;
             _attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
@@ -164,7 +164,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         double d = 0;
                         int i = 0;
-                        if (Tools.ParseNumber(digits._oValue.ToString(), ref i, out d, ParseNumberOptions.Default))
+                        if (Tools.ParseJsNumber(digits._oValue.ToString(), ref i, out d, ParseNumberOptions.Default))
                             dgts = (int)d;
                         break;
                     }
@@ -368,10 +368,10 @@ namespace NiL.JS.BaseLibrary
             if (_valueType == JSValueType.Integer)
                 return Tools.Int32ToString(_iValue);
             if (_valueType == JSValueType.Double)
-                return Tools.DoubleToString(_dValue);
+                return NumberUtils.DoubleToString(_dValue);
             if (_iValue != 0)
                 return Tools.Int32ToString(_iValue);
-            return Tools.DoubleToString(_dValue);
+            return NumberUtils.DoubleToString(_dValue);
         }
 
         [Hidden]

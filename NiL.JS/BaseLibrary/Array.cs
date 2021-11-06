@@ -1503,7 +1503,7 @@ namespace NiL.JS.BaseLibrary
                     var pindex = 0;
                     var dindex = 0.0;
                     long lindex = 0;
-                    if (Tools.ParseNumber(item.Key, ref pindex, out dindex)
+                    if (Tools.ParseJsNumber(item.Key, ref pindex, out dindex)
                         && (pindex == item.Key.Length)
                         && (lindex = (long)dindex) == dindex
                         && lindex < _length)
@@ -2035,7 +2035,7 @@ namespace NiL.JS.BaseLibrary
                     {
                         var pindex = 0;
                         var dindex = 0.0;
-                        if (Tools.ParseNumber(item.Key, ref pindex, out dindex) && (pindex == item.Key.Length)
+                        if (Tools.ParseJsNumber(item.Key, ref pindex, out dindex) && (pindex == item.Key.Length)
                             && dindex < len)
                         {
                             keysToRemove.Add(item.Key);
@@ -2212,7 +2212,7 @@ namespace NiL.JS.BaseLibrary
                             if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
                             {
                                 int si = 0;
-                                if (Tools.ParseNumber(skey, ref si, out double dindex)
+                                if (Tools.ParseJsNumber(skey, ref si, out double dindex)
                                     && (si == skey.Length)
                                     && dindex >= 0
                                     && dindex < uint.MaxValue

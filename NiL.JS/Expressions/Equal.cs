@@ -56,7 +56,7 @@ namespace NiL.JS.Expressions
                             case JSValueType.String:
                                 {
                                     tstr = tjso._oValue.ToString();
-                                    if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                    if (Tools.ParseJsNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                         return tint == tdouble ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                     else
                                         return false;
@@ -98,7 +98,7 @@ namespace NiL.JS.Expressions
                             case JSValueType.String:
                                 {
                                     tstr = tjso._oValue.ToString();
-                                    if (Tools.ParseNumber(tstr, ref index, out tjso._dValue) && (index == tstr.Length))
+                                    if (Tools.ParseJsNumber(tstr, ref index, out tjso._dValue) && (index == tstr.Length))
                                         return tdouble == tjso._dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                     else
                                         return false;
@@ -133,14 +133,14 @@ namespace NiL.JS.Expressions
                             case JSValueType.Boolean:
                             case JSValueType.Integer:
                                 {
-                                    if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                    if (Tools.ParseJsNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                         return tdouble == temp._iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                     else
                                         return false;
                                 }
                             case JSValueType.Double:
                                 {
-                                    if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                    if (Tools.ParseJsNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                         return tdouble == temp._dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                     else
                                         return false;
@@ -158,7 +158,7 @@ namespace NiL.JS.Expressions
                                         case JSValueType.Integer:
                                         case JSValueType.Boolean:
                                             {
-                                                if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                                if (Tools.ParseJsNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                                     return tdouble == temp._iValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                                 else
                                                     goto
@@ -166,7 +166,7 @@ namespace NiL.JS.Expressions
                                             }
                                         case JSValueType.Double:
                                             {
-                                                if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                                if (Tools.ParseJsNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                                     return tdouble == temp._dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                                 else
                                                     goto case JSValueType.String;
@@ -214,7 +214,7 @@ namespace NiL.JS.Expressions
                                         case JSValueType.String:
                                             {
                                                 tstr = temp._oValue.ToString();
-                                                if (Tools.ParseNumber(tstr, ref index, out temp._dValue) && (index == tstr.Length))
+                                                if (Tools.ParseJsNumber(tstr, ref index, out temp._dValue) && (index == tstr.Length))
                                                     return tdouble == temp._dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                                 else
                                                     return false;
@@ -233,7 +233,7 @@ namespace NiL.JS.Expressions
                                         case JSValueType.Integer:
                                             {
                                                 temp._dValue = temp._valueType == JSValueType.Double ? temp._dValue : temp._iValue;
-                                                if (Tools.ParseNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
+                                                if (Tools.ParseJsNumber(tstr, ref index, out tdouble) && (index == tstr.Length))
                                                     return tdouble == temp._dValue ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False;
                                                 else
                                                     return false;

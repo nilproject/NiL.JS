@@ -112,7 +112,7 @@ namespace NiL.JS.Core.Interop
                             if ('0' <= fc && '9' >= fc)
                             {
                                 var si = 0;
-                                if (Tools.ParseNumber(tname._oValue.ToString(), ref si, out double dindex)
+                                if (Tools.ParseJsNumber(tname._oValue.ToString(), ref si, out double dindex)
                                     && (si == tname._oValue.ToString().Length)
                                     && dindex >= 0
                                     && dindex < uint.MaxValue

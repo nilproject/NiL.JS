@@ -1210,7 +1210,7 @@ namespace NiL.JS.Expressions
                         {
                             int n = 0;
                             double d = 0;
-                            if (Tools.ParseNumber(state.Code, ref start, out d, 0, ParseNumberOptions.Default | (state.Strict ? ParseNumberOptions.RaiseIfOctal : ParseNumberOptions.None)))
+                            if (Tools.ParseJsNumber(state.Code, ref start, out d, 0, ParseNumberOptions.Default | (state.Strict ? ParseNumberOptions.RaiseIfOctal : ParseNumberOptions.None)))
                             {
                                 if ((n = (int)d) == d && !Tools.IsNegativeZero(d))
                                 {

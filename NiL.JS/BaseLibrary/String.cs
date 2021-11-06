@@ -49,7 +49,7 @@ namespace NiL.JS.BaseLibrary
                 else if (n._valueType == JSValueType.Double)
                 {
                     if (n._dValue < 0 || n._dValue > 0x10FFFF || double.IsInfinity(n._dValue) || double.IsNaN(n._dValue) || n._dValue % 1.0 != 0.0)
-                        ExceptionHelper.Throw(new RangeError("Invalid code point " + Tools.DoubleToString(n._dValue)));
+                        ExceptionHelper.Throw(new RangeError("Invalid code point " + NumberUtils.DoubleToString(n._dValue)));
                     ucs = (int)n._dValue;
                 }
 

@@ -167,7 +167,7 @@ namespace NiL.JS.Expressions
                         }
                         case JSValueType.String:
                         {
-                            resultContainer._oValue = new RopeString(Tools.DoubleToString(first._dValue), second._oValue);
+                            resultContainer._oValue = new RopeString(NumberUtils.DoubleToString(first._dValue), second._oValue);
                             resultContainer._valueType = JSValueType.String;
                             return;
                         }
@@ -210,7 +210,7 @@ namespace NiL.JS.Expressions
                         }
                         case JSValueType.Double:
                         {
-                            tstr = new RopeString(tstr, Tools.DoubleToString(second._dValue));
+                            tstr = new RopeString(tstr, NumberUtils.DoubleToString(second._dValue));
                             break;
                         }
                         case JSValueType.Undefined:

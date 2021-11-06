@@ -38,7 +38,7 @@ namespace Tests.Core
             foreach (var number in numbers)
             {
                 var parsedNumber = 0.0;
-                var result = Tools.ParseNumber(number.Value, out parsedNumber, 0);
+                var result = Tools.ParseJsNumber(number.Value, out parsedNumber, 0);
 
                 Assert.IsTrue(result);
                 Assert.AreEqual(number.Key, parsedNumber);

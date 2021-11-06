@@ -97,24 +97,6 @@ namespace NiL.JS.Core
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
         };
 
-        private struct DoubleStringCacheItem
-        {
-            public double key;
-            public string value;
-        }
-
-        private static readonly DoubleStringCacheItem[] cachedDoubleString = new DoubleStringCacheItem[8];
-        private static int cachedDoubleStringsIndex = 0;
-
-        private static readonly decimal[] powersOf10 = new[]
-            {
-                1e-18M, 1e-17M, 1e-16M, 1e-15M, 1e-14M, 1e-13M, 1e-12M, 1e-11M,
-                1e-10M, 1e-9M, 1e-8M, 1e-7M, 1e-6M, 1e-5M, 1e-4M, 1e-3M, 1e-2M,
-                1e-1M, 1e+0M, 1e+1M, 1e+2M, 1e+3M, 1e+4M, 1e+5M, 1e+6M, 1e+7M,
-                1e+8M, 1e+9M, 1e+10M, 1e+11M, 1e+12M, 1e+13M, 1e+14M, 1e+15M,
-                1e+16M, 1e+17M, 1e+18M
-            };
-
         internal sealed class _ForcedEnumerator<T> : IEnumerator<T>
         {
             private int index;
@@ -207,7 +189,7 @@ namespace NiL.JS.Core
                         if (s.Length > 0 && (Tools.IsWhiteSpace(s[0]) || Tools.IsWhiteSpace(s[s.Length - 1])))
                             s = s.Trim(Tools.TrimChars);
 
-                        if (Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
+                        if (Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
                             return double.NaN;
 
                         return x;
@@ -319,7 +301,7 @@ namespace NiL.JS.Core
                     int ix = 0;
                     string s = (value._oValue.ToString()).Trim();
 
-                    if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
+                    if (!Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                         return 0;
 
                     if (double.IsNaN(x))
@@ -410,7 +392,7 @@ namespace NiL.JS.Core
                     double x = 0;
                     int ix = 0;
                     string s = (r._oValue.ToString()).Trim();
-                    if (!Tools.ParseNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
+                    if (!Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                         return 0;
                     if (double.IsNaN(x))
                         return 0;
@@ -469,7 +451,7 @@ namespace NiL.JS.Core
                     double x = 0;
                     int ix = 0;
                     string s = (arg._oValue.ToString()).Trim(TrimChars);
-                    if (!Tools.ParseNumber(s, ref ix, out x, ParseNumberOptions.Default & ~ParseNumberOptions.ProcessOctalLiteralsOldSyntax) || ix < s.Length)
+                    if (!Tools.ParseJsNumber(s, ref ix, out x, ParseNumberOptions.Default & ~ParseNumberOptions.ProcessOctalLiteralsOldSyntax) || ix < s.Length)
                         x = double.NaN;
                     result._valueType = JSValueType.Double;
                     result._dValue = x;
@@ -554,7 +536,7 @@ namespace NiL.JS.Core
                         if (targetType == typeof(decimal))
                             return (decimal)jsobj._dValue;
                         if (targetType == typeof(string))
-                            return DoubleToString(jsobj._dValue);
+                            return NumberUtils.DoubleToString(jsobj._dValue);
 
                         if (targetType.GetTypeInfo().IsEnum)
                             return Enum.ToObject(targetType, (long)jsobj._dValue);
@@ -800,319 +782,6 @@ namespace NiL.JS.Core
             return result;
         }
 
-        public static string DoubleToString(double d)
-        {
-            if (d == 0.0)
-                return "0";
-            if (double.IsPositiveInfinity(d))
-                return "Infinity";
-            if (double.IsNegativeInfinity(d))
-                return "-Infinity";
-            if (double.IsNaN(d))
-                return "NaN";
-
-            string res;
-            lock (cachedDoubleString)
-            {
-                for (var i = 8; i-- > 0;)
-                {
-                    if (cachedDoubleString[i].key == d)
-                        return cachedDoubleString[i].value;
-                }
-
-                var abs = System.Math.Abs(d);
-                if (abs < 0.000001)
-                    res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
-                else if (abs >= 1e+21)
-                    res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
-                else
-                {
-                    int neg = (d < 0.0 || (d == -0.0 && Tools.IsNegativeZero(d))) ? 1 : 0;
-
-                    if (abs >= 1e+18)
-                    {
-                        res = ((ulong)(abs / 1000.0)).ToString(CultureInfo.InvariantCulture) + "000";
-                    }
-                    else
-                    {
-                        var highestBit = 1UL << 52;
-                        var raw = BitConverter.DoubleToInt64Bits(abs);
-                        ulong m = ((ulong)raw & ((1UL << 52) - 1)) | highestBit;
-                        long sign = (raw >> 63) | 1L;
-                        int e = (int)((raw & long.MaxValue) >> 52);
-                        e = 52 - e + 1023;
-
-                        var intPart = e > 63 ? 0 : e <= 0 ? m : m >> e;
-                        var fracPart = e < 0 ? 0 : e >= 63 ? m : (m & ((1ul << e) - 1));
-                        var fracSize = 0;
-
-                        var str = new ulong[] { 1 };
-                        var temp = new ulong[] { 1 };
-                        var intBuffer = new ulong[] { 0 };
-                        var fracBuffer = new ulong[] { 0 };
-
-                        if (intPart != 0)
-                        {
-                            var curDeg = e < 0 ? e : 0;
-                            var curBit = 0;
-                            for (var b = 0; b < 53 && intPart != 0; b++, curBit++)
-                            {
-                                if ((intPart & 1) != 0)
-                                {
-                                    while (curDeg < curBit)
-                                    {
-                                        numStrSum(str, str, ref str);
-                                        curDeg++;
-                                    }
-
-                                    numStrSum(intBuffer, str, ref intBuffer);
-                                }
-
-                                intPart >>= 1;
-                            }
-
-                            if (fracPart != 0)
-                            {
-                                System.Array.Clear(str, 0, str.Length);
-                                str[str.Length - 1] = 1;
-                            }
-                        }
-
-                        if (fracPart != 0)
-                        {
-                            var curDeg = e > 53 ? 53 - e : 0;
-                            var curBit = 1;
-                            var supplimented = false;
-                            if (e < 53 && e > 40)
-                            {
-                                fracPart <<= 1;
-                                //if (((fracPart >> 1) & 1) == 0)
-                                //    fracPart |= 1;
-
-                                fracPart <<= 52 - e;
-                            }
-
-                            for (var b = 0; b <= 53; b++, curBit++)
-                            {
-                                if ((fracPart & highestBit) != 0)
-                                {
-                                    //var d1 = string.Concat(str.Reverse().Select(x => x.ToString("X16")));
-
-                                    while (curDeg < curBit)
-                                    {
-                                        numStrSum(str, str, ref temp);
-                                        numStrSum(temp, temp, ref temp);
-                                        numStrSum(str, temp, ref str);
-
-                                        //d1 = string.Concat(str.Reverse().Select(x => x.ToString("X16")));
-
-                                        numStrMul10(fracBuffer, ref fracBuffer);
-
-                                        fracSize++;
-                                        curDeg++;
-                                    }
-
-                                    //var d0 = string.Concat(fracBuffer.Reverse().Select(x => x.ToString("X16")));
-
-                                    numStrSum(fracBuffer, str, ref fracBuffer);
-
-                                    //var d2 = string.Concat(fracBuffer.Reverse().Select(x => x.ToString("X16")));
-                                }
-
-                                if (b == 52)
-                                {
-                                    var test = m % 10;
-
-                                    var needSupply = ((fracPart >> 1) & highestBit) != 0
-                                                  || (((~fracPart >> 1) & fracPart) & highestBit) == 0
-                                                  || (((fracPart >> 2) & (~fracPart >> 1) & fracPart) & highestBit) != 0;
-                                    if (supplimented || !needSupply)
-                                        break;
-
-                                    fracPart |= highestBit >> 1;
-                                    supplimented = true;
-                                }
-
-                                fracPart <<= 1;
-                            }
-                        }
-
-                        var buffer = new char[2 + intBuffer.Length * 16 + fracBuffer.Length * 16];
-                        var bufferPos = 0;
-                        var signDigits = 0;
-
-                        var write = false;
-                        for (var i = 0; i < intBuffer.Length * 16; i++)
-                        {
-                            var v = (intBuffer[i / 16] >> 4 * (15 - i)) & 0xf;
-                            if (v != 0 || write)
-                            {
-                                write = true;
-                                buffer[bufferPos++] = (char)((char)v + '0');
-                                signDigits++;
-                            }
-                        }
-
-                        if (bufferPos == 0)
-                            buffer[bufferPos++] = '0';
-
-                        var lastRealSign = bufferPos;
-
-                        if (fracSize != 0)
-                        {
-                            if (write)
-                                signDigits++;
-
-                            buffer[bufferPos++] = '.';
-                            for (var i = fracSize; i-- > 0;)
-                            {
-                                var v = (fracBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
-                                buffer[bufferPos++] = (char)((char)v + '0');
-
-                                if (v != 0)
-                                {
-                                    write = true;
-                                    lastRealSign = bufferPos;
-                                }
-
-                                if (write)
-                                    signDigits++;
-
-                                if (signDigits == 17 || bufferPos == buffer.Length)
-                                    break;
-                            }
-
-                            if (lastRealSign < buffer.Length)
-                                buffer[lastRealSign] = '\0';
-                        }
-
-                        res = new string(buffer, 0, lastRealSign);
-                    }
-
-                    if (neg == 1)
-                        res = "-" + res;
-                }
-
-                cachedDoubleString[cachedDoubleStringsIndex].key = d;
-                cachedDoubleString[cachedDoubleStringsIndex].value = res;
-                cachedDoubleStringsIndex = (cachedDoubleStringsIndex + 1) & 7;
-            }
-
-            return res;
-        }
-
-        private static int digitsCount(ulong x)
-        {
-            var res = 0;
-
-            if ((x >> 32) != 0)
-            {
-                res += 8;
-                x >>= 32;
-            }
-
-            if ((x >> 16) != 0)
-            {
-                res += 4;
-                x >>= 16;
-            }
-
-            if ((x >> 8) != 0)
-            {
-                res += 2;
-                x >>= 8;
-            }
-
-            if ((x >> 4) != 0)
-            {
-                res += 1;
-            }
-
-            return res;
-        }
-
-        private static void numStrMul10(ulong[] x, ref ulong[] output)
-        {
-            if (x.Length == 0)
-            {
-                System.Array.Clear(output, 0, output.Length);
-                return;
-            }
-
-            var size = 0;
-            for (var i = x.Length; i-- > 0;)
-            {
-                if (x[i] != 0)
-                {
-                    size = i + 1;
-
-                    if ((x[i] & (0xful << 60)) != 0)
-                    {
-                        size++;
-                    }
-
-                    break;
-                }
-            }
-
-            if (size > output.Length)
-            {
-                output = new ulong[size];
-            }
-
-            var o = 0ul;
-            for (var i = 0; i < output.Length; i++)
-            {
-                var v = i >= x.Length ? 0 : x[i];
-                output[i] = (v << 4) | o;
-                o = (v & (0xful << 60)) >> 60;
-            }
-        }
-
-        private static void numStrSum(ulong[] left, ulong[] rigth, ref ulong[] output)
-        {
-            var len = System.Math.Max(left.Length, rigth.Length);
-            if (output.Length < len)
-                output = new ulong[len];
-
-            var go = 0u;
-            for (var i = 0; i < output.Length; i++)
-            {
-                var l = i < left.Length ? left[i] : 0;
-                var r = i < rigth.Length ? rigth[i] : 0;
-
-                l += go;
-                go = 0;
-
-                do
-                {
-                    var el = l & 0x8888_8888_8888_8888;
-                    var er = r & 0x8888_8888_8888_8888;
-                    l += r;
-                    var o = ((el | er) & ~l) >> 3;
-                    r = o * 6;
-                    go |= (uint)(o >> 60);
-                    for (; ; )
-                    {
-                        o = l & (l << 1 | l << 2) & 0x8888888888888888;
-                        if (o == 0)
-                            break;
-                        o >>= 3;
-
-                        l -= o * 10;
-                        l += o << 4;
-                        go |= (uint)(o >> 60);
-                    }
-                }
-                while (r != 0);
-
-                output[i] = l;
-
-                if (i + 1 == output.Length && go != 0)
-                    System.Array.Resize(ref output, output.Length * 2);
-            }
-        }
-
         internal static void CheckEndOfInput(string code, ref int i)
         {
             if (i >= code.Length)
@@ -1152,46 +821,35 @@ namespace NiL.JS.Core
             return cacheItem.value;
         }
 
-        public static bool ParseNumber(string code, out double value, int radix)
+        public static bool ParseJsNumber(string code, out double value, int radix)
         {
             int index = 0;
-            return ParseNumber(code, ref index, out value, radix, ParseNumberOptions.Default);
+            return ParseJsNumber(code, ref index, out value, radix, ParseNumberOptions.Default);
         }
 
-        public static bool ParseNumber(string code, out double value, ParseNumberOptions options)
+        public static bool ParseJsNumber(string code, out double value, ParseNumberOptions options)
         {
             int index = 0;
-            return ParseNumber(code, ref index, out value, 0, options);
+            return ParseJsNumber(code, ref index, out value, 0, options);
         }
 
-        public static bool ParseNumber(string code, out double value, int radix, ParseNumberOptions options)
+        public static bool ParseJsNumber(string code, out double value, int radix, ParseNumberOptions options)
         {
             int index = 0;
-            return ParseNumber(code, ref index, out value, radix, options);
+            return ParseJsNumber(code, ref index, out value, radix, options);
         }
 
-        public static bool ParseNumber(string code, ref int index, out double value)
+        public static bool ParseJsNumber(string code, ref int index, out double value)
         {
-            return ParseNumber(code, ref index, out value, 0, ParseNumberOptions.Default);
+            return ParseJsNumber(code, ref index, out value, 0, ParseNumberOptions.Default);
         }
 
-        public static bool ParseNumber(string code, ref int index, out double value, ParseNumberOptions options)
+        public static bool ParseJsNumber(string code, ref int index, out double value, ParseNumberOptions options)
         {
-            return ParseNumber(code, ref index, out value, 0, options);
+            return ParseJsNumber(code, ref index, out value, 0, options);
         }
 
-        /// <summary>
-        /// Проверяет символ на принадлежность диапазону цифр
-        /// </summary>
-        /// <param name="c"></param>
-        /// <remarks>Использовать вместо этой функции char.IsDigit не получится. Версия char учитывает региональные особенности, что не нужно</remarks>
-        /// <returns></returns>
-        public static bool IsDigit(char c)
-        {
-            return c >= '0' && c <= '9';
-        }
-
-        public static bool ParseNumber(string code, ref int index, out double value, int radix, ParseNumberOptions options)
+        public static bool ParseJsNumber(string code, ref int index, out double value, int radix, ParseNumberOptions options)
         {
             if (code == null)
                 throw new ArgumentNullException("code");
@@ -1248,7 +906,7 @@ namespace NiL.JS.Core
                 && (code[i] == '0')
                 && (i + 1 < code.Length))
             {
-                if (IsDigit(code[i + 1]))
+                if (NumberUtils.IsDigit(code[i + 1]))
                 {
                     if (raiseOldOctalLiterals)
                         ExceptionHelper.ThrowSyntaxError("Octal literals not allowed in strict mode", code, i);
@@ -1258,7 +916,7 @@ namespace NiL.JS.Core
                         i++;
                     }
 
-                    if (processOldOctals && (i + 1 < code.Length) && IsDigit(code[i + 1]))
+                    if (processOldOctals && (i + 1 < code.Length) && NumberUtils.IsDigit(code[i + 1]))
                         radix = 8;
                 }
                 else
@@ -1286,227 +944,11 @@ namespace NiL.JS.Core
 
             if (allowFloat && radix == 0)
             {
-                ulong temp = 0;
-                int scount = 0;
-                int deg = 0;
-                while (i < code.Length)
-                {
-                    if (IsDigit(code[i]))
-                    {
-                        if (scount <= 18)
-                        {
-                            temp = temp * 10 + (ulong)(code[i++] - '0');
-                        }
-                        else
-                        {
-                            deg++;
-                            i++;
-                        }
-
-                        scount++;
-                        result = true;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                if (!result && (i >= code.Length || code[i] != '.'))
-                {
-                    value = double.NaN;
+                var len = NumberUtils.TryParse(code, i, out value);
+                if (len < 0)
                     return false;
-                }
 
-                if (i < code.Length && code[i] == '.')
-                {
-                    i++;
-                    while (i < code.Length)
-                    {
-                        if (IsDigit(code[i]))
-                        {
-                            if (scount <= 18 || ((temp * 10) / 10 == temp))
-                            {
-                                temp = temp * 10 + (ulong)(code[i++] - '0');
-                                deg--;
-                            }
-                            else
-                            {
-                                i++;
-                            }
-
-                            scount++;
-                            result = true;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                if (!result)
-                {
-                    value = double.NaN;
-                    return false;
-                }
-
-                if (i < code.Length && (code[i] == 'e' || code[i] == 'E'))
-                {
-                    i++;
-                    int td = 0;
-                    int esign = code[i] == 43 || code[i] == 45 ? 44 - code[i++] : 1;
-                    if (!IsDigit(code[i]))
-                    {
-                        i--;
-                        if (code[i] == 'e' || code[i] == 'E')
-                            i--;
-                    }
-                    else
-                    {
-                        scount = 0;
-                        while (i < code.Length)
-                        {
-                            if (!IsDigit(code[i]))
-                                break;
-                            else
-                            {
-                                if (scount <= 6)
-                                    td = td * 10 + (code[i++] - '0');
-                                else
-                                    i++;
-                            }
-                        }
-
-                        deg += td * esign;
-                    }
-                }
-
-                if (deg != 0)
-                {
-                    if (deg < 0)
-                    {
-                        if (temp != 0)
-                        {
-                            while ((temp % 10) == 0 && deg < 0)
-                            {
-                                deg++;
-                                temp /= 10;
-                            }
-                        }
-
-                        if (temp == 0)
-                        {
-                            value = 0;
-                            deg = 0;
-                        }
-                        else if (deg < -18)
-                        {
-                            var tail = temp % 1000000;
-                            temp /= 1000000;
-
-                            value = (double)(temp * 1e-12M + tail * 1e-18M);
-                            deg += 18;
-                        }
-                        else
-                        {
-                            var frac = temp;
-                            var mask = (ulong)powersOf10[-deg + 18];
-                            temp = temp / mask;
-                            frac -= temp * mask;
-
-                            int e = 0;
-
-                            if (frac != 0)
-                            {
-                                while (frac != 0 && (temp >> 52) == 0)
-                                {
-                                    e++;
-                                    temp <<= 1;
-                                    frac <<= 1;
-                                    if (frac >= mask)
-                                    {
-                                        temp |= 1;
-                                        frac -= mask;
-                                    }
-                                }
-
-                                if (frac >= mask >> 1)
-                                {
-                                    temp++;
-                                }
-
-                                while (temp < (1UL << 52))
-                                {
-                                    e++;
-                                    temp <<= 1;
-                                }
-                            }
-                            else if (temp != 0)
-                            {
-                                while ((temp >> 52) == 0)
-                                {
-                                    temp <<= 1;
-                                    e++;
-                                }
-
-                                while (temp > ((1UL << 53) - 1))
-                                {
-                                    temp >>= 1;
-                                    e--;
-                                }
-                            }
-
-                            temp = (temp & ((1UL << 52) - 1));
-                            e = 1023 - e + 52;
-                            temp |= ((ulong)e << 52);
-                            value = BitConverter.Int64BitsToDouble((long)temp);
-
-                            deg = 0;
-                        }
-                    }
-                    else
-                    {
-                        if (deg > 10)
-                        {
-                            value = temp * 1e+10;
-                            deg -= 10;
-                        }
-                        else
-                        {
-                            var tail = temp % 10000;
-                            deg += 4;
-                            temp /= 10000;
-
-                            value = (double)(temp * powersOf10[deg + 18]) + (double)(tail * powersOf10[deg + 18 - 4]);
-                            deg = 0;
-                        }
-                    }
-
-                    if (deg != 0)
-                    {
-                        if (deg == -324)
-                        {
-                            value *= 1e-323;
-                            value *= 0.1;
-                        }
-                        else if (deg > 0)
-                        {
-                            var exp = System.Math.Pow(10.0, deg);
-                            value *= exp;
-                        }
-                        else
-                        {
-                            var exp = System.Math.Pow(10.0, -deg);
-                            value /= exp;
-                        }
-                    }
-                }
-                else
-                    value = temp;
-
-                value *= sign;
-                index = i;
+                index += len;
                 return true;
             }
             else
@@ -1551,7 +993,7 @@ namespace NiL.JS.Core
                     value = double.NaN;
                     return false;
                 }
-                
+
                 value = extended ? doubleTemp : temp;
                 value *= sign;
                 index = i;
@@ -2003,9 +1445,9 @@ namespace NiL.JS.Core
                 if (str[i] >= '0' && str[i] <= '7')
                 {
                     var ccode = str[i] - '0';
-                    if (i + 1 < str.Length && IsDigit(str[i + 1]))
+                    if (i + 1 < str.Length && NumberUtils.IsDigit(str[i + 1]))
                         ccode = ccode * 8 + (str[++i] - '0');
-                    if (i + 1 < str.Length && IsDigit(str[i + 1]))
+                    if (i + 1 < str.Length && NumberUtils.IsDigit(str[i + 1]))
                         ccode = ccode * 8 + (str[++i] - '0');
                     return ccode;
                 }
@@ -2185,7 +1627,7 @@ namespace NiL.JS.Core
                 var pindex = 0;
                 var dindex = 0.0;
                 var lindex = 0U;
-                if (Tools.ParseNumber(i, ref pindex, out dindex)
+                if (Tools.ParseJsNumber(i, ref pindex, out dindex)
                     && (pindex == i.Length)
                     && dindex < length
                     && (lindex = (uint)dindex) == dindex)
@@ -2681,7 +2123,7 @@ namespace NiL.JS.Core
                     {
                         while (pos + len < f.Length)
                         {
-                            if (Tools.IsDigit(f[pos + len]))
+                            if (NumberUtils.IsDigit(f[pos + len]))
                                 len++;
                             else
                                 break;
@@ -2731,14 +2173,14 @@ namespace NiL.JS.Core
                             d = double.NaN;
                             if (v != null)
                                 d = (double)Tools.JSObjectToNumber(v);
-                            else if (!Tools.ParseNumber((o ?? "null").ToString(), out d, 0))
+                            else if (!Tools.ParseJsNumber((o ?? "null").ToString(), out d, 0))
                                 d = double.NaN;
 
                             if (double.IsNaN(d) || double.IsInfinity(d))
                                 d = 0.0;
                             d = System.Math.Truncate(d);
 
-                            string dstr = Tools.DoubleToString(System.Math.Abs(d));
+                            string dstr = NumberUtils.DoubleToString(System.Math.Abs(d));
                             if (d < 0)
                                 s.Append('-');
                             if (dstr.Length < para)
@@ -2751,12 +2193,12 @@ namespace NiL.JS.Core
                             d = double.NaN;
                             if (v != null)
                                 d = (double)Tools.JSObjectToNumber(v);
-                            else if (!Tools.ParseNumber((o ?? "null").ToString(), out d, 0))
+                            else if (!Tools.ParseJsNumber((o ?? "null").ToString(), out d, 0))
                                 d = double.NaN;
 
                             if (para >= 0)
                                 d = System.Math.Round(d, System.Math.Min(15, para));
-                            s.Append(Tools.DoubleToString(d));
+                            s.Append(NumberUtils.DoubleToString(d));
 
                             usedArg = true;
                             break;

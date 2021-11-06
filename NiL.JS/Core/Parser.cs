@@ -408,7 +408,7 @@ namespace NiL.JS.Core
         public static bool ValidateNumber(string code, ref int index)
         {
             double fictive = 0.0;
-            return Tools.ParseNumber(code, ref index, out fictive, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix);
+            return Tools.ParseJsNumber(code, ref index, out fictive, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix);
         }
 
         public static bool ValidateRegex(string code, int index)
