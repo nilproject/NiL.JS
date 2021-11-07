@@ -799,7 +799,7 @@ namespace NiL.JS.Core
                     for (var sourceEnumerator = jsobj.GetEnumerator(false, EnumerationMode.RequireValues); sourceEnumerator.MoveNext();)
                     {
                         var targetProp = targetInstance.GetProperty(sourceEnumerator.Current.Key, true, PropertyScope.Common);
-                        
+
                         if (targetProp._valueType >= JSValueType.Object && targetProp.Value is PropertyPair pair)
                         {
                             args.Reset();
@@ -825,9 +825,10 @@ namespace NiL.JS.Core
             if (array == null)
                 return null;
 
-            var result = (IList)Activator.CreateInstance(collectionType, new object[] { (int)array._data.Length });
+            var len = (int)array._data.Length;
+            var result = (IList)Activator.CreateInstance(collectionType, new object[] { len });
 
-            for (var j = result.Count; j-- > 0;)
+            for (var j = 0; j < len; j++)
             {
                 var temp = (array._data[j] ?? JSValue.undefined);
                 var value = ConvertJStoObj(temp, elementType, hightLoyalty);
@@ -835,7 +836,10 @@ namespace NiL.JS.Core
                 if (!hightLoyalty && value == null && (elementType.GetTypeInfo().IsValueType || (!temp.IsNull && !temp.IsUndefined())))
                     return null;
 
-                result[j] = value;
+                if (result.Count <= j)
+                    result.Add(value);
+                else
+                    result[j] = value;
             }
 
             return result;
