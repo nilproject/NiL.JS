@@ -564,7 +564,7 @@ namespace NiL.JS.Core.Functions
                 return null;
 
             target = target._oValue as JSValue ?? target; // это может быть лишь ссылка на какой-то другой контейнер
-            var res = Tools.convertJStoObj(target, targetType, false);
+            var res = Tools.ConvertJStoObj(target, targetType, false);
             return res;
         }
 
@@ -610,7 +610,7 @@ namespace NiL.JS.Core.Functions
             }
             else if (value._valueType > JSValueType.Undefined)
             {
-                result = Tools.convertJStoObj(value, parameterType, !strictConversion);
+                result = Tools.ConvertJStoObj(value, parameterType, !strictConversion);
                 if (strictConversion && result == null)
                 {
                     if (options.HasFlag(ConvertArgsOptions.ThrowOnError))

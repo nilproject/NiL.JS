@@ -178,7 +178,7 @@ namespace NiL.JS.Extensions
 
                     try
                     {
-                        return (T)(Tools.convertJStoObj(self, typeof(T), true) ?? self.Value);
+                        return (T)(Tools.ConvertJStoObj(self, typeof(T), true) ?? self.Value);
                     }
                     catch (InvalidCastException)
                     {
@@ -236,7 +236,7 @@ namespace NiL.JS.Extensions
 
         public static object ConvertToType(this JSValue value, Type targetType)
         {
-            return Tools.convertJStoObj(value, targetType, true);
+            return Tools.ConvertJStoObj(value, targetType, true);
         }
 
         public static void Assign(this JSValue target, object value)

@@ -474,7 +474,11 @@ namespace NiL.JS.BaseLibrary
             }
 
             var currentContext = Context.CurrentContext;
-            var ceocw = _functionDefinition._functionInfo.ContainsEval || _functionDefinition._functionInfo.ContainsWith || _functionDefinition._functionInfo.NeedDecompose || (currentContext?._debugging ?? false);
+            var ceocw = _functionDefinition._functionInfo.ContainsEval
+                || _functionDefinition._functionInfo.ContainsWith
+                || _functionDefinition._functionInfo.NeedDecompose
+                || (currentContext?._debugging ?? false);
+
             if (_functionDefinition.recursionDepth > _functionDefinition.parametersStored) // рекурсивный вызов.
             {
                 if (!ceocw)
@@ -602,6 +606,7 @@ namespace NiL.JS.BaseLibrary
 
             internalContext._thisBind = targetObject;
             internalContext._strict |= _functionDefinition._body._strict;
+
             if (_functionDefinition.kind == FunctionKind.Arrow)
             {
                 internalContext._arguments = internalContext._parent._arguments;

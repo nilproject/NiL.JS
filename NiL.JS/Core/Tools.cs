@@ -483,16 +483,16 @@ namespace NiL.JS.Core
             }
         }
 
-        internal static object convertJStoObj(JSValue jsobj, Type targetType, bool hightLoyalty)
+        internal static object ConvertJStoObj(JSValue jsobj, Type targetType, bool hightLoyalty)
         {
             if (jsobj == null)
                 return null;
 
-            if (targetType.IsAssignableFrom(jsobj.GetType()))
-                return jsobj;
-
             if (targetType.GetTypeInfo().IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 targetType = targetType.GetGenericArguments()[0];
+
+            if (targetType.IsAssignableFrom(jsobj.GetType()))
+                return jsobj;
 
             object value = null;
             switch (jsobj._valueType)
@@ -543,7 +543,7 @@ namespace NiL.JS.Core
                     }
 
                     if (targetType == typeof(double))
-                        return (double)jsobj._dValue;
+                        return jsobj._dValue;
                     if (targetType == typeof(float))
                         return (float)jsobj._dValue;
 
@@ -704,6 +704,7 @@ namespace NiL.JS.Core
 
             if (targetType.IsAssignableFrom(value.GetType()))
                 return value;
+
 #if (PORTABLE || NETCORE)
             if (IntrospectionExtensions.GetTypeInfo(targetType).IsEnum && Enum.IsDefined(targetType, value))
                 return value;
@@ -711,6 +712,7 @@ namespace NiL.JS.Core
             if (targetType.IsEnum && Enum.IsDefined(targetType, value))
                 return value;
 #endif
+
             var tpres = value as Proxy;
             if (tpres != null && targetType.IsAssignableFrom(tpres._hostedType))
             {
@@ -722,56 +724,113 @@ namespace NiL.JS.Core
             }
 
             if (value is ConstructorProxy && typeof(Type).IsAssignableFrom(targetType))
-            {
                 return (value as ConstructorProxy)._staticProxy._hostedType;
-            }
+
+            if (targetType == typeof(object[]) && value is ArrayBuffer)
+                return (value as ArrayBuffer).GetData();
 
             if ((value is BaseLibrary.Array || value is TypedArray || value is ArrayBuffer)
                 && typeof(IEnumerable).IsAssignableFrom(targetType))
             {
-                Type @interface = null;
-                Type elementType = null;
+                Type iEnumerableInterface = null;
+                Type elementType = typeof(object);
 
-                if ((targetType.IsArray && (elementType = targetType.GetElementType()) != null)
-#if PORTABLE || NETCORE
-                || ((@interface = targetType.GetInterface(typeof(IEnumerable<>).Name)) != null
-#else
-                || ((@interface = targetType.GetTypeInfo().GetInterface(typeof(IEnumerable<>).Name)) != null
+                if (targetType == typeof(object[])
+                    || targetType == typeof(IEnumerable)
+                    || targetType == typeof(ICollection)
+                    || targetType == typeof(IList)
+                    || targetType == typeof(IEnumerable<object>)
+                    || targetType == typeof(ICollection<object>)
+                    || targetType == typeof(IList<object>)
+#if !NET40
+                    || targetType == typeof(IReadOnlyList<object>)
+                    || targetType == typeof(IReadOnlyCollection<object>)
 #endif
-                     && targetType.IsAssignableFrom((elementType = @interface.GetGenericArguments()[0]).MakeArrayType())))
+                    )
                 {
-                    if (elementType.GetTypeInfo().IsPrimitive)
+                    elementType = targetType.HasElementType ? targetType.GetElementType() : typeof(object);
+                    return convertCollection(value as BaseLibrary.Array, elementType, typeof(object[]), hightLoyalty);
+                }
+
+#if PORTABLE || NETCORE
+                iEnumerableInterface = targetType.GetInterface(typeof(IEnumerable<>).Name);
+#else
+                iEnumerableInterface = targetType.GetTypeInfo().GetInterface(typeof(IEnumerable<>).Name);
+#endif
+                if (iEnumerableInterface != null)
+                {
+                    elementType = iEnumerableInterface.GetGenericArguments()[0];
+
+                    if (targetType.IsAssignableFrom(iEnumerableInterface)
+                        || targetType.IsAssignableFrom(elementType.MakeArrayType())
+                        || targetType.IsAssignableFrom(typeof(IList<>).MakeGenericType(elementType))
+                        || targetType.IsAssignableFrom(typeof(ICollection<>).MakeGenericType(elementType))
+#if !NET40
+                        || targetType.IsAssignableFrom(typeof(IReadOnlyList<>).MakeGenericType(elementType))
+                        || targetType.IsAssignableFrom(typeof(IReadOnlyCollection<>).MakeGenericType(elementType))
+#endif
+                        )
                     {
-                        if (elementType == typeof(byte) && value is ArrayBuffer)
-                            return (value as ArrayBuffer).GetData();
-
-                        var ta = value as TypedArray;
-                        if (ta != null && ta.ElementType == elementType)
-                            return ta.ToNativeArray();
+                        return convertCollection(value as BaseLibrary.Array, elementType, elementType.MakeArrayType(), hightLoyalty);
                     }
+                }
 
-                    return convertArray(value as BaseLibrary.Array, elementType, hightLoyalty);
-                }
-                else if (targetType.IsAssignableFrom(typeof(object[])))
+                if (targetType.IsAssignableFrom(typeof(List<>).MakeGenericType(elementType)))
                 {
-                    return convertArray(value as BaseLibrary.Array, typeof(object), hightLoyalty);
+                    return convertCollection(value as BaseLibrary.Array, elementType, typeof(List<>).MakeGenericType(elementType), hightLoyalty);
                 }
+
+                if (targetType.IsArray && elementType.GetTypeInfo().IsPrimitive)
+                {
+                    if (value is TypedArray typedArray && typedArray.ElementType == elementType)
+                        return typedArray.ToNativeArray();
+
+                    if (targetType == typeof(byte[]) && value is ArrayBuffer arrayBuffer)
+                        return (value as ArrayBuffer).GetData();
+                }
+            }
+
+            if (jsobj._valueType >= JSValueType.Object && !targetType.GetTypeInfo().IsPrimitive)
+            {
+                var targetInstance = (JSValue.GetConstructor(targetType) as Function)?.Construct(new Arguments());
+                if (!(targetInstance is null))
+                {
+                    var args = new Arguments();
+                    for (var sourceEnumerator = jsobj.GetEnumerator(false, EnumerationMode.RequireValues); sourceEnumerator.MoveNext();)
+                    {
+                        var targetProp = targetInstance.GetProperty(sourceEnumerator.Current.Key, true, PropertyScope.Common);
+                        
+                        if (targetProp._valueType >= JSValueType.Object && targetProp.Value is PropertyPair pair)
+                        {
+                            args.Reset();
+                            args.Add(sourceEnumerator.Current.Value);
+                            pair.setter?.Invoke(false, targetInstance, args);
+                        }
+                    }
+                }
+
+                return targetInstance.Value;
+            }
+
+            if (targetType.GetTypeInfo().IsValueType)
+            {
+                return Activator.CreateInstance(targetType);
             }
 
             return null;
         }
 
-        private static object convertArray(BaseLibrary.Array array, Type elementType, bool hightLoyalty)
+        private static IList convertCollection(BaseLibrary.Array array, Type elementType, Type collectionType, bool hightLoyalty)
         {
             if (array == null)
                 return null;
 
-            var result = (IList)Activator.CreateInstance(elementType.MakeArrayType(), new object[] { (int)array._data.Length });
+            var result = (IList)Activator.CreateInstance(collectionType, new object[] { (int)array._data.Length });
 
             for (var j = result.Count; j-- > 0;)
             {
                 var temp = (array._data[j] ?? JSValue.undefined);
-                var value = convertJStoObj(temp, elementType, hightLoyalty);
+                var value = ConvertJStoObj(temp, elementType, hightLoyalty);
 
                 if (!hightLoyalty && value == null && (elementType.GetTypeInfo().IsValueType || (!temp.IsNull && !temp.IsUndefined())))
                     return null;

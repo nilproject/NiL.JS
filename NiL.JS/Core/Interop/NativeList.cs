@@ -221,7 +221,7 @@ namespace NiL.JS.Core.Interop
         public void push(Arguments args)
         {
             for (var i = 0; i < args._iValue; i++)
-                _data.Add(Tools.convertJStoObj(args[i], _elementType, true));
+                _data.Add(Tools.ConvertJStoObj(args[i], _elementType, true));
         }
 
         public JSValue pop()

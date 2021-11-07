@@ -21,7 +21,7 @@ namespace NiL.JS.Core
         Common = 0,
         Own = 1,
         Super = 2,
-        PrototypeOfSuperclass = 3
+        PrototypeOfSuperClass = 3
     }
 
 #if !(PORTABLE || NETCORE)
@@ -1279,7 +1279,7 @@ namespace NiL.JS.Core
 
         object IConvertible.ToType(Type conversionType, IFormatProvider provider)
         {
-            return Tools.convertJStoObj(this, conversionType, true);
+            return Tools.ConvertJStoObj(this, conversionType, true);
         }
 
         ushort IConvertible.ToUInt16(IFormatProvider provider)

@@ -592,7 +592,7 @@ namespace NiL.JS.Expressions
                         position++;
 
                     if (position < code.Length && code[position] == ';')
-                        ExceptionHelper.Throw((new SyntaxError("Expression can not start with word \"function\"")));
+                        ExceptionHelper.Throw(new SyntaxError("Expression can not start with word \"function\""));
 
                     return new Call(func, args.ToArray());
                 }
@@ -823,6 +823,7 @@ namespace NiL.JS.Expressions
                 || _body._lines == null
                 || _body._lines.Length == 0)
                 return;
+
             if (_body._variables != null)
             {
                 var containsEntities = _functionInfo.ContainsInnerEntities;
@@ -832,6 +833,7 @@ namespace NiL.JS.Expressions
                         containsEntities |= _body._variables[i].initializer != null;
                     _functionInfo.ContainsInnerEntities = containsEntities;
                 }
+
                 for (var i = 0; i < _body._variables.Length; i++)
                 {
                     _functionInfo.ContainsArguments |= _body._variables[i].name == "arguments";

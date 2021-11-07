@@ -51,21 +51,16 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            JSValue res = null;
-            JSValue source = null;
+            JSValue res;
 
-            source = _left.Evaluate(context);
+            var source = _left.Evaluate(context);
             if (source._valueType < JSValueType.Object)
             {
                 source = source.CloneImpl(false);
             }
             else if (source != source._oValue)
             {
-                res = source._oValue as JSValue;
-                if (res != null)
-                {
-                    source = res;
-                }
+                source = source._oValue as JSValue ?? source;
             }
 
             res = source.GetProperty(cachedMemberName ?? _right.Evaluate(context), false, memberScope);
@@ -73,14 +68,16 @@ namespace NiL.JS.Expressions
 
             if (res == null)
                 res = JSValue.undefined;
-
-            if (res._valueType == JSValueType.NotExists)
+            else
             {
-                res._valueType = JSValueType.NotExistsInObject;
-            }
-            else if (res._valueType == JSValueType.Property)
-            {
-                res = Tools.InvokeGetter(res, source);
+                if (res._valueType == JSValueType.NotExists)
+                {
+                    res._valueType = JSValueType.NotExistsInObject;
+                }
+                else if (res._valueType == JSValueType.Property)
+                {
+                    res = Tools.InvokeGetter(res, source);
+                }
             }
 
             return res;
@@ -90,7 +87,9 @@ namespace NiL.JS.Expressions
         {
             if (stats != null)
                 stats.UseGetMember = true;
+
             base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+            
             if (_right is Constant)
             {
                 cachedMemberName = _right.Evaluate(null);
@@ -99,7 +98,7 @@ namespace NiL.JS.Expressions
             }
 
             if (_left is Super)
-                memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.PrototypeOfSuperclass;
+                memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.PrototypeOfSuperClass;
 
             return false;
         }

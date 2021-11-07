@@ -154,22 +154,38 @@ namespace Sandbox
             }
         }
 
+        private class TestStruct
+        {
+            public int Value0 { get; set; }
+            public string Value1 { get; set; }
+            public double Value2;
+        }
+
         private static void testEx()
         {
             var context = new Context();
+            context.DefineVariable("test").Assign(new Action<TestStruct>(x =>
+            {
+                Debugger.Break();
+            }));
 
-            var array = new int[10];
-            array[2] = 2;
+            context.Eval("test({Value0:1,Value1:'str',Value2:123.456})");
 
-            context.DefineVariable("test").Assign(new { array = array });
+            return;
 
-            context.Eval(@"
-test.array[0] = 1;
-test.array[1] = 2;
-test.array[2] = 3;
-");
+            var strValue = "1234.4567e+12";
+            var doubleValue = double.Parse(strValue, System.Globalization.CultureInfo.InvariantCulture);
+            var sw = Stopwatch.StartNew();
+            for (var i = 0; i < 10_000_000; i++)
+            {
+                //double.Parse(strValue, System.Globalization.CultureInfo.InvariantCulture);
+                //NumberUtils.TryParse(strValue, 0, out _);
 
-            Console.WriteLine(string.Join(", ", array));
+                //doubleValue.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                NumberUtils.DoubleToString(doubleValue);
+            }
+
+            Console.WriteLine(sw.Elapsed);
         }
 
         public sealed class MyTestModuleResolver : CachedModuleResolverBase
@@ -252,7 +268,7 @@ test.array[2] = 3;
             }));
 #endif
 
-            int mode = 2
+            int mode = 3
                     ;
             switch (mode)
             {

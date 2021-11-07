@@ -90,6 +90,7 @@ namespace NiL.JS.Core
         public static GlobalContext DefaultGlobalContext { get { return _DefaultGlobalContext; } }
 
         internal ExecutionMode _executionMode;
+        internal int _callDepth;
         internal JSValue _objectSource;
         internal JSValue _executionInfo;
         internal JSValue _lastResult;
@@ -102,7 +103,6 @@ namespace NiL.JS.Core
         internal VariableDescriptor[] _definedVariables;
         internal Module _module;
         private Dictionary<CodeNode, object> _suspendData;
-        internal int _callDepth;
 
         public Context RootContext
         {

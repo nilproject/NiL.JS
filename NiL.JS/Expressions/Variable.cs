@@ -21,13 +21,18 @@ namespace NiL.JS.Expressions
         {
             if (context._owner._functionDefinition.kind == BaseLibrary.FunctionKind.Arrow)
                 context = context._parent;
+
             if (context._arguments == null)
                 context._owner.BuildArgumentsObject();
+
             var res = context._arguments;
+
             if (res is Arguments)
                 context._arguments = res = res.CloneImpl(false);
+
             if (context._variables != null && context._variables.ContainsKey(Name))
                 context._variables[Name] = res;
+
             return res;
         }
 
@@ -189,6 +194,7 @@ namespace NiL.JS.Expressions
             {
                 if (stats != null)
                     stats.ContainsArguments = true;
+
                 _this = new GetArgumentsExpression(ScopeLevel) { _descriptor = _descriptor };
             }
 
@@ -226,7 +232,7 @@ namespace NiL.JS.Expressions
                             }
                             continue;
                         }
-                        
+
                         if (_descriptor.isReadOnly && (assigns[i] is Assignment assignment) && assignment.Force)
                         {
                             lastAssign = assigns[i];

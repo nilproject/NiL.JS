@@ -14,7 +14,7 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 var res = new Element(this, index);
-                res._dValue = BitConverter.ToSingle(buffer.data, index * BYTES_PER_ELEMENT + byteOffset);
+                res._dValue = getValue(index);
                 res._valueType = JSValueType.Double;
                 return res;
             }
@@ -22,22 +22,33 @@ namespace NiL.JS.BaseLibrary
             {
                 if (index < 0 || index > length._iValue)
                     ExceptionHelper.Throw(new RangeError());
-                var v = BitConverter.GetBytes((float)Tools.JSObjectToDouble(value));
-                if (BitConverter.IsLittleEndian)
-                {
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[3];
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[2];
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[1];
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[0];
-                }
-                else
-                {
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[0];
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[1];
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[2];
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[3];
-                }
+
+                setValue(index, (float)Tools.JSObjectToDouble(value));
             }
+        }
+
+        private void setValue(int index, float value)
+        {
+            var v = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian)
+            {
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[3];
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[2];
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[1];
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[0];
+            }
+            else
+            {
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[0];
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[1];
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[2];
+                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[3];
+            }
+        }
+
+        private float getValue(int index)
+        {
+            return BitConverter.ToSingle(buffer.data, index * BYTES_PER_ELEMENT + byteOffset);
         }
 
         public override int BYTES_PER_ELEMENT
@@ -88,7 +99,10 @@ namespace NiL.JS.BaseLibrary
 
         protected internal override System.Array ToNativeArray()
         {
-            throw new NotImplementedException();
+            var res = new float[length._iValue];
+            for (var i = 0; i < res.Length; i++)
+                res[i] = getValue(i);
+            return res;
         }
     }
 }
