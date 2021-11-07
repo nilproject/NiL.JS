@@ -11,23 +11,14 @@ namespace NiL.JS.Core
             public string value;
         }
 
-        private const int MaxSafeDigitsInTwoLongs = 31;
-        private const int MinExponentValue = -1022;
-        private const int MaxExponentValue = 1023;
-        private const int MantisaSize = 53;
-        private const int ToStringDigitsLimit = 16;
+        private const int _MaxSafeDigitsInTwoLongs = 31;
+        private const int _MinExponentValue = -1022;
+        private const int _MaxExponentValue = 1023;
+        private const int _MantisaSize = 53;
+        private const int _ToStringDigitsLimit = 16;
 
-        private static readonly DoubleStringCacheItem[] cachedDoubleString = new DoubleStringCacheItem[8];
-        private static int cachedDoubleStringsIndex = 0;
-
-        private static readonly decimal[] powersOf10 = new[]
-            {
-                1e-18M, 1e-17M, 1e-16M, 1e-15M, 1e-14M, 1e-13M, 1e-12M, 1e-11M,
-                1e-10M, 1e-9M, 1e-8M, 1e-7M, 1e-6M, 1e-5M, 1e-4M, 1e-3M, 1e-2M,
-                1e-1M, 1e+0M, 1e+1M, 1e+2M, 1e+3M, 1e+4M, 1e+5M, 1e+6M, 1e+7M,
-                1e+8M, 1e+9M, 1e+10M, 1e+11M, 1e+12M, 1e+13M, 1e+14M, 1e+15M,
-                1e+16M, 1e+17M, 1e+18M
-            };
+        private static readonly DoubleStringCacheItem[] _CachedDoubleString = new DoubleStringCacheItem[8];
+        private static int _CachedDoubleStringsIndex = 0;
 
         /// <summary>
         /// Проверяет символ на принадлежность диапазону цифр
@@ -53,7 +44,7 @@ namespace NiL.JS.Core
                     var d = source[pos] - '0';
                     if (d != 0 || digitsCount != 0)
                     {
-                        if (digitsCount < MaxSafeDigitsInTwoLongs)
+                        if (digitsCount < _MaxSafeDigitsInTwoLongs)
                         {
                             digits[1] = (digits[1] << 4) | (digits[0] >> 60);
                             digits[0] <<= 4;
@@ -117,7 +108,7 @@ namespace NiL.JS.Core
                 fracLeadingCount = 0;
             }
 
-            if (intDigitsCount == MaxSafeDigitsInTwoLongs)
+            if (intDigitsCount == _MaxSafeDigitsInTwoLongs)
             {
                 fracDigitsCount = 0;
                 fracPart[0] = 0ul;
@@ -167,7 +158,7 @@ namespace NiL.JS.Core
 
             if (eDeg > 0)
             {
-                while (intDigitsCount < MaxSafeDigitsInTwoLongs && eDeg != 0)
+                while (intDigitsCount < _MaxSafeDigitsInTwoLongs && eDeg != 0)
                 {
                     ulong d = 0;
 
@@ -221,7 +212,7 @@ namespace NiL.JS.Core
                         intPart[1] >>= 4;
                         intDigitsCount--;
 
-                        if (fracDigitsCount == MaxSafeDigitsInTwoLongs)
+                        if (fracDigitsCount == _MaxSafeDigitsInTwoLongs)
                         {
                             fracPart[0] = (fracPart[0] >> 4) | ((fracPart[1] & 0xf) << 60);
                             fracPart[1] >>= 4;
@@ -230,7 +221,7 @@ namespace NiL.JS.Core
 
                         fracPart[fracDigitsCount / 16] |= d << (fracDigitsCount % 16 * 4);
 
-                        if (fracDigitsCount < MaxSafeDigitsInTwoLongs)
+                        if (fracDigitsCount < _MaxSafeDigitsInTwoLongs)
                             fracDigitsCount++;
 
                         eDeg++;
@@ -255,9 +246,6 @@ namespace NiL.JS.Core
                     longBuffer += (intPart[i / 16] >> (i % 16 * 4)) & 0xf;
 
                 if (longBuffer >= limit)
-                //if (!full && longBuffer < limit)
-                //    longBuffer += (intPart[i / 16] >> (i % 16 * 4)) & 0xf;
-                //else
                 {
                     full = true;
                     var tail = longBuffer >> 2;
@@ -270,7 +258,7 @@ namespace NiL.JS.Core
                         exponent -= 1;
                     }
 
-                    //longBuffer += tail & 1;
+                    longBuffer += tail & 1;
                 }
             }
 
@@ -339,14 +327,14 @@ namespace NiL.JS.Core
             logDelta = intLog - 52;
             var denormal = false;
 
-            if ((exponent - logDelta) > -MinExponentValue + MantisaSize)
+            if ((exponent - logDelta) > -_MinExponentValue + _MantisaSize)
             {
-                logDelta = exponent - -MinExponentValue - MantisaSize;
+                logDelta = exponent - -_MinExponentValue - _MantisaSize;
                 denormal = true;
             }
-            else if ((exponent - logDelta) < -MaxExponentValue - MantisaSize)
+            else if ((exponent - logDelta) < -_MaxExponentValue - _MantisaSize)
             {
-                logDelta = exponent + -MaxExponentValue - MantisaSize;
+                logDelta = exponent + -_MaxExponentValue - _MantisaSize;
                 denormal = true;
             }
 
@@ -354,7 +342,7 @@ namespace NiL.JS.Core
 
             if (logDelta <= -63 || logDelta >= 63)
             {
-                longBuffer = 1ul << MantisaSize;
+                longBuffer = 1ul << _MantisaSize;
             }
             else
             {
@@ -370,7 +358,7 @@ namespace NiL.JS.Core
                     longBuffer = (longBuffer >> logDelta) + ((longBuffer >> (logDelta - 1)) & 1);
                 }
 
-                if (longBuffer >= 1ul << MantisaSize)
+                if (longBuffer >= 1ul << _MantisaSize)
                 {
                     exponent--;
                     longBuffer >>= 1;
@@ -422,12 +410,12 @@ namespace NiL.JS.Core
                 return "NaN";
 
             string res;
-            lock (cachedDoubleString)
+            lock (_CachedDoubleString)
             {
                 for (var i = 8; i-- > 0;)
                 {
-                    if (cachedDoubleString[i].key == d)
-                        return cachedDoubleString[i].value;
+                    if (_CachedDoubleString[i].key == d)
+                        return _CachedDoubleString[i].value;
                 }
 
                 var abs = Math.Abs(d);
@@ -535,10 +523,10 @@ namespace NiL.JS.Core
                                         break;
 
                                     var digitsCount = 0;
-                                    var lastDigit = getLastDigit(ref digitsCount, intBuffer, intBuffer.Length * 16, ToStringDigitsLimit);
-                                    if (digitsCount < ToStringDigitsLimit)
+                                    var lastDigit = getLastDigit(ref digitsCount, intBuffer, intBuffer.Length * 16, _ToStringDigitsLimit);
+                                    if (digitsCount < _ToStringDigitsLimit)
                                     {
-                                        lastDigit = getLastDigit(ref digitsCount, fracBuffer, fracSize, ToStringDigitsLimit);
+                                        lastDigit = getLastDigit(ref digitsCount, fracBuffer, fracSize, _ToStringDigitsLimit);
                                     }
 
                                     var needSupply = lastDigit >= 4;
@@ -593,7 +581,7 @@ namespace NiL.JS.Core
                                 if (write)
                                     signDigits++;
 
-                                if (signDigits == ToStringDigitsLimit || bufferPos == buffer.Length)
+                                if (signDigits == _ToStringDigitsLimit || bufferPos == buffer.Length)
                                     break;
                             }
                         }
@@ -605,9 +593,9 @@ namespace NiL.JS.Core
                         res = "-" + res;
                 }
 
-                cachedDoubleString[cachedDoubleStringsIndex].key = d;
-                cachedDoubleString[cachedDoubleStringsIndex].value = res;
-                cachedDoubleStringsIndex = (cachedDoubleStringsIndex + 1) & 7;
+                _CachedDoubleString[_CachedDoubleStringsIndex].key = d;
+                _CachedDoubleString[_CachedDoubleStringsIndex].value = res;
+                _CachedDoubleStringsIndex = (_CachedDoubleStringsIndex + 1) & 7;
             }
 
             return res;
@@ -693,18 +681,19 @@ namespace NiL.JS.Core
         {
             if (x.Length == 0)
             {
-                System.Array.Clear(output, 0, output.Length);
+                Array.Clear(output, 0, output.Length);
                 return;
             }
 
             var size = 0;
             for (var i = x.Length; i-- > 0;)
             {
-                if (x[i] != 0)
+                var vx = x[i];
+                if (vx != 0)
                 {
                     size = i + 1;
 
-                    if ((x[i] & (0xful << 60)) != 0)
+                    if (((vx >> 60) & 0xf) != 0)
                     {
                         size++;
                     }
@@ -719,25 +708,28 @@ namespace NiL.JS.Core
             }
 
             var o = 0ul;
+            var xLen = x.Length;
             for (var i = 0; i < output.Length; i++)
             {
-                var v = i >= x.Length ? 0 : x[i];
+                var v = i >= xLen ? 0 : x[i];
                 output[i] = (v << 4) | o;
-                o = (v & (0xful << 60)) >> 60;
+                o = (v >> 60) & 0xf;
             }
         }
 
         private static void numStrSum(ulong[] left, ulong[] rigth, ref ulong[] output)
         {
-            var len = System.Math.Max(left.Length, rigth.Length);
+            var leftLen = left.Length;
+            int rightLen = rigth.Length;
+            var len = Math.Max(leftLen, rightLen);
             if (output.Length < len)
                 output = new ulong[len];
 
             var go = 0u;
             for (var i = 0; i < output.Length; i++)
             {
-                var l = i < left.Length ? left[i] : 0;
-                var r = i < rigth.Length ? rigth[i] : 0;
+                var l = i < leftLen ? left[i] : 0;
+                var r = i < rightLen ? rigth[i] : 0;
 
                 l += go;
                 go = 0;
@@ -766,8 +758,8 @@ namespace NiL.JS.Core
 
                 output[i] = l;
 
-                if (i + 1 == output.Length && go != 0)
-                    System.Array.Resize(ref output, output.Length * 2);
+                if (go != 0 && i + 1 == output.Length)
+                    Array.Resize(ref output, output.Length * 2);
             }
         }
     }
