@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 
 namespace NiL.JS.Core
 {
-    internal static class NumberUtils
+    public static class NumberUtils
     {
         private struct DoubleStringCacheItem
         {
@@ -277,7 +274,7 @@ namespace NiL.JS.Core
                 }
             }
 
-            var logDelta = IntLog(longBuffer) - 60;
+            var logDelta = IntLog((long)longBuffer) - 60;
             if (logDelta < 0)
             {
                 longBuffer <<= -logDelta;
@@ -338,7 +335,7 @@ namespace NiL.JS.Core
                 longBuffer += tail & 1;
             }
 
-            var intLog = IntLog(longBuffer);
+            var intLog = IntLog((long)longBuffer);
             logDelta = intLog - 52;
             var denormal = false;
 
@@ -397,8 +394,9 @@ namespace NiL.JS.Core
             return position - start;
         }
 
-        public static int IntLog(ulong x)
+        public static int IntLog(long value)
         {
+            var x = (ulong)value;
             unchecked
             {
                 int log = (int)((-(long)(x & 0xffff_ffff_0000_0000ul)) >> 62) & 32;
