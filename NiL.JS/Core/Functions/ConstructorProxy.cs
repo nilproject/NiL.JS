@@ -97,6 +97,9 @@ namespace NiL.JS.Core.Functions
                 if (ctors[i].IsStatic)
                     continue;
 
+                if (ctors[i].GetParameters().Any(x => x.ParameterType.IsPointer || x.IsOut || x.IsIn || x.IsRetval || x.ParameterType.IsByRef))
+                    continue;
+
                 if (!ctors[i].IsDefined(typeof(HiddenAttribute), false) || ctors[i].IsDefined(typeof(ForceUseAttribute), true))
                 {
                     ctorsL.Add(new MethodProxy(context, ctors[i]));

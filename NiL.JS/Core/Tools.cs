@@ -735,7 +735,8 @@ namespace NiL.JS.Core
                 Type iEnumerableInterface = null;
                 Type elementType = typeof(object);
 
-                if (targetType == typeof(object[])
+                if (hightLoyalty
+                    && (targetType == typeof(object[])
                     || targetType == typeof(IEnumerable)
                     || targetType == typeof(ICollection)
                     || targetType == typeof(IList)
@@ -746,7 +747,7 @@ namespace NiL.JS.Core
                     || targetType == typeof(IReadOnlyList<object>)
                     || targetType == typeof(IReadOnlyCollection<object>)
 #endif
-                    )
+                    ))
                 {
                     elementType = targetType.HasElementType ? targetType.GetElementType() : typeof(object);
                     return convertCollection(value as BaseLibrary.Array, elementType, typeof(object[]), hightLoyalty);
@@ -759,23 +760,26 @@ namespace NiL.JS.Core
 #endif
                 if (iEnumerableInterface != null)
                 {
-                    elementType = iEnumerableInterface.GetGenericArguments()[0];
+                    if (hightLoyalty)
+                    {
+                        elementType = iEnumerableInterface.GetGenericArguments()[0];
 
-                    if (targetType.IsAssignableFrom(iEnumerableInterface)
-                        || targetType.IsAssignableFrom(elementType.MakeArrayType())
-                        || targetType.IsAssignableFrom(typeof(IList<>).MakeGenericType(elementType))
-                        || targetType.IsAssignableFrom(typeof(ICollection<>).MakeGenericType(elementType))
+                        if (targetType.IsAssignableFrom(iEnumerableInterface)
+                            || targetType.IsAssignableFrom(elementType.MakeArrayType())
+                            || targetType.IsAssignableFrom(typeof(IList<>).MakeGenericType(elementType))
+                            || targetType.IsAssignableFrom(typeof(ICollection<>).MakeGenericType(elementType))
 #if !NET40
                         || targetType.IsAssignableFrom(typeof(IReadOnlyList<>).MakeGenericType(elementType))
-                        || targetType.IsAssignableFrom(typeof(IReadOnlyCollection<>).MakeGenericType(elementType))
+                            || targetType.IsAssignableFrom(typeof(IReadOnlyCollection<>).MakeGenericType(elementType))
 #endif
                         )
-                    {
-                        return convertCollection(value as BaseLibrary.Array, elementType, elementType.MakeArrayType(), hightLoyalty);
+                        {
+                            return convertCollection(value as BaseLibrary.Array, elementType, elementType.MakeArrayType(), hightLoyalty);
+                        }
                     }
                 }
 
-                if (targetType.IsAssignableFrom(typeof(List<>).MakeGenericType(elementType)))
+                if (hightLoyalty && targetType.IsAssignableFrom(typeof(List<>).MakeGenericType(elementType)))
                 {
                     return convertCollection(value as BaseLibrary.Array, elementType, typeof(List<>).MakeGenericType(elementType), hightLoyalty);
                 }
@@ -790,31 +794,37 @@ namespace NiL.JS.Core
                 }
             }
 
-            if (jsobj._valueType >= JSValueType.Object && !targetType.GetTypeInfo().IsPrimitive)
+            if (hightLoyalty)
             {
-                var targetInstance = (JSValue.GetConstructor(targetType) as Function)?.Construct(new Arguments());
-                if (!(targetInstance is null))
+                if (jsobj._valueType >= JSValueType.Object
+                    && !targetType.GetTypeInfo().IsPrimitive
+                    && targetType != typeof(string)
+                    && !targetType.IsSubclassOf(typeof(JSValue)))
                 {
-                    var args = new Arguments();
-                    for (var sourceEnumerator = jsobj.GetEnumerator(false, EnumerationMode.RequireValues); sourceEnumerator.MoveNext();)
+                    var targetInstance = (JSValue.GetConstructor(targetType) as Function)?.Construct(new Arguments());
+                    if (!(targetInstance is null))
                     {
-                        var targetProp = targetInstance.GetProperty(sourceEnumerator.Current.Key, true, PropertyScope.Common);
-
-                        if (targetProp._valueType >= JSValueType.Object && targetProp.Value is PropertyPair pair)
+                        var args = new Arguments();
+                        for (var sourceEnumerator = jsobj.GetEnumerator(false, EnumerationMode.RequireValues); sourceEnumerator.MoveNext();)
                         {
-                            args.Reset();
-                            args.Add(sourceEnumerator.Current.Value);
-                            pair.setter?.Invoke(false, targetInstance, args);
+                            var targetProp = targetInstance.GetProperty(sourceEnumerator.Current.Key, true, PropertyScope.Common);
+
+                            if (targetProp._valueType >= JSValueType.Object && targetProp.Value is PropertyPair pair)
+                            {
+                                args.Reset();
+                                args.Add(sourceEnumerator.Current.Value);
+                                pair.setter?.Invoke(false, targetInstance, args);
+                            }
                         }
                     }
+
+                    return targetInstance.Value;
                 }
 
-                return targetInstance.Value;
-            }
-
-            if (targetType.GetTypeInfo().IsValueType)
-            {
-                return Activator.CreateInstance(targetType);
+                if (targetType.GetTypeInfo().IsValueType)
+                {
+                    return Activator.CreateInstance(targetType);
+                }
             }
 
             return null;
