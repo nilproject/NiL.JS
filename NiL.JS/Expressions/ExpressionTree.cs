@@ -1189,10 +1189,9 @@ namespace NiL.JS.Expressions
                 }
                 else if (Parser.ValidateValue(state.Code, ref i))
                 {
-                    string value = state.Code.Substring(start, i - start);
-                    if ((value[0] == '\'') || (value[0] == '"'))
+                    if ((state.Code[start] == '\'') || (state.Code[start] == '"'))
                     {
-                        value = Tools.Unescape(value.Substring(1, value.Length - 2), state.Strict);
+                        var value = Tools.Unescape(state.Code.Substring(start + 1, i - start - 2), state.Strict);
                         JSValue jsValue = null;
                         if (!state.StringConstants.TryGetValue(value, out jsValue))
                             state.StringConstants[value] = jsValue = value;
@@ -1201,23 +1200,22 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
-                        bool b = false;
-                        if (value == "null")
+                        if (i - start == 4 && Parser.Validate(state.Code, "null", start))
                             operand = new Constant(JSValue.@null) { Position = start, Length = i - start };
-                        else if (bool.TryParse(value, out b))
-                            operand = new Constant(b ? NiL.JS.BaseLibrary.Boolean.True : NiL.JS.BaseLibrary.Boolean.False) { Position = start, Length = i - start };
+                        else if (Parser.Validate(state.Code, "true", start) || Parser.Validate(state.Code, "false", start))
+                            operand = new Constant(state.Code[start] == 't' ? BaseLibrary.Boolean.True : BaseLibrary.Boolean.False) { Position = start, Length = i - start };
                         else
                         {
-                            int n = 0;
+                            int temp = start;
                             double d = 0;
-                            if (Tools.ParseNumber(state.Code, ref start, out d, 0, ParseNumberOptions.Default | (state.Strict ? ParseNumberOptions.RaiseIfOctal : ParseNumberOptions.None)))
+                            if (Tools.ParseJsNumber(state.Code, ref temp, out d, 0, ParseNumberOptions.Default | (state.Strict ? ParseNumberOptions.RaiseIfOctal : ParseNumberOptions.None)))
                             {
-                                if ((n = (int)d) == d && !Tools.IsNegativeZero(d))
+                                if ((temp = (int)d) == d && !Tools.IsNegativeZero(d))
                                 {
-                                    if (state.IntConstants.ContainsKey(n))
-                                        operand = new Constant(state.IntConstants[n]) { Position = start, Length = i - start };
-                                    else
-                                        operand = new Constant(state.IntConstants[n] = n) { Position = start, Length = i - start };
+                                    if (!state.IntConstants.TryGetValue(temp, out var value))
+                                        value = state.IntConstants[temp] = temp;
+
+                                    operand = new Constant(value) { Position = start, Length = i - start };
                                 }
                                 else
                                 {
@@ -1227,10 +1225,10 @@ namespace NiL.JS.Expressions
                                         operand = new Constant(state.DoubleConstants[d] = d) { Position = start, Length = i - start };
                                 }
                             }
-                            else if (Parser.ValidateRegex(state.Code, ref start, true))
+                            else if (Parser.ValidateRegex(state.Code, ref i, true))
                                 throw new InvalidOperationException("This case was moved");
                             else
-                                throw new ArgumentException("Unable to process value (" + value + ")");
+                                throw new ArgumentException("Unable to process value (" + state.Code.Substring(start, i - start) + ")");
                         }
                     }
                 }

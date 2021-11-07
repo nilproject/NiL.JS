@@ -59,7 +59,7 @@ namespace NiL.JS.Expressions
                                 {
                                     var index = 0;
                                     double td = 0;
-                                    if (Tools.ParseNumber(second._oValue.ToString(), ref index, out td) && (index == (second._oValue.ToString()).Length))
+                                    if (Tools.ParseJsNumber(second._oValue.ToString(), ref index, out td) && (index == (second._oValue.ToString()).Length))
                                         return first._iValue < td;
                                     else
                                         return moreOrEqual;
@@ -107,7 +107,7 @@ namespace NiL.JS.Expressions
                                     {
                                         var index = 0;
                                         double td = 0;
-                                        if (Tools.ParseNumber(second._oValue.ToString(), ref index, out td) && (index == (second._oValue.ToString()).Length))
+                                        if (Tools.ParseJsNumber(second._oValue.ToString(), ref index, out td) && (index == (second._oValue.ToString()).Length))
                                             return first._dValue < td;
                                         else
                                             return moreOrEqual;
@@ -142,7 +142,7 @@ namespace NiL.JS.Expressions
                                 {
                                     double d = 0;
                                     int i = 0;
-                                    if (Tools.ParseNumber(left, ref i, out d) && (i == left.Length))
+                                    if (Tools.ParseJsNumber(left, ref i, out d) && (i == left.Length))
                                         return d < second._iValue;
                                     else
                                         return moreOrEqual;
@@ -151,7 +151,7 @@ namespace NiL.JS.Expressions
                                 {
                                     double d = 0;
                                     int i = 0;
-                                    if (Tools.ParseNumber(left, ref i, out d) && (i == left.Length))
+                                    if (Tools.ParseJsNumber(left, ref i, out d) && (i == left.Length))
                                         return d < second._dValue;
                                     else
                                         return moreOrEqual;
@@ -171,7 +171,7 @@ namespace NiL.JS.Expressions
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
+                                                if (Tools.ParseJsNumber(left, ref i, out t) && (i == left.Length))
                                                     return t < second._iValue;
                                                 else
                                                     goto case JSValueType.String;
@@ -180,7 +180,7 @@ namespace NiL.JS.Expressions
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
+                                                if (Tools.ParseJsNumber(left, ref i, out t) && (i == left.Length))
                                                     return t < second._dValue;
                                                 else
                                                     goto case JSValueType.String;
@@ -193,7 +193,7 @@ namespace NiL.JS.Expressions
                                             {
                                                 double t = 0.0;
                                                 int i = 0;
-                                                if (Tools.ParseNumber(left, ref i, out t) && (i == left.Length))
+                                                if (Tools.ParseJsNumber(left, ref i, out t) && (i == left.Length))
                                                     return t < 0;
                                                 else
                                                     return moreOrEqual;

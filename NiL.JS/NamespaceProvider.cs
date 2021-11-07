@@ -84,7 +84,7 @@ namespace NiL.JS
                         string fn = selection.Current.Value.FullName;
                         for (var i = fn.Length - 1; i > reqname.Length; i--)
                         {
-                            if (!Tools.IsDigit(fn[i]))
+                            if (!NumberUtils.IsDigit(fn[i]))
                             {
                                 fn = null;
                                 break;

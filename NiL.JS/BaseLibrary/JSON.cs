@@ -87,13 +87,13 @@ namespace NiL.JS.BaseLibrary
                 var newObject = false;
                 var start = pos;
                 var frame = stack.Peek();
-                if (Tools.IsDigit(code[start]) || (code[start] == '-' && Tools.IsDigit(code[start + 1])))
+                if (NumberUtils.IsDigit(code[start]) || (code[start] == '-' && NumberUtils.IsDigit(code[start + 1])))
                 {
                     if (frame.state != ParseState.Value)
                         ExceptionHelper.ThrowSyntaxError("Unexpected token at position " + pos);
 
                     double value;
-                    if (!Tools.ParseNumber(code, ref pos, out value))
+                    if (!Tools.ParseJsNumber(code, ref pos, out value))
                         ExceptionHelper.ThrowSyntaxError("Invalid number definition.");
 
                     var intValue = (int)value;

@@ -208,8 +208,8 @@ namespace NiL.JS.Expressions
                             ExceptionHelper.Throw(new SyntaxError("Invalid char \"-\" at " + CodeCoordinates.FromTextPosition(state.Code, start, 1)));
 
                         int n = start;
-                        if (Tools.ParseNumber(state.Code, ref n, out double d))
-                            fieldName = Tools.DoubleToString(d);
+                        if (Tools.ParseJsNumber(state.Code, ref n, out double d))
+                            fieldName = NumberUtils.DoubleToString(d);
                         else if (state.Code[start] == '\'' || state.Code[start] == '"')
                             fieldName = Tools.Unescape(state.Code.Substring(start + 1, i - start - 2), state.Strict);
                         else if (flds.Count != 0)

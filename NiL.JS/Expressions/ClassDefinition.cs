@@ -329,8 +329,8 @@ namespace NiL.JS.Expressions
                         {
                             double d = 0.0;
                             int n = s;
-                            if (Tools.ParseNumber(state.Code, ref n, out d))
-                                fieldName = Tools.DoubleToString(d);
+                            if (Tools.ParseJsNumber(state.Code, ref n, out d))
+                                fieldName = NumberUtils.DoubleToString(d);
                             else if (state.Code[s] == '\'' || state.Code[s] == '"')
                                 fieldName = Tools.Unescape(state.Code.Substring(s + 1, i - s - 2), state.Strict);
                         }

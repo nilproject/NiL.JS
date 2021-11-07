@@ -228,7 +228,7 @@ namespace NiL.JS.BaseLibrary
                             {
                                 var dindex = 0.0;
                                 int si = 0;
-                                if (Tools.ParseNumber(tname._oValue.ToString(), ref si, out dindex)
+                                if (Tools.ParseJsNumber(tname._oValue.ToString(), ref si, out dindex)
                                     && (si == tname._oValue.ToString().Length)
                                     && dindex >= 0
                                     && dindex < uint.MaxValue
@@ -287,7 +287,7 @@ namespace NiL.JS.BaseLibrary
                         {
                             var dindex = 0.0;
                             int si = 0;
-                            if (Tools.ParseNumber(tname._oValue.ToString(), ref si, out dindex)
+                            if (Tools.ParseJsNumber(tname._oValue.ToString(), ref si, out dindex)
                                 && (si == tname._oValue.ToString().Length)
                                 && dindex >= 0
                                 && dindex < uint.MaxValue
