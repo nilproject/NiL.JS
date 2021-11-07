@@ -14,6 +14,9 @@ namespace NiL.JS.Core
         }
 
         private const int MaxSafeDigitsInTwoLongs = 31;
+        private const int MinExponentValue = -1022;
+        private const int MaxExponentValue = 1023;
+        private const int MantisaSize = 53;
 
         private static readonly DoubleStringCacheItem[] cachedDoubleString = new DoubleStringCacheItem[8];
         private static int cachedDoubleStringsIndex = 0;
@@ -87,9 +90,10 @@ namespace NiL.JS.Core
             var position = start;
 
             int sign = 1;
-            if (source[position] == '-' || source[position] == '+')
+            if (position < source.Length && (source[position] == '-' || source[position] == '+'))
                 sign = 44 - source[position++];
 
+            var intPartStart = position;
             var intPart = new ulong[2];
             var intDigitsCount = selectDigits(source, intPart, ref position, out var intLeadingCount);
 
@@ -99,7 +103,7 @@ namespace NiL.JS.Core
                 return -1;
             }
 
-            var intPartSize = position - start;
+            var intPartSize = position - intPartStart;
 
             int fracDigitsCount = 0;
             ulong[] fracPart = new ulong[2];
@@ -121,7 +125,7 @@ namespace NiL.JS.Core
                 fracPart[1] = 0ul;
             }
 
-            if (intPartSize <= 0 && fracDigitsCount <= 0)
+            if (intPartSize <= 0 && (fracDigitsCount + fracLeadingCount) <= 0)
             {
                 value = double.NaN;
                 return -1;
@@ -201,14 +205,18 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    while (fracLeadingCount-- > 0)
+                    while (fracLeadingCount > 0)
                     {
+                        fracLeadingCount--;
                         fracPart[0] = (fracPart[0] >> 4) | ((fracPart[1] & 0xf) << 60);
                         fracPart[1] >>= 4;
                     }
 
                     while (eDeg != 0)
                     {
+                        if (intPart[0] == 0 && intPart[1] == 0)
+                            break;
+
                         var d = intPart[0] & 0xf;
                         intPart[0] = (intPart[0] >> 4) | ((intPart[1] & 0xf) << 60);
                         intPart[1] >>= 4;
@@ -218,50 +226,22 @@ namespace NiL.JS.Core
                         {
                             fracPart[0] = (fracPart[0] >> 4) | ((fracPart[1] & 0xf) << 60);
                             fracPart[1] >>= 4;
+                            fracDigitsCount--;
                         }
 
                         fracPart[fracDigitsCount / 16] |= d << (fracDigitsCount % 16 * 4);
+
+                        if (fracDigitsCount < MaxSafeDigitsInTwoLongs)
+                            fracDigitsCount++;
 
                         eDeg++;
                     }
 
                     if (intDigitsCount < 0)
                         intDigitsCount = 0;
+
+                    fracLeadingCount += -eDeg;
                 }
-
-                /*while (fracDigitsCount < MaxSafeDigitsInTwoLongs && eDeg != 0)
-                {
-                    var d = intPart[0] & 0xf;
-                    intPart[0] = (intPart[0] >> 4) | ((intPart[1] & 0xf) << 60);
-                    intPart[1] >>= 4;
-                    intDigitsCount--;
-
-                    fracPart[fracDigitsCount / 16] |= d << (fracDigitsCount % 16 * 4);
-                    fracDigitsCount++;
-
-                    eDeg++;
-                }
-
-                if (intDigitsCount != 0)
-                {
-                    while (eDeg != 0)
-                    {
-                        var d = intPart[0] & 0xf;
-                        intPart[0] = (intPart[0] >> 4) | ((intPart[1] & 0xf) << 60);
-                        intPart[1] >>= 4;
-                        intDigitsCount--;
-
-                        fracPart[0] = (fracPart[0] >> 4) | ((fracPart[1] & 0xf) << 60);
-                        fracPart[1] >>= 4;
-
-                        fracPart[fracPartSize / 16] |= d << (fracPartSize % 16 * 4);
-
-                        eDeg++;
-                    }
-                }
-
-                if (intDigitsCount < 0)
-                    intDigitsCount = 0;*/
             }
 
             var exponent = 0;
@@ -272,18 +252,26 @@ namespace NiL.JS.Core
             for (var i = intDigitsCount; i-- > 0;)
             {
                 longBuffer *= 10;
-                if (!full && longBuffer < limit)
+                if (!full)
                     longBuffer += (intPart[i / 16] >> (i % 16 * 4)) & 0xf;
-                else
+
+                if (longBuffer >= limit)
+                //if (!full && longBuffer < limit)
+                //    longBuffer += (intPart[i / 16] >> (i % 16 * 4)) & 0xf;
+                //else
                 {
                     full = true;
+                    var tail = longBuffer >> 2;
                     longBuffer >>= 3;
                     exponent -= 3;
                     if (longBuffer > limit)
                     {
+                        tail >>= 1;
                         longBuffer >>= 1;
                         exponent -= 1;
                     }
+
+                    //longBuffer += tail & 1;
                 }
             }
 
@@ -335,29 +323,59 @@ namespace NiL.JS.Core
             {
                 longBuffer *= 5;
 
-                var beforeReduce = longBuffer >> 1;
+                var tail = longBuffer >> 1;
                 longBuffer >>= 2;
                 exponent -= 3;
                 if (longBuffer > limit * 2)
                 {
-                    beforeReduce >>= 1;
+                    tail >>= 1;
                     longBuffer >>= 1;
                     exponent -= 1;
                 }
 
-                longBuffer += beforeReduce & 1;
+                longBuffer += tail & 1;
             }
 
-            logDelta = IntLog(longBuffer) - 52;
-            if (logDelta < 0)
+            var intLog = IntLog(longBuffer);
+            logDelta = intLog - 52;
+            var denormal = false;
+
+            if ((exponent - logDelta) > -MinExponentValue + MantisaSize)
             {
-                longBuffer <<= -logDelta;
-                exponent += -logDelta;
+                logDelta = exponent - -MinExponentValue - MantisaSize;
+                denormal = true;
+            }
+            else if ((exponent - logDelta) < -MaxExponentValue - MantisaSize)
+            {
+                logDelta = exponent + -MaxExponentValue - MantisaSize;
+                denormal = true;
+            }
+
+            exponent -= logDelta;
+
+            if (logDelta <= -63 || logDelta >= 63)
+            {
+                longBuffer = 1ul << MantisaSize;
             }
             else
             {
-                longBuffer = (longBuffer >> logDelta) + ((longBuffer >> (logDelta - 1)) & 1);
-                exponent -= logDelta;
+                if (logDelta < 0)
+                {
+                    longBuffer <<= -logDelta;
+                }
+                else
+                {
+                    if (denormal)
+                        logDelta++;
+
+                    longBuffer = (longBuffer >> logDelta) + ((longBuffer >> (logDelta - 1)) & 1);
+                }
+
+                if (longBuffer >= 1ul << MantisaSize)
+                {
+                    exponent--;
+                    longBuffer >>= 1;
+                }
             }
 
             if (longBuffer == 0)
@@ -368,9 +386,10 @@ namespace NiL.JS.Core
             {
                 longBuffer = (longBuffer & ((1UL << 52) - 1));
                 exponent = 1023 - exponent + 52;
+                exponent &= (1 << 11) - 1;
                 longBuffer |= ((ulong)exponent << 52);
+                longBuffer |= (ulong)sign & (1ul << 63);
                 value = BitConverter.Int64BitsToDouble((long)longBuffer);
-                value *= sign;
             }
 
             return position - start;

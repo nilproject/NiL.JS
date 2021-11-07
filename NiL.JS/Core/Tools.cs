@@ -945,10 +945,11 @@ namespace NiL.JS.Core
             if (allowFloat && radix == 0)
             {
                 var len = NumberUtils.TryParse(code, i, out value);
-                if (len < 0)
+                if (len <= 0)
                     return false;
 
-                index += len;
+                value *= sign;
+                index = i + len;
                 return true;
             }
             else
