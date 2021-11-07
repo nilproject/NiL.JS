@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace NiL.JS.Core
@@ -17,6 +18,7 @@ namespace NiL.JS.Core
         private const int MinExponentValue = -1022;
         private const int MaxExponentValue = 1023;
         private const int MantisaSize = 53;
+        private const int ToStringDigitsLimit = 16;
 
         private static readonly DoubleStringCacheItem[] cachedDoubleString = new DoubleStringCacheItem[8];
         private static int cachedDoubleStringsIndex = 0;
@@ -430,7 +432,7 @@ namespace NiL.JS.Core
                         return cachedDoubleString[i].value;
                 }
 
-                var abs = System.Math.Abs(d);
+                var abs = Math.Abs(d);
                 if (abs < 0.000001)
                     res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
                 else if (abs >= 1e+21)
@@ -483,7 +485,7 @@ namespace NiL.JS.Core
 
                             if (fracPart != 0)
                             {
-                                System.Array.Clear(str, 0, str.Length);
+                                Array.Clear(str, 0, str.Length);
                                 str[str.Length - 1] = 1;
                             }
                         }
@@ -493,17 +495,17 @@ namespace NiL.JS.Core
                             var curDeg = e > 53 ? 53 - e : 0;
                             var curBit = 1;
                             var supplimented = false;
-                            if (e < 53 && e > 40)
+                            if (e < 53)
                             {
                                 fracPart <<= 1;
-                                //if (((fracPart >> 1) & 1) == 0)
-                                //    fracPart |= 1;
-
                                 fracPart <<= 52 - e;
                             }
 
-                            for (var b = 0; b <= 53; b++, curBit++)
+                            var fracPartSize = Math.Min(53, e);
+
+                            for (var b = 0; b <= fracPartSize; b++, curBit++)
                             {
+                                //string d2;
                                 if ((fracPart & highestBit) != 0)
                                 {
                                     //var d1 = string.Concat(str.Reverse().Select(x => x.ToString("X16")));
@@ -526,17 +528,24 @@ namespace NiL.JS.Core
 
                                     numStrSum(fracBuffer, str, ref fracBuffer);
 
-                                    //var d2 = string.Concat(fracBuffer.Reverse().Select(x => x.ToString("X16")));
+                                    //d2 = string.Concat(fracBuffer.Reverse().Select(x => x.ToString("X16")));
                                 }
 
-                                if (b == 52)
+                                if (b == fracPartSize - 1)
                                 {
-                                    var test = m % 10;
+                                    if (supplimented)
+                                        break;
 
-                                    var needSupply = ((fracPart >> 1) & highestBit) != 0
-                                                  || (((~fracPart >> 1) & fracPart) & highestBit) == 0
-                                                  || (((fracPart >> 2) & (~fracPart >> 1) & fracPart) & highestBit) != 0;
-                                    if (supplimented || !needSupply)
+                                    var digitsCount = 0;
+                                    var lastDigit = getLastDigit(ref digitsCount, intBuffer, intBuffer.Length * 16, ToStringDigitsLimit);
+                                    if (digitsCount < ToStringDigitsLimit)
+                                    {
+                                        lastDigit = getLastDigit(ref digitsCount, fracBuffer, fracSize, ToStringDigitsLimit);
+                                    }
+
+                                    var needSupply = lastDigit >= 4;
+
+                                    if (!needSupply)
                                         break;
 
                                     fracPart |= highestBit >> 1;
@@ -552,9 +561,9 @@ namespace NiL.JS.Core
                         var signDigits = 0;
 
                         var write = false;
-                        for (var i = 0; i < intBuffer.Length * 16; i++)
+                        for (var i = intBuffer.Length * 16; i-- > 0;)
                         {
-                            var v = (intBuffer[i / 16] >> 4 * (15 - i)) & 0xf;
+                            var v = (intBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
                             if (v != 0 || write)
                             {
                                 write = true;
@@ -570,14 +579,12 @@ namespace NiL.JS.Core
 
                         if (fracSize != 0)
                         {
-                            if (write)
-                                signDigits++;
-
                             buffer[bufferPos++] = '.';
                             for (var i = fracSize; i-- > 0;)
                             {
-                                var v = (fracBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
-                                buffer[bufferPos++] = (char)((char)v + '0');
+                                var v = fracBuffer.Length <= i / 16 ? 0 : (fracBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
+                                buffer[bufferPos] = (char)((char)v + '0');
+                                bufferPos++;
 
                                 if (v != 0)
                                 {
@@ -588,12 +595,9 @@ namespace NiL.JS.Core
                                 if (write)
                                     signDigits++;
 
-                                if (signDigits == 17 || bufferPos == buffer.Length)
+                                if (signDigits == ToStringDigitsLimit || bufferPos == buffer.Length)
                                     break;
                             }
-
-                            if (lastRealSign < buffer.Length)
-                                buffer[lastRealSign] = '\0';
                         }
 
                         res = new string(buffer, 0, lastRealSign);
@@ -609,6 +613,52 @@ namespace NiL.JS.Core
             }
 
             return res;
+        }
+
+        private static int getLastDigit(ref int digitsCount, ulong[] digitBuffer, int dataSize, int digitsLimit)
+        {
+            var i = dataSize / 16;
+
+            dataSize %= 16;
+            if (dataSize == 0)
+            {
+                i--;
+                dataSize = digitsCount == 0 ? NumberUtils.digitsCount(digitBuffer[i]) : 16;
+            }
+
+            for (; i >= 0; i--, dataSize = 16)
+            {
+                if (i >= digitBuffer.Length || digitBuffer[i] == 0)
+                {
+                    if (digitsCount != 0)
+                    {
+                        digitsCount += dataSize;
+                        if (digitsCount > digitsLimit)
+                        {
+                            digitsCount = digitsLimit;
+                            return 0;
+                        }
+                    }
+
+                    continue;
+                }
+
+                for (var di = dataSize; di-- > 0;)
+                {
+                    if (digitsCount == digitsLimit)
+                        return (int)((digitBuffer[i] >> (di * 4)) & 0xf);
+
+                    if (digitsCount != 0 || ((digitBuffer[i] >> (di * 4)) & 0xf) != 0)
+                    {
+                        di++;
+                        var delta = Math.Min(di, digitsLimit - digitsCount);
+                        digitsCount += delta;
+                        di -= delta;
+                    }
+                }
+            }
+
+            return (int)(digitBuffer[0] & 0xf);
         }
 
         private static int digitsCount(ulong x)
@@ -638,7 +688,7 @@ namespace NiL.JS.Core
                 res += 1;
             }
 
-            return res;
+            return res + ((x & 0xf) != 0 ? 1 : 0);
         }
 
         private static void numStrMul10(ulong[] x, ref ulong[] output)

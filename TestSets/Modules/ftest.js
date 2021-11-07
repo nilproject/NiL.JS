@@ -42,10 +42,13 @@
     //console.log(parseFloat("0.0012344999999999998"));
     //console.log(0.0012345);
 
-    //console.log(0.0012344999999999997);
-    //console.log(0.0012344999999999998);
-    //console.log(0.0012344999999999999);
-    //console.log(0.0012345);
+    console.log(100111122133144155);
+    console.log(6776767677.006771122677555);
+
+    console.log(0.0012344999999999997);
+    console.log(0.0012344999999999998);
+    console.log(0.0012344999999999999);
+    console.log(0.0012345);
     console.log(0.12345);
     console.log(1.2345);
     console.log(69.84999999999992);
