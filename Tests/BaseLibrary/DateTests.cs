@@ -10,6 +10,44 @@ namespace Tests.BaseLibrary
     [TestClass]
     public class DateTests
     {
+        private static readonly TimeZoneInfo TestMoscowTimezone = TimeZoneInfo.CreateCustomTimeZone(
+            "Test Moscow timezone", 
+            new TimeSpan(3 * 3600 * 10000000L), 
+            "Test Moscow timezone",
+            "Test Moscow timezone",
+            "Test Moscow daylight timezone",
+            new TimeZoneInfo.AdjustmentRule[]
+            {
+                TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+                    default,
+                    new DateTime(2010, 12, 31),
+                    TimeSpan.FromHours(1),
+                    TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1,1,1,2,0,0), 3, 5, DayOfWeek.Sunday),
+                    TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1,1,1,3,0,0), 10, 5, DayOfWeek.Sunday)),
+            });
+        private static readonly TimeZoneInfo TestAustraliaTimezone = TimeZoneInfo.CreateCustomTimeZone(
+            "Test Australia timezone",
+            new TimeSpan(10 * 3600 * 10000000L),
+            "Test Australia timezone",
+            "Test Australia timezone",
+            "Test Australia daylight timezone",
+            new TimeZoneInfo.AdjustmentRule[]
+            {
+                TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+                    default,
+                    new DateTime(2007, 12, 31),
+                    TimeSpan.FromHours(1),
+                    TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1,1,1,2,0,0), 10, 5, DayOfWeek.Sunday),
+                    TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1,1,1,3,0,0), 3, 5, DayOfWeek.Sunday)),
+
+                TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+                    new DateTime(2008, 1, 1),
+                    new DateTime(9999, 12, 31),
+                    TimeSpan.FromHours(1),
+                    TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1,1,1,2,0,0), 10, 5, DayOfWeek.Sunday),
+                    TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1,1,1,3,0,0), 4, 5, DayOfWeek.Sunday)),
+            });
+
         [TestMethod]
         public void ShouldParseUSformat()
         {
@@ -44,8 +82,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ShouldCorrectHandleSwitchFromDstToStandard_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var firstDate = new Date(new Arguments { 953996400000 });
@@ -60,26 +97,12 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ShouldCorrectHandleSwitchFromDstToStandardBySetDate_MoscowTime()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 3 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(rtzDelegate);
+            var timezone = TestMoscowTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "3/27/2010 08:00" });
             Assert.AreEqual(-180, d.getTimezoneOffset().As<int>());
             d.setDate(28);
-            Assert.AreEqual(-240, d.getTimezoneOffset().As<int>());
-        }
-
-        [TestMethod]
-        public void ShouldCorrectHandleSwitchFromDstToStandardBySetTime_MoscowTime()
-        {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 3 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(rtzDelegate);
-            Context.CurrentGlobalContext.CurrentTimeZone = timezone;
-
-            var d = new Date(new Arguments { "3/27/2010 08:00" });
-            Assert.AreEqual(-180, d.getTimezoneOffset().As<int>());
-            d.setTime((long)d.getTime() + 86400 * 1000);
             Assert.AreEqual(-240, d.getTimezoneOffset().As<int>());
         }
 
@@ -89,10 +112,21 @@ namespace Tests.BaseLibrary
         }
 
         [TestMethod]
+        public void ShouldCorrectHandleSwitchFromDstToStandardBySetTime_MoscowTime()
+        {
+            var timezone = TestMoscowTimezone;
+            Context.CurrentGlobalContext.CurrentTimeZone = timezone;
+
+            var d = new Date(new Arguments { "3/27/2010 08:00" });
+            Assert.AreEqual(-180, d.getTimezoneOffset().As<int>());
+            d.setTime((long)d.getTime() + 86400 * 1000);
+            Assert.AreEqual(-240, d.getTimezoneOffset().As<int>());
+        }
+
+        [TestMethod]
         public void ShouldCorrectParseIsoTimeInCurrentTimezone_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -103,8 +137,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ShouldReturnsCorrectUtcDateForParsedIsoTime_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -115,8 +148,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ShouldReturnsCorrectUtcDayForParsedIsoTime_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -127,8 +159,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ShouldReturnsCorrectUtcHoursForParsedIsoTime_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -139,8 +170,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ShouldReturnsCorrectUtcYearForParsedIsoTime_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -151,8 +181,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ShouldReturnsCorrectIsoStringForParsedIsoTime_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -163,8 +192,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ShouldReturnsCorrectJsonForParsedIsoTime_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -175,8 +203,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetMonthShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setMonth(5, null);
@@ -187,8 +214,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetUtcMonthShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCMonth(5, null);
@@ -199,8 +225,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetUtcMillisecondsShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCMilliseconds(555);
@@ -211,8 +236,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetUtcHoursShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCHours(4, null, null, null);
@@ -223,8 +247,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetUtcDateShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCDate(15);
@@ -235,8 +258,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetUtcMinutesShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCMinutes(34, null, null);
@@ -247,8 +269,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetMillisecondsShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setMilliseconds(555);
@@ -259,8 +280,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetFullYearShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setFullYear(2005, null, null);
@@ -271,8 +291,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetUtcFullYearShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setUTCFullYear(2004, null, null);
@@ -283,8 +302,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetMinutesShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setMinutes(34, null, null);
@@ -295,8 +313,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetTimeShouldWorkCorrectlyAndReturnTickValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setTime(0);
@@ -307,8 +324,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetTimeShouldRecalcTimezoneOffset_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var d = new Date(new Arguments { "2010-08-30T00:00:00" });
@@ -321,8 +337,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void SetTimeShouldNotOffsetValueWithTimezone_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).setTime(1525898414436);
@@ -333,8 +348,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ToLocaleDateStringShouldCorrectFormatValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).toLocaleDateString();
@@ -345,8 +359,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ToLocaleTimeStringShouldCorrectFormatValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).toLocaleTimeString();
@@ -358,8 +371,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ToStringShouldCorrectFormatValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).toString();
@@ -371,8 +383,7 @@ namespace Tests.BaseLibrary
         [TestMethod]
         public void ToTimeStringShouldCorrectFormatValue_SidneyTimeZone()
         {
-            var timezones = TimeZoneInfo.GetSystemTimeZones().Where(x => x.BaseUtcOffset.Ticks == 10 * 3600 * 10000000L).ToArray();
-            var timezone = timezones.First(x => x.Id.IndexOf("AUS", StringComparison.OrdinalIgnoreCase) != -1 && x.SupportsDaylightSavingTime);
+            var timezone = TestAustraliaTimezone;
             Context.CurrentGlobalContext.CurrentTimeZone = timezone;
 
             var result = new Date(new Arguments { "2010-08-30T00:00:00" }).toTimeString();
