@@ -12,5 +12,5 @@ $REVISION=$(git rev-list --count origin/develop)
 cd NiL.JS
 dotnet build -c Release -property:VersionPrefix=2.5.$($REVISION) -property:SignAssembly=true
 dotnet pack -c Release -property:VersionPrefix=2.5.$($REVISION) -property:SignAssembly=true
-copy bin/release/NiL.JS.2.5.$($REVISION).nupkg ../nuget/NiL.JS.2.5.$($REVISION).nupkg
+mv -Force bin/release/NiL.JS.2.5.$($REVISION).nupkg ../nuget/NiL.JS.2.5.$($REVISION).nupkg
 cd ..

@@ -54,9 +54,9 @@ jobs:
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
     env:
-      Solution_Name: NiL.JS/NiL.JS.csproj                   # Replace with your solution name, i.e. MyWpfApp.sln.
-      Test_Project_Path: Tests/Tests.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
       Project_Directory: NiL.JS
+      Solution_Name: $Project_Directory/NiL.JS.csproj                   # Replace with your solution name, i.e. MyWpfApp.sln.
+      Test_Project_Path: Tests/Tests.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
       Nuget_Pack_Output_Directory: nuget
 
     steps:
@@ -85,7 +85,7 @@ jobs:
     - name: Decode the snk
       run: |
         $snk_byte = [System.Convert]::FromBase64String("${{ secrets.SNK_KEY }}")
-        $certificatePath = Join-Path -Path $env:Project_Directory -ChildPath key.snk
+        $certificatePath = Join-Path -Path $env:Project_Directory -ChildPath keys.snk
         [IO.File]::WriteAllBytes("$certificatePath", $snk_byte)
 
     # Execute all unit tests in the solution
@@ -101,11 +101,11 @@ jobs:
 
     # Remove the pfx
     - name: Remove the snk
-      run: Remove-Item -path $env:Project_Directory\key.snk
+      run: Remove-Item -path NiL.JS\keys.snk
 
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
         name: NuGet Package
-        path: ${{ env.Nuget_Pack_Output_Directory }}\nuget
+        path: ${{ env.Nuget_Pack_Output_Directory }}
