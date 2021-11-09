@@ -11,14 +11,7 @@ using NiL.JS.Extensions;
 
 namespace NiL.JS.BaseLibrary
 {
-    public enum PromiseState
-    {
-        Pending,
-        Fulfilled,
-        Rejected
-    }
-
-    public sealed class Promise
+    public sealed class Promise : IPromiseLike
     {
         private Task _innerTask;
         private Function _callback;
@@ -177,12 +170,12 @@ namespace NiL.JS.BaseLibrary
                 _outerTask.SetResult(JSValue.undefined);
         }
 
-        public static Promise resolve(JSValue data)
+        public static IPromiseLike resolve(JSValue data)
         {
             return new Promise(fromResult(data));
         }
 
-        public static Promise race(IIterable promises)
+        public static IPromiseLike race(IIterable promises)
         {
             if (promises == null)
                 return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.race(...)"))));
@@ -190,7 +183,7 @@ namespace NiL.JS.BaseLibrary
             return new Promise(whenAny(promises.AsEnumerable().Select(convertToTask).ToArray()));
         }
 
-        public static Promise all(IIterable promises)
+        public static IPromiseLike all(IIterable promises)
         {
             if (promises == null)
                 return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.all(...)"))));
@@ -203,12 +196,12 @@ namespace NiL.JS.BaseLibrary
             return (arg.Value as Promise)?.Task ?? fromResult(arg);
         }
 
-        public Promise @catch(Function onRejection)
+        public IPromiseLike @catch(Function onRejection)
         {
             return then(null, onRejection);
         }
 
-        public Promise then(Function onFulfilment, Function onRejection)
+        public IPromiseLike then(Function onFulfilment, Function onRejection)
         {
             return then(
                 onFulfilment == null ? null as Func<JSValue, JSValue> : value => onFulfilment.Call(JSValue.undefined, new Arguments { value }),
@@ -216,7 +209,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public Promise then(Func<JSValue, JSValue> onFulfilment, Func<JSValue, JSValue> onRejection)
+        public IPromiseLike then(Func<JSValue, JSValue> onFulfilment, Func<JSValue, JSValue> onRejection)
         {
             if (onFulfilment == null && onRejection == null)
                 return resolve(JSValue.undefined);
