@@ -85,5 +85,14 @@ namespace Tests.Core
                     Assert.AreEqual(val[0], result);
             }
         }
+
+        [TestMethod]
+        public void ConvertJStoObjTest()
+        {
+            var ConvertJStoObj = (Func<ArrayBuffer, Type, bool, object>)typeof(Tools).GetMethod("ConvertJStoObj", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).CreateDelegate(typeof(Func<ArrayBuffer, Type, bool, object>));
+            object res = ConvertJStoObj(new ArrayBuffer(), typeof(byte[]), true);
+            Assert.IsNotNull(res);
+            Assert.IsInstanceOfType(res, typeof(byte[]));
+        }
     }
 }

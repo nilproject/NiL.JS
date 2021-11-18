@@ -726,7 +726,7 @@ namespace NiL.JS.Core
             if (value is ConstructorProxy && typeof(Type).IsAssignableFrom(targetType))
                 return (value as ConstructorProxy)._staticProxy._hostedType;
 
-            if (targetType == typeof(object[]) && value is ArrayBuffer)
+            if ((targetType == typeof(object[]) || targetType == typeof(byte[])) && value is ArrayBuffer)
                 return (value as ArrayBuffer).GetData();
 
             if ((value is BaseLibrary.Array || value is TypedArray || value is ArrayBuffer)
