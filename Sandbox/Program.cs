@@ -243,7 +243,7 @@ namespace Sandbox
                     GetCtor = new Func<string, JSValue>(name => JSValue.GetConstructor(NamespaceProvider.GetType(name)))
                 }));
 #endif
-            Context.DefaultGlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSValue.Undefined; }));
+            //Context.DefaultGlobalContext.DefineVariable("alert").Assign(new ExternalFunction((t, a) => { System.Windows.Forms.MessageBox.Show(a[0].ToString()); return JSValue.Undefined; }));
             Context.DefaultGlobalContext.DefineVariable("print").Assign(new ExternalFunction((t, a) =>
             {
                 for (var i = 0; i < a.Length; i++)
@@ -268,7 +268,7 @@ namespace Sandbox
             }));
 #endif
 
-            int mode = 3
+            int mode = 101
                     ;
             switch (mode)
             {
@@ -501,16 +501,16 @@ namespace Sandbox
             Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(1));
             Console.WriteLine("GC.CollectionCount: " + GC.CollectionCount(2));
             Console.WriteLine("GC.MaxGeneration: " + GC.MaxGeneration);
-            if (System.Windows.Forms.Application.OpenForms.Count != 0)
-            {
-                while (System.Windows.Forms.Application.OpenForms.Count != 0)
-                {
-                    System.Threading.Thread.Sleep(1);
-                    System.Windows.Forms.Application.DoEvents();
-                }
-            }
-            else if (Debugger.IsAttached)
-                Console.ReadKey();
+            //if (System.Windows.Forms.Application.OpenForms.Count != 0)
+            //{
+            //    while (System.Windows.Forms.Application.OpenForms.Count != 0)
+            //    {
+            //        System.Threading.Thread.Sleep(1);
+            //        System.Windows.Forms.Application.DoEvents();
+            //    }
+            //}
+            //else if (Debugger.IsAttached)
+            //    Console.ReadKey();
         }
 
         private static void dromaeoTests()

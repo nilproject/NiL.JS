@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NiL.JS.Core
+﻿namespace NiL.JS.Core
 {
     public interface IIteratorResult
     {
+#pragma warning disable IDE1006
+
         JSValue value { get; }
         bool done { get; }
+
+#pragma warning restore IDE1006
     }
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -22,10 +22,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NiL.JS\NiL.JS.csproj" />
+    <ProjectReference Include="..\Utility\tiny-t4\tiny-t4.csproj" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="dotnet ./../Utility/tt4/$(TargetFramework)/tiny-t4.dll" />
+  <Target Name="PreBuild" BeforeTargets="precompile">
+    <Exec Command="dotnet ./bin/$(Configuration)/$(TargetFramework)/tiny-t4.dll" />
   </Target>
 
 </Project>
