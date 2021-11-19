@@ -22,29 +22,17 @@ namespace NiL.JS.BaseLibrary
             {
                 if (index < 0 || index > length._iValue)
                     ExceptionHelper.Throw(new RangeError());
+
                 var v = BitConverter.DoubleToInt64Bits(Tools.JSObjectToDouble(value));
-                if (BitConverter.IsLittleEndian)
-                {
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)(v >> 0);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 8);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 16);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 24);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 4] = (byte)(v >> 32);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 5] = (byte)(v >> 40);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 6] = (byte)(v >> 48);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 7] = (byte)(v >> 56);
-                }
-                else
-                {
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)(v >> 56);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 48);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 40);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 32);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 4] = (byte)(v >> 24);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 5] = (byte)(v >> 16);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 6] = (byte)(v >> 8);
-                    buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 7] = (byte)(v >> 0);
-                }
+                int byteIndex = index * BYTES_PER_ELEMENT + byteOffset;
+                buffer.data[byteIndex + 0] = (byte)(v >> 0);
+                buffer.data[byteIndex + 1] = (byte)(v >> 8);
+                buffer.data[byteIndex + 2] = (byte)(v >> 16);
+                buffer.data[byteIndex + 3] = (byte)(v >> 24);
+                buffer.data[byteIndex + 4] = (byte)(v >> 32);
+                buffer.data[byteIndex + 5] = (byte)(v >> 40);
+                buffer.data[byteIndex + 6] = (byte)(v >> 48);
+                buffer.data[byteIndex + 7] = (byte)(v >> 56);
             }
         }
 

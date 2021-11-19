@@ -4,12 +4,17 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using System.Collections;
 using System;
+using System.Linq;
 
 namespace Tests.Core
 {
     [TestClass]
     public class ToolsTests
     {
+        private static readonly Func<JSValue, Type, bool, object> ConvertJStoObj = (Func<JSValue, Type, bool, object>)typeof(Tools)
+                .GetMethod("ConvertJStoObj", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)
+                .CreateDelegate(typeof(Func<JSValue, Type, bool, object>));
+
         [TestMethod]
         public void FormatArgsTest()
         {
@@ -87,12 +92,52 @@ namespace Tests.Core
         }
 
         [TestMethod]
-        public void ConvertJStoObjTest()
+        public void ConvertArrayBufferToByteArrayTest()
         {
-            var ConvertJStoObj = (Func<ArrayBuffer, Type, bool, object>)typeof(Tools).GetMethod("ConvertJStoObj", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).CreateDelegate(typeof(Func<ArrayBuffer, Type, bool, object>));
-            object res = ConvertJStoObj(new ArrayBuffer(), typeof(byte[]), true);
-            Assert.IsNotNull(res);
+            var data = new byte[] { 1, 2, 3, 4 };
+
+            object res = ConvertJStoObj(new ArrayBuffer(data), typeof(byte[]), true);
+
             Assert.IsInstanceOfType(res, typeof(byte[]));
+            CollectionAssert.AreEqual(data, (byte[])res);
+        }
+
+        [TestMethod]
+        public void ConvertFloat32ArrayToNativeArrayTest()
+        {
+            var data = new float[] { 1, 2, 3, 4 };
+            var srcArray = new Float32Array(data.Length);
+            srcArray.set(new Arguments { data });
+
+            object res = ConvertJStoObj(srcArray, typeof(float[]), true);
+
+            Assert.IsInstanceOfType(res, typeof(float[]));
+            CollectionAssert.AreEqual(data, (float[])res);
+        }
+
+        [TestMethod]
+        public void ConvertFloat64ArrayToNativeArrayTest()
+        {
+            var data = new double[] { 1, 2, 3, 4 };
+            var srcArray = new Float64Array(data.Length);
+            srcArray.set(new Arguments { data });
+
+            object res = ConvertJStoObj(srcArray, typeof(double[]), true);
+
+            Assert.IsInstanceOfType(res, typeof(double[]));
+            CollectionAssert.AreEqual(data, (double[])res);
+        }
+
+        [TestMethod]
+        public void ConvertJSArrayToNativeArrayTest()
+        {
+            var data = new string[] { "1", "2", "3", "4" };
+            var srcArray = new NiL.JS.BaseLibrary.Array(data);
+
+            object res = ConvertJStoObj(srcArray, typeof(double[]), true);
+
+            Assert.IsInstanceOfType(res, typeof(double[]));
+            CollectionAssert.AreEqual(data.Select(double.Parse).ToArray(), (double[])res);
         }
     }
 }

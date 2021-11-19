@@ -30,20 +30,11 @@ namespace NiL.JS.BaseLibrary
         private void setValue(int index, float value)
         {
             var v = BitConverter.GetBytes(value);
-            if (BitConverter.IsLittleEndian)
-            {
-                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[3];
-                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[2];
-                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[1];
-                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[0];
-            }
-            else
-            {
-                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = v[0];
-                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = v[1];
-                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = v[2];
-                buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = v[3];
-            }
+            int byteIndex = index * BYTES_PER_ELEMENT + byteOffset;
+            buffer.data[byteIndex + 0] = v[0];
+            buffer.data[byteIndex + 1] = v[1];
+            buffer.data[byteIndex + 2] = v[2];
+            buffer.data[byteIndex + 3] = v[3];
         }
 
         private float getValue(int index)

@@ -174,36 +174,36 @@ namespace NiL.JS.Core
                 {
                     case JSValueType.Boolean:
                     case JSValueType.Integer:
-                    {
-                        return arg._iValue;
-                    }
+                        {
+                            return arg._iValue;
+                        }
                     case JSValueType.Double:
-                    {
-                        return arg._dValue;
-                    }
+                        {
+                            return arg._dValue;
+                        }
                     case JSValueType.String:
-                    {
-                        double x = double.NaN;
-                        int ix = 0;
-                        string s = (arg._oValue.ToString());
-                        if (s.Length > 0 && (Tools.IsWhiteSpace(s[0]) || Tools.IsWhiteSpace(s[s.Length - 1])))
-                            s = s.Trim(Tools.TrimChars);
+                        {
+                            double x = double.NaN;
+                            int ix = 0;
+                            string s = (arg._oValue.ToString());
+                            if (s.Length > 0 && (Tools.IsWhiteSpace(s[0]) || Tools.IsWhiteSpace(s[s.Length - 1])))
+                                s = s.Trim(Tools.TrimChars);
 
-                        if (Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
-                            return double.NaN;
+                            if (Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
+                                return double.NaN;
 
-                        return x;
-                    }
+                            return x;
+                        }
                     case JSValueType.Date:
                     case JSValueType.Function:
                     case JSValueType.Object:
-                    {
-                        if (arg._oValue == null)
-                            return 0;
-                        arg = arg.ToPrimitiveValue_Value_String();
-                        break;
-                        //return JSObjectToDouble(arg);
-                    }
+                        {
+                            if (arg._oValue == null)
+                                return 0;
+                            arg = arg.ToPrimitiveValue_Value_String();
+                            break;
+                            //return JSObjectToDouble(arg);
+                        }
                     case JSValueType.NotExists:
                     case JSValueType.Undefined:
                     case JSValueType.NotExistsInObject:
@@ -282,46 +282,46 @@ namespace NiL.JS.Core
             {
                 case JSValueType.Boolean:
                 case JSValueType.Integer:
-                {
-                    return value._iValue;
-                }
+                    {
+                        return value._iValue;
+                    }
                 case JSValueType.Double:
-                {
-                    if (double.IsNaN(value._dValue))
-                        return nan;
+                    {
+                        if (double.IsNaN(value._dValue))
+                            return nan;
 
-                    if (double.IsInfinity(value._dValue))
-                        return alternateInfinity ? double.IsPositiveInfinity(value._dValue) ? int.MaxValue : int.MinValue : 0;
+                        if (double.IsInfinity(value._dValue))
+                            return alternateInfinity ? double.IsPositiveInfinity(value._dValue) ? int.MaxValue : int.MinValue : 0;
 
-                    return (int)(long)value._dValue;
-                }
+                        return (int)(long)value._dValue;
+                    }
                 case JSValueType.String:
-                {
-                    double x = 0;
-                    int ix = 0;
-                    string s = (value._oValue.ToString()).Trim();
+                    {
+                        double x = 0;
+                        int ix = 0;
+                        string s = (value._oValue.ToString()).Trim();
 
-                    if (!Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
-                        return 0;
+                        if (!Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
+                            return 0;
 
-                    if (double.IsNaN(x))
-                        return nan;
+                        if (double.IsNaN(x))
+                            return nan;
 
-                    if (double.IsInfinity(x))
-                        return alternateInfinity ? double.IsPositiveInfinity(x) ? int.MaxValue : int.MinValue : 0;
+                        if (double.IsInfinity(x))
+                            return alternateInfinity ? double.IsPositiveInfinity(x) ? int.MaxValue : int.MinValue : 0;
 
-                    return (int)x;
-                }
+                        return (int)x;
+                    }
                 case JSValueType.Date:
                 case JSValueType.Function:
                 case JSValueType.Object:
-                {
-                    if (value._oValue == null)
-                        return @null;
+                    {
+                        if (value._oValue == null)
+                            return @null;
 
-                    value = value.ToPrimitiveValue_Value_String();
-                    return JSObjectToInt32(value, 0, 0, 0, true);
-                }
+                        value = value.ToPrimitiveValue_Value_String();
+                        return JSObjectToInt32(value, 0, 0, 0, true);
+                    }
                 case JSValueType.NotExists:
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
@@ -376,39 +376,39 @@ namespace NiL.JS.Core
             {
                 case JSValueType.Boolean:
                 case JSValueType.Integer:
-                {
-                    return r._iValue;
-                }
+                    {
+                        return r._iValue;
+                    }
                 case JSValueType.Double:
-                {
-                    if (double.IsNaN(r._dValue))
-                        return 0;
-                    if (double.IsInfinity(r._dValue))
-                        return alternateInfinity ? double.IsPositiveInfinity(r._dValue) ? long.MaxValue : long.MinValue : 0;
-                    return (long)r._dValue;
-                }
+                    {
+                        if (double.IsNaN(r._dValue))
+                            return 0;
+                        if (double.IsInfinity(r._dValue))
+                            return alternateInfinity ? double.IsPositiveInfinity(r._dValue) ? long.MaxValue : long.MinValue : 0;
+                        return (long)r._dValue;
+                    }
                 case JSValueType.String:
-                {
-                    double x = 0;
-                    int ix = 0;
-                    string s = (r._oValue.ToString()).Trim();
-                    if (!Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
-                        return 0;
-                    if (double.IsNaN(x))
-                        return 0;
-                    if (double.IsInfinity(x))
-                        return alternateInfinity ? double.IsPositiveInfinity(x) ? long.MaxValue : long.MinValue : 0;
-                    return (long)x;
-                }
+                    {
+                        double x = 0;
+                        int ix = 0;
+                        string s = (r._oValue.ToString()).Trim();
+                        if (!Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
+                            return 0;
+                        if (double.IsNaN(x))
+                            return 0;
+                        if (double.IsInfinity(x))
+                            return alternateInfinity ? double.IsPositiveInfinity(x) ? long.MaxValue : long.MinValue : 0;
+                        return (long)x;
+                    }
                 case JSValueType.Date:
                 case JSValueType.Function:
                 case JSValueType.Object:
-                {
-                    if (r._oValue == null)
-                        return nullOrUndefined;
-                    r = r.ToPrimitiveValue_Value_String();
-                    return JSObjectToInt64(r, nullOrUndefined, alternateInfinity);
-                }
+                    {
+                        if (r._oValue == null)
+                            return nullOrUndefined;
+                        r = r.ToPrimitiveValue_Value_String();
+                        return JSObjectToInt64(r, nullOrUndefined, alternateInfinity);
+                    }
                 case JSValueType.NotExists:
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
@@ -438,46 +438,46 @@ namespace NiL.JS.Core
             switch (arg._valueType)
             {
                 case JSValueType.Boolean:
-                {
-                    result._valueType = JSValueType.Integer;
-                    result._iValue = arg._iValue;
-                    return result;
-                }
+                    {
+                        result._valueType = JSValueType.Integer;
+                        result._iValue = arg._iValue;
+                        return result;
+                    }
                 case JSValueType.Integer:
                 case JSValueType.Double:
                     return arg;
                 case JSValueType.String:
-                {
-                    double x = 0;
-                    int ix = 0;
-                    string s = (arg._oValue.ToString()).Trim(TrimChars);
-                    if (!Tools.ParseJsNumber(s, ref ix, out x, ParseNumberOptions.Default & ~ParseNumberOptions.ProcessOctalLiteralsOldSyntax) || ix < s.Length)
-                        x = double.NaN;
-                    result._valueType = JSValueType.Double;
-                    result._dValue = x;
-                    return result;
-                }
+                    {
+                        double x = 0;
+                        int ix = 0;
+                        string s = (arg._oValue.ToString()).Trim(TrimChars);
+                        if (!Tools.ParseJsNumber(s, ref ix, out x, ParseNumberOptions.Default & ~ParseNumberOptions.ProcessOctalLiteralsOldSyntax) || ix < s.Length)
+                            x = double.NaN;
+                        result._valueType = JSValueType.Double;
+                        result._dValue = x;
+                        return result;
+                    }
                 case JSValueType.Date:
                 case JSValueType.Function:
                 case JSValueType.Object:
-                {
-                    if (arg._oValue == null)
                     {
-                        result._valueType = JSValueType.Integer;
-                        result._iValue = 0;
-                        return result;
+                        if (arg._oValue == null)
+                        {
+                            result._valueType = JSValueType.Integer;
+                            result._iValue = 0;
+                            return result;
+                        }
+                        arg = arg.ToPrimitiveValue_Value_String();
+                        return JSObjectToNumber(arg);
                     }
-                    arg = arg.ToPrimitiveValue_Value_String();
-                    return JSObjectToNumber(arg);
-                }
                 case JSValueType.NotExists:
                 case JSValueType.Undefined:
                 case JSValueType.NotExistsInObject:
-                {
-                    result._valueType = JSValueType.Double;
-                    result._dValue = double.NaN;
-                    return result;
-                }
+                    {
+                        result._valueType = JSValueType.Double;
+                        result._dValue = double.NaN;
+                        return result;
+                    }
                 default:
                     throw new NotImplementedException();
             }
@@ -498,208 +498,208 @@ namespace NiL.JS.Core
             switch (jsobj._valueType)
             {
                 case JSValueType.Boolean:
-                {
-                    if (hightLoyalty)
                     {
-                        if (targetType == typeof(string))
-                            return jsobj._iValue != 0 ? JSBool.TrueString : JSBool.FalseString;
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return jsobj._iValue != 0 ? JSBool.TrueString : JSBool.FalseString;
+                        }
+
+                        if (targetType == typeof(bool))
+                            return jsobj._iValue != 0;
+
+                        if (targetType == typeof(JSBool))
+                            return new JSBool(jsobj._iValue != 0);
+
+                        return null;
                     }
-
-                    if (targetType == typeof(bool))
-                        return jsobj._iValue != 0;
-
-                    if (targetType == typeof(JSBool))
-                        return new JSBool(jsobj._iValue != 0);
-
-                    return null;
-                }
                 case JSValueType.Double:
-                {
-                    if (hightLoyalty)
                     {
-                        if (targetType == typeof(byte))
-                            return (byte)jsobj._dValue;
-                        if (targetType == typeof(sbyte))
-                            return (sbyte)jsobj._dValue;
-                        if (targetType == typeof(ushort))
-                            return (ushort)jsobj._dValue;
-                        if (targetType == typeof(short))
-                            return (short)jsobj._dValue;
-                        if (targetType == typeof(int))
-                            return (int)jsobj._dValue;
-                        if (targetType == typeof(uint))
-                            return (uint)jsobj._dValue;
-                        if (targetType == typeof(long))
-                            return (long)jsobj._dValue;
-                        if (targetType == typeof(ulong))
-                            return (ulong)jsobj._dValue;
-                        if (targetType == typeof(decimal))
-                            return (decimal)jsobj._dValue;
-                        if (targetType == typeof(string))
-                            return NumberUtils.DoubleToString(jsobj._dValue);
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(byte))
+                                return (byte)jsobj._dValue;
+                            if (targetType == typeof(sbyte))
+                                return (sbyte)jsobj._dValue;
+                            if (targetType == typeof(ushort))
+                                return (ushort)jsobj._dValue;
+                            if (targetType == typeof(short))
+                                return (short)jsobj._dValue;
+                            if (targetType == typeof(int))
+                                return (int)jsobj._dValue;
+                            if (targetType == typeof(uint))
+                                return (uint)jsobj._dValue;
+                            if (targetType == typeof(long))
+                                return (long)jsobj._dValue;
+                            if (targetType == typeof(ulong))
+                                return (ulong)jsobj._dValue;
+                            if (targetType == typeof(decimal))
+                                return (decimal)jsobj._dValue;
+                            if (targetType == typeof(string))
+                                return NumberUtils.DoubleToString(jsobj._dValue);
 
-                        if (targetType.GetTypeInfo().IsEnum)
-                            return Enum.ToObject(targetType, (long)jsobj._dValue);
-                    }
-
-                    if (targetType == typeof(double))
-                        return jsobj._dValue;
-                    if (targetType == typeof(float))
-                        return (float)jsobj._dValue;
-
-                    if (targetType == typeof(Number))
-                        return new Number(jsobj._dValue);
-
-                    return null;
-                }
-                case JSValueType.Integer:
-                {
-                    if (hightLoyalty)
-                    {
-                        if (targetType == typeof(string))
-                            return Int32ToString(jsobj._iValue);
-
-                        if (targetType == typeof(byte))
-                            return (byte)jsobj._iValue;
-                        if (targetType == typeof(sbyte))
-                            return (sbyte)jsobj._iValue;
-                        if (targetType == typeof(ushort))
-                            return (ushort)jsobj._iValue;
-                        if (targetType == typeof(short))
-                            return (short)jsobj._iValue;
-                    }
-
-                    if (targetType == typeof(int))
-                        return (int)jsobj._iValue;
-
-                    if (targetType == typeof(uint))
-                        return (uint)jsobj._iValue;
-                    if (targetType == typeof(long))
-                        return (long)jsobj._iValue;
-                    if (targetType == typeof(ulong))
-                        return (ulong)jsobj._iValue;
-                    if (targetType == typeof(double))
-                        return (double)jsobj._iValue;
-                    if (targetType == typeof(float))
-                        return (float)jsobj._iValue;
-                    if (targetType == typeof(decimal))
-                        return (decimal)jsobj._iValue;
-
-                    if (targetType == typeof(Number))
-                        return new Number(jsobj._iValue);
-
-                    if (targetType.GetTypeInfo().IsEnum)
-                        return Enum.ToObject(targetType, jsobj._iValue);
-
-                    return null;
-                }
-                case JSValueType.String:
-                {
-                    if (hightLoyalty)
-                    {
-                        if (targetType == typeof(byte))
-                            return (byte)JSObjectToInt32(jsobj);
-                        if (targetType == typeof(sbyte))
-                            return (sbyte)JSObjectToInt32(jsobj);
-                        if (targetType == typeof(short))
-                            return (short)JSObjectToInt32(jsobj);
-                        if (targetType == typeof(ushort))
-                            return (ushort)JSObjectToInt32(jsobj);
-                        if (targetType == typeof(int))
-                            return JSObjectToInt32(jsobj);
-                        if (targetType == typeof(uint))
-                            return (uint)JSObjectToInt64(jsobj);
-                        if (targetType == typeof(long))
-                            return JSObjectToInt64(jsobj);
-                        if (targetType == typeof(ulong))
-                            return (ulong)JSObjectToInt64(jsobj);
+                            if (targetType.GetTypeInfo().IsEnum)
+                                return Enum.ToObject(targetType, (long)jsobj._dValue);
+                        }
 
                         if (targetType == typeof(double))
-                        {
-                            if (jsobj.Value.ToString() == "NaN")
-                                return double.NaN;
-
-                            var r = JSObjectToDouble(jsobj);
-                            if (!double.IsNaN(r))
-                                return r;
-
-                            return null;
-                        }
-
+                            return jsobj._dValue;
                         if (targetType == typeof(float))
-                        {
-                            var r = JSObjectToDouble(jsobj);
-                            if (!double.IsNaN(r))
-                                return (float)r;
+                            return (float)jsobj._dValue;
 
-                            return null;
+                        if (targetType == typeof(Number))
+                            return new Number(jsobj._dValue);
+
+                        return null;
+                    }
+                case JSValueType.Integer:
+                    {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return Int32ToString(jsobj._iValue);
+
+                            if (targetType == typeof(byte))
+                                return (byte)jsobj._iValue;
+                            if (targetType == typeof(sbyte))
+                                return (sbyte)jsobj._iValue;
+                            if (targetType == typeof(ushort))
+                                return (ushort)jsobj._iValue;
+                            if (targetType == typeof(short))
+                                return (short)jsobj._iValue;
                         }
 
+                        if (targetType == typeof(int))
+                            return (int)jsobj._iValue;
+
+                        if (targetType == typeof(uint))
+                            return (uint)jsobj._iValue;
+                        if (targetType == typeof(long))
+                            return (long)jsobj._iValue;
+                        if (targetType == typeof(ulong))
+                            return (ulong)jsobj._iValue;
+                        if (targetType == typeof(double))
+                            return (double)jsobj._iValue;
+                        if (targetType == typeof(float))
+                            return (float)jsobj._iValue;
                         if (targetType == typeof(decimal))
-                        {
-                            var r = JSObjectToDouble(jsobj);
-                            if (!double.IsNaN(r))
-                                return (decimal)r;
+                            return (decimal)jsobj._iValue;
 
-                            return null;
-                        }
+                        if (targetType == typeof(Number))
+                            return new Number(jsobj._iValue);
 
                         if (targetType.GetTypeInfo().IsEnum)
+                            return Enum.ToObject(targetType, jsobj._iValue);
+
+                        return null;
+                    }
+                case JSValueType.String:
+                    {
+                        if (hightLoyalty)
                         {
-                            try
+                            if (targetType == typeof(byte))
+                                return (byte)JSObjectToInt32(jsobj);
+                            if (targetType == typeof(sbyte))
+                                return (sbyte)JSObjectToInt32(jsobj);
+                            if (targetType == typeof(short))
+                                return (short)JSObjectToInt32(jsobj);
+                            if (targetType == typeof(ushort))
+                                return (ushort)JSObjectToInt32(jsobj);
+                            if (targetType == typeof(int))
+                                return JSObjectToInt32(jsobj);
+                            if (targetType == typeof(uint))
+                                return (uint)JSObjectToInt64(jsobj);
+                            if (targetType == typeof(long))
+                                return JSObjectToInt64(jsobj);
+                            if (targetType == typeof(ulong))
+                                return (ulong)JSObjectToInt64(jsobj);
+
+                            if (targetType == typeof(double))
                             {
-                                return Enum.Parse(targetType, jsobj.Value.ToString());
-                            }
-                            catch
-                            {
+                                if (jsobj.Value.ToString() == "NaN")
+                                    return double.NaN;
+
+                                var r = JSObjectToDouble(jsobj);
+                                if (!double.IsNaN(r))
+                                    return r;
+
                                 return null;
                             }
+
+                            if (targetType == typeof(float))
+                            {
+                                var r = JSObjectToDouble(jsobj);
+                                if (!double.IsNaN(r))
+                                    return (float)r;
+
+                                return null;
+                            }
+
+                            if (targetType == typeof(decimal))
+                            {
+                                var r = JSObjectToDouble(jsobj);
+                                if (!double.IsNaN(r))
+                                    return (decimal)r;
+
+                                return null;
+                            }
+
+                            if (targetType.GetTypeInfo().IsEnum)
+                            {
+                                try
+                                {
+                                    return Enum.Parse(targetType, jsobj.Value.ToString());
+                                }
+                                catch
+                                {
+                                    return null;
+                                }
+                            }
                         }
-                    }
 
-                    if (targetType == typeof(string))
-                        return jsobj.Value.ToString();
-
-                    if (targetType == typeof(BaseLibrary.String))
-                        return new BaseLibrary.String(jsobj.Value.ToString());
-
-                    return null;
-                }
-                case JSValueType.Symbol:
-                {
-                    if (hightLoyalty)
-                    {
                         if (targetType == typeof(string))
                             return jsobj.Value.ToString();
-                    }
 
-                    if (targetType == typeof(Symbol))
-                        return jsobj.Value;
+                        if (targetType == typeof(BaseLibrary.String))
+                            return new BaseLibrary.String(jsobj.Value.ToString());
 
-                    return null;
-                }
-                case JSValueType.Function:
-                {
-                    if (hightLoyalty)
-                    {
-                        if (targetType == typeof(string))
-                            return jsobj.Value.ToString();
-                    }
-
-                    if (!targetType.GetTypeInfo().IsAbstract && targetType.GetTypeInfo().IsSubclassOf(typeof(Delegate)))
-                        return (jsobj.Value as Function).MakeDelegate(targetType);
-
-                    goto default;
-                }
-                default:
-                {
-                    value = jsobj.Value;
-
-                    if (value == null)
                         return null;
+                    }
+                case JSValueType.Symbol:
+                    {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return jsobj.Value.ToString();
+                        }
 
-                    break;
-                }
+                        if (targetType == typeof(Symbol))
+                            return jsobj.Value;
+
+                        return null;
+                    }
+                case JSValueType.Function:
+                    {
+                        if (hightLoyalty)
+                        {
+                            if (targetType == typeof(string))
+                                return jsobj.Value.ToString();
+                        }
+
+                        if (!targetType.GetTypeInfo().IsAbstract && targetType.GetTypeInfo().IsSubclassOf(typeof(Delegate)))
+                            return (jsobj.Value as Function).MakeDelegate(targetType);
+
+                        goto default;
+                    }
+                default:
+                    {
+                        value = jsobj.Value;
+
+                        if (value == null)
+                            return null;
+
+                        break;
+                    }
             }
 
             if (targetType.IsAssignableFrom(value.GetType()))
@@ -726,71 +726,51 @@ namespace NiL.JS.Core
             if (value is ConstructorProxy && typeof(Type).IsAssignableFrom(targetType))
                 return (value as ConstructorProxy)._staticProxy._hostedType;
 
-            if ((targetType == typeof(object[]) || targetType == typeof(byte[])) && value is ArrayBuffer)
-                return (value as ArrayBuffer).GetData();
-
-            if ((value is BaseLibrary.Array || value is TypedArray || value is ArrayBuffer)
-                && typeof(IEnumerable).IsAssignableFrom(targetType))
+            if ((value is BaseLibrary.Array
+                 || value is TypedArray
+                 || value is ArrayBuffer)
+               && typeof(IEnumerable).IsAssignableFrom(targetType))
             {
-                Type iEnumerableInterface = null;
                 Type elementType = typeof(object);
 
-                if (hightLoyalty
-                    && (targetType == typeof(object[])
-                    || targetType == typeof(IEnumerable)
-                    || targetType == typeof(ICollection)
-                    || targetType == typeof(IList)
-                    || targetType == typeof(IEnumerable<object>)
-                    || targetType == typeof(ICollection<object>)
-                    || targetType == typeof(IList<object>)
-#if !NET40
-                    || targetType == typeof(IReadOnlyList<object>)
-                    || targetType == typeof(IReadOnlyCollection<object>)
-#endif
-                    ))
+                if (targetType.IsArray && targetType.HasElementType)
                 {
-                    elementType = targetType.HasElementType ? targetType.GetElementType() : typeof(object);
-                    return convertCollection(value as BaseLibrary.Array, elementType, typeof(object[]), hightLoyalty);
+                    elementType = targetType.GetElementType();
                 }
-
-#if PORTABLE || NETCORE
-                iEnumerableInterface = targetType.GetInterface(typeof(IEnumerable<>).Name);
-#else
-                iEnumerableInterface = targetType.GetTypeInfo().GetInterface(typeof(IEnumerable<>).Name);
-#endif
-                if (iEnumerableInterface != null)
+                else
                 {
-                    if (hightLoyalty)
+                    Type iEnumerableInterface = null;
+#if PORTABLE || NETCORE
+                    iEnumerableInterface = targetType.GetInterface(typeof(IEnumerable<>).Name);
+#else
+                    iEnumerableInterface = targetType.GetTypeInfo().GetInterface(typeof(IEnumerable<>).Name);
+#endif
+                    if (iEnumerableInterface != null)
                     {
                         elementType = iEnumerableInterface.GetGenericArguments()[0];
-
-                        if (targetType.IsAssignableFrom(iEnumerableInterface)
-                            || targetType.IsAssignableFrom(elementType.MakeArrayType())
-                            || targetType.IsAssignableFrom(typeof(IList<>).MakeGenericType(elementType))
-                            || targetType.IsAssignableFrom(typeof(ICollection<>).MakeGenericType(elementType))
-#if !NET40
-                        || targetType.IsAssignableFrom(typeof(IReadOnlyList<>).MakeGenericType(elementType))
-                            || targetType.IsAssignableFrom(typeof(IReadOnlyCollection<>).MakeGenericType(elementType))
-#endif
-                        )
-                        {
-                            return convertCollection(value as BaseLibrary.Array, elementType, elementType.MakeArrayType(), hightLoyalty);
-                        }
                     }
                 }
 
-                if (hightLoyalty && targetType.IsAssignableFrom(typeof(List<>).MakeGenericType(elementType)))
-                {
-                    return convertCollection(value as BaseLibrary.Array, elementType, typeof(List<>).MakeGenericType(elementType), hightLoyalty);
-                }
+                if (value is TypedArray typedArray && targetType.IsAssignableFrom(typedArray.ElementType.MakeArrayType()))
+                    return typedArray.ToNativeArray();
 
-                if (targetType.IsArray && elementType.GetTypeInfo().IsPrimitive)
-                {
-                    if (value is TypedArray typedArray && typedArray.ElementType == elementType)
-                        return typedArray.ToNativeArray();
+                if (value is ArrayBuffer arrayBuffer && targetType.IsAssignableFrom(typeof(byte[])))
+                    return (value as ArrayBuffer).GetData();
 
-                    if (targetType == typeof(byte[]) && value is ArrayBuffer arrayBuffer)
-                        return (value as ArrayBuffer).GetData();
+                if (value is BaseLibrary.Array array)
+                {
+                    if (hightLoyalty || elementType == typeof(JSValue))
+                    {
+                        if (targetType.IsAssignableFrom(elementType.MakeArrayType()))
+                        {
+                            return convertCollection(array, elementType, elementType.MakeArrayType(), hightLoyalty);
+                        }
+
+                        if (targetType.IsAssignableFrom(typeof(List<>).MakeGenericType(elementType)))
+                        {
+                            return convertCollection(value as BaseLibrary.Array, elementType, typeof(List<>).MakeGenericType(elementType), hightLoyalty);
+                        }
+                    }
                 }
             }
 
@@ -1123,175 +1103,175 @@ namespace NiL.JS.Core
                     {
                         case 'x':
                         case 'u':
-                        {
-                            if (i + (code[i] == 'u' ? 5 : 3) > code.Length)
                             {
-                                if (processRegexComp)
+                                if (i + (code[i] == 'u' ? 5 : 3) > code.Length)
                                 {
-                                    res.Append(code[i]);
-                                    break;
-                                }
-                                else
-                                    ExceptionHelper.ThrowSyntaxError("Invalid escape code (\"" + code + "\")");
-                            }
-
-                            if (fullUnicode && code[i] == 'u' && code[i + 1] == '{')
-                            {
-                                // look here in section 3.7 Surrogates for more information.
-                                // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
-
-                                int closingBracket = code.IndexOf('}', i + 2);
-                                if (closingBracket == -1)
-                                    ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence"));
-
-                                string c = code.Substring(i + 2, closingBracket - i - 2);
-                                uint ucs = 0;
-                                if (uint.TryParse(c, NumberStyles.HexNumber, null, out ucs))
-                                {
-                                    if (ucs <= 0xFFFF)
-                                        res.Append((char)ucs);
-                                    else if (ucs <= 0x10FFFF)
+                                    if (processRegexComp)
                                     {
-                                        ucs -= 0x10000;
-                                        char h = (char)((ucs >> 10) + 0xD800);
-                                        char l = (char)((ucs % 0x400) + 0xDC00);
-                                        res.Append(h).Append(l);
+                                        res.Append(code[i]);
+                                        break;
                                     }
                                     else
-                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
-                                    i += c.Length + 2;
+                                        ExceptionHelper.ThrowSyntaxError("Invalid escape code (\"" + code + "\")");
                                 }
-                                else
-                                {
-                                    if (processRegexComp)
-                                        res.Append(code[i]);
-                                    else
-                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
-                                }
-                            }
-                            else
-                            {
-                                string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
-                                ushort chc = 0;
-                                if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
-                                {
-                                    char ch = (char)chc;
-                                    res.Append(ch);
-                                    i += c.Length;
-                                }
-                                else
-                                {
-                                    if (processRegexComp)
-                                        res.Append(code[i]);
-                                    else
-                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'"));
-                                }
-                            }
 
-                            break;
-                        }
+                                if (fullUnicode && code[i] == 'u' && code[i + 1] == '{')
+                                {
+                                    // look here in section 3.7 Surrogates for more information.
+                                    // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
+
+                                    int closingBracket = code.IndexOf('}', i + 2);
+                                    if (closingBracket == -1)
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence"));
+
+                                    string c = code.Substring(i + 2, closingBracket - i - 2);
+                                    uint ucs = 0;
+                                    if (uint.TryParse(c, NumberStyles.HexNumber, null, out ucs))
+                                    {
+                                        if (ucs <= 0xFFFF)
+                                            res.Append((char)ucs);
+                                        else if (ucs <= 0x10FFFF)
+                                        {
+                                            ucs -= 0x10000;
+                                            char h = (char)((ucs >> 10) + 0xD800);
+                                            char l = (char)((ucs % 0x400) + 0xDC00);
+                                            res.Append(h).Append(l);
+                                        }
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                        i += c.Length + 2;
+                                    }
+                                    else
+                                    {
+                                        if (processRegexComp)
+                                            res.Append(code[i]);
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                    }
+                                }
+                                else
+                                {
+                                    string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
+                                    ushort chc = 0;
+                                    if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
+                                    {
+                                        char ch = (char)chc;
+                                        res.Append(ch);
+                                        i += c.Length;
+                                    }
+                                    else
+                                    {
+                                        if (processRegexComp)
+                                            res.Append(code[i]);
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'"));
+                                    }
+                                }
+
+                                break;
+                            }
                         case 't':
-                        {
-                            res.Append(processRegexComp ? "\\t" : "\t");
-                            break;
-                        }
+                            {
+                                res.Append(processRegexComp ? "\\t" : "\t");
+                                break;
+                            }
                         case 'f':
-                        {
-                            res.Append(processRegexComp ? "\\f" : "\f");
-                            break;
-                        }
+                            {
+                                res.Append(processRegexComp ? "\\f" : "\f");
+                                break;
+                            }
                         case 'v':
-                        {
-                            res.Append(processRegexComp ? "\\v" : "\v");
-                            break;
-                        }
+                            {
+                                res.Append(processRegexComp ? "\\v" : "\v");
+                                break;
+                            }
                         case 'b':
-                        {
-                            res.Append(processRegexComp ? "\\b" : "\b");
-                            break;
-                        }
+                            {
+                                res.Append(processRegexComp ? "\\b" : "\b");
+                                break;
+                            }
                         case 'n':
-                        {
-                            res.Append(processRegexComp ? "\\n" : "\n");
-                            break;
-                        }
+                            {
+                                res.Append(processRegexComp ? "\\n" : "\n");
+                                break;
+                            }
                         case 'r':
-                        {
-                            res.Append(processRegexComp ? "\\r" : "\r");
-                            break;
-                        }
+                            {
+                                res.Append(processRegexComp ? "\\r" : "\r");
+                                break;
+                            }
                         case '\n':
-                        {
-                            break;
-                        }
+                            {
+                                break;
+                            }
                         case '\r':
-                        {
-                            if (code.Length > i + 1 && code[i + 1] == '\n')
-                                i++;
-                            break;
-                        }
+                            {
+                                if (code.Length > i + 1 && code[i + 1] == '\n')
+                                    i++;
+                                break;
+                            }
                         case 'c':
                         case 'C':
-                        {
-                            if (!processRegexComp)
-                                goto default;
-
-                            if (i + 1 < code.Length)
                             {
-                                char ch = code[i + 1];
-                                // convert a -> A
-                                if (ch >= 'a' && ch <= 'z')
-                                    ch = (char)(ch - ('a' - 'A'));
-                                if ((char)(ch - '@') < ' ')
-                                {
-                                    res.Append("\\c");
-                                    res.Append(ch);
-                                    ++i;
-                                    break;
-                                }
-                            }
+                                if (!processRegexComp)
+                                    goto default;
 
-                            // invalid control character
-                            goto case 'p';
-                        }
+                                if (i + 1 < code.Length)
+                                {
+                                    char ch = code[i + 1];
+                                    // convert a -> A
+                                    if (ch >= 'a' && ch <= 'z')
+                                        ch = (char)(ch - ('a' - 'A'));
+                                    if ((char)(ch - '@') < ' ')
+                                    {
+                                        res.Append("\\c");
+                                        res.Append(ch);
+                                        ++i;
+                                        break;
+                                    }
+                                }
+
+                                // invalid control character
+                                goto case 'p';
+                            }
                         // not supported in standard
                         case 'P':
                         case 'p':
                         case 'k':
                         case 'K':
-                        {
-                            if (!processRegexComp)
-                                goto default;
+                            {
+                                if (!processRegexComp)
+                                    goto default;
 
-                            // regex that does not match anything
-                            res.Append(@"\b\B");
-                            break;
-                        }
+                                // regex that does not match anything
+                                res.Append(@"\b\B");
+                                break;
+                            }
                         default:
-                        {
-                            if (!processRegexComp && code[i] >= '0' && code[i] <= '7')
                             {
-                                if (strict && (code[i] != '0' || (code.Length > i + 1 && code[i + 1] >= '0' && code[i + 1] <= '7')))
-                                    ExceptionHelper.Throw(new SyntaxError("Octal literals are not allowed in strict mode."));
+                                if (!processRegexComp && code[i] >= '0' && code[i] <= '7')
+                                {
+                                    if (strict && (code[i] != '0' || (code.Length > i + 1 && code[i + 1] >= '0' && code[i + 1] <= '7')))
+                                        ExceptionHelper.Throw(new SyntaxError("Octal literals are not allowed in strict mode."));
 
-                                var ccode = code[i] - '0';
-                                if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
-                                    ccode = ccode * 8 + (code[++i] - '0');
-                                if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
-                                    ccode = ccode * 8 + (code[++i] - '0');
-                                res.Append((char)ccode);
+                                    var ccode = code[i] - '0';
+                                    if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
+                                        ccode = ccode * 8 + (code[++i] - '0');
+                                    if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
+                                        ccode = ccode * 8 + (code[++i] - '0');
+                                    res.Append((char)ccode);
+                                }
+                                else if (processUnknown)
+                                {
+                                    res.Append(code[i]);
+                                }
+                                else
+                                {
+                                    res.Append('\\');
+                                    res.Append(code[i]);
+                                }
+                                break;
                             }
-                            else if (processUnknown)
-                            {
-                                res.Append(code[i]);
-                            }
-                            else
-                            {
-                                res.Append('\\');
-                                res.Append(code[i]);
-                            }
-                            break;
-                        }
                     }
                 }
                 else if (res != null)
@@ -1338,74 +1318,74 @@ namespace NiL.JS.Core
                 {
                     case 'x':
                     case 'u':
-                    {
-                        if (i + (code[i] == 'u' ? 5 : 3) > code.Length)
                         {
-                            if (processRegexComp)
-                                return code[i].ToString();
-                            else
-                                ExceptionHelper.Throw(new SyntaxError("Invalid escape code (\"" + code + "\")"));
-                        }
-
-                        if (code[i] == 'u' && code[i + 1] == '{')
-                        {
-                            if (fullUnicode)
+                            if (i + (code[i] == 'u' ? 5 : 3) > code.Length)
                             {
-                                // look here in section 3.7 Surrogates for more information.
-                                // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
+                                if (processRegexComp)
+                                    return code[i].ToString();
+                                else
+                                    ExceptionHelper.Throw(new SyntaxError("Invalid escape code (\"" + code + "\")"));
+                            }
 
-                                int closingBracket = code.IndexOf('}', i + 2);
-                                if (closingBracket == -1)
-                                    ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence"));
-
-                                string c = code.Substring(i + 2, closingBracket - i - 2);
-                                uint ucs = 0;
-                                if (uint.TryParse(c, NumberStyles.HexNumber, null, out ucs))
+                            if (code[i] == 'u' && code[i + 1] == '{')
+                            {
+                                if (fullUnicode)
                                 {
-                                    processedChars += c.Length + 2;
-                                    if (ucs <= 0xFFFF)
-                                        return ((char)ucs).ToString();
-                                    else if (ucs <= 0x10FFFF)
+                                    // look here in section 3.7 Surrogates for more information.
+                                    // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
+
+                                    int closingBracket = code.IndexOf('}', i + 2);
+                                    if (closingBracket == -1)
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence"));
+
+                                    string c = code.Substring(i + 2, closingBracket - i - 2);
+                                    uint ucs = 0;
+                                    if (uint.TryParse(c, NumberStyles.HexNumber, null, out ucs))
                                     {
-                                        ucs -= 0x10000;
-                                        char h = (char)((ucs >> 10) + 0xD800);
-                                        char l = (char)((ucs % 0x400) + 0xDC00);
-                                        return h.ToString() + l.ToString();
+                                        processedChars += c.Length + 2;
+                                        if (ucs <= 0xFFFF)
+                                            return ((char)ucs).ToString();
+                                        else if (ucs <= 0x10FFFF)
+                                        {
+                                            ucs -= 0x10000;
+                                            char h = (char)((ucs >> 10) + 0xD800);
+                                            char l = (char)((ucs % 0x400) + 0xDC00);
+                                            return h.ToString() + l.ToString();
+                                        }
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
                                     }
                                     else
-                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                    {
+                                        if (processRegexComp)
+                                            return code[i].ToString();
+                                        else
+                                            ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                    }
+                                }
+                                else
+                                    return code[i].ToString();
+                            }
+                            else
+                            {
+                                string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
+                                ushort chc = 0;
+                                if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
+                                {
+                                    processedChars += c.Length;
+                                    char ch = (char)chc;
+                                    return ch.ToString();
                                 }
                                 else
                                 {
                                     if (processRegexComp)
                                         return code[i].ToString();
                                     else
-                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\u{" + c + "}'"));
+                                        ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'"));
                                 }
                             }
-                            else
-                                return code[i].ToString();
+                            return code[i].ToString(); // this will never be reached
                         }
-                        else
-                        {
-                            string c = code.Substring(i + 1, code[i] == 'u' ? 4 : 2);
-                            ushort chc = 0;
-                            if (ushort.TryParse(c, NumberStyles.HexNumber, null, out chc))
-                            {
-                                processedChars += c.Length;
-                                char ch = (char)chc;
-                                return ch.ToString();
-                            }
-                            else
-                            {
-                                if (processRegexComp)
-                                    return code[i].ToString();
-                                else
-                                    ExceptionHelper.Throw(new SyntaxError("Invalid escape sequence '\\" + code[i] + c + "'"));
-                            }
-                        }
-                        return code[i].ToString(); // this will never be reached
-                    }
                     case 't':
                         return (processRegexComp ? "\\t" : "\t");
                     case 'f':
@@ -1419,76 +1399,76 @@ namespace NiL.JS.Core
                     case 'r':
                         return (processRegexComp ? "\\r" : "\r");
                     case '\n':
-                    {
-                        return "";
-                    }
+                        {
+                            return "";
+                        }
                     case '\r':
-                    {
-                        if (code.Length > i + 1 && code[i] == '\n')
-                            processedChars = 3;
-                        return "";
-                    }
+                        {
+                            if (code.Length > i + 1 && code[i] == '\n')
+                                processedChars = 3;
+                            return "";
+                        }
                     case 'c':
                     case 'C':
-                    {
-                        if (!processRegexComp)
-                            goto default;
-
-                        if (i + 1 < code.Length)
                         {
-                            char ch = code[i + 1];
-                            // convert a -> A
-                            if (ch >= 'a' && ch <= 'z')
-                                ch = (char)(ch - ('a' - 'A'));
-                            if ((char)(ch - '@') < ' ')
-                            {
-                                processedChars++;
-                                return "\\c" + ch.ToString();
-                            }
-                        }
+                            if (!processRegexComp)
+                                goto default;
 
-                        // invalid control character
-                        goto case 'p';
-                    }
+                            if (i + 1 < code.Length)
+                            {
+                                char ch = code[i + 1];
+                                // convert a -> A
+                                if (ch >= 'a' && ch <= 'z')
+                                    ch = (char)(ch - ('a' - 'A'));
+                                if ((char)(ch - '@') < ' ')
+                                {
+                                    processedChars++;
+                                    return "\\c" + ch.ToString();
+                                }
+                            }
+
+                            // invalid control character
+                            goto case 'p';
+                        }
                     // not supported in standard
                     case 'P':
                     case 'p':
                     case 'k':
                     case 'K':
-                    {
-                        if (!processRegexComp)
-                            goto default;
+                        {
+                            if (!processRegexComp)
+                                goto default;
 
-                        // regex that does not match anything
-                        return @"\b\B";
-                    }
+                            // regex that does not match anything
+                            return @"\b\B";
+                        }
                     default:
-                    {
-                        if (code[i] >= '0' && code[i] <= '7' && !processRegexComp)
                         {
-                            if (strict)
-                                ExceptionHelper.Throw(new SyntaxError("Octal literals are not allowed in strict mode."));
+                            if (code[i] >= '0' && code[i] <= '7' && !processRegexComp)
+                            {
+                                if (strict)
+                                    ExceptionHelper.Throw(new SyntaxError("Octal literals are not allowed in strict mode."));
 
-                            var ccode = code[i] - '0';
-                            if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
-                            {
-                                ccode = ccode * 8 + (code[++i] - '0');
-                                processedChars++;
+                                var ccode = code[i] - '0';
+                                if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
+                                {
+                                    ccode = ccode * 8 + (code[++i] - '0');
+                                    processedChars++;
+                                }
+                                if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
+                                {
+                                    ccode = ccode * 8 + (code[++i] - '0');
+                                    processedChars++;
+                                }
+                                return ((char)ccode).ToString();
                             }
-                            if (i + 1 < code.Length && code[i + 1] >= '0' && code[i + 1] <= '7')
+                            else
                             {
-                                ccode = ccode * 8 + (code[++i] - '0');
-                                processedChars++;
+                                if (!processUnknown)
+                                    return "\\" + code[i].ToString();
+                                return code[i].ToString();
                             }
-                            return ((char)ccode).ToString();
                         }
-                        else
-                        {
-                            if (!processUnknown)
-                                return "\\" + code[i].ToString();
-                            return code[i].ToString();
-                        }
-                    }
                 }
             }
 
@@ -1917,51 +1897,51 @@ namespace NiL.JS.Core
                 case JSValueType.Symbol:
                     return "Symbol";
                 case JSValueType.Object:
-                {
-                    var o = v as ObjectWrapper;
-                    if (o == null)
-                        o = v._oValue as ObjectWrapper;
-                    if (o != null)
-                        return o.Value.GetType().Name;
-
-                    if (v._oValue == null)
-                        return "null";
-
-                    if (v._oValue is GlobalObject)
-                        return "global";
-
-                    if (v._oValue is Proxy)
                     {
-                        var hostedType = (v._oValue as Proxy)._hostedType;
-                        if (hostedType == typeof(JSObject))
-                            return "Object";
-                        return hostedType.Name;
-                    }
+                        var o = v as ObjectWrapper;
+                        if (o == null)
+                            o = v._oValue as ObjectWrapper;
+                        if (o != null)
+                            return o.Value.GetType().Name;
 
-                    if (v.Value.GetType() == typeof(JSObject))
-                        return "Object";
-                    return v.Value.GetType().Name;
-                }
+                        if (v._oValue == null)
+                            return "null";
+
+                        if (v._oValue is GlobalObject)
+                            return "global";
+
+                        if (v._oValue is Proxy)
+                        {
+                            var hostedType = (v._oValue as Proxy)._hostedType;
+                            if (hostedType == typeof(JSObject))
+                                return "Object";
+                            return hostedType.Name;
+                        }
+
+                        if (v.Value.GetType() == typeof(JSObject))
+                            return "Object";
+                        return v.Value.GetType().Name;
+                    }
                 case JSValueType.Function:
                     return "Function";
                 case JSValueType.Date:
                     return "Date";
                 case JSValueType.Property:
-                {
-                    var prop = v._oValue as PropertyPair;
-                    if (prop != null)
                     {
-                        var tempStr = "";
-                        if (prop.getter != null)
-                            tempStr += "Getter";
-                        if (prop.setter != null)
-                            tempStr += ((tempStr.Length > 0) ? "/" : "") + "Setter";
-                        if (tempStr.Length == 0)
-                            tempStr = "Invalid";
-                        return tempStr + " Property";
+                        var prop = v._oValue as PropertyPair;
+                        if (prop != null)
+                        {
+                            var tempStr = "";
+                            if (prop.getter != null)
+                                tempStr += "Getter";
+                            if (prop.setter != null)
+                                tempStr += ((tempStr.Length > 0) ? "/" : "") + "Setter";
+                            if (tempStr.Length == 0)
+                                tempStr = "Invalid";
+                            return tempStr + " Property";
+                        }
+                        return "Property";
                     }
-                    return "Property";
-                }
                 default:
                     throw new NotImplementedException();
             }
@@ -1985,141 +1965,141 @@ namespace NiL.JS.Core
             switch (v.ValueType)
             {
                 case JSValueType.String:
-                {
-                    return "\"" + v.ToString() + "\"";
-                }
-                case JSValueType.Date:
-                {
-                    string dstr = v.ToString();
-                    if (dstr == "Invalid date")
-                        return dstr;
-                    return "Date " + dstr;
-                }
-                case JSValueType.Function:
-                {
-                    BaseLibrary.Function f = v.Value as BaseLibrary.Function;
-                    if (f == null)
-                        return v.ToString();
-                    if (recursionDepth >= maxRecursionDepth)
-                        return f.name + "()";
-                    if (recursionDepth == maxRecursionDepth - 1)
-                        return f.ToString(true);
-                    return f.ToString();
-                }
-                case JSValueType.Object:
-                {
-                    if (v._oValue == null)
-                        return "null";
-
-                    if (v.Value is RegExp)
-                        return v.ToString();
-
-                    if (v.Value is BaseLibrary.Array
-                        || v.Value == Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Array))
-                        || v == Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Array)))
                     {
-                        BaseLibrary.Array a = v.Value as BaseLibrary.Array;
-                        StringBuilder s;
+                        return "\"" + v.ToString() + "\"";
+                    }
+                case JSValueType.Date:
+                    {
+                        string dstr = v.ToString();
+                        if (dstr == "Invalid date")
+                            return dstr;
+                        return "Date " + dstr;
+                    }
+                case JSValueType.Function:
+                    {
+                        BaseLibrary.Function f = v.Value as BaseLibrary.Function;
+                        if (f == null)
+                            return v.ToString();
+                        if (recursionDepth >= maxRecursionDepth)
+                            return f.name + "()";
+                        if (recursionDepth == maxRecursionDepth - 1)
+                            return f.ToString(true);
+                        return f.ToString();
+                    }
+                case JSValueType.Object:
+                    {
+                        if (v._oValue == null)
+                            return "null";
 
-                        if (a == null) // v == Array.prototype
+                        if (v.Value is RegExp)
+                            return v.ToString();
+
+                        if (v.Value is BaseLibrary.Array
+                            || v.Value == Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Array))
+                            || v == Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Array)))
                         {
-                            s = new StringBuilder("Array [ ");
-                            int j = 0;
-                            for (var e = v.GetEnumerator(true, EnumerationMode.RequireValues); e.MoveNext();)
+                            BaseLibrary.Array a = v.Value as BaseLibrary.Array;
+                            StringBuilder s;
+
+                            if (a == null) // v == Array.prototype
                             {
-                                if (j++ > 0)
-                                    s.Append(", ");
-                                s.Append(e.Current.Key).Append(": ");
-                                s.Append(Tools.JSValueToObjectString(e.Current.Value, maxRecursionDepth, recursionDepth + 1));
+                                s = new StringBuilder("Array [ ");
+                                int j = 0;
+                                for (var e = v.GetEnumerator(true, EnumerationMode.RequireValues); e.MoveNext();)
+                                {
+                                    if (j++ > 0)
+                                        s.Append(", ");
+                                    s.Append(e.Current.Key).Append(": ");
+                                    s.Append(Tools.JSValueToObjectString(e.Current.Value, maxRecursionDepth, recursionDepth + 1));
+                                }
+                                s.Append(" ]");
+                                return s.ToString();
+                            }
+
+                            long len = (long)a.length;
+
+                            if (recursionDepth >= maxRecursionDepth)
+                                return $"Array[{len}]";
+
+                            s = new StringBuilder($"Array ({len}) [ ");
+                            int i = 0;
+                            int undefs = 0;
+                            for (i = 0; i < len; i++)
+                            {
+                                var val = a[i];
+                                if (undefs > 1)
+                                {
+                                    if (val != null && val._valueType <= JSValueType.Undefined)
+                                        undefs++;
+                                    else
+                                    {
+                                        s.Append(" x ").Append(undefs);
+                                        s.Append(", ");
+                                        s.Append(Tools.JSValueToObjectString(val, maxRecursionDepth, recursionDepth + 1));
+                                        undefs = 0;
+                                    }
+                                }
+                                else
+                                {
+                                    if (val != null && val._valueType <= JSValueType.Undefined)
+                                    {
+                                        if (++undefs > 1)
+                                            continue;
+                                    }
+                                    else
+                                        undefs = 0;
+                                    if (i > 0)
+                                        s.Append(", ");
+                                    s.Append(Tools.JSValueToObjectString(val, maxRecursionDepth, recursionDepth + 1));
+                                }
+                            }
+                            if (undefs > 0)
+                                s.Append(" x ").Append(undefs);
+
+                            if (a._fields != null)
+                            {
+                                for (var e = a._fields.GetEnumerator(); e.MoveNext();)
+                                {
+                                    if (i++ > 0)
+                                        s.Append(", ");
+                                    s.Append(e.Current.Key).Append(": ");
+                                    s.Append(Tools.JSValueToObjectString(e.Current.Value, maxRecursionDepth, recursionDepth + 1));
+                                }
                             }
                             s.Append(" ]");
+
                             return s.ToString();
                         }
-
-                        long len = (long)a.length;
-
-                        if (recursionDepth >= maxRecursionDepth)
-                            return $"Array[{len}]";
-
-                        s = new StringBuilder($"Array ({len}) [ ");
-                        int i = 0;
-                        int undefs = 0;
-                        for (i = 0; i < len; i++)
+                        else
                         {
-                            var val = a[i];
-                            if (undefs > 1)
-                            {
-                                if (val != null && val._valueType <= JSValueType.Undefined)
-                                    undefs++;
-                                else
-                                {
-                                    s.Append(" x ").Append(undefs);
-                                    s.Append(", ");
-                                    s.Append(Tools.JSValueToObjectString(val, maxRecursionDepth, recursionDepth + 1));
-                                    undefs = 0;
-                                }
-                            }
-                            else
-                            {
-                                if (val != null && val._valueType <= JSValueType.Undefined)
-                                {
-                                    if (++undefs > 1)
-                                        continue;
-                                }
-                                else
-                                    undefs = 0;
-                                if (i > 0)
-                                    s.Append(", ");
-                                s.Append(Tools.JSValueToObjectString(val, maxRecursionDepth, recursionDepth + 1));
-                            }
-                        }
-                        if (undefs > 0)
-                            s.Append(" x ").Append(undefs);
+                            string typeName = Tools.GetTypeName(v);
+                            if (recursionDepth >= maxRecursionDepth)
+                                return typeName;
 
-                        if (a._fields != null)
-                        {
-                            for (var e = a._fields.GetEnumerator(); e.MoveNext();)
+                            StringBuilder s = new StringBuilder(typeName);
+                            s.Append(" { ");
+
+                            JSObject o = v as JSObject;
+                            if (o == null)
+                                o = v._oValue as JSObject;
+                            if (o == null)
+                                return v.ToString();
+
+
+                            int i = 0;
+                            for (var e = o.GetEnumerator(true, EnumerationMode.RequireValues); e.MoveNext();)
                             {
                                 if (i++ > 0)
                                     s.Append(", ");
                                 s.Append(e.Current.Key).Append(": ");
                                 s.Append(Tools.JSValueToObjectString(e.Current.Value, maxRecursionDepth, recursionDepth + 1));
                             }
+
+                            s.Append(" }");
+
+                            return s.ToString();
                         }
-                        s.Append(" ]");
-
-                        return s.ToString();
                     }
-                    else
-                    {
-                        string typeName = Tools.GetTypeName(v);
-                        if (recursionDepth >= maxRecursionDepth)
-                            return typeName;
-
-                        StringBuilder s = new StringBuilder(typeName);
-                        s.Append(" { ");
-
-                        JSObject o = v as JSObject;
-                        if (o == null)
-                            o = v._oValue as JSObject;
-                        if (o == null)
-                            return v.ToString();
-
-
-                        int i = 0;
-                        for (var e = o.GetEnumerator(true, EnumerationMode.RequireValues); e.MoveNext();)
-                        {
-                            if (i++ > 0)
-                                s.Append(", ");
-                            s.Append(e.Current.Key).Append(": ");
-                            s.Append(Tools.JSValueToObjectString(e.Current.Value, maxRecursionDepth, recursionDepth + 1));
-                        }
-
-                        s.Append(" }");
-
-                        return s.ToString();
-                    }
-                }
             }
 
             return v.ToString();
