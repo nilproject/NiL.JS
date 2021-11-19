@@ -7,58 +7,77 @@ on:
     branches: [ develop ]
 
 jobs:
-  Tests_on_NET_Core_31:
+  Tests:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+        
+    env:
+      Project_Directory: NiL.JS
+      Solution_Name: $Project_Directory/NiL.JS.csproj                   # Replace with your solution name, i.e. MyWpfApp.sln.
+      Test_Project_Path: Tests/Tests.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
+      Nuget_Pack_Output_Directory: nuget
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET
+      with:
+        submodules: true
+
+    # Install the .NET Core 6.0
+    - name: Install .NET Core 6.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.x
-    - name: Restore dependencies
-      run: |
-        cd ./NiL.JS
-        dotnet clean
-        dotnet restore
-        cd ..
-    - name: Build
-      run: |
-        cd ./NiL.JS
-        dotnet build --no-restore -c Release -property:TargetFrameworks=netcoreapp3.1 -property:SignAssembly=false -property:PublicSign=false
-        cd ..
-    - name: Test
-      run: |
-        cd Tests
-        dotnet ../Utility/tt4/netcoreapp3.1/tiny-t4.dll
-        dotnet test -c Release -property:TargetFramework=netcoreapp3.1 -property:SignAssembly=false -property:PublicSign=false
-        cd ..
+        dotnet-version: 6.0.x
 
-  Tests_on_NET_Core_50:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET
+    # Install the .NET Core 5.0
+    - name: Install .NET Core 5.0
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+
+    # Install the .NET Core 3.1
+    - name: Install .NET Core 3.1
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+
+    - name: Decode the snk
+      run: |
+        $snk_byte = [System.Convert]::FromBase64String("${{ secrets.SNK_KEY }}")
+        $certificatePath = Join-Path -Path $env:Project_Directory -ChildPath keys.snk
+        [IO.File]::WriteAllBytes("$certificatePath", $snk_byte)
+
     - name: Restore dependencies
       run: |
         cd ./NiL.JS
         dotnet clean
         dotnet restore
         cd ..
+
     - name: Build
       run: |
         cd ./NiL.JS
-        dotnet build --no-restore -c Release -property:TargetFrameworks=net5.0 -property:SignAssembly=false -property:PublicSign=false
+        dotnet build --no-restore -c Release -property:SignAssembly=false -property:PublicSign=false
         cd ..
-    - name: Test
+
+    - name: Run TinyT4
       run: |
         cd Tests
-        dotnet ../Utility/tt4/net5.0/tiny-t4.dll
+        dotnet run --project ..\Utility\tiny-t4\ --framework net6.0
+
+    - name: Test .NET Core 3.1
+      run: |
+        cd Tests
+        dotnet test -c Release -property:TargetFramework=netcoreapp3.1 -property:SignAssembly=false -property:PublicSign=false
+
+    - name: Test .NET Core 5.0
+      run: |
+        cd Tests
         dotnet test -c Release -property:TargetFramework=net5.0 -property:SignAssembly=false -property:PublicSign=false
-        cd ..
+
+    - name: Test .NET Core 6.0
+      run: |
+        cd Tests
+        dotnet test -c Release -property:TargetFramework=net6.0 -property:SignAssembly=false -property:PublicSign=false
+
+    - name: Remove the snk
+      run: Remove-Item -path NiL.JS\keys.snk
