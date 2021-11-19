@@ -48,6 +48,8 @@ namespace Tests.Core
             var numbers = new KeyValuePair<double, string>[]
             {
                 new KeyValuePair<double, string>(69.85, "69.85"),
+                new KeyValuePair<double, string>(10.43, "10.43"),
+                new KeyValuePair<double, string>(10.67, "10.67"),
                 new KeyValuePair<double, string>(10.2, "10.2"),
                 new KeyValuePair<double, string>(12.34, "12.34"),
                 new KeyValuePair<double, string>(1.3, "1.3"),

@@ -641,6 +641,8 @@ namespace NiL.JS.Core
                         digitsCount += delta;
                         di -= delta;
                     }
+                    else
+                        digitsCount++;
                 }
             }
 
@@ -672,6 +674,7 @@ namespace NiL.JS.Core
             if ((x >> 4) != 0)
             {
                 res += 1;
+                x >>= 4;
             }
 
             return res + ((x & 0xf) != 0 ? 1 : 0);
