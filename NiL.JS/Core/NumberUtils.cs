@@ -398,7 +398,7 @@ namespace NiL.JS.Core
             }
         }
 
-        public static string DoubleToString(double d)
+        public static string DoubleToString(double d, int digitsLimit = _ToStringDigitsLimit, bool trailingZeros = false)
         {
             if (d == 0.0)
                 return "0";
@@ -420,9 +420,9 @@ namespace NiL.JS.Core
 
                 var abs = Math.Abs(d);
                 if (abs < 0.000001)
-                    res = d.ToString("0.####e-0", CultureInfo.InvariantCulture);
+                    res = d.ToString("0.################e-0", CultureInfo.InvariantCulture);
                 else if (abs >= 1e+21)
-                    res = d.ToString("0.####e+0", CultureInfo.InvariantCulture);
+                    res = d.ToString("0.################e+0", CultureInfo.InvariantCulture);
                 else
                 {
                     int neg = (d < 0.0 || (d == -0.0 && Tools.IsNegativeZero(d))) ? 1 : 0;
@@ -448,6 +448,7 @@ namespace NiL.JS.Core
                         var temp = new ulong[] { 1 };
                         var intBuffer = new ulong[] { 0 };
                         var fracBuffer = new ulong[] { 0 };
+                        var alterFracBuffer = default(ulong[]);
 
                         if (intPart != 0)
                         {
@@ -480,7 +481,6 @@ namespace NiL.JS.Core
                         {
                             var curDeg = e > 53 ? 53 - e : 0;
                             var curBit = 1;
-                            var supplimented = false;
                             if (e < 53)
                             {
                                 fracPart <<= 1;
@@ -491,18 +491,13 @@ namespace NiL.JS.Core
 
                             for (var b = 0; b <= fracPartSize; b++, curBit++)
                             {
-                                //string d2;
-                                if ((fracPart & highestBit) != 0)
+                                if ((fracPart & highestBit) != 0 || b == fracPartSize)
                                 {
-                                    //var d1 = string.Concat(str.Reverse().Select(x => x.ToString("X16")));
-
                                     while (curDeg < curBit)
                                     {
                                         numStrSum(str, str, ref temp);
                                         numStrSum(temp, temp, ref temp);
                                         numStrSum(str, temp, ref str);
-
-                                        //d1 = string.Concat(str.Reverse().Select(x => x.ToString("X16")));
 
                                         numStrMul10(fracBuffer, ref fracBuffer);
 
@@ -510,32 +505,43 @@ namespace NiL.JS.Core
                                         curDeg++;
                                     }
 
-                                    //var d0 = string.Concat(fracBuffer.Reverse().Select(x => x.ToString("X16")));
-
-                                    numStrSum(fracBuffer, str, ref fracBuffer);
-
-                                    //d2 = string.Concat(fracBuffer.Reverse().Select(x => x.ToString("X16")));
+                                    if (b == fracPartSize)
+                                    {
+                                        alterFracBuffer = new ulong[fracBuffer.Length];
+                                        numStrSum(fracBuffer, str, ref alterFracBuffer);
+                                    }
+                                    else
+                                    {
+                                        numStrSum(fracBuffer, str, ref fracBuffer);
+                                    }
                                 }
 
-                                if (b == fracPartSize - 1)
+                                if (b == fracPartSize)
                                 {
-                                    if (supplimented)
-                                        break;
+                                    var fracLen = 0;
+                                    var alterLen = 0;
+                                    var fracSizeLimit = digitsLimit;
 
-                                    var digitsCount = 0;
-                                    var lastDigit = getLastDigit(ref digitsCount, intBuffer, intBuffer.Length * 16, _ToStringDigitsLimit);
-                                    if (digitsCount < _ToStringDigitsLimit)
+                                    for (var pi = intBuffer.Length; pi-- > 0;)
                                     {
-                                        lastDigit = getLastDigit(ref digitsCount, fracBuffer, fracSize, _ToStringDigitsLimit);
+                                        var count = digitsCount(intBuffer[pi]);
+                                        if (count != 0)
+                                            fracSizeLimit -= count + pi * 16;
                                     }
 
-                                    var needSupply = lastDigit >= 4;
+                                    for (var di = fracSize; di-- > 0 && fracSize - di < fracSizeLimit;)
+                                    {
+                                        if (fracBuffer.Length > di / 16 && ((fracBuffer[di / 16] >> ((di % 16) * 4)) & 0xf) != 0)
+                                            fracLen = fracSize - di;
 
-                                    if (!needSupply)
-                                        break;
+                                        if (alterFracBuffer.Length > di / 16 && ((alterFracBuffer[di / 16] >> ((di % 16) * 4)) & 0xf) != 0)
+                                            alterLen = fracSize - di;
+                                    }
 
-                                    fracPart |= highestBit >> 1;
-                                    supplimented = true;
+                                    if (alterLen < fracLen)
+                                    {
+                                        fracBuffer = alterFracBuffer;
+                                    }
                                 }
 
                                 fracPart <<= 1;
@@ -581,12 +587,19 @@ namespace NiL.JS.Core
                                 if (write)
                                     signDigits++;
 
-                                if (signDigits == _ToStringDigitsLimit || bufferPos == buffer.Length)
+                                if (signDigits == digitsLimit || bufferPos == buffer.Length)
                                     break;
                             }
                         }
 
-                        res = new string(buffer, 0, lastRealSign);
+                        res = new string(buffer, 0, trailingZeros ? bufferPos : lastRealSign);
+                        if (res.Length < digitsLimit && trailingZeros)
+                        {
+                            if (fracSize == 0)
+                                res += '.';
+
+                            res = res.PadRight(digitsLimit + '0');
+                        }
                     }
 
                     if (neg == 1)
@@ -599,54 +612,6 @@ namespace NiL.JS.Core
             }
 
             return res;
-        }
-
-        private static int getLastDigit(ref int digitsCount, ulong[] digitBuffer, int dataSize, int digitsLimit)
-        {
-            var i = dataSize / 16;
-
-            dataSize %= 16;
-            if (dataSize == 0)
-            {
-                i--;
-                dataSize = digitsCount == 0 ? NumberUtils.digitsCount(digitBuffer[i]) : 16;
-            }
-
-            for (; i >= 0; i--, dataSize = 16)
-            {
-                if (i >= digitBuffer.Length || digitBuffer[i] == 0)
-                {
-                    if (digitsCount != 0)
-                    {
-                        digitsCount += dataSize;
-                        if (digitsCount > digitsLimit)
-                        {
-                            digitsCount = digitsLimit;
-                            return 0;
-                        }
-                    }
-
-                    continue;
-                }
-
-                for (var di = dataSize; di-- > 0;)
-                {
-                    if (digitsCount == digitsLimit)
-                        return (int)((digitBuffer[i] >> (di * 4)) & 0xf);
-
-                    if (digitsCount != 0 || ((digitBuffer[i] >> (di * 4)) & 0xf) != 0)
-                    {
-                        di++;
-                        var delta = Math.Min(di, digitsLimit - digitsCount);
-                        digitsCount += delta;
-                        di -= delta;
-                    }
-                    else
-                        digitsCount++;
-                }
-            }
-
-            return (int)(digitBuffer[0] & 0xf);
         }
 
         private static int digitsCount(ulong x)

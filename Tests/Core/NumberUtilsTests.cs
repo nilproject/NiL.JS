@@ -56,7 +56,14 @@ namespace Tests.Core
                 new KeyValuePair<double, string>(20.20, "20.2"),
                 new KeyValuePair<double, string>(0.00021140449751288852, "0.0002114044975128885"),
                 new KeyValuePair<double, string>(34.970703125, "34.970703125"),
-                new KeyValuePair<double, string>(1.7158203125, "1.7158203125")
+                new KeyValuePair<double, string>(1.7158203125, "1.7158203125"),
+                new KeyValuePair<double, string>(20.99, "20.99"), 
+                new KeyValuePair<double, string>(10.19, "10.19"), 
+                new KeyValuePair<double, string>(8.06, "8.06"), 
+                new KeyValuePair<double, string>(10.36, "10.36"), 
+                new KeyValuePair<double, string>(0.56, "0.56"),
+                new KeyValuePair<double, string>(0.68, "0.68"), 
+                new KeyValuePair<double, string>(9.12, "9.12")
             };
 
             foreach (var (number, expected) in numbers)
