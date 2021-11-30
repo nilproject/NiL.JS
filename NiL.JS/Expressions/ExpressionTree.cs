@@ -366,6 +366,7 @@ namespace NiL.JS.Expressions
             bool canAsign = !forUnary; // на случай f() = x
             bool assign = false; // на случай операторов 'x='
             bool binary = false;
+            bool optionalChaining = false;
             bool repeat;
             int rollbackPos;
 
@@ -377,6 +378,7 @@ namespace NiL.JS.Expressions
 
                 if (state.Code.Length <= i)
                     break;
+
                 rollbackPos = i;
 
                 while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
@@ -461,6 +463,28 @@ namespace NiL.JS.Expressions
                             binary = true;
                             kind = OperationType.NullishCoalescing;
                             break;
+                        }
+
+                        if (state.Code.Length > i + 2
+                            && state.Code[i + 1] == '.'
+                            && !NumberUtils.IsDigit(state.Code[i + 2]))
+                        {
+                            i++;
+                            optionalChaining = true;
+
+                            if (state.Code[i + 1] == '(')
+                            {
+                                i++;
+                                goto case '(';
+                            }
+
+                            if (state.Code[i + 1] == '[')
+                            {
+                                i++;
+                                goto case '[';
+                            }
+
+                            goto case '.';
                         }
 
                         binary = true;
@@ -788,42 +812,50 @@ namespace NiL.JS.Expressions
                             ExceptionHelper.Throw(new SyntaxError(string.Format(Strings.InvalidPropertyName, CodeCoordinates.FromTextPosition(state.Code, i, 0))));
 
                         string name = state.Code.Substring(s, i - s);
-
-                        JSValue jsname = null;
-                        if (!state.StringConstants.TryGetValue(name, out jsname))
+                        if (!state.StringConstants.TryGetValue(name, out var jsname))
                             state.StringConstants[name] = jsname = name;
-                        else
-                            name = jsname._oValue.ToString();
 
-                        first = new Property(first, new Constant(name)
-                        {
-                            Position = s,
-                            Length = i - s
-                        })
+                        first = new Property(
+                            first,
+                            new Constant(jsname)
+                            {
+                                Position = s,
+                                Length = i - s
+                            },
+                            optionalChaining)
                         {
                             Position = first.Position,
                             Length = i - first.Position
                         };
 
                         repeat = true;
-                        canAsign = true;
+                        canAsign = !optionalChaining;
                         break;
                     }
                     case '[':
                     {
-                        Expression mname = null;
                         do
                             i++;
                         while (Tools.IsWhiteSpace(state.Code[i]));
+
                         int startPos = i;
-                        mname = (Expression)ExpressionTree.Parse(state, ref i, false, true, false, true, false);
+                        var mname = Parse(state, ref i, false, true, false, true, false);
+
                         if (mname == null)
                             ExceptionHelper.Throw((new SyntaxError("Unexpected token at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
+
                         while (Tools.IsWhiteSpace(state.Code[i]))
                             i++;
+
                         if (state.Code[i] != ']')
                             ExceptionHelper.Throw((new SyntaxError("Expected \"]\" at " + CodeCoordinates.FromTextPosition(state.Code, startPos, 0))));
-                        first = new Property(first, mname) { Position = first.Position, Length = i + 1 - first.Position };
+
+                        first = new Property(first, mname, optionalChaining)
+                        {
+                            Position = first.Position,
+                            Length = i + 1 - first.Position
+                        };
+
                         i++;
                         repeat = true;
                         canAsign = true;
@@ -836,7 +868,9 @@ namespace NiL.JS.Expressions
                                 && cname.value._valueType == JSValueType.String
                                 && Parser.ValidateName(cname.value._oValue.ToString(), ref startPos, false)
                                 && startPos == cname.value._oValue.ToString().Length)
+                            {
                                 state.Message(MessageLevel.Recomendation, mname.Position, mname.Length, "[\"" + cname.value._oValue + "\"] is better written in dot notation.");
+                            }
                         }
                         break;
                     }
@@ -885,11 +919,12 @@ namespace NiL.JS.Expressions
                                 args[args.Count - 1] = new Spread(args[args.Count - 1]);
                                 withSpread = true;
                             }
+
                             if (args[args.Count - 1] == null)
                                 ExceptionHelper.ThrowSyntaxError("Expected \")\"", state.Code, startPos);
                         }
 
-                        first = new Call(first, args.ToArray())
+                        first = new Call(first, args.ToArray(), optionalChaining)
                         {
                             Position = first.Position,
                             Length = i - first.Position + 1,

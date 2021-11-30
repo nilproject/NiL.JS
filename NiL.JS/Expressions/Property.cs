@@ -9,28 +9,28 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class Property : Expression
     {
-        private JSValue cachedMemberName;
-        private PropertyScope memberScope;
+        private JSValue _cachedMemberName;
+        private PropertyScope _memberScope;
 
-        public CodeNode Source { get { return _left; } }
-        public CodeNode FieldName { get { return _right; } }
+        public CodeNode Source => _left;
+        public CodeNode FieldName => _right;
 
-        protected internal override bool ContextIndependent
+        protected internal override bool ContextIndependent => false;
+
+        internal override bool ResultInTempContainer => false;
+
+        public bool OptionalChaining { get; }
+
+        public Property(Expression source, Expression fieldName)
+            : this(source, fieldName, false)
         {
-            get
-            {
-                return false;
-            }
+
         }
 
-        internal override bool ResultInTempContainer
-        {
-            get { return false; }
-        }
-
-        internal Property(Expression source, Expression fieldName)
+        public Property(Expression source, Expression fieldName, bool optionalChaining)
             : base(source, fieldName, false)
         {
+            OptionalChaining = optionalChaining;
         }
 
         internal protected override JSValue EvaluateForWrite(Context context)
@@ -42,7 +42,7 @@ namespace NiL.JS.Expressions
                 source = source.Clone() as JSValue;
             else
                 source = source._oValue as JSValue ?? source;
-            res = source.GetProperty(cachedMemberName ?? _right.Evaluate(context), true, memberScope);
+            res = source.GetProperty(_cachedMemberName ?? _right.Evaluate(context), true, _memberScope);
             context._objectSource = source;
             if (res._valueType == JSValueType.NotExists)
                 res._valueType = JSValueType.NotExistsInObject;
@@ -54,6 +54,17 @@ namespace NiL.JS.Expressions
             JSValue res;
 
             var source = _left.Evaluate(context);
+
+            if (source._valueType <= JSValueType.Undefined
+                || (source._valueType >= JSValueType.Object && source._oValue == null))
+            {
+                if (OptionalChaining)
+                    return JSValue.undefined;
+
+                ExceptionHelper.ThrowTypeError(
+                    string.Format(Strings.TryingToGetProperty, _right, source.Defined ? "null" : "undefined"));
+            }
+
             if (source._valueType < JSValueType.Object)
             {
                 source = source.CloneImpl(false);
@@ -63,7 +74,8 @@ namespace NiL.JS.Expressions
                 source = source._oValue as JSValue ?? source;
             }
 
-            res = source.GetProperty(cachedMemberName ?? _right.Evaluate(context), false, memberScope);
+
+            res = source.GetProperty(_cachedMemberName ?? _right.Evaluate(context), false, _memberScope);
             context._objectSource = source;
 
             if (res == null)
@@ -89,16 +101,16 @@ namespace NiL.JS.Expressions
                 stats.UseGetMember = true;
 
             base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
-            
+
             if (_right is Constant)
             {
-                cachedMemberName = _right.Evaluate(null);
-                if (stats != null && cachedMemberName.ToString() == "arguments")
+                _cachedMemberName = _right.Evaluate(null);
+                if (stats != null && _cachedMemberName.ToString() == "arguments")
                     stats.ContainsArguments = true;
             }
 
             if (_left is Super)
-                memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.PrototypeOfSuperClass;
+                _memberScope = (codeContext & CodeContext.InStaticMember) != 0 ? PropertyScope.Super : PropertyScope.PrototypeOfSuperClass;
 
             return false;
         }

@@ -225,7 +225,7 @@ namespace NiL.JS.Expressions
 
                         if (assigns[i].Position > Position)
                         {
-                            if ((_codeContext & CodeContext.InLoop) != 0 && ((assigns[i] as Expression)._codeContext & CodeContext.InLoop) != 0)
+                            if ((_codeContext & CodeContext.InLoop) != 0 && (assigns[i]._codeContext & CodeContext.InLoop) != 0)
                             {
                                 lastAssign = null;
                                 break;

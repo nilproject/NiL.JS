@@ -45,8 +45,12 @@ namespace NiL.JS.Expressions
                 return PredictedType.Unknown;
             }
         }
+
         public Expression[] Arguments { get { return _arguments; } }
+        
         public bool AllowTCO { get { return allowTCO && _callMode == 0; } }
+
+        public bool OptionalChaining { get; }
 
         protected internal override bool NeedDecompose
         {
@@ -65,35 +69,40 @@ namespace NiL.JS.Expressions
             }
         }
 
-        internal Call(Expression first, Expression[] arguments)
+        public Call(Expression first, Expression[] arguments)
+            : this(first, arguments, false)
+        { }
+
+        public Call(Expression first, Expression[] arguments, bool optionalChaining)
             : base(first, null, false)
         {
-            this._arguments = arguments;
+            _arguments = arguments;
+            OptionalChaining = optionalChaining;
         }
 
         public override JSValue Evaluate(Context context)
         {
-            var temp = _left.Evaluate(context);
+            var function = _left.Evaluate(context);
             JSValue targetObject = context._objectSource;
             ICallable callable = null;
             Function func = null;
 
-            if (temp._valueType >= JSValueType.Object)
+            if (function._valueType >= JSValueType.Object)
             {
-                if (temp._valueType == JSValueType.Function)
+                if (function._valueType == JSValueType.Function)
                 {
-                    func = temp._oValue as Function;
+                    func = function._oValue as Function;
                     callable = func;
                 }
 
                 if (func == null)
                 {
-                    callable = temp._oValue as ICallable;
+                    callable = function._oValue as ICallable;
                     if (callable == null)
-                        callable = temp.Value as ICallable;
+                        callable = function.Value as ICallable;
                     if (callable == null)
                     {
-                        var typeProxy = temp.Value as Proxy;
+                        var typeProxy = function.Value as Proxy;
                         if (typeProxy != null)
                             callable = typeProxy.PrototypeInstance as ICallable;
                     }
@@ -102,10 +111,13 @@ namespace NiL.JS.Expressions
 
             if (callable == null)
             {
-                for (int i = 0; i < this._arguments.Length; i++)
+                if (OptionalChaining)
+                    return JSValue.undefined;
+
+                for (int i = 0; i < _arguments.Length; i++)
                 {
                     context._objectSource = null;
-                    this._arguments[i].Evaluate(context);
+                    _arguments[i].Evaluate(context);
                 }
 
                 context._objectSource = null;
@@ -153,7 +165,7 @@ namespace NiL.JS.Expressions
                 if (_callMode == CallMode.Construct)
                     targetObject = null;
 
-                if ((temp._attributes & JSValueAttributesInternal.Eval) != 0)
+                if ((function._attributes & JSValueAttributesInternal.Eval) != 0)
                     return callEval(context);
 
                 return func.InternalInvoke(targetObject, _arguments, context, withSpread, _callMode != 0);
