@@ -32,12 +32,16 @@ namespace NiL.JS.BaseLibrary
 
             foreach (var value in iterable.AsEnumerable())
             {                
-                _storage.Add(value.Value as JSValue ?? value);
+                _storage.Add(value.Value);
             }
         }
 
         public Set add(object item)
         {
+            if (item == null)
+                item = JSValue.@null;
+            else
+                item = (item as JSValue)?.Value ?? item;
             _storage.Add(item);
 
             return this;
@@ -50,11 +54,19 @@ namespace NiL.JS.BaseLibrary
 
         public bool delete(object key)
         {
+            if (key == null)
+                key = JSValue.@null;
+            else
+                key = (key as JSValue)?.Value ?? key;
             return _storage.Remove(key);
         }
 
         public bool has(object key)
         {
+            if (key == null)
+                key = JSValue.@null;
+            else
+                key = (key as JSValue)?.Value ?? key;
             return _storage.Contains(key);
         }
 
