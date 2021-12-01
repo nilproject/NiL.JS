@@ -31,7 +31,7 @@ namespace NiL.JS.BaseLibrary
                 return;
 
             foreach (var value in iterable.AsEnumerable())
-            {                
+            {
                 _storage.Add(value.Value);
             }
         }
@@ -95,6 +95,18 @@ namespace NiL.JS.BaseLibrary
             return _storage
                 .GetEnumerator()
                 .AsIterator();
+        }
+
+        public IIterator entries()
+        {
+            return _storage
+                .Select(x =>
+                {
+                    var value = JSValue.Marshal(x);
+                    return new Array { value, value };
+                })
+                .AsIterable()
+                .iterator();
         }
     }
 }

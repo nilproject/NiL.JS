@@ -168,14 +168,17 @@ namespace NiL.JS.Core
                 }
                 else if (forWrite)
                 {
-                    if (((res._attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto))
+                    if ((res._attributes & JSValueAttributesInternal.SystemObject) != 0 || fromProto)
                     {
                         if ((res._attributes & JSValueAttributesInternal.ReadOnly) == 0
                             && (res._valueType != JSValueType.Property || propertyScope == PropertyScope.Own))
                         {
                             res = res.CloneImpl(false);
+                            res._attributes &= ~(JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate);
+
                             if (_fields == null)
                                 _fields = getFieldsContainer();
+
                             _fields[name] = res;
                         }
                     }

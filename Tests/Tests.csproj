@@ -22,11 +22,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NiL.JS\NiL.JS.csproj" />
-    <ProjectReference Include="..\Utility\tiny-t4\tiny-t4.csproj" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="precompile">
-    <Exec Command="dotnet ./bin/$(Configuration)/$(TargetFramework)/tiny-t4.dll" />
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="dotnet run --project ../Utility/tiny-t4/ --framework net6.0" />
   </Target>
 
 </Project>

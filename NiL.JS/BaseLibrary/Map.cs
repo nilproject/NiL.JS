@@ -30,7 +30,8 @@ namespace NiL.JS.BaseLibrary
                     ExceptionHelper.ThrowTypeError($"Iterator value {item} is not an entry object");
 
                 var value = item["1"];
-                _storage[item["0"].Value] = value.Value as JSValue ?? value;
+                var key = item["0"].Value;
+                _storage[key] = value.Value as JSValue ?? value;
             }
         }
 
@@ -41,8 +42,7 @@ namespace NiL.JS.BaseLibrary
             else
                 key = (key as JSValue)?.Value ?? key;
 
-            object result = null;
-            _storage.TryGetValue(key, out result);
+            _storage.TryGetValue(key, out object result);
             return result;
         }
 
@@ -87,7 +87,7 @@ namespace NiL.JS.BaseLibrary
         {
             foreach (var item in _storage)
             {
-                callback.Call(thisArg, new Arguments { item.Key, item.Value, this });
+                callback.Call(thisArg, new Arguments { item.Value, item.Key, this });
             }
         }
 
@@ -108,5 +108,8 @@ namespace NiL.JS.BaseLibrary
                 .GetEnumerator()
                 .AsIterator();
         }
+
+        public IIterator entries()
+            => iterator();
     }
 }
