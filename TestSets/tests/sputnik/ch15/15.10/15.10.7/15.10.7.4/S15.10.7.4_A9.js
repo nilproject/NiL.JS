@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.7/15.10.7.4/S15.10.7.4_A9.js
  * @description Checking if deleting the multiline property fails
+ * 
+ * @ignore
  */
 
 __re = new RegExp;

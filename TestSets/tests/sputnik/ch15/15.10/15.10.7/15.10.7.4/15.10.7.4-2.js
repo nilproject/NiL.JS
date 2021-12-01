@@ -2,6 +2,8 @@
 /**
  * @path ch15/15.10/15.10.7/15.10.7.4/15.10.7.4-2.js
  * @description RegExp.prototype.multiline is a data property with default attribute values (false)
+ * 
+ * @ignore
  */
 
 

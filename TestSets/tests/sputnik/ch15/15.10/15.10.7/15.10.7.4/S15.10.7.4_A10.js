@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.7/15.10.7.4/S15.10.7.4_A10.js
  * @description Checking if varying the multiline property fails
+ * 
+ * @ignore
  */
 
 __re = /\n/;

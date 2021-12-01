@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.7/15.10.7.2/S15.10.7.2_A8.js
  * @description Checking if enumerating the global property of RegExp instance fails
+ *
+ * @ignore
  */
 
 __re = new RegExp("[o-o]","m");

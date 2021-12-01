@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.7/15.10.7.1/S15.10.7.1_A8.js
  * @description Checking if enumerating the source property of RegExp instance fails
+ *
+ * @ignore
  */
 
 __re = new RegExp("[1-2]","i");

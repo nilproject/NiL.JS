@@ -2,6 +2,8 @@
 /**
  * @path ch15/15.10/15.10.7/15.10.7.3/15.10.7.3-2.js
  * @description RegExp.prototype.ignoreCase is a data property with default attribute values (false)
+ * 
+ * @ignore
  */
 
 

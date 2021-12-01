@@ -494,7 +494,6 @@ namespace NiL.JS.BaseLibrary
         }
 
         internal bool _global;
-        [Field]
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
@@ -508,26 +507,26 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        [Field]
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public Boolean ignoreCase
         {
+            [Hidden]
             get
             {
                 return (_regex.Options & RegexOptions.IgnoreCase) != 0;
             }
         }
 
-        [Field]
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public Boolean multiline
         {
+            [Hidden]
             get
             {
                 return (_regex.Options & RegexOptions.Multiline) != 0;
@@ -535,7 +534,6 @@ namespace NiL.JS.BaseLibrary
         }
 
         internal bool _sticky;
-        [Field]
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
@@ -550,7 +548,6 @@ namespace NiL.JS.BaseLibrary
         }
 
         internal bool _unicode;
-        [Field]
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
@@ -564,13 +561,13 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-        [Field]
         [ReadOnly]
         [DoNotDelete]
         [DoNotEnumerate]
         [NotConfigurable]
         public String source
         {
+            [Hidden]
             get
             {
                 return new String(_source);
@@ -583,10 +580,12 @@ namespace NiL.JS.BaseLibrary
         [NotConfigurable]
         public JSValue lastIndex
         {
+            [Hidden]
             get
             {
                 return _lastIndex ?? (_lastIndex = 0);
             }
+            [Hidden]
             set
             {
                 _lastIndex = (value ?? JSValue.undefined).CloneImpl(false);

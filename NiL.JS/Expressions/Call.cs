@@ -213,7 +213,11 @@ namespace NiL.JS.Expressions
 #endif
         private static void checkStack(Context context)
         {
+#if DEBUG
+            if (context._callDepth >= 800)
+#else
             if (context._callDepth >= 1000)
+#endif
                 throw new JSException(new RangeError("Stack overflow."));
         }
 

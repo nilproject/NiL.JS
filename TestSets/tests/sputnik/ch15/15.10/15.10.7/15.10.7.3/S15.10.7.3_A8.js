@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.7/15.10.7.3/S15.10.7.3_A8.js
  * @description Checking if enumerating the ignoreCase property of RegExp instance fails
+ *
+ * @ignore
  */
 
 __re = new RegExp("[|||||||]","");

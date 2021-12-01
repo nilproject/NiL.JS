@@ -24,8 +24,4 @@
     <ProjectReference Include="..\NiL.JS\NiL.JS.csproj" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="dotnet run --project ../Utility/tiny-t4/ --framework net6.0" />
-  </Target>
-
 </Project>

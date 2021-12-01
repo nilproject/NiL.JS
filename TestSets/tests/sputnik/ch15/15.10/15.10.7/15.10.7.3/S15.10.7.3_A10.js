@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.7/15.10.7.3/S15.10.7.3_A10.js
  * @description Checking if varying the ignoreCase property fails
+ *
+ * @ignore
  */
 
 __re = /a|b|c/;

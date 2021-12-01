@@ -138,11 +138,11 @@ namespace NiL.JS.Core
                 if (forWrite || _fields != null)
                     name = key.ToString();
 
-                fromProto = 
-                    (propertyScope >= PropertyScope.Super 
-                        || _fields == null 
-                        || !_fields.TryGetValue(name, out res) 
-                        || res._valueType < JSValueType.Undefined) 
+                fromProto =
+                    (propertyScope >= PropertyScope.Super
+                        || _fields == null
+                        || !_fields.TryGetValue(name, out res)
+                        || res._valueType < JSValueType.Undefined)
                     && ((proto = __proto__)._oValue != null);
 
                 if (fromProto)
@@ -174,7 +174,9 @@ namespace NiL.JS.Core
                             && (res._valueType != JSValueType.Property || propertyScope == PropertyScope.Own))
                         {
                             res = res.CloneImpl(false);
-                            res._attributes &= ~(JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate);
+
+                            if ((res._attributes & JSValueAttributesInternal.Field) == 0)
+                                res._attributes &= ~(JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete);
 
                             if (_fields == null)
                                 _fields = getFieldsContainer();
@@ -353,11 +355,11 @@ namespace NiL.JS.Core
         {
             // return new Dictionary<string, JSValue>(System.StringComparer.Ordinal);
             return new StringMap<JSValue>();
-//#if !PORTABLE
-//            return new System.Collections.Concurrent.ConcurrentDictionary<string, JSValue>(StringComparer.Ordinal);
-//#else
-//            return new Dictionary<string, JSValue>(System.StringComparer.Ordinal);
-//#endif
+            //#if !PORTABLE
+            //            return new System.Collections.Concurrent.ConcurrentDictionary<string, JSValue>(StringComparer.Ordinal);
+            //#else
+            //            return new Dictionary<string, JSValue>(System.StringComparer.Ordinal);
+            //#endif
         }
 
         [DoNotEnumerate]
@@ -971,15 +973,29 @@ namespace NiL.JS.Core
         {
             if (args[0]._valueType < JSValueType.Object)
                 ExceptionHelper.Throw(new TypeError("Object.getOwnPropertyNames called on non-object value."));
+
             if (args[0]._oValue == null)
                 ExceptionHelper.Throw(new TypeError("Cannot get property names of null"));
+            
             var obj = args[0]._oValue as JSObject;
 
-            var result = new BaseLibrary.Array();
-            for (var e = obj.GetEnumerator(false, EnumerationMode.KeysOnly); e.MoveNext();)
-                result.Add(e.Current.Key);
+            var result = new HashSet<string>();
+            var fieldsOnly = false;
+            while (obj != null && obj.Defined && !obj.IsNull)
+            {
+                for (var e = obj.GetEnumerator(false, EnumerationMode.RequireValues); e.MoveNext();)
+                {
+                    if (fieldsOnly && (e.Current.Value._attributes & JSValueAttributesInternal.Field) == 0)
+                        continue;
 
-            return result;
+                    result.Add(e.Current.Key);
+                }
+
+                obj = obj.__proto__;
+                fieldsOnly = true;
+            }
+
+            return new BaseLibrary.Array(result);
         }
 
         [DoNotEnumerate]

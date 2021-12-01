@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.7/15.10.7.2/S15.10.7.2_A9.js
  * @description Checking if deleting the global property fails
+ * 
+ * @ignore
  */
 
 __re = new RegExp;

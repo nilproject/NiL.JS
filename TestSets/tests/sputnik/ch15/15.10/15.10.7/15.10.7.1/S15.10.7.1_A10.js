@@ -4,6 +4,8 @@
  *
  * @path ch15/15.10/15.10.7/15.10.7.1/S15.10.7.1_A10.js
  * @description Checking if varying the source property fails
+ * 
+ * @ignore
  */
 
 __re = /./;

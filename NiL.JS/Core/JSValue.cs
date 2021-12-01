@@ -657,14 +657,17 @@ namespace NiL.JS.Core
             {
                 if (_oValue == null)
                     ExceptionHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, name, "null"));
+
                 if (_oValue == this)
                     throw new InvalidOperationException();
+
                 var obj = _oValue as JSObject;
                 if (obj != null)
                     return obj.DeleteProperty(name);
             }
             else if (_valueType <= JSValueType.Undefined)
                 ExceptionHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, name, "undefined"));
+
             return true;
         }
 
@@ -876,6 +879,7 @@ namespace NiL.JS.Core
 #endif
             if ((_attributes & (JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject)) != 0)
                 return;
+
             _valueType = value._valueType | JSValueType.Undefined;
             _iValue = value._iValue;
             _dValue = value._dValue;
