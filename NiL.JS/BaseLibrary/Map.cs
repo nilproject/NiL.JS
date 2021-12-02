@@ -98,7 +98,7 @@ namespace NiL.JS.BaseLibrary
 
         public IIterator values()
         {
-            return _storage.Keys.AsIterable().iterator();
+            return _storage.Values.AsIterable().iterator();
         }
 
         public IIterator iterator()
