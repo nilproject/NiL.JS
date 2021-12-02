@@ -10,6 +10,6 @@ Licensed under BSD 3-Clause License.
  var context = new Context(); 
  context.Eval(@"console.log( 
  `This is a JavaScript engine written in C#. 
- This engine can perform js code on .NET 4 and 4.5, Universal Windows Platform and .NET Core`)"); 
+ This engine can perform js code on NET Framework 4.6.1+, NET Standard 1.3+, NET Core 3.1, 5.0 and 6.0`)"); 
  ``` 
 > [Other Examples](https://github.com/nilproject/NiL.JS/tree/develop/Examples)  
