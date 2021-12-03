@@ -412,203 +412,204 @@ namespace NiL.JS.Core
             string res;
             lock (_CachedDoubleString)
             {
-                for (var i = 8; i-- > 0;)
-                {
-                    if (_CachedDoubleString[i].key == d)
-                        return _CachedDoubleString[i].value;
-                }
-
                 var abs = Math.Abs(d);
-                if (abs < 0.000001)
-                    res = d.ToString("0.################e-0", CultureInfo.InvariantCulture);
-                else if (abs >= 1e+21)
-                    res = d.ToString("0.################e+0", CultureInfo.InvariantCulture);
-                else
+                int neg = (d < 0.0 || (d == -0.0 && Tools.IsNegativeZero(d))) ? 1 : 0;
+
+                if (digitsLimit == _ToStringDigitsLimit && !trailingZeros)
                 {
-                    int neg = (d < 0.0 || (d == -0.0 && Tools.IsNegativeZero(d))) ? 1 : 0;
-
-                    if (abs >= 1e+18)
+                    for (var i = 8; i-- > 0;)
                     {
+                        if (_CachedDoubleString[i].key == d)
+                            return _CachedDoubleString[i].value;
+                    }
+
+                    if (abs < 0.000001)
+                        res = abs.ToString("0.################e-0", CultureInfo.InvariantCulture);
+                    else if (abs >= 1e+21)
+                        res = abs.ToString("0.################e+0", CultureInfo.InvariantCulture);
+                    else if (abs >= 1e+18)
                         res = ((ulong)(abs / 1000.0)).ToString(CultureInfo.InvariantCulture) + "000";
-                    }
                     else
-                    {
-                        var highestBit = 1UL << 52;
-                        var raw = BitConverter.DoubleToInt64Bits(abs);
-                        ulong m = ((ulong)raw & ((1UL << 52) - 1)) | highestBit;
-                        long sign = (raw >> 63) | 1L;
-                        int e = (int)((raw & long.MaxValue) >> 52);
-                        e = 52 - e + 1023;
-
-                        var intPart = e > 63 ? 0 : e <= 0 ? m : m >> e;
-                        var fracPart = e < 0 ? 0 : e >= 63 ? m : (m & ((1ul << e) - 1));
-                        var fracSize = 0;
-
-                        var str = new ulong[] { 1 };
-                        var temp = new ulong[] { 1 };
-                        var intBuffer = new ulong[] { 0 };
-                        var fracBuffer = new ulong[] { 0 };
-                        var alterFracBuffer = default(ulong[]);
-
-                        if (intPart != 0)
-                        {
-                            var curDeg = e < 0 ? e : 0;
-                            var curBit = 0;
-                            for (var b = 0; b < 53 && intPart != 0; b++, curBit++)
-                            {
-                                if ((intPart & 1) != 0)
-                                {
-                                    while (curDeg < curBit)
-                                    {
-                                        numStrSum(str, str, ref str);
-                                        curDeg++;
-                                    }
-
-                                    numStrSum(intBuffer, str, ref intBuffer);
-                                }
-
-                                intPart >>= 1;
-                            }
-
-                            if (fracPart != 0)
-                            {
-                                Array.Clear(str, 0, str.Length);
-                                str[str.Length - 1] = 1;
-                            }
-                        }
-
-                        if (fracPart != 0)
-                        {
-                            var curDeg = e > 53 ? 53 - e : 0;
-                            var curBit = 1;
-                            if (e < 53)
-                            {
-                                fracPart <<= 1;
-                                fracPart <<= 52 - e;
-                            }
-
-                            var fracPartSize = Math.Min(53, e);
-
-                            for (var b = 0; b <= fracPartSize; b++, curBit++)
-                            {
-                                if ((fracPart & highestBit) != 0 || b == fracPartSize)
-                                {
-                                    while (curDeg < curBit)
-                                    {
-                                        numStrSum(str, str, ref temp);
-                                        numStrSum(temp, temp, ref temp);
-                                        numStrSum(str, temp, ref str);
-
-                                        numStrMul10(fracBuffer, ref fracBuffer);
-
-                                        fracSize++;
-                                        curDeg++;
-                                    }
-
-                                    if (b == fracPartSize)
-                                    {
-                                        alterFracBuffer = new ulong[fracBuffer.Length];
-                                        numStrSum(fracBuffer, str, ref alterFracBuffer);
-                                    }
-                                    else
-                                    {
-                                        numStrSum(fracBuffer, str, ref fracBuffer);
-                                    }
-                                }
-
-                                if (b == fracPartSize)
-                                {
-                                    var fracLen = 0;
-                                    var alterLen = 0;
-                                    var fracSizeLimit = digitsLimit;
-
-                                    for (var pi = intBuffer.Length; pi-- > 0;)
-                                    {
-                                        var count = digitsCount(intBuffer[pi]);
-                                        if (count != 0)
-                                            fracSizeLimit -= count + pi * 16;
-                                    }
-
-                                    for (var di = fracSize; di-- > 0 && fracSize - di < fracSizeLimit;)
-                                    {
-                                        if (fracBuffer.Length > di / 16 && ((fracBuffer[di / 16] >> ((di % 16) * 4)) & 0xf) != 0)
-                                            fracLen = fracSize - di;
-
-                                        if (alterFracBuffer.Length > di / 16 && ((alterFracBuffer[di / 16] >> ((di % 16) * 4)) & 0xf) != 0)
-                                            alterLen = fracSize - di;
-                                    }
-
-                                    if (alterLen < fracLen)
-                                    {
-                                        fracBuffer = alterFracBuffer;
-                                    }
-                                }
-
-                                fracPart <<= 1;
-                            }
-                        }
-
-                        var buffer = new char[2 + intBuffer.Length * 16 + fracBuffer.Length * 16];
-                        var bufferPos = 0;
-                        var signDigits = 0;
-
-                        var write = false;
-                        for (var i = intBuffer.Length * 16; i-- > 0;)
-                        {
-                            var v = (intBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
-                            if (v != 0 || write)
-                            {
-                                write = true;
-                                buffer[bufferPos++] = (char)((char)v + '0');
-                                signDigits++;
-                            }
-                        }
-
-                        if (bufferPos == 0)
-                            buffer[bufferPos++] = '0';
-
-                        var lastRealSign = bufferPos;
-
-                        if (fracSize != 0)
-                        {
-                            buffer[bufferPos++] = '.';
-                            for (var i = fracSize; i-- > 0;)
-                            {
-                                var v = fracBuffer.Length <= i / 16 ? 0 : (fracBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
-                                buffer[bufferPos] = (char)((char)v + '0');
-                                bufferPos++;
-
-                                if (v != 0)
-                                {
-                                    write = true;
-                                    lastRealSign = bufferPos;
-                                }
-
-                                if (write)
-                                    signDigits++;
-
-                                if (signDigits == digitsLimit || bufferPos == buffer.Length)
-                                    break;
-                            }
-                        }
-
-                        res = new string(buffer, 0, trailingZeros ? bufferPos : lastRealSign);
-                        if (res.Length < digitsLimit && trailingZeros)
-                        {
-                            if (fracSize == 0)
-                                res += '.';
-
-                            res = res.PadRight(digitsLimit + '0');
-                        }
-                    }
-
-                    if (neg == 1)
-                        res = "-" + res;
+                        res = lowLevelFormat(_ToStringDigitsLimit, false, abs);
                 }
+                else
+                    res = lowLevelFormat(digitsLimit, trailingZeros, abs);
+
+                if (neg == 1)
+                    res = "-" + res;
 
                 _CachedDoubleString[_CachedDoubleStringsIndex].key = d;
                 _CachedDoubleString[_CachedDoubleStringsIndex].value = res;
                 _CachedDoubleStringsIndex = (_CachedDoubleStringsIndex + 1) & 7;
+            }
+
+            return res;
+        }
+
+        private static string lowLevelFormat(int digitsLimit, bool trailingZeros, double abs)
+        {
+            string res;
+            var highestBit = 1UL << 52;
+            var raw = BitConverter.DoubleToInt64Bits(abs);
+            ulong m = ((ulong)raw & ((1UL << 52) - 1)) | highestBit;
+            int e = (int)((raw & long.MaxValue) >> 52);
+            e = 52 - e + 1023;
+
+            var intPart = e > 63 ? 0 : e <= 0 ? m : m >> e;
+            var fracPart = e < 0 ? 0 : e >= 63 ? m : (m & ((1ul << e) - 1));
+            var fracSize = 0;
+
+            var str = new ulong[] { 1 };
+            var temp = new ulong[] { 1 };
+            var intBuffer = new ulong[] { 0 };
+            var fracBuffer = new ulong[] { 0 };
+            var alterFracBuffer = default(ulong[]);
+
+            if (intPart != 0)
+            {
+                var curDeg = e < 0 ? e : 0;
+                var curBit = 0;
+                for (var b = 0; b < 53 && intPart != 0; b++, curBit++)
+                {
+                    if ((intPart & 1) != 0)
+                    {
+                        while (curDeg < curBit)
+                        {
+                            numStrSum(str, str, ref str);
+                            curDeg++;
+                        }
+
+                        numStrSum(intBuffer, str, ref intBuffer);
+                    }
+
+                    intPart >>= 1;
+                }
+
+                if (fracPart != 0)
+                {
+                    Array.Clear(str, 0, str.Length);
+                    str[str.Length - 1] = 1;
+                }
+            }
+
+            if (fracPart != 0)
+            {
+                var curDeg = e > 53 ? 53 - e : 0;
+                var curBit = 1;
+                if (e < 53)
+                {
+                    fracPart <<= 53 - e;
+                }
+
+                var fracPartSize = Math.Min(53, e);
+
+                for (var b = 0; b <= fracPartSize; b++, curBit++)
+                {
+                    if ((fracPart & highestBit) != 0 || b == fracPartSize)
+                    {
+                        while (curDeg < curBit)
+                        {
+                            numStrSum(str, str, ref temp);
+                            numStrSum(temp, temp, ref temp);
+                            numStrSum(str, temp, ref str);
+
+                            numStrMul10(fracBuffer, ref fracBuffer);
+
+                            fracSize++;
+                            curDeg++;
+                        }
+
+                        if (b == fracPartSize)
+                        {
+                            alterFracBuffer = new ulong[fracBuffer.Length];
+                            numStrSum(fracBuffer, str, ref alterFracBuffer);
+                        }
+                        else
+                        {
+                            numStrSum(fracBuffer, str, ref fracBuffer);
+                        }
+                    }
+
+                    fracPart <<= 1;
+                }
+
+                var fracLen = 0;
+                var alterLen = 0;
+                var fracSizeLimit = digitsLimit;
+
+                for (var pi = intBuffer.Length; pi-- > 0;)
+                {
+                    var count = digitsCount(intBuffer[pi]);
+                    if (count != 0)
+                        fracSizeLimit -= count + pi * 16;
+                }
+
+                for (var di = fracSize; di-- > 0 && fracSize - di < fracSizeLimit;)
+                {
+                    if (fracBuffer.Length > di / 16 && ((fracBuffer[di / 16] >> ((di % 16) * 4)) & 0xf) != 0)
+                        fracLen = fracSize - di;
+
+                    if (alterFracBuffer.Length > di / 16 && ((alterFracBuffer[di / 16] >> ((di % 16) * 4)) & 0xf) != 0)
+                        alterLen = fracSize - di;
+                }
+
+                if (alterLen < fracLen)
+                {
+                    fracBuffer = alterFracBuffer;
+                }
+            }
+
+            var buffer = new char[2 + intBuffer.Length * 16 + fracBuffer.Length * 16];
+            var bufferPos = 0;
+            var nonZeroDigits = 0;
+
+            var write = false;
+            for (var i = intBuffer.Length * 16; i-- > 0;)
+            {
+                var v = (intBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
+                if (v != 0 || write)
+                {
+                    write = true;
+                    buffer[bufferPos++] = (char)((char)v + '0');
+                    nonZeroDigits++;
+                }
+            }
+
+            if (bufferPos == 0)
+                buffer[bufferPos++] = '0';
+
+            var lastRealSign = bufferPos;
+
+            if (fracSize != 0)
+            {
+                buffer[bufferPos++] = '.';
+                for (var i = fracSize; i-- > 0;)
+                {
+                    var v = fracBuffer.Length <= i / 16 ? 0 : (fracBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
+                    buffer[bufferPos] = (char)((char)v + '0');
+                    bufferPos++;
+
+                    if (v != 0)
+                    {
+                        write = true;
+                        lastRealSign = bufferPos;
+                    }
+
+                    if (write)
+                        nonZeroDigits++;
+
+                    if (nonZeroDigits == digitsLimit || bufferPos == buffer.Length)
+                        break;
+                }
+            }
+
+            res = new string(buffer, 0, trailingZeros ? bufferPos : lastRealSign);
+            if (res.Length < digitsLimit && trailingZeros)
+            {
+                if (fracSize == 0)
+                    res += '.';
+
+                res = res.PadRight(digitsLimit + 1, '0');
             }
 
             return res;

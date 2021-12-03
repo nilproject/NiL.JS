@@ -116,8 +116,12 @@ namespace NiL.JS.BaseLibrary
         [InstanceMember]
         public static JSValue toPrecision(JSValue self, Arguments digits)
         {
-            double res = Tools.JSObjectToDouble(self);
-            return res.ToString("G" + Tools.JSObjectToInt32(digits[0]), CultureInfo.InvariantCulture);
+            var size = Tools.JSObjectToInt32(digits[0]);
+            if (size < 1 || size > 100)
+                ExceptionHelper.Throw(new RangeError("toPrecision() argument must be between 1 and 100"));
+
+            double d = Tools.JSObjectToDouble(self);
+            return NumberUtils.DoubleToString(d, size, true);
         }
 
         [DoNotEnumerate]
