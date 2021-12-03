@@ -541,13 +541,13 @@ namespace NiL.JS.Core
             }
 
             int index = 0;
-            string c = Parser.RemoveComments(code, 0);
-            var ps = new ParseInfo(c, code, null);
+            var ps = new ParseInfo(code, null);
             ps.CodeContext |= (_strict ? CodeContext.Strict : default(CodeContext)) | CodeContext.InEval;
 
             var body = CodeBlock.Parse(ps, ref index) as CodeBlock;
-            if (index < c.Length)
+            if (index < code.Length)
                 throw new ArgumentException("Invalid char");
+
             var variables = new Dictionary<string, VariableDescriptor>();
             var stats = new FunctionInfo();
 

@@ -386,17 +386,17 @@ namespace NiL.JS.Core
                         case "public":
                         case "static":
                         case "let":
-                            {
-                                if (strict)
-                                    return false;
-                                break;
-                            }
+                        {
+                            if (strict)
+                                return false;
+                            break;
+                        }
                         default:
-                            {
-                                if (customReservedWords != null && customReservedWords.Contains(name))
-                                    return false;
-                                break;
-                            }
+                        {
+                            if (customReservedWords != null && customReservedWords.Contains(name))
+                                return false;
+                            break;
+                        }
                     }
                 }
             }
@@ -467,67 +467,68 @@ namespace NiL.JS.Core
                     switch (c)
                     {
                         case 'g':
-                            {
-                                if (g)
-                                    if (throwError)
-                                        throw new ArgumentException("Invalid flag in RegExp definition");
-                                    else
-                                        return false;
-                                g = true;
-                                break;
-                            }
-                        case 'i':
-                            {
-                                if (i)
-                                    if (throwError)
-                                        throw new ArgumentException("Invalid flag in RegExp definition");
-                                    else
-                                        return false;
-                                i = true;
-                                break;
-                            }
-                        case 'm':
-                            {
-                                if (m)
-                                    if (throwError)
-                                        throw new ArgumentException("Invalid flag in RegExp definition");
-                                    else
-                                        return false;
-                                m = true;
-                                break;
-                            }
-                        case 'u':
-                            {
-                                if (u)
-                                    if (throwError)
-                                        throw new ArgumentException("Invalid flag in RegExp definition");
-                                    else
-                                        return false;
-                                u = true;
-                                break;
-                            }
-                        case 'y':
-                            {
-                                if (y)
-                                    if (throwError)
-                                        throw new ArgumentException("Invalid flag in RegExp definition");
-                                    else
-                                        return false;
-                                y = true;
-                                break;
-                            }
-                        default:
-                            {
-                                if (IsIdentifierTerminator(c))
-                                {
-                                    w = false;
-                                    break;
-                                }
+                        {
+                            if (g)
                                 if (throwError)
-                                    throw new ArgumentException("Invalid flag in regexp definition");
+                                    throw new ArgumentException("Invalid flag in RegExp definition");
                                 else
                                     return false;
+                            g = true;
+                            break;
+                        }
+                        case 'i':
+                        {
+                            if (i)
+                                if (throwError)
+                                    throw new ArgumentException("Invalid flag in RegExp definition");
+                                else
+                                    return false;
+                            i = true;
+                            break;
+                        }
+                        case 'm':
+                        {
+                            if (m)
+                                if (throwError)
+                                    throw new ArgumentException("Invalid flag in RegExp definition");
+                                else
+                                    return false;
+                            m = true;
+                            break;
+                        }
+                        case 'u':
+                        {
+                            if (u)
+                                if (throwError)
+                                    throw new ArgumentException("Invalid flag in RegExp definition");
+                                else
+                                    return false;
+                            u = true;
+                            break;
+                        }
+                        case 'y':
+                        {
+                            if (y)
+                                if (throwError)
+                                    throw new ArgumentException("Invalid flag in RegExp definition");
+                                else
+                                    return false;
+                            y = true;
+                            break;
+                        }
+                        default:
+                        {
+                            if (IsIdentifierTerminator(c))
+                            {
+                                w = false;
+                                break;
                             }
+
+                            if (throwError)
+                                throw new ArgumentException("Invalid flag in regexp definition");
+                            else
+                                return false;
+                        }
                     }
                 }
 
@@ -625,25 +626,28 @@ namespace NiL.JS.Core
                     switch (code[index + 1])
                     {
                         case '/':
-                            {
-                                index += 2;
-                                while (index < code.Length && !Tools.IsLineTerminator(code[index]))
-                                    index++;
+                        {
+                            index += 2;
+                            while (index < code.Length && !Tools.IsLineTerminator(code[index]))
+                                index++;
 
-                                work = true;
-                                break;
-                            }
+                            work = true;
+                            break;
+                        }
+
                         case '*':
-                            {
-                                index += 2;
-                                while (index + 1 < code.Length && (code[index] != '*' || code[index + 1] != '/'))
-                                    index++;
-                                if (index + 1 >= code.Length)
-                                    ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
-                                index += 2;
-                                work = true;
-                                break;
-                            }
+                        {
+                            index += 2;
+                            while (index + 1 < code.Length && (code[index] != '*' || code[index + 1] != '/'))
+                                index++;
+
+                            if (index + 1 >= code.Length)
+                                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
+                            
+                            index += 2;
+                            work = true;
+                            break;
+                        }
                     }
                 }
 
@@ -673,54 +677,33 @@ namespace NiL.JS.Core
             {
                 while (index < code.Length && Tools.IsWhiteSpace(code[index]))
                 {
-                    if (res != null)
-                        res.Append(code[index++]);
-                    else
-                        index++;
+                    index++;
                 }
 
                 var s = index;
                 index = SkipComment(code, index, false);
                 if (s != index && res == null)
-                {
-                    res = new StringBuilder(code.Length);
-                    for (var j = 0; j < s; j++)
-                        res.Append(code[j]);
-                }
+                    res = new StringBuilder(code);
 
                 for (; s < index; s++)
                 {
-                    if (Tools.IsWhiteSpace(code[s]))
-                        res.Append(code[s]);
-                    else
-                        res.Append(' ');
+                    if (!Tools.IsWhiteSpace(code[s]))
+                        res[s] = ' ';
                 }
 
                 if (index >= code.Length)
                     continue;
 
-                if (Parser.ValidateRegex(code, ref index, false)) // оно путает деление с комментарием в конце строки и regexp.
+                if (ValidateRegex(code, ref index, false)) // оно путает деление с комментарием в конце строки и regexp.
                 // Посему делаем так: если встретили что-то похожее на regexp - останавливаемся.
                 // Остальные комментарии удалим когда, в процессе разбора, поймём, что же это на самом деле
                 {
-                    if (res != null)
-                        for (; s <= index; s++)
-                            res.Append(code[s]);
                     break;
                 }
 
-                if (Parser.ValidateString(code, ref index, false))
-                {
-                    if (res != null)
-                    {
-                        for (; s < index; s++)
-                            res.Append(code[s]);
-                    }
-                }
-                else if (res != null)
-                    res.Append(code[index++]);
-                else
-                    index++;
+                ValidateString(code, ref index, false);
+
+                index++;
             }
 
             return (res as object ?? code).ToString();

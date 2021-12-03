@@ -22,13 +22,13 @@ namespace NiL.JS.Expressions
     public sealed class Call : Expression
     {
         private Expression[] _arguments;
-        internal bool withSpread;
-        internal bool allowTCO;
+        internal bool _allowTCO;
+        internal bool _withSpread;
         internal CallMode _callMode;
 
-        public CallMode CallMode { get { return _callMode; } }
-        protected internal override bool ContextIndependent { get { return false; } }
-        internal override bool ResultInTempContainer { get { return false; } }
+        public CallMode CallMode => _callMode;
+        protected internal override bool ContextIndependent => false;
+        internal override bool ResultInTempContainer => false;
         protected internal override PredictedType ResultType
         {
             get
@@ -47,8 +47,8 @@ namespace NiL.JS.Expressions
         }
 
         public Expression[] Arguments { get { return _arguments; } }
-        
-        public bool AllowTCO { get { return allowTCO && _callMode == 0; } }
+
+        public bool AllowTCO { get { return _allowTCO && _callMode == 0; } }
 
         public bool OptionalChaining { get; }
 
@@ -82,94 +82,96 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
+#if DEBUG
+            if (context._callDepth >= 800)
+#else
+            if (context._callDepth >= 1000)
+#endif
+                ExceptionHelper.Throw(new RangeError("Stack overflow."), this, context);
+
             var function = _left.Evaluate(context);
+
             JSValue targetObject = context._objectSource;
+
             ICallable callable = null;
             Function func = null;
 
-            if (function._valueType >= JSValueType.Object)
+            if (function._valueType == JSValueType.Function)
             {
-                if (function._valueType == JSValueType.Function)
+                func = function._oValue as Function;
+                callable = func;
+            }
+
+            if (func == null)
+            {
+                callable = function._oValue as ICallable;
+                if (callable == null)
+                    callable = function.Value as ICallable;
+
+                if (callable == null)
                 {
-                    func = function._oValue as Function;
-                    callable = func;
+                    var typeProxy = function.Value as Proxy;
+                    if (typeProxy != null)
+                        callable = typeProxy.PrototypeInstance as ICallable;
                 }
 
-                if (func == null)
+                if (callable == null)
                 {
-                    callable = function._oValue as ICallable;
-                    if (callable == null)
-                        callable = function.Value as ICallable;
-                    if (callable == null)
+                    if (OptionalChaining)
+                        return JSValue.undefined;
+
+                    for (int i = 0; i < _arguments.Length; i++)
                     {
-                        var typeProxy = function.Value as Proxy;
-                        if (typeProxy != null)
-                            callable = typeProxy.PrototypeInstance as ICallable;
+                        context._objectSource = null;
+                        _arguments[i].Evaluate(context);
                     }
-                }
-            }
 
-            if (callable == null)
-            {
-                if (OptionalChaining)
-                    return JSValue.undefined;
-
-                for (int i = 0; i < _arguments.Length; i++)
-                {
                     context._objectSource = null;
-                    _arguments[i].Evaluate(context);
+
+                    // Аргументы должны быть вычислены даже если функция не существует.
+                    ExceptionHelper.ThrowTypeError(_left.ToString() + " is not a function", this, context);
+
+                    return null;
                 }
-
-                context._objectSource = null;
-
-                // Аргументы должны быть вычислены даже если функция не существует.
-                ExceptionHelper.ThrowTypeError(_left.ToString() + " is not a function");
-
-                return null;
             }
-            else if (func == null)
+
+            if (func == null)
             {
-                checkStack(context);
                 switch (_callMode)
                 {
                     case CallMode.Construct:
-                    {
                         return callable.Construct(Tools.CreateArguments(_arguments, context));
-                    }
+
                     case CallMode.Super:
-                    {
                         return callable.Construct(targetObject, Tools.CreateArguments(_arguments, context));
-                    }
+
                     default:
                         return callable.Call(targetObject, Tools.CreateArguments(_arguments, context));
                 }
             }
-            else
+
+            if (_allowTCO
+                && _callMode == 0
+                && (func._functionDefinition.kind != FunctionKind.Generator)
+                && (func._functionDefinition.kind != FunctionKind.MethodGenerator)
+                && (func._functionDefinition.kind != FunctionKind.AnonymousGenerator)
+                && context._owner != null
+                && func == context._owner._oValue)
             {
-                if (allowTCO
-                    && _callMode == 0
-                    && (func._functionDefinition.kind != FunctionKind.Generator)
-                    && (func._functionDefinition.kind != FunctionKind.MethodGenerator)
-                    && (func._functionDefinition.kind != FunctionKind.AnonymousGenerator)
-                    && context._owner != null
-                    && func == context._owner._oValue)
-                {
-                    tailCall(context, func);
-                    context._objectSource = targetObject;
-                    return JSValue.undefined;
-                }
-                else
-                    context._objectSource = null;
-
-                checkStack(context);
-                if (_callMode == CallMode.Construct)
-                    targetObject = null;
-
-                if ((function._attributes & JSValueAttributesInternal.Eval) != 0)
-                    return callEval(context);
-
-                return func.InternalInvoke(targetObject, _arguments, context, withSpread, _callMode != 0);
+                tailCall(context, func);
+                context._objectSource = targetObject;
+                return JSValue.undefined;
             }
+            else
+                context._objectSource = null;
+
+            if (_callMode == CallMode.Construct)
+                targetObject = null;
+
+            if ((function._attributes & JSValueAttributesInternal.Eval) != 0)
+                return callEval(context);
+
+            return func.InternalInvoke(targetObject, _arguments, context, _withSpread, _callMode != 0);
         }
 
         private JSValue callEval(Context context)
@@ -182,10 +184,10 @@ namespace NiL.JS.Expressions
 
             var evalCode = _arguments[0].Evaluate(context);
 
-            for (int i = 1; i < this._arguments.Length; i++)
+            for (int i = 1; i < _arguments.Length; i++)
             {
                 context._objectSource = null;
-                this._arguments[i].Evaluate(context);
+                _arguments[i].Evaluate(context);
             }
 
             if (evalCode._valueType != JSValueType.String)
@@ -208,25 +210,12 @@ namespace NiL.JS.Expressions
             context._executionInfo = arguments;
         }
 
-#if !NET40
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-        private static void checkStack(Context context)
-        {
-#if DEBUG
-            if (context._callDepth >= 800)
-#else
-            if (context._callDepth >= 1000)
-#endif
-                throw new JSException(new RangeError("Stack overflow."));
-        }
-
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             if (stats != null)
                 stats.UseCall = true;
 
-            this._codeContext = codeContext;
+            _codeContext = codeContext;
 
             var super = _left as Super;
 
@@ -271,6 +260,7 @@ namespace NiL.JS.Expressions
                     }
                 }
             }
+
             return false;
         }
 

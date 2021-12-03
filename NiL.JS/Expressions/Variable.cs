@@ -82,7 +82,7 @@ namespace NiL.JS.Expressions
                     }
                     else
                     {
-                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, context, this);
+                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
                     }
                 }
 
@@ -111,7 +111,7 @@ namespace NiL.JS.Expressions
                         }
                         else
                         {
-                            ExceptionHelper.ThrowVariableIsNotDefined(_variableName, context, this);
+                            ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
                         }
                     }
                     break;

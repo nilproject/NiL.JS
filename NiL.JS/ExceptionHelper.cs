@@ -34,6 +34,15 @@ namespace NiL.JS
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
+        internal static void Throw(Error error, CodeNode exceptionMaker, Context context)
+        {
+            throw new JSException(error, exceptionMaker, GetCode(context));
+        }
+
+        /// <exception cref="NiL.JS.Core.JSException">
+        /// </exception>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         internal static void Throw(JSValue error)
         {
             throw new JSException(error ?? JSValue.undefined);
@@ -61,7 +70,7 @@ namespace NiL.JS
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
-        internal static void ThrowVariableIsNotDefined(string variableName, Context context, CodeNode exceptionMaker)
+        internal static void ThrowVariableIsNotDefined(string variableName, CodeNode exceptionMaker, Context context)
         {
             var code = GetCode(context);
             Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, code);
@@ -81,7 +90,7 @@ namespace NiL.JS
         [DebuggerStepThrough]
         internal static void ThrowVariableIsNotDefined(string variableName, CodeNode exceptionMaker)
         {
-            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, null);
+            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, null as string);
         }
 
         /// <exception cref="NiL.JS.Core.JSException">

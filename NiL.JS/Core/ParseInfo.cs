@@ -30,7 +30,7 @@ namespace NiL.JS.Core
         public bool AllowDirectives => (CodeContext & CodeContext.AllowDirectives) != 0;
 
         private ParseInfo(
-            string codeWithoutComments,
+            string code,
             List<string> labels,
             Stack<bool> allowBreak,
             Stack<bool> allowContinue,
@@ -39,8 +39,8 @@ namespace NiL.JS.Core
             Dictionary<double, JSValue> doubleConstants,
             List<VariableDescriptor> variables)
         {
-            Code = codeWithoutComments;
-            SourceCode = codeWithoutComments;
+            Code = code;
+            SourceCode = code;
             Labels = labels;
             AllowBreak = allowBreak;
             AllowContinue = allowContinue;
@@ -50,9 +50,9 @@ namespace NiL.JS.Core
             Variables = variables;
         }
 
-        public ParseInfo(string codeWithoutComments, string sourceCode, InternalCompilerMessageCallback message)
+        public ParseInfo(string sourceCode, InternalCompilerMessageCallback message)
         {
-            Code = codeWithoutComments;
+            Code = Parser.RemoveComments(sourceCode, 0);
             SourceCode = sourceCode;
             Message = message;
 

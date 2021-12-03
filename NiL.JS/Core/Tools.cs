@@ -1482,6 +1482,7 @@ namespace NiL.JS.Core
                 return ((str[i] - 0xD800) * 0x400) + (str[++i] - 0xDC00) + 0x10000;
             return str[i];
         }
+
         internal static int NextCodePoint(string str, ref int i, bool regexp)
         {
             if (str[i] >= '\uD800' && str[i] <= '\uDBFF' && i + 1 < str.Length && str[i + 1] >= '\uDC00' && str[i + 1] <= '\uDFFF')

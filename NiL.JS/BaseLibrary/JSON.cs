@@ -365,7 +365,7 @@ namespace NiL.JS.BaseLibrary
             if (obj._valueType >= JSValueType.Object && obj.Value == null)
                 return "null";
 
-            return stringifyImpl("", obj, replacer, keys, space, new HashSet<JSValue>(), new Arguments());
+            return stringifyImpl("", obj, replacer, keys, space, null, replacer != null ? new Arguments() : null);
         }
 
         internal static void escapeIfNeed(StringBuilder sb, char c)
@@ -440,11 +440,6 @@ namespace NiL.JS.BaseLibrary
 
             obj = obj.Value as JSValue ?? obj;
 
-            if (processed.Contains(obj))
-                ExceptionHelper.Throw(new TypeError("Unable to convert circular structure to JSON."));
-
-            processed.Add(obj);
-
             try
             {
                 StringBuilder result = null;
@@ -469,6 +464,14 @@ namespace NiL.JS.BaseLibrary
 
                     return obj.ToString();
                 }
+
+                if (processed == null)
+                    processed = new HashSet<JSValue>();
+
+                if (processed.Contains(obj))
+                    ExceptionHelper.Throw(new TypeError("Unable to convert circular structure to JSON."));
+
+                processed.Add(obj);
 
                 if (obj.Value == null)
                     return null;
@@ -578,7 +581,7 @@ namespace NiL.JS.BaseLibrary
             }
             finally
             {
-                processed.Remove(obj);
+                processed?.Remove(obj);
             }
         }
     }

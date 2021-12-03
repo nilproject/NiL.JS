@@ -78,6 +78,7 @@ namespace NiL.JS.Statements
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             Parser.Build(ref value, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+
             // Улучшает работу оптимизатора хвостовой рекурсии
             if (message == null && value is Conditional)
             {
@@ -88,7 +89,7 @@ namespace NiL.JS.Statements
             }
             else if (value is Call)
             {
-                (value as Call).allowTCO = true;
+                (value as Call)._allowTCO = true;
             }
 
             stats.Returns.Add(value ?? Empty.Instance);

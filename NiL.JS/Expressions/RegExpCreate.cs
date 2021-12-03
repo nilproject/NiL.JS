@@ -49,7 +49,8 @@ namespace NiL.JS.Expressions
             string value = state.Code.Substring(position, i - position);
             position = i;
 
-            state.Code = Parser.RemoveComments(state.SourceCode, i);
+            state.Code = Parser.RemoveComments(state.SourceCode, position);
+
             var s = value.LastIndexOf('/') + 1;
             string flags = value.Substring(s);
             try
@@ -60,6 +61,7 @@ namespace NiL.JS.Expressions
             {
                 if (state.Message != null)
                     state.Message(MessageLevel.Error, i - value.Length, value.Length, string.Format(Strings.InvalidRegExp, value));
+
                 return new ExpressionWrapper(new Throw(e));
             }
         }

@@ -13,7 +13,7 @@ namespace NiL.JS.BaseLibrary
         /// </summary>
         [Hidden]
         private static int _randomSeed = Environment.TickCount;
-        
+
         /// <summary>
         /// Random instance 
         /// </summary>
@@ -757,7 +757,7 @@ namespace NiL.JS.BaseLibrary
             return res;
         }
 
-#region Exclusives
+        #region Exclusives
 
         [DoNotEnumerate]
         [DoNotDelete]
@@ -767,6 +767,6 @@ namespace NiL.JS.BaseLibrary
             return System.Math.IEEERemainder(Tools.JSObjectToDouble(a), Tools.JSObjectToDouble(b));
         }
 
-#endregion
+        #endregion
     }
 }

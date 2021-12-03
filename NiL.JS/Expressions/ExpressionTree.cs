@@ -705,6 +705,7 @@ namespace NiL.JS.Expressions
                             i = rollbackPos;
                             break;
                         }
+
                         state.Code = Parser.RemoveComments(state.SourceCode, i + 1);
                         binary = true;
                         kind = OperationType.Division;
@@ -928,7 +929,7 @@ namespace NiL.JS.Expressions
                         {
                             Position = first.Position,
                             Length = i - first.Position + 1,
-                            withSpread = withSpread
+                            _withSpread = withSpread
                         };
 
                         i++;
@@ -944,7 +945,7 @@ namespace NiL.JS.Expressions
                         {
                             Position = first.Position,
                             Length = i - first.Position + 1,
-                            withSpread = true
+                            _withSpread = true
                         };
 
                         repeat = !forNew;

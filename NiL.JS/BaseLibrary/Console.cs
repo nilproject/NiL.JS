@@ -120,6 +120,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (!(bool)args[0])
                 LogArguments(LogLevel.Log, args, 1);
+
             return JSValue.undefined;
         }
 
