@@ -1119,7 +1119,7 @@ namespace NiL.JS.BaseLibrary
                 else
                 {
                     if (year < 100)
-                        year += (Context.CurrentGlobalContext.Year / 100) * 100;
+                        year += (Context.CurrentGlobalContext.Now.Year / 100) * 100;
                 }
 
                 time = dateToMilliseconds(year, month - 1, day,
