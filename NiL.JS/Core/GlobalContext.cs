@@ -33,6 +33,8 @@ namespace NiL.JS.Core
         public JsonSerializersRegistry JsonSerializersRegistry { get; set; }
         public TimeZoneInfo CurrentTimeZone { get; set; }
 
+        internal DateTime Now => TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.Utc, CurrentTimeZone);
+
         public GlobalContext()
             : this("")
         {

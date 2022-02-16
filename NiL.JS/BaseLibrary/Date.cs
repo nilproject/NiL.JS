@@ -51,8 +51,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Date()
         {
-            _time = DateTime.Now.Ticks / 10000;
-            _timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+            var now = Context.CurrentGlobalContext.Now;
+            _time = now.Ticks / 10000;
+            _timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(now).Ticks / 10000;
             _time -= _timeZoneOffset;
         }
 
@@ -242,8 +243,9 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public static JSValue now()
         {
-            var time = DateTime.Now.Ticks / 10000;
-            var timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(DateTime.Now).Ticks / 10000;
+            var now = Context.CurrentGlobalContext.Now;
+            var time = now.Ticks / 10000;
+            var timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(now).Ticks / 10000;
             return time - timeZoneOffset - _unixTimeBase;
         }
 
@@ -1112,12 +1114,12 @@ namespace NiL.JS.BaseLibrary
 
                 if (!wasYear)
                 {
-                    year = DateTime.Now.Year;
+                    year = Context.CurrentGlobalContext.Now.Year;
                 }
                 else
                 {
                     if (year < 100)
-                        year += (DateTime.Now.Year / 100) * 100;
+                        year += (Context.CurrentGlobalContext.Now.Year / 100) * 100;
                 }
 
                 time = dateToMilliseconds(year, month - 1, day,
@@ -1361,7 +1363,7 @@ namespace NiL.JS.BaseLibrary
                 day = 1;
 
             if (year < 100)
-                year += (DateTime.Now.Year / 100) * 100;
+                year += (Context.CurrentGlobalContext.Now.Year / 100) * 100;
 
             time = dateToMilliseconds(year, month - 1, day, hour, minutes, seconds, milliseconds);
 
