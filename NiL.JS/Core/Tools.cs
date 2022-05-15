@@ -655,6 +655,11 @@ namespace NiL.JS.Core
                                     return null;
                                 }
                             }
+
+                            if (targetType == typeof(Guid))
+                            {
+                                return Guid.Parse(jsobj.Value.ToString());
+                            }
                         }
 
                         if (targetType == typeof(string))
