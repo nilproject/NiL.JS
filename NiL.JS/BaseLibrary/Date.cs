@@ -51,7 +51,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public Date()
         {
-            var now = Context.CurrentGlobalContext.Now;
+            var now = getNow();
             _time = now.Ticks / 10000;
             _timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(now).Ticks / 10000;
             _time -= _timeZoneOffset;
@@ -243,7 +243,7 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         public static JSValue now()
         {
-            var now = Context.CurrentGlobalContext.Now;
+            var now = getNow();
             var time = now.Ticks / 10000;
             var timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(now).Ticks / 10000;
             return time - timeZoneOffset - _unixTimeBase;
@@ -1105,6 +1105,7 @@ namespace NiL.JS.BaseLibrary
 
             try
             {
+                var now = getNow();
                 if (!wasDay && !wasMonth && !wasYear && timeTokens == null)
                     return false;
 
@@ -1114,12 +1115,12 @@ namespace NiL.JS.BaseLibrary
 
                 if (!wasYear)
                 {
-                    year = Context.CurrentGlobalContext.Now.Year;
+                    year = now.Year;
                 }
                 else
                 {
                     if (year < 100)
-                        year += (Context.CurrentGlobalContext.Now.Year / 100) * 100;
+                        year += (now.Year / 100) * 100;
                 }
 
                 time = dateToMilliseconds(year, month - 1, day,
@@ -1363,7 +1364,7 @@ namespace NiL.JS.BaseLibrary
                 day = 1;
 
             if (year < 100)
-                year += (Context.CurrentGlobalContext.Now.Year / 100) * 100;
+                year += (getNow().Year / 100) * 100;
 
             time = dateToMilliseconds(year, month - 1, day, hour, minutes, seconds, milliseconds);
 
@@ -1407,6 +1408,9 @@ namespace NiL.JS.BaseLibrary
         {
             return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
         }
+
+        private static DateTime getNow()
+            => TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.Utc, Context.CurrentGlobalContext.CurrentTimeZone);
 
         #region Do not remove
 

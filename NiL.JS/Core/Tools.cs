@@ -483,6 +483,9 @@ namespace NiL.JS.Core
             }
         }
 
+        public static object ConvertJSValueToType(JSValue jsobj, Type targetType)
+            => ConvertJStoObj(jsobj, targetType, true);
+
         internal static object ConvertJStoObj(JSValue jsobj, Type targetType, bool hightLoyalty)
         {
             if (jsobj == null)
@@ -784,7 +787,7 @@ namespace NiL.JS.Core
                 if (jsobj._valueType >= JSValueType.Object
                     && !targetType.GetTypeInfo().IsPrimitive
                     && targetType != typeof(string)
-                    && !targetType.IsSubclassOf(typeof(JSValue)))
+                    && !typeof(JSValue).IsAssignableFrom(targetType))
                 {
                     var targetInstance = (JSValue.GetConstructor(targetType) as Function)?.Construct(new Arguments());
                     if (!(targetInstance is null))

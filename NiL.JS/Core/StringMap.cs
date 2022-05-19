@@ -262,11 +262,11 @@ namespace NiL.JS.Core
             {
                 for (var i = 0; i < records.Length; i++)
                 {
-                    var record = records[i];
+                    ref var record = ref records[i];
                     if (record.key == null)
                         break;
 
-                    if (string.CompareOrdinal(record.key, key) == 0)
+                    if (record.key[0] == key[0] && string.CompareOrdinal(record.key, key) == 0)
                     {
                         value = record.value;
                         return true;

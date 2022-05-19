@@ -94,7 +94,7 @@ namespace NiL.JS.Extensions
                 }
             }
         }
-
+        
         public static T As<T>(this JSValue self)
         {
 #if PORTABLE || NETCORE
