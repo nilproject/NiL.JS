@@ -629,57 +629,66 @@ namespace NiL.JS.Core.Interop
             return false;
         }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            if (_members == null)
-                fillMembers();
+            if (propertyScope is PropertyScope.Common or PropertyScope.Own)
+            {
+                if (_members == null)
+                    fillMembers();
 
-            if (PrototypeInstance != null)
-            {
-                var @enum = PrototypeInstance.GetEnumerator(hideNonEnumerable, enumerationMode);
-                while (@enum.MoveNext())
-                    yield return @enum.Current;
-            }
-            else
-            {
-                foreach (var f in _fields)
+                if (PrototypeInstance != null)
                 {
-                    if (!hideNonEnumerable || (f.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0)
-                        yield return f;
+                    var @enum = PrototypeInstance.GetEnumerator(hideNonEnumerable, enumerationMode);
+                    while (@enum.MoveNext())
+                        yield return @enum.Current;
                 }
-            }
-
-            foreach (var item in _members)
-            {
-                if (_fields.ContainsKey(item.Key))
-                    continue;
-
-                for (var i = item.Value.Count; i-- > 0;)
+                else
                 {
-                    if (item.Value[i].IsDefined(typeof(HiddenAttribute), false))
-                        continue;
-
-                    if (!hideNonEnumerable || !item.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
+                    foreach (var f in _fields)
                     {
-                        switch (enumerationMode)
-                        {
-                            case EnumerationMode.KeysOnly:
-                            {
-                                yield return new KeyValuePair<string, JSValue>(item.Key, null);
-                                break;
-                            }
-                            case EnumerationMode.RequireValues:
-                            case EnumerationMode.RequireValuesForWrite:
-                            {
-                                yield return new KeyValuePair<string, JSValue>(
-                                    item.Key,
-                                    _fields[item.Key] = proxyMember(enumerationMode == EnumerationMode.RequireValuesForWrite, item.Value));
-                                break;
-                            }
-                        }
-                        break;
+                        if (!hideNonEnumerable || (f.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0)
+                            yield return f;
                     }
                 }
+
+                foreach (var item in _members)
+                {
+                    if (_fields.ContainsKey(item.Key))
+                        continue;
+
+                    for (var i = item.Value.Count; i-- > 0;)
+                    {
+                        if (item.Value[i].IsDefined(typeof(HiddenAttribute), false))
+                            continue;
+
+                        if (!hideNonEnumerable || !item.Value[i].IsDefined(typeof(DoNotEnumerateAttribute), false))
+                        {
+                            switch (enumerationMode)
+                            {
+                                case EnumerationMode.KeysOnly:
+                                {
+                                    yield return new KeyValuePair<string, JSValue>(item.Key, null);
+                                    break;
+                                }
+                                case EnumerationMode.RequireValues:
+                                case EnumerationMode.RequireValuesForWrite:
+                                {
+                                    yield return new KeyValuePair<string, JSValue>(
+                                        item.Key,
+                                        _fields[item.Key] = proxyMember(enumerationMode == EnumerationMode.RequireValuesForWrite, item.Value));
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (propertyScope is not PropertyScope.Own && __proto__ is not null)
+            {
+                for (var e = __proto__.GetEnumerator(hideNonEnumerable, enumerationMode, PropertyScopeForProto(propertyScope)); e.MoveNext();)
+                    yield return e.Current;
             }
         }
     }

@@ -36,7 +36,7 @@ namespace NiL.JS.Core
             return base.GetProperty(key, forWrite, memberScope);
         }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
         {
             foreach (var i in _context._variables)
                 if (i.Value.Exists && (!hideNonEnumerable || (i.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))

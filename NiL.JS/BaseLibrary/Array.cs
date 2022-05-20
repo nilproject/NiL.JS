@@ -541,7 +541,7 @@ namespace NiL.JS.BaseLibrary
 
             if (arrayLike._valueType < JSValueType.Object)
                 arrayLike = arrayLike.ToObject();
-            
+
             var simpleFunction = false;
             if (args.Length == 1)
             {
@@ -2099,39 +2099,29 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            foreach (var item in _data.DirectOrder)
+            if (propertyScope is PropertyScope.Common or PropertyScope.Own)
             {
-                if (item.Value != null
-                    && item.Value.Exists
-                    && (!hideNonEnum || (item.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                foreach (var item in _data.DirectOrder)
                 {
-                    var value = item.Value;
-                    if (enumeratorMode == EnumerationMode.RequireValuesForWrite && (value._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
-                        _data[item.Key] = value = value.CloneImpl(true);
-
-                    yield return new KeyValuePair<string, JSValue>(((uint)item.Key).ToString(), value);
-                }
-            }
-            if (!hideNonEnum)
-                yield return new KeyValuePair<string, JSValue>("length", length);
-            if (_fields != null)
-            {
-                foreach (var f in _fields)
-                {
-                    if (f.Value.Exists && (!hideNonEnum || (f.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                    if (item.Value != null
+                        && item.Value.Exists
+                        && (!hideNonEnum || (item.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     {
-                        var value = f.Value;
+                        var value = item.Value;
                         if (enumeratorMode == EnumerationMode.RequireValuesForWrite && (value._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
-                        {
-                            _fields[f.Key] = value = value.CloneImpl(true);
-                        }
+                            _data[item.Key] = value = value.CloneImpl(true);
 
-                        yield return new KeyValuePair<string, JSValue>(f.Key, value);
+                        yield return new KeyValuePair<string, JSValue>(((uint)item.Key).ToString(), value);
                     }
                 }
+                if (!hideNonEnum)
+                    yield return new KeyValuePair<string, JSValue>("length", length);
             }
+
+            for (var e = base.GetEnumerator(hideNonEnum, enumeratorMode, propertyScope); e.MoveNext();)
+                yield return e.Current;
         }
 
         [Hidden]
@@ -2406,15 +2396,15 @@ namespace NiL.JS.BaseLibrary
             {
                 var nlenD = Tools.JSObjectToDouble(value);
                 var nlen = (uint)nlenD;
-                
+
                 if (double.IsNaN(nlenD) || double.IsInfinity(nlenD) || nlen != nlenD)
                     ExceptionHelper.Throw(new RangeError("Invalid array length"));
-                
+
                 if ((_attributes & JSValueAttributesInternal.ReadOnly) != 0)
                     return;
 
                 array.SetLenght(nlen);
-                
+
                 if ((int)array._data.Length == array._data.Length)
                 {
                     _iValue = (int)array._data.Length;

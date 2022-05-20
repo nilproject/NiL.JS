@@ -960,8 +960,11 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
         {
+            if (propertyScope is not PropertyScope.Own and not PropertyScope.Common)
+                yield break;
+
             var str = _oValue.ToString();
             var len = str.Length;
             for (var i = 0; i < len; i++)

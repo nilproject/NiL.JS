@@ -56,14 +56,18 @@ namespace NiL.JS.Core.Functions
             return JSObject.CreateObject();
         }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            var pe = _staticProxy.GetEnumerator(hideNonEnum, enumerationMode);
+            var pe = _staticProxy.GetEnumerator(hideNonEnum, enumerationMode, propertyScope);
             while (pe.MoveNext())
                 yield return pe.Current;
-            pe = __proto__.GetEnumerator(hideNonEnum, enumerationMode);
-            while (pe.MoveNext())
-                yield return pe.Current;
+
+            if (propertyScope is not PropertyScope.Own)
+            {
+                pe = __proto__.GetEnumerator(hideNonEnum, enumerationMode, PropertyScopeForProto(propertyScope));
+                while (pe.MoveNext())
+                    yield return pe.Current;
+            }
         }
     }
 }

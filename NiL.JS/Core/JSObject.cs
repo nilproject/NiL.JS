@@ -313,20 +313,23 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            if (_fields != null)
+            if (propertyScope is PropertyScope.Common or PropertyScope.Own)
             {
-                foreach (var f in _fields)
+                if (_fields != null)
                 {
-                    if (f.Value.Exists && (!hideNonEnum || (f.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                        yield return f;
+                    foreach (var f in _fields)
+                    {
+                        if (f.Value.Exists && (!hideNonEnum || (f.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                            yield return f;
+                    }
                 }
             }
 
-            if (_objectPrototype != null)
+            if (_objectPrototype != null && propertyScope is not PropertyScope.Own)
             {
-                for (var e = _objectPrototype.GetEnumerator(hideNonEnum, EnumerationMode.RequireValues); e.MoveNext();)
+                for (var e = _objectPrototype.GetEnumerator(hideNonEnum, EnumerationMode.RequireValues, PropertyScopeForProto(propertyScope)); e.MoveNext();)
                 {
                     if (e.Current.Value._valueType >= JSValueType.Undefined
                         && (e.Current.Value._attributes & JSValueAttributesInternal.Field) != 0)
@@ -976,7 +979,7 @@ namespace NiL.JS.Core
 
             if (args[0]._oValue == null)
                 ExceptionHelper.Throw(new TypeError("Cannot get property names of null"));
-            
+
             var obj = args[0]._oValue as JSObject;
 
             var result = new HashSet<string>();

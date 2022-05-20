@@ -106,9 +106,9 @@ namespace NiL.JS.Core.Functions
             return original.ConstructObject();
         }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            return original.GetEnumerator(hideNonEnumerable, enumeratorMode);
+            return original.GetEnumerator(hideNonEnumerable, enumeratorMode, propertyScope);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)

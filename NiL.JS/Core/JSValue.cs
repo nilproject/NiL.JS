@@ -989,19 +989,22 @@ namespace NiL.JS.Core
         [Hidden]
         public IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator()
         {
-            return GetEnumerator(true, EnumerationMode.RequireValuesForWrite);
+            return GetEnumerator(true, EnumerationMode.RequireValuesForWrite, PropertyScope.Common);
         }
 
-        protected internal virtual IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode)
+        protected internal virtual IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
         {
             if (_valueType >= JSValueType.Object && _oValue != this)
             {
                 var innerObject = _oValue as JSValue;
                 if (innerObject != null)
-                    return innerObject.GetEnumerator(hideNonEnumerable, enumeratorMode);
+                    return innerObject.GetEnumerator(hideNonEnum, enumeratorMode, propertyScope);
             }
 
-            return GetEnumeratorImpl(hideNonEnumerable);
+            if (propertyScope is not PropertyScope.Common and not PropertyScope.Own)
+                return Enumerable.Empty<KeyValuePair<string, JSValue>>().GetEnumerator();
+
+            return GetEnumeratorImpl(hideNonEnum);
         }
 
         private IEnumerator<KeyValuePair<string, JSValue>> GetEnumeratorImpl(bool hideNonEnum)
@@ -1209,7 +1212,7 @@ namespace NiL.JS.Core
             return res.Exists;
         }
 
-#region Члены IConvertible
+        #region Члены IConvertible
 #if !(PORTABLE)
         TypeCode IConvertible.GetTypeCode()
         {
@@ -1301,9 +1304,9 @@ namespace NiL.JS.Core
             return (ulong)Tools.JSObjectToInt64(this);
         }
 #endif
-#endregion
+        #endregion
 
-#region Члены IComparable<JSValue>
+        #region Члены IComparable<JSValue>
 
         [Hidden]
         public virtual int CompareTo(JSValue other)
@@ -1331,7 +1334,7 @@ namespace NiL.JS.Core
                 throw new InvalidOperationException("Type mismatch");
         }
 
-#endregion
+        #endregion
 
         public static JSValue Marshal(object value)
         {
@@ -1355,5 +1358,14 @@ namespace NiL.JS.Core
         {
             return Context.CurrentGlobalContext.GetGenericTypeSelector(types);
         }
+
+        private protected PropertyScope PropertyScopeForProto(PropertyScope propertyScope)
+            => propertyScope switch
+            {
+                PropertyScope.Super => PropertyScope.Own,
+                PropertyScope.PrototypeOfSuperClass => PropertyScope.Super,
+                PropertyScope.Common => PropertyScope.Common,
+                _ => throw new InvalidOperationException(),
+            };
     }
 }

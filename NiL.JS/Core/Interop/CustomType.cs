@@ -38,12 +38,9 @@ namespace NiL.JS.Core.Interop
         }
 
         [Hidden]
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            if (_fields != null)
-                foreach (var r in _fields)
-                    if (r.Value.Exists && (!hideNonEnum || (r.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                        yield return r;
+            return base.GetEnumerator(hideNonEnum, enumerationMode, propertyScope);
         }
     }
 }

@@ -156,7 +156,7 @@ namespace NiL.JS
                 yield return type.Value;
         }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool pdef, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool pdef, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
         {
             yield break;
         }

@@ -388,12 +388,15 @@ namespace NiL.JS.Core.Interop
             return result;
         }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            for (var i = 0; i < _data.Count; i++)
-                yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumerationMode > 0 ? new Element(this, i) : null);
+            if (propertyScope is PropertyScope.Own or PropertyScope.Common)
+            {
+                for (var i = 0; i < _data.Count; i++)
+                    yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumerationMode > 0 ? new Element(this, i) : null);
+            }
 
-            for (var e = base.GetEnumerator(hideNonEnumerable, enumerationMode); e.MoveNext();)
+            for (var e = base.GetEnumerator(hideNonEnumerable, enumerationMode, propertyScope); e.MoveNext();)
                 yield return e.Current;
         }
 

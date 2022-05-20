@@ -362,14 +362,18 @@ namespace NiL.JS.Core.Functions
             return null;
         }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            var e = __proto__.GetEnumerator(hideNonEnumerable, enumerationMode);
+            var e = _staticProxy.GetEnumerator(hideNonEnumerable, enumerationMode, propertyScope);
             while (e.MoveNext())
                 yield return e.Current;
-            e = _staticProxy.GetEnumerator(hideNonEnumerable, enumerationMode);
-            while (e.MoveNext())
-                yield return e.Current;
+
+            if (propertyScope is not PropertyScope.Own)
+            {
+                e = __proto__.GetEnumerator(hideNonEnumerable, enumerationMode, PropertyScopeForProto(propertyScope));
+                while (e.MoveNext())
+                    yield return e.Current;
+            }
         }
 
         public override string ToString(bool headerOnly)

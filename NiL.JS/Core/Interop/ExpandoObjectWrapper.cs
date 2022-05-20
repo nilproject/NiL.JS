@@ -74,15 +74,20 @@ namespace NiL.JS.Core.Interop
             return (_target as IDictionary<string, object>).Remove(key.ToString());
         }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            if (enumeratorMode == EnumerationMode.KeysOnly)
-                return (_target as IDictionary<string, object>).Keys.Select(x => new KeyValuePair<string, JSValue>(x, null)).GetEnumerator();
+            if (propertyScope is PropertyScope.Own or PropertyScope.Common)
+            {
+                if (enumeratorMode == EnumerationMode.KeysOnly)
+                    return (_target as IDictionary<string, object>).Keys.Select(x => new KeyValuePair<string, JSValue>(x, null)).GetEnumerator();
 
-            if (enumeratorMode == EnumerationMode.RequireValues)
-                return (_target as IDictionary<string, object>).Select(x => new KeyValuePair<string, JSValue>(x.Key, Marshal(x.Value))).GetEnumerator();
+                if (enumeratorMode == EnumerationMode.RequireValues)
+                    return _target.Select(x => new KeyValuePair<string, JSValue>(x.Key, Marshal(x.Value))).GetEnumerator();
 
-            return (_target as IDictionary<string, object>).Select(x => new KeyValuePair<string, JSValue>(x.Key, new ValueWrapper(this, x.Key))).GetEnumerator();
+                return _target.Select(x => new KeyValuePair<string, JSValue>(x.Key, new ValueWrapper(this, x.Key))).GetEnumerator();
+            }
+
+            return base.GetEnumerator(hideNonEnum, enumeratorMode, propertyScope);
         }
     }
 }

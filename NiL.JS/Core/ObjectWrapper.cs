@@ -76,13 +76,13 @@ namespace NiL.JS.Core
             return base.DeleteProperty(name);
         }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
         {
             var t = instance as JSValue;
             if (t != null)
-                return t.GetEnumerator(hideNonEnum, enumerationMode);
+                return t.GetEnumerator(hideNonEnum, enumerationMode, propertyScope);
 
-            return base.GetEnumerator(hideNonEnum, enumerationMode);
+            return base.GetEnumerator(hideNonEnum, enumerationMode, propertyScope);
         }
     }
 }

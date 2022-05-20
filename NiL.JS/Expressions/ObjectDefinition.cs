@@ -16,12 +16,16 @@ namespace NiL.JS.Expressions
         private sealed class ObjectSpreadMarker : Expression
         {
             public static readonly ObjectSpreadMarker Instance = new ObjectSpreadMarker();
+            public static readonly JSValue FakeResult = new JSValue();
 
             private ObjectSpreadMarker() { }
 
+            protected internal override bool ContextIndependent => true;
+            protected internal override bool NeedDecompose => false;
+
             public override JSValue Evaluate(Context context)
             {
-                throw new InvalidOperationException();
+                return FakeResult;
             }
         }
 
@@ -210,7 +214,14 @@ namespace NiL.JS.Expressions
                             mode == FunctionKind.Setter ? propertyAccessor : null
                         );
                         fields.Add(accessorName, propertyPair);
-                        properties.Add(new KeyValuePair<Expression, Expression>(new Constant(accessorName), propertyPair));
+                        properties.Add(
+                            new KeyValuePair<Expression, Expression>(
+                                new Constant(accessorName)
+                                {
+                                    Position = start,
+                                    Length = accessorName.Length,
+                                },
+                                propertyPair));
                     }
                     else
                     {
@@ -245,7 +256,8 @@ namespace NiL.JS.Expressions
                 }
                 else if (Parser.Validate(state.Code, "...", ref i))
                 {
-
+                    var value = ExpressionTree.Parse(state, ref i, processComma: false);
+                    properties.Add(new KeyValuePair<Expression, Expression>(ObjectSpreadMarker.Instance, value));
                 }
                 else
                 {
@@ -329,7 +341,14 @@ namespace NiL.JS.Expressions
                     }
 
                     fields[fieldName] = initializer;
-                    properties.Add(new KeyValuePair<Expression, Expression>(new Constant(fieldName), initializer));
+                    properties.Add(
+                        new KeyValuePair<Expression, Expression>(
+                            new Constant(fieldName)
+                            {
+                                Position = start,
+                                Length = fieldName.Length,
+                            },
+                            initializer));
                 }
 
                 while (Tools.IsWhiteSpace(state.Code[i]))
@@ -359,47 +378,59 @@ namespace NiL.JS.Expressions
 
             for (var i = 0; i < _properties.Length; i++)
             {
-                var key = _properties[i].Key.Evaluate(context).CloneImpl(false);
+                var key = _properties[i].Key.Evaluate(context);
                 var value = _properties[i].Value.Evaluate(context).CloneImpl(false);
                 value._attributes = JSValueAttributesInternal.None;
 
                 JSValue existedValue;
                 Symbol symbolKey = null;
                 string stringKey = null;
-                if (key.Is<Symbol>())
+
+                if (key == ObjectSpreadMarker.FakeResult)
                 {
-                    symbolKey = key.As<Symbol>();
-
-                    if (res._symbols == null)
-                        res._symbols = new Dictionary<Symbol, JSValue>();
-
-                    res._symbols.TryGetValue(symbolKey, out existedValue);
+                    for (var enumerator = value.GetEnumerator(true, EnumerationMode.RequireValues, PropertyScope.Own); enumerator.MoveNext();)
+                    {
+                        var property = enumerator.Current;
+                        res._fields[property.Key] = property.Value.CloneImpl(true, (JSValueAttributesInternal)int.MaxValue);
+                    }
                 }
                 else
                 {
-                    stringKey = key.As<string>();
-
-                    res._fields.TryGetValue(stringKey, out existedValue);
-                }
-
-                if (existedValue != value)
-                {
-                    if (existedValue.Is(JSValueType.Property) && value.Is(JSValueType.Property))
+                    if (key.Is<Symbol>())
                     {
-                        var oldGs = existedValue.As<Core.PropertyPair>();
-                        var newGs = value.As<Core.PropertyPair>();
-                        oldGs.getter = newGs.getter ?? oldGs.getter;
-                        oldGs.setter = newGs.setter ?? oldGs.setter;
+                        symbolKey = key.As<Symbol>();
+
+                        if (res._symbols == null)
+                            res._symbols = new Dictionary<Symbol, JSValue>();
+
+                        res._symbols.TryGetValue(symbolKey, out existedValue);
                     }
                     else
                     {
-                        if (key.Is<Symbol>())
+                        stringKey = key.As<string>();
+
+                        res._fields.TryGetValue(stringKey, out existedValue);
+                    }
+
+                    if (existedValue != value)
+                    {
+                        if (existedValue.Is(JSValueType.Property) && value.Is(JSValueType.Property))
                         {
-                            res._symbols[symbolKey] = value;
+                            var oldGs = existedValue.As<Core.PropertyPair>();
+                            var newGs = value.As<Core.PropertyPair>();
+                            oldGs.getter = newGs.getter ?? oldGs.getter;
+                            oldGs.setter = newGs.setter ?? oldGs.setter;
                         }
                         else
                         {
-                            res._fields[stringKey] = value;
+                            if (key.Is<Symbol>())
+                            {
+                                res._symbols[symbolKey] = value;
+                            }
+                            else
+                            {
+                                res._fields[stringKey] = value;
+                            }
                         }
                     }
                 }
@@ -512,7 +543,10 @@ namespace NiL.JS.Expressions
 
             for (int i = 0; i < _properties.Length; i++)
             {
-                res += (_properties[i].Key as Constant as object ?? ("[" + _properties[i].Key + "]")) + " : " + _properties[i].Value;
+                if (_properties[i].Key is ObjectSpreadMarker)
+                    res += "..." + _properties[i].Value;
+                else
+                    res += (_properties[i].Key as Constant as object ?? ("[" + _properties[i].Key + "]")) + " : " + _properties[i].Value;
                 if (i + 1 < _properties.Length)
                     res += ", ";
             }

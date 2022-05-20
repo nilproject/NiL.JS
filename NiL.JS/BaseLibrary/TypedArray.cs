@@ -314,14 +314,15 @@ namespace NiL.JS.BaseLibrary
 
         protected internal abstract System.Array ToNativeArray();
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode)
+        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            var baseEnum = base.GetEnumerator(hideNonEnum, enumeratorMode);
-            while(baseEnum.MoveNext())
+            var baseEnum = base.GetEnumerator(hideNonEnum, enumeratorMode, propertyScope);
+            while (baseEnum.MoveNext())
                 yield return baseEnum.Current;
 
-            for (int i = 0, len = Tools.JSObjectToInt32(length); i < len; i++)
-                yield return new KeyValuePair<string, JSValue>(i.ToString(), this[i]);
+            if (propertyScope is PropertyScope.Common or PropertyScope.Own)
+                for (int i = 0, len = Tools.JSObjectToInt32(length); i < len; i++)
+                    yield return new KeyValuePair<string, JSValue>(i.ToString(), this[i]);
         }
     }
 }
