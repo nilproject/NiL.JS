@@ -180,12 +180,15 @@ namespace NiL.JS.Statements
                     }
                     condition.Eliminated = true;
                 }
-                else if ((opts & Options.SuppressUselessStatementsElimination) == 0
-                        && ((this.condition is Expressions.ObjectDefinition && (this.condition as Expressions.ObjectDefinition).FieldNames.Length == 0)
-                            || (this.condition is ArrayDefinition && (this.condition as ArrayDefinition).Elements.Length == 0)))
+                else
                 {
-                    _this = new InfinityLoop(this.body, this.labels);
-                    this.condition.Eliminated = true;
+                    if ((opts & Options.SuppressUselessStatementsElimination) == 0
+                        && ((condition is ObjectDefinition && (condition as ObjectDefinition).Properties.Length == 0)
+                            || (condition is ArrayDefinition)))
+                    {
+                        _this = new InfinityLoop(body, labels);
+                        condition.Eliminated = true;
+                    }
                 }
             }
 #if (PORTABLE || NETCORE)

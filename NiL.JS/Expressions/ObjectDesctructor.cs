@@ -60,39 +60,23 @@ namespace NiL.JS.Expressions
                     return;
 
                 var j = 0;
-                var values = new JSValue[targetMap.FieldNames.Length + targetMap.ComputedProperties.Length];
-                for (var i = 0; i < targetMap.FieldNames.Length; i++, j++)
-                    values[j] = source[targetMap.FieldNames[i]].CloneImpl(false);
-                for (var i = 0; i < targetMap.ComputedProperties.Length; i++, j++)
-                    values[j] = source.GetProperty(targetMap.ComputedProperties[i].Key.Evaluate(_context), false, PropertyScope.Common).CloneImpl(false);
+                var values = new JSValue[targetMap.Properties.Length];
+                for (var i = 0; i < targetMap.Properties.Length; i++, j++)
+                    values[j] = source.GetProperty(targetMap.Properties[i].Key.Evaluate(_context), false, PropertyScope.Common).CloneImpl(false);
 
                 Arguments setterArgs = null;
                 j = 0;
-                for (var i = 0; i < targetMap.FieldNames.Length; i++, j++)
+                for (var i = 0; i < targetMap.Properties.Length; i++, j++)
                 {
-                    if (targetMap.Values[i] is ObjectDefinition)
+                    if (targetMap.Properties[i].Value is ObjectDefinition)
                     {
-                        assignValues(values[j], targetMap.Values[i] as ObjectDefinition);
-                        assignValues(values[j], targetMap.Values[i] as ArrayDefinition);
+                        assignValues(values[j], targetMap.Properties[i].Value as ObjectDefinition);
+                        assignValues(values[j], targetMap.Properties[i].Value as ArrayDefinition);
                     }
                     else
                     {
-                        var target = targetMap.Values[i].EvaluateForWrite(_context);
-                        setterArgs = assign(target, values[j], targetMap.FieldNames[i], setterArgs);
-                    }
-                }
-
-                for (var i = 0; i < targetMap.ComputedProperties.Length; i++, j++)
-                {
-                    if (targetMap.ComputedProperties[i].Value is ObjectDefinition)
-                    {
-                        assignValues(values[j], targetMap.ComputedProperties[i].Value as ObjectDefinition);
-                        assignValues(values[j], targetMap.ComputedProperties[i].Value as ArrayDefinition);
-                    }
-                    else
-                    {
-                        var target = targetMap.ComputedProperties[i].Value.EvaluateForWrite(_context);
-                        setterArgs = assign(target, values[j], targetMap.ComputedProperties[i].Value, setterArgs);
+                        var target = targetMap.Properties[i].Value.EvaluateForWrite(_context);
+                        setterArgs = assign(target, values[j], targetMap.Properties[i].Value, setterArgs);
                     }
                 }
             }
@@ -178,19 +162,9 @@ namespace NiL.JS.Expressions
             if (objectDefinition == null)
                 return true;
 
-            for (var i = 0; i < objectDefinition.Values.Length; i++)
+            for (var i = 0; i < objectDefinition.Properties.Length; i++)
             {
-                if (!ExpressionTree.canBeAssignee(objectDefinition.Values[i]))
-                {
-                    if (@throw)
-                        ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
-                    return false;
-                }
-            }
-
-            for (var i = 0; i < objectDefinition.ComputedProperties.Length; i++)
-            {
-                if (!ExpressionTree.canBeAssignee(objectDefinition.ComputedProperties[i].Value))
+                if (!ExpressionTree.canBeAssignee(objectDefinition.Properties[i].Value))
                 {
                     if (@throw)
                         ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
@@ -248,29 +222,16 @@ namespace NiL.JS.Expressions
             if (objectDefinition == null)
                 return;
 
-            for (var i = 0; i < objectDefinition.Values.Length; i++)
+            for (var i = 0; i < objectDefinition.Properties.Length; i++)
             {
-                if (objectDefinition.Values[i] is Variable)
+                if (objectDefinition.Properties[i].Value is Variable)
                 {
-                    result.Add((Variable)objectDefinition.Values[i]);
+                    result.Add((Variable)objectDefinition.Properties[i].Value);
                 }
                 else
                 {
-                    collectTargetVariables(objectDefinition.Values[i] as ObjectDefinition, result);
-                    collectTargetVariables(objectDefinition.Values[i] as ArrayDefinition, result);
-                }
-            }
-
-            for (var i = 0; i < objectDefinition.ComputedProperties.Length; i++)
-            {
-                if (objectDefinition.ComputedProperties[i].Value is Variable)
-                {
-                    result.Add((Variable)objectDefinition.ComputedProperties[i].Value);
-                }
-                else
-                {
-                    collectTargetVariables(objectDefinition.ComputedProperties[i].Value as ObjectDefinition, result);
-                    collectTargetVariables(objectDefinition.ComputedProperties[i].Value as ArrayDefinition, result);
+                    collectTargetVariables(objectDefinition.Properties[i].Value as ObjectDefinition, result);
+                    collectTargetVariables(objectDefinition.Properties[i].Value as ArrayDefinition, result);
                 }
             }
         }
