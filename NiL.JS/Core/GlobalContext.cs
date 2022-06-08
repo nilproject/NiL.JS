@@ -468,7 +468,7 @@ namespace NiL.JS.Core
                     }
                     else if (value is ExpandoObject)
                     {
-                        return new ExpandoObjectWrapper(value as ExpandoObject);
+                        return new DictionaryWrapper<string, object>(value as ExpandoObject);
                     }
                     else if (value is Task)
                     {
