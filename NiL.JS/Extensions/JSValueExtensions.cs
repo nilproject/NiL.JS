@@ -176,8 +176,8 @@ namespace NiL.JS.Extensions
                         if (self.Value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
                             return ((Function)self.Value).MakeDelegate<T>();
 
-                        if (typeof(T).IsAssignableFrom(self.GetType()))
-                            return (T)(object)self;
+                        if (typeof(T).IsAssignableFrom(self.Value.GetType()))
+                            return (T)self.Value;
 
                         try
                         {

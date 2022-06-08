@@ -4,6 +4,12 @@ using NiL.JS.Extensions;
 
 namespace NiL.JS.Core.Interop
 {
+    public static class DictionaryWrapper
+    {
+        public static DictionaryWrapper<TKey, TValue> Of<TKey, TValue>(IDictionary<TKey, TValue> dictionary)
+            => new DictionaryWrapper<TKey, TValue>(dictionary);
+    }
+
     public sealed class DictionaryWrapper<TKey, TValue> : JSObject
     {
         private readonly IDictionary<TKey, TValue> _target;
