@@ -392,7 +392,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = undefined;
 
-            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args[0], args[1], undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -420,7 +420,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = -1L;
 
-            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args[0], args[1], undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -431,6 +431,69 @@ namespace NiL.JS.BaseLibrary
                 }
 
                 return true;
+            });
+
+            return result;
+        }
+
+        private static void flatten(JSValue array, JSValue callbackFn, JSValue thisBind, int depth, Action<JSValue> pushItemCallback)
+        {
+            iterateImpl(array, callbackFn, thisBind, undefined, undefined, true, (value, index, thisBind, jsCallback) =>
+            {
+                var item = jsCallback?.Call(thisBind, new Arguments { value.CloneImpl(false), index, array }) ?? value;
+
+                if (depth > 0 && item.Value is Array)
+                    flatten(item, callbackFn, thisBind, depth - 1, pushItemCallback);
+                else
+                    pushItemCallback(item);
+
+                return true;
+            });
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsCount(1)]
+        public static JSValue flatMap(JSValue self, Arguments args)
+        {
+            if (self == null)
+                self = undefined;
+            if (self._valueType < JSValueType.Object)
+                self = self.ToObject();
+
+            var targetIndex = 0;
+            var result = new Array();
+
+            flatten(self, args[0], args[1], 1, item =>
+            {
+                if (item._valueType >= JSValueType.Undefined)
+                    result[targetIndex] = item.CloneImpl(false);
+
+                targetIndex++;
+            });
+
+            return result;
+        }
+
+        [DoNotEnumerate]
+        [InstanceMember]
+        [ArgumentsCount(1)]
+        public static JSValue flat(JSValue self, Arguments args)
+        {
+            if (self == null)
+                self = undefined;
+            if (self._valueType < JSValueType.Object)
+                self = self.ToObject();
+
+            var targetIndex = 0;
+            var result = new Array();
+
+            flatten(self, null, null, 1, item =>
+            {
+                if (item._valueType >= JSValueType.Undefined)
+                    result[targetIndex] = item.CloneImpl(false);
+
+                targetIndex++;
             });
 
             return result;
@@ -448,7 +511,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = true;
 
-            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args[0], args[1], undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -469,7 +532,7 @@ namespace NiL.JS.BaseLibrary
                 self = self.ToObject();
 
             var result = true;
-            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args[0], args[1], undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -491,7 +554,7 @@ namespace NiL.JS.BaseLibrary
 
             Array result = new Array();
 
-            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args[0], args[1], undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -516,7 +579,7 @@ namespace NiL.JS.BaseLibrary
 
             Array result = new Array();
 
-            var len = iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            var len = iterateImpl(self, args[0], args[1], undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -574,18 +637,7 @@ namespace NiL.JS.BaseLibrary
             }
             else
             {
-                var newArgs = new Arguments();
-                for (var i = 1; i < args.Length; i++)
-                {
-                    newArgs.Add(args[i]);
-                }
-
-                if (simpleFunction)
-                {
-                    newArgs.Add(Function.Empty);
-                }
-
-                var len = iterateImpl(arrayLike, newArgs, undefined, undefined, false, callback);
+                var len = iterateImpl(arrayLike, args[1], args[2], undefined, undefined, false, callback);
                 result.SetLenght(len);
             }
 
@@ -602,7 +654,7 @@ namespace NiL.JS.BaseLibrary
             if (self._valueType < JSValueType.Object)
                 self = self.ToObject();
 
-            iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, args[0], args[1], undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -623,7 +675,7 @@ namespace NiL.JS.BaseLibrary
                 self = undefined;
             var result = -1L;
 
-            iterateImpl(self, null, args?[1] ?? undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, null, args?[1] ?? undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 if (Expressions.StrictEqual.Check(args[0], value))
                 {
@@ -644,7 +696,7 @@ namespace NiL.JS.BaseLibrary
         {
             var result = -1L;
 
-            iterateImpl(self, null, args?[1] ?? undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            iterateImpl(self, null, null, args?[1] ?? undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 if (args[0].IsNaN() ?
                         value.IsNaN()
@@ -661,7 +713,7 @@ namespace NiL.JS.BaseLibrary
             return result != -1L;
         }
 
-        private static long iterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, JSValue endIndexSrc, bool processMissing, Func<JSValue, long, JSValue, ICallable, bool> callback)
+        private static long iterateImpl(JSValue self, JSValue callbackFn, JSValue thisBind, JSValue startIndexSrc, JSValue endIndexSrc, bool processMissing, Func<JSValue, long, JSValue, ICallable, bool> callback)
         {
             Array arraySrc = self._oValue as Array;
             bool nativeMode = arraySrc != null;
@@ -684,16 +736,13 @@ namespace NiL.JS.BaseLibrary
             long startIndex = 0;
             long endIndex = 0;
             ICallable jsCallback = null;
-            JSValue thisBind = null;
 
-            if (args != null)
+            if (callbackFn != null)
             {
-                // forEach, map, filter, every, some, reduce
-                jsCallback = args[0] == null ? null : args[0]._oValue as ICallable;
+                // forEach, map, filter, every, some, reduce, flatMap
+                jsCallback = callbackFn == null ? null : callbackFn._oValue as ICallable;
                 if (jsCallback == null)
                     ExceptionHelper.Throw(new TypeError("Callback is not a function."));
-
-                thisBind = args.Length > 1 ? args[1] : null;
             }
             else if (startIndexSrc.Exists)
             {
@@ -1302,11 +1351,9 @@ namespace NiL.JS.BaseLibrary
             {
                 skip = false;
                 result = args[1];
-                args[1] = null;
-                args._iValue = 1;
             }
 
-            var len = (skip ? 0 : 1) + iterateImpl(self, args, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
+            var len = (skip ? 0 : 1) + iterateImpl(self, args[0], null, undefined, undefined, false, (value, index, thisBind, jsCallback) =>
             {
                 value = value.CloneImpl(false);
 
@@ -1561,7 +1608,7 @@ namespace NiL.JS.BaseLibrary
 
             var result = new Array();
             var index = 0L;
-            iterateImpl(self, null, args[0], args[1], true, (value, itemIndex, thisBind, jsCallback) =>
+            iterateImpl(self, null, null, args[0], args[1], true, (value, itemIndex, thisBind, jsCallback) =>
             {
                 if (value.Exists)
                 {
@@ -2181,55 +2228,55 @@ namespace NiL.JS.BaseLibrary
                     switch (key._valueType)
                     {
                         case JSValueType.Integer:
-                        {
-                            isIndex = (key._iValue & int.MinValue) == 0;
-                            index = key._iValue;
-                            break;
-                        }
-                        case JSValueType.Double:
-                        {
-                            isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
-                            if (isIndex)
-                                index = (int)(uint)key._dValue;
-                            break;
-                        }
-                        case JSValueType.String:
-                        {
-                            if (string.CompareOrdinal("length", key._oValue.ToString()) == 0)
-                                return length;
-
-                            var skey = key._oValue.ToString();
-                            if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
                             {
-                                int si = 0;
-                                if (Tools.ParseJsNumber(skey, ref si, out double dindex)
-                                    && (si == skey.Length)
-                                    && dindex >= 0
-                                    && dindex < uint.MaxValue
-                                    && (long)dindex == dindex)
-                                {
-                                    isIndex = true;
-                                    index = (int)(uint)dindex;
-                                }
+                                isIndex = (key._iValue & int.MinValue) == 0;
+                                index = key._iValue;
+                                break;
                             }
-
-                            break;
-                        }
-                        default:
-                        {
-                            if (key._valueType >= JSValueType.Object)
+                        case JSValueType.Double:
                             {
-                                key = key.ToPrimitiveValue_String_Value();
-                                var keyValue = key.Value;
-                                if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
+                                isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
+                                if (isIndex)
+                                    index = (int)(uint)key._dValue;
+                                break;
+                            }
+                        case JSValueType.String:
+                            {
+                                if (string.CompareOrdinal("length", key._oValue.ToString()) == 0)
                                     return length;
 
-                                if (key.ValueType < JSValueType.Object)
-                                    repeat = true;
-                            }
+                                var skey = key._oValue.ToString();
+                                if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
+                                {
+                                    int si = 0;
+                                    if (Tools.ParseJsNumber(skey, ref si, out double dindex)
+                                        && (si == skey.Length)
+                                        && dindex >= 0
+                                        && dindex < uint.MaxValue
+                                        && (long)dindex == dindex)
+                                    {
+                                        isIndex = true;
+                                        index = (int)(uint)dindex;
+                                    }
+                                }
 
-                            break;
-                        }
+                                break;
+                            }
+                        default:
+                            {
+                                if (key._valueType >= JSValueType.Object)
+                                {
+                                    key = key.ToPrimitiveValue_String_Value();
+                                    var keyValue = key.Value;
+                                    if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
+                                        return length;
+
+                                    if (key.ValueType < JSValueType.Object)
+                                        repeat = true;
+                                }
+
+                                break;
+                            }
                     }
                 }
                 while (repeat);
