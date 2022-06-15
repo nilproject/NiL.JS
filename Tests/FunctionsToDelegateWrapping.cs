@@ -4,7 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NiL.JS;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
+using NiL.JS.Extensions;
 
 namespace Tests
 {
@@ -33,6 +36,57 @@ namespace Tests
             context.Eval("list.Add(x => 'hi ' + x)");
 
             Assert.AreEqual("hi Test", list[0]("Test"));
+        }
+
+        [TestMethod]
+        public async Task TryExecuteAsyncTaskFromJs()
+        {
+            var executionCount = 0;
+
+            Task<bool> runCSharp()
+            {
+                executionCount++;
+                return Task.FromResult(true);
+            }
+
+            var module = new Module(@"
+                async function wrappedExecutesOnce() {
+                    var res = await runCSharp();
+                    return res;
+                }
+                async function wrappedExecutesTwice() {
+                    return await runCSharp();
+                }
+            ");
+
+            module
+                .Context
+                .DefineVariable("runCSharp")
+                .Assign(JSValue.Marshal(new Func<Task<bool>>(runCSharp)));
+
+            module.Run();
+
+            var result1 = await module
+                .Context
+                .GetVariable("wrappedExecutesOnce")
+                .As<Function>()
+                .Call(new Arguments())
+                .As<Promise>()
+                .Task;
+
+            Assert.AreEqual(true, result1.Value);
+            Assert.AreEqual(1, executionCount);
+
+            var result2 = await module
+                .Context
+                .GetVariable("wrappedExecutesTwice")
+                .As<Function>()
+                .Call(new Arguments())
+                .As<Promise>()
+                .Task;
+
+            Assert.AreEqual(true, result2.Value);
+            Assert.AreEqual(2, executionCount);
         }
     }
 }

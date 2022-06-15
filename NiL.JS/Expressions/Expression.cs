@@ -200,7 +200,7 @@ namespace NiL.JS.Expressions
                 s.Decompose(ref s, result);
                 if (result.Count > 0)
                 {
-                    self = new SuspendableExpression(this, result.ToArray());
+                    self = new SuspendableExpression(s, result.ToArray());
                 }
             }
         }
