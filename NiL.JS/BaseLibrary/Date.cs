@@ -62,7 +62,7 @@ namespace NiL.JS.BaseLibrary
         {
             _time = dateTime.Ticks / 10000;
             _timeZoneOffset = Context.CurrentGlobalContext.CurrentTimeZone.GetUtcOffset(dateTime).Ticks / 10000;
-            if (dateTime.Kind != DateTimeKind.Utc)
+            if (dateTime.Kind == DateTimeKind.Local)
                 _time -= _timeZoneOffset;
         }
 
@@ -729,7 +729,7 @@ namespace NiL.JS.BaseLibrary
             if (_error || isIncorrectTimeRange(_time))
                 ExceptionHelper.Throw(new RangeError("Invalid time value"));
 
-            return getYearImpl(false) +
+            return getYearImpl(false).ToString("0000") +
             "-" + (this.getMonthImpl(false) + 1).ToString("00") +
             "-" + this.getDateImpl(false).ToString("00") +
             "T" + this.getHoursImpl(false).ToString("00") +

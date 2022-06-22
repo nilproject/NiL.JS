@@ -392,7 +392,7 @@ namespace NiL.JS.Core
                     double x = 0;
                     int ix = 0;
                     string s = (r._oValue.ToString()).Trim();
-                    if (!Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
+                    if (!ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                         return 0;
                     if (double.IsNaN(x))
                         return 0;
@@ -670,6 +670,12 @@ namespace NiL.JS.Core
 
                     if (targetType == typeof(BaseLibrary.String))
                         return new BaseLibrary.String(jsobj.Value.ToString());
+
+                    if (targetType == typeof(Date))
+                        return new Date(new Arguments { jsobj.Value.ToString() });
+
+                    if (targetType == typeof(DateTime))
+                        return DateTime.TryParse(jsobj.Value.ToString(), out var dateTime) ? dateTime : new Date(new Arguments { jsobj.Value.ToString() }).ToDateTime();
 
                     return null;
                 }
