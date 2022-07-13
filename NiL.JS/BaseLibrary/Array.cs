@@ -1965,6 +1965,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (args == null)
                 throw new ArgumentNullException("args");
+
             var comparer = args[0]._oValue as Function;
             var selfa = self as Array;
             if (selfa != null)
@@ -1983,20 +1984,25 @@ namespace NiL.JS.BaseLibrary
                     {
                         if (item.Value == null || !item.Value.Defined)
                             continue;
+
                         var v = item.Value;
                         if (v._valueType == JSValueType.Property)
                             v = ((v._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
+
                         List<JSValue> list = null;
                         if (!tt.TryGetValue(v, out list))
                             tt[v] = list = new List<JSValue>();
+
                         list.Add(item.Value);
                     }
+
                     selfa._data.Clear();
                     foreach (var node in tt.Nodes)
                     {
                         for (var i = 0; i < node.value.Count; i++)
                             selfa._data.Add(node.value[i]);
                     }
+
                     selfa._data[(int)length - 1] = selfa._data[(int)length - 1];
                 }
                 else
@@ -2016,12 +2022,14 @@ namespace NiL.JS.BaseLibrary
                             tt[key] = list = new List<JSValue>();
                         list.Add(item.Value);
                     }
+
                     selfa._data.Clear();
                     foreach (var node in tt.Nodes)
                     {
                         for (var i = 0; i < node.value.Count; i++)
                             selfa._data.Add(node.value[i]);
                     }
+
                     selfa._data[(int)length - 1] = selfa._data[(int)length - 1];
                 }
             }
@@ -2414,7 +2422,7 @@ namespace NiL.JS.BaseLibrary
                 second.Assign(y);
                 args[0] = first;
                 args[1] = second;
-                var res = Tools.JSObjectToInt32(comparer.Call(undefined, args));
+                var res = Tools.JSObjectToInt32(Math.sign(comparer.Call(undefined, args)));
                 return res;
             }
         }
