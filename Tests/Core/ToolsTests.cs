@@ -139,5 +139,41 @@ namespace Tests.Core
             Assert.IsInstanceOfType(res, typeof(double[]));
             CollectionAssert.AreEqual(data.Select(double.Parse).ToArray(), (double[])res);
         }
+
+        [TestMethod]
+        public void JSObjectToTypelessDictionaryInterfaceTest()
+        {
+            var json = @"{ ""key0"": ""value0"", ""key1"": ""value1"" }";
+            var jsobj = JSON.parse(json);
+
+            var dictionary = Tools.ConvertJSValueToType(jsobj, typeof(IDictionary)) as IDictionary;
+
+            Assert.AreEqual("value0", (dictionary["key0"] as JSValue).Value);
+            Assert.AreEqual("value1", (dictionary["key1"] as JSValue).Value);
+        }
+
+        [TestMethod]
+        public void JSObjectToTypedDictionaryInterfaceTest()
+        {
+            var json = @"{ ""key0"": ""value0"", ""key1"": ""value1"" }";
+            var jsobj = JSON.parse(json);
+
+            var dictionary = Tools.ConvertJSValueToType(jsobj, typeof(IDictionary<string, string>)) as IDictionary;
+
+            Assert.AreEqual("value0", dictionary["key0"]);
+            Assert.AreEqual("value1", dictionary["key1"]);
+        }
+
+        [TestMethod]
+        public void JSObjectToTypedDictionaryTest()
+        {
+            var json = @"{ ""key0"": ""value0"", ""key1"": ""value1"" }";
+            var jsobj = JSON.parse(json);
+
+            var dictionary = Tools.ConvertJSValueToType(jsobj, typeof(Dictionary<string, string>)) as IDictionary;
+
+            Assert.AreEqual("value0", dictionary["key0"]);
+            Assert.AreEqual("value1", dictionary["key1"]);
+        }
     }
 }
