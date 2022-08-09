@@ -12,22 +12,13 @@ namespace NiL.JS.Expressions
 #endif
     public sealed class NumberAddition : Expression
     {
-        protected internal override Core.PredictedType ResultType
+        protected internal override PredictedType ResultType
         {
             get
             {
-                var pd = _left.ResultType;
-                switch (pd)
-                {
-                    case PredictedType.Double:
-                        {
-                            return PredictedType.Double;
-                        }
-                    default:
-                        {
-                            return PredictedType.Number;
-                        }
-                }
+                var leftType = _left.ResultType;
+                var rightType = _right.ResultType;
+                return leftType == PredictedType.Double || rightType == PredictedType.Double ? PredictedType.Double : PredictedType.Number;
             }
         }
 
