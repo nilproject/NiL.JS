@@ -7,6 +7,11 @@ namespace NiL.JS
 {
     public sealed class Script
     {
+        [ThreadStatic]
+        private static readonly Stack<Script> _scriptsStack = new Stack<Script>();
+
+        internal static Script CurrentScript => _scriptsStack.Count > 0 ? _scriptsStack.Peek() : null;
+
         public string Code { get; private set; }
         public CodeBlock Root { get; private set; }
 
@@ -28,7 +33,7 @@ namespace NiL.JS
                     Code = ""
                 };
             }
-            
+
             var internalCallback = messageCallback != null ?
                 (level, position, length, message) => messageCallback(level, CodeCoordinates.FromTextPosition(code, position, length), message)
                 : null as InternalCompilerMessageCallback;
@@ -62,6 +67,9 @@ namespace NiL.JS
             if (Code == "")
                 return JSValue.Undefined;
 
+            lock (_scriptsStack)
+                _scriptsStack.Push(this);
+
             try
             {
                 context.Activate();
@@ -72,6 +80,9 @@ namespace NiL.JS
                 for (var i = 0; i < Root._variables.Length; i++)
                     Root._variables[i].cacheContext = null;
                 context.Deactivate();
+
+                lock (_scriptsStack)
+                    _scriptsStack.Pop();
             }
         }
     }

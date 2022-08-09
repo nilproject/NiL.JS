@@ -98,6 +98,7 @@ namespace NiL.JS.Core
         internal JSValue _thisBind;
         internal Function _owner;
         internal Context _parent;
+        internal string _sourceCode;
         internal IDictionary<string, JSValue> _variables;
         internal bool _strict;
         internal VariableDescriptor[] _definedVariables;
@@ -630,6 +631,7 @@ namespace NiL.JS.Core
                 var oldThisBind = ThisBind;
                 var runContextOfEval = context.Activate();
                 context._thisBind = thisBind;
+                context._sourceCode = code;
                 try
                 {
                     return body.Evaluate(context) ?? context._lastResult ?? JSValue.notExists;

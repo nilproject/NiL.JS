@@ -221,9 +221,9 @@ namespace NiL.JS.Core.Functions
             };
 
             var lambda = Expression.Lambda<RestPrmsConverter>(
-                Expression.Block(new[] { argumentIndex, resultArray, resultArrayIndex, tempValue }, tree), 
+                Expression.Block(new[] { argumentIndex, resultArray, resultArrayIndex, tempValue }, tree),
                 context, arguments, argumentsObjectPrm);
-            
+
             return lambda.Compile();
         }
 
@@ -480,30 +480,16 @@ namespace NiL.JS.Core.Functions
         {
             object value;
             var target = GetTargetObject(targetValue, _hardTarget);
-            try
+            if (_parameters.Length == 0 && argumentsSource != null)
             {
-                if (_parameters.Length == 0 && argumentsSource != null)
-                {
-                    for (var i = 0; i < argumentsSource.Length; i++)
-                        argumentsSource[i].Evaluate(initiator);
-                }
-
-                value = _fastWrapper(target, initiator, argumentsSource, argumentsObject);
-
-                if (_returnConverter != null)
-                    value = _returnConverter.From(value);
+                for (var i = 0; i < argumentsSource.Length; i++)
+                    argumentsSource[i].Evaluate(initiator);
             }
-            catch (Exception e)
-            {
-                while (e.InnerException != null)
-                    e = e.InnerException;
 
-                if (e is JSException)
-                    throw e;
+            value = _fastWrapper(target, initiator, argumentsSource, argumentsObject);
 
-                ExceptionHelper.Throw(new TypeError(e.Message), e);
-                throw;
-            }
+            if (_returnConverter != null)
+                value = _returnConverter.From(value);
 
             return value;
         }

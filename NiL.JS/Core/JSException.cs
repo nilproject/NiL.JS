@@ -12,6 +12,8 @@ namespace NiL.JS.Core
 #endif
     public sealed class JSException : Exception
     {
+        private string _stackTraceOverride;
+
         public JSValue Error { get; }
         public CodeNode ExceptionMaker { get; }
         public string Code { get; internal set; }
@@ -49,6 +51,8 @@ namespace NiL.JS.Core
             Error = Context.CurrentGlobalContext.ProxyValue(avatar);
         }
 
+        public override string StackTrace => _stackTraceOverride ?? base.StackTrace;
+
         public override string Message
         {
             get
@@ -73,6 +77,11 @@ namespace NiL.JS.Core
 
                 return result;
             }
+        }
+
+        internal void InternalSetStackTrace(string stackTrace)
+        {
+            _stackTraceOverride = stackTrace;
         }
     }
 }

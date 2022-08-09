@@ -76,12 +76,12 @@ namespace NiL.JS
             Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, code);
         }
 
-        private static string GetCode(Context context)
+        internal static string GetCode(Context context)
         {
-            var code = context.RootContext._owner?._functionDefinition?._body?.Code;
-            if (code == null)
-                code = context._module?.Script.Code;
-            return code;
+            while (context != null && context._sourceCode == null)
+                context = context._parent;
+
+            return context?._sourceCode ?? Script.CurrentScript?.Code;
         }
 
         /// <exception cref="NiL.JS.Core.JSException">

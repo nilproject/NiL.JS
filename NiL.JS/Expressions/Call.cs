@@ -168,10 +168,32 @@ namespace NiL.JS.Expressions
             if (_callMode == CallMode.Construct)
                 targetObject = null;
 
-            if ((function._attributes & JSValueAttributesInternal.Eval) != 0)
-                return callEval(context);
+            try
+            {
+                if ((function._attributes & JSValueAttributesInternal.Eval) != 0)
+                    return callEval(context);
 
-            return func.InternalInvoke(targetObject, _arguments, context, _withSpread, _callMode != 0);
+                return func.InternalInvoke(targetObject, _arguments, context, _withSpread, _callMode != 0);
+            }
+            catch (Exception e)
+            {
+                foreach(var item in e.Data.Values)
+                {
+                    if ((item as Tuple<Context, CodeCoordinates>).Item1 == context)
+                        throw;
+                }
+
+                e.Data.Add(
+                    new CallStackMarker(e.Data.Count), 
+                    Tuple.Create(
+                        context, 
+                        CodeCoordinates.FromTextPosition(
+                            ExceptionHelper.GetCode(context), 
+                            Position, 
+                            Length)));
+
+                throw;
+            }
         }
 
         private JSValue callEval(Context context)

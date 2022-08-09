@@ -345,13 +345,16 @@ namespace NiL.JS.Statements
 
         private void evaluateLines(Context context, int i, bool clearSuspendData)
         {
-            for (var ls = _lines; i < ls.Length; i++)
+            var ls = _lines;
+            try
             {
-                if (context._debugging)
-                    context.raiseDebugger(_lines[i]);
-                var t = ls[i].Evaluate(context);
-                if (t != null)
-                    context._lastResult = t;
+                for (; i < ls.Length; i++)
+                {
+                    if (context._debugging)
+                        context.raiseDebugger(_lines[i]);
+                    var t = ls[i].Evaluate(context);
+                    if (t != null)
+                        context._lastResult = t;
 #if DEBUG && !(PORTABLE || NETCORE)
                 if (!context.Running)
                     if (System.Diagnostics.Debugger.IsAttached)
@@ -388,18 +391,38 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
-                if (context._executionMode != ExecutionMode.Regular)
-                {
-                    if (context._executionMode == ExecutionMode.Suspend)
+                    if (context._executionMode != ExecutionMode.Regular)
                     {
-                        context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
+                        if (context._executionMode == ExecutionMode.Suspend)
+                        {
+                            context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
+                        }
+
+                        break;
                     }
 
-                    break;
+                    if (clearSuspendData)
+                        context.SuspendData.Clear();
+                }
+            }
+            catch (Exception e)
+            {
+                foreach (var item in e.Data.Values)
+                {
+                    if ((item as Tuple<Context, CodeCoordinates>).Item1 == context)
+                        throw;
                 }
 
-                if (clearSuspendData)
-                    context.SuspendData.Clear();
+                e.Data.Add(
+                    new CallStackMarker(e.Data.Count),
+                    Tuple.Create(
+                        context,
+                        CodeCoordinates.FromTextPosition(
+                            ExceptionHelper.GetCode(context),
+                            ls[i].Position,
+                            ls[i].Length)));
+
+                throw;
             }
         }
 

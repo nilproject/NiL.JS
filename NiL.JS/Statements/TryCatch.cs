@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
-using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements
@@ -128,7 +128,49 @@ namespace NiL.JS.Statements
             }
             catch (Exception e)
             {
-                if (this._catch)
+                var stackTrace = new List<string>();
+
+                var innerEx = e;
+                while (innerEx != null)
+                {
+                    var isOurException = false;
+                    for (var i = innerEx.Data.Count; i-- > 0;)
+                    {
+                        var item = innerEx.Data[new CallStackMarker(i)] as Tuple<Context, CodeCoordinates>;
+                        if (item == null)
+                            continue;
+
+                        isOurException = true;
+                        stackTrace.Add("   at " + (item.Item1?._owner?.name ?? "<unknown function>") + ": line " + item.Item2.Line);
+                    }
+
+                    if (!isOurException)
+                        stackTrace.Add(innerEx.StackTrace);
+
+                    innerEx = innerEx.InnerException;
+                }
+
+                if (e is TargetInvocationException targetInvocationException)
+                {
+                    var baseException = targetInvocationException.GetBaseException();
+                    if (baseException is JSException jsEx)
+                    {
+                        e = baseException;
+                    }
+                    else
+                    {
+                        jsEx = new JSException(new TypeError(e.Message), e);
+                        e = jsEx;
+                    }
+
+                    if (stackTrace.Count > 0)
+                    {
+                        stackTrace.Reverse();
+                        jsEx.InternalSetStackTrace(string.Join(Environment.NewLine, stackTrace));
+                    }
+                }
+
+                if (_catch)
                 {
                     if (catchBody != null)
                         catchHandler(context, e);
