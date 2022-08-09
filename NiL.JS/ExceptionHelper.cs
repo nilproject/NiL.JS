@@ -204,5 +204,23 @@ namespace NiL.JS
         {
             throw exception;
         }
+
+        internal static void SetCallStackData(Exception e, Context context, CodeNode codeNode)
+        {
+            foreach (var item in e.Data.Values)
+            {
+                if ((item as Tuple<Context, CodeCoordinates>).Item1 == context)
+                    return;
+            }
+
+            e.Data.Add(
+                new CallStackMarker(e.Data.Count),
+                Tuple.Create(
+                    context,
+                    CodeCoordinates.FromTextPosition(
+                        ExceptionHelper.GetCode(context),
+                        codeNode.Position,
+                        codeNode.Length)));
+        }
     }
 }

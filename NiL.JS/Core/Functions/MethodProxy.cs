@@ -345,25 +345,18 @@ namespace NiL.JS.Core.Functions
             if (methodInfo.ReturnType == typeof(void))
                 tree = Expression.Block(tree, Expression.Constant(null));
 
-            try
-            {
-                return Expression
-                    .Lambda<WrapperDelegate>(
-                        Expression.Convert(tree, typeof(object)),
-                        methodInfo.Name,
-                        new[]
-                        {
-                            target,
-                            context,
-                            arguments,
-                            argumentsObjectPrm
-                        })
-                    .Compile();
-            }
-            catch
-            {
-                throw;
-            }
+            return Expression
+                .Lambda<WrapperDelegate>(
+                    Expression.Convert(tree, typeof(object)),
+                    methodInfo.Name,
+                    new[]
+                    {
+                        target,
+                        context,
+                        arguments,
+                        argumentsObjectPrm
+                    })
+                .Compile();
         }
 
         private WrapperDelegate makeFastWrapper(ConstructorInfo constructorInfo)
@@ -429,25 +422,18 @@ namespace NiL.JS.Core.Functions
                 }
             }
 
-            try
-            {
-                return Expression
-                    .Lambda<WrapperDelegate>(
-                        Expression.Convert(tree, typeof(object)),
-                        constructorInfo.DeclaringType.Name,
-                        new[]
-                        {
-                            target,
-                            context,
-                            arguments,
-                            argumentsObjectPrm
-                        })
-                    .Compile();
-            }
-            catch
-            {
-                throw;
-            }
+            return Expression
+                .Lambda<WrapperDelegate>(
+                    Expression.Convert(tree, typeof(object)),
+                    constructorInfo.DeclaringType.Name,
+                    new[]
+                    {
+                        target,
+                        context,
+                        arguments,
+                        argumentsObjectPrm
+                    })
+                .Compile();
         }
 
         private object callRestPrmsConverter(Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject)
@@ -701,9 +687,8 @@ namespace NiL.JS.Core.Functions
             }
             catch
             {
+                return base.MakeDelegate(delegateType);
             }
-
-            return base.MakeDelegate(delegateType);
         }
 #endif
 

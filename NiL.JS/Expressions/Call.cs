@@ -82,72 +82,20 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-#if DEBUG
-            if (context._callDepth >= 800)
-#else
-            if (context._callDepth >= 1000)
-#endif
+            if (context._callDepth >= 60)
                 ExceptionHelper.Throw(new RangeError("Stack overflow."), this, context);
 
             var function = _left.Evaluate(context);
 
             JSValue targetObject = context._objectSource;
 
-            ICallable callable = null;
             Function func = null;
-
             if (function._valueType == JSValueType.Function)
-            {
                 func = function._oValue as Function;
-                callable = func;
-            }
 
             if (func == null)
             {
-                callable = function._oValue as ICallable;
-                if (callable == null)
-                    callable = function.Value as ICallable;
-
-                if (callable == null)
-                {
-                    var typeProxy = function.Value as Proxy;
-                    if (typeProxy != null)
-                        callable = typeProxy.PrototypeInstance as ICallable;
-                }
-
-                if (callable == null)
-                {
-                    if (OptionalChaining)
-                        return JSValue.undefined;
-
-                    for (int i = 0; i < _arguments.Length; i++)
-                    {
-                        context._objectSource = null;
-                        _arguments[i].Evaluate(context);
-                    }
-
-                    context._objectSource = null;
-
-                    // Аргументы должны быть вычислены даже если функция не существует.
-                    ExceptionHelper.ThrowTypeError(_left.ToString() + " is not a function", this, context);
-
-                    return null;
-                }
-            }
-
-            if (func == null)
-            {
-                switch (_callMode)
-                {
-                    case CallMode.Construct:
-                        return callable.Construct(Tools.CreateArguments(_arguments, context));
-
-                    case CallMode.Super:
-                        return callable.Construct(targetObject, Tools.CreateArguments(_arguments, context));
-
-                    default:
-                        return callable.Call(targetObject, Tools.CreateArguments(_arguments, context));
-                }
+                return callCallable(context, targetObject, function);
             }
 
             if (_allowTCO
@@ -177,22 +125,58 @@ namespace NiL.JS.Expressions
             }
             catch (Exception e)
             {
-                foreach(var item in e.Data.Values)
-                {
-                    if ((item as Tuple<Context, CodeCoordinates>).Item1 == context)
-                        throw;
-                }
-
-                e.Data.Add(
-                    new CallStackMarker(e.Data.Count), 
-                    Tuple.Create(
-                        context, 
-                        CodeCoordinates.FromTextPosition(
-                            ExceptionHelper.GetCode(context), 
-                            Position, 
-                            Length)));
-
+                ExceptionHelper.SetCallStackData(e, context, this);
                 throw;
+            }
+        }
+
+        private void throwNaF(Context context)
+        {
+            for (int i = 0; i < _arguments.Length; i++)
+            {
+                context._objectSource = null;
+                _arguments[i].Evaluate(context);
+            }
+
+            context._objectSource = null;
+
+            // Аргументы должны быть вычислены даже если функция не существует.
+            ExceptionHelper.ThrowTypeError(_left.ToString() + " is not a function", this, context);
+        }
+
+        private JSValue callCallable(Context context, JSValue targetObject, JSValue function)
+        {
+            var callable = function._oValue as ICallable;
+            if (callable == null)
+                callable = function.Value as ICallable;
+
+            if (callable == null)
+            {
+                var typeProxy = function.Value as Proxy;
+                if (typeProxy != null)
+                    callable = typeProxy.PrototypeInstance as ICallable;
+            }
+
+            if (callable == null)
+            {
+                if (OptionalChaining)
+                    return JSValue.undefined;
+
+                throwNaF(context);
+
+                return null;
+            }
+
+            switch (_callMode)
+            {
+                case CallMode.Construct:
+                    return callable.Construct(Tools.CreateArguments(_arguments, context));
+
+                case CallMode.Super:
+                    return callable.Construct(targetObject, Tools.CreateArguments(_arguments, context));
+
+                default:
+                    return callable.Call(targetObject, Tools.CreateArguments(_arguments, context));
             }
         }
 

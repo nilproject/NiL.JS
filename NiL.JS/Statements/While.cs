@@ -162,44 +162,34 @@ namespace NiL.JS.Statements
                     message(MessageLevel.Warning, condition.Position, 2, "Useless conversion. Remove double negation in condition");
                 condition = (condition as Expression)._left;
             }
-            try
+
+            if (allowRemove && (condition is Constant || (condition is Expression && (condition as Expression).ContextIndependent)))
             {
-                if (allowRemove && (condition is Constant || (condition is Expression && (condition as Expression).ContextIndependent)))
+                Eliminated = true;
+                if ((bool)condition.Evaluate(null))
                 {
-                    Eliminated = true;
-                    if ((bool)condition.Evaluate(null))
-                    {
-                        if ((opts & Options.SuppressUselessStatementsElimination) == 0 && body != null)
-                            _this = new InfinityLoop(body, labels);
-                    }
-                    else if ((opts & Options.SuppressUselessStatementsElimination) == 0)
-                    {
-                        _this = null;
-                        if (body != null)
-                            body.Eliminated = true;
-                    }
+                    if ((opts & Options.SuppressUselessStatementsElimination) == 0 && body != null)
+                        _this = new InfinityLoop(body, labels);
+                }
+                else if ((opts & Options.SuppressUselessStatementsElimination) == 0)
+                {
+                    _this = null;
+                    if (body != null)
+                        body.Eliminated = true;
+                }
+                condition.Eliminated = true;
+            }
+            else
+            {
+                if ((opts & Options.SuppressUselessStatementsElimination) == 0
+                    && ((condition is ObjectDefinition && (condition as ObjectDefinition).Properties.Length == 0)
+                        || (condition is ArrayDefinition)))
+                {
+                    _this = new InfinityLoop(body, labels);
                     condition.Eliminated = true;
                 }
-                else
-                {
-                    if ((opts & Options.SuppressUselessStatementsElimination) == 0
-                        && ((condition is ObjectDefinition && (condition as ObjectDefinition).Properties.Length == 0)
-                            || (condition is ArrayDefinition)))
-                    {
-                        _this = new InfinityLoop(body, labels);
-                        condition.Eliminated = true;
-                    }
-                }
             }
-#if (PORTABLE || NETCORE)
-            catch
-            {
-#else
-            catch (Exception e)
-            {
-                System.Diagnostics.Debugger.Log(10, "Error", e.Message);
-#endif
-            }
+
             return false;
         }
 

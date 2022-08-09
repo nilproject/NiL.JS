@@ -128,45 +128,16 @@ namespace NiL.JS.Statements
             }
             catch (Exception e)
             {
-                var stackTrace = new List<string>();
-
-                var innerEx = e;
-                while (innerEx != null)
-                {
-                    var isOurException = false;
-                    for (var i = innerEx.Data.Count; i-- > 0;)
-                    {
-                        var item = innerEx.Data[new CallStackMarker(i)] as Tuple<Context, CodeCoordinates>;
-                        if (item == null)
-                            continue;
-
-                        isOurException = true;
-                        stackTrace.Add("   at " + (item.Item1?._owner?.name ?? "<unknown function>") + (item.Item2 != null ? ": line " + item.Item2.Line : string.Empty));
-                    }
-
-                    if (!isOurException)
-                        stackTrace.Add(innerEx.StackTrace);
-
-                    innerEx = innerEx.InnerException;
-                }
-
                 if (e is TargetInvocationException targetInvocationException)
                 {
                     var baseException = targetInvocationException.GetBaseException();
-                    if (baseException is JSException jsEx)
+                    if (baseException is JSException)
                     {
                         e = baseException;
                     }
                     else
                     {
-                        jsEx = new JSException(new TypeError(e.Message), e);
-                        e = jsEx;
-                    }
-
-                    if (stackTrace.Count > 0)
-                    {
-                        stackTrace.Reverse();
-                        jsEx.InternalSetStackTrace(string.Join(Environment.NewLine, stackTrace));
+                        e = new JSException(new TypeError(e.Message), e);
                     }
                 }
 

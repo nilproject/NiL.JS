@@ -176,27 +176,17 @@ namespace NiL.JS.Statements
                     message(MessageLevel.Warning, condition.Position, 2, "Useless conversion. Remove double negation in condition");
                 condition = (condition as Expression)._left;
             }
-            try
+            
+            if ((opts & Options.SuppressUselessStatementsElimination) == 0
+                && (condition is Constant || (condition.ContextIndependent)))
             {
-                if ((opts & Options.SuppressUselessStatementsElimination) == 0
-                    && (condition is Constant || (condition.ContextIndependent)))
-                {
-                    if ((bool)condition.Evaluate(null))
-                        _this = then;
-                    else
-                        _this = @else;
-                    condition.Eliminated = true;
-                }
+                if ((bool)condition.Evaluate(null))
+                    _this = then;
+                else
+                    _this = @else;
+                condition.Eliminated = true;
             }
-#if (PORTABLE || NETCORE)
-            catch
-            {
-#else
-            catch (Exception e)
-            {
-                System.Diagnostics.Debugger.Log(10, "Error", e.Message);
-#endif
-            }
+            
             return false;
         }
 

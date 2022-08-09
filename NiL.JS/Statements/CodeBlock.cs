@@ -316,9 +316,22 @@ namespace NiL.JS.Statements
             if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 evaluateWithScope(context, i, clearSuspendData);
             else
-                evaluateLines(context, i, clearSuspendData);
+                evaluateWithoutScope(context, i, clearSuspendData);
 
             return null;
+        }
+
+        private void evaluateWithoutScope(Context context, int i, bool clearSuspendData)
+        {
+            try
+            {
+                evaluateLines(context, ref i, clearSuspendData);
+            }
+            catch (Exception e)
+            {
+                ExceptionHelper.SetCallStackData(e, context, _lines[i]);
+                throw;
+            }
         }
 
         private void evaluateWithScope(Context context, int i, bool clearSuspendData)
@@ -326,7 +339,12 @@ namespace NiL.JS.Statements
             var activated = _suppressScopeIsolation != SuppressScopeIsolationMode.Suppress && context.Activate();
             try
             {
-                evaluateLines(context, i, clearSuspendData);
+                evaluateLines(context, ref i, clearSuspendData);
+            }
+            catch (Exception e)
+            {
+                ExceptionHelper.SetCallStackData(e, context, _lines[i]);
+                throw;
             }
             finally
             {
@@ -343,18 +361,15 @@ namespace NiL.JS.Statements
             }
         }
 
-        private void evaluateLines(Context context, int i, bool clearSuspendData)
+        private void evaluateLines(Context context, ref int i, bool clearSuspendData)
         {
-            var ls = _lines;
-            try
+            for (var ls = _lines; i < ls.Length; i++)
             {
-                for (; i < ls.Length; i++)
-                {
-                    if (context._debugging)
-                        context.raiseDebugger(_lines[i]);
-                    var t = ls[i].Evaluate(context);
-                    if (t != null)
-                        context._lastResult = t;
+                if (context._debugging)
+                    context.raiseDebugger(_lines[i]);
+                var t = ls[i].Evaluate(context);
+                if (t != null)
+                    context._lastResult = t;
 #if DEBUG && !(PORTABLE || NETCORE)
                 if (!context.Running)
                     if (System.Diagnostics.Debugger.IsAttached)
@@ -391,38 +406,18 @@ namespace NiL.JS.Statements
                     else
                         throw new ApplicationException("Boolean.True has been rewitten");
 #endif
-                    if (context._executionMode != ExecutionMode.Regular)
+                if (context._executionMode != ExecutionMode.Regular)
+                {
+                    if (context._executionMode == ExecutionMode.Suspend)
                     {
-                        if (context._executionMode == ExecutionMode.Suspend)
-                        {
-                            context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
-                        }
-
-                        break;
+                        context.SuspendData[this] = new SuspendData { Context = context, LineIndex = i };
                     }
 
-                    if (clearSuspendData)
-                        context.SuspendData.Clear();
-                }
-            }
-            catch (Exception e)
-            {
-                foreach (var item in e.Data.Values)
-                {
-                    if ((item as Tuple<Context, CodeCoordinates>).Item1 == context)
-                        throw;
+                    break;
                 }
 
-                e.Data.Add(
-                    new CallStackMarker(e.Data.Count),
-                    Tuple.Create(
-                        context,
-                        CodeCoordinates.FromTextPosition(
-                            ExceptionHelper.GetCode(context),
-                            ls[i].Position,
-                            ls[i].Length)));
-
-                throw;
+                if (clearSuspendData)
+                    context.SuspendData.Clear();
             }
         }
 

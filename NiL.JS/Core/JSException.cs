@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
@@ -52,7 +53,7 @@ namespace NiL.JS.Core
             Error = Context.CurrentGlobalContext.ProxyValue(avatar);
         }
 
-        public override string StackTrace => _stackTraceOverride ?? base.StackTrace;
+        public override string StackTrace => (_stackTraceOverride ??= getStackTrace()) ?? base.StackTrace;
 
         public override string Message
         {
@@ -80,9 +81,35 @@ namespace NiL.JS.Core
             }
         }
 
-        internal void InternalSetStackTrace(string stackTrace)
+        private string getStackTrace()
         {
-            _stackTraceOverride = stackTrace;
+            var stackTrace = new List<string>();
+
+            var innerEx = this as Exception;
+            while (innerEx != null)
+            {
+                var isOurException = false;
+                for (var i = innerEx.Data.Count; i-- > 0;)
+                {
+                    var item = innerEx.Data[new CallStackMarker(i)] as Tuple<Context, CodeCoordinates>;
+                    if (item == null)
+                        continue;
+
+                    isOurException = true;
+                    stackTrace.Add("   at " + (item.Item1?._owner?.name ?? "<unknown function>") + (item.Item2 != null ? ": line " + item.Item2.Line : string.Empty));
+                }
+
+                if (!isOurException)
+                    stackTrace.Add(innerEx.StackTrace);
+
+                innerEx = innerEx.InnerException;
+            }
+
+            if (stackTrace.Count == 0)
+                return null;
+
+            stackTrace.Reverse();
+            return string.Join(Environment.NewLine, stackTrace);
         }
     }
 }
