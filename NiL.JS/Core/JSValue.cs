@@ -555,6 +555,7 @@ namespace NiL.JS.Core
                 {
                     if (propertyScope == PropertyScope.Own)
                         return notExists;
+
                     forWrite = false;
                     return Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Common);
                 }
@@ -563,6 +564,7 @@ namespace NiL.JS.Core
                 {
                     if (propertyScope == PropertyScope.Own)
                         return notExists;
+
                     forWrite = false;
                     return Context.CurrentGlobalContext.GetPrototype(typeof(Number)).GetProperty(key, false, PropertyScope.Common);
                 }
@@ -581,8 +583,10 @@ namespace NiL.JS.Core
                 {
                     if (_oValue == this)
                         break;
+
                     if (_oValue == null)
                         ExceptionHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, key, "null"));
+                    
                     var inObj = _oValue as JSObject;
                     if (inObj != null)
                         return inObj.GetProperty(key, forWrite, propertyScope);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.Core;
 using NiL.JS.Extensions;
@@ -66,7 +67,7 @@ namespace Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(JSException))]
+        [ExpectedException(typeof(InvalidCastException))]
         public void TwoArrayArgumentsShouldCauseException()
         {
             var testClass = new ClassWithTwoMethods();

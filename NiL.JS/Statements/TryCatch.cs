@@ -141,7 +141,7 @@ namespace NiL.JS.Statements
                             continue;
 
                         isOurException = true;
-                        stackTrace.Add("   at " + (item.Item1?._owner?.name ?? "<unknown function>") + ": line " + item.Item2.Line);
+                        stackTrace.Add("   at " + (item.Item1?._owner?.name ?? "<unknown function>") + (item.Item2 != null ? ": line " + item.Item2.Line : string.Empty));
                     }
 
                     if (!isOurException)

@@ -25,18 +25,19 @@ namespace NiL.JS.Core
         }
 
         public JSException(Error data, CodeNode exceptionMaker, string code)
+            : this(Context.CurrentGlobalContext.ProxyValue(data), exceptionMaker, code)
+        {
+        }
+
+        public JSException(JSValue data, CodeNode exceptionMaker, string code)
         {
             Error = Context.CurrentGlobalContext.ProxyValue(data);
             ExceptionMaker = exceptionMaker;
             Code = code;
-            if (code != null) {
+            if (code != null)
+            {
                 CodeCoordinates = CodeCoordinates.FromTextPosition(code, exceptionMaker.Position, exceptionMaker.Length);
             }
-        }
-
-        public JSException(JSValue data)
-        {
-            Error = data;
         }
 
         public JSException(JSValue data, Exception innerException)

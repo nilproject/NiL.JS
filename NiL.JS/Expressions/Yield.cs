@@ -91,7 +91,7 @@ namespace NiL.JS.Expressions
                 context.SuspendData.Clear();
                 context._executionMode = ExecutionMode.Regular;
                 var exceptionData = context._executionInfo;
-                ExceptionHelper.Throw(exceptionData);
+                ExceptionHelper.Throw(exceptionData, this, context);
             }
 
             if (_reiterate)

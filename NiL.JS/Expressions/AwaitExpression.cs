@@ -24,7 +24,7 @@ namespace NiL.JS.Expressions
                 if ((bool)context.SuspendData[this])
                 {
                     context._executionMode = ExecutionMode.Regular;
-                    throw new JSException(context._executionInfo);
+                    ExceptionHelper.Throw(context._executionInfo, this, context);
                 }
             }
             else if (context._executionMode == ExecutionMode.Resume)

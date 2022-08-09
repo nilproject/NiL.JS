@@ -7,8 +7,10 @@ namespace NiL.JS
 {
     public sealed class Script
     {
+        private static readonly object _scriptStackLock = new();
+
         [ThreadStatic]
-        private static readonly Stack<Script> _scriptsStack = new Stack<Script>();
+        private static Stack<Script> _scriptsStack;
 
         internal static Script CurrentScript => _scriptsStack.Count > 0 ? _scriptsStack.Peek() : null;
 
@@ -67,8 +69,13 @@ namespace NiL.JS
             if (Code == "")
                 return JSValue.Undefined;
 
-            lock (_scriptsStack)
+            lock (_scriptStackLock)
+            {
+                if (_scriptsStack == null)
+                    _scriptsStack = new();
+
                 _scriptsStack.Push(this);
+            }
 
             try
             {
@@ -81,7 +88,7 @@ namespace NiL.JS
                     Root._variables[i].cacheContext = null;
                 context.Deactivate();
 
-                lock (_scriptsStack)
+                lock (_scriptStackLock)
                     _scriptsStack.Pop();
             }
         }

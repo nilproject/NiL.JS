@@ -59,7 +59,7 @@ namespace NiL.JS.Statements
             if (context._executionMode == ExecutionMode.Suspend)
                 return null;
 
-            ExceptionHelper.Throw(value);
+            ExceptionHelper.Throw(value, this, context);
             return null;
         }
 

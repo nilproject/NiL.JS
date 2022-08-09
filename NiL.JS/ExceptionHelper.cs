@@ -43,9 +43,9 @@ namespace NiL.JS
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
-        internal static void Throw(JSValue error)
+        internal static void Throw(JSValue error, CodeNode exceptionMaker, Context context)
         {
-            throw new JSException(error ?? JSValue.undefined);
+            throw new JSException(error ?? JSValue.undefined, exceptionMaker, GetCode(context));
         }
 
         /// <exception cref="NiL.JS.Core.JSException">

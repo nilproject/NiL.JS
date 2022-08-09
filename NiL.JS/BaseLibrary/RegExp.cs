@@ -49,11 +49,12 @@ namespace NiL.JS.BaseLibrary
                 if (args.GetProperty("length")._iValue > 1 && args[1]._valueType > JSValueType.Undefined)
                     ExceptionHelper.Throw(new TypeError("Cannot supply flags when constructing one RegExp from another"));
                 _oValue = ptrn._oValue;
-                _regex = (ptrn.Value as RegExp)._regex;
-                _global = (ptrn.Value as RegExp)._global;
-                _sticky = (ptrn.Value as RegExp)._sticky;
-                _unicode = (ptrn.Value as RegExp)._unicode;
-                _source = (ptrn.Value as RegExp)._source;
+                var regExp = ptrn.Value as RegExp;
+                _regex = regExp._regex;
+                _global = regExp._global;
+                _sticky = regExp._sticky;
+                _unicode = regExp._unicode;
+                _source = regExp._source;
                 return;
             }
             var pattern = ptrn._valueType > JSValueType.Undefined ? ptrn.ToString() : "";
