@@ -82,7 +82,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (context._callDepth >= 60)
+            if (context._callDepth >= 100)
                 ExceptionHelper.Throw(new RangeError("Stack overflow."), this, context);
 
             var function = _left.Evaluate(context);
@@ -116,18 +116,10 @@ namespace NiL.JS.Expressions
             if (_callMode == CallMode.Construct)
                 targetObject = null;
 
-            try
-            {
-                if ((function._attributes & JSValueAttributesInternal.Eval) != 0)
-                    return callEval(context);
+            if ((function._attributes & JSValueAttributesInternal.Eval) != 0)
+                return callEval(context);
 
-                return func.InternalInvoke(targetObject, _arguments, context, _withSpread, _callMode != 0);
-            }
-            catch (Exception e)
-            {
-                ExceptionHelper.SetCallStackData(e, context, this);
-                throw;
-            }
+            return func.InternalInvoke(targetObject, _arguments, context, _withSpread, _callMode != 0);
         }
 
         private void throwNaF(Context context)
