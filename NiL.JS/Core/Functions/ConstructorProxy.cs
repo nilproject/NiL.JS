@@ -168,23 +168,21 @@ namespace NiL.JS.Core.Functions
                     return new Date().ToString();
             }
 
-            try
+            object obj;
+            if (_staticProxy._hostedType == typeof(BaseLibrary.Array))
             {
-                object obj;
-                if (_staticProxy._hostedType == typeof(BaseLibrary.Array))
+                if (arguments == null)
                 {
-                    if (arguments == null)
+                    obj = new BaseLibrary.Array();
+                }
+                else
+                {
+                    switch (arguments._iValue)
                     {
-                        obj = new BaseLibrary.Array();
-                    }
-                    else
-                    {
-                        switch (arguments._iValue)
-                        {
-                            case 0:
-                                obj = new BaseLibrary.Array();
-                                break;
-                            case 1:
+                        case 0:
+                            obj = new BaseLibrary.Array();
+                            break;
+                        case 1:
                             {
                                 var a0 = arguments[0];
                                 switch (a0._valueType)
@@ -201,102 +199,93 @@ namespace NiL.JS.Core.Functions
                                 }
                                 break;
                             }
-                            default:
-                                obj = new BaseLibrary.Array(arguments);
-                                break;
-                        }
+                        default:
+                            obj = new BaseLibrary.Array(arguments);
+                            break;
                     }
                 }
-                else
-                {
-                    if ((arguments == null || arguments._iValue == 0)
+            }
+            else
+            {
+                if ((arguments == null || arguments._iValue == 0)
 #if (PORTABLE || NETCORE)
- && _staticProxy._hostedType.GetTypeInfo().IsValueType)
+&& _staticProxy._hostedType.GetTypeInfo().IsValueType)
 #else
  && _staticProxy._hostedType.IsValueType)
 #endif
-                    {
-                        obj = Activator.CreateInstance(_staticProxy._hostedType);
-                    }
-                    else
-                    {
-                        object[] args = null;
-                        var constructor = findConstructor(arguments, ref args);
-
-                        if (constructor == null)
-                            ExceptionHelper.ThrowTypeError(_staticProxy._hostedType.Name + " can't be created.");
-
-                        if (args == null)
-                            args = new object[] { arguments };
-
-                        var target = constructor.GetTargetObject(targetObject, null);
-                        if (target != null)
-                            obj = constructor._method.Invoke(target, args);
-                        else
-                            obj = (constructor._method as ConstructorInfo).Invoke(args);
-                    }
-                }
-
-                JSValue res = obj as JSValue;
-
-                if (construct)
                 {
-                    if (res != null)
-                    {
-                        // Для Number, Boolean и String
-                        if (res._valueType < JSValueType.Object)
-                        {
-                            objc.instance = obj;
-                            if (objc._objectPrototype == null)
-                                objc._objectPrototype = res.__proto__;
-                            res = objc;
-                        }
-                        else if (res._oValue is JSValue)
-                        {
-                            res._oValue = res;
-                            // На той стороне понять, по new или нет вызван конструктор не получится,
-                            // поэтому по соглашению такие типы себя настраивают так, как будто они по new,
-                            // а в oValue пишут экземпляр аргумента на тот случай, если вызван конструктор типа как функция
-                            // с передачей в качестве аргумента существующего экземпляра
-                        }
-                    }
+                    obj = Activator.CreateInstance(_staticProxy._hostedType);
+                }
+                else
+                {
+                    object[] args = null;
+                    var constructor = findConstructor(arguments, ref args);
+
+                    if (constructor == null)
+                        ExceptionHelper.ThrowTypeError(_staticProxy._hostedType.Name + " can't be created.");
+
+                    if (args == null)
+                        args = new object[] { arguments };
+
+                    var target = constructor.GetTargetObject(targetObject, null);
+                    if (target != null)
+                        obj = constructor._method.Invoke(target, args);
                     else
+                        obj = (constructor._method as ConstructorInfo).Invoke(args);
+                }
+            }
+
+            JSValue res = obj as JSValue;
+
+            if (construct)
+            {
+                if (res != null)
+                {
+                    // Для Number, Boolean и String
+                    if (res._valueType < JSValueType.Object)
                     {
                         objc.instance = obj;
-
-                        objc._attributes |= _staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
-                        if (obj.GetType() == typeof(Date))
-                            objc._valueType = JSValueType.Date;
-                        else if (res != null)
-                            objc._valueType = (JSValueType)System.Math.Max((int)objc._valueType, (int)res._valueType);
-
+                        if (objc._objectPrototype == null)
+                            objc._objectPrototype = res.__proto__;
                         res = objc;
+                    }
+                    else if (res._oValue is JSValue)
+                    {
+                        res._oValue = res;
+                        // На той стороне понять, по new или нет вызван конструктор не получится,
+                        // поэтому по соглашению такие типы себя настраивают так, как будто они по new,
+                        // а в oValue пишут экземпляр аргумента на тот случай, если вызван конструктор типа как функция
+                        // с передачей в качестве аргумента существующего экземпляра
                     }
                 }
                 else
                 {
-                    if (_staticProxy._hostedType == typeof(JSValue))
-                    {
-                        if ((res._oValue is JSValue) && (res._oValue as JSValue)._valueType >= JSValueType.Object)
-                            return res._oValue as JSValue;
-                    }
+                    objc.instance = obj;
 
-                    res = res ?? new ObjectWrapper(obj)
-                    {
-                        _attributes = JSValueAttributesInternal.SystemObject | (_staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
-                    };
+                    objc._attributes |= _staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
+                    if (obj.GetType() == typeof(Date))
+                        objc._valueType = JSValueType.Date;
+                    else if (res != null)
+                        objc._valueType = (JSValueType)System.Math.Max((int)objc._valueType, (int)res._valueType);
+
+                    res = objc;
+                }
+            }
+            else
+            {
+                if (_staticProxy._hostedType == typeof(JSValue))
+                {
+                    if ((res._oValue is JSValue) && (res._oValue as JSValue)._valueType >= JSValueType.Object)
+                        return res._oValue as JSValue;
                 }
 
-                return res;
+                res = res ?? new ObjectWrapper(obj)
+                {
+                    _attributes = JSValueAttributesInternal.SystemObject | (_staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
+                };
             }
-            catch (TargetInvocationException e)
-            {
-#if !(PORTABLE || NETCORE)
-                if (System.Diagnostics.Debugger.IsAttached)
-                    System.Diagnostics.Debugger.Log(10, "Exception", e.ToString());
-#endif
-                throw e.GetBaseException();
-            }
+
+            return res;
         }
 
         protected internal override JSValue ConstructObject()
