@@ -318,7 +318,7 @@ namespace NiL.JS.Statements
             if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 evaluateWithScope(context, i, clearSuspendData);
             else
-                evaluateLines(context, ref i, clearSuspendData);
+                evaluateLines(context, i, clearSuspendData);
 
             return null;
         }
@@ -329,7 +329,7 @@ namespace NiL.JS.Statements
             var activated = _suppressScopeIsolation != SuppressScopeIsolationMode.Suppress && context.Activate();
             try
             {
-                evaluateLines(context, ref i, clearSuspendData);
+                evaluateLines(context, i, clearSuspendData);
             }
             finally
             {
@@ -347,7 +347,7 @@ namespace NiL.JS.Statements
             }
         }
 
-        private void evaluateLines(Context context, ref int i, bool clearSuspendData)
+        private void evaluateLines(Context context, int i, bool clearSuspendData)
         {
             var stackFrame = ExceptionHelper.GetStackFrame(context, false);
 

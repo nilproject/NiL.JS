@@ -13,7 +13,7 @@ namespace NiL.JS.Core
 #endif
     public sealed class JSException : Exception
     {
-        private string _stackTraceOverride;
+        private object _stackTraceOverride;
 
         public JSValue Error { get; }
         public CodeNode ExceptionMaker { get; }
@@ -23,7 +23,7 @@ namespace NiL.JS.Core
         public JSException(Error data)
         {
             Error = Context.CurrentGlobalContext.ProxyValue(data);
-            _stackTraceOverride ??= ExceptionHelper.GetStackTrace(1);
+            _stackTraceOverride = ExceptionHelper.GetStackTrace(1);
         }
 
         public JSException(Error data, CodeNode exceptionMaker, string code)
@@ -58,7 +58,7 @@ namespace NiL.JS.Core
             _stackTraceOverride = ExceptionHelper.GetStackTrace(1);
         }
 
-        public override string StackTrace => _stackTraceOverride ?? base.StackTrace;
+        public override string StackTrace => (_stackTraceOverride = _stackTraceOverride?.ToString() ?? base.StackTrace)?.ToString();
 
         public override string Message
         {

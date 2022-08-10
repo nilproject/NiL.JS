@@ -10,15 +10,81 @@ using System.Diagnostics;
 using System.Reflection;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
+using System.Collections;
 
 namespace NiL.JS
 {
     internal static class ExceptionHelper
     {
+        internal sealed class StackTraceState
+        {
+            public JsStackFrame JsStack;
+            public StackTrace StackTrace;
+
+            public override string ToString()
+            {
+                var stack = JsStack;
+
+                var originalStackTraceLines = StackTrace.ToString().Split('\n');
+                var wordAt = originalStackTraceLines.FirstOrDefault()?.Trim().Split(' ')[0] ?? "at";
+                var wordLine = originalStackTraceLines.FirstOrDefault(x => x.Contains(':'))?.Split(':')?.LastOrDefault().Split(' ')[0] ?? "line";
+
+                wordAt = "   " + wordAt + " ";
+
+                var recordsToRemove = 0;
+                JsStackFrame jsFrame = null;
+                var frames = StackTrace.GetFrames();
+                var stackTraceTexts = new List<string>();
+                for (int i = 0; i < frames.Length; i++)
+                {
+                    StackFrame frame = frames[i];
+                    var method = frame.GetMethod();
+                    if (method != null && method.GetCustomAttribute(typeof(StackFrameOverrideAttribute)) != null)
+                    {
+                        stackTraceTexts.RemoveRange(stackTraceTexts.Count - recordsToRemove, recordsToRemove);
+                        recordsToRemove = 0;
+                        jsFrame = stack;
+                        stack = stack.PrevFrame;
+
+                        var code = GetCode(jsFrame.Context);
+                        var codeCoords = code != null ? CodeCoordinates.FromTextPosition(code, jsFrame.CodeNode?.Position ?? 0, jsFrame.CodeNode?.Length ?? 0) : null;
+                        stackTraceTexts.Add(
+                            wordAt + (jsFrame.Context?._owner?.name ?? "<anonymous method>") +
+                            ":" + wordLine + " " + codeCoords?.Line);
+                    }
+                    else if (_baseClassesToHide.Any(x => x.IsAssignableFrom(method.DeclaringType)))
+                    {
+                        // do nothing
+                    }
+                    else if (i < originalStackTraceLines.Length)
+                    {
+                        if (method.DeclaringType == null)
+                        {
+                            recordsToRemove++;
+                        }
+                        else if (_namespacesToReplace.Any(x => method.DeclaringType.Namespace == x))
+                        {
+                            recordsToRemove++;
+                        }
+                        else
+                        {
+                            recordsToRemove = 0;
+                        }
+
+                        stackTraceTexts.Add(originalStackTraceLines[i].Replace("\r", string.Empty));
+                    }
+                }
+
+                return string.Join(Environment.NewLine, stackTraceTexts);
+            }
+        }
+
         internal sealed class JsStackFrame
         {
             public Context Context;
             public CodeNode CodeNode;
+
+            internal JsStackFrame PrevFrame;
         }
 
         [AttributeUsage(
@@ -30,48 +96,41 @@ namespace NiL.JS
         internal sealed class StackFrameOverrideAttribute : Attribute { }
 
         [ThreadStatic]
-        private static Stack<JsStackFrame> _executionStack;
+        private static JsStackFrame _executionStack;
 
         internal static void DropStackFrame(Context context)
         {
             if (!TryDropStackFrame(context))
-                throw new InvalidOperationException("_executionStack.Peek().Context != context");
+                throw new InvalidOperationException("_executionStack.Context != context");
         }
 
         internal static bool TryDropStackFrame(Context context)
         {
-            if (_executionStack == null || _executionStack.Count == 0)
+            if (_executionStack == null)
                 return false;
 
-            if (_executionStack.Peek().Context != context)
+            if (_executionStack.Context != context)
                 return false;
 
-            _executionStack.Pop();
+            _executionStack = _executionStack.PrevFrame;
             return true;
         }
 
         internal static JsStackFrame GetStackFrame(Context context, bool newStackFrame)
         {
-            if (_executionStack == null)
-                _executionStack = new Stack<JsStackFrame>();
-
             if (newStackFrame
-                || _executionStack.Count == 0
-                || _executionStack.Peek().Context != context)
+                || _executionStack == null
+                || _executionStack.Context != context)
             {
-                var frame = new JsStackFrame { Context = context };
-                _executionStack.Push(frame);
-                return frame;
+                _executionStack = new JsStackFrame
+                {
+                    Context = context,
+                    PrevFrame = _executionStack
+                };
+                return _executionStack;
             }
 
-            return _executionStack.Peek();
-        }
-
-        internal static Stack<JsStackFrame> GetExecutionStack()
-        {
-            var result = new Stack<JsStackFrame>(
-                (_executionStack as IEnumerable<JsStackFrame> ?? System.Array.Empty<JsStackFrame>()).Reverse());
-            return result;
+            return _executionStack;
         }
 
         private static readonly string[] _namespacesToReplace = new[]
@@ -88,66 +147,43 @@ namespace NiL.JS
             typeof(RuntimeMethodHandle),
         };
 
-        internal static string GetStackTrace(int skipFrames)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static object GetStackTrace(int skipFrames)
         {
-            var stackTraceTexts = new List<string>();
+            var stack = _executionStack;
+            JsStackFrame stackCopy = null;
 
-            var stack = GetExecutionStack();
-
-            var stackTrace = new StackTrace(1 + skipFrames, true);
-            var originalStackTraceLines = stackTrace.ToString().Split('\n');
-
-            var wordAt = originalStackTraceLines.FirstOrDefault()?.Trim().Split(' ')[0] ?? "at";
-            var wordLine = originalStackTraceLines.FirstOrDefault(x => x.Contains(':'))?.Split(':')?.LastOrDefault().Split(' ')[0] ?? "line";
-
-            wordAt = "   " + wordAt + " ";
-
-            var namespaceIndex = wordAt.Length;
-
-            var recordsToRemove = 0;
-
-            JsStackFrame jsFrame = null;
-            var frames = stackTrace.GetFrames();
-            for (int i = 0; i < frames.Length; i++)
+            if (stack != null)
             {
-                StackFrame frame = frames[i];
-                var method = frame.GetMethod();
-                if (method != null && method.GetCustomAttribute(typeof(StackFrameOverrideAttribute)) != null)
+                stackCopy = new JsStackFrame
                 {
-                    stackTraceTexts.RemoveRange(stackTraceTexts.Count - recordsToRemove, recordsToRemove);
-                    recordsToRemove = 0;
+                    CodeNode = stack.CodeNode,
+                    Context = stack.Context,
+                };
 
-                    jsFrame = stack.Pop();
-                    var code = GetCode(jsFrame.Context);
-                    var codeCoords = code != null ? CodeCoordinates.FromTextPosition(code, jsFrame.CodeNode?.Position ?? 0, jsFrame.CodeNode?.Length ?? 0) : null;
-                    stackTraceTexts.Add(
-                        wordAt + (jsFrame.Context?._owner?.name ?? "<anonymous method>") +
-                        ":" + wordLine + " " + codeCoords?.Line);
-                }
-                else if (_baseClassesToHide.Any(x => x.IsAssignableFrom(method.DeclaringType)))
+                var stackCopyTail = stackCopy;
+                stack = stack.PrevFrame;
+                while (stack != null)
                 {
-                    // do nothing
-                }
-                else if (i < originalStackTraceLines.Length)
-                {
-                    if (method.DeclaringType == null)
+                    var frame = new JsStackFrame
                     {
-                        recordsToRemove++;
-                    }
-                    else if (_namespacesToReplace.Any(x => method.DeclaringType.Namespace == x))
-                    {
-                        recordsToRemove++;
-                    }
-                    else
-                    {
-                        recordsToRemove = 0;
-                    }
+                        CodeNode = stack.CodeNode,
+                        Context = stack.Context,
+                    };
 
-                        stackTraceTexts.Add(originalStackTraceLines[i].Replace("\r", string.Empty));
+                    stackCopyTail.PrevFrame = frame;
+                    stackCopyTail = frame;
+                    stack = stack.PrevFrame;
                 }
             }
 
-            return string.Join(Environment.NewLine, stackTraceTexts);
+            var stackTrace = new StackTrace(1 + skipFrames, true);
+
+            return new StackTraceState
+            {
+                JsStack = stackCopy,
+                StackTrace = stackTrace
+            };
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
