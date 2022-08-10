@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;

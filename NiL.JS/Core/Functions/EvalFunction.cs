@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
@@ -66,23 +67,16 @@ namespace NiL.JS.Core.Functions
             try
             {
                 var ccontext = Context.CurrentContext;
-                var root = ccontext.RootContext;
-                while (ccontext != root && ccontext != null)
+                var rootContext = ccontext.RootContext;
+                while (ccontext != rootContext && ccontext != null)
                 {
                     stack.Push(ccontext);
-                    ccontext = ccontext.Deactivate();
+                    ccontext = ccontext.Deactivate(false);
                 }
+
                 if (ccontext == null)
                 {
-                    root.Activate();
-                    try
-                    {
-                        return root.Eval(arguments[0].ToString(), false);
-                    }
-                    finally
-                    {
-                        root.Deactivate();
-                    }
+                    return invokeWithContext(arguments, rootContext);
                 }
                 else
                     return ccontext.Eval(arguments[0].ToString(), false);
@@ -90,7 +84,22 @@ namespace NiL.JS.Core.Functions
             finally
             {
                 while (stack.Count != 0)
-                    stack.Pop().Activate();
+                    stack.Pop().Activate(false);
+            }
+        }
+
+        [ExceptionHelper.StackFrameOverride]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static JSValue invokeWithContext(Arguments arguments, Context context)
+        {
+            context.Activate();
+            try
+            {
+                return context.Eval(arguments[0].ToString(), false);
+            }
+            finally
+            {
+                context.Deactivate();
             }
         }
 

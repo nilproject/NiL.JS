@@ -161,12 +161,12 @@ namespace NiL.JS.Core
                 throw new Exception("Unable to activate base context");
         }
 
-        public new void Deactivate()
+        public new void Deactivate(bool dropStackFrame = true)
         {
             if (CurrentContext != this)
                 throw new InvalidOperationException();
 
-            if (base.Deactivate() != null)
+            if (base.Deactivate(dropStackFrame) != null)
                 throw new InvalidOperationException("Invalid state");
         }
 

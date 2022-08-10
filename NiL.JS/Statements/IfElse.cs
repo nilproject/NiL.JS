@@ -109,12 +109,15 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
+            var frame = ExceptionHelper.GetStackFrame(context, false);
+
             bool conditionResult;
             if (context._executionMode != ExecutionMode.Resume || !context.SuspendData.ContainsKey(this))
             {
                 if (context._debugging)
                     context.raiseDebugger(condition);
 
+                frame.CodeNode = condition;
                 conditionResult = (bool)condition.Evaluate(context);
                 if (context._executionMode == ExecutionMode.Suspend)
                     return null;
@@ -131,6 +134,8 @@ namespace NiL.JS.Statements
                     if (context._debugging && !(then is CodeBlock))
                         context.raiseDebugger(then);
 
+                    frame.CodeNode = then;
+
                     var temp = then.Evaluate(context);
                     if (temp != null)
                         context._lastResult = temp;
@@ -140,6 +145,8 @@ namespace NiL.JS.Statements
             {
                 if (context._debugging && !(@else is CodeBlock))
                     context.raiseDebugger(@else);
+
+                frame.CodeNode = @else;
 
                 var temp = @else.Evaluate(context);
                 if (temp != null)

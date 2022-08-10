@@ -205,6 +205,7 @@ namespace NiL.JS.Statements
             finallyAction(context);
         }
 
+        [ExceptionHelper.StackFrameOverride]
         private void catchHandler(Context context, Exception e)
         {
             if (context._debugging)

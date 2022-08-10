@@ -136,6 +136,7 @@ namespace NiL.JS.Core.Functions
             return result;
         }
 
+        [ExceptionHelper.StackFrameOverride]
         private JSValue run(Context internalContext)
         {
             internalContext.Activate();

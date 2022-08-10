@@ -70,8 +70,11 @@ namespace NiL.JS.Statements
             };
         }
 
+        [ExceptionHelper.StackFrameOverride]
         public override JSValue Evaluate(Context context)
         {
+            var frame = ExceptionHelper.GetStackFrame(context, false);
+
             JSValue scopeObject = null;
             WithContext intcontext = null;
             Action<Context> action = null;
@@ -86,6 +89,8 @@ namespace NiL.JS.Statements
                 }
             }
 
+            frame.CodeNode = _scope;
+
             if (context._executionMode != ExecutionMode.Resume && context._debugging)
                 context.raiseDebugger(_scope);
 
@@ -99,6 +104,8 @@ namespace NiL.JS.Statements
             intcontext = new WithContext(scopeObject, context);
             action = (c) =>
             {
+                ExceptionHelper.GetStackFrame(intcontext, false).CodeNode = _body;
+
                 try
                 {
                     intcontext._executionMode = c._executionMode;
@@ -118,8 +125,8 @@ namespace NiL.JS.Statements
                 }
             };
 
-            if (context._debugging && !(_body is CodeBlock))
-                context.raiseDebugger(_body);
+            if (intcontext._debugging && !(_body is CodeBlock))
+                intcontext.raiseDebugger(_body);
 
             action(context);
             return null;

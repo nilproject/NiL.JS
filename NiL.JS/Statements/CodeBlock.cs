@@ -313,27 +313,17 @@ namespace NiL.JS.Statements
                     initVariables(context);
             }
 
+            ExceptionHelper.GetStackFrame(context, false).CodeNode = this;
+
             if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 evaluateWithScope(context, i, clearSuspendData);
             else
-                evaluateWithoutScope(context, i, clearSuspendData);
+                evaluateLines(context, ref i, clearSuspendData);
 
             return null;
         }
 
-        private void evaluateWithoutScope(Context context, int i, bool clearSuspendData)
-        {
-            try
-            {
-                evaluateLines(context, ref i, clearSuspendData);
-            }
-            catch (Exception e)
-            {
-                ExceptionHelper.SetCallStackData(e, context, _lines[i]);
-                throw;
-            }
-        }
-
+        [ExceptionHelper.StackFrameOverride]
         private void evaluateWithScope(Context context, int i, bool clearSuspendData)
         {
             var activated = _suppressScopeIsolation != SuppressScopeIsolationMode.Suppress && context.Activate();
@@ -341,17 +331,13 @@ namespace NiL.JS.Statements
             {
                 evaluateLines(context, ref i, clearSuspendData);
             }
-            catch (Exception e)
-            {
-                ExceptionHelper.SetCallStackData(e, context, _lines[i]);
-                throw;
-            }
             finally
             {
                 if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 {
                     if (activated)
                         context.Deactivate();
+
                     context._parent._lastResult = context._lastResult;
                     context._parent._executionInfo = context._executionInfo;
                     context._parent._executionMode = context._executionMode;
@@ -363,10 +349,15 @@ namespace NiL.JS.Statements
 
         private void evaluateLines(Context context, ref int i, bool clearSuspendData)
         {
+            var stackFrame = ExceptionHelper.GetStackFrame(context, false);
+
             for (var ls = _lines; i < ls.Length; i++)
             {
                 if (context._debugging)
                     context.raiseDebugger(_lines[i]);
+
+                stackFrame.CodeNode = ls[i];
+
                 var t = ls[i].Evaluate(context);
                 if (t != null)
                     context._lastResult = t;

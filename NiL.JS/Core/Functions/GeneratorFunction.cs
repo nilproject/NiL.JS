@@ -53,6 +53,7 @@ namespace NiL.JS.Core.Functions
             _targetObject = self;
         }
 
+        [ExceptionHelper.StackFrameOverride]
         public IIteratorResult next(Arguments args)
         {
             if (_generatorContext == null)

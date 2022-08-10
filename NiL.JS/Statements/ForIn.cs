@@ -178,17 +178,21 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
+            var frame = ExceptionHelper.GetStackFrame(context, false);
+
             SuspendData suspendData = null;
             if (context._executionMode >= ExecutionMode.Resume)
             {
                 suspendData = context.SuspendData[this] as SuspendData;
             }
 
-            JSValue source = null;
+            JSValue source;
             if (suspendData == null || suspendData.source == null)
             {
                 if (context._debugging && !(_source is CodeBlock))
                     context.raiseDebugger(_source);
+
+                frame.CodeNode = _source;
 
                 source = _source.Evaluate(context);
                 if (context._executionMode == ExecutionMode.Suspend)
@@ -205,6 +209,8 @@ namespace NiL.JS.Statements
             {
                 if (context._debugging && !(_variable is CodeBlock))
                     context.raiseDebugger(_variable);
+
+                frame.CodeNode = _variable;
 
                 var varialeDefStat = _variable as VariableDefinition;
                 if (varialeDefStat != null)
@@ -244,11 +250,14 @@ namespace NiL.JS.Statements
                 var keys = (suspendData != null ? suspendData.keys : null) ?? source.GetEnumerator(false, EnumerationMode.RequireValues);
                 while (context._executionMode >= ExecutionMode.Resume || keys.MoveNext())
                 {
+                    frame.CodeNode = _body;
+
                     if (context._executionMode != ExecutionMode.Resume)
                     {
                         var key = keys.Current.Key;
                         if (processedKeys.Contains(key))
                             continue;
+
                         processedKeys.Add(key);
 
                         variable._valueType = JSValueType.String;

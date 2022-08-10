@@ -31,20 +31,17 @@ namespace NiL.JS.Statements
             public int lineIndex;
         }
 
-        private FunctionDefinition[] functions;
-        private CodeNode[] lines;
-        private SwitchCase[] cases;
-        private CodeNode image;
+        private FunctionDefinition[] _functions;
+        private CodeNode[] _body;
+        private SwitchCase[] _cases;
+        private CodeNode _image;
 
-        public FunctionDefinition[] Functions { get { return functions; } }
-        public CodeNode[] Body { get { return lines; } }
-        public SwitchCase[] Cases { get { return cases; } }
-        public CodeNode Image { get { return image; } }
+        public FunctionDefinition[] Functions => _functions;
+        public CodeNode[] Body => _body;
+        public SwitchCase[] Cases => _cases;
+        public CodeNode Image => _image;
 
-        internal Switch(CodeNode[] body)
-        {
-            this.lines = body;
-        }
+        internal Switch(CodeNode[] body) => _body = body;
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
@@ -131,9 +128,9 @@ namespace NiL.JS.Statements
                 index = i;
                 result = new Switch(body.ToArray())
                 {
-                    functions = funcs.ToArray(),
-                    cases = cases.ToArray(),
-                    image = image,
+                    _functions = funcs.ToArray(),
+                    _cases = cases.ToArray(),
+                    _image = image,
                     Position = pos,
                     Length = index - pos
                 };
@@ -155,18 +152,27 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
 #if DEBUG
-            if (functions != null)
+            if (_functions != null)
                 throw new InvalidOperationException();
 #endif
             JSValue imageValue = null;
             int caseIndex = 1;
-            int lineIndex = cases[0].index;
+            int lineIndex = _cases[0].index;
+
+            var frame = ExceptionHelper.GetStackFrame(context, false);
+
+            frame.CodeNode = _image;
 
             if (context._executionMode >= ExecutionMode.Resume)
             {
                 var sdata = context.SuspendData[this] as SuspendData;
                 if (sdata.imageValue == null)
-                    imageValue = image.Evaluate(context);
+                {
+                    if (context._debugging)
+                        context.raiseDebugger(_image);
+
+                    imageValue = _image.Evaluate(context);
+                }
                 else
                     imageValue = sdata.imageValue;
                 caseIndex = sdata.caseIndex;
@@ -175,22 +181,25 @@ namespace NiL.JS.Statements
             else
             {
                 if (context._debugging)
-                    context.raiseDebugger(image);
+                    context.raiseDebugger(_image);
 
-                imageValue = image.Evaluate(context);
+                imageValue = _image.Evaluate(context);
             }
+
             if (context._executionMode == ExecutionMode.Suspend)
             {
                 context.SuspendData[this] = new SuspendData() { caseIndex = 1 };
                 return null;
             }
 
-            for (; caseIndex < cases.Length; caseIndex++)
+            for (; caseIndex < _cases.Length; caseIndex++)
             {
-                if (context._debugging)
-                    context.raiseDebugger(cases[caseIndex].statement);
+                frame.CodeNode = _cases[caseIndex].Statement;
 
-                var cseResult = cases[caseIndex].statement.Evaluate(context);
+                if (context._debugging)
+                    context.raiseDebugger(_cases[caseIndex].statement);
+
+                var cseResult = _cases[caseIndex].statement.Evaluate(context);
                 if (context._executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = new SuspendData()
@@ -201,19 +210,22 @@ namespace NiL.JS.Statements
                     return null;
                 }
 
-                if (Expressions.StrictEqual.Check(imageValue, cseResult))
+                if (StrictEqual.Check(imageValue, cseResult))
                 {
-                    lineIndex = cases[caseIndex].index;
-                    caseIndex = cases.Length;
+                    lineIndex = _cases[caseIndex].index;
+                    caseIndex = _cases.Length;
                     break;
                 }
             }
-            for (; lineIndex < lines.Length; lineIndex++)
+
+            for (; lineIndex < _body.Length; lineIndex++)
             {
-                if (lines[lineIndex] == null)
+                if (_body[lineIndex] == null)
                     continue;
 
-                context._lastResult = lines[lineIndex].Evaluate(context) ?? context._lastResult;
+                frame.CodeNode = _body[lineIndex];
+
+                context._lastResult = _body[lineIndex].Evaluate(context) ?? context._lastResult;
                 if (context._executionMode != ExecutionMode.Regular)
                 {
                     if (context._executionMode == ExecutionMode.Break && context._executionInfo == null)
@@ -229,9 +241,11 @@ namespace NiL.JS.Statements
                             lineIndex = lineIndex
                         };
                     }
+
                     return null;
                 }
             }
+
             return null;
         }
 
@@ -239,17 +253,23 @@ namespace NiL.JS.Statements
         {
             if (expressionDepth < 1)
                 throw new InvalidOperationException();
-            Parser.Build(ref image, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            for (int i = 0; i < lines.Length; i++)
-                Parser.Build(ref lines[i], 1, variables, codeContext | CodeContext.Conditional, message, stats, opts);
-            for (int i = 0; functions != null && i < functions.Length; i++)
+
+            Parser.Build(ref _image, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+
+            for (int i = 0; i < _body.Length; i++)
+                Parser.Build(ref _body[i], 1, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+
+            for (int i = 0; _functions != null && i < _functions.Length; i++)
             {
-                CodeNode stat = functions[i];
+                CodeNode stat = _functions[i];
                 Parser.Build(ref stat, 1, variables, codeContext, message, stats, opts);
             }
-            functions = null;
-            for (int i = 1; i < cases.Length; i++)
-                Parser.Build(ref cases[i].statement, 2, variables, codeContext, message, stats, opts);
+
+            _functions = null;
+
+            for (int i = 1; i < _cases.Length; i++)
+                Parser.Build(ref _cases[i].statement, 2, variables, codeContext, message, stats, opts);
+
             return false;
         }
 
@@ -257,29 +277,33 @@ namespace NiL.JS.Statements
         {
             var res = new List<CodeNode>()
             {
-                image
+                _image
             };
-            res.AddRange(lines);
-            if (functions != null && functions.Length > 0)
-                res.AddRange(functions);
-            if (cases.Length > 0)
-                res.AddRange(from c in cases where c != null select c.statement);
+
+            res.AddRange(_body);
+
+            if (_functions != null && _functions.Length > 0)
+                res.AddRange(_functions);
+
+            if (_cases.Length > 0)
+                res.AddRange(from c in _cases where c != null select c.statement);
+
             res.RemoveAll(x => x == null);
             return res.ToArray();
         }
 
         public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            image.Optimize(ref image, owner, message, opts, stats);
-            for (var i = 1; i < cases.Length; i++)
-                cases[i].statement.Optimize(ref cases[i].statement, owner, message, opts, stats);
-            for (var i = lines.Length; i-- > 0;)
+            _image.Optimize(ref _image, owner, message, opts, stats);
+            for (var i = 1; i < _cases.Length; i++)
+                _cases[i].statement.Optimize(ref _cases[i].statement, owner, message, opts, stats);
+            for (var i = _body.Length; i-- > 0;)
             {
-                if (lines[i] == null)
+                if (_body[i] == null)
                     continue;
-                var cn = lines[i] as CodeNode;
+                var cn = _body[i] as CodeNode;
                 cn.Optimize(ref cn, owner, message, opts, stats);
-                lines[i] = cn;
+                _body[i] = cn;
             }
         }
 
@@ -290,26 +314,26 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            string res = "switch (" + image + ") {" + Environment.NewLine;
+            string res = "switch (" + _image + ") {" + Environment.NewLine;
             var replp = Environment.NewLine;
             var replt = Environment.NewLine + "  ";
-            for (int i = lines.Length; i-- > 0;)
+            for (int i = _body.Length; i-- > 0;)
             {
-                for (int j = 0; j < cases.Length; j++)
+                for (int j = 0; j < _cases.Length; j++)
                 {
-                    if (cases[j] != null && cases[j].index == i)
+                    if (_cases[j] != null && _cases[j].index == i)
                     {
-                        res += "case " + cases[j].statement + ":" + Environment.NewLine;
+                        res += "case " + _cases[j].statement + ":" + Environment.NewLine;
                     }
                 }
-                string lc = lines[i].ToString().Replace(replp, replt);
+                string lc = _body[i].ToString().Replace(replp, replt);
                 res += "  " + lc + (lc[lc.Length - 1] != '}' ? ";" + Environment.NewLine : Environment.NewLine);
             }
-            if (functions != null)
+            if (_functions != null)
             {
-                for (var i = 0; i < functions.Length; i++)
+                for (var i = 0; i < _functions.Length; i++)
                 {
-                    var func = functions[i].ToString().Replace(replp, replt);
+                    var func = _functions[i].ToString().Replace(replp, replt);
                     res += "  " + func + Environment.NewLine;
                 }
             }
@@ -318,35 +342,35 @@ namespace NiL.JS.Statements
 
         public override void Decompose(ref CodeNode self)
         {
-            for (var i = 0; i < cases.Length; i++)
+            for (var i = 0; i < _cases.Length; i++)
             {
-                if (cases[i].statement != null)
+                if (_cases[i].statement != null)
                 {
-                    cases[i].statement.Decompose(ref cases[i].statement);
+                    _cases[i].statement.Decompose(ref _cases[i].statement);
                 }
             }
 
-            for (var i = 0; i < lines.Length; i++)
+            for (var i = 0; i < _body.Length; i++)
             {
-                lines[i].Decompose(ref lines[i]);
+                _body[i].Decompose(ref _body[i]);
             }
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            image.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _image.RebuildScope(functionInfo, transferedVariables, scopeBias);
 
-            for (var i = 0; i < cases.Length; i++)
+            for (var i = 0; i < _cases.Length; i++)
             {
-                if (cases[i].statement != null)
+                if (_cases[i].statement != null)
                 {
-                    cases[i].statement.RebuildScope(functionInfo, transferedVariables, scopeBias);
+                    _cases[i].statement.RebuildScope(functionInfo, transferedVariables, scopeBias);
                 }
             }
 
-            for (var i = 0; i < lines.Length; i++)
+            for (var i = 0; i < _body.Length; i++)
             {
-                lines[i]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+                _body[i]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
             }
         }
     }

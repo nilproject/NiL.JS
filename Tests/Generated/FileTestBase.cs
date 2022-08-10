@@ -76,9 +76,6 @@ namespace Tests.Generated
                 }
                 while (preambleEnd < preambleEndTemp);
 
-                if (code.IndexOf("@negative") != -1)
-                    System.Diagnostics.Debugger.Break();
-
                 var negative = code.IndexOf("* @negative", 0, preambleEnd) != -1;
                 var strict = code.IndexOf("* @onlyStrict", 0, preambleEnd) != -1;
 

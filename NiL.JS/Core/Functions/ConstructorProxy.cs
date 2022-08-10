@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
@@ -183,22 +184,22 @@ namespace NiL.JS.Core.Functions
                             obj = new BaseLibrary.Array();
                             break;
                         case 1:
+                        {
+                            var a0 = arguments[0];
+                            switch (a0._valueType)
                             {
-                                var a0 = arguments[0];
-                                switch (a0._valueType)
-                                {
-                                    case JSValueType.Integer:
-                                        obj = new BaseLibrary.Array(a0._iValue);
-                                        break;
-                                    case JSValueType.Double:
-                                        obj = new BaseLibrary.Array(a0._dValue);
-                                        break;
-                                    default:
-                                        obj = new BaseLibrary.Array(arguments);
-                                        break;
-                                }
-                                break;
+                                case JSValueType.Integer:
+                                    obj = new BaseLibrary.Array(a0._iValue);
+                                    break;
+                                case JSValueType.Double:
+                                    obj = new BaseLibrary.Array(a0._dValue);
+                                    break;
+                                default:
+                                    obj = new BaseLibrary.Array(arguments);
+                                    break;
                             }
+                            break;
+                        }
                         default:
                             obj = new BaseLibrary.Array(arguments);
                             break;
@@ -228,10 +229,20 @@ namespace NiL.JS.Core.Functions
                         args = new object[] { arguments };
 
                     var target = constructor.GetTargetObject(targetObject, null);
-                    if (target != null)
-                        obj = constructor._method.Invoke(target, args);
-                    else
-                        obj = (constructor._method as ConstructorInfo).Invoke(args);
+
+                    try
+                    {
+                        if (target != null)
+                            obj = constructor._method.Invoke(target, args);
+                        else
+                            obj = (constructor._method as ConstructorInfo).Invoke(args);
+
+                    }
+                    catch (TargetInvocationException e)
+                    {
+                        ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+                        return null;
+                    }
                 }
             }
 

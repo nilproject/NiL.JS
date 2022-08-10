@@ -12,14 +12,14 @@ namespace NiL.JS.Statements
 #endif
     public sealed class While : CodeNode
     {
-        private bool allowRemove;
-        private CodeNode condition;
-        private CodeNode body;
-        private string[] labels;
+        private bool _allowRemove;
+        private CodeNode _condition;
+        private CodeNode _body;
+        private string[] _labels;
 
-        public CodeNode Condition { get { return condition; } }
-        public CodeNode Body { get { return body; } }
-        public ICollection<string> Labels { get { return new ReadOnlyCollection<string>(labels); } }
+        public CodeNode Condition { get { return _condition; } }
+        public CodeNode Body { get { return _body; } }
+        public ICollection<string> Labels { get { return new ReadOnlyCollection<string>(_labels); } }
 
         internal static CodeNode Parse(ParseInfo state, ref int index)
         {
@@ -61,10 +61,10 @@ namespace NiL.JS.Statements
             index = i;
             return new While()
             {
-                allowRemove = ccs == state.ContiniesCount && cbs == state.BreaksCount,
-                body = body,
-                condition = condition,
-                labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
+                _allowRemove = ccs == state.ContiniesCount && cbs == state.BreaksCount,
+                _body = body,
+                _condition = condition,
+                _labels = state.Labels.GetRange(state.Labels.Count - labelsCount, labelsCount).ToArray(),
                 Position = pos,
                 Length = index - pos
             };
@@ -72,18 +72,22 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
-            bool be = body != null;
+            bool be = _body != null;
             JSValue checkResult;
 
-            if (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == condition)
-            {
-                if (context._executionMode != ExecutionMode.Resume && context._debugging)
-                    context.raiseDebugger(condition);
+            var frame = ExceptionHelper.GetStackFrame(context, false);
 
-                checkResult = condition.Evaluate(context);
+            if (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == _condition)
+            {
+                frame.CodeNode = _condition;
+
+                if (context._executionMode != ExecutionMode.Resume && context._debugging)
+                    context.raiseDebugger(_condition);
+
+                checkResult = _condition.Evaluate(context);
                 if (context._executionMode == ExecutionMode.Suspend)
                 {
-                    context.SuspendData[this] = condition;
+                    context.SuspendData[this] = _condition;
                     return null;
                 }
                 if (!(bool)checkResult)
@@ -94,19 +98,21 @@ namespace NiL.JS.Statements
             {
                 if (be
                  && (context._executionMode != ExecutionMode.Resume
-                    || context.SuspendData[this] == body))
+                    || context.SuspendData[this] == _body))
                 {
-                    if (context._executionMode != ExecutionMode.Resume && context._debugging && !(body is CodeBlock))
-                        context.raiseDebugger(body);
+                    frame.CodeNode = _body;
 
-                    var temp = body.Evaluate(context);
+                    if (context._executionMode != ExecutionMode.Resume && context._debugging && !(_body is CodeBlock))
+                        context.raiseDebugger(_body);
+
+                    var temp = _body.Evaluate(context);
                     if (temp != null)
                         context._lastResult = temp;
                     if (context._executionMode != ExecutionMode.Regular)
                     {
                         if (context._executionMode < ExecutionMode.Return)
                         {
-                            var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
+                            var me = context._executionInfo == null || System.Array.IndexOf(_labels, context._executionInfo._oValue as string) != -1;
                             var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                             if (me)
                             {
@@ -118,7 +124,7 @@ namespace NiL.JS.Statements
                         }
                         else if (context._executionMode == ExecutionMode.Suspend)
                         {
-                            context.SuspendData[this] = body;
+                            context.SuspendData[this] = _body;
                             return null;
                         }
                         else
@@ -127,12 +133,12 @@ namespace NiL.JS.Statements
                 }
 
                 if (context._executionMode != ExecutionMode.Resume && context._debugging)
-                    context.raiseDebugger(condition);
+                    context.raiseDebugger(_condition);
 
-                checkResult = condition.Evaluate(context);
+                checkResult = _condition.Evaluate(context);
                 if (context._executionMode == ExecutionMode.Suspend)
                 {
-                    context.SuspendData[this] = condition;
+                    context.SuspendData[this] = _condition;
                     return null;
                 }
             }
@@ -144,8 +150,8 @@ namespace NiL.JS.Statements
         {
             var res = new List<CodeNode>()
             {
-                body,
-                condition
+                _body,
+                _condition
             };
             res.RemoveAll(x => x == null);
             return res.ToArray();
@@ -154,39 +160,39 @@ namespace NiL.JS.Statements
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             expressionDepth = System.Math.Max(1, expressionDepth);
-            Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
-            Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
-            if ((opts & Options.SuppressUselessStatementsElimination) == 0 && condition is ConvertToBoolean)
+            Parser.Build(ref _body, expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
+            Parser.Build(ref _condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+            if ((opts & Options.SuppressUselessStatementsElimination) == 0 && _condition is ConvertToBoolean)
             {
                 if (message != null)
-                    message(MessageLevel.Warning, condition.Position, 2, "Useless conversion. Remove double negation in condition");
-                condition = (condition as Expression)._left;
+                    message(MessageLevel.Warning, _condition.Position, 2, "Useless conversion. Remove double negation in condition");
+                _condition = (_condition as Expression)._left;
             }
 
-            if (allowRemove && (condition is Constant || (condition is Expression && (condition as Expression).ContextIndependent)))
+            if (_allowRemove && (_condition is Constant || (_condition is Expression && (_condition as Expression).ContextIndependent)))
             {
                 Eliminated = true;
-                if ((bool)condition.Evaluate(null))
+                if ((bool)_condition.Evaluate(null))
                 {
-                    if ((opts & Options.SuppressUselessStatementsElimination) == 0 && body != null)
-                        _this = new InfinityLoop(body, labels);
+                    if ((opts & Options.SuppressUselessStatementsElimination) == 0 && _body != null)
+                        _this = new InfinityLoop(_body, _labels);
                 }
                 else if ((opts & Options.SuppressUselessStatementsElimination) == 0)
                 {
                     _this = null;
-                    if (body != null)
-                        body.Eliminated = true;
+                    if (_body != null)
+                        _body.Eliminated = true;
                 }
-                condition.Eliminated = true;
+                _condition.Eliminated = true;
             }
             else
             {
                 if ((opts & Options.SuppressUselessStatementsElimination) == 0
-                    && ((condition is ObjectDefinition && (condition as ObjectDefinition).Properties.Length == 0)
-                        || (condition is ArrayDefinition)))
+                    && ((_condition is ObjectDefinition && (_condition as ObjectDefinition).Properties.Length == 0)
+                        || (_condition is ArrayDefinition)))
                 {
-                    _this = new InfinityLoop(body, labels);
-                    condition.Eliminated = true;
+                    _this = new InfinityLoop(_body, _labels);
+                    _condition.Eliminated = true;
                 }
             }
 
@@ -195,24 +201,24 @@ namespace NiL.JS.Statements
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            if (condition != null)
-                condition.Optimize(ref condition, owner, message, opts, stats);
-            if (body != null)
-                body.Optimize(ref body, owner, message, opts, stats);
+            if (_condition != null)
+                _condition.Optimize(ref _condition, owner, message, opts, stats);
+            if (_body != null)
+                _body.Optimize(ref _body, owner, message, opts, stats);
         }
 
         public override void Decompose(ref CodeNode self)
         {
-            if (condition != null)
-                condition.Decompose(ref condition);
-            if (body != null)
-                body.Decompose(ref body);
+            if (_condition != null)
+                _condition.Decompose(ref _condition);
+            if (_body != null)
+                _body.Decompose(ref _body);
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -222,7 +228,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return "while (" + condition + ")" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            return "while (" + _condition + ")" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
         }
     }
 }

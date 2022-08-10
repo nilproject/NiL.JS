@@ -526,6 +526,7 @@ namespace NiL.JS.BaseLibrary
             return result;
         }
 
+        [ExceptionHelper.StackFrameOverride]
         internal JSValue evaluateBody(Context internalContext)
         {
             _functionDefinition._body.Evaluate(internalContext);

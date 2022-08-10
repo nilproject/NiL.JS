@@ -7,11 +7,149 @@ using System.Threading.Tasks;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using System.Diagnostics;
+using System.Reflection;
+using NiL.JS.Expressions;
+using NiL.JS.Statements;
 
 namespace NiL.JS
 {
     internal static class ExceptionHelper
     {
+        internal sealed class JsStackFrame
+        {
+            public Context Context;
+            public CodeNode CodeNode;
+        }
+
+        [AttributeUsage(
+            AttributeTargets.Method
+            | AttributeTargets.Constructor
+            | AttributeTargets.Property
+            | AttributeTargets.Delegate
+            | AttributeTargets.Event)]
+        internal sealed class StackFrameOverrideAttribute : Attribute { }
+
+        [ThreadStatic]
+        private static Stack<JsStackFrame> _executionStack;
+
+        internal static void DropStackFrame(Context context)
+        {
+            if (!TryDropStackFrame(context))
+                throw new InvalidOperationException("_executionStack.Peek().Context != context");
+        }
+
+        internal static bool TryDropStackFrame(Context context)
+        {
+            if (_executionStack == null || _executionStack.Count == 0)
+                return false;
+
+            if (_executionStack.Peek().Context != context)
+                return false;
+
+            _executionStack.Pop();
+            return true;
+        }
+
+        internal static JsStackFrame GetStackFrame(Context context, bool newStackFrame)
+        {
+            if (_executionStack == null)
+                _executionStack = new Stack<JsStackFrame>();
+
+            if (newStackFrame
+                || _executionStack.Count == 0
+                || _executionStack.Peek().Context != context)
+            {
+                var frame = new JsStackFrame { Context = context };
+                _executionStack.Push(frame);
+                return frame;
+            }
+
+            return _executionStack.Peek();
+        }
+
+        internal static Stack<JsStackFrame> GetExecutionStack()
+        {
+            var result = new Stack<JsStackFrame>(
+                (_executionStack as IEnumerable<JsStackFrame> ?? System.Array.Empty<JsStackFrame>()).Reverse());
+            return result;
+        }
+
+        private static readonly string[] _namespacesToReplace = new[]
+        {
+            typeof(CodeBlock).Namespace,
+            typeof(Addition).Namespace,
+        };
+
+        private static readonly Type[] _baseClassesToHide = new[]
+        {
+            typeof(Function),
+            typeof(ExceptionHelper),
+            typeof(ConstructorInfo),
+            typeof(RuntimeMethodHandle),
+        };
+
+        internal static string GetStackTrace(int skipFrames)
+        {
+            var stackTraceTexts = new List<string>();
+
+            var stack = GetExecutionStack();
+
+            var stackTrace = new StackTrace(1 + skipFrames, true);
+            var originalStackTraceLines = stackTrace.ToString().Split('\n');
+
+            var wordAt = originalStackTraceLines.FirstOrDefault()?.Trim().Split(' ')[0] ?? "at";
+            var wordLine = originalStackTraceLines.FirstOrDefault(x => x.Contains(':'))?.Split(':')?.LastOrDefault().Split(' ')[0] ?? "line";
+
+            wordAt = "   " + wordAt + " ";
+
+            var namespaceIndex = wordAt.Length;
+
+            var recordsToRemove = 0;
+
+            JsStackFrame jsFrame = null;
+            var frames = stackTrace.GetFrames();
+            for (int i = 0; i < frames.Length; i++)
+            {
+                StackFrame frame = frames[i];
+                var method = frame.GetMethod();
+                if (method != null && method.GetCustomAttribute(typeof(StackFrameOverrideAttribute)) != null)
+                {
+                    stackTraceTexts.RemoveRange(stackTraceTexts.Count - recordsToRemove, recordsToRemove);
+                    recordsToRemove = 0;
+
+                    jsFrame = stack.Pop();
+                    var code = GetCode(jsFrame.Context);
+                    var codeCoords = code != null ? CodeCoordinates.FromTextPosition(code, jsFrame.CodeNode?.Position ?? 0, jsFrame.CodeNode?.Length ?? 0) : null;
+                    stackTraceTexts.Add(
+                        wordAt + (jsFrame.Context?._owner?.name ?? "<anonymous method>") +
+                        ":" + wordLine + " " + codeCoords?.Line);
+                }
+                else if (_baseClassesToHide.Any(x => x.IsAssignableFrom(method.DeclaringType)))
+                {
+                    // do nothing
+                }
+                else if (i < originalStackTraceLines.Length)
+                {
+                    if (method.DeclaringType == null)
+                    {
+                        recordsToRemove++;
+                    }
+                    else if (_namespacesToReplace.Any(x => method.DeclaringType.Namespace == x))
+                    {
+                        recordsToRemove++;
+                    }
+                    else
+                    {
+                        recordsToRemove = 0;
+                    }
+
+                        stackTraceTexts.Add(originalStackTraceLines[i].Replace("\r", string.Empty));
+                }
+            }
+
+            return string.Join(Environment.NewLine, stackTraceTexts);
+        }
+
         /// <exception cref="NiL.JS.Core.JSException">
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -205,22 +343,23 @@ namespace NiL.JS
             throw exception;
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void SetCallStackData(Exception e, Context context, CodeNode codeNode)
         {
-            foreach (var item in e.Data.Values)
-            {
-                if ((item as Tuple<Context, CodeCoordinates>).Item1 == context)
-                    return;
-            }
+            //var data = e.Data[CallStackMarker.Instance] as List<Tuple<Context, CodeCoordinates>>;
+            //if (data == null)
+            //    e.Data[CallStackMarker.Instance] = data = new List<Tuple<Context, CodeCoordinates>>();
 
-            e.Data.Add(
-                new CallStackMarker(e.Data.Count),
-                Tuple.Create(
-                    context,
-                    CodeCoordinates.FromTextPosition(
-                        ExceptionHelper.GetCode(context),
-                        codeNode.Position,
-                        codeNode.Length)));
+            //if (data.Count > 0 && data[data.Count - 1].Item1 == context)
+            //    return;
+
+            //data.Add(
+            //    Tuple.Create(
+            //        context,
+            //        CodeCoordinates.FromTextPosition(
+            //            GetCode(context),
+            //            codeNode.Position,
+            //            codeNode.Length)));
         }
     }
 }

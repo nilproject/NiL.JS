@@ -180,6 +180,8 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
+            var frame = ExceptionHelper.GetStackFrame(context, false);
+
             SuspendData suspendData = null;
             if (context._executionMode >= ExecutionMode.Resume)
             {
@@ -191,6 +193,8 @@ namespace NiL.JS.Statements
             {
                 if (context._debugging && !(_source is CodeBlock))
                     context.raiseDebugger(_source);
+
+                frame.CodeNode = _source;
 
                 source = _source.Evaluate(context);
                 if (context._executionMode == ExecutionMode.Suspend)
@@ -205,8 +209,10 @@ namespace NiL.JS.Statements
             JSValue variable = null;
             if (suspendData == null || suspendData.variable == null)
             {
-                if (context._debugging && !(_variable is CodeBlock))
+                if (context._debugging && _variable is not CodeBlock)
                     context.raiseDebugger(_variable);
+
+                frame.CodeNode = _variable;
 
                 var varialeDefStat = _variable as VariableDefinition;
                 if (varialeDefStat != null)
@@ -221,10 +227,12 @@ namespace NiL.JS.Statements
                 }
                 else
                     variable = _variable.EvaluateForWrite(context);
+
                 if (context._executionMode == ExecutionMode.Suspend)
                 {
                     if (suspendData == null)
                         suspendData = new SuspendData();
+
                     context.SuspendData[this] = suspendData;
                     suspendData.source = source;
                     return null;
@@ -250,6 +258,8 @@ namespace NiL.JS.Statements
                     variable.Assign(iteratorResult.value);
                     variable._attributes = tempAttr;
                 }
+
+                frame.CodeNode = _body;
 
                 _body.Evaluate(context);
 

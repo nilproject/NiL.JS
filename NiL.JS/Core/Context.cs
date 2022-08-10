@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
@@ -244,6 +245,7 @@ namespace NiL.JS.Core
 
                 _definedVariables = _owner?.Body?._variables;
                 _parent = prototype;
+                _sourceCode = prototype._sourceCode;
                 _thisBind = prototype._thisBind;
                 _debugging = prototype._debugging;
                 _module = prototype._module;
@@ -260,7 +262,7 @@ namespace NiL.JS.Core
             _DefaultGlobalContext.ResetContext();
         }
 
-        internal bool Activate()
+        internal bool Activate(bool addStackFrame = true)
         {
             if (currentContextStack == null)
                 currentContextStack = new List<Context>();
@@ -268,16 +270,23 @@ namespace NiL.JS.Core
             if (currentContextStack.Count > 0 && currentContextStack[currentContextStack.Count - 1] == this)
                 return false;
 
+            if (addStackFrame)
+                ExceptionHelper.GetStackFrame(this, true);
+
             currentContextStack.Add(this);
             return true;
         }
 
-        internal Context Deactivate()
+        internal Context Deactivate(bool dropStackFrame = true)
         {
             if (currentContextStack[currentContextStack.Count - 1] != this)
                 throw new InvalidOperationException("Context is not running");
 
             currentContextStack.RemoveAt(currentContextStack.Count - 1);
+
+            if (dropStackFrame)
+                while (ExceptionHelper.TryDropStackFrame(this)) ;
+
             return CurrentContext;
         }
 
@@ -634,7 +643,7 @@ namespace NiL.JS.Core
                 context._sourceCode = code;
                 try
                 {
-                    return body.Evaluate(context) ?? context._lastResult ?? JSValue.notExists;
+                    return doEval(body, context);
                 }
                 catch (JSException e)
                 {
@@ -659,6 +668,13 @@ namespace NiL.JS.Core
                     this.Deactivate();
                 this._debugging = debugging;
             }
+        }
+
+        [ExceptionHelper.StackFrameOverride]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static JSValue doEval(CodeBlock body, Context context)
+        {
+            return body.Evaluate(context) ?? context._lastResult ?? JSValue.notExists;
         }
 
         public IEnumerator<string> GetEnumerator()

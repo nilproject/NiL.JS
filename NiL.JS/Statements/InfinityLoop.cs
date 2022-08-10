@@ -11,31 +11,35 @@ namespace NiL.JS.Statements
 #endif
     public sealed class InfinityLoop : CodeNode
     {
-        private CodeNode body;
-        private string[] labels;
+        private CodeNode _body;
+        private readonly string[] _labels;
 
-        public CodeNode Body { get { return body; } }
-        public ReadOnlyCollection<string> Labels { get { return new ReadOnlyCollection<string>(labels); } }
+        public CodeNode Body { get { return _body; } }
+        public ReadOnlyCollection<string> Labels { get { return new ReadOnlyCollection<string>(_labels); } }
 
         internal InfinityLoop(CodeNode body, string[] labels)
         {
-            this.body = body ?? new Empty();
-            this.labels = labels;
+            _body = body ?? new Empty();
+            _labels = labels;
         }
 
         public override JSValue Evaluate(Context context)
         {
+            var frame = ExceptionHelper.GetStackFrame(context, false);
+
             for (;;)
             {
-                if (context._debugging && !(body is CodeBlock))
-                    context.raiseDebugger(body);
+                frame.CodeNode = _body;
 
-                context._lastResult = body.Evaluate(context) ?? context._lastResult;
+                if (context._debugging && _body is not CodeBlock)
+                    context.raiseDebugger(_body);
+
+                context._lastResult = _body.Evaluate(context) ?? context._lastResult;
                 if (context._executionMode != ExecutionMode.Regular)
                 {
                     if (context._executionMode < ExecutionMode.Return)
                     {
-                        var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
+                        var me = context._executionInfo == null || System.Array.IndexOf(_labels, context._executionInfo._oValue as string) != -1;
                         var _break = (context._executionMode > ExecutionMode.Continue) || !me;
                         if (me)
                         {
@@ -53,7 +57,7 @@ namespace NiL.JS.Statements
 
         protected internal override CodeNode[] GetChildrenImpl()
         {
-            return new[] { body };
+            return new[] { _body };
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
@@ -63,17 +67,17 @@ namespace NiL.JS.Statements
 
         public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
         {
-            body.Optimize(ref body, owner, message, opts, stats);
+            _body.Optimize(ref _body, owner, message, opts, stats);
         }
 
         public override void Decompose(ref CodeNode self)
         {
-            body.Decompose(ref body);
+            _body.Decompose(ref _body);
         }
 
         public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
         {
-            body.RebuildScope(functionInfo, transferedVariables, scopeBias);
+            _body.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -83,7 +87,7 @@ namespace NiL.JS.Statements
 
         public override string ToString()
         {
-            return "for (;;)" + (body is CodeBlock ? "" : Environment.NewLine + "  ") + body;
+            return "for (;;)" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
         }
     }
 }

@@ -507,6 +507,12 @@ namespace NiL.JS.Expressions
                 var value = _properties[i].Value;
                 value.Decompose(ref value, result);
 
+                if (!value.ContextIndependent)
+                {
+                    result.Add(new StoreValue(value, false));
+                    value = new ExtractStoredValue(value);
+                }
+
                 if ((key != _properties[i].Key) || (value != _properties[i].Value))
                 {
                     _properties[i] = new KeyValuePair<Expression, Expression>(key, value);

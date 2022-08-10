@@ -64,6 +64,7 @@ namespace NiL.JS
             return new Script() { Code = code, Root = root };
         }
 
+        [ExceptionHelper.StackFrameOverride]
         public JSValue Evaluate(Context context)
         {
             if (Code == "")

@@ -161,8 +161,12 @@ namespace NiL.JS.Statements
 
         public override JSValue Evaluate(Context context)
         {
+            var frame = ExceptionHelper.GetStackFrame(context, false);
+
             if (_initializer != null && (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == _initializer))
             {
+                frame.CodeNode = _initializer;
+
                 if (context._executionMode != ExecutionMode.Resume && context._debugging)
                     context.raiseDebugger(_initializer);
 
@@ -180,6 +184,8 @@ namespace NiL.JS.Statements
 
             if (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == _condition)
             {
+                frame.CodeNode = _condition;
+
                 if (context._executionMode != ExecutionMode.Resume && context._debugging)
                     context.raiseDebugger(_condition);
 
@@ -196,6 +202,8 @@ namespace NiL.JS.Statements
 
             do
             {
+                frame.CodeNode = _body;
+
                 if (be && (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == _body))
                 {
                     if (context._executionMode != ExecutionMode.Resume && context._debugging && !(_body is CodeBlock))
@@ -230,6 +238,8 @@ namespace NiL.JS.Statements
                     }
                 }
 
+                frame.CodeNode = _post;
+
                 if (pe && (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == _post))
                 {
                     if (context._executionMode != ExecutionMode.Resume && context._debugging)
@@ -237,6 +247,8 @@ namespace NiL.JS.Statements
 
                     _post.Evaluate(context);
                 }
+
+                frame.CodeNode = _condition;
 
                 if (context._executionMode != ExecutionMode.Resume && context._debugging)
                     context.raiseDebugger(_condition);

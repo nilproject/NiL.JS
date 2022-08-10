@@ -1,4 +1,5 @@
-﻿using NiL.JS.Core;
+﻿using System;
+using NiL.JS.Core;
 
 namespace NiL.JS.BaseLibrary
 {
@@ -30,7 +31,8 @@ namespace NiL.JS.BaseLibrary
 
         public static void assert(Arguments args)
         {
-            System.Diagnostics.Debug.Assert((bool)args[0], args[0].ToString());
+            if (!(bool)args[0])
+                throw new Exception(args[0].ToString());
         }
 
         public static JSValue asserta(Function f, JSValue sample)
@@ -42,8 +44,9 @@ namespace NiL.JS.BaseLibrary
             {
                 var message = f.ToString();
                 message = message.Substring(message.IndexOf("=>") + 2).Trim();
-                System.Diagnostics.Debug.Fail(message + " not equals " + sample);
+                throw new Exception(message + " not equals " + sample);
             }
+
             return JSValue.undefined;
         }
     }

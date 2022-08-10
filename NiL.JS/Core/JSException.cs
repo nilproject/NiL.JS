@@ -23,6 +23,7 @@ namespace NiL.JS.Core
         public JSException(Error data)
         {
             Error = Context.CurrentGlobalContext.ProxyValue(data);
+            _stackTraceOverride ??= ExceptionHelper.GetStackTrace(1);
         }
 
         public JSException(Error data, CodeNode exceptionMaker, string code)
@@ -39,21 +40,25 @@ namespace NiL.JS.Core
             {
                 CodeCoordinates = CodeCoordinates.FromTextPosition(code, exceptionMaker.Position, exceptionMaker.Length);
             }
+
+            _stackTraceOverride = ExceptionHelper.GetStackTrace(1);
         }
 
         public JSException(JSValue data, Exception innerException)
             : base("External error", innerException)
         {
             Error = data;
+            _stackTraceOverride = ExceptionHelper.GetStackTrace(1);
         }
 
         public JSException(Error avatar, Exception innerException)
             : base("", innerException)
         {
             Error = Context.CurrentGlobalContext.ProxyValue(avatar);
+            _stackTraceOverride = ExceptionHelper.GetStackTrace(1);
         }
 
-        public override string StackTrace => (_stackTraceOverride ??= getStackTrace()) ?? base.StackTrace;
+        public override string StackTrace => _stackTraceOverride ?? base.StackTrace;
 
         public override string Message
         {
@@ -79,37 +84,6 @@ namespace NiL.JS.Core
 
                 return result;
             }
-        }
-
-        private string getStackTrace()
-        {
-            var stackTrace = new List<string>();
-
-            var innerEx = this as Exception;
-            while (innerEx != null)
-            {
-                var isOurException = false;
-                for (var i = innerEx.Data.Count; i-- > 0;)
-                {
-                    var item = innerEx.Data[new CallStackMarker(i)] as Tuple<Context, CodeCoordinates>;
-                    if (item == null)
-                        continue;
-
-                    isOurException = true;
-                    stackTrace.Add("   at " + (item.Item1?._owner?.name ?? "<unknown function>") + (item.Item2 != null ? ": line " + item.Item2.Line : string.Empty));
-                }
-
-                if (!isOurException)
-                    stackTrace.Add(innerEx.StackTrace);
-
-                innerEx = innerEx.InnerException;
-            }
-
-            if (stackTrace.Count == 0)
-                return null;
-
-            stackTrace.Reverse();
-            return string.Join(Environment.NewLine, stackTrace);
         }
     }
 }

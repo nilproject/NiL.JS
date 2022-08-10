@@ -29,7 +29,7 @@ namespace Tests.Fuzz
 
             try
             {
-                using (var file = new FileStream(_typescriptServicesPath, FileMode.Open))
+                using (var file = new FileStream(_typescriptServicesPath, FileMode.Open, FileAccess.Read))
                 using (var fileReader = new StreamReader(file))
                 {
                     _module = new Module(fileReader.ReadToEnd());
