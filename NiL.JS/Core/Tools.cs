@@ -491,7 +491,8 @@ namespace NiL.JS.Core
             if (jsobj == null)
                 return null;
 
-            if (targetType.GetTypeInfo().IsInterface)
+            var typeInfo = targetType.GetTypeInfo();
+            if (typeInfo.IsInterface)
             {
                 if (targetType == typeof(IDictionary))
                     targetType = typeof(Dictionary<string, object>);
@@ -506,7 +507,8 @@ namespace NiL.JS.Core
                     targetType = typeof(object[]);
             }
 
-            if (targetType.GetTypeInfo().IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (typeInfo.IsGenericType 
+                && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 targetType = targetType.GetGenericArguments()[0];
 
             if (targetType.IsAssignableFrom(jsobj.GetType()))

@@ -21,22 +21,23 @@ namespace NiL.JS.Core.Functions
         DummyValues = 4
     }
 
+    internal delegate object WrapperDelegate(object target, Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject);
+
     [Prototype(typeof(Function), true)]
     internal sealed class MethodProxy : Function
     {
-        private delegate object WrapperDelegate(object target, Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject);
         private delegate object RestPrmsConverter(Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject);
 
         private static readonly Dictionary<MethodBase, WrapperDelegate> WrapperCache = new Dictionary<MethodBase, WrapperDelegate>();
         private static readonly MethodInfo ArgumentsGetItemMethod = typeof(Arguments).GetMethod("get_Item", new[] { typeof(int) });
 
-        private readonly WrapperDelegate _fastWrapper;
         private readonly bool _forceInstance;
         private readonly bool _strictConversion;
         private readonly RestPrmsConverter _restPrmsArrayCreator;
         private readonly ConvertValueAttribute[] _paramsConverters;
         private readonly string _name;
 
+        internal readonly WrapperDelegate _fastWrapper;
         internal readonly ParameterInfo[] _parameters;
         internal readonly MethodBase _method;
         internal readonly object _hardTarget;
@@ -235,10 +236,6 @@ namespace NiL.JS.Core.Functions
             var context = Expression.Parameter(typeof(Context), "context");
             var arguments = Expression.Parameter(typeof(Expressions.Expression[]), "arguments");
             var argumentsObjectPrm = Expression.Parameter(typeof(Arguments), "argumentsObject");
-            var argumentsObject = Expression.Condition(
-                Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
-                argumentsObjectPrm,
-                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(), arguments, context)));
 
             if (_parameters.Length == 0)
             {
@@ -256,8 +253,19 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                if ((_parameters.Length == 1 || (_parameters.Length == 2 && _forceInstance)) && _parameters.Last().ParameterType == typeof(Arguments))
+                if ((_parameters.Length == 1 || (_parameters.Length == 2 && _forceInstance)) 
+                    && _parameters[_parameters.Length - 1].ParameterType == typeof(Arguments))
                 {
+                    var argumentsObject = Expression.Condition(
+                        Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
+                        argumentsObjectPrm,
+                        Expression.Assign(
+                            argumentsObjectPrm,
+                            Expression.Call(
+                                ((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(),
+                                arguments,
+                                context)));
+
                     if (_forceInstance)
                     {
                         tree = Expression.Call(methodInfo, Expression.Convert(target, typeof(JSValue)), argumentsObject);
@@ -294,6 +302,7 @@ namespace NiL.JS.Core.Functions
                     var targetPrmIndex = 0;
                     if (_forceInstance)
                         prms[targetPrmIndex++] = Expression.Convert(target, typeof(JSValue));
+
                     for (var i = 0; targetPrmIndex < prms.Length; i++, targetPrmIndex++)
                     {
                         if (targetPrmIndex == prms.Length - 1 && _restPrmsArrayCreator != null)
@@ -367,10 +376,6 @@ namespace NiL.JS.Core.Functions
             var context = Expression.Parameter(typeof(Context), "context");
             var arguments = Expression.Parameter(typeof(Expressions.Expression[]), "arguments");
             var argumentsObjectPrm = Expression.Parameter(typeof(Arguments), "argumentsObject");
-            var argumentsObject = Expression.Condition(
-                Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
-                argumentsObjectPrm,
-                Expression.Assign(argumentsObjectPrm, Expression.Call(((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(), arguments, context)));
 
             if (_parameters.Length == 0)
             {
@@ -380,13 +385,23 @@ namespace NiL.JS.Core.Functions
             {
                 if (_parameters.Length == 1 && _parameters[0].ParameterType == typeof(Arguments))
                 {
+                    Expression argumentsObject = Expression.Condition(
+                        Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
+                        argumentsObjectPrm,
+                        Expression.Assign(
+                            argumentsObjectPrm,
+                            Expression.Call(
+                                ((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(),
+                                arguments,
+                                context)));
+
                     tree = Expression.New(constructorInfo, argumentsObject);
                 }
                 else
                 {
-                    Func<Expressions.Expression[], Context, int, object> processArg = processArgument;
-                    Func<Expressions.Expression[], Context, int, object> processArgTail = processArgumentsTail;
-                    Func<int, JSValue, object> convertArg = convertArgument;
+                    var processArg = ((Func<Expressions.Expression[], Context, int, object>)processArgument).GetMethodInfo();
+                    var processArgTail = ((Func<Expressions.Expression[], Context, int, object>)processArgumentsTail).GetMethodInfo();
+                    var convertArg = ((Func<int, JSValue, object>)convertArgument).GetMethodInfo();
 
                     var prms = new Expression[_parameters.Length];
                     for (var i = 0; i < prms.Length; i++)
@@ -394,7 +409,7 @@ namespace NiL.JS.Core.Functions
                         prms[i] = Expression.Convert(
                             Expression.Call(
                                 Expression.Constant(this),
-                                i + 1 < prms.Length ? processArg.GetMethodInfo() : processArgTail.GetMethodInfo(),
+                                i + 1 < prms.Length ? processArg : processArgTail,
                                 arguments,
                                 context,
                                 Expression.Constant(i)),
@@ -403,12 +418,14 @@ namespace NiL.JS.Core.Functions
 
                     tree = Expression.New(constructorInfo, prms);
 
+                    var argumentsObject = argumentsObjectPrm;
+
                     for (var i = 0; i < prms.Length; i++)
                     {
                         prms[i] = Expression.Convert(
                             Expression.Call(
                                 Expression.Constant(this),
-                                convertArg.GetMethodInfo(),
+                                convertArg,
                                 Expression.Constant(i),
                                 Expression.Call(argumentsObject, ArgumentsGetItemMethod, Expression.Constant(i))),
                             _parameters[i].ParameterType);

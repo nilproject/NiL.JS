@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
@@ -13,17 +14,22 @@ namespace NiL.JS.Core
 #endif
     public sealed class JSException : Exception
     {
-        private object _stackTraceOverride;
+        private ExceptionHelper.StackTraceState _stackTraceData;
 
         public JSValue Error { get; }
         public CodeNode ExceptionMaker { get; }
         public string Code { get; internal set; }
         public CodeCoordinates CodeCoordinates { get; internal set; }
 
+        private JSException()
+        {
+            _stackTraceData = ExceptionHelper.GetStackTrace(1);
+        }
+
         public JSException(Error data)
+            : this()
         {
             Error = Context.CurrentGlobalContext.ProxyValue(data);
-            _stackTraceOverride = ExceptionHelper.GetStackTrace(1);
         }
 
         public JSException(Error data, CodeNode exceptionMaker, string code)
@@ -32,40 +38,38 @@ namespace NiL.JS.Core
         }
 
         public JSException(JSValue data, CodeNode exceptionMaker, string code)
+            : this()
         {
-            Error = Context.CurrentGlobalContext.ProxyValue(data);
+            Error = data;
             ExceptionMaker = exceptionMaker;
             Code = code;
             if (code != null)
             {
                 CodeCoordinates = CodeCoordinates.FromTextPosition(code, exceptionMaker.Position, exceptionMaker.Length);
             }
-
-            _stackTraceOverride = ExceptionHelper.GetStackTrace(1);
         }
 
         public JSException(JSValue data, Exception innerException)
             : base("External error", innerException)
         {
             Error = data;
-            _stackTraceOverride = ExceptionHelper.GetStackTrace(1);
+
+            _stackTraceData = ExceptionHelper.GetStackTrace(1);
         }
 
         public JSException(Error avatar, Exception innerException)
-            : base("", innerException)
+            : this(Context.CurrentGlobalContext.ProxyValue(avatar), innerException)
         {
-            Error = Context.CurrentGlobalContext.ProxyValue(avatar);
-            _stackTraceOverride = ExceptionHelper.GetStackTrace(1);
         }
 
-        public override string StackTrace => (_stackTraceOverride = _stackTraceOverride?.ToString() ?? base.StackTrace)?.ToString();
+        public override string StackTrace => _stackTraceData?.ToString(this) ?? base.StackTrace;
 
         public override string Message
         {
             get
             {
-                var result = CodeCoordinates != null ? " at " + CodeCoordinates : "";
-                if (Error._oValue is Error)
+                var result = CodeCoordinates != null ? " at " + CodeCoordinates : null as string;
+                if (Error?._oValue is Error)
                 {
                     var n = Error.GetProperty("name");
                     if (n._valueType == JSValueType.Property)
@@ -79,10 +83,10 @@ namespace NiL.JS.Core
                 }
                 else
                 {
-                    result = Error.ToString() + result;
+                    result = Error?.ToString() + result;
                 }
 
-                return result;
+                return result ?? "JavaScript Error";
             }
         }
     }

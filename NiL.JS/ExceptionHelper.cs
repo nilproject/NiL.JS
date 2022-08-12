@@ -11,6 +11,7 @@ using System.Reflection;
 using NiL.JS.Expressions;
 using NiL.JS.Statements;
 using System.Collections;
+using System.Runtime.ExceptionServices;
 
 namespace NiL.JS
 {
@@ -19,13 +20,17 @@ namespace NiL.JS
         internal sealed class StackTraceState
         {
             public JsStackFrame JsStack;
-            public StackTrace StackTrace;
 
             public override string ToString()
+                => ToString(null);
+
+            public string ToString(JSException jSException)
             {
                 var stack = JsStack;
 
-                var originalStackTraceLines = StackTrace.ToString().Split('\n');
+                var exceptionStackTrace = new StackTrace(jSException, true);
+
+                var originalStackTraceLines = exceptionStackTrace.ToString().Split('\n');
                 var wordAt = originalStackTraceLines.FirstOrDefault()?.Trim().Split(' ')[0] ?? "at";
                 var wordLine = originalStackTraceLines.FirstOrDefault(x => x.Contains(':'))?.Split(':')?.LastOrDefault().Split(' ')[0] ?? "line";
 
@@ -33,13 +38,14 @@ namespace NiL.JS
 
                 var recordsToRemove = 0;
                 JsStackFrame jsFrame = null;
-                var frames = StackTrace.GetFrames();
+                var frames = exceptionStackTrace.GetFrames();
                 var stackTraceTexts = new List<string>();
                 for (int i = 0; i < frames.Length; i++)
                 {
                     StackFrame frame = frames[i];
                     var method = frame.GetMethod();
-                    if (method != null && method.GetCustomAttribute(typeof(StackFrameOverrideAttribute)) != null)
+                    if (method != null
+                        && method.GetCustomAttribute(typeof(StackFrameOverrideAttribute)) != null)
                     {
                         stackTraceTexts.RemoveRange(stackTraceTexts.Count - recordsToRemove, recordsToRemove);
                         recordsToRemove = 0;
@@ -81,10 +87,9 @@ namespace NiL.JS
 
         internal sealed class JsStackFrame
         {
-            public Context Context;
-            public CodeNode CodeNode;
-
             internal JsStackFrame PrevFrame;
+            public CodeNode CodeNode;
+            public Context Context;
         }
 
         [AttributeUsage(
@@ -148,7 +153,7 @@ namespace NiL.JS
         };
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static object GetStackTrace(int skipFrames)
+        internal static StackTraceState GetStackTrace(int skipFrames)
         {
             var stack = _executionStack;
             JsStackFrame stackCopy = null;
@@ -177,12 +182,9 @@ namespace NiL.JS
                 }
             }
 
-            var stackTrace = new StackTrace(1 + skipFrames, true);
-
             return new StackTraceState
             {
-                JsStack = stackCopy,
-                StackTrace = stackTrace
+                JsStack = stackCopy
             };
         }
 

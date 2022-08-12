@@ -31,7 +31,7 @@ namespace NiL.JS.Core.Functions
 
         private static readonly object[] _emptyObjectArray = new object[0];
         internal readonly StaticProxy _staticProxy;
-        private MethodProxy[] constructors;
+        private readonly MethodProxy[] _constructors;
 
         public override string name
         {
@@ -113,7 +113,7 @@ namespace NiL.JS.Core.Functions
                 y.Parameters.Length == 1 && y.Parameters[0].ParameterType == typeof(Arguments) ? -1 :
                 x.Parameters.Length - y.Parameters.Length);
 
-            constructors = ctorsL.ToArray();
+            _constructors = ctorsL.ToArray();
         }
 
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
@@ -219,14 +219,10 @@ namespace NiL.JS.Core.Functions
                 }
                 else
                 {
-                    object[] args = null;
-                    var constructor = findConstructor(arguments, ref args);
+                    var constructor = findConstructor(arguments, out var args);
 
                     if (constructor == null)
                         ExceptionHelper.ThrowTypeError(_staticProxy._hostedType.Name + " can't be created.");
-
-                    if (args == null)
-                        args = new object[] { arguments };
 
                     var target = constructor.GetTargetObject(targetObject, null);
 
@@ -307,18 +303,21 @@ namespace NiL.JS.Core.Functions
             };
         }
 
-        private MethodProxy findConstructor(Arguments arguments, ref object[] args)
+        private MethodProxy findConstructor(Arguments arguments, out object[] args)
         {
             args = null;
             var len = arguments == null ? 0 : arguments._iValue;
             for (var pass = 0; pass < passesCount; pass++)
             {
-                for (int i = 0; i < constructors.Length; i++)
+                for (int i = 0; i < _constructors.Length; i++)
                 {
-                    if (constructors[i]._parameters.Length == 1 && constructors[i]._parameters[0].ParameterType == typeof(Arguments))
-                        return constructors[i];
+                    if (_constructors[i]._parameters.Length == 1 && _constructors[i]._parameters[0].ParameterType == typeof(Arguments))
+                    {
+                        args = new object[] { arguments };
+                        return _constructors[i];
+                    }
 
-                    if (pass == 1 || constructors[i]._parameters.Length == len)
+                    if (pass == 1 || _constructors[i]._parameters.Length == len)
                     {
                         if (len == 0)
                         {
@@ -326,7 +325,7 @@ namespace NiL.JS.Core.Functions
                         }
                         else
                         {
-                            args = constructors[i].ConvertArguments(
+                            args = _constructors[i].ConvertArguments(
                                 arguments,
                                 (pass >= 1 ? 0 : ConvertArgsOptions.StrictConversion)
                                 | (pass >= 2 ? ConvertArgsOptions.DummyValues : 0));
@@ -337,12 +336,12 @@ namespace NiL.JS.Core.Functions
                             for (var j = args.Length; j-- > 0;)
                             {
                                 if (args[j] != null ?
-                                    !constructors[i]._parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
+                                    !_constructors[i]._parameters[j].ParameterType.IsAssignableFrom(args[j].GetType())
                                     :
 #if (PORTABLE || NETCORE)
                                     constructors[i]._parameters[j].ParameterType.GetTypeInfo().IsValueType)
 #else
-                                    constructors[i]._parameters[j].ParameterType.IsValueType)
+                                    _constructors[i]._parameters[j].ParameterType.IsValueType)
 #endif
                                 {
                                     j = 0;
@@ -354,7 +353,7 @@ namespace NiL.JS.Core.Functions
                                 continue;
                         }
 
-                        return constructors[i];
+                        return _constructors[i];
                     }
                 }
             }
