@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
@@ -150,6 +151,7 @@ namespace NiL.JS.Statements
                 {
                     if (finallyBody == null)
                         throw;
+
                     exception = e;
                 }
             }
@@ -163,7 +165,7 @@ namespace NiL.JS.Statements
             }
 
             if (context._executionMode != ExecutionMode.Suspend && exception != null)
-                throw exception;
+                ExceptionDispatchInfo.Capture(exception).Throw();
 
             return null;
         }

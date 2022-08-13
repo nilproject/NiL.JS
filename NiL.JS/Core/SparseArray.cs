@@ -126,8 +126,6 @@ namespace NiL.JS.Core
                     return default(TValue);
 
                 uint unsignedIndex = (uint)index;
-                int bi = 31;
-                uint i = 0;
 
                 if (unsignedIndex < _allocatedCount)
                 {
@@ -135,9 +133,16 @@ namespace NiL.JS.Core
                         return _values[index];
                 }
 
-                for (; ; bi--)
+                var log = NumberUtils.IntLog(unsignedIndex);
+                var navyIndex = unsignedIndex << 31 - log;
+                navyIndex <<= 1;
+                uint i = 0;
+
+                var iter = 0;
+
+                while (true)
                 {
-                    i = (unsignedIndex & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
+                    i = (navyIndex >> 31) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
                     if (i == 0)
                     {
                         return default(TValue);
@@ -146,6 +151,9 @@ namespace NiL.JS.Core
                     {
                         return _values[i];
                     }
+
+                    navyIndex <<= 1;
+                    iter++;
                 }
             }
             set
@@ -212,8 +220,13 @@ namespace NiL.JS.Core
                     }
                 }
 
-                int bi = 31;
-                for (uint i = 0, ni = 0; ; bi--)
+                var log = NumberUtils.IntLog(unsignedIndex);
+                var navyIndex = unsignedIndex << 31 - log;
+                navyIndex <<= 1;
+
+                var i = 0u;
+                var ni = 0u;
+                while (true)
                 {
                     if (_navyData[i].index > unsignedIndex)
                     {
@@ -232,12 +245,14 @@ namespace NiL.JS.Core
                         _values[i] = value;
                         if (oi < _pseudoLength)
                             this[(int)oi] = ov;
+
                         return;
                     }
                     else if (_navyData[i].index < unsignedIndex)
                     {
-                        var b = (unsignedIndex & (1 << bi)) == 0;
-                        ni = b ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
+                        var b = (navyIndex >> 31) == 0;
+                        ref var navyItem = ref _navyData[i];
+                        ni = b ? navyItem.zeroContinue : navyItem.oneContinue;
                         if (ni == 0)
                         {
                             if (_pseudoLength <= unsignedIndex)
@@ -247,9 +262,9 @@ namespace NiL.JS.Core
                                 return;
 
                             if (b)
-                                _navyData[i].zeroContinue = ni = _allocatedCount++;
+                                navyItem.zeroContinue = ni = _allocatedCount++;
                             else
-                                _navyData[i].oneContinue = ni = _allocatedCount++;
+                                navyItem.oneContinue = ni = _allocatedCount++;
 
                             if (_navyData.Length <= _allocatedCount)
                                 ensureCapacity(_navyData.Length * 2);
@@ -264,12 +279,17 @@ namespace NiL.JS.Core
                     else
                     {
                         _values[i] = value;
+
                         if (_pseudoLength <= index)
                             _pseudoLength = unsignedIndex + 1;
+
                         if (_allocatedCount <= i)
                             _allocatedCount = i + 1;
+
                         return;
                     }
+
+                    navyIndex <<= 1;
                 }
             }
         }
@@ -365,84 +385,99 @@ namespace NiL.JS.Core
         /// <returns>Zero if the requested index does not Exists</returns>
         public long NearestIndexNotLess(long index)
         {
-            if (_mode == ArrayMode.Sparse)
-            {
-                if (_navyData.Length == 0)
-                    return index;
-            }
-            else
-            {
-                if (_values.Length < index)
-                    return 0;
-                return index;
-            }
-            int bi = 31;
+            if (_pseudoLength < index)
+                return -1;
+
+            return findNearest(index, true);
+        }
+
+        private long findNearest(long index, bool notLess)
+        {
+            var log = NumberUtils.IntLog(index);
+            var navyIndex = (uint)(index << 31 - log);
+            navyIndex <<= 1;
+            var mask = 1u << 31;
+
+            long nearestNext = notLess ? (long)uint.MaxValue + 1 : -1;
             long i = 0;
-            long pm = -1;
-            for (; ; bi--)
+            while (true)
             {
-                if (_navyData[i].oneContinue != 0)
-                    pm = i;
-                i = (index & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
-                if (i == 0)
-                {
-                    if (pm == -1)
-                        return 0;
-                    i = _navyData[pm].oneContinue;
-                    for (; ; )
-                    {
-                        if (_navyData[i].zeroContinue != 0)
-                        {
-                            i = _navyData[i].zeroContinue;
-                            continue;
-                        }
-                        if (_navyData[i].oneContinue != 0)
-                        {
-                            i = _navyData[i].oneContinue;
-                            continue;
-                        }
-                        break;
-                    }
-                }
-                if (_navyData[i].index >= (uint)index)
-                {
+                if (_navyData[i].index == nearestNext)
                     return _navyData[i].index;
+
+                var zeroNext = _navyData[_navyData[i].zeroContinue];
+                var oneNext = _navyData[_navyData[i].oneContinue];
+
+                if (zeroNext.index == nearestNext)
+                    return zeroNext.index;
+
+                if (oneNext.index == nearestNext)
+                    return oneNext.index;
+
+                if ((navyIndex & mask) == 0 && zeroNext.index != 0 && zeroNext.index <= index)
+                {
+                    i = _navyData[i].zeroContinue;
                 }
+                else
+                {
+                    if (_navyData[i].oneContinue == 0 || oneNext.index > index)
+                    {
+                        if (_navyData[i].index == index)
+                            return _navyData[i].index;
+
+                        mask <<= 1;
+                        if (notLess)
+                        {
+                            if (zeroNext.index > index && nearestNext > zeroNext.index)
+                                nearestNext = zeroNext.index;
+
+                            if (oneNext.index > index && nearestNext > oneNext.index)
+                                nearestNext = oneNext.index;
+
+                            if (_navyData[i].index > index && nearestNext > _navyData[i].index)
+                                nearestNext = _navyData[i].index;
+
+                            navyIndex = (uint)(((int)navyIndex & ~(mask - 1)) + mask);
+                        }
+                        else
+                        {
+                            if (zeroNext.index < index && nearestNext < zeroNext.index)
+                                nearestNext = zeroNext.index;
+
+                            if (oneNext.index < index && nearestNext < oneNext.index)
+                                nearestNext = oneNext.index;
+
+                            if (_navyData[i].index < index && nearestNext < _navyData[i].index)
+                                nearestNext = _navyData[i].index;
+
+                            navyIndex = (uint)(((uint)navyIndex | (mask - 1)) - mask);
+                        }
+
+                        i = 0;
+                        mask = 1u << 31;
+                        continue;
+                    }
+
+                    i = _navyData[i].oneContinue;
+                }
+
+                mask >>= 1;
+
+                if (i == 0)
+                    return -1;
             }
         }
 
         public long NearestIndexNotMore(long index)
         {
-            if (_mode == ArrayMode.Sparse)
-            {
-                if (_navyData.Length == 0)
-                    return 0;
-            }
-            else
-            {
-                return Math.Min(_values.Length, index);
-            }
-            int bi = 31;
-            long i = 0;
-            for (; ; bi--)
-            {
-                var ni = (index & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
-                if (ni == 0 || _navyData[ni].index > index)
-                    index = _navyData[i].index;
-                else
-                    i = ni;
-                if (_navyData[i].index == index)
-                {
-                    return _navyData[i].index;
-                }
-            }
+            return findNearest(index, false);
         }
 
         public IEnumerable<KeyValuePair<int, TValue>> DirectOrder
         {
             get
             {
-                var index = 1U;
+                var index = 1L;
                 var skipFirst = !_zeroExists;
                 if (_mode == ArrayMode.Flat)
                 {
@@ -482,50 +517,15 @@ namespace NiL.JS.Core
 
                     while (index < _pseudoLength)
                     {
-                        int bi = 31;
-                        long i = 0;
-                        long pm = -1;
-                        for (; bi >= 0; bi--)
-                        {
-                            var goToZero = (index & (1U << bi)) == 0;
-                            if (goToZero && _navyData[i].oneContinue != 0)
-                                pm = _navyData[i].oneContinue;
+                        index = NearestIndexNotLess(index);
 
-                            i = goToZero ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
+                        if (index < 0)
+                            break;
 
-                            if (i == 0)
-                            {
-                                if (pm == -1)
-                                {
-                                    yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
-                                    yield break;
-                                }
+                        if (index > 0)
+                            yield return new KeyValuePair<int, TValue>((int)index, this[(int)index]);
 
-                                i = pm;
-                                for (; ; )
-                                {
-                                    if (_navyData[i].zeroContinue != 0)
-                                    {
-                                        i = _navyData[i].zeroContinue;
-                                        continue;
-                                    }
-                                    if (_navyData[i].oneContinue != 0)
-                                    {
-                                        i = _navyData[i].oneContinue;
-                                        continue;
-                                    }
-                                    break;
-                                }
-                            }
-
-                            if (_navyData[i].index >= index)
-                            {
-                                index = _navyData[i].index;
-                                yield return new KeyValuePair<int, TValue>((int)index, _values[i]);
-                                index++;
-                                break;
-                            }
-                        }
+                        index++;
                     }
                 }
             }
@@ -535,16 +535,17 @@ namespace NiL.JS.Core
         {
             get
             {
-                var index = _pseudoLength - 1;
+                long index = _pseudoLength - 1;
                 if (_mode == ArrayMode.Flat)
                 {
                     if (_pseudoLength > _values.Length)
                         yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
+
                     for (var i = Math.Min(_values.Length, _pseudoLength); i-- > 0;)
                     {
                         if (_mode != ArrayMode.Flat)
                         {
-                            index = (uint)i;
+                            index = i;
                             break;
                         }
                         yield return new KeyValuePair<int, TValue>((int)i, _values[i]);
@@ -554,28 +555,22 @@ namespace NiL.JS.Core
                 {
                     if (_allocatedCount == 0)
                         yield break;
+
                     while (index > 0)
                     {
-                        int bi = 31;
-                        long i = 0;
-                        for (; ; bi--)
-                        {
-                            var ni = (index & (1 << bi)) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
-                            if (ni == 0 || _navyData[ni].index > index)
-                                index = _navyData[i].index;
-                            else
-                                i = ni;
-                            if (_navyData[i].index == index)
-                            {
-                                yield return new KeyValuePair<int, TValue>((int)index, _values[i]);
-                                if (index == 0)
-                                    yield break;
-                                index--;
-                                break;
-                            }
-                        }
+                        index = NearestIndexNotMore(index);
+
+                        if (index < 0)
+                            break;
+
+                        if (index > 0)
+                            yield return new KeyValuePair<int, TValue>((int)index, this[(int)index]);
+
+                        index--;
                     }
-                    yield return new KeyValuePair<int, TValue>(0, _values[0]);
+
+                    if (_zeroExists)
+                        yield return new KeyValuePair<int, TValue>(0, _values[0]);
                 }
             }
         }

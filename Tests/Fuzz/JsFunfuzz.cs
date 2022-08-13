@@ -26,7 +26,7 @@ namespace Tests.Fuzz
 
             try
             {
-                using (var file = new FileStream(JsFunfuzzScriptPath, FileMode.Open))
+                using (var file = new FileStream(JsFunfuzzScriptPath, FileMode.Open, FileAccess.Read))
                 using (var fileReader = new StreamReader(file))
                 {
                     _module = new Module(fileReader.ReadToEnd());

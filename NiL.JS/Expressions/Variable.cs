@@ -99,28 +99,25 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var res = _descriptor.Get(context, false, _scopeLevel);
-            switch (res._valueType)
+            if (res._valueType == JSValueType.NotExists)
             {
-                case JSValueType.NotExists:
+                if (!_suspendThrow)
                 {
-                    if (!_suspendThrow)
+                    if ((_codeContext & CodeContext.InEval) != 0)
                     {
-                        if ((_codeContext & CodeContext.InEval) != 0)
-                        {
-                            ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
-                        }
-                        else
-                        {
-                            ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
-                        }
+                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
                     }
-                    break;
-                }
-                case JSValueType.Property:
-                {
-                    return Tools.InvokeGetter(res, context._objectSource);
+                    else
+                    {
+                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
+                    }
                 }
             }
+            else if (res._valueType == JSValueType.Property)
+            {
+                return Tools.InvokeGetter(res, context._objectSource);
+            }
+
             return res;
         }
 

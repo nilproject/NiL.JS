@@ -50,5 +50,30 @@ jsExceptionMethod()");
                 Assert.IsTrue(stackTrace.Contains("Array.map"), stackTrace);
             }
         }
+
+
+        [TestMethod]
+        public void ShouldProcessCodeTypeSwitchForConstructors()
+        {
+            var context = new Context();
+
+            context.DefineVariable("complexEval").Assign(new Func<string, JSValue>(x => new Context().Eval(x)));
+
+            try
+            {
+                context.Eval(
+@"function jsExceptionMethod() {
+   complexEval(""new Array(-1)"")
+}
+jsExceptionMethod()");
+            }
+            catch (Exception e)
+            {
+                var stackTrace = e.StackTrace;
+
+                Assert.IsTrue(stackTrace.Contains("jsExceptionMethod"), stackTrace);
+                Assert.IsTrue(stackTrace.Contains("Array..ctor"), stackTrace);
+            }
+        }
     }
 }
