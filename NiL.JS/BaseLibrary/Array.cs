@@ -2303,15 +2303,14 @@ namespace NiL.JS.BaseLibrary
                             return notExists;
                         }
 
-                        var res = _data[index];
+                        ref var res = ref _data.GetExisted(index);
                         if (res == null)
                         {
                             res = new JSValue() { _valueType = JSValueType.NotExistsInObject };
-                            _data[index] = res;
                         }
                         else if ((res._attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {
-                            _data[index] = res = res.CloneImpl(false);
+                            res = res.CloneImpl(false);
                         }
 
                         return res;

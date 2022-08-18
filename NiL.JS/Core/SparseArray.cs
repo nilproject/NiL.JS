@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core
@@ -10,7 +13,7 @@ namespace NiL.JS.Core
         Sparse
     }
 
-    public sealed class SparseArray<TValue> : IList<TValue>
+    public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue>
     {
         [StructLayout(LayoutKind.Sequential)]
         private struct _NavyItem
@@ -25,6 +28,7 @@ namespace NiL.JS.Core
             }
         }
 
+        private const int _flatSizeLimit = 32;
         private static readonly _NavyItem[] emptyNavyData = new _NavyItem[0]; // data dummy. In cases where instance of current class was created, but not used
         private static readonly TValue[] emptyData = new TValue[0];
 
@@ -106,8 +110,103 @@ namespace NiL.JS.Core
         {
             if (_pseudoLength == 0 || index != (int)(_pseudoLength - 1))
                 throw new InvalidOperationException();
+
             this[(int)(_pseudoLength - 1)] = default(TValue);
             _pseudoLength--;
+        }
+
+        public ref TValue GetExisted(int index)
+        {
+            uint unsignedIndex = (uint)index;
+
+            if (_mode == ArrayMode.Flat)
+            {
+                if (index >= 0 && _pseudoLength > index && _values.Length > index)
+                    return ref _values[index];
+
+                if (index >= 0 && index < _flatSizeLimit)
+                {
+                    ensureCapacity(index + 1);
+                    if (unsignedIndex >= _pseudoLength)
+                        _pseudoLength = unsignedIndex + 1;
+
+                    return ref _values[index];
+                }
+
+                RebuildToSparse();
+            }
+
+            if (unsignedIndex < _allocatedCount)
+            {
+                if (_navyData[index].index == unsignedIndex)
+                    return ref _values[index];
+            }
+
+            if (_allocatedCount == 0)
+            {
+                ensureCapacity(1);
+                _allocatedCount = 1;
+            }
+
+            var log = NumberUtils.IntLog(unsignedIndex);
+            var navyIndex = unsignedIndex << 31 - log;
+            navyIndex <<= 1;
+            uint i = 0;
+            uint ni;
+
+            while (true)
+            {
+                if (_navyData[i].index > unsignedIndex)
+                {
+                    var oldIndex = _navyData[i].index;
+                    var oldValue = _values[i];
+
+                    _navyData[i].index = unsignedIndex;
+
+                    if (oldIndex < _pseudoLength)
+                        this[(int)oldIndex] = oldValue;
+
+                    _values[i] = default;
+                    
+                    return ref _values[i];
+                }
+                else if (_navyData[i].index < unsignedIndex)
+                {
+                    var b = (navyIndex >> 31) == 0;
+                    ref var navyItem = ref _navyData[i];
+                    ni = b ? navyItem.zeroContinue : navyItem.oneContinue;
+                    if (ni == 0)
+                    {
+                        if (_pseudoLength <= unsignedIndex)
+                            _pseudoLength = unsignedIndex + 1;
+
+                        if (b)
+                            navyItem.zeroContinue = ni = _allocatedCount++;
+                        else
+                            navyItem.oneContinue = ni = _allocatedCount++;
+
+                        if (_navyData.Length <= _allocatedCount)
+                            ensureCapacity(_navyData.Length * 2);
+
+                        _navyData[ni].index = unsignedIndex;
+                        return ref _values[ni];
+                    }
+
+                    i = ni;
+                }
+                else
+                {
+                    if (_pseudoLength <= index)
+                        _pseudoLength = unsignedIndex + 1;
+
+                    if (_allocatedCount <= i)
+                        _allocatedCount = i + 1;
+
+                    return ref _values[i];
+                }
+
+                navyIndex <<= 1;
+            }
         }
 
         public TValue this[int index]
@@ -138,12 +237,13 @@ namespace NiL.JS.Core
                 navyIndex <<= 1;
                 uint i = 0;
 
-                var iter = 0;
-
                 while (true)
                 {
-                    i = (navyIndex >> 31) == 0 ? _navyData[i].zeroContinue : _navyData[i].oneContinue;
-                    if (i == 0)
+                    i = (navyIndex >> 31) == 0
+                        ? _navyData[i].zeroContinue
+                        : _navyData[i].oneContinue;
+
+                    if (i == 0 || _navyData[i].index > unsignedIndex)
                     {
                         return default(TValue);
                     }
@@ -153,7 +253,6 @@ namespace NiL.JS.Core
                     }
 
                     navyIndex <<= 1;
-                    iter++;
                 }
             }
             set
@@ -173,7 +272,7 @@ namespace NiL.JS.Core
                             return;
                         }
 
-                        if (unsignedIndex < 32)
+                        if (unsignedIndex < _flatSizeLimit)
                         {
                             // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца.
                             // Кто-то верит, что это должно работать быстрее.
@@ -575,6 +674,12 @@ namespace NiL.JS.Core
             }
         }
 
+        public ICollection<int> Keys => this.DirectOrder.Select(x => x.Key).ToList();
+
+        public ICollection<TValue> Values => this.DirectOrder.Select(x => x.Value).ToList();
+
+        public int Count => Tools.JSObjectToInt32(Length);
+
         /// <summary>
         /// Reduce length to "index of last item with non-default value" + 1
         /// </summary>
@@ -643,6 +748,74 @@ namespace NiL.JS.Core
 
             if (_values.Length < len)
                 this[(int)len - 1] = default(TValue);
+        }
+
+        public void Add(int key, TValue value)
+        {
+            if (NearestIndexNotLess(key) == key)
+                throw new InvalidOperationException();
+
+            this[key] = value;
+        }
+
+        public bool ContainsKey(int key)
+        {
+            return NearestIndexNotLess(key) == key;
+        }
+
+        public bool Remove(int key)
+        {
+            if (key >= _pseudoLength)
+                return false;
+
+            if (key < _pseudoLength)
+                this[key] = default(TValue);
+
+            if (key == _pseudoLength - 1)
+                _pseudoLength--;
+
+            return true;
+        }
+
+        public bool TryGetValue(int key, [MaybeNullWhen(false)] out TValue value)
+        {
+            if (_pseudoLength <= key)
+            {
+                value = default;
+                return false;
+            }
+
+            value = this[key];
+            return true;
+        }
+
+        public void Add(KeyValuePair<int, TValue> item)
+        {
+            Add(item.Key, item.Value);
+        }
+
+        public bool Contains(KeyValuePair<int, TValue> item)
+        {
+            return Equals(this[item.Key], item.Value);
+        }
+
+        public void CopyTo(KeyValuePair<int, TValue>[] array, int arrayIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Remove(KeyValuePair<int, TValue> item)
+        {
+            if (Contains(item))
+                return Remove(item.Key);
+
+            return false;
+        }
+
+        IEnumerator<KeyValuePair<int, TValue>> IEnumerable<KeyValuePair<int, TValue>>.GetEnumerator()
+        {
+            foreach (var item in this.DirectOrder)
+                yield return item;
         }
     }
 }
