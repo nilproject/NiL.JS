@@ -161,7 +161,7 @@ namespace NiL.JS.Core
             if (allowIncrease)
             {
                 if ((_count == mask + 1)
-                    || (_count > 50 && _count * 8 / 5 >= mask))
+                    || (_count > 50 && _count * 6 / 5 >= mask))
                 {
                     mask = increaseSize() - 1;
                 }
@@ -196,7 +196,7 @@ namespace NiL.JS.Core
             _count++;
             _version++;
 
-            if (colisionCount > 17 && allowIncrease)
+            if (colisionCount > 17 && allowIncrease && _eicount * 10 > _records.Length)
                 increaseSize();
         }
 
@@ -217,23 +217,16 @@ namespace NiL.JS.Core
             {
                 int hash;
                 var keyLen = key.Length;
-                int isNumber = int.MinValue & (-keyLen);
-                char c;
                 hash = (int)((uint)keyLen * 0x30303) ^ 0xb7b7b7;
-                for (var i = 0; i < keyLen; i++)
+                if (keyLen > 0)
                 {
-                    c = key[i];
-
-                    var o = hash;
-                    hash >>= 3;
-                    hash ^= o * 0x0151_0131;
-                    hash ^= c * 0x34d8_4881;
-
-                    isNumber &= ('0' - 1 - c) & (c - '9' - 1);
+                    for (var i = 5; i-- > 0;)
+                    {
+                        hash = (hash >> 3)
+                             ^ (hash * (int)0xf751_8131)
+                             ^ (key[i % keyLen] * 0x34d8_4881);
+                    }
                 }
-
-                hash &= int.MaxValue;
-                hash |= isNumber;
 
                 return hash;
             }
@@ -296,7 +289,8 @@ namespace NiL.JS.Core
 
             do
             {
-                if (records[index].hash == hash && string.CompareOrdinal(records[index].key, key) == 0)
+                if (records[index].hash == hash
+                    && string.CompareOrdinal(records[index].key, key) == 0)
                 {
                     value = records[index].value;
                     _previousIndex = index;
@@ -579,7 +573,6 @@ namespace NiL.JS.Core
 
             List<KeyValuePair<uint, string>> numbers = null;
             uint exprected = 0;
-            var forceCheckNum = _records.Length <= MaxAsListSize;
 
             var i = 0;
             while (i < _eicount)
@@ -588,9 +581,8 @@ namespace NiL.JS.Core
 
                 for (; i < _records.Length; i++)
                 {
-                    int index = i;// _existsedIndexes[i];
+                    int index = i;
                     if (_records[index].key != null
-                        && (_records[index].hash < 0 || forceCheckNum)
                         && uint.TryParse(_records[index].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
                     {
                         if (exprected == number)
@@ -635,8 +627,7 @@ namespace NiL.JS.Core
                 {
                     int index = _existsedIndexes[i];
                     if (_records[index].key != null
-                        && (_records[index].hash >= 0
-                            || !uint.TryParse(_records[index].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)))
+                        && (!uint.TryParse(_records[index].key, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)))
                     {
                         yield return new KeyValuePair<string, TValue>(_records[index].key, _records[index].value);
                     }

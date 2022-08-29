@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -56,9 +58,10 @@ namespace Tests.Core
                 sum += psum;
             }
 
-            return sum;
+            return Math.Sqrt(sum);
         }
 
+        [Ignore]
         [TestMethod]
         public void ComputeHashProcessesNonNegativeNumbers()
         {
@@ -128,25 +131,25 @@ namespace Tests.Core
             var d4 = variance(hbyte4, 0, 15, iterations);
             var d5 = variance(hbyte5, 0, 15, iterations);
             var d6 = variance(hbyte6, 0, 15, iterations);
-            var d7 = variance(hbyte7, 8, 15, iterations);
+            var d7 = variance(hbyte7, 0, 15, iterations);
 
-            Console.WriteLine(Math.Sqrt(d0));
-            Console.WriteLine(Math.Sqrt(d1));
-            Console.WriteLine(Math.Sqrt(d2));
-            Console.WriteLine(Math.Sqrt(d3));
-            Console.WriteLine(Math.Sqrt(d4));
-            Console.WriteLine(Math.Sqrt(d5));
-            Console.WriteLine(Math.Sqrt(d6));
-            Console.WriteLine(Math.Sqrt(d7));
+            Console.WriteLine(d0);
+            Console.WriteLine(d1);
+            Console.WriteLine(d2);
+            Console.WriteLine(d3);
+            Console.WriteLine(d4);
+            Console.WriteLine(d5);
+            Console.WriteLine(d6);
+            Console.WriteLine(d7);
 
-            Assert.IsTrue(Math.Sqrt(d0) >= 4.6);
-            Assert.IsTrue(Math.Sqrt(d1) >= 4.6);
-            Assert.IsTrue(Math.Sqrt(d2) >= 4.6);
-            Assert.IsTrue(Math.Sqrt(d3) >= 4.6);
-            Assert.IsTrue(Math.Sqrt(d4) >= 4.6);
-            Assert.IsTrue(Math.Sqrt(d5) >= 4.6);
-            Assert.IsTrue(Math.Sqrt(d6) >= 4.6);
-            Assert.IsTrue(Math.Sqrt(d7) >= 2.29);
+            Assert.IsTrue(d0 >= 4.6);
+            Assert.IsTrue(d1 >= 4.6);
+            Assert.IsTrue(d2 >= 4.6);
+            Assert.IsTrue(d3 >= 4.6);
+            Assert.IsTrue(d4 >= 4.6);
+            Assert.IsTrue(d5 >= 4.6);
+            Assert.IsTrue(d6 >= 4.6);
+            Assert.IsTrue(d7 >= 4.6);
         }
 
         [TestMethod]
@@ -164,6 +167,45 @@ namespace Tests.Core
             {
                 Assert.AreEqual(i, items[i], "items[i] != i");
             }
+        }
+
+        [Ignore]
+        [TestMethod]
+        public void PerformanceTest()
+        {
+            Func<StringMap<int>> storage = () => new StringMap<int>();
+            //Func<Dictionary<string, int>> storage = () => new Dictionary<string, int>();
+
+            Console.WriteLine(storage.GetMethodInfo().ReturnType);
+
+            var map = storage();
+            var random = new Random(0x1234);
+            var buffer = new byte[50];
+
+            var strings = new string[1000000];
+
+            for (var i = 0; i < strings.Length; i++)
+                strings[i] = createRandomAsciiString(random, buffer);
+
+            var stringIndex = 0;
+            var writeRounds = 1;
+            var writeCount = 1000000;
+            var readRounds = 1;
+            var readCount = 1000000;
+
+            var sw = Stopwatch.StartNew();
+            for (var r = 0; r < writeRounds; r++)
+                for (var i = 0; i < writeCount; i++)
+                    map[strings[stringIndex]] = i;
+            Console.WriteLine("random write " + writeRounds + "*" + writeCount + ": " + sw.Elapsed);
+
+            stringIndex = 0;
+
+            sw.Restart();
+            for (var r = 0; r < readRounds; r++)
+                for (var i = 0; i < readCount; i++)
+                    map.TryGetValue(strings[stringIndex], out _);
+            Console.WriteLine("random read  " + readRounds + "*" + readCount + ": " + sw.Elapsed);
         }
     }
 }
