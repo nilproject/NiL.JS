@@ -56,7 +56,7 @@ namespace NiL.JS
                         var codeCoords = code != null ? CodeCoordinates.FromTextPosition(code, jsFrame.CodeNode?.Position ?? 0, jsFrame.CodeNode?.Length ?? 0) : null;
                         stackTraceTexts.Add(
                             wordAt + (jsFrame.Context?._owner?.name ?? "<anonymous method>") +
-                            ":" + wordLine + " " + codeCoords?.Line);
+                            (codeCoords != null ? ":" + wordLine + " " + codeCoords.Line + ":" + codeCoords.Column : ""));
                     }
                     else if (_baseClassesToHide.Any(x => x.IsAssignableFrom(method.DeclaringType)))
                     {
@@ -201,17 +201,9 @@ namespace NiL.JS
         /// </exception>
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DebuggerStepThrough]
-        internal static void Throw(Error error, CodeNode exceptionMaker, string code)
-        {
-            throw new JSException(error, exceptionMaker, code);
-        }
-
-        /// <exception cref="NiL.JS.Core.JSException">
-        /// </exception>
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [DebuggerStepThrough]
         internal static void Throw(Error error, CodeNode exceptionMaker, Context context)
         {
+            GetStackFrame(context, false).CodeNode = exceptionMaker;
             throw new JSException(error, exceptionMaker, GetCode(context));
         }
 
@@ -221,6 +213,7 @@ namespace NiL.JS
         [DebuggerStepThrough]
         internal static void Throw(JSValue error, CodeNode exceptionMaker, Context context)
         {
+            GetStackFrame(context, false).CodeNode = exceptionMaker;
             throw new JSException(error ?? JSValue.undefined, exceptionMaker, GetCode(context));
         }
 
@@ -248,8 +241,7 @@ namespace NiL.JS
         [DebuggerStepThrough]
         internal static void ThrowVariableIsNotDefined(string variableName, CodeNode exceptionMaker, Context context)
         {
-            var code = GetCode(context);
-            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, code);
+            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, context);
         }
 
         internal static string GetCode(Context context)
@@ -258,15 +250,6 @@ namespace NiL.JS
                 context = context._parent;
 
             return context?._sourceCode ?? Script.CurrentScript?.Code;
-        }
-
-        /// <exception cref="NiL.JS.Core.JSException">
-        /// </exception>
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        [DebuggerStepThrough]
-        internal static void ThrowVariableIsNotDefined(string variableName, CodeNode exceptionMaker)
-        {
-            Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, null as string);
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
@@ -362,8 +345,7 @@ namespace NiL.JS
         [DebuggerStepThrough]
         internal static void ThrowTypeError(string message, CodeNode exceptionMaker, Context context)
         {
-            var code = GetCode(context);
-            Throw(new TypeError(message), exceptionMaker, code);
+            Throw(new TypeError(message), exceptionMaker, context);
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
@@ -379,25 +361,6 @@ namespace NiL.JS
         internal static void Throw(Exception exception)
         {
             throw exception;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void SetCallStackData(Exception e, Context context, CodeNode codeNode)
-        {
-            //var data = e.Data[CallStackMarker.Instance] as List<Tuple<Context, CodeCoordinates>>;
-            //if (data == null)
-            //    e.Data[CallStackMarker.Instance] = data = new List<Tuple<Context, CodeCoordinates>>();
-
-            //if (data.Count > 0 && data[data.Count - 1].Item1 == context)
-            //    return;
-
-            //data.Add(
-            //    Tuple.Create(
-            //        context,
-            //        CodeCoordinates.FromTextPosition(
-            //            GetCode(context),
-            //            codeNode.Position,
-            //            codeNode.Length)));
         }
     }
 }

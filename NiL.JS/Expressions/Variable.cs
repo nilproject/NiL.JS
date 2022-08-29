@@ -76,14 +76,7 @@ namespace NiL.JS.Expressions
             {
                 if (result._valueType < JSValueType.Undefined && (!_suspendThrow || _forceThrow))
                 {
-                    if ((_codeContext & CodeContext.InEval) != 0)
-                    {
-                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
-                    }
-                    else
-                    {
-                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
-                    }
+                    ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
                 }
 
                 if (context._strict)
@@ -103,14 +96,7 @@ namespace NiL.JS.Expressions
             {
                 if (!_suspendThrow)
                 {
-                    if ((_codeContext & CodeContext.InEval) != 0)
-                    {
-                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this);
-                    }
-                    else
-                    {
-                        ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
-                    }
+                    ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
                 }
             }
             else if (res._valueType == JSValueType.Property)
