@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using NiL.JS.Backward;
-using NiL.JS.Core.Interop;
+using System.Runtime.CompilerServices;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Core
@@ -66,7 +65,7 @@ namespace NiL.JS.Core
         {
             context._objectSource = null;
 
-            if (((definitionScopeLevel | scopeLevel) & int.MinValue) != 0)
+            if (definitionScopeLevel < 0 || scopeLevel < 0)
                 return context.GetVariable(name, forWrite);
 
             if (context == cacheContext && !forWrite)
@@ -75,6 +74,7 @@ namespace NiL.JS.Core
             return deepGet(context, forWrite, scopeLevel);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private JSValue deepGet(Context context, bool forWrite, int depth)
         {
             JSValue res = null;

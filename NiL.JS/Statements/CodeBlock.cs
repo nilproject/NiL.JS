@@ -608,6 +608,7 @@ namespace NiL.JS.Statements
                     {
                         var cn = _variables[i].initializer as CodeNode;
                         cn.Optimize(ref cn, owner, message, opts, stats);
+                        _variables[i].initializer = cn as Expression ?? _variables[i].initializer;
                     }
                 }
             }
@@ -632,6 +633,7 @@ namespace NiL.JS.Statements
                     {
                         var cn = _variables[i].initializer as CodeNode;
                         cn.Optimize(ref cn, owner, message, opts, stats);
+                        _variables[i].initializer = cn as Expression ?? _variables[i].initializer;
                     }
                 }
             }

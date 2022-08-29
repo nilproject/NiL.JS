@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions
 #endif
     public class Less : Expression
     {
-        private bool trueLess;
+        private bool _regularLess;
 
         protected internal override PredictedType ResultType
         {
@@ -26,7 +26,7 @@ namespace NiL.JS.Expressions
         internal Less(Expression first, Expression second)
             : base(first, second, true)
         {
-            trueLess = this.GetType() == typeof(Less);
+            _regularLess = this.GetType() == typeof(Less);
         }
 
         internal static bool Check(JSValue first, JSValue second)
@@ -233,32 +233,38 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var f = _left.Evaluate(context);
+            
             var temp = _tempContainer;
-            _tempContainer = null;
+            _tempContainer = null;            
             if (temp == null)
                 temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+
             temp._valueType = f._valueType;
             temp._iValue = f._iValue;
             temp._dValue = f._dValue;
             temp._oValue = f._oValue;
+
             var s = _right.Evaluate(context);
             _tempContainer = temp;
+
             if (temp._valueType == JSValueType.Integer && s._valueType == JSValueType.Integer)
             {
                 temp._valueType = JSValueType.Boolean;
                 temp._iValue = temp._iValue < s._iValue ? 1 : 0;
                 return _tempContainer;
             }
+            
             if (_tempContainer._valueType == JSValueType.Double && s._valueType == JSValueType.Double)
             {
                 temp._valueType = JSValueType.Boolean;
                 if (double.IsNaN(temp._dValue) || double.IsNaN(s._dValue))
-                    temp._iValue = trueLess ? 0 : 1;
+                    temp._iValue = _regularLess ? 0 : 1;
                 else
                     temp._iValue = temp._dValue < s._dValue ? 1 : 0;
                 return _tempContainer;
             }
-            return Check(_tempContainer, s, !trueLess);
+
+            return Check(_tempContainer, s, !_regularLess);
         }
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)

@@ -163,15 +163,18 @@ namespace NiL.JS.Statements
         {
             var frame = ExceptionHelper.GetStackFrame(context, false);
 
-            if (_initializer != null && (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == _initializer))
+            ref var _executionMode = ref context._executionMode;
+            ref var _debugging = ref context._debugging;
+
+            if (_initializer != null && (_executionMode != ExecutionMode.Resume || context.SuspendData[this] == _initializer))
             {
                 frame.CodeNode = _initializer;
 
-                if (context._executionMode != ExecutionMode.Resume && context._debugging)
+                if (_executionMode != ExecutionMode.Resume && context._debugging)
                     context.raiseDebugger(_initializer);
 
                 _initializer.Evaluate(context);
-                if (context._executionMode == ExecutionMode.Suspend)
+                if (_executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = _initializer;
                     return null;
@@ -182,15 +185,15 @@ namespace NiL.JS.Statements
             var pe = _post != null;
             var @continue = false;
 
-            if (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == _condition)
+            if (_executionMode != ExecutionMode.Resume || context.SuspendData[this] == _condition)
             {
                 frame.CodeNode = _condition;
 
-                if (context._executionMode != ExecutionMode.Resume && context._debugging)
+                if (_executionMode != ExecutionMode.Resume && context._debugging)
                     context.raiseDebugger(_condition);
 
                 @continue = (bool)_condition.Evaluate(context);
-                if (context._executionMode == ExecutionMode.Suspend)
+                if (_executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = _condition;
                     return null;
@@ -200,35 +203,34 @@ namespace NiL.JS.Statements
                     return null;
             }
 
+            JSValue lastResult = JSValue.notExists;
             do
             {
                 frame.CodeNode = _body;
 
-                if (be && (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == _body))
+                if (be && (_executionMode != ExecutionMode.Resume || context.SuspendData[this] == _body))
                 {
-                    if (context._executionMode != ExecutionMode.Resume && context._debugging && !(_body is CodeBlock))
+                    if (_executionMode != ExecutionMode.Resume && _debugging && !(_body is CodeBlock))
                         context.raiseDebugger(_body);
 
-                    var temp = _body.Evaluate(context);
-                    if (temp != null)
-                        context._lastResult = temp;
+                    lastResult = _body.Evaluate(context);
 
-                    if (context._executionMode != ExecutionMode.Regular)
+                    if (_executionMode != ExecutionMode.Regular)
                     {
-                        if (context._executionMode < ExecutionMode.Return)
+                        if (_executionMode < ExecutionMode.Return)
                         {
                             var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
-                            var _break = (context._executionMode > ExecutionMode.Continue) || !me;
+                            var _break = _executionMode > ExecutionMode.Continue || !me;
                             if (me)
                             {
-                                context._executionMode = ExecutionMode.Regular;
+                                _executionMode = ExecutionMode.Regular;
                                 context._executionInfo = null;
                             }
 
                             if (_break)
                                 return null;
                         }
-                        else if (context._executionMode == ExecutionMode.Suspend)
+                        else if (_executionMode == ExecutionMode.Suspend)
                         {
                             context.SuspendData[this] = _body;
                             return null;
@@ -240,9 +242,9 @@ namespace NiL.JS.Statements
 
                 frame.CodeNode = _post;
 
-                if (pe && (context._executionMode != ExecutionMode.Resume || context.SuspendData[this] == _post))
+                if (pe && (_executionMode != ExecutionMode.Resume || context.SuspendData[this] == _post))
                 {
-                    if (context._executionMode != ExecutionMode.Resume && context._debugging)
+                    if (_executionMode != ExecutionMode.Resume && _debugging)
                         context.raiseDebugger(_post);
 
                     _post.Evaluate(context);
@@ -250,17 +252,20 @@ namespace NiL.JS.Statements
 
                 frame.CodeNode = _condition;
 
-                if (context._executionMode != ExecutionMode.Resume && context._debugging)
+                if (_executionMode != ExecutionMode.Resume && _debugging)
                     context.raiseDebugger(_condition);
 
                 @continue = (bool)_condition.Evaluate(context);
-                if (context._executionMode == ExecutionMode.Suspend)
+                if (_executionMode == ExecutionMode.Suspend)
                 {
                     context.SuspendData[this] = _condition;
                     return null;
                 }
             }
             while (@continue);
+
+            if (lastResult != null)
+                context._lastResult = lastResult;
 
             return null;
         }

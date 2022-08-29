@@ -74,6 +74,7 @@ namespace NiL.JS.Expressions
                             _tempContainer._valueType = JSValueType.Integer;
                         }
                     }
+
                     return _tempContainer;
                 }
                 else
@@ -84,13 +85,14 @@ namespace NiL.JS.Expressions
                 da = Tools.JSObjectToDouble(f);
                 s = _right.Evaluate(context);
             }
+
             _tempContainer._dValue = da * Tools.JSObjectToDouble(s);
             _tempContainer._valueType = JSValueType.Double;
             return _tempContainer;
 #else
-            tempResult.dValue = Tools.JSObjectToDouble(first.Invoke(context)) * Tools.JSObjectToDouble(second.Invoke(context));
-            tempResult.valueType = JSObjectType.Double;
-            return tempResult;
+            _tempContainer._dValue = Tools.JSObjectToDouble(_left.Evaluate(context)) * Tools.JSObjectToDouble(_right.Evaluate(context));
+            _tempContainer._valueType = JSValueType.Double;
+            return _tempContainer;
 #endif
         }
 

@@ -36,65 +36,60 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            lock (this)
+            JSValue sjso = null;
+            JSValue source = null;
+
+            var tc = _tempContainer;
+            var pntc = _propertyNameTempContainer;
+            var stc = _sourceTempContainer;
+
+            source = _left.Evaluate(context);
+            if (source._valueType >= JSValueType.Object
+                && source._oValue != null
+                && source._oValue != source
+                && (sjso = source._oValue as JSValue) != null
+                && sjso._valueType >= JSValueType.Object)
             {
-                JSValue sjso = null;
-                JSValue source = null;
-                
-                var tc = _tempContainer;
-                var pntc = _propertyNameTempContainer;
-                var stc = _sourceTempContainer;
-
-                try
-                {
-                    source = _left.Evaluate(context);
-                    if (source._valueType >= JSValueType.Object
-                        && source._oValue != null
-                        && source._oValue != source
-                        && (sjso = source._oValue as JSValue) != null
-                        && sjso._valueType >= JSValueType.Object)
-                    {
-                        source = sjso;
-                    }
-                    else
-                    {
-                        if (_sourceTempContainer == null)
-                            _sourceTempContainer = new JSValue();
-
-                        _sourceTempContainer.Assign(source);
-                        source = _sourceTempContainer;
-                        _sourceTempContainer = null;
-                    }
-
-                    var propertyName = _cachedMemberName;
-                    if (propertyName == null)
-                    {
-                        if (_propertyNameTempContainer == null)
-                            _propertyNameTempContainer = new JSValue();
-                        propertyName = safeGet(_propertyNameTempContainer, _right, context);
-                        _propertyNameTempContainer = null;
-                    }
-
-                    if (_tempContainer == null)
-                        _tempContainer = new JSValue();
-                    var value = safeGet(_tempContainer, _value, context);
-                    _tempContainer = null;
-
-                    source.SetProperty(
-                        propertyName,
-                        value,
-                        context._strict);
-
-                    context._objectSource = null;
-                    return value;
-                }
-                finally
-                {
-                    _tempContainer = tc;
-                    _propertyNameTempContainer = pntc;
-                    _sourceTempContainer = stc;
-                }
+                source = sjso;
             }
+            else
+            {
+                if (_sourceTempContainer == null)
+                    _sourceTempContainer = new JSValue();
+
+                _sourceTempContainer.Assign(source);
+                source = _sourceTempContainer;
+                _sourceTempContainer = null;
+            }
+
+            var propertyName = _cachedMemberName;
+            if (propertyName == null)
+            {
+                if (_propertyNameTempContainer == null)
+                    _propertyNameTempContainer = new JSValue();
+
+                propertyName = safeGet(_propertyNameTempContainer, _right, context);
+                _propertyNameTempContainer = null;
+            }
+
+            if (_tempContainer == null)
+                _tempContainer = new JSValue();
+
+            var value = safeGet(_tempContainer, _value, context);
+            _tempContainer = null;
+
+            source.SetProperty(
+                propertyName,
+                value,
+                context._strict);
+
+            context._objectSource = null;
+
+            _tempContainer = tc;
+            _propertyNameTempContainer = pntc;
+            _sourceTempContainer = stc;
+
+            return value;
         }
 
 #if !NET40

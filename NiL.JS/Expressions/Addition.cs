@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using NiL.JS.Core;
 #if !PORTABLE
 using NiL.JS.Core.JIT;
@@ -50,6 +51,10 @@ namespace NiL.JS.Expressions
                         return PredictedType.Number;
                 }
 
+                if (frt is PredictedType.Number or PredictedType.Double or PredictedType.Int
+                    && srt is PredictedType.Number or PredictedType.Double or PredictedType.Int)
+                    return PredictedType.Number;
+
                 return PredictedType.Unknown;
             }
         }
@@ -71,8 +76,7 @@ namespace NiL.JS.Expressions
 
             var temp = _tempContainer;
             _tempContainer = null;
-            if (temp == null)
-                temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+            temp ??= new JSValue { _attributes = JSValueAttributesInternal.Temporary };
 
             temp._valueType = f._valueType;
             temp._iValue = f._iValue;
@@ -84,6 +88,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void Impl(JSValue resultContainer, JSValue first, JSValue second)
         {
             switch (first._valueType)
@@ -125,7 +130,10 @@ namespace NiL.JS.Expressions
                         }
                         case JSValueType.String:
                         {
-                            resultContainer._oValue = new RopeString((first._valueType == JSValueType.Boolean ? (first._iValue != 0 ? "true" : "false") : first._iValue.ToString(CultureInfo.InvariantCulture)), second._oValue);
+                            resultContainer._oValue = new RopeString(
+                                (first._valueType == JSValueType.Boolean
+                                ? (first._iValue != 0 ? "true" : "false")
+                                : first._iValue.ToString(CultureInfo.InvariantCulture)), second._oValue);
                             resultContainer._valueType = JSValueType.String;
                             return;
                         }
@@ -358,11 +366,9 @@ namespace NiL.JS.Expressions
         {
             base.Optimize(ref _this, owner, message, opts, stats);
 
-            if (Tools.IsEqual(_left.ResultType, PredictedType.Number, PredictedType.Group)
-                && Tools.IsEqual(_right.ResultType, PredictedType.Number, PredictedType.Group))
+            if (ResultType is PredictedType.Number or PredictedType.Double or PredictedType.Int)
             {
                 _this = new NumberAddition(_left, _right);
-                return;
             }
         }
 #if !NETCORE

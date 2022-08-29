@@ -5,9 +5,9 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
@@ -1770,6 +1770,7 @@ namespace NiL.JS.Core
             return ((int)(ValueType)x & (int)(ValueType)mask) == ((int)(ValueType)y & (int)(ValueType)mask);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static JSValue InvokeGetter(JSValue property, JSValue target)
         {
             if (property._valueType != JSValueType.Property)

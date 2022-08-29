@@ -45,6 +45,7 @@ namespace NiL.JS
 
             var stat = new FunctionInfo();
             Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, internalCallback, stat, options);
+
             var body = root as CodeBlock;
             body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
@@ -53,10 +54,14 @@ namespace NiL.JS
 
             var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
-            var bd = body as CodeNode;
-            body.Optimize(ref bd, null, internalCallback, options, stat);
+
             if (tv != null)
                 body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
+
+            var bd = body as CodeNode;
+
+            if ((options & Options.DoNotOptimize) == 0)
+                body.Optimize(ref bd, null, internalCallback, options, stat);
 
             if (stat.NeedDecompose)
                 body.Decompose(ref bd);
