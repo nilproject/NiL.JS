@@ -218,11 +218,11 @@ namespace NiL.JS.Core
             }
         }
 
-        internal JSValueAttributesInternal _attributes;
         internal JSValueType _valueType;
         internal int _iValue;
-        internal double _dValue;
         internal object _oValue;
+        internal double _dValue;
+        internal JSValueAttributesInternal _attributes;
 
         [Hidden]
         public virtual object Value

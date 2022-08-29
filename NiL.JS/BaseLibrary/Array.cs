@@ -18,7 +18,7 @@ namespace NiL.JS.BaseLibrary
     public sealed class Array : JSObject, IIterable
     {
         private static readonly SparseArray<JSValue> emptyData = new SparseArray<JSValue>();
-        [Hidden]
+
         internal SparseArray<JSValue> _data;
 
         [DoNotEnumerate]
@@ -1234,18 +1234,23 @@ namespace NiL.JS.BaseLibrary
                     var item0 = selfa._data[(int)(selfa._data.Length - 1 - i)];
                     var item1 = selfa._data[(int)(i)];
                     JSValue value0, value1;
+                    
                     if (item0 == null || !item0.Exists)
                         item0 = selfa.__proto__[(selfa._data.Length - 1 - i).ToString()];
+                    
                     if (item0._valueType == JSValueType.Property)
                         value0 = ((item0._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
                     else
                         value0 = item0;
+                    
                     if (item1 == null || !item1.Exists)
                         item1 = selfa.__proto__[i.ToString()];
+                    
                     if (item1._valueType == JSValueType.Property)
                         value1 = ((item1._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
                     else
                         value1 = item1;
+
                     if (item0._valueType == JSValueType.Property)
                     {
                         if (args == null)
@@ -2303,10 +2308,10 @@ namespace NiL.JS.BaseLibrary
                             return notExists;
                         }
 
-                        ref var res = ref _data.GetExisted(index);
+                        ref var res = ref _data.GetExistent(index);
                         if (res == null)
                         {
-                            res = new JSValue() { _valueType = JSValueType.NotExistsInObject };
+                            res = new JSValue { _valueType = JSValueType.NotExistsInObject };
                         }
                         else if ((res._attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {

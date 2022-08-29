@@ -182,7 +182,7 @@ namespace NiL.JS.Core
         {
             get
             {
-                return GetCurrectContextStack().Contains(this);
+                return GetCurrectContextStack().LastIndexOf(this) != -1;
             }
         }
 

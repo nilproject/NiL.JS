@@ -270,7 +270,7 @@ namespace NiL.JS.Core
 
                 for (var i = 0; i < types.Count; i++)
                 {
-                    if (types[i].GetGenericArguments().Length == args._iValue)
+                    if (types[i].GetGenericArguments().Length == args.Length)
                     {
                         type = types[i];
                         break;

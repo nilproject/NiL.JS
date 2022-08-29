@@ -34,7 +34,7 @@ namespace NiL.JS.Core
 
         private ArrayMode _mode;
         private uint _pseudoLength;
-        private uint _allocatedCount;
+        private uint _usedCount;
         private _NavyItem[] _navyData;
         private TValue[] _values;
         private bool _zeroExists;
@@ -77,14 +77,14 @@ namespace NiL.JS.Core
             _mode = ArrayMode.Flat;
             this._values = values;
             _navyData = emptyNavyData;
-            _allocatedCount = (_pseudoLength = (uint)values.Length);
+            _usedCount = (_pseudoLength = (uint)values.Length);
         }
 
         #region Члены IList<TValue>
 
         public int IndexOf(TValue item)
         {
-            for (var i = 0; i < _allocatedCount; i++)
+            for (var i = 0; i < _usedCount; i++)
             {
                 if (object.Equals(_values[i], item))
                 {
@@ -115,7 +115,7 @@ namespace NiL.JS.Core
             _pseudoLength--;
         }
 
-        public ref TValue GetExisted(int index)
+        public ref TValue GetExistent(int index)
         {
             uint unsignedIndex = (uint)index;
 
@@ -124,7 +124,7 @@ namespace NiL.JS.Core
                 if (index >= 0 && _pseudoLength > index && _values.Length > index)
                     return ref _values[index];
 
-                if (index >= 0 && index < _flatSizeLimit)
+                if (index >= 0 && (index < _flatSizeLimit || index == _pseudoLength))
                 {
                     ensureCapacity(index + 1);
                     if (unsignedIndex >= _pseudoLength)
@@ -136,16 +136,16 @@ namespace NiL.JS.Core
                 RebuildToSparse();
             }
 
-            if (unsignedIndex < _allocatedCount)
+            if (unsignedIndex < _usedCount)
             {
                 if (_navyData[index].index == unsignedIndex)
                     return ref _values[index];
             }
 
-            if (_allocatedCount == 0)
+            if (_usedCount == 0)
             {
                 ensureCapacity(1);
-                _allocatedCount = 1;
+                _usedCount = 1;
             }
 
             var log = NumberUtils.IntLog(unsignedIndex);
@@ -156,24 +156,24 @@ namespace NiL.JS.Core
 
             while (true)
             {
-                if (_navyData[i].index > unsignedIndex)
+                ref var navyItem = ref _navyData[i];
+                if (navyItem.index > unsignedIndex)
                 {
-                    var oldIndex = _navyData[i].index;
+                    var oldIndex = navyItem.index;
                     var oldValue = _values[i];
 
-                    _navyData[i].index = unsignedIndex;
+                    navyItem.index = unsignedIndex;
 
                     if (oldIndex < _pseudoLength)
                         this[(int)oldIndex] = oldValue;
 
                     _values[i] = default;
-                    
+
                     return ref _values[i];
                 }
-                else if (_navyData[i].index < unsignedIndex)
+                else if (navyItem.index < unsignedIndex)
                 {
-                    var b = (navyIndex >> 31) == 0;
-                    ref var navyItem = ref _navyData[i];
+                    var b = (navyIndex & (1 << 31)) == 0;
                     ni = b ? navyItem.zeroContinue : navyItem.oneContinue;
                     if (ni == 0)
                     {
@@ -181,11 +181,11 @@ namespace NiL.JS.Core
                             _pseudoLength = unsignedIndex + 1;
 
                         if (b)
-                            navyItem.zeroContinue = ni = _allocatedCount++;
+                            navyItem.zeroContinue = ni = _usedCount++;
                         else
-                            navyItem.oneContinue = ni = _allocatedCount++;
+                            navyItem.oneContinue = ni = _usedCount++;
 
-                        if (_navyData.Length <= _allocatedCount)
+                        if (_navyData.Length <= _usedCount)
                             ensureCapacity(_navyData.Length * 2);
 
                         _navyData[ni].index = unsignedIndex;
@@ -199,8 +199,8 @@ namespace NiL.JS.Core
                     if (_pseudoLength <= index)
                         _pseudoLength = unsignedIndex + 1;
 
-                    if (_allocatedCount <= i)
-                        _allocatedCount = i + 1;
+                    if (_usedCount <= i)
+                        _usedCount = i + 1;
 
                     return ref _values[i];
                 }
@@ -226,7 +226,7 @@ namespace NiL.JS.Core
 
                 uint unsignedIndex = (uint)index;
 
-                if (unsignedIndex < _allocatedCount)
+                if (unsignedIndex < _usedCount)
                 {
                     if (_navyData[index].index == unsignedIndex)
                         return _values[index];
@@ -272,7 +272,7 @@ namespace NiL.JS.Core
                             return;
                         }
 
-                        if (unsignedIndex < _flatSizeLimit)
+                        if (unsignedIndex < _flatSizeLimit || unsignedIndex == _pseudoLength)
                         {
                             // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца.
                             // Кто-то верит, что это должно работать быстрее.
@@ -297,13 +297,13 @@ namespace NiL.JS.Core
                     }
                 }
 
-                if (_allocatedCount == 0)
+                if (_usedCount == 0)
                 {
                     ensureCapacity(1);
-                    _allocatedCount = 1;
+                    _usedCount = 1;
                 }
 
-                if (unsignedIndex < _allocatedCount)
+                if (unsignedIndex < _usedCount)
                 {
                     if (_navyData[index].index == unsignedIndex)
                     {
@@ -342,10 +342,20 @@ namespace NiL.JS.Core
                         var ov = _values[i];
                         _navyData[i].index = unsignedIndex;
                         _values[i] = value;
-                        if (oi < _pseudoLength)
-                            this[(int)oi] = ov;
 
-                        return;
+                        if (oi >= _pseudoLength)
+                            return;
+
+                        value = ov;
+                        unsignedIndex = oi;
+
+                        i = 0;
+                        ni = 0;
+                        log = NumberUtils.IntLog(unsignedIndex);
+                        navyIndex = unsignedIndex << 31 - log;
+                        navyIndex <<= 1;
+
+                        continue;
                     }
                     else if (_navyData[i].index < unsignedIndex)
                     {
@@ -361,11 +371,11 @@ namespace NiL.JS.Core
                                 return;
 
                             if (b)
-                                navyItem.zeroContinue = ni = _allocatedCount++;
+                                navyItem.zeroContinue = ni = _usedCount++;
                             else
-                                navyItem.oneContinue = ni = _allocatedCount++;
+                                navyItem.oneContinue = ni = _usedCount++;
 
-                            if (_navyData.Length <= _allocatedCount)
+                            if (_navyData.Length <= _usedCount)
                                 ensureCapacity(_navyData.Length * 2);
 
                             _navyData[ni].index = unsignedIndex;
@@ -382,8 +392,8 @@ namespace NiL.JS.Core
                         if (_pseudoLength <= index)
                             _pseudoLength = unsignedIndex + 1;
 
-                        if (_allocatedCount <= i)
-                            _allocatedCount = i + 1;
+                        if (_usedCount <= i)
+                            _usedCount = i + 1;
 
                         return;
                     }
@@ -407,10 +417,10 @@ namespace NiL.JS.Core
 
         public void Clear()
         {
-            while (_allocatedCount > 0)
+            while (_usedCount > 0)
             {
-                _navyData[(int)(--_allocatedCount)] = default(_NavyItem);
-                _values[(int)_allocatedCount] = default(TValue);
+                _navyData[(int)(--_usedCount)] = default(_NavyItem);
+                _values[(int)_usedCount] = default(TValue);
             }
             _pseudoLength = 0;
         }
@@ -601,7 +611,7 @@ namespace NiL.JS.Core
 
                 if (_mode == ArrayMode.Sparse) // Режим может поменяться во время итерации в режиме Flat
                 {
-                    if (_allocatedCount > 0)
+                    if (_usedCount > 0)
                     {
                         if (!skipFirst)
                         {
@@ -652,7 +662,7 @@ namespace NiL.JS.Core
                 }
                 if (_mode == ArrayMode.Sparse)
                 {
-                    if (_allocatedCount == 0)
+                    if (_usedCount == 0)
                         yield break;
 
                     while (index > 0)
@@ -699,7 +709,7 @@ namespace NiL.JS.Core
             }
             else
             {
-                for (var i = _allocatedCount; i-- > 0;)
+                for (var i = _usedCount; i-- > 0;)
                 {
                     if (_navyData[i].index > len && !object.Equals(_values[i], default(TValue)))
                         len = _navyData[i].index;
@@ -714,11 +724,15 @@ namespace NiL.JS.Core
             if (_values.Length >= p)
                 return;
 
+            p = 2 << NumberUtils.IntLog(p);
+
             var newValues = new TValue[p];
             if (_values != null)
                 for (var i = 0; i < _values.Length; i++)
                     newValues[i] = _values[i];
+
             _values = newValues;
+            
             if (_mode == ArrayMode.Sparse)
             {
                 var newData = new _NavyItem[p];
@@ -730,7 +744,7 @@ namespace NiL.JS.Core
 
         public void RebuildToSparse()
         {
-            _allocatedCount = 0;
+            _usedCount = 0;
             _mode = ArrayMode.Sparse;
             var len = _pseudoLength;
             if (len == 0)
