@@ -142,7 +142,9 @@ namespace NiL.JS.Core
                 index = hash & mask;
                 do
                 {
-                    if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
+                    if (_records[index].hash == hash
+                        && _records[index].key is not null
+                        && string.CompareOrdinal(_records[index].key, key) == 0)
                     {
                         if (@throw)
                             ExceptionHelper.Throw(new InvalidOperationException("Item already Exists"));
@@ -169,24 +171,35 @@ namespace NiL.JS.Core
 
             int prewIndex = -1;
             index = hash & mask;
+            var emptySlot = -1;
 
-            if (_records[index].key != null)
+            if (_records[index].key is null && emptySlot == -1)
+                emptySlot = index;
+
+            while (_records[index].next > 0)
             {
-                while (_records[index].next > 0)
-                {
-                    index = _records[index].next - 1;
-                    colisionCount++;
-                }
+                index = _records[index].next - 1;
+                colisionCount++;
 
-                prewIndex = index;
+                if (_records[index].key is null && emptySlot == -1)
+                    emptySlot = index;
+            }
+
+            prewIndex = index;
+
+            if (emptySlot == -1)
+            {
                 while (_records[index].key != null)
                     index = (index + 3) & mask;
             }
+            else
+                index = emptySlot;
 
             _records[index].hash = hash;
             _records[index].key = key;
             _records[index].value = value;
-            if (prewIndex >= 0)
+
+            if (emptySlot == -1 && prewIndex >= 0)
                 _records[prewIndex].next = index + 1;
 
             ensureExistedIndexCapacity();
@@ -217,14 +230,15 @@ namespace NiL.JS.Core
             {
                 int hash;
                 var keyLen = key.Length;
+                var m = (keyLen >> 2) | 4;
                 hash = (int)((uint)keyLen * 0x30303) ^ 0xb7b7b7;
                 if (keyLen > 0)
                 {
-                    for (var i = 5; i-- > 0;)
+                    for (var i = 0; i < m; i++)
                     {
-                        hash = (hash >> 3)
-                             ^ (hash * (int)0xf751_8131)
-                             ^ (key[i % keyLen] * 0x34d8_4881);
+                        hash = (hash >> 14)
+                             ^ (hash * (int)0xf351_f351)
+                             ^ (key[i % keyLen] * 0x34df_5981);
                     }
                 }
 
@@ -259,7 +273,7 @@ namespace NiL.JS.Core
                     if (record.key == null)
                         break;
 
-                    if (record.key[0] == key[0] && string.CompareOrdinal(record.key, key) == 0)
+                    if (string.CompareOrdinal(record.key, key) == 0)
                     {
                         value = record.value;
                         return true;
@@ -290,6 +304,7 @@ namespace NiL.JS.Core
             do
             {
                 if (records[index].hash == hash
+                    && records[index].key is not null
                     && string.CompareOrdinal(records[index].key, key) == 0)
                 {
                     value = records[index].value;
@@ -357,69 +372,35 @@ namespace NiL.JS.Core
             var mask = _records.Length - 1;
             int hash = computeHash(key);
             int index;
-            int targetIndex = -1;
-            int prewIndex;
+            int prevItemIndex = -1;
 
             for (index = hash & mask; index >= 0; index = _records[index].next - 1)
             {
-                if (_records[index].hash == hash && string.CompareOrdinal(_records[index].key, key) == 0)
+                if (_records[index].hash == hash
+                    && _records[index].key is not null
+                    && string.CompareOrdinal(_records[index].key, key) == 0)
                 {
-                    if (_records[index].next > 0)
-                    {
-                        prewIndex = targetIndex;
-                        targetIndex = index;
-                        index = _records[index].next - 1;
+                    if (index == _previousIndex)
+                        _previousIndex = -1;
 
-                        do
-                        {
-                            if ((_records[index].hash & mask) == targetIndex)
-                            {
-                                _records[targetIndex] = _records[index];
-                                _records[targetIndex].next = index + 1;
-                                prewIndex = targetIndex;
-                                targetIndex = index;
-                            }
+                    _records[index].key = null;
+                    _records[index].value = default(TValue);
+                    _records[index].hash = 0;
 
-                            index = _records[index].next - 1;
-                        }
-                        while (index >= 0);
+                    if (prevItemIndex >= 0 && _records[index].next == 0)
+                        _records[prevItemIndex].next = 0;
 
-                        _records[targetIndex].key = null;
-                        _records[targetIndex].value = default(TValue);
-                        _records[targetIndex].hash = 0;
-
-                        if (targetIndex == _previousIndex)
-                            _previousIndex = -1;
-
-                        if (prewIndex >= 0)
-                            _records[prewIndex].next = 0;
-
-                        index = targetIndex;
-                    }
-                    else
-                    {
-                        if (index == _previousIndex)
-                            _previousIndex = -1;
-
-                        _records[index].key = null;
-                        _records[index].value = default(TValue);
-                        _records[index].hash = 0;
-
-                        if (targetIndex >= 0)
-                            _records[targetIndex].next = 0;
-                    }
+                    var indexInExIndex = Array.IndexOf(_existsedIndexes, index);
+                    Array.Copy(_existsedIndexes, indexInExIndex + 1, _existsedIndexes, indexInExIndex, _existsedIndexes.Length - indexInExIndex - 1);
 
                     _count--;
                     _eicount--;
                     _version++;
 
-                    var indexInExIndex = Array.IndexOf(_existsedIndexes, index);
-                    Array.Copy(_existsedIndexes, indexInExIndex + 1, _existsedIndexes, indexInExIndex, _existsedIndexes.Length - indexInExIndex - 1);
-
                     return true;
                 }
 
-                targetIndex = index;
+                prevItemIndex = index;
             }
 
             return false;
@@ -442,28 +423,23 @@ namespace NiL.JS.Core
                 _count = 0;
                 _eicount = 0;
 
-                if (newLength == MaxAsListSize << 1)
+                if (oldRecords.Length == MaxAsListSize)
                 {
                     for (var i = 0; i < c; i++)
                     {
                         var index = _existsedIndexes[i];
-                        Record record = oldRecords[index];
+                        ref var record = ref oldRecords[index];
                         if (record.key != null)
-                        {
                             record.hash = computeHash(record.key);
-                            oldRecords[index] = record;
-                        }
                     }
                 }
 
                 for (var i = 0; i < c; i++)
                 {
                     var index = _existsedIndexes[i];
-                    Record record = oldRecords[index];
+                    ref var record = ref oldRecords[index];
                     if (record.key != null)
-                    {
                         insert(record.key, record.value, record.hash, false, false);
-                    }
                 }
             }
 
