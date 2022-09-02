@@ -88,7 +88,7 @@ namespace NiL.JS.Core.Functions
                             args = _methods[i].ConvertArguments(
                                 arguments,
                                 (pass >= 1 ? ConvertArgsOptions.Default : ConvertArgsOptions.StrictConversion)
-                                | (pass >= 2 ? ConvertArgsOptions.DummyValues : ConvertArgsOptions.Default));
+                                | (pass >= 2 ? ConvertArgsOptions.AllowDefaultValues : ConvertArgsOptions.Default));
 
                             if (args == null)
                                 continue;

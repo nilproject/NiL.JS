@@ -6,6 +6,7 @@ using System.Runtime.ExceptionServices;
 using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Core.Functions
 {
@@ -30,6 +31,8 @@ namespace NiL.JS.Core.Functions
         private const int passesCount = 3;
 
         private static readonly object[] _emptyObjectArray = new object[0];
+        private static readonly Arguments _emptyArguments = new Arguments();
+
         internal readonly StaticProxy _staticProxy;
         private readonly MethodProxy[] _constructors;
 
@@ -156,17 +159,36 @@ namespace NiL.JS.Core.Functions
             return _staticProxy.DeleteProperty(name) && __proto__.DeleteProperty(name);
         }
 
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        internal override JSValue InternalInvoke(JSValue targetObject, Expression[] arguments, Context initiator, bool withSpread, bool construct)
         {
-            var objc = targetObject as ObjectWrapper;
-            if (construct) // new
-            {
+            if (_functionDefinition._body == null)
+                return NotExists;
 
+            var argumentsObject = arguments.Length == 0 ? _emptyArguments : Tools.CreateArguments(arguments, initiator);
+
+            initiator._objectSource = null;
+
+            if (construct)
+            {
+                if (targetObject == null || targetObject._valueType < JSValueType.Object)
+                    return Construct(argumentsObject);
+
+                return Construct(targetObject, argumentsObject);
             }
             else
+                return Call(targetObject, argumentsObject);
+        }
+
+        public override JSValue Construct(Arguments arguments)
+        {
+            return Invoke(true, null, arguments);
+        }
+
+        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+        {
+            if (!construct && _staticProxy._hostedType == typeof(Date))
             {
-                if (_staticProxy._hostedType == typeof(Date))
-                    return new Date().ToString();
+                return new Date().ToString();
             }
 
             object obj;
@@ -243,7 +265,6 @@ namespace NiL.JS.Core.Functions
             }
 
             JSValue res = obj as JSValue;
-
             if (construct)
             {
                 if (res != null)
@@ -251,6 +272,7 @@ namespace NiL.JS.Core.Functions
                     // Для Number, Boolean и String
                     if (res._valueType < JSValueType.Object)
                     {
+                        var objc = (targetObject as ObjectWrapper ?? ConstructObject()) as ObjectWrapper;
                         objc.instance = obj;
                         if (objc._objectPrototype == null)
                             objc._objectPrototype = res.__proto__;
@@ -267,9 +289,8 @@ namespace NiL.JS.Core.Functions
                 }
                 else
                 {
-                    objc.instance = obj;
+                    var objc = wrapObject(targetObject, obj);
 
-                    objc._attributes |= _staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
                     if (obj.GetType() == typeof(Date))
                         objc._valueType = JSValueType.Date;
                     else if (res != null)
@@ -286,13 +307,21 @@ namespace NiL.JS.Core.Functions
                         return res._oValue as JSValue;
                 }
 
-                res = res ?? new ObjectWrapper(obj)
+                if (res == null)
                 {
-                    _attributes = JSValueAttributesInternal.SystemObject | (_staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None)
-                };
+                    res = wrapObject(targetObject, obj);
+                }
             }
 
             return res;
+        }
+
+        private ObjectWrapper wrapObject(JSValue targetObject, object obj)
+        {
+            var objc = (targetObject as ObjectWrapper ?? ConstructObject()) as ObjectWrapper;
+            objc.instance = obj;
+            objc._attributes |= _staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
+            return objc;
         }
 
         protected internal override JSValue ConstructObject()
@@ -328,7 +357,7 @@ namespace NiL.JS.Core.Functions
                             args = _constructors[i].ConvertArguments(
                                 arguments,
                                 (pass >= 1 ? 0 : ConvertArgsOptions.StrictConversion)
-                                | (pass >= 2 ? ConvertArgsOptions.DummyValues : 0));
+                                | (pass >= 2 ? ConvertArgsOptions.AllowDefaultValues : 0));
 
                             if (args == null)
                                 continue;

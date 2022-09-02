@@ -18,7 +18,7 @@ namespace NiL.JS.Core.Functions
         Default = 0,
         ThrowOnError = 1,
         StrictConversion = 2,
-        DummyValues = 4
+        AllowDefaultValues = 4
     }
 
     internal delegate object WrapperDelegate(object target, Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject);
@@ -253,7 +253,7 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                if ((_parameters.Length == 1 || (_parameters.Length == 2 && _forceInstance)) 
+                if ((_parameters.Length == 1 || (_parameters.Length == 2 && _forceInstance))
                     && _parameters[_parameters.Length - 1].ParameterType == typeof(Arguments))
                 {
                     var argumentsObject = Expression.Condition(
@@ -477,6 +477,13 @@ namespace NiL.JS.Core.Functions
             }
 
             object value = invokeMethod(targetValue, argumentsSource, null, initiator);
+
+            if (value is not null
+                && targetValue is not null
+                && (value is not JSValue jsval || jsval._valueType == targetValue._valueType)
+                && value == targetValue.Value)
+                return targetValue;
+
             return Context.GlobalContext.ProxyValue(value);
         }
 
@@ -573,7 +580,7 @@ namespace NiL.JS.Core.Functions
 #endif
         private object convertArgument(int index, JSValue value)
         {
-            var cvtArgs = ConvertArgsOptions.ThrowOnError;
+            var cvtArgs = ConvertArgsOptions.ThrowOnError | ConvertArgsOptions.AllowDefaultValues;
             if (_strictConversion)
                 cvtArgs |= ConvertArgsOptions.StrictConversion;
 
@@ -603,10 +610,10 @@ namespace NiL.JS.Core.Functions
                 result = Tools.ConvertJStoObj(value, parameterType, !strictConversion);
                 if (strictConversion && result == null)
                 {
-                    if (options.HasFlag(ConvertArgsOptions.ThrowOnError))
+                    if ((options & ConvertArgsOptions.ThrowOnError) != 0)
                         ExceptionHelper.ThrowTypeError("Unable to convert " + value + " to type " + parameterType);
 
-                    if (!options.HasFlag(ConvertArgsOptions.DummyValues))
+                    if ((options & ConvertArgsOptions.AllowDefaultValues) == 0)
                         return null;
                 }
             }
@@ -616,7 +623,11 @@ namespace NiL.JS.Core.Functions
                     return value;
             }
 
-            if (result == null && _restPrmsArrayCreator == null && (options.HasFlag(ConvertArgsOptions.DummyValues) || parameterInfo.Attributes.HasFlag(ParameterAttributes.HasDefault)))
+            if (result == null
+                && _restPrmsArrayCreator == null
+                && (options & ConvertArgsOptions.AllowDefaultValues) != 0
+                && ((parameterInfo.Attributes & ParameterAttributes.HasDefault) != 0
+                    || parameterInfo.ParameterType.IsValueType))
             {
                 result = parameterInfo.DefaultValue;
 
