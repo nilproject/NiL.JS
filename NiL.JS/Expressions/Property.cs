@@ -65,17 +65,27 @@ namespace NiL.JS.Expressions
                     string.Format(Strings.TryingToGetProperty, _right, source.Defined ? "null" : "undefined"));
             }
 
-            if (source._valueType < JSValueType.Object)
+            var oldTempContainer = _tempContainer;
+            _tempContainer = null;
+            if (_cachedMemberName is null)
             {
-                source = source.CloneImpl(false);
-            }
-            else if (source != source._oValue)
-            {
-                source = source._oValue as JSValue ?? source;
+                if (source._valueType < JSValueType.Object)
+                {
+                    if (oldTempContainer == null)
+                        oldTempContainer = new JSValue();
+
+                    oldTempContainer.Assign(source);
+                    source = oldTempContainer;
+                }
+                else if (source != source._oValue)
+                {
+                    source = source._oValue as JSValue ?? source;
+                }
             }
 
+            var key = _cachedMemberName ?? _right.Evaluate(context);
 
-            res = source.GetProperty(_cachedMemberName ?? _right.Evaluate(context), false, _memberScope);
+            res = source.GetProperty(key, false, _memberScope);
             context._objectSource = source;
 
             if (res == null)
@@ -92,6 +102,7 @@ namespace NiL.JS.Expressions
                 }
             }
 
+            _tempContainer = oldTempContainer;
             return res;
         }
 

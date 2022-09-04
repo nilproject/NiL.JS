@@ -14,6 +14,7 @@ namespace NiL.JS
         SuppressUselessStatementsElimination = 2,
         SuppressConstantPropogation = 4,
         DoNotOptimize = 8,
+        ForceStrict = 16,
     }
 
     public enum ModuleEvaluationState

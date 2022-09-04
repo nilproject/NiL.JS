@@ -13,19 +13,31 @@ namespace NiL.JS.BaseLibrary
     public sealed class String : JSObject, IIterable
     {
         [DoNotEnumerate]
-        public static JSValue fromCharCode(Arguments args)
+        public static JSValue fromCharCode(params JSValue[] args)
         {
             if (args == null || args.Length == 0)
                 return new String();
 
-            int chc = 0;
-            string res = "";
-            for (int i = 0; i < args.Length; i++)
+            if (args.Length == 1)
             {
-                chc = Tools.JSObjectToInt32(args[i]);
-                res += ((char)chc).ToString();
+                return new JSValue
+                {
+                    _oValue = (char)Tools.JSObjectToInt32(args[0]),
+                    _valueType = JSValueType.String,
+                };
             }
-            return res;
+            else
+            {
+                int chc = 0;
+                string res = "";
+                for (int i = 0; i < args.Length; i++)
+                {
+                    chc = Tools.JSObjectToInt32(args[i]);
+                    res += ((char)chc).ToString();
+                }
+
+                return res;
+            }
         }
 
         [DoNotEnumerate]
@@ -111,18 +123,18 @@ namespace NiL.JS.BaseLibrary
         [DoNotEnumerate]
         [InstanceMember]
         [ArgumentsCount(1)]
-        public static JSValue charCodeAt(JSValue self, Arguments args)
+        public static JSValue charCodeAt(JSValue self, JSValue index)
         {
             if (self == null || self._valueType <= JSValueType.Undefined || (self._valueType >= JSValueType.Object && self.Value == null))
                 ExceptionHelper.Throw(new TypeError("String.prototype.charCodeAt called on null or undefined"));
 
             var selfStr = self.BaseToString();
 
-            int p = Tools.JSObjectToInt32(args[0], true);
+            int p = Tools.JSObjectToInt32(index, true);
             if (p < 0 || p >= selfStr.Length)
                 return Number.NaN;
 
-            return new Number((int)selfStr[p]);
+            return (int)selfStr[p];
         }
 
         [DoNotEnumerate]
@@ -980,6 +992,7 @@ namespace NiL.JS.BaseLibrary
 
             if (!hideNonEnum)
                 yield return new KeyValuePair<string, JSValue>("length", length);
+
             if (_fields != null)
             {
                 foreach (var f in _fields)

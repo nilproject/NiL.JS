@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.Core;
+using NiL.JS.Backward;
 
 namespace Tests.Core
 {

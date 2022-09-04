@@ -28,6 +28,11 @@ namespace NiL.JS.Core
         internal JSObject _globalPrototype;
         private readonly Dictionary<Type, JSObject> _proxies;
 
+        internal JSObject _numberPrototype;
+        internal JSObject _booleanPrototype;
+        internal JSObject _symbolPrototype;
+        internal JSObject _stringPrototype;
+
         public string Name { get; private set; }
         public IndexersSupport IndexersSupport { get; set; }
         public JsonSerializersRegistry JsonSerializersRegistry { get; set; }
@@ -76,6 +81,11 @@ namespace NiL.JS.Core
                 _globalPrototype = objectConstructor.prototype as JSObject;
                 _globalPrototype._objectPrototype = JSValue.@null;
 
+                _stringPrototype = GetPrototype(typeof(BaseLibrary.String));
+                _numberPrototype = GetPrototype(typeof(Number));
+                _booleanPrototype = GetPrototype(typeof(BaseLibrary.Boolean));
+                _symbolPrototype = GetPrototype(typeof(Symbol));
+
                 DefineConstructor(typeof(BaseLibrary.Math));
                 DefineConstructor(typeof(BaseLibrary.Array));
                 DefineConstructor(typeof(JSON));
@@ -84,7 +94,7 @@ namespace NiL.JS.Core
                 DefineConstructor(typeof(Date));
                 DefineConstructor(typeof(Number));
                 DefineConstructor(typeof(Symbol));
-                DefineConstructor(typeof(BaseLibrary.Boolean));
+                DefineConstructor(typeof(BaseLibrary.Boolean)); 
                 DefineConstructor(typeof(Error));
                 DefineConstructor(typeof(TypeError));
                 DefineConstructor(typeof(ReferenceError));

@@ -382,9 +382,7 @@ namespace NiL.JS.BaseLibrary
         public virtual JSValue Construct(Arguments arguments)
         {
             if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
-            {
                 ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
-            }
 
             JSValue targetObject = ConstructObject();
             targetObject._attributes |= JSValueAttributesInternal.ConstructingObject;
@@ -429,7 +427,7 @@ namespace NiL.JS.BaseLibrary
             if (_functionDefinition._body == null)
                 return NotExists;
 
-            Arguments argumentsObject = Tools.CreateArguments(arguments, initiator);
+            var argumentsObject = Tools.CreateArguments(arguments, initiator);
 
             initiator._objectSource = null;
 

@@ -16,8 +16,13 @@ namespace NiL.JS.BaseLibrary
         public static readonly Symbol iterator = new Symbol("iterator");
         public static readonly Symbol toStringTag = new Symbol("toStringTag");
 
-        [Hidden]
-        public string Description { get; private set; }
+        [JavaScriptName("description")]
+        public string Description
+        {
+            [Hidden]
+            get;
+            private set;
+        }
 
         public Symbol()
             : this("")
@@ -58,14 +63,6 @@ namespace NiL.JS.BaseLibrary
         public override string ToString()
         {
             return "Symbol(" + Description + ")";
-        }
-
-        protected internal override JSValue GetProperty(JSValue name, bool forWrite, PropertyScope memberScope)
-        {
-            if (forWrite)
-                return undefined;
-
-            return base.GetProperty(name, false, memberScope);
         }
     }
 }

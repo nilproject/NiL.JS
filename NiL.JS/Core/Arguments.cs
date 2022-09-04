@@ -34,7 +34,6 @@ namespace NiL.JS.Core
         private JSValue _a1;
         private JSValue _a2;
         private JSValue _a3;
-        private JSValue _a4;
         internal JSValue _callee;
         internal JSValue _caller;
 
@@ -62,9 +61,6 @@ namespace NiL.JS.Core
                     case 3:
                         res = _a3;
                         break;
-                    case 4:
-                        res = _a4;
-                        break;
                     default:
                         return base[index.ToString()];
                 }
@@ -89,9 +85,6 @@ namespace NiL.JS.Core
                         break;
                     case 3:
                         _a3 = value;
-                        break;
-                    case 4:
-                        _a4 = value;
                         break;
                     default:
                         if (_fields == null)
@@ -157,8 +150,6 @@ namespace NiL.JS.Core
                             return (_a2 ?? (forWrite ? (_a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
                         case 3:
                             return (_a3 ?? (forWrite ? (_a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
-                        case 4:
-                            return (_a4 ?? (forWrite ? (_a4 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
                     }
                 }
                 else
@@ -173,8 +164,6 @@ namespace NiL.JS.Core
                             return (_a2 ?? (forWrite ? (_a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
                         case "3":
                             return (_a3 ?? (forWrite ? (_a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
-                        case "4":
-                            return (_a4 ?? (forWrite ? (_a4 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
                         case "length":
                         {
                             if (_lengthContainer == null)
@@ -238,9 +227,6 @@ namespace NiL.JS.Core
                 if (_a3 != null && _a3.Exists && (!hideNonEnum || (_a3._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return new KeyValuePair<string, JSValue>("3", _a3);
 
-                if (_a4 != null && _a4.Exists && (!hideNonEnum || (_a4._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                    yield return new KeyValuePair<string, JSValue>("4", _a4);
-
                 if (_callee != null && _callee.Exists && (!hideNonEnum || (_callee._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
                     yield return new KeyValuePair<string, JSValue>("callee", _callee);
 
@@ -291,17 +277,9 @@ namespace NiL.JS.Core
                     case 2:
                         return _a2 == null || ((_a2._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a2 = null) == null;
                     case 3:
-                        return _a3 == null || ((_a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a3 = null) == null;
-                    case 4:
-                        return _a4 == null || ((_a4._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a4 = null) == null;
-                        //case 5:
-                        //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
-                        //case 6:
-                        //    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
-                        //case 7:
-                        //    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
-                }
+                        return _a3 == null || ((_a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a3 = null) == null;}
             }
+            
             switch (name.ToString())
             {
                 case "0":
@@ -312,15 +290,8 @@ namespace NiL.JS.Core
                     return _a2 == null || ((_a2._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a2 = null) == null;
                 case "3":
                     return _a3 == null || ((_a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a3 = null) == null;
-                case "4":
-                    return _a4 == null || ((_a4._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a4 = null) == null;
-                    //case "5":
-                    //    return a5 == null || ((a5.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a5 = null) == null;
-                    //case "6":
-                    //    return a6 == null || ((a6.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a6 = null) == null;
-                    //case "7":
-                    //    return a7 == null || ((a7.attributes & JSObjectAttributesInternal.DoNotDelete) == 0) && (a7 = null) == null;
             }
+
             return base.DeleteProperty(name);
         }
 
@@ -332,10 +303,6 @@ namespace NiL.JS.Core
             _a1 = null;
             _a2 = null;
             _a3 = null;
-            _a4 = null;
-            //a5 = null;
-            //a6 = null;
-            //a7 = null;
             _callee = null;
             _caller = null;
             _objectPrototype = null;

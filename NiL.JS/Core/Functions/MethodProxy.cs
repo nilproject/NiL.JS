@@ -570,7 +570,9 @@ namespace NiL.JS.Core.Functions
 #endif
         private object processArgument(Expressions.Expression[] arguments, Context initiator, int index)
         {
-            var value = arguments.Length > index ? Tools.EvalExpressionSafe(initiator, arguments[index]) : notExists;
+            var value = arguments.Length > index
+                ? Tools.EvalExpressionSafe(initiator, arguments[index]) 
+                : notExists;
 
             return convertArgument(index, value);
         }

@@ -45,7 +45,7 @@ namespace NiL.JS
                     StackFrame frame = frames[i];
                     var method = frame.GetMethod();
                     if (method != null
-                        && method.GetCustomAttribute(typeof(StackFrameOverrideAttribute)) != null)
+                             && method.GetCustomAttribute(typeof(StackFrameOverrideAttribute)) != null)
                     {
                         stackTraceTexts.RemoveRange(stackTraceTexts.Count - recordsToRemove, recordsToRemove);
                         recordsToRemove = 0;
@@ -54,6 +54,7 @@ namespace NiL.JS
 
                         var code = GetCode(jsFrame.Context);
                         var codeCoords = code != null ? CodeCoordinates.FromTextPosition(code, jsFrame.CodeNode?.Position ?? 0, jsFrame.CodeNode?.Length ?? 0) : null;
+
                         stackTraceTexts.Add(
                             wordAt + (jsFrame.Context?._owner?.name ?? "<anonymous method>") +
                             (codeCoords != null ? ":" + wordLine + " " + codeCoords.Line + ":" + codeCoords.Column : ""));

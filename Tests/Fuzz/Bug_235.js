@@ -10,7 +10,7 @@ var __extends = (this && this.__extends) || (function () {
         if (typeof b !== "function" && b !== null)
             throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
-        function __() { debugger; this.constructor = d; }
+        function __() { eval(); this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
@@ -30,7 +30,7 @@ var Daughter = /** @class */ (function (_super) {
         _this.sayhello = 'good day';
         return _this;
     }
-    debugger;
+    eval();
     Daughter.prototype.howareyou = function () {
     };
     ;

@@ -283,19 +283,17 @@ namespace NiL.JS.Core.Interop
                     }
                 }
 
-                _members = tempMembers;
-
                 if (IsInstancePrototype)
                 {
                     if (typeof(IIterable).IsAssignableFrom(_hostedType))
                     {
                         IList<MemberInfo> iterator = null;
-                        if (_members.TryGetValue("iterator", out iterator))
+                        if (tempMembers.TryGetValue("iterator", out iterator))
                         {
                             if (_symbols == null)
                                 _symbols = new Dictionary<Symbol, JSValue>();
                             _symbols.Add(Symbol.iterator, proxyMember(false, iterator));
-                            _members.Remove("iterator");
+                            tempMembers.Remove("iterator");
                         }
                     }
 #if NET40
@@ -315,8 +313,8 @@ namespace NiL.JS.Core.Interop
                 {
                     IList<MemberInfo> getter = null;
                     IList<MemberInfo> setter = null;
-                    _members.TryGetValue("get_Item", out getter);
-                    _members.TryGetValue("set_Item", out setter);
+                    tempMembers.TryGetValue("get_Item", out getter);
+                    tempMembers.TryGetValue("set_Item", out setter);
 
                     if (getter != null || setter != null)
                     {
@@ -339,6 +337,8 @@ namespace NiL.JS.Core.Interop
                         _indexersSupported = false;
                     }
                 }
+
+                _members = tempMembers;
             }
         }
 

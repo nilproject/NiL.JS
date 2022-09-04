@@ -31,7 +31,7 @@ namespace NiL.JS.Core
             return c >= '0' && c <= '9';
         }
 
-        private static int selectDigits(string source, ulong[] digits, ref int position, out int leadingCount)
+        private static int selectDigits(string source, ref ulong[] digits, ref int position, out int leadingCount)
         {
             leadingCount = 0;
             var digitsCount = 0;
@@ -46,6 +46,9 @@ namespace NiL.JS.Core
                     {
                         if (digitsCount < _MaxSafeDigitsInTwoLongs)
                         {
+                            if (digits is null)
+                                digits = new ulong[2];
+
                             digits[1] = (digits[1] << 4) | (digits[0] >> 60);
                             digits[0] <<= 4;
                             digits[0] = (ulong)((long)digits[0] | (long)d);
@@ -84,24 +87,30 @@ namespace NiL.JS.Core
                 sign = 44 - source[position++];
 
             var intPartStart = position;
-            var intPart = new ulong[2];
-            var intDigitsCount = selectDigits(source, intPart, ref position, out var intLeadingCount);
+            var intPart = null as ulong[];
+            var intDigitsCount = selectDigits(source, ref intPart, ref position, out var intLeadingCount);
 
-            if (intDigitsCount < 0 && (position >= source.Length || source[position] != '.'))
+            if (intDigitsCount == 0 
+                && intLeadingCount == 0 
+                && source.Length > position 
+                && source[position] != '.')
             {
                 value = double.NaN;
                 return -1;
             }
 
+            if (intPart == null)
+                intPart = new ulong[2];
+
             var intPartSize = position - intPartStart;
 
             int fracDigitsCount = 0;
-            ulong[] fracPart = new ulong[2];
+            var fracPart = new ulong[2];
             int fracLeadingCount;
             if (position < source.Length && source[position] == '.')
             {
                 position++;
-                fracDigitsCount = selectDigits(source, fracPart, ref position, out fracLeadingCount);
+                fracDigitsCount = selectDigits(source, ref fracPart, ref position, out fracLeadingCount);
             }
             else
             {

@@ -34,8 +34,10 @@ namespace NiL.JS.Core
                 _valueType = JSValueType.Date;
             else
                 _valueType = JSValueType.Object;
+
             _oValue = this;
             _attributes = JSValueAttributesInternal.SystemObject;
+
             if (proto != null)
             {
                 _attributes |= proto._attributes & JSValueAttributesInternal.Immutable;

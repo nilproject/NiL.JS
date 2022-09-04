@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Dynamic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace NiL.JS.Backward
@@ -20,30 +24,8 @@ namespace NiL.JS.Backward
         }
     }
 
-#if NETSTANDARD1_3
-    internal enum MemberTypes
-    {
-        Constructor = 1,
-        Event = 2,
-        Field = 4,
-        Method = 8,
-        Property = 16,
-        TypeInfo = 32,
-        Custom = 64,
-        NestedType = 128,
-        All = 191,
-    }
-#endif
-
     internal static class Backward
     {
-#if NETSTANDARD1_3
-        internal static ConstructorInfo[] GetConstructors<T>(this Type self)
-        {
-            return self.GetTypeInfo().DeclaredConstructors.ToArray();
-        }
-#endif
-
         internal static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> self)
         {
             return new ReadOnlyCollection<T>(self);
@@ -154,6 +136,29 @@ namespace NiL.JS.Backward
     }
 }
 
+#if NET461
+namespace System
+{
+    public struct ValueTuple<T1, T2, T3, T4, T5>
+    {
+        public T1 Item1;
+        public T2 Item2;
+        public T3 Item3;
+        public T4 Item4;
+        public T5 Item5;
+
+        public ValueTuple(T1 item1, T2 item2, T3 item3, T4 item4, T5 item5)
+        {
+            Item1 = item1;
+            Item2 = item2;
+            Item3 = item3;
+            Item4 = item4;
+            Item5 = item5;
+        }
+    }
+}
+#endif
+
 #if NET40_OR_GREATER
 namespace System.Diagnostics.CodeAnalysis
 {
@@ -163,5 +168,83 @@ namespace System.Diagnostics.CodeAnalysis
         public MaybeNullWhenAttribute(bool returnValue) { ReturnValue = returnValue; }
         public bool ReturnValue { get; }
     }
+}
+
+namespace NiL.JS.Backward
+{
+    public static class KeyValuePairExtensions
+    {
+        public static void Deconstruct<T1, T2>(this KeyValuePair<T1, T2> keyValuePair, out T1 value1, out T2 value2)
+        {
+            value1 = keyValuePair.Key;
+            value2 = keyValuePair.Value;
+        }
+    }
+}
+
+
+namespace Microsoft.CSharp.RuntimeBinder
+{
+    /*[EditorBrowsable(EditorBrowsableState.Never)]
+    [Flags]
+    public enum CSharpArgumentInfoFlags
+    {
+        None = 0,
+        UseCompileTimeType = 1,
+        Constant = 2,
+        NamedArgument = 4,
+        IsRef = 8,
+        IsOut = 16,
+        IsStaticType = 32
+    }
+
+    /*[EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class CSharpArgumentInfo
+    {
+        private CSharpArgumentInfoFlags _flags;
+        private string _name;
+
+        public CSharpArgumentInfo(CSharpArgumentInfoFlags flags, string name)
+        {
+            _flags = flags;
+            _name = name;
+        }
+
+        public static CSharpArgumentInfo Create(CSharpArgumentInfoFlags flags, string name)
+            => new CSharpArgumentInfo(flags, name);
+    }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Flags]
+    public enum CSharpBinderFlags
+    {
+        None = 0,
+        CheckedContext = 1,
+        InvokeSimpleName = 2,
+        InvokeSpecialName = 4,
+        BinaryOperationLogical = 8,
+        ConvertExplicit = 16,
+        ConvertArrayIndex = 32,
+        ResultIndexed = 64,
+        ValueFromCompoundAssignment = 128,
+        ResultDiscarded = 256
+    }
+
+    /*[EditorBrowsable(EditorBrowsableState.Never)]
+    public static class Binder
+    {
+        public static CallSiteBinder BinaryOperation(CSharpBinderFlags flags, ExpressionType operation, Type context, IEnumerable<CSharpArgumentInfo> argumentInfo)
+            => new DynamicMetaObjectBinder(flags, operation, context, argumentInfo);
+        public static CallSiteBinder Convert(CSharpBinderFlags flags, Type type, Type context);
+        public static CallSiteBinder GetIndex(CSharpBinderFlags flags, Type context, IEnumerable<CSharpArgumentInfo> argumentInfo);
+        public static CallSiteBinder GetMember(CSharpBinderFlags flags, string name, Type context, IEnumerable<CSharpArgumentInfo> argumentInfo);
+        public static CallSiteBinder Invoke(CSharpBinderFlags flags, Type context, IEnumerable<CSharpArgumentInfo> argumentInfo);
+        public static CallSiteBinder InvokeConstructor(CSharpBinderFlags flags, Type context, IEnumerable<CSharpArgumentInfo> argumentInfo);
+        public static CallSiteBinder InvokeMember(CSharpBinderFlags flags, string name, IEnumerable<Type> typeArguments, Type context, IEnumerable<CSharpArgumentInfo> argumentInfo);
+        public static CallSiteBinder IsEvent(CSharpBinderFlags flags, string name, Type context);
+        public static CallSiteBinder SetIndex(CSharpBinderFlags flags, Type context, IEnumerable<CSharpArgumentInfo> argumentInfo);
+        public static CallSiteBinder SetMember(CSharpBinderFlags flags, string name, Type context, IEnumerable<CSharpArgumentInfo> argumentInfo);
+        public static CallSiteBinder UnaryOperation(CSharpBinderFlags flags, ExpressionType operation, Type context, IEnumerable<CSharpArgumentInfo> argumentInfo);
+    }*/
 }
 #endif

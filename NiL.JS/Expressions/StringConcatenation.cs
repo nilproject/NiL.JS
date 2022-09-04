@@ -100,6 +100,14 @@ namespace NiL.JS.Expressions
             return res;
         }
 
+        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
+        {
+            for(var i = 0; i < _parts.Length; i++)
+                _parts[i].Optimize(ref _parts[i], owner, message, opts, stats);
+
+            base.Optimize(ref _this, owner, message, opts, stats);
+        }
+
         public override T Visit<T>(Visitor<T> visitor)
         {
             return visitor.Visit(this);

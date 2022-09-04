@@ -13,6 +13,7 @@ namespace NiL.JS.BaseLibrary
 
         public int size
         {
+            [Hidden]
             get
             {
                 return _storage.Count;

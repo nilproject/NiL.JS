@@ -85,7 +85,8 @@ namespace Tests.Generated
                 {
                     try
                     {
-                        context.Eval(code, !strict);
+                        var script = Script.Parse(code);
+                        script.Evaluate(script.Root.Strict ? new Context(context, script.Root.Strict) : context);
                     }
                     finally
                     {

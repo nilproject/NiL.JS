@@ -40,11 +40,15 @@ namespace NiL.JS
                 (level, position, length, message) => messageCallback(level, CodeCoordinates.FromTextPosition(code, position, length), message)
                 : null as InternalCompilerMessageCallback;
 
+            var codeContext = CodeContext.None;
+            if ((options & Options.ForceStrict) != 0)
+                codeContext |= CodeContext.Strict;
+
             int i = 0;
-            var root = (CodeBlock)CodeBlock.Parse(new ParseInfo(code, internalCallback), ref i);
+            var root = (CodeBlock)CodeBlock.Parse(new ParseInfo(code, internalCallback) { CodeContext = codeContext | CodeContext.AllowDirectives }, ref i);
 
             var stat = new FunctionInfo();
-            Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), CodeContext.None, internalCallback, stat, options);
+            Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), codeContext, internalCallback, stat, options);
 
             var body = root as CodeBlock;
             body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;

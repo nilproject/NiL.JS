@@ -356,6 +356,9 @@ namespace NiL.JS.Expressions
                     {
                         _this = new StringConcatenation(new[] { _left, _right });
                     }
+
+                    _this.Position = this.Position;
+                    _this.Length = this.Length;
                 }
             }
 
@@ -369,6 +372,11 @@ namespace NiL.JS.Expressions
             if (ResultType is PredictedType.Number or PredictedType.Double or PredictedType.Int)
             {
                 _this = new NumberAddition(_left, _right);
+            }
+
+            if (ResultType is PredictedType.String)
+            {
+                _this = new StringConcatenation(new[] { _left, _right });
             }
         }
 #if !NETCORE

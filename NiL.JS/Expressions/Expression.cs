@@ -131,12 +131,14 @@ namespace NiL.JS.Expressions
                 f.Optimize(ref f, owner, message, opts, stats);
                 _left = f as Expression;
             }
+
             if (s != null)
             {
                 s.Optimize(ref s, owner, message, opts, stats);
                 _right = s as Expression;
             }
-            if (ContextIndependent && !(this is Constant))
+
+            if (ContextIndependent && this is not Constant)
             {
                 try
                 {
