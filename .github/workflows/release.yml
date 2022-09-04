@@ -110,7 +110,7 @@ jobs:
     - name: Remove the snk
       run: Remove-Item -path NiL.JS\keys.snk
 
-    # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
+    # Upload the nuget package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:

@@ -13,28 +13,20 @@ jobs:
         
     env:
       Project_Directory: NiL.JS
-      Solution_Name: $Project_Directory/NiL.JS.csproj                   # Replace with your solution name, i.e. MyWpfApp.sln.
-      Test_Project_Path: Tests/Tests.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
+      Solution_Name: $Project_Directory/NiL.JS.csproj
+      Test_Project_Path: Tests/Tests.csproj
       Nuget_Pack_Output_Directory: nuget
 
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: true
-
-    # Install the .NET Core 6.0
+        
     - name: Install .NET Core 6.0
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-
-    # Install the .NET Core 5.0
-    - name: Install .NET Core 5.0
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.x
-
-    # Install the .NET Core 3.1
+        
     - name: Install .NET Core 3.1
       uses: actions/setup-dotnet@v1
       with:
@@ -69,15 +61,15 @@ jobs:
         cd Tests
         dotnet test -c Release -property:TargetFramework=netcoreapp3.1 -property:SignAssembly=false -property:PublicSign=false
 
-    - name: Test .NET Core 5.0
-      run: |
-        cd Tests
-        dotnet test -c Release -property:TargetFramework=net5.0 -property:SignAssembly=false -property:PublicSign=false
-
     - name: Test .NET Core 6.0
       run: |
         cd Tests
         dotnet test -c Release -property:TargetFramework=net6.0 -property:SignAssembly=false -property:PublicSign=false
+
+    - name: Test .NET Framework 4.6.1
+      run: |
+        cd Tests
+        dotnet test -c Release -property:TargetFramework=net461 -property:SignAssembly=false -property:PublicSign=false
 
     - name: Remove the snk
       run: Remove-Item -path NiL.JS\keys.snk
