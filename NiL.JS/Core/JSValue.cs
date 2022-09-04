@@ -539,7 +539,8 @@ namespace NiL.JS.Core
         {
             if (name == null)
                 throw new ArgumentNullException("memberName");
-            return DeleteProperty((JSObject)name);
+
+            return DeleteProperty((JSValue)name);
         }
 
         internal protected JSValue GetProperty(string name, bool forWrite, PropertyScope propertyScope)
@@ -557,7 +558,7 @@ namespace NiL.JS.Core
                         return notExists;
 
                     forWrite = false;
-                    return Context.CurrentGlobalContext.GetPrototype(typeof(BaseLibrary.Boolean)).GetProperty(key, false, PropertyScope.Common);
+                    return Context.CurrentGlobalContext._booleanPrototype.GetProperty(key, false, PropertyScope.Common);
                 }
                 case JSValueType.Integer:
                 case JSValueType.Double:
@@ -566,11 +567,19 @@ namespace NiL.JS.Core
                         return notExists;
 
                     forWrite = false;
-                    return Context.CurrentGlobalContext.GetPrototype(typeof(Number)).GetProperty(key, false, PropertyScope.Common);
+                    return Context.CurrentGlobalContext._numberPrototype.GetProperty(key, false, PropertyScope.Common);
                 }
                 case JSValueType.String:
                 {
                     return stringGetProperty(key, forWrite, propertyScope);
+                }
+                case JSValueType.Symbol:
+                {
+                    if (propertyScope == PropertyScope.Own)
+                        return notExists;
+
+                    forWrite = false;
+                    return Context.CurrentGlobalContext._symbolPrototype.GetProperty(key, false, PropertyScope.Common);
                 }
                 case JSValueType.Undefined:
                 case JSValueType.NotExists:
@@ -586,13 +595,15 @@ namespace NiL.JS.Core
 
                     if (_oValue == null)
                         ExceptionHelper.ThrowTypeError(string.Format(Strings.TryingToGetProperty, key, "null"));
-                    
+
                     var inObj = _oValue as JSObject;
                     if (inObj != null)
                         return inObj.GetProperty(key, forWrite, propertyScope);
+
                     break;
                 }
             }
+
             ExceptionHelper.Throw(new InvalidOperationException("Method GetProperty(...) of custom types must be overridden"));
             return null;
         }
@@ -602,9 +613,12 @@ namespace NiL.JS.Core
             if ((name._valueType == JSValueType.String || name._valueType >= JSValueType.Object)
                 && string.CompareOrdinal(name._oValue.ToString(), "length") == 0)
             {
-                if (_oValue is RopeString)
-                    return (_oValue as RopeString).Length;
-                return _oValue.ToString().Length;
+                if (_oValue is RopeString rope)
+                    return rope.Length;
+
+                var str = _oValue.ToString();
+                _oValue = str;
+                return str.Length;
             }
 
             double dindex = 0.0;
@@ -620,7 +634,7 @@ namespace NiL.JS.Core
                 return notExists;
 
             return Context.CurrentGlobalContext
-                .GetPrototype(typeof(BaseLibrary.String))
+                ._stringPrototype
                 .GetProperty(name, false, PropertyScope.Common);
         }
 
@@ -696,7 +710,11 @@ namespace NiL.JS.Core
         [Hidden]
         public static implicit operator JSValue(char value)
         {
-            return new NiL.JS.BaseLibrary.String(value.ToString());
+            return new JSValue
+            {
+                _oValue = value.ToString(),
+                _valueType = JSValueType.String,
+            };
         }
         #endregion
 
@@ -706,31 +724,46 @@ namespace NiL.JS.Core
         [Hidden]
         public static implicit operator JSValue(bool value)
         {
-            return (NiL.JS.BaseLibrary.Boolean)value;
+            return value ? BaseLibrary.Boolean.True : BaseLibrary.Boolean.False;
         }
 
         [Hidden]
         public static implicit operator JSValue(int value)
         {
-            return new Number(value);
+            return new JSValue
+            {
+                _iValue = value,
+                _valueType = JSValueType.Integer,
+            };
         }
 
         [Hidden]
         public static implicit operator JSValue(long value)
         {
-            return new Number(value);
+            if ((int)value == value)
+                return (int)value;
+
+            return (double)value;
         }
 
         [Hidden]
         public static implicit operator JSValue(double value)
         {
-            return new Number(value);
+            return new JSValue
+            {
+                _dValue = value,
+                _valueType = JSValueType.Double,
+            };
         }
 
         [Hidden]
         public static implicit operator JSValue(string value)
         {
-            return new NiL.JS.BaseLibrary.String(value);
+            return new JSValue
+            {
+                _oValue = value,
+                _valueType = JSValueType.String,
+            };
         }
 
         [Hidden]
@@ -842,6 +875,7 @@ namespace NiL.JS.Core
         {
             if (_valueType == JSValueType.String)
                 return _oValue as string ?? _oValue.ToString();
+
             if (_valueType <= JSValueType.Undefined)
                 return "undefined";
 
