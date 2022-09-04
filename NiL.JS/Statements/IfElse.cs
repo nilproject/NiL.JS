@@ -203,12 +203,14 @@ namespace NiL.JS.Statements
             condition.Optimize(ref cc, owner, message, opts, stats);
             condition = (Expression)cc;
 
+            if (then != null)
+                then.Optimize(ref then, owner, message, opts, stats);
+
+            if (@else != null)
+                @else.Optimize(ref @else, owner, message, opts, stats);
+
             if ((opts & Options.SuppressUselessStatementsElimination) == 0)
             {
-                if (then != null)
-                    then.Optimize(ref then, owner, message, opts, stats);
-                if (@else != null)
-                    @else.Optimize(ref @else, owner, message, opts, stats);
                 if (then == null && @else == null)
                     _this = new Comma(condition, new Constant(JSValue.undefined));
             }

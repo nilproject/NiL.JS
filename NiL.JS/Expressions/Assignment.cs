@@ -164,51 +164,39 @@ namespace NiL.JS.Expressions
             }
 
             var variable = _left as Variable;
-            if (variable != null && variable._descriptor.IsDefined && (_codeContext & CodeContext.InWith) == 0 && !variable._descriptor.captured)
+            if (owner != null // не будем это применять в корневом узле. Только в функциях.
+                                 // Иначе это может использоваться как настройка контекста для последующего использования в Eval
+                && variable != null
+                && variable._descriptor.IsDefined
+                && (!variable._descriptor.IsParameter || !stats.ContainsArguments)
+                && (_codeContext & CodeContext.InWith) == 0
+                && !variable._descriptor.captured
+                && !stats.ContainsEval 
+                && !stats.ContainsWith
+                && (opts & Options.SuppressUselessExpressionsElimination) == 0
+                && (_codeContext & CodeContext.InLoop) == 0)
             {
-                if (!stats.ContainsEval && !stats.ContainsWith)
+                bool last = true;
+                for (var i = 0; last && i < variable._descriptor.references.Count; i++)
                 {
-                    if (owner != null // не будем это применять в корневом узле. Только в функциях.
-                                      // Иначе это может использоваться как настройка контекста для последующего использования в Eval
-                        && (opts & Options.SuppressUselessExpressionsElimination) == 0
-                        && (_codeContext & CodeContext.InLoop) == 0)
-                    {
-                        if (owner._body._strict || variable._descriptor.owner != owner || !owner._functionInfo.ContainsArguments) // аргументы это одна сущность с двумя именами
-                        {
-                            bool last = true;
-                            for (var i = 0; last && i < variable._descriptor.references.Count; i++)
-                            {
-                                last &= variable._descriptor.references[i].Eliminated || variable._descriptor.references[i].Position <= Position;
-                            }
-
-                            if (last)
-                            {
-                                if (_right.ContextIndependent)
-                                {
-                                    _this.Eliminated = true;
-                                    _this = Empty.Instance;
-                                }
-                                else
-                                {
-                                    _this = _right;
-                                    this._right = null;
-                                    this.Eliminated = true;
-                                    this._right = _this as Expression;
-                                }
-                            }
-                        }
-                    }
+                    last &= variable._descriptor.references[i].Eliminated || variable._descriptor.references[i].Position <= Position;
                 }
 
-                /*if (_this == this && second.ResultInTempContainer) // это присваивание, не последнее, без with
+                if (last)
                 {
-                    _this = new AssignmentOverReplace(first, second)
+                    if (_right.ContextIndependent)
                     {
-                        Position = Position,
-                        Length = Length,
-                        _codeContext = _codeContext
-                    };
-                }*/
+                        _this.Eliminated = true;
+                        _this = Empty.Instance;
+                    }
+                    else
+                    {
+                        _this = _right;
+                        this._right = null;
+                        this.Eliminated = true;
+                        this._right = _this as Expression;
+                    }
+                }
             }
         }
 

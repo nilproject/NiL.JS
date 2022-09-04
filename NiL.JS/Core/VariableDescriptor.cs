@@ -52,6 +52,8 @@ namespace NiL.JS.Core
         public bool LexicalScope { get { return lexicalScope; } }
         public ReadOnlyCollection<Expression> Assignments { get { return assignments == null ? null : assignments.AsReadOnly(); } }
 
+        public virtual bool IsParameter => false;
+
         public IEnumerable<VariableReference> References
         {
             get

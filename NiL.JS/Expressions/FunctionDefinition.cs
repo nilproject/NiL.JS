@@ -16,7 +16,10 @@ namespace NiL.JS.Expressions
     public sealed class ParameterDescriptor : VariableDescriptor
     {
         public ObjectDesctructor Destructor { get; internal set; }
+        
         public bool IsRest { get; private set; }
+
+        public override bool IsParameter => true;
 
         internal ParameterDescriptor(string name, bool rest, int depth)
             : base(name, depth)
