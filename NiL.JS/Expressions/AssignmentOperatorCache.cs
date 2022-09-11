@@ -108,9 +108,11 @@ namespace NiL.JS.Expressions
 
             _codeContext = codeContext;
 
-            var res = _left.Build(ref _this, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            var left = _left as CodeNode;
+            var res = _left.Build(ref left, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            _left = left as Expression;
             if (!res && _left is Variable)
-                (_left as Variable)._forceThrow = true;
+                (_left as Variable)._throwMode = ThrowMode.ForceThrow;
             return res;
         }
     }

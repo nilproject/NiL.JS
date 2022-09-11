@@ -36,11 +36,11 @@ namespace NiL.JS.Expressions
             //lock (this)
             {
 #if TYPE_SAFE
-                double da = 0.0;
                 JSValue f = _left.Evaluate(context);
                 JSValue s = null;
                 long l = 0;
                 int a;
+                double da = 0.0;
                 if (f._valueType == JSValueType.Integer
                     || f._valueType == JSValueType.Boolean)
                 {

@@ -82,9 +82,11 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             bool post = _type == IncrimentType.Postincriment;
+            
             Function setter = null;
             JSValue res = null;
             var val = _left.EvaluateForWrite(context);
+            
             Arguments args = null;
             if (val._valueType == JSValueType.Property)
             {
@@ -104,6 +106,7 @@ namespace NiL.JS.Expressions
                     ExceptionHelper.ThrowIncrementReadonly(_left);
                 val = val.CloneImpl(false);
             }
+
             switch (val._valueType)
             {
                 case JSValueType.Boolean:
@@ -150,6 +153,7 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
+
             if (post && val.Defined)
             {
                 res = _tempContainer;
@@ -157,6 +161,7 @@ namespace NiL.JS.Expressions
             }
             else
                 res = val;
+            
             switch (val._valueType)
             {
                 case JSValueType.Integer:
@@ -184,6 +189,7 @@ namespace NiL.JS.Expressions
                         break;
                     }
             }
+
             if (setter != null)
             {
                 args._iValue = 1;
@@ -192,6 +198,7 @@ namespace NiL.JS.Expressions
             }
             else if ((val._attributes & JSValueAttributesInternal.Reassign) != 0)
                 val.Assign(val);
+
             return res;
         }
 
@@ -220,6 +227,7 @@ namespace NiL.JS.Expressions
                 switch (pd)
                 {
                     case PredictedType.Int:
+                    case PredictedType.Number:
                     case PredictedType.Unknown:
                         {
                             vr._descriptor.lastPredictedType = PredictedType.Number;

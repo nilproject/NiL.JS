@@ -1,4 +1,5 @@
 ﻿using System;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
@@ -38,193 +39,193 @@ namespace NiL.JS.Expressions
         {
             switch (first._valueType)
             {
-                case JSValueType.Boolean:
                 case JSValueType.Integer:
+                case JSValueType.Boolean:
+                {
+                    switch (second._valueType)
                     {
+                        case JSValueType.Integer:
+                        case JSValueType.Boolean:
+                        {
+                            return first._iValue < second._iValue;
+                        }
+                        case JSValueType.Double:
+                        {
+                            if (double.IsNaN(second._dValue))
+                                return moreOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                            else
+                                return first._iValue < second._dValue;
+                        }
+                        case JSValueType.String:
+                        {
+                            var index = 0;
+                            double td = 0;
+                            if (Tools.ParseJsNumber(second._oValue.ToString(), ref index, out td) && (index == (second._oValue.ToString()).Length))
+                                return first._iValue < td;
+                            else
+                                return moreOrEqual;
+                        }
+                        case JSValueType.Date:
+                        case JSValueType.Object:
+                        {
+                            second = second.ToPrimitiveValue_Value_String();
+                            if (second._valueType == JSValueType.Integer)
+                                goto case JSValueType.Integer;
+                            if (second._valueType == JSValueType.Boolean)
+                                goto case JSValueType.Integer;
+                            if (second._valueType == JSValueType.Double)
+                                goto case JSValueType.Double;
+                            if (second._valueType == JSValueType.String)
+                                goto case JSValueType.String;
+                            if (second._valueType >= JSValueType.Object) // null
+                                return first._iValue < 0;
+                            throw new NotImplementedException();
+                        }
+                        default:
+                            return moreOrEqual;
+                    }
+                }
+                case JSValueType.Double:
+                {
+                    if (double.IsNaN(first._dValue))
+                        return moreOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                    else
                         switch (second._valueType)
                         {
                             case JSValueType.Boolean:
                             case JSValueType.Integer:
-                                {
-                                    return first._iValue < second._iValue;
-                                }
+                            {
+                                return first._dValue < second._iValue;
+                            }
                             case JSValueType.Double:
-                                {
-                                    if (double.IsNaN(second._dValue))
-                                        return moreOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
-                                    else
-                                        return first._iValue < second._dValue;
-                                }
+                            {
+                                if (double.IsNaN(first._dValue) || double.IsNaN(second._dValue))
+                                    return moreOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
+                                else
+                                    return first._dValue < second._dValue;
+                            }
                             case JSValueType.String:
-                                {
-                                    var index = 0;
-                                    double td = 0;
-                                    if (Tools.ParseJsNumber(second._oValue.ToString(), ref index, out td) && (index == (second._oValue.ToString()).Length))
-                                        return first._iValue < td;
-                                    else
-                                        return moreOrEqual;
-                                }
+                            {
+                                var index = 0;
+                                double td = 0;
+                                if (Tools.ParseJsNumber(second._oValue.ToString(), ref index, out td) && (index == (second._oValue.ToString()).Length))
+                                    return first._dValue < td;
+                                else
+                                    return moreOrEqual;
+                            }
                             case JSValueType.Date:
                             case JSValueType.Object:
-                                {
-                                    second = second.ToPrimitiveValue_Value_String();
-                                    if (second._valueType == JSValueType.Integer)
-                                        goto case JSValueType.Integer;
-                                    if (second._valueType == JSValueType.Boolean)
-                                        goto case JSValueType.Integer;
-                                    if (second._valueType == JSValueType.Double)
-                                        goto case JSValueType.Double;
-                                    if (second._valueType == JSValueType.String)
-                                        goto case JSValueType.String;
-                                    if (second._valueType >= JSValueType.Object) // null
-                                        return first._iValue < 0;
-                                    throw new NotImplementedException();
-                                }
+                            {
+                                second = second.ToPrimitiveValue_Value_String();
+                                if (second._valueType == JSValueType.Integer)
+                                    goto case JSValueType.Integer;
+                                if (second._valueType == JSValueType.Boolean)
+                                    goto case JSValueType.Integer;
+                                if (second._valueType == JSValueType.Double)
+                                    goto case JSValueType.Double;
+                                if (second._valueType == JSValueType.String)
+                                    goto case JSValueType.String;
+                                if (second._valueType >= JSValueType.Object) // null
+                                    return first._dValue < 0;
+                                throw new NotImplementedException();
+                            }
                             default:
                                 return moreOrEqual;
                         }
-                    }
-                case JSValueType.Double:
+                }
+                case JSValueType.String:
+                {
+                    string left = first._oValue.ToString();
+                    switch (second._valueType)
                     {
-                        if (double.IsNaN(first._dValue))
-                            return moreOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
-                        else
+                        case JSValueType.Boolean:
+                        case JSValueType.Integer:
+                        {
+                            double d = 0;
+                            int i = 0;
+                            if (Tools.ParseJsNumber(left, ref i, out d) && (i == left.Length))
+                                return d < second._iValue;
+                            else
+                                return moreOrEqual;
+                        }
+                        case JSValueType.Double:
+                        {
+                            double d = 0;
+                            int i = 0;
+                            if (Tools.ParseJsNumber(left, ref i, out d) && (i == left.Length))
+                                return d < second._dValue;
+                            else
+                                return moreOrEqual;
+                        }
+                        case JSValueType.String:
+                        {
+                            return string.CompareOrdinal(left, second._oValue.ToString()) < 0;
+                        }
+                        case JSValueType.Function:
+                        case JSValueType.Object:
+                        {
+                            second = second.ToPrimitiveValue_Value_String();
                             switch (second._valueType)
                             {
-                                case JSValueType.Boolean:
                                 case JSValueType.Integer:
-                                    {
-                                        return first._dValue < second._iValue;
-                                    }
+                                case JSValueType.Boolean:
+                                {
+                                    double t = 0.0;
+                                    int i = 0;
+                                    if (Tools.ParseJsNumber(left, ref i, out t) && (i == left.Length))
+                                        return t < second._iValue;
+                                    else
+                                        goto case JSValueType.String;
+                                }
                                 case JSValueType.Double:
-                                    {
-                                        if (double.IsNaN(first._dValue) || double.IsNaN(second._dValue))
-                                            return moreOrEqual; // Костыль. Для его устранения нужно делать полноценную реализацию оператора MoreOrEqual.
-                                        else
-                                            return first._dValue < second._dValue;
-                                    }
+                                {
+                                    double t = 0.0;
+                                    int i = 0;
+                                    if (Tools.ParseJsNumber(left, ref i, out t) && (i == left.Length))
+                                        return t < second._dValue;
+                                    else
+                                        goto case JSValueType.String;
+                                }
                                 case JSValueType.String:
-                                    {
-                                        var index = 0;
-                                        double td = 0;
-                                        if (Tools.ParseJsNumber(second._oValue.ToString(), ref index, out td) && (index == (second._oValue.ToString()).Length))
-                                            return first._dValue < td;
-                                        else
-                                            return moreOrEqual;
-                                    }
-                                case JSValueType.Date:
-                                case JSValueType.Object:
-                                    {
-                                        second = second.ToPrimitiveValue_Value_String();
-                                        if (second._valueType == JSValueType.Integer)
-                                            goto case JSValueType.Integer;
-                                        if (second._valueType == JSValueType.Boolean)
-                                            goto case JSValueType.Integer;
-                                        if (second._valueType == JSValueType.Double)
-                                            goto case JSValueType.Double;
-                                        if (second._valueType == JSValueType.String)
-                                            goto case JSValueType.String;
-                                        if (second._valueType >= JSValueType.Object) // null
-                                            return first._dValue < 0;
-                                        throw new NotImplementedException();
-                                    }
-                                default:
-                                    return moreOrEqual;
-                            }
-                    }
-                case JSValueType.String:
-                    {
-                        string left = first._oValue.ToString();
-                        switch (second._valueType)
-                        {
-                            case JSValueType.Boolean:
-                            case JSValueType.Integer:
-                                {
-                                    double d = 0;
-                                    int i = 0;
-                                    if (Tools.ParseJsNumber(left, ref i, out d) && (i == left.Length))
-                                        return d < second._iValue;
-                                    else
-                                        return moreOrEqual;
-                                }
-                            case JSValueType.Double:
-                                {
-                                    double d = 0;
-                                    int i = 0;
-                                    if (Tools.ParseJsNumber(left, ref i, out d) && (i == left.Length))
-                                        return d < second._dValue;
-                                    else
-                                        return moreOrEqual;
-                                }
-                            case JSValueType.String:
                                 {
                                     return string.CompareOrdinal(left, second._oValue.ToString()) < 0;
                                 }
-                            case JSValueType.Function:
-                            case JSValueType.Object:
+                                case JSValueType.Object:
                                 {
-                                    second = second.ToPrimitiveValue_Value_String();
-                                    switch (second._valueType)
-                                    {
-                                        case JSValueType.Integer:
-                                        case JSValueType.Boolean:
-                                            {
-                                                double t = 0.0;
-                                                int i = 0;
-                                                if (Tools.ParseJsNumber(left, ref i, out t) && (i == left.Length))
-                                                    return t < second._iValue;
-                                                else
-                                                    goto case JSValueType.String;
-                                            }
-                                        case JSValueType.Double:
-                                            {
-                                                double t = 0.0;
-                                                int i = 0;
-                                                if (Tools.ParseJsNumber(left, ref i, out t) && (i == left.Length))
-                                                    return t < second._dValue;
-                                                else
-                                                    goto case JSValueType.String;
-                                            }
-                                        case JSValueType.String:
-                                            {
-                                                return string.CompareOrdinal(left, second._oValue.ToString()) < 0;
-                                            }
-                                        case JSValueType.Object:
-                                            {
-                                                double t = 0.0;
-                                                int i = 0;
-                                                if (Tools.ParseJsNumber(left, ref i, out t) && (i == left.Length))
-                                                    return t < 0;
-                                                else
-                                                    return moreOrEqual;
-                                            }
-                                        default: throw new NotImplementedException();
-                                    }
+                                    double t = 0.0;
+                                    int i = 0;
+                                    if (Tools.ParseJsNumber(left, ref i, out t) && (i == left.Length))
+                                        return t < 0;
+                                    else
+                                        return moreOrEqual;
                                 }
-                            default:
-                                return moreOrEqual;
+                                default: throw new NotImplementedException();
+                            }
                         }
+                        default:
+                            return moreOrEqual;
                     }
+                }
                 case JSValueType.Function:
                 case JSValueType.Date:
                 case JSValueType.Object:
+                {
+                    first = first.ToPrimitiveValue_Value_String();
+                    if (first._valueType == JSValueType.Integer)
+                        goto case JSValueType.Integer;
+                    if (first._valueType == JSValueType.Boolean)
+                        goto case JSValueType.Integer;
+                    if (first._valueType == JSValueType.Double)
+                        goto case JSValueType.Double;
+                    if (first._valueType == JSValueType.String)
+                        goto case JSValueType.String;
+                    if (first._valueType >= JSValueType.Object) // null
                     {
-                        first = first.ToPrimitiveValue_Value_String();
-                        if (first._valueType == JSValueType.Integer)
-                            goto case JSValueType.Integer;
-                        if (first._valueType == JSValueType.Boolean)
-                            goto case JSValueType.Integer;
-                        if (first._valueType == JSValueType.Double)
-                            goto case JSValueType.Double;
-                        if (first._valueType == JSValueType.String)
-                            goto case JSValueType.String;
-                        if (first._valueType >= JSValueType.Object) // null
-                        {
-                            first._iValue = 0; // такое делать можно, поскольку тип не меняется
-                            goto case JSValueType.Integer;
-                        }
-                        throw new NotImplementedException();
+                        first._iValue = 0; // такое делать можно, поскольку тип не меняется
+                        goto case JSValueType.Integer;
                     }
+                    throw new NotImplementedException();
+                }
                 default:
                     return moreOrEqual;
             }
@@ -233,9 +234,9 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var f = _left.Evaluate(context);
-            
+
             var temp = _tempContainer;
-            _tempContainer = null;            
+            _tempContainer = null;
             if (temp == null)
                 temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
 
@@ -253,7 +254,7 @@ namespace NiL.JS.Expressions
                 temp._iValue = temp._iValue < s._iValue ? 1 : 0;
                 return _tempContainer;
             }
-            
+
             if (_tempContainer._valueType == JSValueType.Double && s._valueType == JSValueType.Double)
             {
                 temp._valueType = JSValueType.Boolean;

@@ -69,18 +69,22 @@ namespace NiL.JS.Expressions
         {
             if (base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts))
                 return true;
-            if (_left is Variable)
+            if (_left is Variable variable)
             {
                 if ((codeContext & CodeContext.Strict) != 0)
                     ExceptionHelper.Throw(new SyntaxError("Can not delete variable in strict mode"));
-                (_left as Variable)._suspendThrow = true;
+
+                if (variable._throwMode is not ThrowMode.ForceThrow)
+                    variable._throwMode = ThrowMode.Suspend;
             }
+
             var gme = _left as Property;
             if (gme != null)
             {
                 _this = new DeleteProperty(gme._left, gme._right);
                 return false;
             }
+            
             var f = _left as VariableReference ?? ((_left is AssignmentOperatorCache) ? (_left as AssignmentOperatorCache).Source as VariableReference : null);
             if (f != null)
             {
@@ -89,6 +93,7 @@ namespace NiL.JS.Expressions
                 (f.Descriptor.assignments ??
                     (f.Descriptor.assignments = new System.Collections.Generic.List<Expression>())).Add(this);
             }
+            
             return false;
         }
 

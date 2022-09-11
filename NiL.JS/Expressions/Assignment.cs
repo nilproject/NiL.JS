@@ -1,6 +1,7 @@
 using System;
 using NiL.JS.Core;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace NiL.JS.Expressions
 {
@@ -56,6 +57,7 @@ namespace NiL.JS.Expressions
             return temp;
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected void throwReadOnlyError(Context context)
         {
             ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, _left), this, context);

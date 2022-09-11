@@ -71,8 +71,10 @@ namespace NiL.JS.Expressions
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
             base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
-            if (_left is Variable)
-                (_left as Variable)._suspendThrow = true;
+
+            if (_left is Variable variable && variable._throwMode is not ThrowMode.ForceThrow)
+                variable._throwMode = ThrowMode.Suspend;
+
             return false;
         }
 

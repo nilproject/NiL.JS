@@ -7,6 +7,24 @@ using NiL.JS.Core.JIT;
 
 namespace NiL.JS.Expressions
 {
+    internal sealed class RegularVariable : Variable
+    {
+        internal RegularVariable(string name, int scopeLevel)
+            : base(name, scopeLevel)
+        {
+        }
+
+        public sealed override JSValue Evaluate(Context context)
+        {
+            return _descriptor.Get(context, false, _scopeLevel);
+        }
+
+        protected internal sealed override JSValue EvaluateForWrite(Context context)
+        {
+            return _descriptor.Get(context, true, _scopeLevel);
+        }
+    }
+
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
@@ -46,14 +64,20 @@ namespace NiL.JS.Expressions
         }
     }
 
+    internal enum ThrowMode
+    {
+        Default,
+        Suspend,
+        ForceThrow,
+    }
+
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif
     public class Variable : VariableReference
     {
         internal string _variableName;
-        internal bool _suspendThrow;
-        internal bool _forceThrow;
+        internal ThrowMode _throwMode;
 
         public override string Name => _variableName;
 
@@ -68,13 +92,19 @@ namespace NiL.JS.Expressions
             _variableName = name;
         }
 
+        protected Variable(string name, int scopeLevel)
+        {
+            ScopeLevel = scopeLevel;
+            _variableName = name;
+        }
+
         internal protected override JSValue EvaluateForWrite(Context context)
         {
             var result = _descriptor.Get(context, true, _scopeLevel);
 
-            if (context._strict || _forceThrow)
+            if (context._strict || _throwMode is ThrowMode.ForceThrow)
             {
-                if (result._valueType < JSValueType.Undefined && (!_suspendThrow || _forceThrow))
+                if (result._valueType < JSValueType.Undefined && _throwMode is not ThrowMode.Suspend)
                 {
                     ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
                 }
@@ -92,14 +122,14 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             var res = _descriptor.Get(context, false, _scopeLevel);
-            if (res._valueType == JSValueType.NotExists)
+            if (res._valueType is JSValueType.NotExists)
             {
-                if (!_suspendThrow)
+                if (_throwMode is not ThrowMode.Suspend)
                 {
                     ExceptionHelper.ThrowVariableIsNotDefined(_variableName, this, context);
                 }
             }
-            else if (res._valueType == JSValueType.Property)
+            else if (res._valueType is JSValueType.Property)
             {
                 return Tools.InvokeGetter(res, context._objectSource);
             }
@@ -140,16 +170,16 @@ namespace NiL.JS.Expressions
         {
             _codeContext = codeContext;
 
-            VariableDescriptor desc = null;
-            if (!variables.TryGetValue(_variableName, out desc) || desc == null)
+            if (!variables.TryGetValue(_variableName, out VariableDescriptor desc) || desc == null)
             {
                 desc = new VariableDescriptor(this, 1) { isDefined = false };
-                variables[_variableName] = this.Descriptor;
+                variables[_variableName] = Descriptor;
             }
             else
             {
                 if (!desc.references.Contains(this))
                     desc.references.Add(this);
+
                 _descriptor = desc;
             }
 
@@ -164,7 +194,8 @@ namespace NiL.JS.Expressions
                 desc.definitionScopeLevel = -Math.Abs(desc.definitionScopeLevel);
             }
 
-            _forceThrow |= desc.lexicalScope;
+            if (desc.lexicalScope)
+                _throwMode = ThrowMode.ForceThrow;
 
             if (expressionDepth >= 0 && expressionDepth < 2 && desc.IsDefined && !desc.lexicalScope && (opts & Options.SuppressUselessExpressionsElimination) == 0)
             {
@@ -178,7 +209,23 @@ namespace NiL.JS.Expressions
                 if (stats != null)
                     stats.ContainsArguments = true;
 
-                _this = new GetArgumentsExpression(ScopeLevel) { _descriptor = _descriptor };
+                _this = new GetArgumentsExpression(ScopeLevel)
+                {
+                    _descriptor = _descriptor,
+                    Position = Position,
+                    Length = Length,
+                    _codeContext = codeContext,
+                };
+            }
+            else if (desc.isDefined && (codeContext & CodeContext.InWith) == 0 && !desc.lexicalScope)
+            {
+                _this = new RegularVariable(Name, ScopeLevel)
+                {
+                    _descriptor = _descriptor,
+                    Position = Position,
+                    Length = Length,
+                    _codeContext = codeContext,
+                };
             }
 
             return false;

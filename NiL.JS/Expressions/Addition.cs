@@ -76,7 +76,8 @@ namespace NiL.JS.Expressions
 
             var temp = _tempContainer;
             _tempContainer = null;
-            temp ??= new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+            if (temp == null)
+                temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
 
             temp._valueType = f._valueType;
             temp._iValue = f._iValue;
@@ -93,8 +94,8 @@ namespace NiL.JS.Expressions
         {
             switch (first._valueType)
             {
-                case JSValueType.Boolean:
                 case JSValueType.Integer:
+                case JSValueType.Boolean:
                 {
                     if (second._valueType >= JSValueType.Object)
                     {
@@ -118,7 +119,7 @@ namespace NiL.JS.Expressions
                             else
                             {
                                 resultContainer._valueType = JSValueType.Double;
-                                resultContainer._dValue = (double)tl;
+                                resultContainer._dValue = tl;
                             }
                             return;
                         }
@@ -157,7 +158,13 @@ namespace NiL.JS.Expressions
                 case JSValueType.Double:
                 {
                     if (second._valueType >= JSValueType.Object)
-                        second = second.ToPrimitiveValue_Value_String();
+                    {
+                        if (second._valueType == JSValueType.Date)
+                            second = second.ToPrimitiveValue_String_Value();
+                        else
+                            second = second.ToPrimitiveValue_Value_String();
+                    }
+
                     switch (second._valueType)
                     {
                         case JSValueType.Integer:
@@ -291,6 +298,7 @@ namespace NiL.JS.Expressions
                     first = first.ToPrimitiveValue_Value_String();
                     if (first._valueType == JSValueType.Integer || first._valueType == JSValueType.Boolean)
                         goto case JSValueType.Integer;
+
                     else if (first._valueType == JSValueType.Object) // null
                     {
                         if (second._valueType >= JSValueType.String)
