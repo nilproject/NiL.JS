@@ -43,8 +43,9 @@ namespace NiL.JS.BaseLibrary
 
             _oValue = this;
             _valueType = JSValueType.Object;
-            _data = new SparseArray<JSValue>((int)System.Math.Min(100000, length));
+            _data = new SparseArray<JSValue>((int)System.Math.Min(10000, length));
             _attributes |= JSValueAttributesInternal.SystemObject;
+            _data[(int)length] = null;
         }
 
         [DoNotEnumerate]
@@ -59,7 +60,12 @@ namespace NiL.JS.BaseLibrary
             _attributes |= JSValueAttributesInternal.SystemObject;
 
             if (length > 0)
+            {
+                if (length < 10000)
+                    _data.EnsureCapacity((int)length);
+
                 _data[(int)((uint)length - 1)] = null;
+            }
         }
 
         [DoNotEnumerate]
@@ -1055,7 +1061,7 @@ namespace NiL.JS.BaseLibrary
             return joinImpl(self, args == null || args._iValue == 0 || !args[0].Defined ? "," : args[0].ToString(), false);
         }
 
-        private static string joinImpl(JSValue self, string separator, bool locale)
+        private static JSValue joinImpl(JSValue self, string separator, bool locale)
         {
             var selfA = self.Value as Array;
             selfA = selfA ?? Tools.arraylikeToArray(self, true, false, false, -1);
@@ -1107,7 +1113,11 @@ namespace NiL.JS.BaseLibrary
 
             selfA._data = _data;
 
-            return sb.ToString();
+            return new JSValue
+            {
+                _oValue = sb,
+                _valueType = JSValueType.String,
+            };
         }
 
         [DoNotEnumerate]
@@ -1234,18 +1244,18 @@ namespace NiL.JS.BaseLibrary
                     var item0 = selfa._data[(int)(selfa._data.Length - 1 - i)];
                     var item1 = selfa._data[(int)(i)];
                     JSValue value0, value1;
-                    
+
                     if (item0 == null || !item0.Exists)
                         item0 = selfa.__proto__[(selfa._data.Length - 1 - i).ToString()];
-                    
+
                     if (item0._valueType == JSValueType.Property)
                         value0 = ((item0._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
                     else
                         value0 = item0;
-                    
+
                     if (item1 == null || !item1.Exists)
                         item1 = selfa.__proto__[i.ToString()];
-                    
+
                     if (item1._valueType == JSValueType.Property)
                         value1 = ((item1._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
                     else
@@ -2142,7 +2152,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public override string ToString()
         {
-            return joinImpl(this, ",", false);
+            return joinImpl(this, ",", false)._oValue.ToString();
         }
 
         [DoNotEnumerate]
@@ -2231,7 +2241,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         internal protected override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (key._valueType != JSValueType.Symbol && memberScope < PropertyScope.Super)
+            if (memberScope < PropertyScope.Super)
             {
                 var isIndex = false;
                 var index = 0;
@@ -2242,55 +2252,57 @@ namespace NiL.JS.BaseLibrary
                     switch (key._valueType)
                     {
                         case JSValueType.Integer:
-                            {
-                                isIndex = (key._iValue & int.MinValue) == 0;
-                                index = key._iValue;
-                                break;
-                            }
+                        {
+                            isIndex = key._iValue >= 0;
+                            index = key._iValue;
+                            break;
+                        }
                         case JSValueType.Double:
-                            {
-                                isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
-                                if (isIndex)
-                                    index = (int)(uint)key._dValue;
-                                break;
-                            }
+                        {
+                            isIndex = key._dValue >= 0 && key._dValue < uint.MaxValue && (long)key._dValue == key._dValue;
+                            if (isIndex)
+                                index = (int)(uint)key._dValue;
+                            break;
+                        }
                         case JSValueType.String:
+                        {
+                            var skey = key._oValue.ToString();
+
+                            if (string.CompareOrdinal("length", skey) == 0)
+                                return length;
+
+                            if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
                             {
-                                if (string.CompareOrdinal("length", key._oValue.ToString()) == 0)
-                                    return length;
-
-                                var skey = key._oValue.ToString();
-                                if (skey.Length > 0 && '0' <= skey[0] && '9' >= skey[0])
+                                int si = 0;
+                                if (Tools.ParseJsNumber(skey, ref si, out double dindex)
+                                    && (si == skey.Length)
+                                    && dindex >= 0
+                                    && dindex < uint.MaxValue
+                                    && (long)dindex == dindex)
                                 {
-                                    int si = 0;
-                                    if (Tools.ParseJsNumber(skey, ref si, out double dindex)
-                                        && (si == skey.Length)
-                                        && dindex >= 0
-                                        && dindex < uint.MaxValue
-                                        && (long)dindex == dindex)
-                                    {
-                                        isIndex = true;
-                                        index = (int)(uint)dindex;
-                                    }
+                                    isIndex = true;
+                                    index = (int)(uint)dindex;
                                 }
-
-                                break;
                             }
+
+                            break;
+                        }
+                        case JSValueType.Symbol:
+                        {
+                            break;
+                        }
                         default:
+                        {
+                            if (key._valueType >= JSValueType.Object)
                             {
-                                if (key._valueType >= JSValueType.Object)
-                                {
-                                    key = key.ToPrimitiveValue_String_Value();
-                                    var keyValue = key.Value;
-                                    if (keyValue != null && string.CompareOrdinal("length", keyValue.ToString()) == 0)
-                                        return length;
+                                key = key.ToPrimitiveValue_String_Value();
 
-                                    if (key.ValueType < JSValueType.Object)
-                                        repeat = true;
-                                }
-
-                                break;
+                                if (key.ValueType < JSValueType.Object)
+                                    repeat = true;
                             }
+
+                            break;
+                        }
                     }
                 }
                 while (repeat);
@@ -2322,11 +2334,15 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        notExists._valueType = JSValueType.NotExistsInObject;
-                        var res = _data[index] ?? notExists;
-                        if (res._valueType < JSValueType.Undefined && memberScope != PropertyScope.Own)
+                        var res = _data[index];
+                        if (res is null || res._valueType < JSValueType.Undefined)
                         {
-                            return __proto__.GetProperty(key, false, memberScope);
+                            notExists._valueType = JSValueType.NotExistsInObject;
+                            res = notExists;
+                            if (res._valueType < JSValueType.Undefined && memberScope != PropertyScope.Own)
+                            {
+                                return __proto__.GetProperty(key, false, memberScope);
+                            }
                         }
 
                         return res;

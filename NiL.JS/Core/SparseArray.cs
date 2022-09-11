@@ -29,8 +29,8 @@ namespace NiL.JS.Core
         }
 
         private const int _flatSizeLimit = 32;
-        private static readonly _NavyItem[] emptyNavyData = new _NavyItem[0]; // data dummy. In cases where instance of current class was created, but not used
-        private static readonly TValue[] emptyData = new TValue[0];
+        private static readonly _NavyItem[] _emptyNavyData = new _NavyItem[0]; // data dummy. In cases where instance of current class was created, but not used
+        private static readonly TValue[] _emptyData = new TValue[0];
 
         private ArrayMode _mode;
         private uint _pseudoLength;
@@ -59,24 +59,24 @@ namespace NiL.JS.Core
         public SparseArray(ArrayMode arrayMode = ArrayMode.Flat)
         {
             _mode = arrayMode;
-            _values = emptyData;
-            _navyData = emptyNavyData;
+            _values = _emptyData;
+            _navyData = _emptyNavyData;
         }
 
         public SparseArray(int capacity)
         {
             _mode = ArrayMode.Flat;
-            _values = emptyData;
-            _navyData = emptyNavyData;
+            _values = _emptyData;
+            _navyData = _emptyNavyData;
             if (capacity > 0)
-                ensureCapacity(capacity);
+                EnsureCapacity(capacity);
         }
 
         public SparseArray(TValue[] values)
         {
             _mode = ArrayMode.Flat;
             this._values = values;
-            _navyData = emptyNavyData;
+            _navyData = _emptyNavyData;
             _usedCount = (_pseudoLength = (uint)values.Length);
         }
 
@@ -126,7 +126,7 @@ namespace NiL.JS.Core
 
                 if (index >= 0 && (index < _flatSizeLimit || index == _pseudoLength))
                 {
-                    ensureCapacity(index + 1);
+                    EnsureCapacity(index + 1);
                     if (unsignedIndex >= _pseudoLength)
                         _pseudoLength = unsignedIndex + 1;
 
@@ -144,7 +144,7 @@ namespace NiL.JS.Core
 
             if (_usedCount == 0)
             {
-                ensureCapacity(1);
+                EnsureCapacity(1);
                 _usedCount = 1;
             }
 
@@ -186,7 +186,7 @@ namespace NiL.JS.Core
                             navyItem.oneContinue = ni = _usedCount++;
 
                         if (_navyData.Length <= _usedCount)
-                            ensureCapacity(_navyData.Length * 2);
+                            EnsureCapacity(_navyData.Length * 2);
 
                         _navyData[ni].index = unsignedIndex;
                         return ref _values[ni];
@@ -257,6 +257,11 @@ namespace NiL.JS.Core
             }
             set
             {
+                //if (_mode == ArrayMode.Sparse && _pseudoLength == _usedCount)
+                //{
+                //    RebuildToFlat();
+                //}
+
                 bool @default = value == null; // структуры мы будем записывать, иначе пришлось бы вызывать тяжелые операции сравнения.
                 //if (navyData.Length <= allocatedCount)
                 //    ensureCapacity(navyData.Length * 2);
@@ -279,7 +284,7 @@ namespace NiL.JS.Core
                             // Вот именно из-за таких кусков кода так и может показаться.
                             // Не время для попыток исправить мир
                             _pseudoLength = unsignedIndex + 1;
-                            ensureCapacity((int)_pseudoLength);
+                            EnsureCapacity((int)_pseudoLength);
                             this[index] = value;
                             return;
                         }
@@ -289,7 +294,7 @@ namespace NiL.JS.Core
                     else
                     {
                         if (_values.Length <= index)
-                            ensureCapacity(Math.Max(index + 1, _values.Length * 2));
+                            EnsureCapacity(Math.Max(index + 1, _values.Length * 2));
                         if (_pseudoLength == index)
                             _pseudoLength = unsignedIndex + 1;
                         _values[index] = value;
@@ -299,7 +304,7 @@ namespace NiL.JS.Core
 
                 if (_usedCount == 0)
                 {
-                    ensureCapacity(1);
+                    EnsureCapacity(1);
                     _usedCount = 1;
                 }
 
@@ -376,7 +381,7 @@ namespace NiL.JS.Core
                                 navyItem.oneContinue = ni = _usedCount++;
 
                             if (_navyData.Length <= _usedCount)
-                                ensureCapacity(_navyData.Length * 2);
+                                EnsureCapacity(_navyData.Length * 2);
 
                             _navyData[ni].index = unsignedIndex;
                             _values[ni] = value;
@@ -718,7 +723,7 @@ namespace NiL.JS.Core
             _pseudoLength = (uint)(len + 1);
         }
 
-        private void ensureCapacity(int p)
+        public void EnsureCapacity(int p)
         {
             p = Math.Max(4, p);
             if (_values.Length >= p)
@@ -727,12 +732,11 @@ namespace NiL.JS.Core
             p = 2 << NumberUtils.IntLog(p);
 
             var newValues = new TValue[p];
-            if (_values != null)
-                for (var i = 0; i < _values.Length; i++)
-                    newValues[i] = _values[i];
+            for (var i = 0; i < _values.Length; i++)
+                newValues[i] = _values[i];
 
             _values = newValues;
-            
+
             if (_mode == ArrayMode.Sparse)
             {
                 var newData = new _NavyItem[p];
@@ -749,7 +753,7 @@ namespace NiL.JS.Core
             var len = _pseudoLength;
             if (len == 0)
             {
-                ensureCapacity(0);
+                EnsureCapacity(0);
                 return;
             }
 
@@ -762,6 +766,17 @@ namespace NiL.JS.Core
 
             if (_values.Length < len)
                 this[(int)len - 1] = default(TValue);
+        }
+
+        public void RebuildToFlat()
+        {
+            var newValues = new TValue[_pseudoLength];
+            for (var i = 0; i < _pseudoLength; i++)
+                newValues[i] = this[i];
+
+            _mode = ArrayMode.Flat;
+            _values = newValues;
+            _navyData = _emptyNavyData;
         }
 
         public void Add(int key, TValue value)
