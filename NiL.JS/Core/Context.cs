@@ -152,9 +152,6 @@ namespace NiL.JS.Core
                 var c = this;
                 if (_thisBind == null)
                 {
-                    if (_strict)
-                        return JSValue.undefined;
-
                     for (; c._thisBind == null;)
                     {
                         if (c._parent._parent == null)
