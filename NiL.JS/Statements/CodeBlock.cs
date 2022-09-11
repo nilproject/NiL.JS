@@ -313,8 +313,6 @@ namespace NiL.JS.Statements
                     initVariables(context);
             }
 
-            ExceptionHelper.GetStackFrame(context, false).CodeNode = this;
-
             if (_suppressScopeIsolation != SuppressScopeIsolationMode.Suppress)
                 evaluateWithScope(context, i, clearSuspendData);
             else
@@ -326,6 +324,7 @@ namespace NiL.JS.Statements
         [ExceptionHelper.StackFrameOverride]
         private void evaluateWithScope(Context context, int i, bool clearSuspendData)
         {
+            ExceptionHelper.GetStackFrame(context, false).CodeNode = this;
             var activated = _suppressScopeIsolation != SuppressScopeIsolationMode.Suppress && context.Activate();
             try
             {
@@ -353,10 +352,10 @@ namespace NiL.JS.Statements
 
             for (var ls = _lines; i < ls.Length; i++)
             {
+                stackFrame.CodeNode = ls[i];
+
                 if (context._debugging)
                     context.raiseDebugger(_lines[i]);
-
-                stackFrame.CodeNode = ls[i];
 
                 var t = ls[i].Evaluate(context);
                 if (t != null)

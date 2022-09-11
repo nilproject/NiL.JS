@@ -560,11 +560,22 @@ namespace NiL.JS.BaseLibrary
 
                         result.Append("\":").Append(space == null ? string.Empty : " ");
 
+                        result.EnsureCapacity(result.Length + stringValue.Length);
+                        var newLineIndex = 0;
                         for (var i = 0; i < stringValue.Length; i++)
                         {
-                            result.Append(stringValue[i]);
-                            if (i >= Environment.NewLine.Length && stringValue.IndexOf(Environment.NewLine, i - Environment.NewLine.Length + 1, Environment.NewLine.Length) != -1)
+                            if (newLineIndex < Environment.NewLine.Length
+                                && stringValue[i] == Environment.NewLine[newLineIndex])
+                            {
+                                newLineIndex++;
+                            }
+                            else if (newLineIndex != 0)
+                            {
                                 result.Append(space);
+                                newLineIndex = 0;
+                            }
+
+                            result.Append(stringValue[i]);
                         }
 
                         prevKey = member.Key;

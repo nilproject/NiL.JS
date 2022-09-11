@@ -70,7 +70,7 @@ namespace NiL.JS.Core
         internal static List<Context> GetCurrectContextStack()
         {
             if (currentContextStack == null)
-                currentContextStack = new List<Context> { DefaultGlobalContext };
+                currentContextStack = new List<Context>();
 
             return currentContextStack;
         }
@@ -134,7 +134,7 @@ namespace NiL.JS.Core
                 GlobalContext result = iter as GlobalContext;
 
                 if (result == null)
-                    throw new Exception("Incorrect state");
+                    throw new InvalidOperationException("Incorrect state");
 
                 return result;
             }
@@ -614,6 +614,7 @@ namespace NiL.JS.Core
                                     if (cc._definedVariables[j].name == body._variables[i].name)
                                     {
                                         cc._definedVariables[j].definitionScopeLevel = -1;
+                                        break;
                                     }
                                 }
                             }

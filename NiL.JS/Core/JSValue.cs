@@ -842,7 +842,7 @@ namespace NiL.JS.Core
 
             var res = new JSValue();
             res.Assign(this);
-            res._attributes = this._attributes & ~resetMask;
+            res._attributes = _attributes & ~resetMask;
             return res;
         }
 

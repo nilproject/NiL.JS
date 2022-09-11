@@ -62,9 +62,6 @@ namespace NiL.JS.Core
         private Record[] _records = EmpryArrayHelper.Empty<Record>();
         private int[] _existsedIndexes;
 
-        private bool _emptyKeyValueExists = false;
-        private TValue _emptyKeyValue;
-
         public StringMap()
         {
             Clear();
@@ -74,15 +71,6 @@ namespace NiL.JS.Core
         {
             if (key == null)
                 ExceptionHelper.ThrowArgumentNull("key");
-
-            if (key.Length == 0)
-            {
-                if (@throw && _emptyKeyValueExists)
-                    ExceptionHelper.Throw(new InvalidOperationException("Item already exists"));
-                _emptyKeyValueExists = true;
-                _emptyKeyValue = value;
-                return;
-            }
 
             int index;
             int colisionCount = 0;
@@ -251,18 +239,6 @@ namespace NiL.JS.Core
             if (key == null)
                 throw new ArgumentNullException("key");
 
-            if (key.Length == 0)
-            {
-                if (!_emptyKeyValueExists)
-                {
-                    value = default(TValue);
-                    return false;
-                }
-
-                value = _emptyKeyValue;
-                return true;
-            }
-
             var previousIndex = _previousIndex;
             var records = _records;
             if (records.Length <= MaxAsListSize)
@@ -329,16 +305,6 @@ namespace NiL.JS.Core
              */
             if (key == null)
                 throw new ArgumentNullException();
-
-            if (key.Length == 0)
-            {
-                if (!_emptyKeyValueExists)
-                    return false;
-
-                _emptyKeyValue = default(TValue);
-                _emptyKeyValueExists = false;
-                return true;
-            }
 
             if (_records.Length <= MaxAsListSize)
             {
@@ -502,8 +468,6 @@ namespace NiL.JS.Core
             _count = 0;
             _eicount = 0;
             _version++;
-            _emptyKeyValue = default(TValue);
-            _emptyKeyValueExists = false;
             _previousIndex = -1;
         }
 
@@ -529,7 +493,7 @@ namespace NiL.JS.Core
 
         public int Count
         {
-            get { return _count + (_emptyKeyValueExists ? 1 : 0); }
+            get { return _count; }
         }
 
         public bool IsReadOnly
@@ -544,9 +508,6 @@ namespace NiL.JS.Core
 
         public IEnumerator<KeyValuePair<string, TValue>> GetEnumerator()
         {
-            if (_emptyKeyValueExists)
-                yield return new KeyValuePair<string, TValue>("", _emptyKeyValue);
-
             List<KeyValuePair<uint, string>> numbers = null;
             uint exprected = 0;
 
