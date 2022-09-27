@@ -346,7 +346,9 @@ namespace NiL.JS.Core.Functions
                         return _constructors[i];
                     }
 
-                    if (pass == 1 || _constructors[i]._parameters.Length == len)
+                    if (pass == 1 
+                        || _constructors[i]._parameters.Length == len 
+                        || (_constructors[i]._parameters.Length >= len && _constructors[i]._parameters.Count(x => !x.IsOptional) <= len))
                     {
                         if (len == 0)
                         {
