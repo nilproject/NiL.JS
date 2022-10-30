@@ -1641,6 +1641,7 @@ namespace NiL.JS.Core
         {
             if (p < '0' || p > 'f')
                 return false;
+
             var c = hexCharToInt(p);
             return c >= 0 && c < 16;
         }

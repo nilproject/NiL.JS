@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Statements;
 
@@ -60,7 +61,7 @@ namespace NiL.JS
             body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
 
             if (tv != null)
-                body._variables = new List<VariableDescriptor>(tv.Values).ToArray();
+                body._variables = tv.Values.ToArray();
 
             var bd = body as CodeNode;
 

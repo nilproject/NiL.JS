@@ -1161,7 +1161,7 @@ namespace NiL.JS.Expressions
                             || (state.Code[i] != '.'
                                 && state.Code[i] != '['
                                 && (state.Code[i] != '(' || (state.CodeContext & CodeContext.InClassConstructor) == 0)))
-                            ExceptionHelper.ThrowSyntaxError("super keyword unexpected in this coontext", state.Code, i);
+                            ExceptionHelper.ThrowSyntaxError("super keyword unexpected in this context", state.Code, i);
 
                         operand = new Super();
                         break;

@@ -629,7 +629,7 @@ namespace NiL.JS.BaseLibrary
             string selfStr = self.BaseToString();
 
             if (args == null || args.Length == 0)
-                return self.BaseToString();
+                return selfStr;
 
             int pos0 = Tools.JSObjectToInt32(args[0], 0, 0, 0, true);
             int pos1 = Tools.JSObjectToInt32(args[1], 0, selfStr.Length, 0, true);
@@ -642,7 +642,7 @@ namespace NiL.JS.BaseLibrary
             pos1 = System.Math.Min(System.Math.Max(0, pos1), selfStr.Length);
 
             if (pos0 >= pos1)
-                return new String();
+                return string.Empty;
 
             return selfStr.Substring(pos0, pos1 - pos0);
         }
