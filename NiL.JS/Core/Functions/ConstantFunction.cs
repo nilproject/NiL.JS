@@ -21,7 +21,15 @@ namespace NiL.JS.Core.Functions
                 arguments[i].Evaluate(initiator);
 
             if (construct)
-                return base.ConstructObject();
+            {
+                if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
+                    ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
+
+                return ConstructObject();
+            }
+
+            if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithNewOnly)
+                ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
 
             return _value;
         }

@@ -318,7 +318,7 @@ namespace NiL.JS.BaseLibrary
                 throw new ArgumentNullException(nameof(context));
 
             _initialContext = context;
-            RequireNewKeywordLevel = RequireNewKeywordLevel.Both;
+            setNewKeywordRule();
         }
 
         [DoNotEnumerate]
@@ -376,6 +376,7 @@ namespace NiL.JS.BaseLibrary
             _functionDefinition = functionDefinition;
             _valueType = JSValueType.Function;
             _oValue = this;
+            setNewKeywordRule();
         }
 
         [Hidden]
@@ -402,9 +403,7 @@ namespace NiL.JS.BaseLibrary
         public virtual JSValue Construct(JSValue targetObject, Arguments arguments)
         {
             if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
-            {
                 ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
-            }
 
             var res = Invoke(true, targetObject, arguments);
             if (res._valueType < JSValueType.Object || res._oValue == null)
@@ -449,9 +448,7 @@ namespace NiL.JS.BaseLibrary
         public JSValue Call(JSValue targetObject, Arguments arguments)
         {
             if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithNewOnly)
-            {
                 ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithoutNew, name));
-            }
 
             targetObject = correctTargetObject(targetObject, _functionDefinition._body._strict);
             return Invoke(false, targetObject, arguments);
@@ -619,7 +616,8 @@ namespace NiL.JS.BaseLibrary
                 {
                     internalContext._variables["arguments"] = arguments;
 
-                    if (!string.IsNullOrEmpty(name) && (Kind == FunctionKind.Function || Kind == FunctionKind.Generator))
+                    if (!string.IsNullOrEmpty(name) 
+                        && Kind is FunctionKind.Function or FunctionKind.Generator or FunctionKind.AsyncFunction)
                         internalContext._variables[name] = this;
                 }
 
@@ -939,6 +937,25 @@ namespace NiL.JS.BaseLibrary
             _delegateCache.Add(delegateType, @delegate);
 
             return @delegate;
+        }
+
+        private void setNewKeywordRule()
+        {
+            RequireNewKeywordLevel = Kind switch
+            {
+                FunctionKind.Getter
+                or FunctionKind.Setter 
+                or FunctionKind.Arrow 
+                or FunctionKind.Method 
+                or FunctionKind.AsyncAnonymousFunction
+                or FunctionKind.Generator
+                or FunctionKind.AnonymousGenerator
+                or FunctionKind.AsyncArrow
+                or FunctionKind.AsyncFunction
+                or FunctionKind.AsyncMethod
+                or FunctionKind.MethodGenerator => RequireNewKeywordLevel.WithoutNewOnly,
+                _ => RequireNewKeywordLevel.Both,
+            };
         }
     }
 }
