@@ -174,7 +174,6 @@ namespace NiL.JS.Expressions
                 ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, i);
 
             FunctionDefinition ctor = null;
-            ClassDefinition result = null;
 
             var flds = new Dictionary<string, MemberDescriptor>();
             var computedProperties = new List<MemberDescriptor>();
@@ -397,7 +396,8 @@ namespace NiL.JS.Expressions
                     ctor = (FunctionDefinition)FunctionDefinition.Parse(nestedParseInfo, ref ctorIndex, FunctionKind.Method);
             }
 
-            result = new ClassDefinition(name, baseType, new List<MemberDescriptor>(flds.Values).ToArray(), ctor as FunctionDefinition, computedProperties.ToArray());
+            var classDefinition = new ClassDefinition(name, baseType, new List<MemberDescriptor>(flds.Values).ToArray(), ctor, computedProperties.ToArray());
+            classDefinition.reference.ScopeLevel = state.LexicalScopeLevel;
 
             if ((state.CodeContext & CodeContext.InExpression) == 0)
             {
@@ -413,12 +413,12 @@ namespace NiL.JS.Expressions
                         ExceptionHelper.ThrowSyntaxError("In strict mode code, class can only be declared at top level or immediately within other function.", state.Code, index);
                     }
 
-                    state.Variables.Add(result.reference._descriptor);
+                    state.Variables.Add(classDefinition.reference._descriptor);
                 }
             }
 
             index = i + 1;
-            return result;
+            return classDefinition;
         }
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
