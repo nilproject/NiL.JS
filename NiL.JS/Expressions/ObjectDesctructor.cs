@@ -49,7 +49,7 @@ namespace NiL.JS.Expressions
                     else
                     {
                         var target = targetMap.Elements[i].EvaluateForWrite(_context);
-                        setterArgs = assign(target, values[i], targetMap.Elements[i], setterArgs);
+                        assign(target, values[i], targetMap.Elements[i], ref setterArgs);
                     }
                 }
             }
@@ -62,7 +62,16 @@ namespace NiL.JS.Expressions
                 var j = 0;
                 var values = new JSValue[targetMap.Properties.Length];
                 for (var i = 0; i < targetMap.Properties.Length; i++, j++)
-                    values[j] = source.GetProperty(targetMap.Properties[i].Key.Evaluate(_context), false, PropertyScope.Common).CloneImpl(false);
+                {
+                    values[j] =
+                        Tools.InvokeGetter(
+                            source.GetProperty(
+                                targetMap.Properties[i].Key.Evaluate(_context),
+                                false,
+                                PropertyScope.Common),
+                            source)
+                        .CloneImpl(false);
+                }
 
                 Arguments setterArgs = null;
                 j = 0;
@@ -76,12 +85,12 @@ namespace NiL.JS.Expressions
                     else
                     {
                         var target = targetMap.Properties[i].Value.EvaluateForWrite(_context);
-                        setterArgs = assign(target, values[j], targetMap.Properties[i].Value, setterArgs);
+                        assign(target, values[j], targetMap.Properties[i].Value, ref setterArgs);
                     }
                 }
             }
 
-            private Arguments assign(JSValue target, JSValue value, object targetName, Arguments setterArgs)
+            private void assign(JSValue target, JSValue value, object targetName, ref Arguments setterArgs)
             {
                 if (target._valueType == JSValueType.Property)
                 {
@@ -115,8 +124,6 @@ namespace NiL.JS.Expressions
                     else
                         target.Assign(value);
                 }
-
-                return setterArgs;
             }
         }
 

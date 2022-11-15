@@ -44,27 +44,31 @@ namespace NiL.JS.Expressions
             var i = index;
             if (!Parser.Validate(state.Code, "new", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
+            
             while (Tools.IsWhiteSpace(state.Code[i]))
                 i++;
+            
             var result = (Expression)ExpressionTree.Parse(state, ref i, true, false, true, true, false);
             if (result == null)
             {
                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
                 ExceptionHelper.Throw((new SyntaxError("Invalid prefix operation. " + cord)));
             }
+
             if (result is Call)
                 result = new New(result as Call) { Position = index, Length = i - index };
             else
             {
                 if (state.Message != null)
                     state.Message(MessageLevel.Warning, index, 0, "Missed brackets in a constructor invocation.");
-                result = new Expressions.New(new Call(result, new Expression[0]) { Position = result.Position, Length = result.Length }) { Position = index, Length = i - index };
+                result = new New(new Call(result, new Expression[0]) { Position = result.Position, Length = result.Length }) { Position = index, Length = i - index };
             }
+
             index = i;
             return result;
         }
 
-        public override JSValue Evaluate(NiL.JS.Core.Context context)
+        public override JSValue Evaluate(Context context)
         {
             throw new InvalidOperationException();
         }
