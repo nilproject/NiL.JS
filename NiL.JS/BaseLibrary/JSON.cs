@@ -546,10 +546,6 @@ namespace NiL.JS.BaseLibrary
                             {
                                 result.Append("null,");
                             }
-
-                            result.Append(stringValue);
-
-                            prevKey = member.Key;
                         }
                     }
                     else
@@ -561,25 +557,26 @@ namespace NiL.JS.BaseLibrary
                         result.Append("\":").Append(space == null ? string.Empty : " ");
 
                         result.EnsureCapacity(result.Length + stringValue.Length);
-                        var newLineIndex = 0;
-                        for (var i = 0; i < stringValue.Length; i++)
-                        {
-                            if (newLineIndex < Environment.NewLine.Length
-                                && stringValue[i] == Environment.NewLine[newLineIndex])
-                            {
-                                newLineIndex++;
-                            }
-                            else if (newLineIndex != 0)
-                            {
-                                result.Append(space);
-                                newLineIndex = 0;
-                            }
+                    }
 
-                            result.Append(stringValue[i]);
+                    var newLineIndex = 0;
+                    for (var i = 0; i < stringValue.Length; i++)
+                    {
+                        if (newLineIndex < Environment.NewLine.Length
+                            && stringValue[i] == Environment.NewLine[newLineIndex])
+                        {
+                            newLineIndex++;
+                        }
+                        else if (newLineIndex != 0)
+                        {
+                            result.Append(space);
+                            newLineIndex = 0;
                         }
 
-                        prevKey = member.Key;
+                        result.Append(stringValue[i]);
                     }
+
+                    prevKey = member.Key;
                 }
 
                 if (space != null)
