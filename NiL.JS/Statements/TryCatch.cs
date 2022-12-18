@@ -120,6 +120,9 @@ namespace NiL.JS.Statements
                     context.raiseDebugger(body);
             }
 
+            if (body is not CodeBlock)
+                ExceptionHelper.GetStackFrame(context, false).CodeNode = body;
+
             try
             {
                 body.Evaluate(context);
@@ -191,6 +194,9 @@ namespace NiL.JS.Statements
             Action<Context> finallyAction = null;
             finallyAction = (c) =>
             {
+                if (finallyBody is not CodeBlock)
+                    ExceptionHelper.GetStackFrame(context, false).CodeNode = finallyBody;
+
                 c._lastResult = finallyBody.Evaluate(c) ?? context._lastResult;
                 if (c._executionMode == ExecutionMode.Regular)
                 {
@@ -217,6 +223,7 @@ namespace NiL.JS.Statements
                 return;
 
             JSValue cvar = null;
+
 #if !(PORTABLE || NETCORE)
             if (e is RuntimeWrappedException)
             {
@@ -231,10 +238,6 @@ namespace NiL.JS.Statements
 
             cvar._attributes |= JSValueAttributesInternal.DoNotDelete;
             var catchContext = new CatchContext(cvar, context, catchVariableDesc.name);
-#if DEBUG
-            if (!(e is JSException))
-                System.Diagnostics.Debugger.Break();
-#endif
 
             Action<Context> catchAction = null;
             catchAction = (c) =>
@@ -244,6 +247,10 @@ namespace NiL.JS.Statements
                     catchContext._executionMode = c._executionMode;
                     catchContext._executionInfo = c._executionInfo;
                     catchContext.Activate();
+
+                    if (catchBody is not CodeBlock)
+                        ExceptionHelper.GetStackFrame(catchContext, false).CodeNode = catchBody;
+
                     catchContext._lastResult = catchBody.Evaluate(catchContext) ?? catchContext._lastResult;
                 }
                 finally
@@ -289,8 +296,7 @@ namespace NiL.JS.Statements
             {
                 _catch = true;
                 catchVariableDesc.owner = this;
-                VariableDescriptor oldVarDesc = null;
-                variables.TryGetValue(catchVariableDesc.name, out oldVarDesc);
+                variables.TryGetValue(catchVariableDesc.name, out var oldVarDesc);
                 variables[catchVariableDesc.name] = catchVariableDesc;
                 catchPosition = catchBody.Position;
                 Parser.Build(ref catchBody, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);

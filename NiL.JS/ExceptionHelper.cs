@@ -17,6 +17,20 @@ namespace NiL.JS
 {
     internal static class ExceptionHelper
     {
+        private static readonly string[] _namespacesToReplace = new[]
+        {
+            typeof(CodeBlock).Namespace,
+            typeof(Addition).Namespace,
+        };
+
+        private static readonly Type[] _baseClassesToHide = new[]
+        {
+            typeof(Function),
+            typeof(ExceptionHelper),
+            typeof(ConstructorInfo),
+            typeof(RuntimeMethodHandle),
+        };
+
         internal sealed class StackTraceState
         {
             public JsStackFrame JsStack;
@@ -138,20 +152,6 @@ namespace NiL.JS
 
             return _executionStack;
         }
-
-        private static readonly string[] _namespacesToReplace = new[]
-        {
-            typeof(CodeBlock).Namespace,
-            typeof(Addition).Namespace,
-        };
-
-        private static readonly Type[] _baseClassesToHide = new[]
-        {
-            typeof(Function),
-            typeof(ExceptionHelper),
-            typeof(ConstructorInfo),
-            typeof(RuntimeMethodHandle),
-        };
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static StackTraceState GetStackTrace(int skipFrames)
