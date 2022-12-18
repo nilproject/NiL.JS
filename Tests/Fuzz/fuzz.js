@@ -14,14 +14,6 @@ catch (e) {
     if (!(e instanceof SyntaxError))
         console.log("empty func argument fail #2.1");
 }
-try {
-    eval('(function(){})(1,);');
-    console.log("empty func argument fail #3");
-}
-catch (e) {
-    if (!(e instanceof SyntaxError))
-        console.log("empty func argument fail #3.1");
-}
 
 var f = eval("function functionInsideEval(){}");
 
