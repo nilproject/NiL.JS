@@ -886,30 +886,28 @@ namespace NiL.JS.Expressions
                             Tools.SkipSpaces(state.Code, ref i);
                             Tools.CheckEndOfInput(state.Code, ref i);
 
-                            if (state.Code[i] == ')')
+                            bool commaExists = args.Count == 0;
+                            for (; ; )
                             {
-                                break;
-                            }
-                            else
-                            {
-                                bool commaExists = args.Count == 0;
-                                for (; ; )
+                                if (state.Code[i] == ',')
                                 {
-                                    if (state.Code[i] == ',')
-                                    {
-                                        if (commaExists)
-                                            ExceptionHelper.ThrowSyntaxError("Missing argument of function call", state.Code, i);
-                                        do
-                                            i++;
-                                        while (Tools.IsWhiteSpace(state.Code[i]));
-                                        commaExists = true;
-                                    }
-                                    else
-                                        break;
+                                    if (commaExists)
+                                        ExceptionHelper.ThrowSyntaxError("Missing argument of function call", state.Code, i);
+
+                                    i++;
+                                    Tools.SkipSpaces(state.Code, ref i);
+                                    commaExists = true;
                                 }
-                                if (!commaExists)
-                                    ExceptionHelper.ThrowSyntaxError("Expected ','", state.Code, i);
+                                else
+                                    break;
                             }
+
+                            if (state.Code[i] == ')')
+                                break;
+
+                            if (!commaExists)
+                                ExceptionHelper.ThrowSyntaxError("Expected ','", state.Code, i);
+
                             if (i + 1 == state.Code.Length)
                                 ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource, state.Code, i);
 
