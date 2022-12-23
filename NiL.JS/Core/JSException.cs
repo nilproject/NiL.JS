@@ -18,12 +18,12 @@ namespace NiL.JS.Core
 
         public JSValue Error { get; }
         public CodeNode ExceptionMaker { get; }
-        public string Code { get; internal set; }
+        public string SourceCode { get; internal set; }
         public CodeCoordinates CodeCoordinates { get; internal set; }
 
         private JSException()
         {
-            _stackTraceData = ExceptionHelper.GetStackTrace(1);
+            _stackTraceData = ExceptionHelper.GetJsStackTrace();
         }
 
         public JSException(Error data)
@@ -32,21 +32,16 @@ namespace NiL.JS.Core
             Error = Context.CurrentGlobalContext.ProxyValue(data);
         }
 
-        public JSException(Error data, CodeNode exceptionMaker, string code)
-            : this(Context.CurrentGlobalContext.ProxyValue(data), exceptionMaker, code)
+        public JSException(Error data, CodeNode exceptionMaker)
+            : this(Context.CurrentGlobalContext.ProxyValue(data), exceptionMaker)
         {
         }
 
-        public JSException(JSValue data, CodeNode exceptionMaker, string code)
+        public JSException(JSValue data, CodeNode exceptionMaker)
             : this()
         {
             Error = data;
             ExceptionMaker = exceptionMaker;
-            Code = code;
-            if (code != null)
-            {
-                CodeCoordinates = CodeCoordinates.FromTextPosition(code, exceptionMaker.Position, exceptionMaker.Length);
-            }
         }
 
         public JSException(JSValue data, Exception innerException)
@@ -54,7 +49,7 @@ namespace NiL.JS.Core
         {
             Error = data;
 
-            _stackTraceData = ExceptionHelper.GetStackTrace(1);
+            _stackTraceData = ExceptionHelper.GetJsStackTrace();
         }
 
         public JSException(Error avatar, Exception innerException)

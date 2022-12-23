@@ -33,7 +33,7 @@ namespace NiL.JS.Statements
 
         internal static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];
 
-        private string code;
+        private string _sourceCode;
 #if (NET40 || !NETSTANDARD1_3 && !NET40) && JIT
         internal Func<Context, JSObject> compiledVersion;
 #endif
@@ -43,7 +43,7 @@ namespace NiL.JS.Statements
         internal VariableDescriptor[] _variables;
         internal CodeNode[] _lines;
         internal bool _strict;
-        internal bool built;
+        internal bool _built;
         internal SuppressScopeIsolationMode _suppressScopeIsolation;
 
         public VariableDescriptor[] Variables { get { return _variables; } }
@@ -58,24 +58,11 @@ namespace NiL.JS.Statements
             }
         }
 
-        public override int Length
-        {
-            get
-            {
-                return base.Length < 0 ? -base.Length : base.Length;
-            }
-            internal set
-            {
-                base.Length = value;
-            }
-        }
-
         public CodeBlock(CodeNode[] body)
         {
             if (body == null)
                 throw new ArgumentNullException("body");
 
-            code = "";
             _lines = body;
             _variables = null;
             _strict = false;
@@ -228,7 +215,7 @@ namespace NiL.JS.Statements
                     _strict = state.Strict,
                     _variables = variables ?? emptyVariables,
                     Position = startPos,
-                    code = state.SourceCode,
+                    _sourceCode = state.SourceCode,
                     Length = position - startPos,
 #if DEBUG
                     directives = directives
@@ -349,6 +336,8 @@ namespace NiL.JS.Statements
         private void evaluateLines(Context context, int i, bool clearSuspendData)
         {
             var stackFrame = ExceptionHelper.GetStackFrame(context, false);
+            if (_sourceCode is not null)
+                stackFrame.SourceCode = _sourceCode;
 
             for (var ls = _lines; i < ls.Length; i++)
             {
@@ -439,9 +428,9 @@ namespace NiL.JS.Statements
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (built)
+            if (_built)
                 return false;
-            built = true;
+            _built = true;
 
             List<VariableDescriptor> variablesToRestore = null;
             if (_variables != null && _variables.Length != 0)
@@ -800,7 +789,7 @@ namespace NiL.JS.Statements
 
         public string ToString(bool linewiseStringify)
         {
-            if (linewiseStringify || string.IsNullOrEmpty(code))
+            if (linewiseStringify || string.IsNullOrEmpty(_sourceCode))
             {
                 if (_lines == null || _lines.Length == 0)
                     return "{ }";
@@ -819,18 +808,12 @@ namespace NiL.JS.Statements
                     lc = lc.Replace(replp, replt);
                     res.Append("  ").Append(lc).Append(lc[lc.Length - 1] != '}' ? ";" : "").Append(Environment.NewLine);
                 }
+
                 return res.Append("}").ToString();
             }
             else
             {
-                if (base.Length > 0)
-                {
-                    Length = -base.Length;
-                    if (Position > 0)
-                        code = code.Substring(Position + 1, Length - 2);
-                }
-
-                return '{' + code + '}';
+                return '{' + _sourceCode.Substring(Position + 1, Length - 2) + '}';
             }
         }
     }

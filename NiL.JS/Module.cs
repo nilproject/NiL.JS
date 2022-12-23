@@ -159,7 +159,6 @@ namespace NiL.JS
             Context = new Context(globalContext ?? Context.CurrentGlobalContext, true, null);
             Context._module = this;
             Context._thisBind = new GlobalObject(Context);
-            Context._sourceCode = script.Code;
 
             Script = script;
 

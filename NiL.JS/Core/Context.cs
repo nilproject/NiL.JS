@@ -99,7 +99,6 @@ namespace NiL.JS.Core
         internal JSValue _thisBind;
         internal Function _owner;
         internal Context _parent;
-        internal string _sourceCode;
         internal IDictionary<string, JSValue> _variables;
         internal bool _strict;
         internal VariableDescriptor[] _definedVariables;
@@ -242,7 +241,6 @@ namespace NiL.JS.Core
 
                 _definedVariables = _owner?.Body?._variables;
                 _parent = prototype;
-                _sourceCode = prototype._sourceCode;
                 _thisBind = prototype._thisBind;
                 _debugging = prototype._debugging;
                 _module = prototype._module;
@@ -508,15 +506,15 @@ namespace NiL.JS.Core
         /// <summary>
         /// Evaluate script
         /// </summary>
-        /// <param name="code">Code in JavaScript</param>
+        /// <param name="sourceCode">Code in JavaScript</param>
         /// <param name="suppressScopeCreation">If true, scope will not be created. All variables, which will be defined via let, const or class will not be destructed after evalution</param>
         /// <returns>Result of last evaluated operation</returns>
-        public JSValue Eval(string code, JSValue thisBind, bool suppressScopeCreation = false)
+        public JSValue Eval(string sourceCode, JSValue thisBind, bool suppressScopeCreation = false)
         {
             if (_parent == null)
                 throw new InvalidOperationException("Cannot execute script in global context");
 
-            if (string.IsNullOrEmpty(code))
+            if (string.IsNullOrEmpty(sourceCode))
                 return JSValue.undefined;
 
             // чистить кэш тут не достаточно.
@@ -548,11 +546,11 @@ namespace NiL.JS.Core
             }
 
             int index = 0;
-            var ps = new ParseInfo(code, null);
+            var ps = new ParseInfo(sourceCode, null);
             ps.CodeContext |= (_strict ? CodeContext.Strict : default(CodeContext)) | CodeContext.InEval;
 
             var body = CodeBlock.Parse(ps, ref index) as CodeBlock;
-            if (index < code.Length)
+            if (index < sourceCode.Length)
                 throw new ArgumentException("Invalid char");
 
             var variables = new Dictionary<string, VariableDescriptor>();
@@ -638,17 +636,16 @@ namespace NiL.JS.Core
                 var oldThisBind = ThisBind;
                 var runContextOfEval = context.Activate();
                 context._thisBind = thisBind;
-                context._sourceCode = code;
                 try
                 {
                     return doEval(body, context);
                 }
                 catch (JSException e)
                 {
-                    if ((e.Code == null || e.CodeCoordinates == null) && e.ExceptionMaker != null)
+                    if ((e.SourceCode == null || e.CodeCoordinates == null) && e.ExceptionMaker != null)
                     {
-                        e.Code = code;
-                        e.CodeCoordinates = CodeCoordinates.FromTextPosition(code, e.ExceptionMaker.Position, e.ExceptionMaker.Length);
+                        e.SourceCode = sourceCode;
+                        e.CodeCoordinates = CodeCoordinates.FromTextPosition(sourceCode, e.ExceptionMaker.Position, e.ExceptionMaker.Length);
                     }
 
                     throw;

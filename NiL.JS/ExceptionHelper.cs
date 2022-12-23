@@ -66,7 +66,7 @@ namespace NiL.JS
                         jsFrame = stack;
                         stack = stack.PrevFrame;
 
-                        var code = GetCode(jsFrame.Context);
+                        var code = GetSourceCode(jsFrame);
                         var codeCoords = code != null ? CodeCoordinates.FromTextPosition(code, jsFrame.CodeNode?.Position ?? 0, jsFrame.CodeNode?.Length ?? 0) : null;
 
                         stackTraceTexts.Add(
@@ -102,9 +102,10 @@ namespace NiL.JS
 
         internal sealed class JsStackFrame
         {
-            internal JsStackFrame PrevFrame;
+            public JsStackFrame PrevFrame;
             public CodeNode CodeNode;
             public Context Context;
+            public string SourceCode;
         }
 
         [AttributeUsage(
@@ -154,7 +155,7 @@ namespace NiL.JS
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static StackTraceState GetStackTrace(int skipFrames)
+        internal static StackTraceState GetJsStackTrace()
         {
             var stack = _executionStack;
             JsStackFrame stackCopy = null;
@@ -165,6 +166,7 @@ namespace NiL.JS
                 {
                     CodeNode = stack.CodeNode,
                     Context = stack.Context,
+                    SourceCode = stack.SourceCode,
                 };
 
                 var stackCopyTail = stackCopy;
@@ -175,6 +177,7 @@ namespace NiL.JS
                     {
                         CodeNode = stack.CodeNode,
                         Context = stack.Context,
+                        SourceCode = stack.SourceCode,
                     };
 
                     stackCopyTail.PrevFrame = frame;
@@ -205,7 +208,7 @@ namespace NiL.JS
         internal static void Throw(Error error, CodeNode exceptionMaker, Context context)
         {
             GetStackFrame(context, false).CodeNode = exceptionMaker;
-            throw new JSException(error, exceptionMaker, GetCode(context));
+            throw new JSException(error, exceptionMaker);
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
@@ -215,7 +218,7 @@ namespace NiL.JS
         internal static void Throw(JSValue error, CodeNode exceptionMaker, Context context)
         {
             GetStackFrame(context, false).CodeNode = exceptionMaker;
-            throw new JSException(error ?? JSValue.undefined, exceptionMaker, GetCode(context));
+            throw new JSException(error ?? JSValue.undefined, exceptionMaker);
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
@@ -245,12 +248,12 @@ namespace NiL.JS
             Throw(new ReferenceError(string.Format(Strings.VariableNotDefined, variableName)), exceptionMaker, context);
         }
 
-        internal static string GetCode(Context context)
+        internal static string GetSourceCode(JsStackFrame frame)
         {
-            while (context != null && context._sourceCode == null)
-                context = context._parent;
+            while (frame != null && frame.SourceCode == null)
+                frame = frame.PrevFrame;
 
-            return context?._sourceCode ?? Script.CurrentScript?.Code;
+            return frame?.SourceCode ?? Script.CurrentScript?.Code;
         }
 
         /// <exception cref="NiL.JS.Core.JSException">
