@@ -1663,7 +1663,7 @@ namespace NiL.JS.Core
         {
             var length = src.GetProperty("length", true, PropertyScope.Common); // тут же проверка на null/undefined с падением если надо
 
-            var result = (uint)JSObjectToInt64(InvokeGetter(length, src).ToPrimitiveValue_Value_String(), 0, false);
+            var result = (uint)JSObjectToInt64(GetPropertyOrValue(length, src).ToPrimitiveValue_Value_String(), 0, false);
             if (reassignLen)
             {
                 if (length._valueType == JSValueType.Property)
@@ -1782,20 +1782,36 @@ namespace NiL.JS.Core
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static JSValue InvokeGetter(JSValue property, JSValue target)
+        internal static JSValue GetPropertyOrValue(JSValue propertyObject, JSValue target)
         {
-            if (property._valueType != JSValueType.Property)
-                return property;
+            if (propertyObject._valueType != JSValueType.Property)
+                return propertyObject;
 
-            var getter = property._oValue as PropertyPair;
-            if (getter == null || getter.getter == null)
+            var propPair = propertyObject._oValue as PropertyPair;
+            if (propPair == null || propPair.getter == null)
                 return JSValue.undefined;
 
-            property = getter.getter.Call(target, null);
-            if (property._valueType < JSValueType.Undefined)
-                property = JSValue.undefined;
+            propertyObject = propPair.getter.Call(target, null);
+            if (propertyObject._valueType < JSValueType.Undefined)
+                propertyObject = JSValue.undefined;
 
-            return property;
+            return propertyObject;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static void SetPropertyOrValue(JSValue propertyObject, JSValue target, JSValue newValue)
+        {
+            if (propertyObject._valueType != JSValueType.Property)
+            {
+                propertyObject.Assign(newValue);
+                return;
+            }
+
+            var propPair = propertyObject._oValue as PropertyPair;
+            if (propPair == null || propPair.setter == null)
+                return;
+
+            propertyObject = propPair.setter.Call(target, new Arguments { newValue });
         }
 
         internal static JSValue EvalExpressionSafe(Context context, Expressions.Expression source)

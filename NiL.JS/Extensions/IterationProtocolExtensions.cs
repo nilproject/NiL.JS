@@ -117,7 +117,7 @@ namespace NiL.JS.Extensions
         {
             get
             {
-                return Tools.InvokeGetter(result["value"], result);
+                return Tools.GetPropertyOrValue(result["value"], result);
             }
         }
 
@@ -125,7 +125,7 @@ namespace NiL.JS.Extensions
         {
             get
             {
-                return (bool)Tools.InvokeGetter(result["done"], result);
+                return (bool)Tools.GetPropertyOrValue(result["done"], result);
             }
         }
     }

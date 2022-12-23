@@ -94,6 +94,7 @@ namespace NiL.JS.Expressions
                 setter = ppair.setter;
                 if (context._strict && setter == null)
                     ExceptionHelper.ThrowIncrementPropertyWOSetter(_left);
+
                 args = new Arguments();
                 if (ppair.getter == null)
                     val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
@@ -104,6 +105,7 @@ namespace NiL.JS.Expressions
             {
                 if (context._strict)
                     ExceptionHelper.ThrowIncrementReadonly(_left);
+
                 val = val.CloneImpl(false);
             }
 

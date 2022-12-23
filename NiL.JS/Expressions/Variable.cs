@@ -37,7 +37,7 @@ namespace NiL.JS.Expressions
 
         internal protected override JSValue EvaluateForWrite(Context context)
         {
-            if (context._owner._functionDefinition.kind == BaseLibrary.FunctionKind.Arrow)
+            if (context._owner._functionDefinition._kind == BaseLibrary.FunctionKind.Arrow)
                 context = context._parent;
 
             if (context._arguments == null)
@@ -56,7 +56,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (context._owner._functionDefinition.kind == BaseLibrary.FunctionKind.Arrow)
+            if (context._owner._functionDefinition._kind == BaseLibrary.FunctionKind.Arrow)
                 context = context._parent;
             if (context._arguments == null)
                 context._owner.BuildArgumentsObject();
@@ -131,7 +131,7 @@ namespace NiL.JS.Expressions
             }
             else if (res._valueType is JSValueType.Property)
             {
-                return Tools.InvokeGetter(res, context._objectSource);
+                return Tools.GetPropertyOrValue(res, context._objectSource);
             }
 
             return res;

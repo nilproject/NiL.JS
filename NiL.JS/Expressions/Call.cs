@@ -100,9 +100,9 @@ namespace NiL.JS.Expressions
 
             if (_allowTCO
                 && _callMode == 0
-                && (func._functionDefinition.kind != FunctionKind.Generator)
-                && (func._functionDefinition.kind != FunctionKind.MethodGenerator)
-                && (func._functionDefinition.kind != FunctionKind.AnonymousGenerator)
+                && (func._functionDefinition._kind != FunctionKind.Generator)
+                && (func._functionDefinition._kind != FunctionKind.MethodGenerator)
+                && (func._functionDefinition._kind != FunctionKind.AnonymousGenerator)
                 && context._owner != null
                 && func == context._owner._oValue)
             {
@@ -249,14 +249,14 @@ namespace NiL.JS.Expressions
                     var func = f.initializer as FunctionDefinition;
                     if (func != null)
                     {
-                        for (var i = 0; i < func.parameters.Length; i++)
+                        for (var i = 0; i < func._parameters.Length; i++)
                         {
                             if (i >= _arguments.Length)
                                 break;
-                            if (func.parameters[i].lastPredictedType == PredictedType.Unknown)
-                                func.parameters[i].lastPredictedType = _arguments[i].ResultType;
-                            else if (Tools.CompareWithMask(func.parameters[i].lastPredictedType, _arguments[i].ResultType, PredictedType.Group) != 0)
-                                func.parameters[i].lastPredictedType = PredictedType.Ambiguous;
+                            if (func._parameters[i].lastPredictedType == PredictedType.Unknown)
+                                func._parameters[i].lastPredictedType = _arguments[i].ResultType;
+                            else if (Tools.CompareWithMask(func._parameters[i].lastPredictedType, _arguments[i].ResultType, PredictedType.Group) != 0)
+                                func._parameters[i].lastPredictedType = PredictedType.Ambiguous;
                         }
                     }
                 }

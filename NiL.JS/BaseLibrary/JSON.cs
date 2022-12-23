@@ -511,7 +511,7 @@ namespace NiL.JS.BaseLibrary
                     if (value._valueType < JSValueType.Undefined)
                         continue;
 
-                    value = Tools.InvokeGetter(value, obj);
+                    value = Tools.GetPropertyOrValue(value, obj);
                     stringValue = stringifyImpl(member.Key, value, replacer, null, space, processed, args);
 
                     if (stringValue == null)

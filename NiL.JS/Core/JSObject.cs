@@ -285,7 +285,7 @@ namespace NiL.JS.Core
                     return field.DeleteProperty(key);
             }
 
-            string tname = null;
+            string tname;
             if (_fields != null
                 && _fields.TryGetValue(tname = key.ToString(), out field)
                 && (!field.Exists || (field._attributes & JSValueAttributesInternal.DoNotDelete) == 0))
@@ -309,6 +309,7 @@ namespace NiL.JS.Core
                 field._oValue = null;
                 return true;
             }
+
             return false;
         }
 
@@ -395,27 +396,27 @@ namespace NiL.JS.Core
                         ExceptionHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
                     var value = desc["value"];
                     if (value._valueType == JSValueType.Property)
-                        value = Tools.InvokeGetter(value, desc);
+                        value = Tools.GetPropertyOrValue(value, desc);
 
                     var configurable = desc["configurable"];
                     if (configurable._valueType == JSValueType.Property)
-                        configurable = Tools.InvokeGetter(configurable, desc);
+                        configurable = Tools.GetPropertyOrValue(configurable, desc);
 
                     var enumerable = desc["enumerable"];
                     if (enumerable._valueType == JSValueType.Property)
-                        enumerable = Tools.InvokeGetter(enumerable, desc);
+                        enumerable = Tools.GetPropertyOrValue(enumerable, desc);
 
                     var writable = desc["writable"];
                     if (writable._valueType == JSValueType.Property)
-                        writable = Tools.InvokeGetter(writable, desc);
+                        writable = Tools.GetPropertyOrValue(writable, desc);
 
                     var get = desc["get"];
                     if (get._valueType == JSValueType.Property)
-                        get = Tools.InvokeGetter(get, desc);
+                        get = Tools.GetPropertyOrValue(get, desc);
 
                     var set = desc["set"];
                     if (set._valueType == JSValueType.Property)
-                        set = Tools.InvokeGetter(set, desc);
+                        set = Tools.GetPropertyOrValue(set, desc);
 
                     if (value.Exists && (get.Exists || set.Exists))
                         ExceptionHelper.Throw(new TypeError("Property can not have getter or setter and default value."));
@@ -531,27 +532,27 @@ namespace NiL.JS.Core
         {
             var value = desc["value"];
             if (value._valueType == JSValueType.Property)
-                value = Tools.InvokeGetter(value, desc);
+                value = Tools.GetPropertyOrValue(value, desc);
 
             var configurable = desc["configurable"];
             if (configurable._valueType == JSValueType.Property)
-                configurable = Tools.InvokeGetter(configurable, desc);
+                configurable = Tools.GetPropertyOrValue(configurable, desc);
 
             var enumerable = desc["enumerable"];
             if (enumerable._valueType == JSValueType.Property)
-                enumerable = Tools.InvokeGetter(enumerable, desc);
+                enumerable = Tools.GetPropertyOrValue(enumerable, desc);
 
             var writable = desc["writable"];
             if (writable._valueType == JSValueType.Property)
-                writable = Tools.InvokeGetter(writable, desc);
+                writable = Tools.GetPropertyOrValue(writable, desc);
 
             var get = desc["get"];
             if (get._valueType == JSValueType.Property)
-                get = Tools.InvokeGetter(get, desc);
+                get = Tools.GetPropertyOrValue(get, desc);
 
             var set = desc["set"];
             if (set._valueType == JSValueType.Property)
-                set = Tools.InvokeGetter(set, desc);
+                set = Tools.GetPropertyOrValue(set, desc);
 
             if (value.Exists && (get.Exists || set.Exists))
                 ExceptionHelper.Throw(new TypeError("Property can not have getter or setter and default value."));

@@ -64,7 +64,7 @@ namespace NiL.JS.Expressions
                 for (var i = 0; i < targetMap.Properties.Length; i++, j++)
                 {
                     values[j] =
-                        Tools.InvokeGetter(
+                        Tools.GetPropertyOrValue(
                             source.GetProperty(
                                 targetMap.Properties[i].Key.Evaluate(_context),
                                 false,

@@ -40,7 +40,11 @@ namespace NiL.JS.Core
         private _LengthContainer _lengthContainer;
         internal bool _suppressClone;
 
-        public int Length => _iValue;
+        public int Length
+        {
+            get => _iValue;
+            internal set => _iValue = value;
+        }
 
         public JSValue this[int index]
         {

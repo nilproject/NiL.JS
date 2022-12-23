@@ -82,15 +82,15 @@ namespace NiL.JS.Expressions
         #endregion
 
         internal readonly FunctionInfo _functionInfo;
-        internal ParameterDescriptor[] parameters;
+        internal ParameterDescriptor[] _parameters;
         internal CodeBlock _body;
-        internal FunctionKind kind;
+        internal FunctionKind _kind;
 #if DEBUG
         internal bool trace;
 #endif
 
         public CodeBlock Body { get { return _body; } }
-        public ReadOnlyCollection<ParameterDescriptor> Parameters { get { return new ReadOnlyCollection<ParameterDescriptor>(parameters); } }
+        public ReadOnlyCollection<ParameterDescriptor> Parameters { get { return new ReadOnlyCollection<ParameterDescriptor>(_parameters); } }
 
         protected internal override bool NeedDecompose
         {
@@ -125,8 +125,8 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return kind != FunctionKind.Arrow
-                    && kind != FunctionKind.AsyncArrow;
+                return _kind != FunctionKind.Arrow
+                    && _kind != FunctionKind.AsyncArrow;
             }
         }
 
@@ -134,7 +134,7 @@ namespace NiL.JS.Expressions
         {
             get
             {
-                return kind;
+                return _kind;
             }
         }
 
@@ -160,7 +160,7 @@ namespace NiL.JS.Expressions
         internal FunctionDefinition()
             : this("anonymous")
         {
-            parameters = new ParameterDescriptor[0];
+            _parameters = new ParameterDescriptor[0];
             _body = new CodeBlock(new CodeNode[0])
             {
                 _strict = true,
@@ -401,7 +401,7 @@ namespace NiL.JS.Expressions
                     {
                         body = new CodeBlock(new CodeNode[]
                         {
-                            new Return(ExpressionTree.Parse(state, ref position, processComma: false) as Expression)
+                            new Return(ExpressionTree.Parse(state, ref position, processComma: false))
                         })
                         {
                             _variables = new VariableDescriptor[0]
@@ -494,9 +494,9 @@ namespace NiL.JS.Expressions
 
             var func = new FunctionDefinition(name)
             {
-                parameters = parameters.ToArray(),
+                _parameters = parameters.ToArray(),
                 _body = body,
-                kind = kind,
+                _kind = kind,
                 Position = index,
                 Length = position - index,
 #if DEBUG
@@ -631,10 +631,10 @@ namespace NiL.JS.Expressions
 
         protected internal override CodeNode[] GetChildrenImpl()
         {
-            var res = new CodeNode[1 + parameters.Length + (Reference != null ? 1 : 0)];
-            for (var i = 0; i < parameters.Length; i++)
-                res[i] = parameters[i].references[0];
-            res[parameters.Length] = _body;
+            var res = new CodeNode[1 + _parameters.Length + (Reference != null ? 1 : 0)];
+            for (var i = 0; i < _parameters.Length; i++)
+                res[i] = _parameters[i].references[0];
+            res[_parameters.Length] = _body;
 
             if (Reference != null)
                 res[res.Length - 1] = Reference;
@@ -659,10 +659,10 @@ namespace NiL.JS.Expressions
         /// <returns></returns>
         public Function MakeFunction(Context context)
         {
-            if (kind == FunctionKind.Generator || kind == FunctionKind.MethodGenerator || kind == FunctionKind.AnonymousGenerator)
+            if (_kind == FunctionKind.Generator || _kind == FunctionKind.MethodGenerator || _kind == FunctionKind.AnonymousGenerator)
                 return new GeneratorFunction(context, this);
 
-            if (kind == FunctionKind.AsyncFunction || kind == FunctionKind.AsyncAnonymousFunction || kind == FunctionKind.AsyncArrow || kind == FunctionKind.AsyncMethod)
+            if (_kind == FunctionKind.AsyncFunction || _kind == FunctionKind.AsyncAnonymousFunction || _kind == FunctionKind.AsyncArrow || _kind == FunctionKind.AsyncMethod)
                 return new AsyncFunction(context, this);
 
             if (_body != null)
@@ -695,7 +695,7 @@ namespace NiL.JS.Expressions
 
         public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
         {
-            if (_body.built)
+            if (_body._built)
                 return false;
 
             if (stats != null)
@@ -718,13 +718,13 @@ namespace NiL.JS.Expressions
             }
 
             VariableDescriptor descriptorToRestore = null;
-            if (!string.IsNullOrEmpty(_name) && kind is FunctionKind.Function or FunctionKind.Generator or FunctionKind.AsyncFunction)
+            if (!string.IsNullOrEmpty(_name) && _kind is FunctionKind.Function or FunctionKind.Generator or FunctionKind.AsyncFunction)
             {
                 variables.TryGetValue(_name, out descriptorToRestore);
                 variables[_name] = reference._descriptor;
             }
 
-            _functionInfo.ContainsRestParameters = parameters.Length > 0 && parameters[parameters.Length - 1].IsRest;
+            _functionInfo.ContainsRestParameters = _parameters.Length > 0 && _parameters[_parameters.Length - 1].IsRest;
 
             var bodyCode = _body as CodeNode;
             bodyCode.Build(
@@ -742,10 +742,10 @@ namespace NiL.JS.Expressions
 
             if (message != null)
             {
-                for (var i = parameters.Length; i-- > 0;)
+                for (var i = _parameters.Length; i-- > 0;)
                 {
-                    if (parameters[i].ReferenceCount == 1)
-                        message(MessageLevel.Recomendation, parameters[i].references[0].Position, 0, "Unused parameter \"" + parameters[i].name + "\"");
+                    if (_parameters[i].ReferenceCount == 1)
+                        message(MessageLevel.Recomendation, _parameters[i].references[0].Position, 0, "Unused parameter \"" + _parameters[i].name + "\"");
                     else
                         break;
                 }
@@ -770,7 +770,7 @@ namespace NiL.JS.Expressions
             {
                 variables[descriptorToRestore.name] = descriptorToRestore;
             }
-            else if (!string.IsNullOrEmpty(_name) && (kind == FunctionKind.Function || kind == FunctionKind.Generator))
+            else if (!string.IsNullOrEmpty(_name) && (_kind == FunctionKind.Function || _kind == FunctionKind.Generator))
             {
                 variables.Remove(_name);
             }
@@ -811,7 +811,7 @@ namespace NiL.JS.Expressions
                         if (message != null
                             && _functionInfo.ResultType >= PredictedType.Undefined
                             && _functionInfo.Returns[i].ResultType >= PredictedType.Undefined)
-                            message(MessageLevel.Warning, parameters[i].references[0].Position, 0, "Type of return value is ambiguous");
+                            message(MessageLevel.Warning, _parameters[i].references[0].Position, 0, "Type of return value is ambiguous");
                         break;
                     }
                 }
@@ -886,7 +886,7 @@ namespace NiL.JS.Expressions
         internal string ToString(bool headerOnly)
         {
             StringBuilder code = new StringBuilder();
-            switch (kind)
+            switch (_kind)
             {
                 case FunctionKind.Generator:
                 {
@@ -931,20 +931,20 @@ namespace NiL.JS.Expressions
             code.Append(_name)
                 .Append("(");
 
-            if (parameters != null)
-                for (int i = 0; i < parameters.Length;)
-                    code.Append(parameters[i])
-                        .Append(++i < parameters.Length ? "," : "");
+            if (_parameters != null)
+                for (int i = 0; i < _parameters.Length;)
+                    code.Append(_parameters[i])
+                        .Append(++i < _parameters.Length ? "," : "");
 
             code.Append(")");
 
             if (!headerOnly)
             {
                 code.Append(" ");
-                if (kind == FunctionKind.Arrow)
+                if (_kind == FunctionKind.Arrow)
                     code.Append("=> ");
 
-                if (kind == FunctionKind.Arrow
+                if (_kind == FunctionKind.Arrow
                     && _body._lines.Length == 1
                     && _body.Position == _body._lines[0].Position)
                     code.Append(_body._lines[0].Children[0].ToString());

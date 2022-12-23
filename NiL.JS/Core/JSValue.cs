@@ -948,7 +948,7 @@ namespace NiL.JS.Core
 
                 JSValue res = null;
 
-                var tpvs = Tools.InvokeGetter(GetProperty(func0), this);
+                var tpvs = Tools.GetPropertyOrValue(GetProperty(func0), this);
                 if (tpvs._valueType == JSValueType.Function)
                 {
                     res = (tpvs._oValue as Function).Call(this, null);
@@ -964,7 +964,7 @@ namespace NiL.JS.Core
 
                 if (func1 != null)
                 {
-                    tpvs = Tools.InvokeGetter(GetProperty(func1), this);
+                    tpvs = Tools.GetPropertyOrValue(GetProperty(func1), this);
                     if (tpvs._valueType == JSValueType.Function)
                     {
                         res = (tpvs._oValue as Function).Call(this, null);
@@ -1105,7 +1105,7 @@ namespace NiL.JS.Core
                     var tag = self.GetProperty(Symbol.toStringTag, false, PropertyScope.Common);
                     if (tag.Defined)
                     {
-                        return $"[object {Tools.InvokeGetter(tag, self)}]";
+                        return $"[object {Tools.GetPropertyOrValue(tag, self)}]";
                     }
 
                     if (self._oValue is Proxy)

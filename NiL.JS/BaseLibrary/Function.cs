@@ -125,7 +125,7 @@ namespace NiL.JS.BaseLibrary
                         | JSValueAttributesInternal.DoNotEnumerate
                         | JSValueAttributesInternal.NonConfigurable
                     };
-                    _length._iValue = _functionDefinition.parameters.Length;
+                    _length._iValue = _functionDefinition._parameters.Length;
                 }
 
                 return _length;
@@ -156,7 +156,7 @@ namespace NiL.JS.BaseLibrary
             [Hidden]
             get
             {
-                return _functionDefinition.kind;
+                return _functionDefinition._kind;
             }
         }
 
@@ -564,15 +564,15 @@ namespace NiL.JS.BaseLibrary
                 {
                     _caller = oldContext != null ? oldContext._owner : null,
                     _callee = this,
-                    _iValue = _functionDefinition.parameters.Length
+                    _iValue = _functionDefinition._parameters.Length
                 };
 
-                for (var i = 0; i < _functionDefinition.parameters.Length; i++)
+                for (var i = 0; i < _functionDefinition._parameters.Length; i++)
                 {
                     if (_functionDefinition._body._strict)
-                        args[i] = _functionDefinition.parameters[i].cacheRes.CloneImpl(false);
+                        args[i] = _functionDefinition._parameters[i].cacheRes.CloneImpl(false);
                     else
-                        args[i] = _functionDefinition.parameters[i].cacheRes;
+                        args[i] = _functionDefinition._parameters[i].cacheRes;
                 }
 
                 context._arguments = args;
@@ -603,7 +603,7 @@ namespace NiL.JS.BaseLibrary
             internalContext._thisBind = targetObject;
             internalContext._strict |= _functionDefinition._body._strict;
 
-            if (_functionDefinition.kind == FunctionKind.Arrow)
+            if (_functionDefinition._kind == FunctionKind.Arrow)
             {
                 internalContext._arguments = internalContext._parent._arguments;
                 internalContext._thisBind = internalContext._parent._thisBind;
@@ -637,7 +637,7 @@ namespace NiL.JS.BaseLibrary
         internal void initParameters(Arguments args, bool storeVariablesIntoContext, Context internalContext)
         {
             storeVariablesIntoContext |= _functionDefinition._functionInfo.ContainsArguments;
-            int min = System.Math.Min(args._iValue, _functionDefinition.parameters.Length - (_functionDefinition._functionInfo.ContainsRestParameters ? 1 : 0));
+            int min = System.Math.Min(args._iValue, _functionDefinition._parameters.Length - (_functionDefinition._functionInfo.ContainsRestParameters ? 1 : 0));
 
             JSValue[] defaultValues = null;
             Array restArray = null;
@@ -646,16 +646,16 @@ namespace NiL.JS.BaseLibrary
                 restArray = new Array();
             }
 
-            for (var i = 0; i < _functionDefinition.parameters.Length; i++)
+            for (var i = 0; i < _functionDefinition._parameters.Length; i++)
             {
                 JSValue t = args[i];
-                var prm = _functionDefinition.parameters[i];
+                var prm = _functionDefinition._parameters[i];
                 if (!t.Defined)
                 {
                     if (prm.initializer != null)
                     {
                         if (defaultValues == null)
-                            defaultValues = new JSValue[_functionDefinition.parameters.Length];
+                            defaultValues = new JSValue[_functionDefinition._parameters.Length];
                         defaultValues[i] = prm.initializer.Evaluate(internalContext);
                     }
                 }
@@ -664,7 +664,7 @@ namespace NiL.JS.BaseLibrary
             for (var i = 0; i < min; i++)
             {
                 JSValue t = args[i];
-                var prm = _functionDefinition.parameters[i];
+                var prm = _functionDefinition._parameters[i];
                 if (!t.Defined)
                 {
                     if (prm.initializer != null)
@@ -720,9 +720,9 @@ namespace NiL.JS.BaseLibrary
                 }
             }
 
-            for (var i = min; i < _functionDefinition.parameters.Length; i++)
+            for (var i = min; i < _functionDefinition._parameters.Length; i++)
             {
-                var parameter = _functionDefinition.parameters[i];
+                var parameter = _functionDefinition._parameters[i];
                 if (parameter.initializer != null)
                 {
                     if (storeVariablesIntoContext || parameter.assignments != null)
@@ -792,13 +792,13 @@ namespace NiL.JS.BaseLibrary
 
         internal void storeParameters()
         {
-            if (_functionDefinition.parameters.Length != 0)
+            if (_functionDefinition._parameters.Length != 0)
             {
-                var context = _functionDefinition.parameters[0].cacheContext;
+                var context = _functionDefinition._parameters[0].cacheContext;
                 if (context._variables == null)
                     context._variables = getFieldsContainer();
-                for (var i = 0; i < _functionDefinition.parameters.Length; i++)
-                    context._variables[_functionDefinition.parameters[i].Name] = _functionDefinition.parameters[i].cacheRes;
+                for (var i = 0; i < _functionDefinition._parameters.Length; i++)
+                    context._variables[_functionDefinition._parameters[i].Name] = _functionDefinition._parameters[i].cacheRes;
             }
         }
 

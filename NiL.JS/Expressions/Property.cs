@@ -98,7 +98,7 @@ namespace NiL.JS.Expressions
                 }
                 else if (res._valueType == JSValueType.Property)
                 {
-                    res = Tools.InvokeGetter(res, source);
+                    res = Tools.GetPropertyOrValue(res, source);
                 }
             }
 

@@ -494,7 +494,7 @@ namespace NiL.JS.Expressions
                 }
                 else
                 {
-                    ctor.prototype.__proto__ = Tools.InvokeGetter(baseProto.GetProperty("prototype"), baseProto)._oValue as JSObject;
+                    ctor.prototype.__proto__ = Tools.GetPropertyOrValue(baseProto.GetProperty("prototype"), baseProto)._oValue as JSObject;
                 }
 
                 ctor.__proto__ = baseProto as JSObject;
