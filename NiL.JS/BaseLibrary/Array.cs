@@ -1544,9 +1544,9 @@ namespace NiL.JS.BaseLibrary
 
                 var delta = System.Math.Max(0, args._iValue - 2) - (pos1 - pos0);
 
-                foreach (var node in (delta > 0 ? selfa._data.ReversOrder : selfa._data.DirectOrder))
+                foreach (var node in (delta > 0 ? selfa._data.KeysReversOrder : selfa._data.KeysDirectOrder))
                 {
-                    var key = node.Key;
+                    var key = node;
 
                     if (key < pos0)
                         continue;
@@ -1554,7 +1554,7 @@ namespace NiL.JS.BaseLibrary
                     if (key >= pos1 && delta == 0)
                         break;
 
-                    var value = node.Value;
+                    ref var value = ref selfa._data.GetExistent(key);
 
                     if (value == null || !value.Exists)
                     {
@@ -1583,7 +1583,7 @@ namespace NiL.JS.BaseLibrary
                             t = value;
                         }
 
-                        selfa._data[key] = null;
+                        value = null;
                     }
                 }
 

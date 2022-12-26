@@ -28,8 +28,8 @@ namespace NiL.JS.Core
             }
         }
 
+        private readonly bool _isClass = typeof(TValue).IsClass;
         private const int _flatSizeLimit = 32;
-        private static readonly _NavyItem[] _emptyNavyData = new _NavyItem[0]; // data dummy. In cases where instance of current class was created, but not used
         private static readonly TValue[] _emptyData = new TValue[0];
 
         private ArrayMode _mode;
@@ -60,14 +60,14 @@ namespace NiL.JS.Core
         {
             _mode = arrayMode;
             _values = _emptyData;
-            _navyData = _emptyNavyData;
+            _navyData = Array.Empty<_NavyItem>();
         }
 
         public SparseArray(int capacity)
         {
             _mode = ArrayMode.Flat;
             _values = _emptyData;
-            _navyData = _emptyNavyData;
+            _navyData = Array.Empty<_NavyItem>();
             if (capacity > 0)
                 EnsureCapacity(capacity);
         }
@@ -76,7 +76,7 @@ namespace NiL.JS.Core
         {
             _mode = ArrayMode.Flat;
             this._values = values;
-            _navyData = _emptyNavyData;
+            _navyData = Array.Empty<_NavyItem>();
             _usedCount = (_pseudoLength = (uint)values.Length);
         }
 
@@ -257,23 +257,18 @@ namespace NiL.JS.Core
             }
             set
             {
-                //if (_mode == ArrayMode.Sparse && _pseudoLength == _usedCount)
-                //{
-                //    RebuildToFlat();
-                //}
+                bool isDefault = value is null; // структуры мы будем записывать, иначе пришлось бы вызывать тяжелые операции сравнения.
 
-                bool @default = value == null; // структуры мы будем записывать, иначе пришлось бы вызывать тяжелые операции сравнения.
-                //if (navyData.Length <= allocatedCount)
-                //    ensureCapacity(navyData.Length * 2);
                 uint unsignedIndex = (uint)index;
                 if (_mode == ArrayMode.Flat)
                 {
                     if (index < 0 || index > _pseudoLength)
                     {
-                        if (@default)
+                        if (isDefault)
                         {
                             if (unsignedIndex >= _pseudoLength)
                                 _pseudoLength = unsignedIndex + 1;
+
                             return;
                         }
 
@@ -294,9 +289,11 @@ namespace NiL.JS.Core
                     else
                     {
                         if (_values.Length <= index)
-                            EnsureCapacity(Math.Max(index + 1, _values.Length * 2));
+                            EnsureCapacity(index + 1);
+
                         if (_pseudoLength == index)
                             _pseudoLength = unsignedIndex + 1;
+                        
                         _values[index] = value;
                         return;
                     }
@@ -334,7 +331,7 @@ namespace NiL.JS.Core
                 {
                     if (_navyData[i].index > unsignedIndex)
                     {
-                        if (@default)
+                        if (isDefault)
                         {
                             if (_pseudoLength <= unsignedIndex)
                                 _pseudoLength = unsignedIndex + 1; // длина может быть меньше
@@ -372,7 +369,7 @@ namespace NiL.JS.Core
                             if (_pseudoLength <= unsignedIndex)
                                 _pseudoLength = unsignedIndex + 1;
 
-                            if (@default)
+                            if (isDefault)
                                 return;
 
                             if (b)
@@ -587,7 +584,7 @@ namespace NiL.JS.Core
             return findNearest(index, false);
         }
 
-        public IEnumerable<KeyValuePair<int, TValue>> DirectOrder
+        public IEnumerable<int> KeysDirectOrder
         {
             get
             {
@@ -600,11 +597,11 @@ namespace NiL.JS.Core
                         skipFirst = true;
                         if (i >= _values.Length) // была насильно установлена длина фиктивным элементом.
                         {
-                            yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
+                            yield return (int)(_pseudoLength - 1);
                             yield break;
                         }
 
-                        yield return new KeyValuePair<int, TValue>(i, _values[i]);
+                        yield return i;
 
                         if (_mode != ArrayMode.Flat)
                         {
@@ -620,12 +617,12 @@ namespace NiL.JS.Core
                     {
                         if (!skipFirst)
                         {
-                            yield return new KeyValuePair<int, TValue>(0, _values[0]);
+                            yield return 0;
                         }
                     }
                     else
                     {
-                        yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
+                        yield return (int)(_pseudoLength - 1);
                         yield break;
                     }
 
@@ -637,7 +634,7 @@ namespace NiL.JS.Core
                             break;
 
                         if (index > 0)
-                            yield return new KeyValuePair<int, TValue>((int)index, this[(int)index]);
+                            yield return (int)index;
 
                         index++;
                     }
@@ -645,7 +642,9 @@ namespace NiL.JS.Core
             }
         }
 
-        public IEnumerable<KeyValuePair<int, TValue>> ReversOrder
+        public IEnumerable<KeyValuePair<int, TValue>> DirectOrder => KeysDirectOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
+
+        public IEnumerable<int> KeysReversOrder
         {
             get
             {
@@ -653,7 +652,7 @@ namespace NiL.JS.Core
                 if (_mode == ArrayMode.Flat)
                 {
                     if (_pseudoLength > _values.Length)
-                        yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default(TValue));
+                        yield return (int)(_pseudoLength - 1);
 
                     for (var i = Math.Min(_values.Length, _pseudoLength); i-- > 0;)
                     {
@@ -662,7 +661,7 @@ namespace NiL.JS.Core
                             index = i;
                             break;
                         }
-                        yield return new KeyValuePair<int, TValue>((int)i, _values[i]);
+                        yield return (int)i;
                     }
                 }
                 if (_mode == ArrayMode.Sparse)
@@ -678,18 +677,20 @@ namespace NiL.JS.Core
                             break;
 
                         if (index > 0)
-                            yield return new KeyValuePair<int, TValue>((int)index, this[(int)index]);
+                            yield return (int)index;
 
                         index--;
                     }
 
                     if (_zeroExists)
-                        yield return new KeyValuePair<int, TValue>(0, _values[0]);
+                        yield return 0;
                 }
             }
         }
 
-        public ICollection<int> Keys => this.DirectOrder.Select(x => x.Key).ToList();
+        public IEnumerable<KeyValuePair<int, TValue>> ReversOrder => KeysReversOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
+
+        public ICollection<int> Keys => this.KeysDirectOrder.ToList();
 
         public ICollection<TValue> Values => this.DirectOrder.Select(x => x.Value).ToList();
 
@@ -720,18 +721,21 @@ namespace NiL.JS.Core
                         len = _navyData[i].index;
                 }
             }
+
             _pseudoLength = (uint)(len + 1);
         }
 
-        public void EnsureCapacity(int p)
+        public void EnsureCapacity(int capacity)
         {
-            p = Math.Max(4, p);
-            if (_values.Length >= p)
+            capacity = Math.Max(4, capacity);
+            if (_values.Length >= capacity)
                 return;
 
-            p = 2 << NumberUtils.IntLog(p);
+            var newCapacity = 1 << NumberUtils.IntLog(capacity);
+            if (newCapacity < capacity)
+                newCapacity <<= 1;
 
-            var newValues = new TValue[p];
+            var newValues = new TValue[newCapacity];
             for (var i = 0; i < _values.Length; i++)
                 newValues[i] = _values[i];
 
@@ -739,7 +743,7 @@ namespace NiL.JS.Core
 
             if (_mode == ArrayMode.Sparse)
             {
-                var newData = new _NavyItem[p];
+                var newData = new _NavyItem[newCapacity];
                 for (var i = 0; i < _navyData.Length; i++)
                     newData[i] = _navyData[i];
                 _navyData = newData;
@@ -776,7 +780,7 @@ namespace NiL.JS.Core
 
             _mode = ArrayMode.Flat;
             _values = newValues;
-            _navyData = _emptyNavyData;
+            _navyData = Array.Empty<_NavyItem>();
         }
 
         public void Add(int key, TValue value)
