@@ -54,7 +54,7 @@ jobs:
     - name: Run TinyT4
       run: |
         cd Tests
-        dotnet run --project ..\Utility\tiny-t4\ --framework net6.0
+        dotnet run --project ..\Utility\tiny-t4\ --framework net7.0
 
     - name: Test .NET Core 3.1
       run: |
