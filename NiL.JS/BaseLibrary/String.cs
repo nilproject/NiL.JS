@@ -636,15 +636,22 @@ namespace NiL.JS.BaseLibrary
 
             if (pos0 < 0)
                 pos0 += selfStr.Length;
+
             if (pos1 < 0)
                 pos1 += selfStr.Length;
+            
             pos0 = System.Math.Min(System.Math.Max(0, pos0), selfStr.Length);
             pos1 = System.Math.Min(System.Math.Max(0, pos1), selfStr.Length);
 
             if (pos0 >= pos1)
                 return string.Empty;
 
-            return selfStr.Substring(pos0, pos1 - pos0);
+            var subStrLen = pos1 - pos0;
+
+            if (pos0 == 0 && subStrLen == selfStr.Length)
+                return selfStr;
+
+            return selfStr.Substring(pos0, subStrLen);
         }
 
         [DoNotEnumerate]
@@ -788,7 +795,12 @@ namespace NiL.JS.BaseLibrary
             pos0 = System.Math.Max(0, System.Math.Min(pos0, selfStr.Length));
             pos1 = System.Math.Max(0, System.Math.Min(pos1, selfStr.Length));
 
-            return selfStr.Substring(pos0, System.Math.Min(selfStr.Length, System.Math.Max(0, pos1 - pos0)));
+            var subStrLen = System.Math.Min(selfStr.Length, System.Math.Max(0, pos1 - pos0));
+
+            if (subStrLen == selfStr.Length && pos0 == 0)
+                return selfStr;
+
+            return selfStr.Substring(pos0, subStrLen);
         }
 
         [DoNotEnumerate]
@@ -816,6 +828,9 @@ namespace NiL.JS.BaseLibrary
 
             if (selfStr.Length < start + length)
                 length = selfStr.Length - start;
+
+            if (start == 0 && length == selfStr.Length)
+                return selfStr;
 
             return selfStr.Substring(start, length);
         }
@@ -938,7 +953,8 @@ namespace NiL.JS.BaseLibrary
         public override bool Equals(object obj)
         {
             if (obj is String)
-                return _oValue.Equals((obj as String)._oValue);
+                return _oValue.ToString().Equals((obj as String)._oValue.ToString());
+
             return false;
         }
 

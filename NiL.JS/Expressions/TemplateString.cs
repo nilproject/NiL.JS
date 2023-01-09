@@ -163,7 +163,7 @@ namespace NiL.JS.Expressions
                 if (Mode == TemplateStringMode.Regular)
                     result.Append(strings[i]);
                 else
-                    stringsArray.Add(strings[i].Replace(@"\", @"\\"));
+                    stringsArray[i] = strings[i].Replace(@"\", @"\\");
             }
 
             if (Mode == TemplateStringMode.Regular)

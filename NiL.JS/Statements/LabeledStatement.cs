@@ -51,7 +51,7 @@ namespace NiL.JS.Statements
         public override JSValue Evaluate(Context context)
         {
             var res = statement.Evaluate(context);
-            if ((context._executionMode == ExecutionMode.Break) && (context._executionInfo != null) && (context._executionInfo._oValue as string == label))
+            if ((context._executionMode == ExecutionMode.Break) && (context._executionInfo != null) && (context._executionInfo._oValue.ToString() == label))
             {
                 context._executionMode = ExecutionMode.Regular;
                 context._executionInfo = JSValue.notExists;

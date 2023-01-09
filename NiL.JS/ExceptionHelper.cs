@@ -139,9 +139,9 @@ namespace NiL.JS
 
         internal static JsStackFrame GetStackFrame(Context context, bool newStackFrame)
         {
-            if (newStackFrame
-                || _executionStack == null
-                || _executionStack.Context != context)
+            if (_executionStack == null
+                || _executionStack.Context != context
+                || newStackFrame)
             {
                 _executionStack = new JsStackFrame
                 {

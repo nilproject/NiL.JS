@@ -154,7 +154,7 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        internal bool SetLenght(long nlen)
+        internal bool SetLength(long nlen)
         {
             if (_data.Length == nlen)
                 return true;
@@ -177,7 +177,7 @@ namespace NiL.JS.BaseLibrary
                 }
                 if (!res)
                 {
-                    SetLenght(nlen + 1);
+                    SetLength(nlen + 1);
                     return false;
                 }
             }
@@ -595,7 +595,7 @@ namespace NiL.JS.BaseLibrary
                 return true;
             });
 
-            result.SetLenght(len);
+            result.SetLength(len);
 
             return result;
         }
@@ -640,12 +640,12 @@ namespace NiL.JS.BaseLibrary
                     callback(item, index++, args[2], simpleFunction ? Function.Empty : args[1].As<ICallable>());
                 }
 
-                result.SetLenght(index);
+                result.SetLength(index);
             }
             else
             {
                 var len = iterateImpl(arrayLike, args[1], args[2], undefined, undefined, false, callback);
-                result.SetLenght(len);
+                result.SetLength(len);
             }
 
             return result;
@@ -1161,12 +1161,15 @@ namespace NiL.JS.BaseLibrary
             {
                 if (selfa._data.Length == 0)
                     return notExists;
+
                 int newLen = (int)(selfa._data.Length - 1);
                 var res = selfa._data[newLen] ?? self[newLen.ToString()];
+
                 if (res._valueType == JSValueType.Property)
                     res = ((res._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null);
+                
                 selfa._data.RemoveAt(newLen);
-                selfa._data[newLen - 1] = selfa._data[newLen - 1];
+                
                 return res;
             }
             else
@@ -1174,19 +1177,24 @@ namespace NiL.JS.BaseLibrary
                 var length = Tools.getLengthOfArraylike(self, true);
                 if (length <= 0 || length > uint.MaxValue)
                     return notExists;
+
                 length--;
                 var tres = self.GetProperty(length.ToString(), true, PropertyScope.Common);
                 JSValue res;
+                
                 if (tres._valueType == JSValueType.Property)
                     res = ((tres._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null);
                 else
                     res = tres.CloneImpl(false);
+                
                 if ((tres._attributes & JSValueAttributesInternal.DoNotDelete) == 0)
                 {
                     tres._oValue = null;
                     tres._valueType = JSValueType.NotExistsInObject;
                 }
+                
                 self["length"] = length;
+                
                 return res;
             }
         }
@@ -1207,9 +1215,11 @@ namespace NiL.JS.BaseLibrary
                         {
                             if (selfa._fields == null)
                                 selfa._fields = getFieldsContainer();
+
                             selfa._fields[uint.MaxValue.ToString()] = args[0].CloneImpl(false);
                             ExceptionHelper.Throw(new RangeError("Invalid length of array"));
                         }
+
                         selfa._data.Add(args[i].CloneImpl(false));
                     }
                 }
@@ -2006,7 +2016,7 @@ namespace NiL.JS.BaseLibrary
             nestedArgs[1] = nestedArgs[0];
 
             nestedArgs.Length = args.Length + 2;
-            for (var i = 0; i < args._iValue; i++)
+            for (var i = 0; i < args.Length; i++)
                 nestedArgs[i + 2] = args[i];
 
             spliceImpl(self, nestedArgs, false, out _);
@@ -2343,7 +2353,7 @@ namespace NiL.JS.BaseLibrary
                 if ((_attributes & JSValueAttributesInternal.ReadOnly) != 0)
                     return;
 
-                array.SetLenght(nlen);
+                array.SetLength(nlen);
 
                 if ((int)array._data.Length == array._data.Length)
                 {

@@ -219,7 +219,7 @@ namespace NiL.JS.Statements
                     {
                         if (_executionMode < ExecutionMode.Return)
                         {
-                            var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue as string) != -1;
+                            var me = context._executionInfo == null || System.Array.IndexOf(labels, context._executionInfo._oValue.ToString()) != -1;
                             var _break = _executionMode > ExecutionMode.Continue || !me;
                             if (me)
                             {
