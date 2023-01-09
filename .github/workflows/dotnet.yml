@@ -22,10 +22,10 @@ jobs:
       with:
         submodules: true
         
-    - name: Install .NET Core 6.0
+    - name: Install .NET Core 7.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
         
     - name: Install .NET Core 3.1
       uses: actions/setup-dotnet@v1
@@ -61,10 +61,10 @@ jobs:
         cd Tests
         dotnet test -c Release -property:TargetFramework=netcoreapp3.1 -property:SignAssembly=false -property:PublicSign=false
 
-    - name: Test .NET Core 6.0
+    - name: Test .NET Core 7.0
       run: |
         cd Tests
-        dotnet test -c Release -property:TargetFramework=net6.0 -property:SignAssembly=false -property:PublicSign=false
+        dotnet test -c Release -property:TargetFramework=net7.0 -property:SignAssembly=false -property:PublicSign=false
 
     - name: Test .NET Framework 4.6.1
       run: |
