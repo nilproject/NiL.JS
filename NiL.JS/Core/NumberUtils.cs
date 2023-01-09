@@ -694,9 +694,10 @@ namespace NiL.JS.Core
                 o = (v >> 60) & 0xf;
             }
         }
-
         private static void numStrSum(ulong[] left, ulong[] rigth, ref ulong[] output)
         {
+            const ulong Mask8 = 0x8888_8888_8888_8888;
+
             var leftLen = left.Length;
             int rightLen = rigth.Length;
             var len = Math.Max(leftLen, rightLen);
@@ -712,27 +713,22 @@ namespace NiL.JS.Core
                 l += go;
                 go = 0;
 
-                do
+                var el = l;
+                l += r;
+                var o = ((el | r) & ~l & Mask8) >> 3;
+                l += o * 6;
+                r = l;
+                go |= (uint)(o >> 60);
+                for (; ; )
                 {
-                    var el = l & 0x8888_8888_8888_8888;
-                    var er = r & 0x8888_8888_8888_8888;
-                    l += r;
-                    var o = ((el | er) & ~l) >> 3;
-                    r = o * 6;
-                    go |= (uint)(o >> 60);
-                    for (; ; )
-                    {
-                        o = l & (l << 1 | l << 2) & 0x8888888888888888;
-                        if (o == 0)
-                            break;
-                        o >>= 3;
+                    o = ((l & Mask8) >> 2) & (l >> 1 | l);
+                    if (o == 0)
+                        break;
 
-                        l -= o * 10;
-                        l += o << 4;
-                        go |= (uint)(o >> 60);
-                    }
+                    l += o * 3;
                 }
-                while (r != 0);
+
+                go |= (uint)((r & ~l) >> 63);
 
                 output[i] = l;
 

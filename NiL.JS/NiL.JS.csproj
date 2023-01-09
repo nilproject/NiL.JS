@@ -4,7 +4,7 @@
     <Description>ECMAScript 6 (ES2015) engine</Description>
     <AssemblyTitle>NiL.JS</AssemblyTitle>  
     <Authors>NiLProject</Authors>
-    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">netcoreapp3.1;net461;net48;net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">netcoreapp3.1;net461;net48;net5.0;net6.0;net7.0</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
