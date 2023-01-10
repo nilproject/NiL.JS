@@ -45,26 +45,36 @@ namespace NiL.JS.BaseLibrary
         {
             var result = double.NaN;
             var radixo = args[1];
-            var dradix = radixo.Exists ? Tools.JSObjectToDouble(radixo) : 0;
             int radix;
+
+            var dradix = radixo.Exists ? Tools.JSObjectToDouble(radixo) : 0;
+
             if (double.IsNaN(dradix) || double.IsInfinity(dradix))
                 radix = 0;
             else
                 radix = (int)((long)dradix & 0xFFFFFFFF);
+            
             if (radix != 0 && (radix < 2 || radix > 36))
                 return Number.NaN;
+
             var source = args[0];
+            
             if (source._valueType == JSValueType.Integer)
                 return source;
+            
             if (source._valueType == JSValueType.Double)
                 return double.IsInfinity(source._dValue) || double.IsNaN(source._dValue) ?
                     Number.NaN : source._dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
                     (Number)System.Math.Truncate(source._dValue);
+
+            var index = 0;
             var arg = source.ToString().Trim(Tools.TrimChars);
             if (!string.IsNullOrEmpty(arg))
-                Tools.ParseJsNumber(arg, out result, radix, ParseNumberOptions.AllowAutoRadix);
-            if (double.IsInfinity(result))
+                Tools.ParseJsNumber(arg, ref index, out result, radix, ParseNumberOptions.AllowAutoRadix);
+            
+            if (index == 0)
                 return Number.NaN;
+            
             return System.Math.Truncate(result);
         }
 
@@ -74,12 +84,15 @@ namespace NiL.JS.BaseLibrary
             var source = x[0];
             if (source._valueType == JSValueType.Integer)
                 return source;
+
             if (source._valueType == JSValueType.Double)
                 return source._dValue == 0.0 ? (Number)0 : // +0 и -0 должны стать равными
                     source;
+            
             var arg = source.ToString().Trim(Tools.TrimChars);
             if (!string.IsNullOrEmpty(arg))
                 Tools.ParseJsNumber(arg, out result, ParseNumberOptions.AllowFloat);
+            
             return result;
         }
 

@@ -99,8 +99,18 @@ namespace NiL.JS.BaseLibrary
             _valueType = JSValueType.Double;
             double d = 0;
             int i = 0;
-            if (value.Length != 0 && Tools.ParseJsNumber(value, ref i, out d, 0, ParseNumberOptions.Default | (Context.CurrentContext._strict ? ParseNumberOptions.RaiseIfOctal : 0)) && i == value.Length)
+            if (value.Length != 0
+                && Tools.ParseJsNumber(
+                    value,
+                    ref i,
+                    out d,
+                    0,
+                    ParseNumberOptions.Default | (Context.CurrentContext._strict ? ParseNumberOptions.RaiseIfOctal : 0))
+                && i == value.Length)
+            {
                 _dValue = d;
+            }
+
             _attributes |= JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly;
         }
 
