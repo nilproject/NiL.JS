@@ -36,15 +36,16 @@
 # For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
 # refer to https://github.com/microsoft/github-actions-for-desktop-apps
 
-name: Build NuGet Package
+name: Make release
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
 
 jobs:
 
   build:
+    
+    environment: release
 
     strategy:
       matrix:
@@ -55,8 +56,8 @@ jobs:
 
     env:
       Project_Directory: NiL.JS
-      Solution_Name: $Project_Directory/NiL.JS.csproj                   # Replace with your solution name, i.e. MyWpfApp.sln.
-      Test_Project_Path: Tests/Tests.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
+      Solution_Name: $Project_Directory/NiL.JS.csproj
+      Test_Project_Path: Tests/Tests.csproj
       Nuget_Pack_Output_Directory: nuget
 
     steps:
@@ -101,16 +102,13 @@ jobs:
         $certificatePath = Join-Path -Path $env:Project_Directory -ChildPath keys.snk
         [IO.File]::WriteAllBytes("$certificatePath", $snk_byte)
 
-    # Execute all unit tests in the solution
-    - name: Execute unit tests on .NET Core 6.0
-      run: |
-        cd Tests
-        dotnet run --project ..\Utility\tiny-t4\ --framework net6.0
-        dotnet test -c Release -property:TargetFramework=net6.0 -property:SignAssembly=false -property:PublicSign=false
-
+    
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
-      run: ./pack.ps1
+      run: |
+        $VERSION=${{ vars.VERSION }}
+        echo $VERSION
+        ./pack.ps1
 
     # Remove the pfx
     - name: Remove the snk
@@ -122,3 +120,27 @@ jobs:
       with:
         name: NuGet Package
         path: ${{ env.Nuget_Pack_Output_Directory }}
+
+    - name: Make release tag
+      id: tag
+      run: |
+        echo $VERSION
+        $TAG="${{ vars.VERSION }}.$(git rev-list --count origin/develop)"
+        echo "tag=$TAG" >> $env:GITHUB_OUTPUT
+        echo $GITHUB_OUTPUT
+        echo $env:GITHUB_OUTPUT
+        git tag $TAG
+        git push --tags
+
+    - name: Build release message
+      run: |
+        echo ${{ steps.tag.outputs.tag }}
+        ./buildReleaseMessage.ps1 > ./release.md
+
+    - name: Make release ${{ steps.tag.outputs.tag }}
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ steps.tag.outputs.tag }}
+        name: ${{ steps.tag.outputs.tag }}
+        artifacts: ${{ env.Nuget_Pack_Output_Directory }}/*
+        bodyFile: ./release.md
