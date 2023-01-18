@@ -313,12 +313,12 @@ namespace NiL.JS.Core
             return null;
         }
 
-        internal virtual void ReplaceVariableInstance(string name, JSValue instance)
+        public virtual JSValue DefineConstant(string name, JSValue value, bool deletable = false)
         {
-            if (_variables != null && _variables.ContainsKey(name))
-                _variables[name] = instance;
-            else
-                _parent?.ReplaceVariableInstance(name, instance);
+            var v = DefineVariable(name, deletable);
+            v.Assign(value);
+            v._attributes |= JSValueAttributesInternal.ReadOnly;
+            return v;
         }
 
         public virtual JSValue DefineVariable(string name, bool deletable = false)
