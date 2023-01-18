@@ -361,7 +361,7 @@ namespace NiL.JS.Core
         public void DefineGetSetVariable(string name, Func<object> getter, Action<object> setter)
         {
             var property = GetVariable(name);
-            if (property.ValueType >= JSValueType.Undefined)
+            if (property is not null && property.ValueType >= JSValueType.Undefined)
                 throw new ArgumentException();
 
             property = DefineVariable(name);
