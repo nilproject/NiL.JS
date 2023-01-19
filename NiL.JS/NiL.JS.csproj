@@ -5,6 +5,7 @@
     <AssemblyTitle>NiL.JS</AssemblyTitle>  
     <Authors>NiLProject</Authors>
     <PackageReleaseNotes>Release.md</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">netcoreapp3.1;net461;net48;net5.0;net6.0;net7.0</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -36,6 +37,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <None Include="../README.md" Pack="true" PackagePath="" />
     <None Include="../Release.md" Pack="true" PackagePath="" />
     <None Include="../License" Pack="true" PackagePath="" />
     <None Include="../nil.js logo small.png" Pack="true" PackagePath="" />
