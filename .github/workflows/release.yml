@@ -102,6 +102,19 @@ jobs:
         $certificatePath = Join-Path -Path $env:Project_Directory -ChildPath keys.snk
         [IO.File]::WriteAllBytes("$certificatePath", $snk_byte)
 
+    - name: Run TinyT4
+      run: |
+        cd Tests
+        dotnet run --project ..\Utility\tiny-t4\ --framework net7.0
+
+    - name: Test .NET Core 7.0
+      run: |
+        cd Tests
+        dotnet test -c Release -property:TargetFramework=net7.0 -property:SignAssembly=false -property:PublicSign=false
+
+    - name: Build release message
+      run: |
+        ./buildReleaseMessage.ps1 > ./Release.md
     
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
@@ -132,15 +145,14 @@ jobs:
         git tag $TAG
         git push --tags
 
-    - name: Build release message
-      run: |
-        echo ${{ steps.tag.outputs.tag }}
-        ./buildReleaseMessage.ps1 > ./release.md
-
     - name: Make release ${{ steps.tag.outputs.tag }}
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ steps.tag.outputs.tag }}
         name: ${{ steps.tag.outputs.tag }}
         artifacts: ${{ env.Nuget_Pack_Output_Directory }}/*
-        bodyFile: ./release.md
+        bodyFile: ./Release.md
+
+    - name: Upload package to nuget.org
+      run: dotnet nuget push nuget/NiL.JS.${{ steps.tag.outputs.tag }}.nupkg -k ${{ secrets.NUGET_ORG_TOKEN }} -s https://nuget.org/
+        

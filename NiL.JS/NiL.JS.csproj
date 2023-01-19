@@ -4,6 +4,7 @@
     <Description>ECMAScript 6 (ES2015) engine</Description>
     <AssemblyTitle>NiL.JS</AssemblyTitle>  
     <Authors>NiLProject</Authors>
+    <PackageReleaseNotes>Release.md</PackageReleaseNotes>
     <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">netcoreapp3.1;net461;net48;net5.0;net6.0;net7.0</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -33,8 +34,9 @@
   <PropertyGroup Condition="'$(VersionPrefix)' == ''">
     <VersionPrefix>2.5</VersionPrefix>
   </PropertyGroup>
-
+  
   <ItemGroup>
+    <None Include="../Release.md" Pack="true" PackagePath="" />
     <None Include="../License" Pack="true" PackagePath="" />
     <None Include="../nil.js logo small.png" Pack="true" PackagePath="" />
   </ItemGroup>
