@@ -51,11 +51,11 @@ namespace Tests.BaseLibrary
                 nestedObj.DefineProperty("null").Assign(JSValue.Null);
                 obj.DefineProperty("nested").Assign(nestedObj);
 
-                var expected3 = string.Join(Environment.NewLine, new[] { "{", "   \"test\": 123,", "   \"array\": [", "      123,", "      \"test\"", "   ],", "   \"nested\": {", "      \"nil\": \"JS!\"", "   }", "}" });
+                var expected3 = string.Join(Environment.NewLine, new[] { "{", "   \"test\": 123,", "   \"array\": [", "      123,", "      \"test\"", "   ],", "   \"nested\": {", "      \"nil\": \"JS!\",", "      \"null\": null", "   }", "}" });
                 var stringified = JSON.stringify(new Arguments { obj, null, 3 });
                 Assert.AreEqual(expected3, stringified);
 
-                var expected2 = string.Join(Environment.NewLine, new[] { "{", "  \"test\": 123,", "  \"array\": [", "    123,", "    \"test\"", "  ],", "  \"nested\": {", "    \"nil\": \"JS!\"", "  }", "}" });
+                var expected2 = string.Join(Environment.NewLine, new[] { "{", "  \"test\": 123,", "  \"array\": [", "    123,", "    \"test\"", "  ],", "  \"nested\": {", "    \"nil\": \"JS!\",", "    \"null\": null", "  }", "}" });
                 stringified = JSON.stringify(new Arguments { obj, null, 2 });
                 Assert.AreEqual(expected2, stringified);
             }
