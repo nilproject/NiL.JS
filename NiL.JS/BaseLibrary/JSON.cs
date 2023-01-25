@@ -33,7 +33,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(2)]
         public static JSValue parse(Arguments args)
         {
-            var length = Tools.JSObjectToInt32(args._iValue);
+            var length = args._iValue;
             var code = args[0].ToString();
             Function reviewer = length > 1 ? args[1]._oValue as Function : null;
             return parse(code, reviewer);
@@ -474,7 +474,7 @@ namespace NiL.JS.BaseLibrary
                 processed.Add(obj);
 
                 if (obj.Value == null)
-                    return null;
+                    return "null";
 
                 if (obj._valueType == JSValueType.Function)
                     return null;

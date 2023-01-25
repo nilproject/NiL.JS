@@ -862,6 +862,9 @@ namespace NiL.JS.Core
                 return Value;
             }
 
+            if (Value is null)
+                return "null";
+
             return (_oValue as JSValue ?? this)._valueType;
         }
 
