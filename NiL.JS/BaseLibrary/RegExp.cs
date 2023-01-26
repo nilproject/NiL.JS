@@ -71,7 +71,7 @@ namespace NiL.JS.BaseLibrary
             _unicode = false;
             try
             {
-                var options = RegexOptions.ECMAScript | RegexOptions.CultureInvariant;
+                var options = RegexOptions.ECMAScript | RegexOptions.CultureInvariant | RegexOptions.Compiled;
 
                 for (int i = 0; i < flags.Length; i++)
                 {
