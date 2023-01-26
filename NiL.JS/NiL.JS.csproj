@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  
   <PropertyGroup>
     <Description>ECMAScript 6 (ES2015) engine</Description>
     <AssemblyTitle>NiL.JS</AssemblyTitle>  
     <Authors>NiLProject</Authors>
-    <PackageReleaseNotes>Release.md</PackageReleaseNotes>
+    <PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">netcoreapp3.1;net461;net48;net5.0;net6.0;net7.0</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
@@ -31,6 +31,12 @@
     <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
     <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
+
+  <Target Name="ReleaseNotesReading" BeforeTargets="GenerateNuspec">
+    <ReadLinesFromFile File="../Release.md" >
+      <Output TaskParameter="Lines" ItemName="ReleaseNoteLines"/>
+    </ReadLinesFromFile>
+  </Target>
   
   <PropertyGroup Condition="'$(VersionPrefix)' == ''">
     <VersionPrefix>2.5</VersionPrefix>
@@ -41,6 +47,7 @@
     <None Include="../Release.md" Pack="true" PackagePath="" />
     <None Include="../License" Pack="true" PackagePath="" />
     <None Include="../nil.js logo small.png" Pack="true" PackagePath="" />
+    <None Include="../nil.js_logo_48.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>
