@@ -233,11 +233,11 @@ namespace NiL.JS.BaseLibrary
             {
                 pos = Tools.JSObjectToInt32(args[1], 0, 0, true);
 
+                if (pos > selfStr.Length)
+                    pos = selfStr.Length;
+
                 if (pos < 0)
                     pos = 0;
-
-                if (pos > selfStr.Length)
-                    pos = selfStr.Length - 1;
             }
 
             return selfStr.IndexOf(fstr, pos, StringComparison.Ordinal);
@@ -349,7 +349,7 @@ namespace NiL.JS.BaseLibrary
             }
         }
 
-// Not implemented in .Net Standard 1.3. Will be in .Net Standard 2.0
+        // Not implemented in .Net Standard 1.3. Will be in .Net Standard 2.0
 #if !NETCORE && !PORTABLE
         [DoNotEnumerate]
         [InstanceMember]
@@ -639,7 +639,7 @@ namespace NiL.JS.BaseLibrary
 
             if (pos1 < 0)
                 pos1 += selfStr.Length;
-            
+
             pos0 = System.Math.Min(System.Math.Max(0, pos0), selfStr.Length);
             pos1 = System.Math.Min(System.Math.Max(0, pos1), selfStr.Length);
 
@@ -1047,7 +1047,7 @@ namespace NiL.JS.BaseLibrary
             return result.ToString();
         }
 
-#region HTML Wrapping
+        #region HTML Wrapping
         [DoNotEnumerate]
         [InstanceMember]
         public static JSValue anchor(JSValue self, Arguments arg)
@@ -1177,7 +1177,7 @@ namespace NiL.JS.BaseLibrary
 
             return "<sup>" + self.ToString() + "</sup>";
         }
-#endregion
+        #endregion
 
         [Hidden]
         public static implicit operator String(string val)
