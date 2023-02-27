@@ -1244,7 +1244,7 @@ namespace NiL.JS.Expressions
                             double d = 0;
                             if (Tools.ParseJsNumber(state.Code, ref temp, out d, 0, ParseNumberOptions.Default | (state.Strict ? ParseNumberOptions.RaiseIfOctal : ParseNumberOptions.None)))
                             {
-                                if ((temp = (int)d) == d && !Tools.IsNegativeZero(d))
+                                if ((temp = (int)d) == d && !NumberUtils.IsNegativeZero(d))
                                 {
                                     if (!state.IntConstants.TryGetValue(temp, out var value))
                                         value = state.IntConstants[temp] = temp;

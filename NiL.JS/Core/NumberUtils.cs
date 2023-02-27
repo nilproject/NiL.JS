@@ -422,7 +422,7 @@ namespace NiL.JS.Core
             lock (_CachedDoubleString)
             {
                 var abs = Math.Abs(d);
-                int neg = (d < 0.0 || (d == -0.0 && Tools.IsNegativeZero(d))) ? 1 : 0;
+                int neg = (d < 0.0 || (d == -0.0 && NumberUtils.IsNegativeZero(d))) ? 1 : 0;
 
                 if (digitsLimit == _ToStringDigitsLimit && !trailingZeros)
                 {
@@ -735,6 +735,14 @@ namespace NiL.JS.Core
                 if (go != 0 && i + 1 == output.Length)
                     Array.Resize(ref output, output.Length * 2);
             }
+        }
+
+#if !NET40
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static bool IsNegativeZero(double d)
+        {
+            return (((ulong)BitConverter.DoubleToInt64Bits(d)) & 0x800F_FFFF_FFFF_FFFF) == 0x8000_0000_0000_0000;
         }
     }
 }

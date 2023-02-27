@@ -86,7 +86,7 @@ namespace NiL.JS.BaseLibrary
                 case JSValueType.Double:
                     {
                         if (value._dValue > 0
-                            || (value._dValue == 0 && !Tools.IsNegativeZero(value._dValue)))
+                            || (value._dValue == 0 && !NumberUtils.IsNegativeZero(value._dValue)))
                             return value;
 
                         value = value.CloneImpl(false);

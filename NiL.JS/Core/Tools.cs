@@ -1140,14 +1140,6 @@ namespace NiL.JS.Core
 #if !NET40
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 #endif
-        internal static bool IsNegativeZero(double d)
-        {
-            return (((ulong)BitConverter.DoubleToInt64Bits(d)) & 0x800F_FFFF_FFFF_FFFF) == 0x8000_0000_0000_0000;
-        }
-
-#if !NET40
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-#endif
         public static string Unescape(string code, bool strict)
         {
             return Unescape(code, strict, true, false, true);
