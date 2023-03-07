@@ -1014,7 +1014,7 @@ namespace NiL.JS.Core
 
             const string NaN = "NaN";
             if ((options & ParseNumberOptions.AllowFloat) != 0
-                && code.Length - i >= NaN.Length 
+                && code.Length - i >= NaN.Length
                 && code.IndexOf(NaN, i, NaN.Length, StringComparison.Ordinal) == i)
             {
                 index = i + NaN.Length;
@@ -1028,7 +1028,7 @@ namespace NiL.JS.Core
 
             const string Infinity = "Infinity";
             if ((options & ParseNumberOptions.AllowFloat) != 0
-                && code.Length - i >= Infinity.Length 
+                && code.Length - i >= Infinity.Length
                 && code.IndexOf(Infinity, i, Infinity.Length, StringComparison.Ordinal) == i)
             {
                 index = i + Infinity.Length;
@@ -1671,49 +1671,58 @@ namespace NiL.JS.Core
             return result;
         }
 
-        internal static BaseLibrary.Array arraylikeToArray(JSValue src, bool evalProps, bool clone, bool reassignLen, long _length)
+        internal static BaseLibrary.Array arraylikeToArray(JSValue src, bool evalProps, bool clone, bool reassignLen, long length)
         {
             var temp = new BaseLibrary.Array();
             bool goDeep = true;
             for (; goDeep;)
             {
                 goDeep = false;
-                var srca = src as BaseLibrary.Array;
+                var srca = src.Value as BaseLibrary.Array;
                 if (srca != null)
                 {
-                    if (_length == -1)
-                        _length = srca._data.Length;
+                    if (length == -1)
+                        length = srca._data.Length;
+
                     long prew = -1;
                     foreach (var element in srca._data.DirectOrder)
                     {
-                        if (element.Key >= _length) // эээ...
+                        if (element.Key >= length) // эээ...
                             break;
+
                         var value = element.Value;
                         if (value == null || !value.Exists)
                             continue;
+
                         if (!goDeep && System.Math.Abs(prew - element.Key) > 1)
                         {
                             goDeep = true;
                         }
+
                         if (evalProps && value._valueType == JSValueType.Property)
                             value = (value._oValue as PropertyPair).getter == null ? JSValue.undefined : (value._oValue as PropertyPair).getter.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
+
                         if (temp._data[element.Key] == null)
                             temp._data[element.Key] = value;
+
+                        prew = element.Key;
                     }
-                    goDeep |= System.Math.Abs(prew - _length) > 1;
+
+                    goDeep |= System.Math.Abs(prew - length) > 1;
                 }
                 else
                 {
-                    if (_length == -1)
+                    if (length == -1)
                     {
-                        _length = getLengthOfArraylike(src, reassignLen);
-                        if (_length == 0)
+                        length = getLengthOfArraylike(src, reassignLen);
+                        if (length == 0)
                             return temp;
                     }
+
                     long prew = -1;
-                    foreach (var index in EnumerateArraylike(_length, src))
+                    foreach (var index in EnumerateArraylike(length, src))
                     {
                         var value = index.Value;
                         if (!value.Exists)
@@ -1722,22 +1731,30 @@ namespace NiL.JS.Core
                             value = (value._oValue as PropertyPair).getter == null ? JSValue.undefined : (value._oValue as PropertyPair).getter.Call(src, null).CloneImpl(false);
                         else if (clone)
                             value = value.CloneImpl(false);
+
                         if (!goDeep && System.Math.Abs(prew - index.Key) > 1)
                         {
                             goDeep = true;
                         }
+
                         if (temp._data[(int)(uint)index.Key] == null)
                             temp._data[(int)(uint)index.Key] = value;
+
+                        prew = index.Key;
                     }
-                    goDeep |= System.Math.Abs(prew - _length) > 1;
+
+                    goDeep |= System.Math.Abs(prew - length) > 1;
                 }
                 if (src.__proto__ == JSValue.@null)
                     break;
+
                 src = src.__proto__._oValue as JSValue ?? src.__proto__;
+
                 if (src == null || (src._valueType >= JSValueType.String && src._oValue == null))
                     break;
             }
-            temp._data[(int)(_length - 1)] = temp._data[(int)(_length - 1)];
+
+            temp._data[(int)(length - 1)] = temp._data[(int)(length - 1)];
             return temp;
         }
 

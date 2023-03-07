@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
@@ -43,7 +44,7 @@ namespace NiL.JS.BaseLibrary
 
             _oValue = this;
             _valueType = JSValueType.Object;
-            _data = new SparseArray<JSValue>((int)System.Math.Min(10000, length));
+            _data = new SparseArray<JSValue>();
             _attributes |= JSValueAttributesInternal.SystemObject;
             _data[(int)length] = null;
         }
@@ -61,9 +62,6 @@ namespace NiL.JS.BaseLibrary
 
             if (length > 0)
             {
-                if (length < 10000)
-                    _data.EnsureCapacity((int)length);
-
                 _data[(int)((uint)length - 1)] = null;
             }
         }
@@ -158,15 +156,19 @@ namespace NiL.JS.BaseLibrary
         {
             if (_data.Length == nlen)
                 return true;
+
             if (nlen < 0)
                 ExceptionHelper.Throw(new RangeError("Invalid array length"));
+
             if (_data.Length > nlen)
             {
                 var res = true;
-                foreach (var element in _data.ReversOrder)
+                var prew = -1;
+                foreach (var element in _data.ReverseOrder)
                 {
                     if ((uint)element.Key < nlen)
                         break;
+
                     if (element.Value != null
                         && element.Value.Exists
                         && (element.Value._attributes & JSValueAttributesInternal.DoNotDelete) != 0)
@@ -174,20 +176,28 @@ namespace NiL.JS.BaseLibrary
                         nlen = element.Key;
                         res = false;
                     }
+                    else
+                    {
+                        if (prew != -1 && prew - element.Key != 1)
+                            _data.TrimLength();
+
+                        if (_data.Length == (uint)element.Key + 1)
+                            _data.RemoveAt(element.Key);
+                    }
+
+                    prew = element.Key;
                 }
+
                 if (!res)
                 {
                     SetLength(nlen + 1);
                     return false;
                 }
             }
-            while (_data.Length > nlen)
-            {
-                _data.RemoveAt((int)(_data.Length - 1));
-                _data.Trim();
-            }
+
             if (_data.Length != nlen)
                 _data[(int)nlen - 1] = _data[(int)nlen - 1];
+
             return true;
         }
 
@@ -909,7 +919,7 @@ namespace NiL.JS.BaseLibrary
 
         private static long reverseIterateImpl(JSValue self, Arguments args, JSValue startIndexSrc, Func<JSValue, long, JSValue, Function, bool> callback)
         {
-            Array arraySrc = self._oValue as Array;
+            Array arraySrc = self.Value as Array;
             bool nativeMode = arraySrc != null;
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
             {
@@ -974,7 +984,7 @@ namespace NiL.JS.BaseLibrary
             else
             {
                 long prevKey = startIndex + 1;
-                var mainEnum = arraySrc._data.ReversOrder.GetEnumerator();
+                var mainEnum = arraySrc._data.ReverseOrder.GetEnumerator();
                 bool moved = true;
                 while (moved)
                 {
@@ -1167,9 +1177,9 @@ namespace NiL.JS.BaseLibrary
 
                 if (res._valueType == JSValueType.Property)
                     res = ((res._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null);
-                
+
                 selfa._data.RemoveAt(newLen);
-                
+
                 return res;
             }
             else
@@ -1181,20 +1191,20 @@ namespace NiL.JS.BaseLibrary
                 length--;
                 var tres = self.GetProperty(length.ToString(), true, PropertyScope.Common);
                 JSValue res;
-                
+
                 if (tres._valueType == JSValueType.Property)
                     res = ((tres._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null);
                 else
                     res = tres.CloneImpl(false);
-                
+
                 if ((tres._attributes & JSValueAttributesInternal.DoNotDelete) == 0)
                 {
                     tres._oValue = null;
                     tres._valueType = JSValueType.NotExistsInObject;
                 }
-                
+
                 self["length"] = length;
-                
+
                 return res;
             }
         }
@@ -1554,7 +1564,14 @@ namespace NiL.JS.BaseLibrary
 
                 var delta = System.Math.Max(0, args._iValue - 2) - (pos1 - pos0);
 
-                foreach (var node in (delta > 0 ? selfa._data.KeysReversOrder : selfa._data.KeysDirectOrder))
+                var enumerable = (delta > 0 ? selfa._data.KeysReverseOrder : selfa._data.KeysForwardOrder);
+
+                if (delta > 0 && (!enumerable.Any() || enumerable.First() != initialLength - 1))
+                {
+                    enumerable = enumerable.Concat(Enumerable.Repeat((int)(initialLength - 1), 1));
+                }
+
+                foreach (var node in enumerable)
                 {
                     var key = node;
 
@@ -1568,12 +1585,12 @@ namespace NiL.JS.BaseLibrary
 
                     if (value == null || !value.Exists)
                     {
-                        value = selfa.__proto__[((uint)key).ToString()];
-                        if (value.Exists)
-                            value = value.CloneImpl(false);
+                        var protoVal = selfa.__proto__[((uint)key).ToString()];
+                        if (protoVal.Exists)
+                            value = protoVal.CloneImpl(false);
                     }
 
-                    if (value._valueType == JSValueType.Property)
+                    if (value != null && value._valueType == JSValueType.Property)
                         value = Tools.GetPropertyOrValue(value, self);
 
                     if (key < pos1)

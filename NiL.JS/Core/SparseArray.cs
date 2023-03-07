@@ -6,12 +6,6 @@ using System.Runtime.InteropServices;
 
 namespace NiL.JS.Core;
 
-public enum ArrayMode
-{
-    Flat,
-    Sparse
-}
-
 public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue>
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -27,69 +21,41 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         }
     }
 
-    private const int _flatSizeLimit = 32;
-    private static readonly TValue[] _emptyData = new TValue[0];
+    private static TValue _fictive;
 
-    private ArrayMode _mode;
     private uint _pseudoLength;
-    private uint _usedCount;
-    private NavyItem[] _navyData;
-    private TValue[] _values;
-    private bool _zeroExists;
-
-    public ArrayMode Mode
-    {
-        get
-        {
-            return _mode;
-        }
-    }
+    private NavyItem[][] _navyData;
+    private TValue[][] _values;
+    private uint[] _used;
 
     [CLSCompliant(false)]
-    public uint Length
-    {
-        get
-        {
-            return _pseudoLength;
-        }
-    }
+    public uint Length => _pseudoLength;
 
-    public SparseArray(ArrayMode arrayMode = ArrayMode.Flat)
+    public SparseArray()
     {
-        _mode = arrayMode;
-        _values = _emptyData;
-        _navyData = Array.Empty<NavyItem>();
-    }
-
-    public SparseArray(int capacity)
-    {
-        _mode = ArrayMode.Flat;
-        _values = _emptyData;
-        _navyData = Array.Empty<NavyItem>();
-        if (capacity > 0)
-            EnsureCapacity(capacity);
+        _values = Array.Empty<TValue[]>();
+        _navyData = Array.Empty<NavyItem[]>();
+        _used = Array.Empty<uint>();
     }
 
     public SparseArray(TValue[] values)
     {
-        _mode = ArrayMode.Flat;
-        _values = values;
-        _navyData = Array.Empty<NavyItem>();
-        _usedCount = _pseudoLength = (uint)values.Length;
+        _values = Array.Empty<TValue[]>();
+        _navyData = Array.Empty<NavyItem[]>();
+        _used = Array.Empty<uint>();
+
+        for (var i = 0; i < values.Length; i++)
+            this[i] = values[i];
     }
 
     #region Члены IList<TValue>
 
     public int IndexOf(TValue item)
     {
-        for (var i = 0; i < _usedCount; i++)
+        for (var i = 0; i < _pseudoLength; i++)
         {
-            if (Equals(_values[i], item))
-            {
-                if (_mode == ArrayMode.Flat)
-                    return i;
-                return (int)_navyData[i].index;
-            }
+            if (Equals(this[i], item))
+                return i;
         }
 
         return -1;
@@ -115,101 +81,137 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
     public ref TValue GetExistent(int index)
     {
+        return ref getInternal(index, false, out _);
+    }
+
+    private ref TValue getInternal(int index, bool forRead, out bool got)
+    {
         uint unsignedIndex = (uint)index;
 
-        if (_mode == ArrayMode.Flat)
-        {
-            if (index >= 0 && _pseudoLength > index && _values.Length > index)
-                return ref _values[index];
-
-            if (index >= 0 && (index < _flatSizeLimit || index == _pseudoLength))
-            {
-                EnsureCapacity(index + 1);
-                if (unsignedIndex >= _pseudoLength)
-                    _pseudoLength = unsignedIndex + 1;
-
-                return ref _values[index];
-            }
-
-            RebuildToSparse();
-        }
-
-        if (unsignedIndex < _usedCount)
-        {
-            if (unsignedIndex == 0)
-            {
-                _zeroExists = true;
-                return ref _values[0];
-            }
-
-            if (_navyData[index].index == unsignedIndex)
-                return ref _values[index];
-        }
-
-        if (_usedCount == 0)
-        {
-            EnsureCapacity(1);
-            _usedCount = 1;
-        }
-
         var log = NumberUtils.IntLog(unsignedIndex);
-        var navyIndex = unsignedIndex << 31 - log;
-        navyIndex <<= 1;
+
+        if (_navyData.Length <= log)
+        {
+            if (forRead)
+            {
+                got = false;
+                return ref _fictive;
+            }
+
+            Array.Resize(ref _navyData, log + 1);
+            Array.Resize(ref _values, log + 1);
+            Array.Resize(ref _used, log + 1);
+        }
+
+        if (_navyData[log] == null)
+        {
+            if (forRead)
+            {
+                got = false;
+                return ref _fictive;
+            }
+
+            if (log <= 4)
+            {
+                _navyData[log] = Array.Empty<NavyItem>();
+                _values[log] = new TValue[1 << Math.Max(1, log)];
+            }
+            else
+            {
+                _navyData[log] = new NavyItem[2];
+                _values[log] = new TValue[2];
+            }
+        }
+
+        if (log <= 4)
+        {
+            var itemIndex = index & ((1 << Math.Max(1, log)) - 1);
+            _used[log] = (uint)Math.Max(_used[log], itemIndex + 1);
+            got = true;
+
+            if (!forRead && _pseudoLength <= unsignedIndex)
+                _pseudoLength = unsignedIndex + 1;
+
+            return ref _values[log][itemIndex];
+        }
+
+        var navy = _navyData[log];
+        var values = _values[log];
+
+        var mask = 1 << (log - 1);
         uint i = 0;
         uint ni;
-
         while (true)
         {
-            ref var navyItem = ref _navyData[i];
+            ref var navyItem = ref navy[i];
             if (navyItem.index > unsignedIndex)
             {
+                if (forRead)
+                {
+                    got = false;
+                    return ref _fictive;
+                }
+
                 var oldIndex = navyItem.index;
-                var oldValue = _values[i];
+                var oldValue = values[i];
 
                 navyItem.index = unsignedIndex;
 
                 if (oldIndex < _pseudoLength)
-                    this[(int)oldIndex] = oldValue;
+                    this[(int)oldIndex] = oldValue!;
 
-                _values[i] = default;
+                values = _values[log];
+                values[i] = default!;
 
-                return ref _values[i];
+                got = true;
+                return ref values[i];
             }
             else if (navyItem.index < unsignedIndex)
             {
-                var b = (navyIndex & 1 << 31) == 0;
+                var b = (index & mask) == 0;
                 ni = b ? navyItem.zeroContinue : navyItem.oneContinue;
                 if (ni == 0)
                 {
+                    if (forRead)
+                    {
+                        got = false;
+                        return ref _fictive;
+                    }
+
                     if (_pseudoLength <= unsignedIndex)
                         _pseudoLength = unsignedIndex + 1;
 
                     if (b)
-                        navyItem.zeroContinue = ni = _usedCount++;
+                        navyItem.zeroContinue = ni = _used[log]++;
                     else
-                        navyItem.oneContinue = ni = _usedCount++;
+                        navyItem.oneContinue = ni = _used[log]++;
 
-                    if (_navyData.Length <= _usedCount)
-                        EnsureCapacity(_navyData.Length * 2);
+                    if (navy.Length < _used[log])
+                    {
+                        var newSize = _navyData[log].Length * 2;
+                        Array.Resize(ref _navyData[log], newSize);
+                        Array.Resize(ref _values[log], newSize);
 
-                    _navyData[ni].index = unsignedIndex;
-                    return ref _values[ni];
+                        navy = _navyData[log];
+                        values = _values[log];
+                    }
+
+                    navy[ni].index = unsignedIndex;
+                    got = true;
+                    return ref values[ni];
                 }
 
                 i = ni;
+                mask >>= 1;
             }
             else
             {
                 if (_pseudoLength <= index)
                     _pseudoLength = unsignedIndex + 1;
 
-                if (_usedCount <= i)
-                    _usedCount = i + 1;
-
-                return ref _values[i];
+                got = true;
+                return ref values[i];
             }
-
-            navyIndex <<= 1;
         }
     }
 
@@ -217,195 +219,26 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
     {
         get
         {
-            if (_mode == ArrayMode.Flat)
-            {
-                if (index < 0 || _pseudoLength <= index || _values.Length <= index)
-                    return default;
-
-                return _values[index];
-            }
-
-            if (_navyData.Length == 0)
-                return default;
-
-            uint unsignedIndex = (uint)index;
-
-            if (unsignedIndex < _usedCount)
-            {
-                if (_navyData[index].index == unsignedIndex)
-                    return _values[index];
-            }
-
-            var log = NumberUtils.IntLog(unsignedIndex);
-            var navyIndex = unsignedIndex << 31 - log;
-            navyIndex <<= 1;
-            uint i = 0;
-
-            while (true)
-            {
-                i = navyIndex >> 31 == 0
-                    ? _navyData[i].zeroContinue
-                    : _navyData[i].oneContinue;
-
-                if (i == 0 || _navyData[i].index > unsignedIndex)
-                {
-                    return default;
-                }
-                else if (_navyData[i].index == unsignedIndex)
-                {
-                    return _values[i];
-                }
-
-                navyIndex <<= 1;
-            }
+            var r = getInternal(index, true, out var got);
+            return got ? r! : default!;
         }
         set
         {
             bool isDefault = value is null; // структуры мы будем записывать, иначе пришлось бы вызывать тяжелые операции сравнения.
 
-            uint unsignedIndex = (uint)index;
-            if (_mode == ArrayMode.Flat)
+            if (isDefault)
             {
-                if (index < 0 || index > _pseudoLength)
+                ref var maybeExists = ref getInternal(index, true, out var got);
+                if (got)
+                    maybeExists = default;
+
+                if (_pseudoLength <= (uint)index)
                 {
-                    if (isDefault)
-                    {
-                        if (unsignedIndex >= _pseudoLength)
-                            _pseudoLength = unsignedIndex + 1;
-
-                        return;
-                    }
-
-                    if (unsignedIndex < _flatSizeLimit || unsignedIndex == _pseudoLength)
-                    {
-                        // Покрывает много тех случаев, когда относительно маленький массив заполняют с конца.
-                        // Кто-то верит, что это должно работать быстрее.
-                        // Вот именно из-за таких кусков кода так и может показаться.
-                        // Не время для попыток исправить мир
-                        _pseudoLength = unsignedIndex + 1;
-                        EnsureCapacity((int)_pseudoLength);
-                        this[index] = value;
-                        return;
-                    }
-                    else
-                        RebuildToSparse();
-                }
-                else
-                {
-                    if (_values.Length <= index)
-                        EnsureCapacity(index + 1);
-
-                    if (_pseudoLength == index)
-                        _pseudoLength = unsignedIndex + 1;
-
-                    _values[index] = value;
-                    return;
+                    _pseudoLength = ((uint)index + 1);
                 }
             }
-
-            if (_usedCount == 0)
-            {
-                EnsureCapacity(1);
-                _usedCount = 1;
-            }
-
-            if (unsignedIndex < _usedCount)
-            {
-                if (_navyData[index].index == unsignedIndex)
-                {
-                    if (index == 0)
-                        _zeroExists = true;
-
-                    if (_pseudoLength <= index)
-                        _pseudoLength = unsignedIndex + 1;
-
-                    _values[index] = value;
-
-                    return;
-                }
-            }
-
-            var log = NumberUtils.IntLog(unsignedIndex);
-            var navyIndex = unsignedIndex << 31 - log;
-            navyIndex <<= 1;
-
-            var i = 0u;
-            var ni = 0u;
-            while (true)
-            {
-                if (_navyData[i].index > unsignedIndex)
-                {
-                    if (isDefault)
-                    {
-                        if (_pseudoLength <= unsignedIndex)
-                            _pseudoLength = unsignedIndex + 1; // длина может быть меньше
-                        // уже записанных элементов если эти элементы имеют значение
-                        // по-умолчанию и был вызван Trim
-                        return;
-                    }
-
-                    var oi = _navyData[i].index;
-                    var ov = _values[i];
-                    _navyData[i].index = unsignedIndex;
-                    _values[i] = value;
-
-                    if (oi >= _pseudoLength)
-                        return;
-
-                    value = ov;
-                    unsignedIndex = oi;
-
-                    i = 0;
-                    ni = 0;
-                    log = NumberUtils.IntLog(unsignedIndex);
-                    navyIndex = unsignedIndex << 31 - log;
-                    navyIndex <<= 1;
-
-                    continue;
-                }
-                else if (_navyData[i].index < unsignedIndex)
-                {
-                    var b = navyIndex >> 31 == 0;
-                    ref var navyItem = ref _navyData[i];
-                    ni = b ? navyItem.zeroContinue : navyItem.oneContinue;
-                    if (ni == 0)
-                    {
-                        if (_pseudoLength <= unsignedIndex)
-                            _pseudoLength = unsignedIndex + 1;
-
-                        if (isDefault)
-                            return;
-
-                        if (b)
-                            navyItem.zeroContinue = ni = _usedCount++;
-                        else
-                            navyItem.oneContinue = ni = _usedCount++;
-
-                        if (_navyData.Length <= _usedCount)
-                            EnsureCapacity(_navyData.Length * 2);
-
-                        _navyData[ni].index = unsignedIndex;
-                        _values[ni] = value;
-                        return;
-                    }
-
-                    i = ni;
-                }
-                else
-                {
-                    _values[i] = value;
-
-                    if (_pseudoLength <= index)
-                        _pseudoLength = unsignedIndex + 1;
-
-                    if (_usedCount <= i)
-                        _usedCount = i + 1;
-
-                    return;
-                }
-
-                navyIndex <<= 1;
-            }
+            else
+                GetExistent(index) = value;
         }
     }
 
@@ -418,16 +251,19 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         if (_pseudoLength == uint.MaxValue)
             throw new InvalidOperationException();
 
-        this[(int)_pseudoLength] = item;
+        this[(int)_pseudoLength++] = item;
+    }
+
+    public void TrimLength()
+    {
+        _pseudoLength = (uint)findNearest(_pseudoLength - 1, false) + 1;
     }
 
     public void Clear()
     {
-        while (_usedCount > 0)
-        {
-            _navyData[(int)(--_usedCount)] = default;
-            _values[(int)_usedCount] = default;
-        }
+        _values = Array.Empty<TValue[]>();
+        _navyData = Array.Empty<NavyItem[]>();
+        _used = Array.Empty<uint>();
         _pseudoLength = 0;
     }
 
@@ -508,64 +344,154 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
     private long findNearest(long index, bool notLess)
     {
-        var nearestAlternativeIndex = uint.MaxValue + 1L;
-        if (!notLess)
-            nearestAlternativeIndex = -nearestAlternativeIndex;
+        uint unsignedIndex = (uint)index;
 
-        var alternatives = new Stack<uint>();
+        var log = NumberUtils.IntLog(unsignedIndex);
 
-        long i = 0;
-        while (true)
+        if (_navyData.Length <= log)
         {
-            if (_navyData[i].index == index)
-                return _navyData[i].index;
+            if (notLess)
+                return -1;
 
-            var zeroNext = _navyData[_navyData[i].zeroContinue];
-            var oneNext = _navyData[_navyData[i].oneContinue];
+            log = _navyData.Length - 1;
+            index = (1 << (log + 1)) - 1;
+        }
 
-            if (zeroNext.index == index)
-                return zeroNext.index;
+        while (log >= 0 && log < _navyData.Length && _navyData[log] == null)
+        {
+            if (notLess)
+                log++;
+            else
+                log--;
+        }
 
-            if (oneNext.index == index)
-                return oneNext.index;
+        if (log < 0 || log > _navyData.Length)
+            return -1;
 
-            if (oneNext.index != 0
-                && (notLess
-                    ? nearestAlternativeIndex > oneNext.index && oneNext.index > index
-                    : nearestAlternativeIndex < oneNext.index && oneNext.index < index))
-                nearestAlternativeIndex = oneNext.index;
-
-            if (zeroNext.index != 0
-                && (notLess
-                    ? nearestAlternativeIndex > zeroNext.index
-                    : zeroNext.index < index))
+        if (log <= 4)
+        {
+            if (notLess)
             {
-                if (notLess
-                    && nearestAlternativeIndex > zeroNext.index
-                    && zeroNext.index > index)
-                    nearestAlternativeIndex = zeroNext.index;
+                if (log == 0)
+                {
+                    if (index > 1)
+                        return -1;
 
-                if (oneNext.index != 0
-                    && (notLess
-                        ? nearestAlternativeIndex > oneNext.index
-                        : oneNext.index < index))
-                    alternatives.Push(_navyData[i].oneContinue);
+                    return index;
+                }
 
-                i = _navyData[i].zeroContinue;
-            }
-            else if (oneNext.index != 0
-                    && (notLess
-                        ? nearestAlternativeIndex > oneNext.index
-                        : oneNext.index < index))
-            {
-                i = _navyData[i].oneContinue;
+                return Math.Max(index, 1 << log);
             }
             else
             {
-                if (alternatives.Count == 0)
-                    return nearestAlternativeIndex > uint.MaxValue ? -1 : nearestAlternativeIndex;
+                return Math.Min(index, (2 << log) - 1);
+            }
+        }
 
-                i = alternatives.Pop();
+        var navy = _navyData[log];
+
+        var oneContinueIndex = 0u;
+        var zeroContinueIndex = 0u;
+
+        var mask = 1 << (log - 1);
+        uint i = 0;
+        uint ni;
+        while (true)
+        {
+            ref var navyItem = ref navy[i];
+            if (navyItem.index > unsignedIndex)
+            {
+                if (notLess)
+                {
+                    return navyItem.index;
+                }
+                else
+                {
+                    log--;
+                    while (log > 0 && _navyData[log] is null)
+                    {
+                        log--;
+                    }
+
+                    if (log < 0 || _navyData[log] is null)
+                    {
+                        return -1;
+                    }
+
+                    navy = _navyData[log];
+
+                    if (navy.Length == 0)
+                    {
+                        return (1 << (log + 1)) - 1;
+                    }
+
+                    i = 0;
+                    mask = int.MaxValue;
+                    continue;
+                }
+            }
+            else if (navyItem.index < unsignedIndex)
+            {
+                var isZero = (index & mask) == 0;
+
+                if (isZero)
+                {
+                    if (navyItem.oneContinue != 0)
+                        oneContinueIndex = navyItem.oneContinue;
+                }
+                else
+                {
+                    if (navyItem.zeroContinue != 0)
+                        zeroContinueIndex = navyItem.zeroContinue;
+                }
+
+                ni = isZero ? navyItem.zeroContinue : navyItem.oneContinue;
+
+                if (ni == 0)
+                {
+                    if (notLess && oneContinueIndex != 0)
+                    {
+                        mask = 0;
+                        ni = oneContinueIndex;
+                        oneContinueIndex = 0;
+                    }
+                    else if (!notLess && zeroContinueIndex != 0)
+                    {
+                        mask = int.MaxValue;
+                        ni = zeroContinueIndex;
+                        zeroContinueIndex = 0;
+                    }
+                    else
+                    {
+                        if (notLess)
+                        {
+                            log++;
+                            while (log < _navyData.Length && _navyData[log] is null)
+                            {
+                                log++;
+                            }
+
+                            if (log >= _navyData.Length || _navyData[log] is null)
+                            {
+                                return -1;
+                            }
+
+                            return _navyData[log][0].index;
+                        }
+
+                        return navyItem.index;
+                    }
+                }
+
+                if (!notLess && navy[ni].index > index)
+                    return navyItem.index;
+
+                i = ni;
+                mask >>= 1;
+            }
+            else
+            {
+                return index;
             }
         }
     }
@@ -575,217 +501,69 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         return findNearest(index, false);
     }
 
-    public IEnumerable<int> KeysDirectOrder
+    public IEnumerable<int> KeysForwardOrder
     {
         get
         {
-            var index = 1L;
-            var skipFirst = !_zeroExists;
-            if (_mode == ArrayMode.Flat)
+            var index = 0L;
+
+            while (index < _pseudoLength)
             {
-                for (var i = 0; i < _pseudoLength; i++)
-                {
-                    skipFirst = true;
-                    if (i >= _values.Length) // была насильно установлена длина фиктивным элементом.
-                    {
-                        yield return (int)(_pseudoLength - 1);
-                        yield break;
-                    }
+                index = NearestIndexNotLess(index);
 
-                    yield return i;
+                if (index < 0)
+                    break;
 
-                    if (_mode != ArrayMode.Flat)
-                    {
-                        index = (uint)(i + 1);
-                        break;
-                    }
-                }
-            }
+                yield return (int)index;
 
-            if (_mode == ArrayMode.Sparse) // Режим может поменяться во время итерации в режиме Flat
-            {
-                if (_usedCount > 0)
-                {
-                    if (!skipFirst)
-                    {
-                        yield return 0;
-                    }
-                }
-                else
-                {
-                    yield return (int)(_pseudoLength - 1);
-                    yield break;
-                }
-
-                while (index < _pseudoLength)
-                {
-                    index = NearestIndexNotLess(index);
-
-                    if (index < 0)
-                        break;
-
-                    if (index > 0)
-                        yield return (int)index;
-
-                    index++;
-                }
+                index++;
             }
         }
     }
 
-    public IEnumerable<KeyValuePair<int, TValue>> DirectOrder => KeysDirectOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
+    public IEnumerable<KeyValuePair<int, TValue>> DirectOrder => KeysForwardOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
 
     public IEnumerable<KeyValuePair<int, TValue>> Unordered
     {
         get
         {
-            for (var i = 0; i < _usedCount; i++)
+            for (var i = 0; i < _navyData.Length; i++)
             {
-                yield return new KeyValuePair<int, TValue>((int)_navyData[i].index, _values[i]);
+                for (var j = 0; j < _used.Length; j++)
+                {
+                    yield return new KeyValuePair<int, TValue>((int)_navyData[i][j].index, _values[i][j]!);
+                }
             }
         }
     }
 
-    public IEnumerable<int> KeysReversOrder
+    public IEnumerable<int> KeysReverseOrder
     {
         get
         {
             long index = _pseudoLength - 1;
-            if (_mode == ArrayMode.Flat)
+
+            while (index >= 0)
             {
-                if (_pseudoLength > _values.Length)
-                    yield return (int)(_pseudoLength - 1);
+                index = NearestIndexNotMore(index);
 
-                for (var i = Math.Min(_values.Length, _pseudoLength); i-- > 0;)
-                {
-                    if (_mode != ArrayMode.Flat)
-                    {
-                        index = i;
-                        break;
-                    }
+                if (index < 0)
+                    break;
 
-                    yield return (int)i;
-                }
-            }
+                yield return (int)index;
 
-            if (_mode == ArrayMode.Sparse)
-            {
-                if (_usedCount == 0)
-                    yield break;
-
-                while (index > 0)
-                {
-                    index = NearestIndexNotMore(index);
-
-                    if (index < 0)
-                        break;
-
-                    if (index > 0)
-                        yield return (int)index;
-
-                    index--;
-                }
-
-                if (_zeroExists)
-                    yield return 0;
+                index--;
             }
         }
     }
 
-    public IEnumerable<KeyValuePair<int, TValue>> ReversOrder => KeysReversOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
+    public IEnumerable<KeyValuePair<int, TValue>> ReverseOrder => KeysReverseOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
 
-    public ICollection<int> Keys => KeysDirectOrder.ToList();
+    public ICollection<int> Keys => KeysForwardOrder.ToList();
 
     public ICollection<TValue> Values => DirectOrder.Select(x => x.Value).ToList();
 
     public int Count => (int)Length;
-
-    /// <summary>
-    /// Reduce length to "index of last item with non-default value" + 1
-    /// </summary>
-    public void Trim()
-    {
-        long len = -1;
-        if (_mode == ArrayMode.Flat)
-        {
-            for (var i = _values.Length; i-- > 0;)
-            {
-                if (!Equals(_values[i], default(TValue)))
-                {
-                    len = i;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            for (var i = _usedCount; i-- > 0;)
-            {
-                if (_navyData[i].index > len && !Equals(_values[i], default(TValue)))
-                    len = _navyData[i].index;
-            }
-        }
-
-        _pseudoLength = (uint)(len + 1);
-    }
-
-    public void EnsureCapacity(int capacity)
-    {
-        capacity = Math.Max(4, capacity);
-        if (_values.Length >= capacity)
-            return;
-
-        var newCapacity = 1 << NumberUtils.IntLog(capacity);
-        if (newCapacity < capacity)
-            newCapacity <<= 1;
-
-        var newValues = new TValue[newCapacity];
-        for (var i = 0; i < _values.Length; i++)
-            newValues[i] = _values[i];
-
-        _values = newValues;
-
-        if (_mode == ArrayMode.Sparse)
-        {
-            var newData = new NavyItem[newCapacity];
-            for (var i = 0; i < _navyData.Length; i++)
-                newData[i] = _navyData[i];
-            _navyData = newData;
-        }
-    }
-
-    public void RebuildToSparse()
-    {
-        _usedCount = 0;
-        _mode = ArrayMode.Sparse;
-        var len = _pseudoLength;
-        if (len == 0)
-        {
-            EnsureCapacity(0);
-            return;
-        }
-
-        _navyData = new NavyItem[_values.Length];
-        var data = _values;
-        _values = new TValue[_values.Length];
-        len = (uint)Math.Min(data.Length, len);
-        for (var i = 0; i < len; i++)
-            this[i] = data[i];
-
-        if (_values.Length < len)
-            this[(int)len - 1] = default;
-    }
-
-    public void RebuildToFlat()
-    {
-        var newValues = new TValue[_pseudoLength];
-        for (var i = 0; i < _pseudoLength; i++)
-            newValues[i] = this[i];
-
-        _mode = ArrayMode.Flat;
-        _values = newValues;
-        _navyData = Array.Empty<NavyItem>();
-    }
 
     public void Add(int key, TValue value)
     {

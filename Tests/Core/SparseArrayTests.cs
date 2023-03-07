@@ -16,23 +16,23 @@ namespace Tests.Core
         [TestMethod]
         public void DirectOrderShouldWorkCorrectlyInSparseMode()
         {
-            var sparseArray = new SparseArray<int>(ArrayMode.Sparse);
+            var sparseArray = new SparseArray<int>();
 
             unchecked
             {
-                for (var i = 32; i >= 0; i--)
+                for (var i = 128; i >= 0; i--)
                     sparseArray[i] = i;
             }
 
             var output = sparseArray.DirectOrder.ToArray();
-            for (var i = 0; i <= 32; i++)
+            for (var i = 0; i <= 128; i++)
                 Assert.AreEqual(i, output[i].Value);
         }
 
         [TestMethod]
         public void DirectOrderShouldWorkCorrectlyInSparseMode2()
         {
-            var sparseArray = new SparseArray<int>(ArrayMode.Sparse);
+            var sparseArray = new SparseArray<int>();
 
             unchecked
             {
@@ -50,7 +50,7 @@ namespace Tests.Core
         [TestMethod]
         public void DirectOrderShouldWorkCorrectlyInSparseMode3()
         {
-            var sparseArray = new SparseArray<int>(ArrayMode.Sparse);
+            var sparseArray = new SparseArray<int>();
 
             unchecked
             {
@@ -71,7 +71,7 @@ namespace Tests.Core
         [TestMethod]
         public void ReverseOrderShouldWorkCorrectlyInSparseMode()
         {
-            var sparseArray = new SparseArray<int>(ArrayMode.Sparse);
+            var sparseArray = new SparseArray<int>();
 
             unchecked
             {
@@ -79,7 +79,7 @@ namespace Tests.Core
                     sparseArray[i] = i;
             }
 
-            var output = sparseArray.ReversOrder.ToArray();
+            var output = sparseArray.ReverseOrder.ToArray();
             for (var i = 0; i <= 32; i++)
                 Assert.AreEqual(32 - i, output[i].Value);
         }
