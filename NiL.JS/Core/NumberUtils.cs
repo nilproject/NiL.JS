@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace NiL.JS.Core
@@ -90,9 +91,9 @@ namespace NiL.JS.Core
             var intPart = null as ulong[];
             var intDigitsCount = selectDigits(source, ref intPart, ref position, out var intLeadingCount);
 
-            if (intDigitsCount == 0 
-                && intLeadingCount == 0 
-                && source.Length > position 
+            if (intDigitsCount == 0
+                && intLeadingCount == 0
+                && source.Length > position
                 && source[position] != '.')
             {
                 value = double.NaN;
@@ -393,18 +394,49 @@ namespace NiL.JS.Core
 
         public static int IntLog(long value)
         {
-            var x = (ulong)value;
-            unchecked
+            if (((ulong)value & 0xffff_ffff_0000_0000ul) != 0)
             {
-                int log = (int)((-(long)(x & 0xffff_ffff_0000_0000ul)) >> 62) & 32;
-                log |= (int)((-(long)((x >> log) & 0xffff0000ul)) >> 62) & 16;
-                log |= (int)((-(long)((x >> log) & 0xff00ul)) >> 62) & 8;
-                log |= (int)((-(long)((x >> log) & 0xf0ul)) >> 62) & 4;
-                log |= (int)((-(long)((x >> log) & 12ul)) >> 62) & 2;
-                log |= (int)((-(long)((x >> log) & 2ul)) >> 62) & 1;
-
-                return log;
+                return IntLog((uint)(value >> 32)) + 32;
             }
+
+            return IntLog((uint)value);
+        }
+
+        [CLSCompliant(false)]
+        public static int IntLog(uint x)
+        {
+            var log = 0;
+
+            if ((x & 0xffff0000u) != 0)
+            {
+                x >>= 16;
+                log += 16;
+            }
+
+            if ((x & 0xff00ul) != 0)
+            {
+                x >>= 8;
+                log += 8;
+            }
+
+            if ((x & 0xf0ul) != 0)
+            {
+                x >>= 4;
+                log += 4;
+            }
+
+            if ((x & 12ul) != 0)
+            {
+                x >>= 2;
+                log += 2;
+            }
+
+            if ((x & 2) != 0)
+            {
+                log += 1;
+            }
+
+            return log;
         }
 
         public static string DoubleToString(double d, int digitsLimit = _ToStringDigitsLimit, bool trailingZeros = false)

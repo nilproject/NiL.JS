@@ -1685,7 +1685,7 @@ namespace NiL.JS.Core
                         length = srca._data.Length;
 
                     long prew = -1;
-                    foreach (var element in srca._data.DirectOrder)
+                    foreach (var element in srca._data.ForwardOrder)
                     {
                         if (element.Key >= length) // эээ...
                             break;
@@ -1762,7 +1762,7 @@ namespace NiL.JS.Core
         {
             if (src._valueType == JSValueType.Object && src.Value is BaseLibrary.Array)
             {
-                foreach (var item in (src.Value as BaseLibrary.Array)._data.DirectOrder)
+                foreach (var item in (src.Value as BaseLibrary.Array)._data.ForwardOrder)
                 {
                     yield return new KeyValuePair<uint, JSValue>((uint)item.Key, item.Value);
                 }

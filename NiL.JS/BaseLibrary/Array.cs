@@ -196,7 +196,10 @@ namespace NiL.JS.BaseLibrary
             }
 
             if (_data.Length != nlen)
+            {
+                _data.TrimLength();
                 _data[(int)nlen - 1] = _data[(int)nlen - 1];
+            }
 
             return true;
         }
@@ -851,7 +854,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     var tempKey = new JSValue();
                     var prevKey = startIndex - 1;
-                    var mainEnum = arraySrc._data.DirectOrder.GetEnumerator();
+                    var mainEnum = arraySrc._data.ForwardOrder.GetEnumerator();
                     var moved = true;
                     while (moved)
                     {
@@ -1566,10 +1569,10 @@ namespace NiL.JS.BaseLibrary
 
                 var enumerable = (delta > 0 ? selfa._data.KeysReverseOrder : selfa._data.KeysForwardOrder);
 
-                if (delta > 0 && (!enumerable.Any() || enumerable.First() != initialLength - 1))
-                {
-                    enumerable = enumerable.Concat(Enumerable.Repeat((int)(initialLength - 1), 1));
-                }
+                //if (delta > 0 && (!enumerable.Any() || enumerable.First() != initialLength - 1))
+                //{
+                //    enumerable = enumerable.Concat(Enumerable.Repeat((int)(initialLength - 1), 1));
+                //}
 
                 foreach (var node in enumerable)
                 {
@@ -1581,17 +1584,17 @@ namespace NiL.JS.BaseLibrary
                     if (key >= pos1 && delta == 0)
                         break;
 
-                    ref var value = ref selfa._data.GetExistent(key);
+                    selfa._data.TryGetValue(key, out var value);
 
                     if (value == null || !value.Exists)
                     {
                         var protoVal = selfa.__proto__[((uint)key).ToString()];
                         if (protoVal.Exists)
-                            value = protoVal.CloneImpl(false);
+                            selfa._data[key] = value = protoVal.CloneImpl(false);
                     }
 
                     if (value != null && value._valueType == JSValueType.Property)
-                        value = Tools.GetPropertyOrValue(value, self);
+                        selfa._data[key] = value = Tools.GetPropertyOrValue(value, self);
 
                     if (key < pos1)
                     {
@@ -1600,17 +1603,24 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        ref var t = ref selfa._data.GetExistent((int)(key + delta));
-                        if (t != null && t._valueType == JSValueType.Property)
+                        if (value != null && value.Exists)
                         {
-                            ((t._oValue as PropertyPair).setter ?? Function.Empty).Call(self, new Arguments { value.CloneImpl(false) });
+                            ref var t = ref selfa._data.GetExistent((int)(key + delta));
+                            if (t != null && t._valueType == JSValueType.Property)
+                            {
+                                ((t._oValue as PropertyPair).setter ?? Function.Empty).Call(self, new Arguments { value.CloneImpl(false) });
+                            }
+                            else
+                            {
+                                t = value;
+                            }
+
+                            selfa._data[key] = default;
                         }
                         else
                         {
-                            t = value;
+                            selfa._data[(int)(key + delta)] = default;
                         }
-
-                        value = null;
                     }
                 }
 
@@ -1885,7 +1895,7 @@ namespace NiL.JS.BaseLibrary
 
                     var tt = new BinaryTree<JSValue, List<JSValue>>(new JSComparer(args, first, second, comparer));
                     uint length = selfa._data.Length;
-                    foreach (var item in selfa._data.DirectOrder)
+                    foreach (var item in selfa._data.ForwardOrder)
                     {
                         if (item.Value == null || !item.Value.Defined)
                             continue;
@@ -1914,7 +1924,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     var tt = new BinaryTree<string, List<JSValue>>(StringComparer.Ordinal);
                     uint length = selfa._data.Length;
-                    foreach (var item in selfa._data.DirectOrder)
+                    foreach (var item in selfa._data.ForwardOrder)
                     {
                         if (item.Value == null || !item.Value.Exists)
                             continue;
@@ -2065,7 +2075,7 @@ namespace NiL.JS.BaseLibrary
         {
             if (propertyScope is PropertyScope.Common or PropertyScope.Own)
             {
-                foreach (var item in _data.DirectOrder)
+                foreach (var item in _data.ForwardOrder)
                 {
                     if (item.Value != null
                         && item.Value.Exists
@@ -2425,7 +2435,7 @@ namespace NiL.JS.BaseLibrary
         private IEnumerable<Array> getEntriesEnumerator()
         {
             var prev = -1;
-            foreach (var item in _data.DirectOrder)
+            foreach (var item in _data.ForwardOrder)
             {
                 if (item.Key - prev > 1)
                 {

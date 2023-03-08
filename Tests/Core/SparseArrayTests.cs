@@ -24,7 +24,7 @@ namespace Tests.Core
                     sparseArray[i] = i;
             }
 
-            var output = sparseArray.DirectOrder.ToArray();
+            var output = sparseArray.ForwardOrder.ToArray();
             for (var i = 0; i <= 128; i++)
                 Assert.AreEqual(i, output[i].Value);
         }
@@ -41,7 +41,7 @@ namespace Tests.Core
                 sparseArray[10000] = 10000;
             }
 
-            var output = sparseArray.DirectOrder.ToArray();
+            var output = sparseArray.ForwardOrder.ToArray();
             Assert.AreEqual(1, output[0].Value);
             Assert.AreEqual(2, output[1].Value);
             Assert.AreEqual(10000, output[2].Value);
@@ -61,7 +61,7 @@ namespace Tests.Core
                 sparseArray[(int)4294967202] = 5;
             }
 
-            var output = sparseArray.DirectOrder.ToArray();
+            var output = sparseArray.ForwardOrder.ToArray();
             Assert.AreEqual(3, output[0].Value);
             Assert.AreEqual(4, output[1].Value);
             Assert.AreEqual(5, output[2].Value);
@@ -84,7 +84,7 @@ namespace Tests.Core
                 Assert.AreEqual(32 - i, output[i].Value);
         }
 
-        [Ignore]
+        //[Ignore]
         [TestMethod]
         public void PerformanceTest()
         {
@@ -97,9 +97,9 @@ namespace Tests.Core
             var sparseArray = storage();
             var random = new Random(0x1234);
 
-            var writeRounds = 1;
+            var writeRounds = 10;
             var writeCount = 1000000;
-            var readRounds = 1;
+            var readRounds = 10;
             var readCount = 1000000;
 
             var sw = Stopwatch.StartNew();

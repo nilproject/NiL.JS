@@ -81,10 +81,10 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
     public ref TValue GetExistent(int index)
     {
-        return ref getInternal(index, false, out _);
+        return ref tryGetInternal(index, false, out _);
     }
 
-    private ref TValue getInternal(int index, bool forRead, out bool got)
+    private ref TValue tryGetInternal(int index, bool forRead, out bool got)
     {
         uint unsignedIndex = (uint)index;
 
@@ -135,11 +135,19 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
             return ref _values[log][itemIndex];
         }
 
+        var mask = 1 << (log - 1);
         var navy = _navyData[log];
         var values = _values[log];
 
-        var mask = 1 << (log - 1);
-        uint i = 0;
+        uint i = (uint)(unsignedIndex & (mask << 1) - 1);
+        if (i < navy.Length && navy[i].index == unsignedIndex)
+        {
+            got = true;
+            return ref values[i];
+        }
+
+        i = 0;
+
         uint ni;
         while (true)
         {
@@ -206,7 +214,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
             }
             else
             {
-                if (_pseudoLength <= index)
+                if (!forRead && _pseudoLength <= index)
                     _pseudoLength = unsignedIndex + 1;
 
                 got = true;
@@ -219,8 +227,12 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
     {
         get
         {
-            var r = getInternal(index, true, out var got);
-            return got ? r! : default!;
+            ref var r = ref tryGetInternal(index, true, out var got);
+
+            if (got)
+                return r;
+
+            return default;
         }
         set
         {
@@ -228,7 +240,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
             if (isDefault)
             {
-                ref var maybeExists = ref getInternal(index, true, out var got);
+                ref var maybeExists = ref tryGetInternal(index, true, out var got);
                 if (got)
                     maybeExists = default;
 
@@ -238,7 +250,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
                 }
             }
             else
-                GetExistent(index) = value;
+                tryGetInternal(index, false, out _) = value;
         }
     }
 
@@ -286,7 +298,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
             array[i] = default;
         }
 
-        foreach (var v in DirectOrder)
+        foreach (var v in ForwardOrder)
         {
             if (v.Key >= 0)
                 array[v.Key + arrayIndex] = v.Value;
@@ -388,13 +400,20 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
             }
         }
 
+        var mask = 1 << (log - 1);
         var navy = _navyData[log];
+
+        uint i = (uint)(unsignedIndex & (mask << 1) - 1);
+        if (i < navy.Length && navy[i].index == unsignedIndex)
+        {
+            return navy[i].index;
+        }
+
+        i = 0;
 
         var oneContinueIndex = 0u;
         var zeroContinueIndex = 0u;
 
-        var mask = 1 << (log - 1);
-        uint i = 0;
         uint ni;
         while (true)
         {
@@ -521,7 +540,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         }
     }
 
-    public IEnumerable<KeyValuePair<int, TValue>> DirectOrder => KeysForwardOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
+    public IEnumerable<KeyValuePair<int, TValue>> ForwardOrder => KeysForwardOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
 
     public IEnumerable<KeyValuePair<int, TValue>> Unordered
     {
@@ -541,7 +560,12 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
     {
         get
         {
-            long index = _pseudoLength - 1;
+            if (_pseudoLength == 0)
+                yield break;
+
+            long index = (long)_pseudoLength - 2;
+
+            yield return (int)(_pseudoLength - 1);
 
             while (index >= 0)
             {
@@ -561,7 +585,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
     public ICollection<int> Keys => KeysForwardOrder.ToList();
 
-    public ICollection<TValue> Values => DirectOrder.Select(x => x.Value).ToList();
+    public ICollection<TValue> Values => ForwardOrder.Select(x => x.Value).ToList();
 
     public int Count => (int)Length;
 
@@ -629,7 +653,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
     IEnumerator<KeyValuePair<int, TValue>> IEnumerable<KeyValuePair<int, TValue>>.GetEnumerator()
     {
-        foreach (var item in DirectOrder)
+        foreach (var item in ForwardOrder)
             yield return item;
     }
 }
