@@ -1567,45 +1567,88 @@ namespace NiL.JS.BaseLibrary
 
                 var delta = System.Math.Max(0, args._iValue - 2) - (pos1 - pos0);
 
-                var enumerable = (delta > 0 ? selfa._data.KeysReverseOrder : selfa._data.KeysForwardOrder);
+                var key = delta > 0 ? pos1 + 1 : pos0 - 1;
 
-                //if (delta > 0 && (!enumerable.Any() || enumerable.First() != initialLength - 1))
-                //{
-                //    enumerable = enumerable.Concat(Enumerable.Repeat((int)(initialLength - 1), 1));
-                //}
+                var done = false;
 
-                foreach (var node in enumerable)
+                var value = default(JSValue);
+                ref var refValue = ref value;
+
+                foreach (var ownKey in delta > 0 ? selfa._data.KeysReverseOrder : selfa._data.KeysForwardOrder)
                 {
-                    var key = node;
-
-                    if (key < pos0)
+                    if (ownKey < pos0)
                         continue;
 
-                    if (key >= pos1 && delta == 0)
-                        break;
-
-                    selfa._data.TryGetValue(key, out var value);
-
-                    if (value == null || !value.Exists)
+                    do
                     {
-                        var protoVal = selfa.__proto__[((uint)key).ToString()];
-                        if (protoVal.Exists)
-                            selfa._data[key] = value = protoVal.CloneImpl(false);
-                    }
+                        refValue = ref selfa._data.TryGetInternalForRead((uint)ownKey, out var got);
+                        value = refValue;
+                        var realValue = value is not null && value.Exists;
 
-                    if (value != null && value._valueType == JSValueType.Property)
-                        selfa._data[key] = value = Tools.GetPropertyOrValue(value, self);
-
-                    if (key < pos1)
-                    {
-                        if (needResult)
-                            res._data[(int)(key - pos0)] = value;
-                    }
-                    else
-                    {
-                        if (value != null && value.Exists)
+                        if (System.Math.Abs(ownKey - key) > 1 || !realValue)
                         {
-                            ref var t = ref selfa._data.GetExistent((int)(key + delta));
+                            var protoKey = key;
+                            var protoValue = default(JSValue);
+                            while (protoValue is null || !protoValue.Exists)
+                            {
+                                protoKey = delta > 0 ? protoKey - 1 : protoKey + 1;
+                                if ((delta > 0 ? protoKey < ownKey : protoKey > ownKey)
+                                    || (protoKey == ownKey && realValue))
+                                {
+                                    break;
+                                }
+
+                                protoValue = selfa.__proto__.GetProperty((uint)protoKey, false, PropertyScope.Common);
+                            }
+
+                            if (protoValue is not null && protoValue.Exists)
+                            {
+                                key = (int)protoKey;
+
+                                if (!got)
+                                    refValue = ref value;
+
+                                refValue = protoValue.CloneImpl(false);
+                                value = refValue;
+                            }
+                            else
+                            {
+                                key = ownKey;
+                            }
+                        }
+                        else
+                        {
+                            key = ownKey;
+                        }
+
+                        if (key >= pos1 && delta == 0)
+                        {
+                            done = true;
+                            break;
+                        }
+
+                        if (value != null && value._valueType == JSValueType.Property)
+                            value = Tools.GetPropertyOrValue(value, self);
+                        else if (got)
+                            refValue = default;
+
+                        if (key < pos1)
+                        {
+                            if (needResult)
+                                res._data[(int)(key - pos0)] = value;
+                        }
+                        else
+                        {
+                            ref var t = ref value;
+                            if (value != null && value.Exists)
+                            {
+                                t = ref selfa._data.TryGetInternalForWrite((uint)(key + delta), out _);
+                            }
+                            else
+                            {
+                                t = ref selfa._data.TryGetInternalForRead((uint)(key + delta), out _);
+                            }
+
                             if (t != null && t._valueType == JSValueType.Property)
                             {
                                 ((t._oValue as PropertyPair).setter ?? Function.Empty).Call(self, new Arguments { value.CloneImpl(false) });
@@ -1614,14 +1657,12 @@ namespace NiL.JS.BaseLibrary
                             {
                                 t = value;
                             }
-
-                            selfa._data[key] = default;
-                        }
-                        else
-                        {
-                            selfa._data[(int)(key + delta)] = default;
                         }
                     }
+                    while (key != ownKey);
+
+                    if (done)
+                        break;
                 }
 
                 if (delta < 0)
@@ -1635,14 +1676,14 @@ namespace NiL.JS.BaseLibrary
                 {
                     if (args[i].Exists)
                     {
-                        var t = selfa._data[(int)(pos0 + i - 2)];
-                        if (t != null && t._valueType == JSValueType.Property)
+                        ref var item = ref selfa._data.GetExistent((int)(pos0 + i - 2));
+                        if (item != null && item._valueType == JSValueType.Property)
                         {
-                            ((t._oValue as PropertyPair).setter ?? Function.Empty).Call(self, new Arguments { args[i] });
+                            ((item._oValue as PropertyPair).setter ?? Function.Empty).Call(self, new Arguments { args[i] });
                         }
                         else
                         {
-                            selfa._data[(int)(pos0 + i - 2)] = args[i].CloneImpl(false);
+                            item = args[i].CloneImpl(false);
                         }
                     }
                 }
@@ -2235,7 +2276,7 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        var res = _data[index];
+                        var res = _data.TryGetInternalForRead((uint)index, out _);
                         if (res is null || res._valueType < JSValueType.Undefined)
                         {
                             notExists._valueType = JSValueType.NotExistsInObject;

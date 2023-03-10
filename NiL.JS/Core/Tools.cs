@@ -1760,13 +1760,29 @@ namespace NiL.JS.Core
 
         internal static IEnumerable<KeyValuePair<uint, JSValue>> EnumerateArraylike(long length, JSValue src)
         {
+            var protoEnumerator = EnumerateArraylike(length, src.__proto__).GetEnumerator();
+            var prev = 0u;
+
             if (src._valueType == JSValueType.Object && src.Value is BaseLibrary.Array)
             {
                 foreach (var item in (src.Value as BaseLibrary.Array)._data.ForwardOrder)
                 {
+                    if (item.Key - prev > 1)
+                    {
+                        while (protoEnumerator.Current.Key < prev && protoEnumerator.MoveNext()) ;
+
+                        while (protoEnumerator.Current.Key < item.Key && protoEnumerator.MoveNext())
+                        {
+                            yield return protoEnumerator.Current;
+                        }
+                    }
+
                     yield return new KeyValuePair<uint, JSValue>((uint)item.Key, item.Value);
+
+                    prev = (uint)item.Key;
                 }
             }
+
             var @enum = src.GetEnumerator(false, EnumerationMode.RequireValues);
             while (@enum.MoveNext())
             {
@@ -1774,12 +1790,24 @@ namespace NiL.JS.Core
                 var pindex = 0;
                 var dindex = 0.0;
                 var lindex = 0U;
-                if (Tools.ParseJsNumber(i, ref pindex, out dindex)
+                if (ParseJsNumber(i, ref pindex, out dindex)
                     && (pindex == i.Length)
-                    && dindex < length
                     && (lindex = (uint)dindex) == dindex)
                 {
-                    yield return new KeyValuePair<uint, JSValue>(lindex, @enum.Current.Value);
+                    if (lindex - prev > 1)
+                    {
+                        while (protoEnumerator.Current.Key < prev && protoEnumerator.MoveNext()) ;
+
+                        while (protoEnumerator.Current.Key < lindex && protoEnumerator.MoveNext())
+                        {
+                            yield return protoEnumerator.Current;
+                        }
+                    }
+
+                    if (lindex < length)
+                        yield return new KeyValuePair<uint, JSValue>(lindex, @enum.Current.Value);
+
+                    prev = lindex;
                 }
             }
         }

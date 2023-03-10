@@ -52,11 +52,48 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             JSValue res;
+            JSValue key;
 
             var source = _left.Evaluate(context);
 
+            if (source._valueType >= JSValueType.Object && source._oValue is JSObject obj)
+            {
+                key = _cachedMemberName ?? _right.Evaluate(context);
+
+                if (obj is BaseLibrary.Array array)
+                {
+                    if (key._valueType == JSValueType.Integer)
+                    {
+                        res = array._data[key._iValue];
+
+                        if (res is null || res._valueType < JSValueType.Undefined)
+                            res = array.GetProperty(key, false, _memberScope);
+
+                        if (res.ValueType == JSValueType.Property)
+                            res = Tools.GetPropertyOrValue(res, array);
+
+                        context._objectSource = array;
+                        return res;
+                    }
+                }
+
+                res = obj.GetProperty(key, false, _memberScope) ?? JSValue.NotExistsInObject;
+                if (res.ValueType == JSValueType.Property)
+                    res = Tools.GetPropertyOrValue(res, obj);
+
+                context._objectSource = obj;
+                return res;
+            }
+
+            return getPropertyGeneric(context, source);
+        }
+
+        private JSValue getPropertyGeneric(Context context, JSValue source)
+        {
+            JSValue res;
+            JSValue key;
             if (source._valueType <= JSValueType.Undefined
-                || (source._valueType >= JSValueType.Object && source._oValue == null))
+                            || (source._valueType >= JSValueType.Object && source._oValue == null))
             {
                 if (OptionalChaining)
                     return JSValue.undefined;
@@ -83,10 +120,9 @@ namespace NiL.JS.Expressions
                 }
             }
 
-            var key = _cachedMemberName ?? _right.Evaluate(context);
+            key = _cachedMemberName ?? _right.Evaluate(context);
 
             res = source.GetProperty(key, false, _memberScope);
-            context._objectSource = source;
 
             if (res == null)
                 res = JSValue.undefined;
@@ -102,6 +138,7 @@ namespace NiL.JS.Expressions
                 }
             }
 
+            context._objectSource = source;
             _tempContainer = oldTempContainer;
             return res;
         }

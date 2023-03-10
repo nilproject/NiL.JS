@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace NiL.JS.Core
 {
@@ -402,38 +403,39 @@ namespace NiL.JS.Core
             return IntLog((uint)value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [CLSCompliant(false)]
         public static int IntLog(uint x)
         {
             var log = 0;
 
-            if ((x & 0xffff0000u) != 0)
+            if (x > 65535)
             {
                 x >>= 16;
-                log += 16;
+                log |= 16;
             }
 
-            if ((x & 0xff00ul) != 0)
+            if (x > 255)
             {
                 x >>= 8;
-                log += 8;
+                log |= 8;
             }
 
-            if ((x & 0xf0ul) != 0)
+            if (x > 15)
             {
                 x >>= 4;
-                log += 4;
+                log |= 4;
             }
 
-            if ((x & 12ul) != 0)
+            if (x > 3)
             {
                 x >>= 2;
-                log += 2;
+                log |= 2;
             }
 
-            if ((x & 2) != 0)
+            if (x > 1)
             {
-                log += 1;
+                log |= 1;
             }
 
             return log;
