@@ -14,6 +14,40 @@ namespace Tests.Core
     public class SparseArrayTests
     {
         [TestMethod]
+        public void DirectOrderShouldWorkCorrectlyInFlatMode()
+        {
+            var sparseArray = new SparseArray<int>();
+
+            unchecked
+            {
+                for (var i = 0; i <= 128; i++)
+                    sparseArray[i] = i;
+            }
+
+            var output = sparseArray.ForwardOrder.ToArray();
+            for (var i = 0; i <= 128; i++)
+                Assert.AreEqual(i, output[i].Value);
+        }
+
+        [TestMethod]
+        public void RebuildToSparseShouldWorkCorrectly()
+        {
+            var sparseArray = new SparseArray<int>();
+
+            unchecked
+            {
+                for (var i = 0; i < 128; i++)
+                {
+                    var v = (i * 67) % 128;
+                    sparseArray[v] = v;
+                }
+            }
+
+            for (var i = 0; i < 128; i++)
+                Assert.AreEqual(i, sparseArray[i]);
+        }
+
+        [TestMethod]
         public void DirectOrderShouldWorkCorrectlyInSparseMode()
         {
             var sparseArray = new SparseArray<int>();
@@ -38,13 +72,25 @@ namespace Tests.Core
             {
                 sparseArray[0] = 1;
                 sparseArray[1] = 2;
+                sparseArray[2] = 3;
+                sparseArray[3] = 4;
+                sparseArray[4] = 5;
+                sparseArray[5] = 6;
+                sparseArray[6] = 7;
+                sparseArray[7] = 8;
                 sparseArray[10000] = 10000;
             }
 
             var output = sparseArray.ForwardOrder.ToArray();
             Assert.AreEqual(1, output[0].Value);
             Assert.AreEqual(2, output[1].Value);
-            Assert.AreEqual(10000, output[2].Value);
+            Assert.AreEqual(3, output[2].Value);
+            Assert.AreEqual(4, output[3].Value);
+            Assert.AreEqual(5, output[4].Value);
+            Assert.AreEqual(6, output[5].Value);
+            Assert.AreEqual(7, output[6].Value);
+            Assert.AreEqual(8, output[7].Value);
+            Assert.AreEqual(10000, output[8].Value);
         }
 
         [TestMethod]
