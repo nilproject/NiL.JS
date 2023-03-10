@@ -32,8 +32,8 @@ namespace NiL.JS.Expressions
         public override string ToString()
         {
             if (_static)
-                return "static " + _value;
-            return _value.ToString();
+                return "static " + _name + " = " + _value;
+            return _name + " = " + _value;
         }
     }
 
@@ -44,31 +44,32 @@ namespace NiL.JS.Expressions
     {
         private sealed class ClassConstructor : Function
         {
-            private readonly ClassDefinition classDefinition;
+            private readonly ClassDefinition _classDefinition;
             public override string name
             {
                 get
                 {
-                    return classDefinition.Name;
+                    return _classDefinition.Name;
                 }
             }
 
             public ClassConstructor(Context context, FunctionDefinition creator, ClassDefinition classDefinition)
                 : base(context, creator)
             {
-                this.classDefinition = classDefinition;
+                _classDefinition = classDefinition;
             }
 
             protected internal override JSValue ConstructObject()
             {
                 var result = CreateObject();
                 result.__proto__ = prototype._oValue as JSObject;
+                _classDefinition.setProperties(Context, result, false);
                 return result;
             }
 
             public override string ToString(bool headerOnly)
             {
-                return classDefinition.ToString();
+                return _classDefinition.ToString();
             }
         }
 
@@ -316,9 +317,7 @@ namespace NiL.JS.Expressions
                         string fieldName = null;
                         if (state.Code[i] == '*')
                         {
-                            do
-                                i++;
-                            while (Tools.IsWhiteSpace(state.Code[i]));
+                            do i++; while (Tools.IsWhiteSpace(state.Code[i]));
                         }
 
                         if (Parser.ValidateName(state.Code, ref i, false, true, state.Strict))
@@ -352,7 +351,6 @@ namespace NiL.JS.Expressions
                         }
                         else if (@static)
                         {
-                            fieldName = "static " + fieldName;
                             state.CodeContext |= CodeContext.InStaticMember;
                         }
 
@@ -365,18 +363,34 @@ namespace NiL.JS.Expressions
                         if (async)
                             state.CodeContext |= CodeContext.InAsync;
 
-                        i = s;
-                        var method = FunctionDefinition.Parse(state, ref i, async ? FunctionKind.AsyncMethod : FunctionKind.Method) as FunctionDefinition;
-                        if (method == null)
-                            ExceptionHelper.ThrowSyntaxError("Unable to parse method", state.Code, i);
+                        while (Tools.IsWhiteSpace(state.Code[i])) i++;
+
+                        Expression expression = null;
+
+                        if (async || asterisk || fieldName == "constructor" || state.Code[i] == '(')
+                        {
+                            i = s;
+                            expression = FunctionDefinition.Parse(state, ref i, async ? FunctionKind.AsyncMethod : FunctionKind.Method) as FunctionDefinition;
+                            if (expression == null)
+                                ExceptionHelper.ThrowSyntaxError("Unable to parse method", state.Code, i);
+                        }
+                        else if (state.Code[i] == '=')
+                        {
+                            do i++; while (Tools.IsWhiteSpace(state.Code[i]));
+                            expression = ExpressionTree.Parse(state, ref i) as Expression;
+                        }
+                        else if (state.Code[i] == ';')
+                        {
+                            i++;
+                        }
 
                         if (fieldName == "constructor")
                         {
-                            ctor = method;
+                            ctor = expression as FunctionDefinition;
                         }
                         else
                         {
-                            flds[fieldName] = new MemberDescriptor(new Constant(method._name), method, @static);
+                            flds[fieldName] = new MemberDescriptor(new Constant(fieldName), expression, @static);
                         }
                     }
                 }
@@ -398,6 +412,7 @@ namespace NiL.JS.Expressions
 
             var classDefinition = new ClassDefinition(name, baseType, new List<MemberDescriptor>(flds.Values).ToArray(), ctor, computedProperties.ToArray());
             classDefinition.reference.ScopeLevel = state.LexicalScopeLevel;
+            classDefinition.reference._descriptor.definitionScopeLevel = state.LexicalScopeLevel;
 
             if ((state.CodeContext & CodeContext.InExpression) == 0)
             {
@@ -497,22 +512,27 @@ namespace NiL.JS.Expressions
                     ctor.prototype.__proto__ = Tools.GetPropertyOrValue(baseProto.GetProperty("prototype"), baseProto)._oValue as JSObject;
                 }
 
-                ctor.__proto__ = baseProto as JSObject;
+                ctor.__proto__ = baseProto;
             }
 
+            setProperties(context, ctor, true);
+
+            variable?.Assign(ctor);
+
+            return ctor;
+        }
+
+        private void setProperties(Context context, JSObject target, bool @static)
+        {
             for (var i = 0; i < _members.Length; i++)
             {
                 var member = _members[i];
-                var value = member.Value.Evaluate(context);
-                JSValue target = null;
-                if (member.Static)
-                {
-                    target = ctor;
-                }
-                else
-                {
-                    target = ctor.prototype;
-                }
+                if (member.Static != @static)
+                    continue;
+
+                var value = member.Value?.Evaluate(context);
+                if (value is null)
+                    continue;
 
                 target.SetProperty(member.Name.Evaluate(null), value, true);
             }
@@ -520,16 +540,8 @@ namespace NiL.JS.Expressions
             for (var i = 0; i < _computedProperties.Length; i++)
             {
                 var member = _computedProperties[i];
-
-                JSObject target = null;
-                if (member.Static)
-                {
-                    target = ctor;
-                }
-                else
-                {
-                    target = ctor.prototype._oValue as JSObject;
-                }
+                if (member.Static != @static)
+                    continue;
 
                 var key = member._name.Evaluate(context).CloneImpl(false);
                 var value = member._value.Evaluate(context).CloneImpl(false);
@@ -575,10 +587,6 @@ namespace NiL.JS.Expressions
                     }
                 }
             }
-
-            variable?.Assign(ctor);
-
-            return ctor;
         }
 
         public override T Visit<T>(Visitor<T> visitor)
@@ -657,7 +665,8 @@ namespace NiL.JS.Expressions
 
             for (var i = _members.Length; i-- > 0;)
             {
-                _members[i]._value.Optimize(ref _members[i]._value, owner, message, opts, stats);
+                if (_members[i]._value is not null)
+                    _members[i]._value.Optimize(ref _members[i]._value, owner, message, opts, stats);
             }
 
             for (var i = 0; i < _computedProperties.Length; i++)
@@ -681,7 +690,7 @@ namespace NiL.JS.Expressions
             for (var i = 0; i < _members.Length; i++)
             {
                 _members[i].Name.RebuildScope(functionInfo, null, scopeBias);
-                _members[i].Value.RebuildScope(functionInfo, null, scopeBias);
+                _members[i].Value?.RebuildScope(functionInfo, null, scopeBias);
             }
         }
     }
