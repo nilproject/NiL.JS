@@ -245,7 +245,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
             return itemIndex + (segment * SegmentSize);
         }
 
-        var mask = 1 << 7;
+        var mask = SegmentSize >> 1;
         var navy = _navyData[segment];
 
         uint i = (uint)(unsignedIndex & (mask << 1) - 1);
@@ -340,7 +340,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
                                 return -1;
                             }
 
-                            return segment * SegmentSize + _values[segment].Length - 1;
+                            return _navyData[segment][0].index;
                         }
 
                         return navyItem.index;
@@ -363,7 +363,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
     [MethodImpl(MethodImplOptions.NoInlining)]
     private ref TValue getFromTree(uint index, bool forRead, out bool got, uint segment)
     {
-        var mask = 1 << 7;
+        var mask = SegmentSize >> 1;
         var navy = _navyData[segment];
         var values = _values[segment];
 
