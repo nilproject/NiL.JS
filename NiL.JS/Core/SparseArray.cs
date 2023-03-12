@@ -485,13 +485,13 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
             if (isDefault)
             {
-                ref var maybeExists = ref TryGetInternalForRead((uint)index, out var got);
-                if (got)
-                    maybeExists = default;
-
                 if (_pseudoLength <= (uint)index)
+                    _pseudoLength = (uint)index + 1;
+                else
                 {
-                    _pseudoLength = ((uint)index + 1);
+                    ref var maybeExists = ref TryGetInternalForRead((uint)index, out var got);
+                    if (got)
+                        maybeExists = default;
                 }
             }
             else

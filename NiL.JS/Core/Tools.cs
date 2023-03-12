@@ -1657,6 +1657,9 @@ namespace NiL.JS.Core
 
         internal static long getLengthOfArraylike(JSValue src, bool reassignLen)
         {
+            if (src._oValue is BaseLibrary.Array array)
+                return array._data.Length;
+
             var length = src.GetProperty("length", true, PropertyScope.Common); // тут же проверка на null/undefined с падением если надо
 
             var result = (uint)JSObjectToInt64(GetPropertyOrValue(length, src).ToPrimitiveValue_Value_String(), 0, false);
@@ -1852,7 +1855,7 @@ namespace NiL.JS.Core
             if (propPair == null || propPair.setter == null)
                 return;
 
-            propertyObject = propPair.setter.Call(target, new Arguments { newValue });
+            propPair.setter.Call(target, new Arguments { newValue });
         }
 
         internal static JSValue EvalExpressionSafe(Context context, Expressions.Expression source)
