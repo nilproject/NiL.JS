@@ -340,6 +340,9 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
                                 return -1;
                             }
 
+                            if (_navyData[segment].Length == 0)
+                                return segment * SegmentSize;
+
                             return _navyData[segment][0].index;
                         }
 
@@ -635,9 +638,9 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         {
             for (var i = 0; i < _navyData.Length; i++)
             {
-                for (var j = 0; j < _used.Length; j++)
+                for (var j = 0; j < _used[i]; j++)
                 {
-                    yield return new KeyValuePair<int, TValue>((int)_navyData[i][j].index, _values[i][j]!);
+                    yield return new KeyValuePair<int, TValue>(_navyData[i].Length is 0 ? i * SegmentSize + j : (int)_navyData[i][j].index, _values[i][j]!);
                 }
             }
         }

@@ -1239,7 +1239,7 @@ namespace NiL.JS.BaseLibrary
                         tempKey._iValue = i;
                         var parentProp = selfa.GetProperty(tempKey, false, PropertyScope.Super);
                         if (parentProp is null or not { _valueType: JSValueType.Property })
-                            selfa._data.Add(v);
+                            selfa._data.Add(v.CloneImpl(false));
                         else
                         {
                             Tools.SetPropertyOrValue(parentProp, selfa, v);

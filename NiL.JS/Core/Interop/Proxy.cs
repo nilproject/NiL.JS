@@ -39,35 +39,35 @@ namespace NiL.JS.Core.Interop
                     try
                     {
 #endif
-                    if (_instanceCtor != null)
-                    {
-                        if (_hostedType == typeof(JSObject))
+                        if (_instanceCtor != null)
                         {
-                            _prototypeInstance = CreateObject();
-                            _prototypeInstance._objectPrototype = @null;
-                            _prototypeInstance._fields = _fields;
-                            _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
-                        }
-                        else if (typeof(JSObject).IsAssignableFrom(_hostedType))
-                        {
-                            _prototypeInstance = _instanceCtor.Invoke(null) as JSObject;
-                            _prototypeInstance._objectPrototype = __proto__;
-                            _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
-                            _prototypeInstance._fields = _fields;
-                            //_prototypeInstance.valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
-                            _valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance._valueType);
-                        }
-                        else
-                        {
-                            var instance = _instanceCtor.Invoke(null);
-                            _prototypeInstance = new ObjectWrapper(instance, this)
+                            if (_hostedType == typeof(JSObject))
                             {
-                                _attributes = _attributes | JSValueAttributesInternal.ProxyPrototype,
-                                _fields = _fields,
-                                _objectPrototype = _context.GlobalContext._globalPrototype
-                            };
+                                _prototypeInstance = CreateObject();
+                                _prototypeInstance._objectPrototype = @null;
+                                _prototypeInstance._fields = _fields;
+                                _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
+                            }
+                            else if (typeof(JSObject).IsAssignableFrom(_hostedType))
+                            {
+                                _prototypeInstance = _instanceCtor.Invoke(null) as JSObject;
+                                _prototypeInstance._objectPrototype = __proto__;
+                                _prototypeInstance._attributes |= JSValueAttributesInternal.ProxyPrototype;
+                                _prototypeInstance._fields = _fields;
+                                //_prototypeInstance.valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance.valueType);
+                                _valueType = (JSValueType)System.Math.Max((int)JSValueType.Object, (int)_prototypeInstance._valueType);
+                            }
+                            else
+                            {
+                                var instance = _instanceCtor.Invoke(null);
+                                _prototypeInstance = new ObjectWrapper(instance, this)
+                                {
+                                    _attributes = _attributes | JSValueAttributesInternal.ProxyPrototype,
+                                    _fields = _fields,
+                                    _objectPrototype = _context.GlobalContext._globalPrototype
+                                };
+                            }
                         }
-                    }
 #if !(PORTABLE || NETCORE)
                     }
                     catch (COMException)
@@ -152,7 +152,7 @@ namespace NiL.JS.Core.Interop
 #if (PORTABLE || NETCORE)
                                 parentProperty = property.DeclaringType.GetTypeInfo().BaseType?.GetRuntimeProperty(property.Name);
 #else
-                            parentProperty = property.DeclaringType.GetTypeInfo().BaseType?.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
+                                parentProperty = property.DeclaringType.GetTypeInfo().BaseType?.GetProperty(property.Name, BindingFlags.Public | BindingFlags.Instance);
 #endif
                             }
                         }
@@ -269,7 +269,7 @@ namespace NiL.JS.Core.Interop
                     {
                         if (_symbols == null)
                             _symbols = new Dictionary<Symbol, JSValue>();
-                        _symbols.Add(Symbol.@for(membername.Substring(2)), proxyMember(false, new[] { member }));
+                        _symbols.Add(Symbol.@for(membername.Substring(2)), proxyMember(new[] { member }));
                     }
                     else
                     {
@@ -292,7 +292,7 @@ namespace NiL.JS.Core.Interop
                         {
                             if (_symbols == null)
                                 _symbols = new Dictionary<Symbol, JSValue>();
-                            _symbols.Add(Symbol.iterator, proxyMember(false, iterator));
+                            _symbols.Add(Symbol.iterator, proxyMember(iterator));
                             tempMembers.Remove("iterator");
                         }
                     }
@@ -322,13 +322,13 @@ namespace NiL.JS.Core.Interop
 
                         if (getter != null)
                         {
-                            _indexerProperty.getter = (Function)proxyMember(false, getter);
+                            _indexerProperty.getter = (Function)proxyMember(getter);
                             _fields["get_Item"] = _indexerProperty.getter;
                         }
 
                         if (setter != null)
                         {
-                            _indexerProperty.setter = (Function)proxyMember(false, setter);
+                            _indexerProperty.setter = (Function)proxyMember(setter);
                             _fields["set_Item"] = _indexerProperty.setter;
                         }
                     }
@@ -421,13 +421,17 @@ namespace NiL.JS.Core.Interop
                 }
             }
 
-            var result = proxyMember(forWrite, m);
+            var result = proxyMember(m);
+
+            if (forWrite && result.NeedClone)
+                result = result.CloneImpl(false);
+
             _fields[name] = result;
 
             return result;
         }
 
-        internal JSValue proxyMember(bool forWrite, IList<MemberInfo> m)
+        internal JSValue proxyMember(IList<MemberInfo> m)
         {
             JSValue r = null;
             if (m.Count > 1)
@@ -545,10 +549,10 @@ namespace NiL.JS.Core.Interop
                     }
 #else
                     case MemberTypes.NestedType:
-                        {
-                            r = _context.GetConstructor((Type)m[0]);
-                            break;
-                        }
+                    {
+                        r = _context.GetConstructor((Type)m[0]);
+                        break;
+                    }
                     default:
                         throw new NotImplementedException("Convertion from " + m[0].MemberType + " not implemented");
 #endif
@@ -557,9 +561,6 @@ namespace NiL.JS.Core.Interop
 
             if (m[0].IsDefined(typeof(DoNotEnumerateAttribute), false))
                 r._attributes |= JSValueAttributesInternal.DoNotEnumerate;
-
-            if (forWrite && r.NeedClone)
-                r = r.CloneImpl(false);
 
             for (var i = m.Count; i-- > 0;)
             {
@@ -673,9 +674,14 @@ namespace NiL.JS.Core.Interop
                                 case EnumerationMode.RequireValues:
                                 case EnumerationMode.RequireValuesForWrite:
                                 {
+                                    var member = proxyMember(item.Value);
+                                    if (enumerationMode == EnumerationMode.RequireValuesForWrite)
+                                        member = member.CloneImpl(false);
+
                                     yield return new KeyValuePair<string, JSValue>(
                                         item.Key,
-                                        _fields[item.Key] = proxyMember(enumerationMode == EnumerationMode.RequireValuesForWrite, item.Value));
+                                        _fields[item.Key] = member);
+
                                     break;
                                 }
                             }

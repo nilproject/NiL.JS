@@ -188,15 +188,19 @@ namespace Tests.Core
                 strings[i] = createRandomAsciiString(random, buffer);
 
             var stringIndex = 0;
-            var writeRounds = 1;
-            var writeCount = 1000000;
-            var readRounds = 1;
-            var readCount = 1000000;
+            var writeRounds = 200;
+            var writeCount = 500000;
+            var readRounds = 200;
+            var readCount = 500000;
 
             var sw = Stopwatch.StartNew();
             for (var r = 0; r < writeRounds; r++)
+            {
+                map = storage();
                 for (var i = 0; i < writeCount; i++)
-                    map[strings[stringIndex]] = i;
+                    map[strings[stringIndex = (stringIndex + 1) % strings.Length]] = i;
+            }
+
             Console.WriteLine("random write " + writeRounds + "*" + writeCount + ": " + sw.Elapsed);
 
             stringIndex = 0;
@@ -204,7 +208,7 @@ namespace Tests.Core
             sw.Restart();
             for (var r = 0; r < readRounds; r++)
                 for (var i = 0; i < readCount; i++)
-                    map.TryGetValue(strings[stringIndex], out _);
+                    map.TryGetValue(strings[stringIndex = (stringIndex + 1) % strings.Length], out _);
             Console.WriteLine("random read  " + readRounds + "*" + readCount + ": " + sw.Elapsed);
         }
     }

@@ -235,37 +235,46 @@ namespace NiL.JS.Expressions
         {
             var f = _left.Evaluate(context);
 
-            var temp = _tempContainer;
-            _tempContainer = null;
-            if (temp == null)
-                temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
-
-            temp._valueType = f._valueType;
-            temp._iValue = f._iValue;
-            temp._dValue = f._dValue;
-            temp._oValue = f._oValue;
+            var valueType = f._valueType;
+            var iValue = f._iValue;
+            var dValue = f._dValue;
+            var oValue = f._oValue;
 
             var s = _right.Evaluate(context);
-            _tempContainer = temp;
 
-            if (temp._valueType == JSValueType.Integer && s._valueType == JSValueType.Integer)
+            if (valueType == JSValueType.Integer && s._valueType == JSValueType.Integer)
             {
-                temp._valueType = JSValueType.Boolean;
-                temp._iValue = temp._iValue < s._iValue ? 1 : 0;
-                return _tempContainer;
+                return iValue < s._iValue ? BaseLibrary.Boolean.True : BaseLibrary.Boolean.False;
             }
 
-            if (_tempContainer._valueType == JSValueType.Double && s._valueType == JSValueType.Double)
+            if (valueType == JSValueType.Double && s._valueType == JSValueType.Double)
             {
-                temp._valueType = JSValueType.Boolean;
-                if (double.IsNaN(temp._dValue) || double.IsNaN(s._dValue))
-                    temp._iValue = _regularLess ? 0 : 1;
+                if (double.IsNaN(dValue) || double.IsNaN(s._dValue))
+                    return _regularLess ? BaseLibrary.Boolean.False : BaseLibrary.Boolean.True;
                 else
-                    temp._iValue = temp._dValue < s._dValue ? 1 : 0;
-                return _tempContainer;
+                    return dValue < s._dValue ? BaseLibrary.Boolean.True : BaseLibrary.Boolean.False;
             }
 
-            return Check(_tempContainer, s, !_regularLess);
+            return genericCheck(valueType, iValue, dValue, oValue, s);
+        }
+
+        private JSValue genericCheck(JSValueType valueType, int iValue, double dValue, object oValue, JSValue s)
+        {
+            if (_tempContainer is null)
+                _tempContainer = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+
+            var temp = _tempContainer;
+            _tempContainer = null;
+
+            temp._valueType = valueType;
+            temp._iValue = iValue;
+            temp._dValue = dValue;
+            temp._oValue = oValue;
+
+            var result = Check(temp, s, !_regularLess);
+
+            _tempContainer = temp;
+            return result;
         }
 
         public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)

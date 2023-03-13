@@ -478,9 +478,11 @@ namespace NiL.JS.Core.Functions
 
             object value = invokeMethod(targetValue, argumentsSource, null, initiator);
 
+            if (value is JSValue jsval)
+                return jsval;
+
             if (value is not null
                 && targetValue is not null
-                && (value is not JSValue jsval || jsval._valueType == targetValue._valueType)
                 && value == targetValue.Value)
                 return targetValue;
 
@@ -571,7 +573,7 @@ namespace NiL.JS.Core.Functions
         private object processArgument(Expressions.Expression[] arguments, Context initiator, int index)
         {
             var value = arguments.Length > index
-                ? Tools.EvalExpressionSafe(initiator, arguments[index]) 
+                ? Tools.EvalExpressionSafe(initiator, arguments[index])
                 : notExists;
 
             return convertArgument(index, value);
