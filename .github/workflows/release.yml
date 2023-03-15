@@ -67,17 +67,11 @@ jobs:
         fetch-depth: 0
         submodules: true
 
-    # Install the .NET Core 7.0
-    - name: Install .NET Core 7.0
+    # Install the .NET Core 3.1
+    - name: Install .NET Core 3.1
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 7.0.x
-
-    # Install the .NET Core 6.0
-    - name: Install .NET Core 6.0
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
+        dotnet-version: 3.1.x
 
     # Install the .NET Core 5.0
     - name: Install .NET Core 5.0
@@ -85,15 +79,21 @@ jobs:
       with:
         dotnet-version: 5.0.x
 
-    # Install the .NET Core 3.1
-    - name: Install .NET Core 3.1
+    # Install the .NET Core 6.0
+    - name: Install .NET Core 6.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.x
+        dotnet-version: 6.0.x
+
+    # Install the .NET Core 7.0
+    - name: Install .NET Core 7.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.x
 
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.3.1
 
     # Decode the base 64 encoded pfx and save the Signing_Certificate
     - name: Decode the snk
