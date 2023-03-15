@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Core
 {
@@ -159,11 +160,15 @@ namespace NiL.JS.Core
                     {
                         if (propertyScope != PropertyScope.Own && string.CompareOrdinal(name, "__proto__") == 0)
                             return proto;
+
                         return notExists;
                     }
+
                     res = new JSValue { _valueType = JSValueType.NotExistsInObject };
+                    
                     if (_fields == null)
                         _fields = getFieldsContainer();
+                    
                     _fields[name] = res;
                 }
                 else if (forWrite)
@@ -937,6 +942,18 @@ namespace NiL.JS.Core
             //if (res.oValue is TypeProxy && (res.oValue as TypeProxy).prototypeInstance != null)
             //    res = (res.oValue as TypeProxy).prototypeInstance;
             return res;
+        }
+
+        [DoNotEnumerate]
+        public static JSObject setPrototypeOf(Arguments args)
+        {
+            if (args[0]._valueType < JSValueType.Object)
+                ExceptionHelper.Throw(new TypeError("Parameter isn't an Object."));
+
+            var obj = args[0].As<JSObject>();
+
+            obj.__proto__ = args[1].As<JSObject>();
+            return obj;
         }
 
         [DoNotEnumerate]

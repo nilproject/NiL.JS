@@ -159,7 +159,7 @@ namespace NiL.JS.Core
                     return new JSObject { _valueType = JSValueType.Undefined };
                 }
 
-                return source._oValue as JSObject ?? source;
+                return source._oValue as JSObject ?? source as JSObject;
             }
         }
 

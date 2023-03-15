@@ -429,7 +429,10 @@ namespace NiL.JS.Expressions
                             }
                             else
                             {
-                                res._fields[stringKey] = value;
+                                if (stringKey is "__proto__" && !value.Is(JSValueType.Property))
+                                    res.__proto__ = value.As<JSObject>();
+                                else
+                                    res._fields[stringKey] = value;
                             }
                         }
                     }
