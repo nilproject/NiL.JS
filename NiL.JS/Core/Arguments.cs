@@ -281,9 +281,10 @@ namespace NiL.JS.Core
                     case 2:
                         return _a2 == null || ((_a2._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a2 = null) == null;
                     case 3:
-                        return _a3 == null || ((_a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a3 = null) == null;}
+                        return _a3 == null || ((_a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a3 = null) == null;
+                }
             }
-            
+
             switch (name.ToString())
             {
                 case "0":

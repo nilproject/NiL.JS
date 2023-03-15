@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
+using NiL.JS.Expressions;
 
 namespace NiL.JS.Core.Functions
 {
@@ -14,9 +16,9 @@ namespace NiL.JS.Core.Functions
 #endif
     internal sealed class BindedFunction : Function
     {
-        private Function original;
+        private Function _target;
         private JSValue _thisBind;
-        private Arguments bindedArguments;
+        private JSValue[] _bindedArguments;
 
         public override JSValue caller
         {
@@ -61,64 +63,83 @@ namespace NiL.JS.Core.Functions
         {
             if (_length == null)
                 _length = new Number(0);
+
             _length._iValue = proto.length._iValue;
-            this.original = proto;
-            this._thisBind = args[0];
-            this.bindedArguments = args;
-            if (args._iValue > 0)
+            _target = proto;
+            _thisBind = args[0];
+            _bindedArguments = new JSValue[System.Math.Max(args.Length - 1, 0)];
+            if (args.Length > 0)
             {
-                args._iValue--;
-                for (var i = 0; i < args._iValue; i++)
-                    args[i] = args[i + 1];
-                _length._iValue -= args._iValue;
+                for (var i = 0; i < _bindedArguments.Length; i++)
+                    _bindedArguments[i] = args[i + 1];
+
+                _length._iValue -= args.Length - 1;
                 if (_length._iValue < 0)
                     _length._iValue = 0;
-                args[args._iValue] = null;
-                if (args._iValue == 0)
-                    bindedArguments = null;
             }
-            else
-                bindedArguments = null;
 
             RequireNewKeywordLevel = proto.RequireNewKeywordLevel;
         }
 
         protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
         {
-            if (bindedArguments != null)
-            {
-                if (arguments == null)
-                    arguments = new Arguments();
+            var internalArgs = arguments;
 
-                arguments._iValue += bindedArguments._iValue;
-                for (var i = arguments._iValue; i-- > bindedArguments._iValue; )
-                    arguments[i] = arguments[i - bindedArguments._iValue];
-                for (var i = bindedArguments._iValue; i-- > 0; )
-                    arguments[i] = bindedArguments[i];
+            if (_bindedArguments.Length != 0)
+            {
+                internalArgs = new Arguments();
+
+                internalArgs.Length = _bindedArguments.Length + arguments.Length;
+
+                for (var i = 0; i < _bindedArguments.Length; i++)
+                    internalArgs[i] = _bindedArguments[i].CloneImpl();
+
+                for (var i = 0; i < arguments.Length; i++)
+                    internalArgs[i + _bindedArguments.Length] = arguments[i];
             }
+
             if ((construct || _thisBind == null || _thisBind.IsNull || !_thisBind.Defined) && (targetObject != null && targetObject.Defined))
-                return original.Invoke(construct, targetObject, arguments);
-            return original.Call(_thisBind, arguments);
+                return _target.Invoke(construct, targetObject, internalArgs);
+
+            return construct ? _target.Construct(internalArgs) : _target.Call(_thisBind, internalArgs);
+        }
+
+        internal override JSValue InternalInvoke(JSValue targetObject, Expression[] arguments, Context initiator, bool withSpread, bool construct)
+        {
+            var internalArgs = new Arguments();
+
+            internalArgs.Length = _bindedArguments.Length + arguments.Length;
+
+            for (var i = 0; i < _bindedArguments.Length; i++)
+                internalArgs[i] = _bindedArguments[i].CloneImpl();
+
+            for (var i = 0; i < arguments.Length; i++)
+                internalArgs[i + _bindedArguments.Length] = arguments[i].Evaluate(initiator);
+
+            if ((construct || _thisBind == null || _thisBind.IsNull || !_thisBind.Defined) && (targetObject != null && targetObject.Defined))
+                return _target.Invoke(construct, targetObject, internalArgs);
+
+            return construct ? _target.Construct(internalArgs) : _target.Call(_thisBind, internalArgs);
         }
 
         protected internal override JSValue ConstructObject()
         {
-            return original.ConstructObject();
+            return _target.ConstructObject();
         }
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnumerable, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            return original.GetEnumerator(hideNonEnumerable, enumeratorMode, propertyScope);
+            return _target.GetEnumerator(hideNonEnumerable, enumeratorMode, propertyScope);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            return original.GetProperty(key, forWrite, memberScope);
+            return _target.GetProperty(key, forWrite, memberScope);
         }
 
         public override string ToString(bool headerOnly)
         {
-            return original.ToString(headerOnly);
+            return _target.ToString(headerOnly);
         }
     }
 }

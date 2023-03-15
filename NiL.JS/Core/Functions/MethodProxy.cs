@@ -326,6 +326,7 @@ namespace NiL.JS.Core.Functions
                     targetPrmIndex = 0;
                     if (_forceInstance)
                         targetPrmIndex++;
+
                     for (var i = 0; targetPrmIndex < prms.Length; i++, targetPrmIndex++)
                     {
                         if (targetPrmIndex == prms.Length - 1 && _restPrmsArrayCreator != null)
@@ -701,13 +702,19 @@ namespace NiL.JS.Core.Functions
             if (_hardTarget != null || args.Length == 0)
                 return this;
 
-            return new MethodProxy(
+            if (args.Length > 1)
+                return new BindedFunction(this, args);
+
+            var target = args[0];
+            var result = new MethodProxy(
                 Context,
-                convertTargetObject(args[0], _method.DeclaringType) ?? args[0].Value as JSObject ?? args[0],
+                convertTargetObject(target, _method.DeclaringType) ?? target.Value as JSObject ?? (target.Defined ? target : null),
                 _method,
                 _parameters,
                 _fastWrapper,
                 _forceInstance);
+
+            return result;
         }
 
 #if !NET40

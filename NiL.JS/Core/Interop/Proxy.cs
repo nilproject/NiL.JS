@@ -391,7 +391,8 @@ namespace NiL.JS.Core.Interop
                 {
                     if (forWrite)
                     {
-                        if ((property._attributes & (JSValueAttributesInternal.SystemObject & JSValueAttributesInternal.ReadOnly)) == JSValueAttributesInternal.SystemObject)
+                        if ((property._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) 
+                            == JSValueAttributesInternal.SystemObject)
                         {
                             if (protoInstanceAsJs != null)
                                 property = protoInstanceAsJs.GetProperty(key, true, memberScope);
@@ -403,22 +404,12 @@ namespace NiL.JS.Core.Interop
                     return property;
                 }
 
-                if (forWrite)
+                var args = new Arguments { null, key };
+                return new JSValue
                 {
-                    return new JSValue
-                    {
-                        _valueType = JSValueType.Property,
-                        _oValue = new PropertyPair(null, _indexerProperty.setter.bind(new Arguments { null, key }))
-                    };
-                }
-                else
-                {
-                    return new JSValue
-                    {
-                        _valueType = JSValueType.Property,
-                        _oValue = new PropertyPair(_indexerProperty.getter.bind(new Arguments { null, key }), null)
-                    };
-                }
+                    _valueType = JSValueType.Property,
+                    _oValue = new PropertyPair(_indexerProperty.getter.bind(args), _indexerProperty.setter.bind(args))
+                };
             }
 
             var result = proxyMember(m);

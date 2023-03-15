@@ -903,8 +903,6 @@ namespace NiL.JS.BaseLibrary
             if (args.Length == 0)
                 return this;
 
-            var newThis = args[0];
-            var strict = (_functionDefinition._body != null && _functionDefinition._body._strict) || Context.CurrentContext._strict;
             return new BindedFunction(this, args);
         }
 
