@@ -259,12 +259,10 @@ namespace NiL.JS.Core.Functions
                     var argumentsObject = Expression.Condition(
                         Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
                         argumentsObjectPrm,
-                        Expression.Assign(
-                            argumentsObjectPrm,
-                            Expression.Call(
-                                ((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(),
-                                arguments,
-                                context)));
+                        Expression.Call(
+                            ((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(),
+                            arguments,
+                            context));
 
                     if (_forceInstance)
                     {
@@ -389,12 +387,10 @@ namespace NiL.JS.Core.Functions
                     Expression argumentsObject = Expression.Condition(
                         Expression.NotEqual(argumentsObjectPrm, Expression.Constant(null)),
                         argumentsObjectPrm,
-                        Expression.Assign(
-                            argumentsObjectPrm,
-                            Expression.Call(
-                                ((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(),
-                                arguments,
-                                context)));
+                        Expression.Call(
+                            ((Func<Expressions.Expression[], Context, Arguments>)Tools.CreateArguments).GetMethodInfo(),
+                            arguments,
+                            context));
 
                     tree = Expression.New(constructorInfo, argumentsObject);
                 }
@@ -532,7 +528,7 @@ namespace NiL.JS.Core.Functions
 
                         var proxy = target as Proxy;
                         if (proxy != null)
-                            target = proxy.PrototypeInstance ?? targetValue.Value;
+                            target = proxy.PrototypeInstance ?? target;
 
                         // ForceInstance работает только если первый аргумент типа JSValue
                         if (!(target is JSValue))

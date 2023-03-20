@@ -484,7 +484,7 @@ namespace NiL.JS.Core
 
         public virtual bool DeleteVariable(string variableName)
         {
-            return this._variables.Remove(variableName);
+            return _variables.Remove(variableName);
         }
 
         internal void SetAbortState(ExecutionMode abortReason, JSValue abortInfo)
