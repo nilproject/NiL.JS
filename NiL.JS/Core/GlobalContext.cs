@@ -20,6 +20,14 @@ namespace NiL.JS.Core
         ForceDisable
     }
 
+    public enum GlobalObjectsAssignMode
+    {
+        Allow = 0,
+        ScriptLocal,
+        Deny,
+        DenyThrowException
+    }
+
 #if !NETCORE
     [Serializable]
 #endif
@@ -35,6 +43,7 @@ namespace NiL.JS.Core
 
         public string Name { get; private set; }
         public IndexersSupport IndexersSupport { get; set; }
+        public GlobalObjectsAssignMode GlobalObjectsAssignMode { get; set; }
         public JsonSerializersRegistry JsonSerializersRegistry { get; set; }
         public TimeZoneInfo CurrentTimeZone { get; set; }
 
@@ -507,6 +516,27 @@ namespace NiL.JS.Core
                     }
                 }
             }
+        }
+
+        protected internal override JSValue GetVariable(string name, bool forWrite)
+        {
+            if (forWrite && GlobalObjectsAssignMode != GlobalObjectsAssignMode.Allow)
+            {
+                switch(GlobalObjectsAssignMode)
+                {
+                    case GlobalObjectsAssignMode.ScriptLocal:
+                        return null;
+
+                    case GlobalObjectsAssignMode.Deny:
+                        return new JSValue { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.SystemObject };
+
+                    case GlobalObjectsAssignMode.DenyThrowException:
+                        ExceptionHelper.Throw(new ReferenceError("Invalid attempt to assign a value to a variable in the GlobalContext"));
+                        break;
+                }
+            }
+
+            return base.GetVariable(name, forWrite);
         }
 
         public override string ToString()
