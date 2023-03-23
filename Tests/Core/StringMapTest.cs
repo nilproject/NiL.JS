@@ -180,13 +180,13 @@ namespace Tests.Core
                 stringMap[str] = str;
             });
 
-            for (var i = 0; i < number; i++)
+            Parallel.For(0, number, new ParallelOptions { MaxDegreeOfParallelism = 30 }, i =>
             {
                 var s = i.ToString();
                 var v = stringMap[s];
                 if (v != s)
                     Assert.Fail("Fail. " + i + " != " + v);
-            }
+            });
         }
 
         [Ignore]

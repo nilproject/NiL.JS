@@ -243,7 +243,9 @@ namespace NiL.JS.Core
             {
                 if (records != _records
                     || records[index].key is not null
-                    || (records[prevIndex].next != index && records[prevIndex].next != 0))
+                    || (prevIndex != index
+                        && records[prevIndex].next != 0
+                        && records[prevIndex].next - 1 != index))
                 {
                     insert(key, value, hash, @throw, allowIncrease);
                     return;
