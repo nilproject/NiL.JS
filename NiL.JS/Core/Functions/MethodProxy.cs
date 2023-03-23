@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
-using NiL.JS.Backward;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
@@ -28,8 +25,8 @@ namespace NiL.JS.Core.Functions
     {
         private delegate object RestPrmsConverter(Context initiator, Expressions.Expression[] arguments, Arguments argumentsObject);
 
-        private static readonly Dictionary<MethodBase, WrapperDelegate> WrapperCache = new Dictionary<MethodBase, WrapperDelegate>();
-        private static readonly MethodInfo ArgumentsGetItemMethod = typeof(Arguments).GetMethod("get_Item", new[] { typeof(int) });
+        private static readonly Dictionary<MethodBase, WrapperDelegate> _wrapperCache = new Dictionary<MethodBase, WrapperDelegate>();
+        private static readonly MethodInfo _argumentsGetItemMethod = typeof(Arguments).GetMethod("get_Item", new[] { typeof(int) });
 
         private readonly bool _forceInstance;
         private readonly bool _strictConversion;
@@ -118,15 +115,17 @@ namespace NiL.JS.Core.Functions
                     _restPrmsArrayCreator = makeRestPrmsArrayCreator();
                 }
 
-                if (!WrapperCache.TryGetValue(methodBase, out _fastWrapper))
-                    WrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodInfo);
+                lock (_wrapperCache)
+                    if (!_wrapperCache.TryGetValue(methodBase, out _fastWrapper))
+                        _wrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodInfo);
 
                 RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
             }
             else if (methodBase is ConstructorInfo)
             {
-                if (!WrapperCache.TryGetValue(methodBase, out _fastWrapper))
-                    WrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodBase as ConstructorInfo);
+                lock (_wrapperCache)
+                    if (!_wrapperCache.TryGetValue(methodBase, out _fastWrapper))
+                        _wrapperCache[methodBase] = _fastWrapper = makeFastWrapper(methodBase as ConstructorInfo);
 
                 if (_parameters.Length > 0 && _parameters.Last().GetCustomAttribute(typeof(ParamArrayAttribute), false) != null)
                 {
@@ -166,7 +165,7 @@ namespace NiL.JS.Core.Functions
 
             var resultArrayCtor = resultArray.Type.GetConstructor(new[] { typeof(int) });
 
-            var convertedValueArgObj = Expression.Call(Expression.Constant(this), convertArg, argumentIndex, Expression.Call(argumentsObjectPrm, ArgumentsGetItemMethod, Expression.PostIncrementAssign(argumentIndex)));
+            var convertedValueArgObj = Expression.Call(Expression.Constant(this), convertArg, argumentIndex, Expression.Call(argumentsObjectPrm, _argumentsGetItemMethod, Expression.PostIncrementAssign(argumentIndex)));
             var conditionArgObj = Expression.GreaterThanOrEqual(argumentIndex, Expression.PropertyOrField(argumentsObjectPrm, nameof(Arguments.Length)));
             var arrayAssignArgObj = Expression.Assign(Expression.ArrayAccess(resultArray, Expression.PostIncrementAssign(resultArrayIndex)), Expression.Convert(convertedValueArgObj, restItemType));
 
@@ -191,7 +190,7 @@ namespace NiL.JS.Core.Functions
                                 Expression.Constant(_parameters.Length)),
                             Expression.Block(
                                 Expression.Assign(tempValue,
-                                    Expression.Call(Expression.Constant(this), convertArg, argumentIndex, Expression.Call(argumentsObjectPrm, ArgumentsGetItemMethod, argumentIndex))),
+                                    Expression.Call(Expression.Constant(this), convertArg, argumentIndex, Expression.Call(argumentsObjectPrm, _argumentsGetItemMethod, argumentIndex))),
                                 Expression.IfThen(Expression.NotEqual(tempValue, Expression.Constant(null)),
                                     Expression.Return(returnLabel, tempValue)))),
                         Expression.Assign(resultArray,
@@ -335,7 +334,7 @@ namespace NiL.JS.Core.Functions
                                 Expression.Constant(this),
                                 convertArg,
                                 Expression.Constant(i),
-                                Expression.Call(argumentsObjectPrm, ArgumentsGetItemMethod, Expression.Constant(i))),
+                                Expression.Call(argumentsObjectPrm, _argumentsGetItemMethod, Expression.Constant(i))),
                             _parameters[i].ParameterType);
                     }
 
@@ -424,7 +423,7 @@ namespace NiL.JS.Core.Functions
                                 Expression.Constant(this),
                                 convertArg,
                                 Expression.Constant(i),
-                                Expression.Call(argumentsObject, ArgumentsGetItemMethod, Expression.Constant(i))),
+                                Expression.Call(argumentsObject, _argumentsGetItemMethod, Expression.Constant(i))),
                             _parameters[i].ParameterType);
                     }
 

@@ -353,19 +353,8 @@ namespace NiL.JS.Core.Interop
             forWrite &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
 
             string name = key.ToString();
-            JSValue r = null;
-            if (_fields.TryGetValue(name, out r))
+            if (_fields.TryGetValue(name, out JSValue r) && r.Exists)
             {
-                if (!r.Exists && !forWrite)
-                {
-                    var t = base.GetProperty(key, false, memberScope);
-                    if (t.Exists)
-                    {
-                        r.Assign(t);
-                        r._valueType = t._valueType;
-                    }
-                }
-
                 if (forWrite && r.NeedClone)
                     _fields[name] = r = r.CloneImpl(false);
 
@@ -391,7 +380,7 @@ namespace NiL.JS.Core.Interop
                 {
                     if (forWrite)
                     {
-                        if ((property._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly)) 
+                        if ((property._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly))
                             == JSValueAttributesInternal.SystemObject)
                         {
                             if (protoInstanceAsJs != null)

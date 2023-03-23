@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using NiL.JS.Backward;
 
 namespace NiL.JS.Core
@@ -61,6 +61,7 @@ namespace NiL.JS.Core
 
         private Record[] _records = EmpryArrayHelper.Empty<Record>();
         private int[] _existsedIndexes;
+        private readonly object _sync = new();
 
         public StringMap()
         {
@@ -74,55 +75,88 @@ namespace NiL.JS.Core
 
             int index;
             int colisionCount = 0;
-            var mask = _records.Length - 1;
-            if (_records.Length == 0)
-                mask = increaseSize() - 1;
-
-            if (_records.Length <= MaxAsListSize)
+            var records = _records;
+            var mask = records.Length - 1;
+            if (records.Length == 0)
             {
-                for (var i = 0; i < _records.Length; i++)
+                lock (_sync)
                 {
-                    if (_records[i].key == null)
+                    if (records == _records)
+                        mask = increaseSize() - 1;
+                    else
+                        mask = _records.Length - 1;
+
+                    records = _records;
+                }
+            }
+
+            if (records.Length <= MaxAsListSize)
+            {
+                for (var i = 0; i < records.Length; i++)
+                {
+                    if (records[i].key == null)
                     {
-                        _records[i].hash = -1;
-                        _records[i].key = key;
-                        _records[i].value = value;
+                        lock (_sync)
+                        {
+                            if (records != _records)
+                            {
+                                insert(key, value, hash, @throw, allowIncrease);
+                                return;
+                            }
+
+                            if (records[i].key == null)
+                            {
+                                records[i].key = key;
+                                records[i].hash = -1;
+                                records[i].value = value;
+
+                                ensureExistedIndexCapacity();
+                                _existsedIndexes[_eicount] = i;
+
+                                _count++;
+                                _eicount++;
+                                _version++;
+                                return;
+                            }
+                        }
+                    }
+
+                    if (string.CompareOrdinal(records[i].key, key) == 0)
+                    {
+                        if (@throw)
+                            ExceptionHelper.Throw(new InvalidOperationException("Item already exists"));
+
+                        records[i].value = value;
+                        return;
+                    }
+                }
+
+                if (records.Length * 2 <= MaxAsListSize)
+                {
+                    lock (_sync)
+                    {
+                        if (records != _records)
+                        {
+                            insert(key, value, hash, @throw, allowIncrease);
+                            return;
+                        }
+
+                        index = records.Length;
+                        increaseSize();
+                        records = _records;
+
+                        records[index].hash = -1;
+                        records[index].key = key;
+                        records[index].value = value;
 
                         ensureExistedIndexCapacity();
-                        _existsedIndexes[_eicount] = i;
+                        _existsedIndexes[_eicount] = index;
 
                         _count++;
                         _eicount++;
                         _version++;
                         return;
                     }
-
-                    if (string.CompareOrdinal(_records[i].key, key) == 0)
-                    {
-                        if (@throw)
-                            ExceptionHelper.Throw(new InvalidOperationException("Item already exists"));
-
-                        _records[i].value = value;
-                        return;
-                    }
-                }
-
-                if (_records.Length * 2 <= MaxAsListSize)
-                {
-                    index = _records.Length;
-                    increaseSize();
-
-                    _records[index].hash = -1;
-                    _records[index].key = key;
-                    _records[index].value = value;
-
-                    ensureExistedIndexCapacity();
-                    _existsedIndexes[_eicount] = index;
-
-                    _count++;
-                    _eicount++;
-                    _version++;
-                    return;
                 }
             }
             else
@@ -130,18 +164,27 @@ namespace NiL.JS.Core
                 index = hash & mask;
                 do
                 {
-                    if (_records[index].hash == hash
-                        && _records[index].key is not null
-                        && string.CompareOrdinal(_records[index].key, key) == 0)
+                    if (records[index].hash == hash
+                        && records[index].key is not null
+                        && string.CompareOrdinal(records[index].key, key) == 0)
                     {
                         if (@throw)
                             ExceptionHelper.Throw(new InvalidOperationException("Item already Exists"));
 
-                        _records[index].value = value;
-                        return;
+                        lock (_sync)
+                        {
+                            if (records != _records)
+                            {
+                                insert(key, value, hash, @throw, allowIncrease);
+                                return;
+                            }
+
+                            records[index].value = value;
+                            return;
+                        }
                     }
 
-                    index = _records[index].next - 1;
+                    index = records[index].next - 1;
                 }
                 while (index >= 0);
             }
@@ -153,52 +196,79 @@ namespace NiL.JS.Core
                 if ((_count == mask + 1)
                     || (_count > 50 && _count * 6 / 5 >= mask))
                 {
-                    mask = increaseSize() - 1;
+                    lock (_sync)
+                    {
+                        if (records != _records)
+                        {
+                            insert(key, value, hash, @throw, allowIncrease);
+                            return;
+                        }
+
+                        if ((_count == mask + 1)
+                            || (_count > 50 && _count * 6 / 5 >= mask))
+                        {
+                            mask = increaseSize() - 1;
+                            records = _records;
+                        }
+                    }
                 }
             }
 
-            int prewIndex = -1;
             index = hash & mask;
-            var emptySlot = -1;
+            var prevIndex = index;
 
-            if (_records[index].key is null && emptySlot == -1)
-                emptySlot = index;
-
-            while (_records[index].next > 0)
+            while (records[index].key is not null && records[index].next > 0)
             {
-                index = _records[index].next - 1;
+                prevIndex = index;
+                index = records[index].next - 1;
                 colisionCount++;
-
-                if (_records[index].key is null && emptySlot == -1)
-                    emptySlot = index;
             }
 
-            prewIndex = index;
-
-            if (emptySlot == -1)
+            if (records[index].key is not null)
             {
-                while (_records[index].key != null)
-                    index = (index + 3) & mask;
+                prevIndex = index;
+                do
+                {
+                    index = (index + 17) & mask;
+                    if (index == prevIndex || records != _records)
+                    {
+                        insert(key, value, hash, @throw, allowIncrease);
+                        return;
+                    }
+                }
+                while (records[index].key is not null);
             }
-            else
-                index = emptySlot;
 
-            _records[index].hash = hash;
-            _records[index].key = key;
-            _records[index].value = value;
+            lock (_sync)
+            {
+                if (records != _records
+                    || records[index].key is not null
+                    || (records[prevIndex].next != index && records[prevIndex].next != 0))
+                {
+                    insert(key, value, hash, @throw, allowIncrease);
+                    return;
+                }
 
-            if (emptySlot == -1 && prewIndex >= 0)
-                _records[prewIndex].next = index + 1;
+                records[index].hash = hash;
+                records[index].key = key;
+                records[index].value = value;
 
-            ensureExistedIndexCapacity();
+                if (prevIndex >= 0 && index != prevIndex)
+                    records[prevIndex].next = index + 1;
 
-            _existsedIndexes[_eicount] = index;
-            _eicount++;
-            _count++;
-            _version++;
+                ensureExistedIndexCapacity();
+                _existsedIndexes[_eicount] = index;
 
-            if (colisionCount > 17 && allowIncrease && _eicount * 10 > _records.Length)
-                increaseSize();
+                _eicount++;
+                _count++;
+                _version++;
+
+                if (colisionCount > 17 && allowIncrease && _eicount * 10 > records.Length)
+                {
+                    if (records == _records)
+                        increaseSize();
+                }
+            }
         }
 
         private void ensureExistedIndexCapacity()
@@ -298,72 +368,88 @@ namespace NiL.JS.Core
 
         public bool Remove(string key)
         {
-            /*
-             * Нужно найти удаляемую запись, пометить её пустой и передвинуть всю цепочку next на один элемент назад по списку next.
-             * При этом возможны ситуации когда элемент встанет на свою законную позицию (при вставке была псевдоколлизия).
-             * в таком случае нужно убрать его из цепочки и таким образом уменьшить список коллизии.
-             */
             if (key == null)
                 throw new ArgumentNullException();
 
-            if (_records.Length <= MaxAsListSize)
+            var records = _records;
+
+            if (records.Length == 0)
+                return false;
+
+            if (records.Length <= MaxAsListSize)
             {
                 var found = false;
-                for (var i = 0; i < _records.Length; i++)
+                try
+                {
+                    for (var i = 0; i < records.Length; i++)
+                    {
+                        if (found)
+                        {
+                            records[i - 1].key = records[i].key;
+                            records[i - 1].value = records[i].value;
+                            records[i].key = null;
+                            records[i].value = default(TValue);
+                        }
+                        else if (string.CompareOrdinal(records[i].key, key) == 0)
+                        {
+                            Monitor.Enter(_sync);
+
+                            if (records != _records)
+                                return Remove(key);
+
+                            _count--;
+                            _eicount--;
+                            _version++;
+                            found = true;
+                            records[i].key = null;
+                            records[i].value = default(TValue);
+                        }
+                    }
+                }
+                finally
                 {
                     if (found)
-                    {
-                        _records[i - 1].key = _records[i].key;
-                        _records[i - 1].value = _records[i].value;
-                        _records[i].key = null;
-                        _records[i].value = default(TValue);
-                    }
-                    else if (string.CompareOrdinal(_records[i].key, key) == 0)
-                    {
-                        _count--;
-                        _eicount--;
-                        _version++;
-                        found = true;
-                        _records[i].key = null;
-                        _records[i].value = default(TValue);
-                    }
+                        Monitor.Exit(_sync);
                 }
 
                 return found;
             }
 
-            if (_records.Length == 0)
-                return false;
-
-            var mask = _records.Length - 1;
+            var mask = records.Length - 1;
             int hash = computeHash(key);
             int index;
             int prevItemIndex = -1;
 
-            for (index = hash & mask; index >= 0; index = _records[index].next - 1)
+            for (index = hash & mask; index >= 0; index = records[index].next - 1)
             {
-                if (_records[index].hash == hash
-                    && _records[index].key is not null
-                    && string.CompareOrdinal(_records[index].key, key) == 0)
+                if (records[index].hash == hash
+                    && records[index].key is not null
+                    && string.CompareOrdinal(records[index].key, key) == 0)
                 {
-                    if (index == _previousIndex)
-                        _previousIndex = -1;
+                    lock (_sync)
+                    {
+                        if (records != _records)
+                            return Remove(key);
 
-                    _records[index].key = null;
-                    _records[index].value = default(TValue);
-                    _records[index].hash = 0;
+                        if (index == _previousIndex)
+                            _previousIndex = -1;
 
-                    if (prevItemIndex >= 0 && _records[index].next == 0)
-                        _records[prevItemIndex].next = 0;
+                        records[index].key = null;
+                        records[index].value = default(TValue);
+                        records[index].hash = 0;
 
-                    var indexInExIndex = Array.IndexOf(_existsedIndexes, index);
-                    Array.Copy(_existsedIndexes, indexInExIndex + 1, _existsedIndexes, indexInExIndex, _existsedIndexes.Length - indexInExIndex - 1);
+                        if (prevItemIndex >= 0 && records[index].next == 0)
+                            records[prevItemIndex].next = 0;
 
-                    _count--;
-                    _eicount--;
-                    _version++;
+                        var indexInExIndex = Array.IndexOf(_existsedIndexes, index);
+                        Array.Copy(_existsedIndexes, indexInExIndex + 1, _existsedIndexes, indexInExIndex, _existsedIndexes.Length - indexInExIndex - 1);
 
-                    return true;
+                        _count--;
+                        _eicount--;
+                        _version++;
+
+                        return true;
+                    }
                 }
 
                 prevItemIndex = index;
@@ -382,6 +468,10 @@ namespace NiL.JS.Core
             else
             {
                 var oldRecords = _records;
+
+                if (oldRecords.Length > 1 << 20)
+                    throw new Exception("My exception");
+
                 var newLength = _records.Length << 1;
                 _records = new Record[newLength];
 
@@ -448,10 +538,7 @@ namespace NiL.JS.Core
             }
             set
             {
-                lock (_records)
-                {
-                    insert(key, value, computeHash(key), false, true);
-                }
+                insert(key, value, computeHash(key), false, true);
             }
         }
 

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.Core;
 
@@ -166,6 +165,27 @@ namespace Tests.Core
             for(var i = 0; i < 85; i++)
             {
                 Assert.AreEqual(i, items[i], "items[i] != i");
+            }
+        }
+
+        [TestMethod]
+        public void StringMapMultithreadingTest()
+        {
+            var stringMap = new StringMap<string>();
+            var number = 100_000;
+
+            Parallel.For(0, number, new ParallelOptions { MaxDegreeOfParallelism = 30 }, i =>
+            {
+                var str = i.ToString();
+                stringMap[str] = str;
+            });
+
+            for (var i = 0; i < number; i++)
+            {
+                var s = i.ToString();
+                var v = stringMap[s];
+                if (v != s)
+                    Assert.Fail("Fail. " + i + " != " + v);
             }
         }
 
