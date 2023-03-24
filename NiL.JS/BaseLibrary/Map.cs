@@ -103,8 +103,9 @@ namespace NiL.JS.BaseLibrary
 
         public IIterator iterator()
         {
+            var globalContext = Context.CurrentGlobalContext;
             return _storage
-                .Select(x => new Array { JSValue.Marshal(x.Key), JSValue.Marshal(x.Value) })
+                .Select(x => new Array { globalContext.ProxyValue(x.Key), globalContext.ProxyValue(x.Value) })
                 .GetEnumerator()
                 .AsIterator();
         }

@@ -15,9 +15,9 @@ namespace NiL.JS.Core.Interop
         public static readonly string ReadOnlyInterfaceName = typeof(IReadOnlyList<>).FullName;
 
         private static readonly Type ReadOnlyListType = typeof(IReadOnlyList<>);
-        private static readonly Dictionary<Type, Func<object, JSValue>> _ctors = new Dictionary<Type, Func<object, JSValue>>();
+        private static readonly Dictionary<Type, Func<object, JSObject>> _ctors = new Dictionary<Type, Func<object, JSObject>>();
 
-        public static JSValue Create(object roList)
+        public static JSObject Create(object roList)
         {
             lock (_ctors)
             {
@@ -27,7 +27,7 @@ namespace NiL.JS.Core.Interop
                     var itemType = type.GetInterface(ReadOnlyInterfaceName).GetGenericArguments()[0];
                     var listType = typeof(NativeReadOnlyList<>).MakeGenericType(typeof(int));
                     var prm = Expression.Parameter(typeof(object));
-                    _ctors[type] = ctor = Expression.Lambda<Func<object, JSValue>>(
+                    _ctors[type] = ctor = Expression.Lambda<Func<object, JSObject>>(
                         Expression.New(
                             listType.GetConstructors()[0],
                             Expression.Convert(prm, type)),

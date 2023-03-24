@@ -161,7 +161,7 @@ namespace NiL.JS.Core.JIT
                     }
                 default:
                     {
-                        dest._oValue = new ObjectWrapper(source);
+                        dest._oValue = new ObjectWrapper(source, source is null ? null : Context.CurrentGlobalContext.GetPrototype(source.GetType()));
                         dest._valueType = JSValueType.Object;
                         break;
                     }

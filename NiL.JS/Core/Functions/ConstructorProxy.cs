@@ -324,13 +324,8 @@ namespace NiL.JS.Core.Functions
             return objc;
         }
 
-        protected internal override JSValue ConstructObject()
-        {
-            return new ObjectWrapper(null)
-            {
-                _objectPrototype = Context.GlobalContext.GetPrototype(_staticProxy._hostedType)
-            };
-        }
+        protected internal override JSValue ConstructObject() 
+            => new ObjectWrapper(null, Context.GlobalContext.GetPrototype(_staticProxy._hostedType));
 
         private MethodProxy findConstructor(Arguments arguments, out object[] args)
         {

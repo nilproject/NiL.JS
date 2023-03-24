@@ -493,6 +493,7 @@ namespace NiL.JS.Core
         /// <exception cref="System.ArgumentException">if property already exists</exception>
         /// <exception cref="System.InvalidOperationException">if unable to create property</exception>
         [Hidden]
+        [Obsolete("Use DefineGetSetProperty(Context context, string name, Func<object> getter, Action<object> setter)")]
         public void DefineGetSetProperty(string name, Func<object> getter, Action<object> setter)
         {
             DefineGetSetProperty(Context.CurrentGlobalContext, name, getter, setter);
@@ -805,7 +806,7 @@ namespace NiL.JS.Core
         }
 
         [Hidden]
-        public static implicit operator JSValue(Delegate action) => Marshal(action);
+        public static implicit operator JSValue(Delegate action) => Context.CurrentGlobalContext.ProxyValue(action);
 
         [Hidden]
         public object Clone()
@@ -994,7 +995,10 @@ namespace NiL.JS.Core
                 return _oValue as JSObject ?? @null;
 
             if (_valueType >= JSValueType.Undefined)
-                return new ObjectWrapper(ToPrimitiveTypeContainer());
+            {
+                var container = ToPrimitiveTypeContainer();
+                return new ObjectWrapper(container, container.__proto__);
+            }
 
             return new JSObject() { _valueType = JSValueType.Object };
         }
@@ -1377,11 +1381,13 @@ namespace NiL.JS.Core
 
         #endregion
 
+        [Obsolete("Use GlobalContext.ProxyValue(value)")]
         public static JSValue Marshal(object value)
         {
             return Context.CurrentGlobalContext.ProxyValue(value);
         }
 
+        [Obsolete("Use ObjectWrapper directly")]
         public static JSValue Wrap(object value)
         {
             if (value == null)
@@ -1390,11 +1396,13 @@ namespace NiL.JS.Core
             return new ObjectWrapper(value);
         }
 
+        [Obsolete("Use GlobalContext.GetConstructor(value)")]
         public static JSValue GetConstructor(Type type)
         {
             return Context.CurrentGlobalContext.GetConstructor(type);
         }
 
+        [Obsolete("Use GlobalContext.GetGenericTypeSelector(value)")]
         public static Function GetGenericTypeSelector(IList<Type> types)
         {
             return Context.CurrentGlobalContext.GetGenericTypeSelector(types);

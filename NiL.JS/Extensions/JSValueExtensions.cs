@@ -6,6 +6,7 @@ using NiL.JS.Backward;
 using System.Reflection.Emit;
 using System.Linq;
 using System.Linq.Expressions;
+using System.ComponentModel;
 
 namespace NiL.JS.Extensions
 {
@@ -245,7 +246,12 @@ namespace NiL.JS.Extensions
         {
             return Tools.ConvertJStoObj(value, targetType, true);
         }
+        public static void Assign(this JSValue target, JSValue value)
+        {
+            target.Assign(value);
+        }
 
+        [Obsolete("Use Assign(this JSValue target, JSValue value)")]
         public static void Assign(this JSValue target, object value)
         {
             target.Assign(JSValue.Marshal(value));

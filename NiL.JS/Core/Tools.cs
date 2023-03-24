@@ -823,7 +823,7 @@ namespace NiL.JS.Core
                     && !typeof(JSValue).IsAssignableFrom(targetType))
                 {
                     var args = new Arguments();
-                    var targetInstance = (JSValue.GetConstructor(targetType) as Function)?.Construct(args).Value;
+                    var targetInstance = (Context.CurrentGlobalContext.GetConstructor(targetType) as Function)?.Construct(args).Value;
 
                     if (targetInstance is IDictionary dictionary)
                     {

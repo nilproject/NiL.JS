@@ -114,7 +114,7 @@ namespace NiL.JS
 
                 if (ut != null)
                 {
-                    res = Proxy.GetGenericTypeSelector(ut);
+                    res = Context.CurrentGlobalContext.GetGenericTypeSelector(ut);
 
                     if (children == null)
                         children = new BinaryTree<JSValue>();

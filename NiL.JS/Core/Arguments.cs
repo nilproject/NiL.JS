@@ -14,13 +14,13 @@ namespace NiL.JS.Core
     [Prototype(typeof(JSObject), true)]
     public sealed class Arguments : JSObject, IEnumerable, IIterable
     {
-        private sealed class _LengthContainer : JSValue
+        private sealed class LengthContainer : JSValue
         {
             private readonly Arguments _owner;
 
-            public _LengthContainer(Arguments owner)
+            public LengthContainer(Arguments owner)
             {
-                this._owner = owner;
+                _owner = owner;
             }
 
             public override void Assign(JSValue value)
@@ -30,6 +30,15 @@ namespace NiL.JS.Core
             }
         }
 
+        private const JSValueAttributesInternal _cloneResetMask = JSValueAttributesInternal.ReadOnly
+                    | JSValueAttributesInternal.SystemObject
+                    | JSValueAttributesInternal.Temporary
+                    | JSValueAttributesInternal.Reassign
+                    | JSValueAttributesInternal.ProxyPrototype
+                    | JSValueAttributesInternal.DoNotEnumerate
+                    | JSValueAttributesInternal.NonConfigurable
+                    | JSValueAttributesInternal.DoNotDelete;
+
         private JSValue _a0;
         private JSValue _a1;
         private JSValue _a2;
@@ -37,8 +46,10 @@ namespace NiL.JS.Core
         internal JSValue _callee;
         internal JSValue _caller;
 
-        private _LengthContainer _lengthContainer;
-        internal bool _suppressClone;
+        private LengthContainer _lengthContainer;
+        private Context _context;
+
+        internal bool SuppressValuesClone { get => _dValue != 0; set => _dValue = value ? 1 : 0; } // field reuse
 
         public int Length
         {
@@ -100,19 +111,23 @@ namespace NiL.JS.Core
             }
         }
 
-        internal Arguments(Context callerContext)
+        public Arguments(Context callerContext)
             : this()
         {
             if (callerContext != null)
             {
-                _caller = callerContext._strict
+                _objectPrototype = callerContext.GlobalContext._globalPrototype;
+                _context = callerContext;
+            }
+            else
+                _caller = NotExistsInObject;
+        }
+
+        private static JSValue getCaller(Context callerContext)
+        {
+            return callerContext._strict
                     && callerContext._owner != null
                     && callerContext._owner._functionDefinition._body._strict ? Function.propertiesDummySM : callerContext._owner;
-
-                _objectPrototype = callerContext.GlobalContext._globalPrototype;
-            }
-
-            _suppressClone = true;
         }
 
         public Arguments()
@@ -122,22 +137,29 @@ namespace NiL.JS.Core
             _attributes = JSValueAttributesInternal.DoNotDelete
                 | JSValueAttributesInternal.DoNotEnumerate
                 | JSValueAttributesInternal.SystemObject;
+            _caller = NotExistsInObject;
         }
 
         public void Add(JSValue arg)
         {
-            this[_iValue++] = arg;
+            this[_iValue++] = arg?.CloneImpl(false, _cloneResetMask);
         }
 
         public void Add(object value)
         {
-            this[_iValue++] = Marshal(value);
+            if (value is JSValue jsval)
+            {
+                Add(jsval);
+                return;
+            }
+
+            this[_iValue++] = (_context?.GlobalContext ?? Context.CurrentGlobalContext).ProxyValue(value);
         }
 
         protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
         {
-            if (forWrite && !_suppressClone)
-                cloneValues();
+            //if (forWrite && !SuppressValuesClone)
+            //    cloneValues();
 
             if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
             {
@@ -171,7 +193,7 @@ namespace NiL.JS.Core
                         case "length":
                         {
                             if (_lengthContainer == null)
-                                _lengthContainer = new _LengthContainer(this)
+                                _lengthContainer = new LengthContainer(this)
                                 {
                                     _valueType = JSValueType.Integer,
                                     _iValue = _iValue,
@@ -189,18 +211,20 @@ namespace NiL.JS.Core
                                 _callee = _callee.CloneImpl(false);
                                 _callee._attributes = JSValueAttributesInternal.DoNotEnumerate;
                             }
+
                             return _callee;
                         }
                         case "caller":
                         {
                             if (_caller == null)
-                                _caller = NotExistsInObject;
+                                _caller = getCaller(_context) ?? NotExistsInObject;
 
                             if (forWrite && (_caller._attributes & JSValueAttributesInternal.SystemObject) != 0)
                             {
                                 _caller = _caller.CloneImpl(false);
-                                _callee._attributes = JSValueAttributesInternal.DoNotEnumerate;
+                                _caller._attributes = JSValueAttributesInternal.DoNotEnumerate;
                             }
+
                             return _caller;
                         }
                     }
@@ -215,7 +239,7 @@ namespace NiL.JS.Core
 
         protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
         {
-            cloneValues();
+            //cloneValues();
 
             if (propertyScope is PropertyScope.Common or PropertyScope.Own)
             {
@@ -248,23 +272,17 @@ namespace NiL.JS.Core
 
         private void cloneValues()
         {
-            if (_suppressClone)
+            if (SuppressValuesClone)
                 return;
-            _suppressClone = true;
 
-            var mask = JSValueAttributesInternal.ReadOnly
-                    | JSValueAttributesInternal.SystemObject
-                    | JSValueAttributesInternal.Temporary
-                    | JSValueAttributesInternal.Reassign
-                    | JSValueAttributesInternal.ProxyPrototype
-                    | JSValueAttributesInternal.DoNotEnumerate
-                    | JSValueAttributesInternal.NonConfigurable
-                    | JSValueAttributesInternal.DoNotDelete;
+            SuppressValuesClone = true;
+
+            
 
             for (var i = 0; i < _iValue; i++)
             {
                 if (this[i].Exists)
-                    this[i] = this[i].CloneImpl(false, mask);
+                    this[i] = this[i].CloneImpl(false, _cloneResetMask);
             }
         }
 
@@ -312,6 +330,8 @@ namespace NiL.JS.Core
             _caller = null;
             _objectPrototype = null;
             _lengthContainer = null;
+            _context = null;
+            _dValue = 0;
             _valueType = JSValueType.Object;
             _oValue = this;
             _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;

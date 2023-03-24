@@ -35,7 +35,7 @@ namespace NiL.JS.Core.Functions
 
                 var result = p.then(then, fail);
 
-                return Marshal(result);
+                return _context.GlobalContext.ProxyValue(result);
             }
 
             private JSValue fail(JSValue arg)
@@ -130,7 +130,7 @@ namespace NiL.JS.Core.Functions
             }
             else
             {
-                result = Marshal(Promise.resolve(result));
+                result = _initialContext.GlobalContext.ProxyValue(Promise.resolve(result));
             }
 
             return result;

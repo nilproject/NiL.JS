@@ -237,7 +237,7 @@ namespace NiL.JS.BaseLibrary
                     }
                     else
                     {
-                        return onRejection(JSValue.Wrap(task.Exception.GetBaseException()));
+                        return onRejection(Context.CurrentGlobalContext.ProxyValue(task.Exception.GetBaseException()));
                     }
                 },
                 TaskContinuationOptions.NotOnRanToCompletion);

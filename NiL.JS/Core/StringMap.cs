@@ -241,8 +241,9 @@ namespace NiL.JS.Core
 
             lock (_sync)
             {
+                ref var record = ref records[index];
                 if (records != _records
-                    || records[index].key is not null
+                    || record.key is not null
                     || (prevIndex != index
                         && records[prevIndex].next != 0
                         && records[prevIndex].next - 1 != index))
@@ -251,9 +252,9 @@ namespace NiL.JS.Core
                     return;
                 }
 
-                records[index].hash = hash;
-                records[index].key = key;
-                records[index].value = value;
+                record.hash = hash;
+                record.key = key;
+                record.value = value;
 
                 if (prevIndex >= 0 && index != prevIndex)
                     records[prevIndex].next = index + 1;
@@ -266,10 +267,7 @@ namespace NiL.JS.Core
                 _version++;
 
                 if (colisionCount > 17 && allowIncrease && _eicount * 10 > records.Length)
-                {
-                    if (records == _records)
-                        increaseSize();
-                }
+                    increaseSize();
             }
         }
 

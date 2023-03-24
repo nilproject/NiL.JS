@@ -426,7 +426,7 @@ namespace NiL.JS.Core.Interop
                     cache[i] = new MethodProxy(_context, m[i] as MethodBase);
                 }
 
-                r = new MethodGroup(cache);
+                r = new MethodGroup(_context, cache);
             }
             else
             {

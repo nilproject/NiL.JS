@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
@@ -45,6 +46,7 @@ namespace NiL.JS.Core
             }
         }
 
+        [Obsolete("Use ObjectWrapper(object instance, JSObject proto) instead")]
         [Hidden]
         public ObjectWrapper(object instance)
             : this(instance, instance != null ? Context.CurrentGlobalContext.GetPrototype(instance.GetType()) : null)

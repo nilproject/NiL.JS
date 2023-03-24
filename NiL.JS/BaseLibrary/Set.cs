@@ -100,10 +100,11 @@ namespace NiL.JS.BaseLibrary
 
         public IIterator entries()
         {
+            var globalContext = Context.CurrentGlobalContext;
             return _storage
                 .Select(x =>
                 {
-                    var value = JSValue.Marshal(x);
+                    var value = globalContext.ProxyValue(x);
                     return new Array { value, value };
                 })
                 .AsIterable()

@@ -65,21 +65,16 @@ namespace NiL.JS.Core
     public class Context : IEnumerable<string>
     {
         [ThreadStatic]
-        internal static List<Context> currentContextStack;
-
-        internal static List<Context> GetCurrectContextStack()
-        {
-            if (currentContextStack == null)
-                currentContextStack = new List<Context>();
-
-            return currentContextStack;
-        }
+        internal static List<Context> _currentContextStack;
 
         public static Context CurrentContext
         {
             get
             {
-                var stack = GetCurrectContextStack();
+                if (_currentContextStack == null)
+                    _currentContextStack = new List<Context>();
+
+                var stack = _currentContextStack;
                 if (stack == null || stack.Count == 0)
                     return null;
 
@@ -87,8 +82,7 @@ namespace NiL.JS.Core
             }
         }
 
-        internal readonly static GlobalContext _DefaultGlobalContext = new GlobalContext() { _strict = true };
-        public static GlobalContext DefaultGlobalContext { get { return _DefaultGlobalContext; } }
+        public static GlobalContext DefaultGlobalContext { get; } = new GlobalContext() { _strict = true };
 
         internal ExecutionMode _executionMode;
         internal int _callDepth;
@@ -139,7 +133,7 @@ namespace NiL.JS.Core
             }
         }
 
-        public static GlobalContext CurrentGlobalContext => (CurrentContext ?? _DefaultGlobalContext).GlobalContext;
+        public static GlobalContext CurrentGlobalContext => (CurrentContext ?? DefaultGlobalContext).GlobalContext;
 
         public JSValue ThisBind
         {
@@ -174,34 +168,16 @@ namespace NiL.JS.Core
         public bool Debugging { get { return _debugging; } set { _debugging = value; } }
         public event DebuggerCallback DebuggerCallback;
 
-        public bool Running
-        {
-            get
-            {
-                return GetCurrectContextStack().LastIndexOf(this) != -1;
-            }
-        }
+        public bool Running => _currentContextStack is not null && _currentContextStack.LastIndexOf(this) != -1;
 
-        public ExecutionMode AbortReason
-        {
-            get
-            {
-                return _executionMode;
-            }
-        }
+        public ExecutionMode AbortReason => _executionMode;
 
-        public JSValue AbortInfo
-        {
-            get
-            {
-                return _executionInfo;
-            }
-        }
+        public JSValue AbortInfo => _executionInfo;
 
         public Dictionary<CodeNode, object> SuspendData
         {
-            get { return _suspendData ?? (_suspendData = new Dictionary<CodeNode, object>()); }
-            internal set { _suspendData = value; }
+            get => _suspendData ??= new Dictionary<CodeNode, object>();
+            internal set => _suspendData = value;
         }
 
         static Context()
@@ -254,35 +230,35 @@ namespace NiL.JS.Core
 
         public static void ResetGlobalContext()
         {
-            _DefaultGlobalContext.ResetContext();
+            DefaultGlobalContext.ResetContext();
         }
 
         internal bool Activate(bool addStackFrame = true)
         {
-            if (currentContextStack == null)
-                currentContextStack = new List<Context>();
+            if (_currentContextStack == null)
+                _currentContextStack = new List<Context>();
 
-            if (currentContextStack.Count > 0 && currentContextStack[currentContextStack.Count - 1] == this)
+            if (_currentContextStack.Count > 0 && _currentContextStack[_currentContextStack.Count - 1] == this)
                 return false;
 
             if (addStackFrame)
                 ExceptionHelper.GetStackFrame(this, true);
 
-            currentContextStack.Add(this);
+            _currentContextStack.Add(this);
             return true;
         }
 
         internal Context Deactivate(bool dropStackFrame = true)
         {
-            if (currentContextStack[currentContextStack.Count - 1] != this)
+            if (_currentContextStack[_currentContextStack.Count - 1] != this)
                 throw new InvalidOperationException("Context is not running");
 
-            currentContextStack.RemoveAt(currentContextStack.Count - 1);
+            _currentContextStack.RemoveAt(_currentContextStack.Count - 1);
 
             if (dropStackFrame)
                 while (ExceptionHelper.TryDropStackFrame(this)) ;
 
-            return CurrentContext;
+            return _currentContextStack.Count > 0 ? _currentContextStack[_currentContextStack.Count - 1] : null;
         }
 
         internal Context GetRunningContextFor(Function function)
@@ -298,7 +274,9 @@ namespace NiL.JS.Core
             if (function == null)
                 return null;
 
-            var stack = GetCurrectContextStack();
+            var stack = _currentContextStack;
+            if (stack == null)
+                return null;
 
             for (var i = stack.Count; i-- > 0;)
             {
@@ -536,7 +514,7 @@ namespace NiL.JS.Core
              */
 
             var mainFunctionContext = this;
-            var stack = GetCurrectContextStack();
+            var stack = _currentContextStack;
             while (stack != null
                 && stack.Count > 1
                 && stack[stack.Count - 2] == mainFunctionContext._parent
@@ -660,8 +638,9 @@ namespace NiL.JS.Core
             finally
             {
                 if (runned)
-                    this.Deactivate();
-                this._debugging = debugging;
+                    Deactivate();
+
+                _debugging = debugging;
             }
         }
 

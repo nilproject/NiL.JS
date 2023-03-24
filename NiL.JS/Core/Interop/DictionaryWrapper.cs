@@ -26,7 +26,7 @@ namespace NiL.JS.Core.Interop
                 _attributes |= JSValueAttributesInternal.Reassign;
 
                 if (owner._target.TryGetValue(key, out var value))
-                    base.Assign(Marshal(value));
+                    base.Assign(Context.CurrentGlobalContext.ProxyValue(value));
             }
 
             public override void Assign(JSValue value)
@@ -56,7 +56,7 @@ namespace NiL.JS.Core.Interop
                 if (!_target.ContainsKey(oKey))
                     return undefined;
 
-                return Marshal(_target[oKey]);
+                return Context.CurrentGlobalContext.ProxyValue(_target[oKey]);
             }
 
             return new ValueWrapper(this, oKey);
@@ -100,7 +100,7 @@ namespace NiL.JS.Core.Interop
         {
             foreach (var key in _target.Keys)
             {
-                var value = forWrite ? new ValueWrapper(this, key) : Marshal(_target[key]);
+                var value = forWrite ? new ValueWrapper(this, key) : Context.CurrentGlobalContext.ProxyValue(_target[key]);
                 yield return new KeyValuePair<string, JSValue>(key.ToString(), value);
             }
         }

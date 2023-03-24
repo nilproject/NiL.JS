@@ -51,8 +51,8 @@ namespace NiL.JS.Core.Functions
             }
         }
 
-        public MethodGroup(MethodProxy[] methods)
-            : base(Context.CurrentContext ?? Context._DefaultGlobalContext)
+        public MethodGroup(GlobalContext _context, MethodProxy[] methods)
+            : base(_context)
         {
             _methods = methods;
 

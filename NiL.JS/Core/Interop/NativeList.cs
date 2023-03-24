@@ -57,7 +57,7 @@ namespace NiL.JS.Core.Interop
                             case TypeCode.DateTime:
                             {
                                 var dateTime = (DateTime)value;
-                                base.Assign(new ObjectWrapper(new Date(dateTime)));
+                                base.Assign(new ObjectWrapper(new Date(dateTime), Context.CurrentGlobalContext.GetPrototype(typeof(Date))));
                                 break;
                             }
                             case TypeCode.Decimal:
@@ -163,7 +163,7 @@ namespace NiL.JS.Core.Interop
                                 }
                                 else
                                 {
-                                    _oValue = Marshal(value);
+                                    _oValue = Context.CurrentGlobalContext.ProxyValue(value);
                                     _valueType = JSValueType.Object;
                                 }
                                 break;

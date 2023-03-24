@@ -103,7 +103,7 @@ namespace NiL.JS.Core
                 DefineConstructor(typeof(Date));
                 DefineConstructor(typeof(Number));
                 DefineConstructor(typeof(Symbol));
-                DefineConstructor(typeof(BaseLibrary.Boolean)); 
+                DefineConstructor(typeof(BaseLibrary.Boolean));
                 DefineConstructor(typeof(Error));
                 DefineConstructor(typeof(TypeError));
                 DefineConstructor(typeof(ReferenceError));
@@ -128,7 +128,7 @@ namespace NiL.JS.Core
 
                 DefineConstructor(typeof(Debug));
 #if !PORTABLE
-                DefineVariable("console").Assign(JSValue.Marshal(new JSConsole()));
+                DefineVariable("console").Assign(ProxyValue(new JSConsole()));
 #endif
 
                 #region Base Functions
@@ -359,7 +359,7 @@ namespace NiL.JS.Core
                 case TypeCode.DateTime:
                 {
                     var dateTime = (DateTime)value;
-                    return new ObjectWrapper(new Date(dateTime));
+                    return new ObjectWrapper(new Date(dateTime), GetPrototype(typeof(Date)));
                 }
                 case TypeCode.Decimal:
                 {
@@ -479,22 +479,31 @@ namespace NiL.JS.Core
                     {
                         if (value is ExternalFunctionDelegate)
                             return new ExternalFunction(value as ExternalFunctionDelegate);
-                        return new MethodProxy(this, ((Delegate)value).GetMethodInfo(), ((Delegate)value).Target);
+                        return new MethodProxy(
+                            this,
+                            ((Delegate)value).GetMethodInfo(),
+                            ((Delegate)value).Target)
+                        {
+                            _objectPrototype = GetPrototype(typeof(MethodProxy))
+                        };
                     }
                     else if (value is IList)
                     {
-                        return new NativeList(value as IList);
+                        return new NativeList(value as IList) { _objectPrototype = GetPrototype(typeof(NativeList)) };
                     }
                     else if (value is ExpandoObject)
                     {
-                        return new DictionaryWrapper<string, object>(value as ExpandoObject);
+                        return new DictionaryWrapper<string, object>(value as ExpandoObject)
+                        {
+                            _objectPrototype = GetPrototype(typeof(DictionaryWrapper<string, object>))
+                        };
                     }
                     else if (value is Task)
                     {
                         Task<JSValue> result;
                         if (Tools.IsTaskOfT(value.GetType()))
                         {
-                            result = new Task<JSValue>(() => ProxyValue(value.GetType().GetMethod("get_Result", new Type[0]).Invoke(value, null)));
+                            result = new Task<JSValue>(() => ProxyValue(value.GetType().GetMethod("get_Result", Type.EmptyTypes).Invoke(value, null)));
                         }
                         else
                         {
@@ -502,17 +511,19 @@ namespace NiL.JS.Core
                         }
 
                         (value as Task).ContinueWith(task => result.Start());
-                        return new ObjectWrapper(new Promise(result));
+                        return new ObjectWrapper(new Promise(result), GetPrototype(typeof(Promise)));
                     }
 #if !NET40
                     else if (value is IEnumerable && NativeReadOnlyListCtors.IsReadOnlyList(value))
                     {
-                        return NativeReadOnlyListCtors.Create(value);
+                        var result = NativeReadOnlyListCtors.Create(value);
+                        result._objectPrototype = GetPrototype(result.GetType());
+                        return result;
                     }
 #endif
                     else
                     {
-                        return new ObjectWrapper(value);
+                        return new ObjectWrapper(value, value != null ? GetPrototype(value.GetType()) : null);
                     }
                 }
             }
@@ -522,7 +533,7 @@ namespace NiL.JS.Core
         {
             if (forWrite && GlobalObjectsAssignMode != GlobalObjectsAssignMode.Allow)
             {
-                switch(GlobalObjectsAssignMode)
+                switch (GlobalObjectsAssignMode)
                 {
                     case GlobalObjectsAssignMode.ScriptLocal:
                         return null;
