@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using NiL.JS.Core;
 
 namespace NiL.JS.Expressions
 {
     public sealed class NewTarget : Expression
     {
+        private readonly int _lexicalScopeDepth;
+
         protected internal override bool ContextIndependent
         {
             get
@@ -33,25 +31,22 @@ namespace NiL.JS.Expressions
             }
         }
 
-        public NewTarget()
+        public NewTarget(int lexicalScopeDepth)
         {
-
+            _lexicalScopeDepth = lexicalScopeDepth;
         }
 
         public override JSValue Evaluate(Context context)
         {
-            if (context._thisBind != null && (context._thisBind._attributes & JSValueAttributesInternal.ConstructingObject) != 0)
+            if (context._thisBind != null
+                && (context._thisBind._attributes & JSValueAttributesInternal.ConstructingObject) != 0)
             {
-                var stack = Context.GetCurrectContextStack();
+                for (var i = 0; i < _lexicalScopeDepth; i++)
+                    context = context._parent;
 
-                var i = 2;
-                while (stack.Count >= i && stack[stack.Count - i]._thisBind == context._thisBind)
-                {
-                    context = stack[stack.Count - i];
-                    i++;
-                }
-
-                return context._owner;
+                if (context._variables is not null
+                    && context._variables.TryGetValue("new.target", out var target))
+                return target;
             }
 
             return JSValue.undefined;

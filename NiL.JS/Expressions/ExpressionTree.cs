@@ -1166,7 +1166,7 @@ namespace NiL.JS.Expressions
                     }
                     case "new.target":
                     {
-                        operand = new NewTarget();
+                        operand = new NewTarget(state.LexicalScopeLevel - state.FunctionScopeLevel);
                         break;
                     }
                     case "this":

@@ -325,7 +325,7 @@ namespace NiL.JS.BaseLibrary
         public Function(Arguments args)
         {
             _initialContext = (Context.CurrentContext ?? Context.DefaultGlobalContext).RootContext;
-            if (_initialContext == Context._DefaultGlobalContext || _initialContext == null)
+            if (_initialContext == Context.DefaultGlobalContext || _initialContext == null)
                 throw new InvalidOperationException("Special Functions constructor can be called from javascript code only");
 
             _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
@@ -486,9 +486,13 @@ namespace NiL.JS.BaseLibrary
 
             for (; ; ) // tail recursion catcher
             {
-                var internalContext = new Context(_initialContext, ceocw, this);
+                var internalContext = new Context(_initialContext, ceocw | construct, this);
                 internalContext._callDepth = (currentContext?._callDepth ?? 0) + 1;
                 internalContext._definedVariables = body._variables;
+
+                if (construct)
+                    internalContext._variables["new.target"] = this;
+
                 internalContext.Activate();
 
                 try
@@ -560,7 +564,7 @@ namespace NiL.JS.BaseLibrary
             var context = Context.GetRunningContextFor(this, out oldContext);
             if (context != null && context._arguments == null)
             {
-                var args = new Arguments()
+                var args = new Arguments(oldContext)
                 {
                     _caller = oldContext != null ? oldContext._owner : null,
                     _callee = this,
