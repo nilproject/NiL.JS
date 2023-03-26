@@ -111,6 +111,16 @@ namespace NiL.JS.Core
         }
     }
 
+    internal sealed class ConstructableValue : JSValue
+    {
+        public JSValue NewTarget;
+
+        public override void Assign(JSValue value)
+        {
+            throw new InvalidOperationException();
+        }
+    }
+
 #if !(PORTABLE || NETCORE)
     [Serializable]
 #endif

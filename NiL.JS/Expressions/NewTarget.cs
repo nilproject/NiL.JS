@@ -39,14 +39,10 @@ namespace NiL.JS.Expressions
         public override JSValue Evaluate(Context context)
         {
             if (context._thisBind != null
-                && (context._thisBind._attributes & JSValueAttributesInternal.ConstructingObject) != 0)
-            {
-                for (var i = 0; i < _lexicalScopeDepth; i++)
-                    context = context._parent;
-
-                if (context._variables is not null
-                    && context._variables.TryGetValue("new.target", out var target))
-                return target;
+                && (context._thisBind._attributes & JSValueAttributesInternal.ConstructingObject) != 0
+                && context._thisBind is ConstructableValue constrValue)
+            {                
+                return constrValue.NewTarget;
             }
 
             return JSValue.undefined;

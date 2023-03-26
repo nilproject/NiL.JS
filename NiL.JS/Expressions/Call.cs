@@ -222,7 +222,7 @@ namespace NiL.JS.Expressions
 
             if (super != null)
             {
-                super.ctorMode = true;
+                super.IsSuperConstructorCall = true;
                 _callMode = CallMode.Super;
             }
 

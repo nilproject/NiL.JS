@@ -380,13 +380,23 @@ namespace NiL.JS.BaseLibrary
         }
 
         [Hidden]
-        public virtual JSValue Construct(Arguments arguments)
+        public JSValue Construct(Arguments arguments)
         {
             if (RequireNewKeywordLevel == RequireNewKeywordLevel.WithoutNewOnly)
                 ExceptionHelper.ThrowTypeError(string.Format(Strings.InvalidTryToCreateWithNew, name));
 
             JSValue targetObject = ConstructObject();
             targetObject._attributes |= JSValueAttributesInternal.ConstructingObject;
+            targetObject = new ConstructableValue
+            {
+                NewTarget = this,
+                _valueType = targetObject._valueType,
+                _iValue = targetObject._iValue,
+                _dValue = targetObject._dValue,
+                _oValue = targetObject,
+                _attributes = targetObject._attributes,
+            };
+
             JSValue result;
             try
             {
@@ -396,6 +406,7 @@ namespace NiL.JS.BaseLibrary
             {
                 targetObject._attributes &= ~JSValueAttributesInternal.ConstructingObject;
             }
+
             return result;
         }
 
@@ -486,13 +497,9 @@ namespace NiL.JS.BaseLibrary
 
             for (; ; ) // tail recursion catcher
             {
-                var internalContext = new Context(_initialContext, ceocw | construct, this);
+                var internalContext = new Context(_initialContext, ceocw, this);
                 internalContext._callDepth = (currentContext?._callDepth ?? 0) + 1;
                 internalContext._definedVariables = body._variables;
-
-                if (construct)
-                    internalContext._variables["new.target"] = this;
-
                 internalContext.Activate();
 
                 try
@@ -620,7 +627,7 @@ namespace NiL.JS.BaseLibrary
                 {
                     internalContext._variables["arguments"] = arguments;
 
-                    if (!string.IsNullOrEmpty(name) 
+                    if (!string.IsNullOrEmpty(name)
                         && Kind is FunctionKind.Function or FunctionKind.Generator or FunctionKind.AsyncFunction)
                         internalContext._variables[name] = this;
                 }
@@ -946,9 +953,9 @@ namespace NiL.JS.BaseLibrary
             RequireNewKeywordLevel = Kind switch
             {
                 FunctionKind.Getter
-                or FunctionKind.Setter 
-                or FunctionKind.Arrow 
-                or FunctionKind.Method 
+                or FunctionKind.Setter
+                or FunctionKind.Arrow
+                or FunctionKind.Method
                 or FunctionKind.AsyncAnonymousFunction
                 or FunctionKind.Generator
                 or FunctionKind.AnonymousGenerator

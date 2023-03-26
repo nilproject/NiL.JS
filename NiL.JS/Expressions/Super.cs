@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions
 {
     public sealed class Super : Expression
     {
-        public bool ctorMode;
+        public bool IsSuperConstructorCall { get; internal set; }
 
         protected internal override bool ContextIndependent
         {
@@ -40,7 +40,7 @@ namespace NiL.JS.Expressions
 
         }
 
-        protected internal override Core.JSValue EvaluateForWrite(Core.Context context)
+        protected internal override JSValue EvaluateForWrite(Context context)
         {
             ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
             return null;
@@ -48,7 +48,7 @@ namespace NiL.JS.Expressions
 
         public override JSValue Evaluate(Context context)
         {
-            if (ctorMode)
+            if (IsSuperConstructorCall)
             {
                 context._objectSource = context._thisBind;
                 return context._owner.__proto__;

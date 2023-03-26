@@ -179,7 +179,7 @@ namespace NiL.JS.Core.Functions
                 return Call(targetObject, argumentsObject);
         }
 
-        public override JSValue Construct(Arguments arguments)
+        public override JSValue Construct(JSValue targetObject, Arguments arguments)
         {
             return Invoke(true, null, arguments);
         }
