@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -10,12 +11,12 @@ namespace NiL.JS.Core;
 
 public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue>, ICloneable
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private struct NavyItem
     {
         public uint index;
-        public uint zeroContinue;
-        public uint oneContinue;
+        public short zeroContinue;
+        public short oneContinue;
 
         public override string ToString()
         {
@@ -30,7 +31,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
     private uint _pseudoLength;
     private NavyItem[][] _navyData;
     private TValue[][] _values;
-    private uint[] _used;
+    private short[] _used;
 
     [CLSCompliant(false)]
     public uint Length => _pseudoLength;
@@ -39,14 +40,14 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
     {
         _values = Array.Empty<TValue[]>();
         _navyData = Array.Empty<NavyItem[]>();
-        _used = Array.Empty<uint>();
+        _used = Array.Empty<short>();
     }
 
     public SparseArray(TValue[] values)
     {
         _values = Array.Empty<TValue[]>();
         _navyData = Array.Empty<NavyItem[]>();
-        _used = Array.Empty<uint>();
+        _used = Array.Empty<short>();
 
         for (var i = 0; i < values.Length; i++)
             this[i] = values[i];
@@ -196,7 +197,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         }
     }
 
-    private long findNearest(long index, bool notLess)
+    private (int segmentIndex, int itemIndex) findNearest(long index, bool notLess)
     {
         uint unsignedIndex = (uint)index;
 
@@ -205,7 +206,9 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         if (_navyData.Length <= segment)
         {
             if (notLess)
-                return -1;
+            {
+                return (-1, -1);
+            }
 
             segment = _navyData.Length - 1;
             index = (segment + 1) * SegmentSize - 1;
@@ -222,7 +225,9 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         }
 
         if (segment < 0 || segment >= _navyData.Length)
-            return -1;
+        {
+            return (-1, -1);
+        }
 
         if (_navyData[segment].Length == 0)
         {
@@ -230,36 +235,49 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
             if (notLess)
             {
-                if (_values[segment].Length <= itemIndex)
-                    return -1;
+                if (_values[segment].Length > itemIndex)
+                {
+                    return (segment, itemIndex);
+                }
+
+                segment++;
+                while (segment < _navyData.Length
+                    && (_values[segment] is null || _values[segment].Length == 0))
+                    segment++;
+
+                if (segment >= _navyData.Length)
+                {
+                    return (-1, -1);
+                }
+
+                return (segment, 0);
             }
             else
             {
                 if (_values[segment].Length < itemIndex)
-                    return _values[segment].Length - 1 + (segment * SegmentSize);
+                {
+                    return (segment, _values[segment].Length - 1);
+                }
             }
 
-            if (segment == 0)
-                return index;
-
-            return itemIndex + (segment * SegmentSize);
+            return (segment, itemIndex);
         }
 
         var mask = SegmentSize >> 1;
         var navy = _navyData[segment];
 
-        uint i = (uint)(unsignedIndex & (mask << 1) - 1);
+        int i = (int)(unsignedIndex & (mask << 1) - 1);
         if (i < navy.Length && navy[i].index == unsignedIndex)
         {
-            return navy[i].index;
+            return (segment, i);
         }
 
         i = 0;
 
-        var oneContinueIndex = 0u;
-        var zeroContinueIndex = 0u;
+        short oneContinueIndex = 0;
+        short zeroContinueIndex = 0;
 
-        uint ni;
+        short ni;
         while (true)
         {
             ref var navyItem = ref navy[i];
@@ -267,7 +285,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
             {
                 if (notLess)
                 {
-                    return navyItem.index;
+                    return (segment, i);
                 }
                 else
                 {
@@ -279,14 +297,14 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
                     if (segment < 0 || _values[segment].Length == 0)
                     {
-                        return -1;
+                        return (-1, -1);
                     }
 
                     navy = _navyData[segment];
 
                     if (navy.Length == 0)
                     {
-                        return segment * SegmentSize + _values[segment].Length - 1;
+                        return (segment, _values[segment].Length - 1);
                     }
 
                     i = 0;
@@ -337,28 +355,27 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
                             if (segment >= _navyData.Length || _values[segment].Length == 0)
                             {
-                                return -1;
+                                return (-1, -1);
                             }
 
-                            if (_navyData[segment].Length == 0)
-                                return segment * SegmentSize;
-
-                            return _navyData[segment][0].index;
+                            return (segment, 0);
                         }
 
-                        return navyItem.index;
+                        return (segment, i);
                     }
                 }
 
                 if (!notLess && navy[ni].index > index)
-                    return navyItem.index;
+                {
+                    return (segment, i);
+                }
 
                 i = ni;
                 mask >>= 1;
             }
             else
             {
-                return index;
+                return (segment, i);
             }
         }
     }
@@ -367,10 +384,10 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
     private ref TValue getFromTree(uint index, bool forRead, out bool got, uint segment)
     {
         var mask = SegmentSize >> 1;
-        var navy = _navyData[segment];
         var values = _values[segment];
+        var navy = _navyData[segment];
 
-        uint i = (uint)((int)index & (mask << 1) - 1);
+        var i = (int)((int)index & (SegmentSize - 1));
         if (i < navy.Length && navy[i].index == index)
         {
             if (i == 0 && _used[segment] == 0)
@@ -391,34 +408,11 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
         i = 0;
 
-        uint ni;
+        short ni;
         while (true)
         {
             ref var navyItem = ref navy[i];
-            if (navyItem.index > index)
-            {
-                if (forRead)
-                {
-                    got = false;
-                    _fictive = default;
-                    return ref _fictive;
-                }
-
-                var oldIndex = navyItem.index;
-                var oldValue = values[i];
-
-                navyItem.index = index;
-
-                if (oldIndex < _pseudoLength)
-                    this[(int)oldIndex] = oldValue!;
-
-                values = _values[segment];
-                values[i] = default!;
-
-                got = true;
-                return ref values[i];
-            }
-            else if (navyItem.index < index)
+            if (navyItem.index < index)
             {
                 var isNotZero = (index & mask) != 0;
                 ni = isNotZero ? navyItem.oneContinue : navyItem.zeroContinue;
@@ -459,6 +453,29 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
                 i = ni;
                 mask >>= 1;
+            }
+            else if (navyItem.index > index)
+            {
+                if (forRead)
+                {
+                    got = false;
+                    _fictive = default;
+                    return ref _fictive;
+                }
+
+                var oldIndex = navyItem.index;
+                var oldValue = values[i];
+
+                navyItem.index = index;
+
+                if (oldIndex < _pseudoLength)
+                    this[(int)oldIndex] = oldValue!;
+
+                values = _values[segment];
+                values[i] = default!;
+
+                got = true;
+                return ref values[i];
             }
             else
             {
@@ -516,14 +533,29 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
     public void TrimLength()
     {
-        _pseudoLength = (uint)findNearest(_pseudoLength - 1, false) + 1;
+        var coord = findNearest(_pseudoLength - 1, false);
+        var externalIndex = getExternalIndex(coord);
+        _pseudoLength = (uint)externalIndex + 1;
+    }
+
+    private long getExternalIndex((int segmentIndex, int itemIndex) coord)
+    {
+        if (coord.segmentIndex == -1)
+            return -1;
+
+        var navyItems = _navyData[coord.segmentIndex];
+        if (navyItems.Length != 0)
+            return navyItems[coord.itemIndex].index;
+
+        var externalIndex = coord.segmentIndex * SegmentSize + (uint)coord.itemIndex;
+        return externalIndex;
     }
 
     public void Clear()
     {
         _values = Array.Empty<TValue[]>();
         _navyData = Array.Empty<NavyItem[]>();
-        _used = Array.Empty<uint>();
+        _used = Array.Empty<short>();
         _pseudoLength = 0;
     }
 
@@ -594,20 +626,45 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
     /// </summary>
     /// <param name="index"></param>
     /// <returns>Zero if the requested index does not Exists</returns>
-    public long NearestIndexNotLess(long index)
+    public long NearestNotLess(long index, out TValue value)
     {
         if (_pseudoLength < index)
+        {
+            value = default;
             return -1;
+        }
 
-        return findNearest(index, true);
+        var coord = findNearest(index, true);
+
+        if (coord.itemIndex == -1)
+        {
+            value = default;
+            return -1;
+        }
+
+        value = _values[coord.segmentIndex][coord.itemIndex];
+        var externalIndex = getExternalIndex(coord);
+        return externalIndex;
     }
 
-    public long NearestIndexNotMore(long index)
+    public long NearestNotMore(long index, out TValue value)
     {
-        return findNearest(index, false);
+        var coord = findNearest(index, false);
+
+        if (coord.itemIndex == -1)
+        {
+            value = default;
+            return -1;
+        }
+
+        value = _values[coord.segmentIndex][coord.itemIndex];
+        var externalIndex = getExternalIndex(coord);
+        return externalIndex;
     }
 
-    public IEnumerable<int> KeysForwardOrder
+    public IEnumerable<int> KeysForwardOrder => ForwardOrder.Select(x => x.Key);
+
+    public IEnumerable<KeyValuePair<int, TValue>> ForwardOrder
     {
         get
         {
@@ -615,22 +672,20 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
             while (index < _pseudoLength)
             {
-                index = NearestIndexNotLess(index);
+                index = NearestNotLess(index, out var value);
 
                 if (index < 0)
                     break;
 
-                yield return (int)index;
+                yield return new KeyValuePair<int, TValue>((int)index, value);
 
                 index++;
             }
 
             if (index < _pseudoLength)
-                yield return (int)_pseudoLength - 1;
+                yield return new KeyValuePair<int, TValue>((int)_pseudoLength - 1, default);
         }
     }
-
-    public IEnumerable<KeyValuePair<int, TValue>> ForwardOrder => KeysForwardOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
 
     public IEnumerable<KeyValuePair<int, TValue>> Unordered
     {
@@ -666,15 +721,23 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
             if (_pseudoLength == 0)
                 yield break;
 
-            long index = (long)_pseudoLength - 2;
+            long index = (long)_pseudoLength - 1;
 
-            yield return (int)(_pseudoLength - 1);
-
-            var zeroYielded = index == -1;
+            var lastYielded = false;
+            var zeroYielded = index == 0;
 
             while (index >= 0)
             {
-                index = NearestIndexNotMore(index);
+                var coord = findNearest(index, false);
+                index = getExternalIndex(coord);
+
+                if (!lastYielded)
+                {
+                    if (index < _pseudoLength - 1)
+                        yield return (int)(_pseudoLength - 1);
+
+                    lastYielded = true;
+                }
 
                 if (index < 0)
                     break;
@@ -692,7 +755,45 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         }
     }
 
-    public IEnumerable<KeyValuePair<int, TValue>> ReverseOrder => KeysReverseOrder.Select(x => new KeyValuePair<int, TValue>(x, this[x]));
+    public IEnumerable<KeyValuePair<int, TValue>> ReverseOrder
+    {
+        get
+        {
+            if (_pseudoLength == 0)
+                yield break;
+
+            long index = (long)_pseudoLength - 1;
+
+            var lastYielded = false;
+            var zeroYielded = index == 0;
+
+            while (index >= 0)
+            {
+                index = NearestNotMore(index, out var value);
+
+                if (!lastYielded)
+                {
+                    if (index < _pseudoLength - 1)
+                        yield return new KeyValuePair<int, TValue>((int)(_pseudoLength - 1), default);
+
+                    lastYielded = true;
+                }
+
+                if (index < 0)
+                    break;
+
+                if (index == 0)
+                    zeroYielded = true;
+
+                yield return new KeyValuePair<int, TValue>((int)index, value);
+
+                index--;
+            }
+
+            if (!zeroYielded)
+                yield return new KeyValuePair<int, TValue>(0, default);
+        }
+    }
 
     public ICollection<int> Keys => KeysForwardOrder.ToList();
 
@@ -702,7 +803,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
     public void Add(int key, TValue value)
     {
-        if (NearestIndexNotLess(key) == key)
+        if (NearestNotLess(key, out _) == key)
             throw new InvalidOperationException();
 
         this[key] = value;
@@ -710,7 +811,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
     public bool ContainsKey(int key)
     {
-        return NearestIndexNotLess(key) == key;
+        return NearestNotLess(key, out _) == key;
     }
 
     public bool Remove(int key)
@@ -784,7 +885,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
             result._values[i] = _values[i]?.Clone() as TValue[];
         }
 
-        result._used = _used.Clone() as uint[];
+        result._used = _used.Clone() as short[];
 
         result._pseudoLength = _pseudoLength;
 

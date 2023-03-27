@@ -1268,8 +1268,8 @@ namespace NiL.JS.BaseLibrary
                     }
 
                     Tools.SetPropertyOrValue(
-                        self.GetProperty(tempKey, true, PropertyScope.Common), 
-                        self, 
+                        self.GetProperty(tempKey, true, PropertyScope.Common),
+                        self,
                         args[j]);
                 }
             }
@@ -1596,23 +1596,18 @@ namespace NiL.JS.BaseLibrary
                 var done = false;
 
                 var value = default(JSValue);
-                ref var refValue = ref value;
 
-                foreach (var ownKey in delta > 0 ? selfa._data.KeysReverseOrder : selfa._data.KeysForwardOrder)
+                foreach (var ownKeyValue in delta > 0 ? selfa._data.ReverseOrder : selfa._data.ForwardOrder)
                 {
+                    var ownKey = ownKeyValue.Key;
+
                     if (ownKey < pos0)
                         continue;
 
                     do
                     {
-                        var got = false;
-                        var tried = false;
                         if (System.Math.Abs(ownKey - key) <= 1)
-                        {
-                            tried = true;
-                            refValue = ref selfa._data.TryGetInternalForRead((uint)ownKey, out got);
-                            value = refValue;
-                        }
+                            value = ownKeyValue.Value;
                         else
                             value = null;
 
@@ -1638,31 +1633,15 @@ namespace NiL.JS.BaseLibrary
                             {
                                 key = (int)protoKey;
 
-                                if (!got)
-                                    refValue = ref value;
-
-                                refValue = protoValue.CloneImpl(false);
-                                value = refValue;
+                                value = protoValue.CloneImpl(false);
                             }
                             else
                             {
-                                if (!tried)
-                                {
-                                    key = ownKey - 1;
-                                    continue;
-                                }
-
                                 key = ownKey;
                             }
                         }
                         else
                         {
-                            if (!tried)
-                            {
-                                key = ownKey - 1;
-                                continue;
-                            }
-
                             key = ownKey;
                         }
 
@@ -1674,8 +1653,6 @@ namespace NiL.JS.BaseLibrary
 
                         if (value != null && value._valueType == JSValueType.Property)
                             value = Tools.GetPropertyOrValue(value, self);
-                        else if (got)
-                            refValue = default;
 
                         if (key < pos1)
                         {

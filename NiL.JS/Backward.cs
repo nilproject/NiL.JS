@@ -1,13 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Dynamic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+
+#if NET461
+namespace System.Runtime.CompilerServices
+{
+    [CLSCompliant(false)]
+    public sealed class TupleElementNamesAttribute : Attribute
+    {
+        private readonly string[] _transformNames;
+
+        public TupleElementNamesAttribute(string[] transformNames)
+        {
+
+            _transformNames = transformNames;
+        }
+
+        public IList<string> TransformNames => _transformNames;
+    }
+}
+
+namespace System
+{
+    public struct ValueTuple<T1, T2>
+    {
+        public readonly T1 Item1;
+        public readonly T2 Item2;
+
+        public ValueTuple(T1 item1, T2 item2)
+        {
+            Item1 = item1;
+            Item2 = item2;
+        }
+    }
+}
+#endif
 
 namespace NiL.JS.Backward
 {
