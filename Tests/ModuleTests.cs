@@ -5,6 +5,8 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS;
 using NiL.JS.Core;
+using NiL.JS.Core.Interop;
+using NiL.JS.Extensions;
 
 namespace Tests
 {
@@ -19,6 +21,85 @@ namespace Tests
             Assert.IsNotNull(module.Context);
         }
 
+        private class TestClass
+        {
+            private readonly string _lol;
+
+            public TestClass(string lol)
+            {
+                _lol = lol;
+            }
+            
+            public TestClass(int number)
+            {
+                _lol = number.ToString();
+            }
+
+            public string Get() => _lol;
+        }
+
+        [TestMethod]
+        public void DefineConstructorShouldAddConstructorAndItsCallable()
+        {
+            var module = new Module("testclass","");
+
+            module.Exports.DefineConstructor(typeof(TestClass), "TestClass");
+            var mainModule = new Module("main",@"import {TestClass} from 'testclass'
+
+var test = new TestClass('lol')
+
+var result = test.Get()");
+            mainModule.ModuleResolversChain.Add(new DelegateModuleResolver((
+                (ModuleRequest request, out Module result) =>
+                {
+                    if (request.AbsolutePath.Contains("testclass"))
+                    {
+                        result = module;
+                        return true;
+                    }
+                    else
+                    {
+                        result = null;
+                        return false;
+                    }
+                })));
+            mainModule.Run();
+            Assert.AreEqual("lol", mainModule.Context.GetVariable("result").As<string>());
+        }
+
+
+        [TestMethod]
+        public void DefineVariableShouldAddAndItsCallable()
+        {
+            var module = new Module("testclass","");
+
+            module.Exports.DefineVariable("testFunc", true)
+                .Assign(GlobalContext.CurrentGlobalContext.ProxyValue(new Func<string>(() => "lol")));
+            module.Exports.DefineConstant("testFuncConst", new Func<string>(() => "const"));
+
+            var mainModule = new Module("main",@"import {testFunc, testFuncConst} from 'testclass'
+
+var result = testFunc()
+var result2 = testFuncConst()");
+            
+            mainModule.ModuleResolversChain.Add(new DelegateModuleResolver((
+                (ModuleRequest request, out Module result) =>
+                {
+                    if (request.AbsolutePath.Contains("testclass"))
+                    {
+                        result = module;
+                        return true;
+                    }
+                    else
+                    {
+                        result = null;
+                        return false;
+                    }
+                })));
+            mainModule.Run();
+            Assert.AreEqual("lol", mainModule.Context.GetVariable("result").As<string>());
+            Assert.AreEqual("const", mainModule.Context.GetVariable("result2").As<string>());
+        }
         [TestMethod]
         public void ExportOperatorShouldAddItemToExportTable()
         {
@@ -38,7 +119,8 @@ namespace Tests
 
             public DelegateModuleResolver(ModuleResolverDelegate moduleResolverDelegate)
             {
-                _moduleResolverDelegate = moduleResolverDelegate ?? throw new ArgumentNullException(nameof(moduleResolverDelegate));
+                _moduleResolverDelegate = moduleResolverDelegate ??
+                                          throw new ArgumentNullException(nameof(moduleResolverDelegate));
             }
 
             public bool TryGetModule(ModuleRequest moduleRequest, out Module result)
@@ -120,7 +202,7 @@ import '../module3.js'
 
             module2.Run();
 
-            for (; ; )
+            for (;;)
             {
                 Thread.Sleep(1);
                 var imported = module2.Context.GetVariable("m");
@@ -155,7 +237,7 @@ import '../module3.js'
 
             module2.Run();
 
-            for (; ; )
+            for (;;)
             {
                 Thread.Sleep(1);
                 var imported = module2.Context.GetVariable("m");
@@ -180,8 +262,8 @@ import '../module3.js'
             }
             catch (TimeoutException)
             {
-
             }
+
             stopWatch.Stop();
 
             Assert.AreEqual(1, Math.Round(stopWatch.Elapsed.TotalSeconds));
@@ -200,8 +282,8 @@ import '../module3.js'
             }
             catch (TimeoutException)
             {
-
             }
+
             stopWatch.Stop();
 
             Assert.AreEqual(1, Math.Round(stopWatch.Elapsed.TotalSeconds));

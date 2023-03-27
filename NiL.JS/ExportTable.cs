@@ -28,7 +28,27 @@ namespace NiL.JS
                 _items[key] = value;
             }
         }
+        public void DefineConstructor(Type type, string name)
+        {
+            var ctor = GlobalContext.DefaultGlobalContext.GetConstructor(type);
+            _items.Add(name, ctor);
+            ctor._attributes |= JSValueAttributesInternal.DoNotEnumerate;
+        }
 
+        public JSValue DefineVariable(string name, bool deletable)
+        {
+            var defineVariable = GlobalContext.DefaultGlobalContext.DefineVariable(name, deletable);
+            _items.Add(name,defineVariable);
+            return defineVariable;
+        }
+        public JSValue DefineConstant(string name, JSValue value, bool deletable = false)
+        {
+            var v = DefineVariable(name, deletable);
+            v.Assign(value);
+            v._attributes |= JSValueAttributesInternal.ReadOnly;
+            return v;
+        }
+        
         public int Count => _items.Count;
 
         public JSValue Default
