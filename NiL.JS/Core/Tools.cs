@@ -1961,7 +1961,13 @@ namespace NiL.JS.Core
             return argumentsObject;
         }
 
-        internal static LambdaExpression BuildJsCallTree(string name, Expression functionGetter, ParameterExpression thisParameter, MethodInfo method, Type delegateType)
+        internal static LambdaExpression BuildJsCallTree(
+            Context context,
+            string name,
+            Expression functionGetter,
+            ParameterExpression thisParameter,
+            MethodInfo method,
+            Type delegateType)
         {
             var prms = method.GetParameters();
 
@@ -1972,9 +1978,9 @@ namespace NiL.JS.Core
                 if (thisParameter != null)
                     handlerArgumentsParameters[i++] = thisParameter;
 
-                for (; i < prms.Length; i++)
+                for (var prmI = 0; i < handlerArgumentsParameters.Length; i++, prmI++)
                 {
-                    handlerArgumentsParameters[i] = Expression.Parameter(prms[i].ParameterType, prms[i].Name);
+                    handlerArgumentsParameters[i] = Expression.Parameter(prms[prmI].ParameterType, prms[prmI].Name);
                 }
             }
 
@@ -1984,9 +1990,9 @@ namespace NiL.JS.Core
             if (prms.Length != 0)
             {
                 expressions.Add(Expression.Assign(argumentsParameter, Expression.New(typeof(Arguments))));
-                for (var i = 0; i < handlerArgumentsParameters.Length; i++)
+                for (var i = 0; i < prms.Length; i++)
                 {
-                    Expression argument = handlerArgumentsParameters[i];
+                    Expression argument = handlerArgumentsParameters[i + (thisParameter != null ? 1 : 0)];
 #if (PORTABLE || NETCORE)
                     if (argument.Type.GetTypeInfo().IsValueType)
 #else
@@ -1996,7 +2002,7 @@ namespace NiL.JS.Core
                         argument = Expression.Convert(argument, typeof(object));
                     }
 
-                    var currentBaseContext = Context.CurrentGlobalContext;
+                    var currentBaseContext = context.GlobalContext;
 
                     expressions.Add(Expression.Call(
                         argumentsParameter,
@@ -2008,7 +2014,11 @@ namespace NiL.JS.Core
                 }
             }
 
-            var callTree = Expression.Call(functionGetter, typeof(Function).GetRuntimeMethod(nameof(Function.Call), new[] { typeof(Arguments) }), argumentsParameter);
+            var argsTypes = thisParameter is not null ? new[] { typeof(JSValue), typeof(Arguments) } : new[] { typeof(Arguments) };
+            var callMethod = typeof(Function).GetRuntimeMethod(nameof(Function.Call), argsTypes);
+            var callTree = thisParameter is null
+                ? Expression.Call(functionGetter, callMethod, argumentsParameter)
+                : Expression.Call(functionGetter, callMethod, thisParameter, argumentsParameter);
 
             expressions.Add(callTree);
             if (method.ReturnParameter.ParameterType != typeof(void)

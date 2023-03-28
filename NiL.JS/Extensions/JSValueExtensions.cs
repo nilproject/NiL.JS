@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Extensions
 {
@@ -255,14 +260,11 @@ namespace NiL.JS.Extensions
             target.Assign(Context.CurrentGlobalContext.ProxyValue(value));
         }
 
-#if DEBUG && !(PORTABLE || NETCORE) // TODO
-        //private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
+        private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
+        private static WeakReference<ModuleBuilder> dynamicModule = new WeakReference<ModuleBuilder>(null);
 
-        public static T AsImplementationOf<T>(this JSValue self)
+        public static T AsImplementationOf<T>(this JSValue self, Context context) where T : class
         {
-            if (!typeof(T).IsInterface)
-                throw new ArgumentException(typeof(T).FullName + " is not an interface type");
-
             if (self._oValue is T)
                 return (T)self._oValue;
             if (typeof(T) == typeof(IIterable))
@@ -270,20 +272,32 @@ namespace NiL.JS.Extensions
             if (typeof(T) == typeof(IIterator))
                 return (T)(object)new IteratorAdapter(self);
 
+            TypeBuilder type = null;
             AssemblyBuilder assemblyBuilder = null;
-            //if (!dynamicAssembly.TryGetTarget(out assemblyBuilder))
-            //{
-            //    assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("<nil.js>DynamicAssembly"), AssemblyBuilderAccess.RunAndCollect);
-            //    dynamicAssembly.SetTarget(assemblyBuilder);
-            //}
+            lock (dynamicAssembly)
+            {
+                if (!dynamicAssembly.TryGetTarget(out assemblyBuilder))
+                {
+                    assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("<nil.js>DynamicAssembly"), AssemblyBuilderAccess.RunAndCollect);
+                    dynamicAssembly.SetTarget(assemblyBuilder);
 
-            var module = assemblyBuilder.GetDynamicModule("InterfaceImplementations") ?? assemblyBuilder.DefineDynamicModule("InterfaceImplementations");
+                    var m = assemblyBuilder.GetDynamicModule("InterfaceImplementations") ?? assemblyBuilder.DefineDynamicModule("InterfaceImplementations");
+                    dynamicModule.SetTarget(m);
+                }
+            }
+
+            dynamicModule.TryGetTarget(out var module);
             var typename = "<jswrapper>" + typeof(T).FullName;
-            var type = (TypeBuilder)module.GetType(typename);
+            type = (TypeBuilder)module.GetType(typename);
             if (type == null)
             {
-                type = module.DefineType(typename, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed, typeof(object), new[] { typeof(T) });
-                var methods = typeof(T).GetMethods();
+                var baseType = typeof(T).IsClass ? typeof(T) : typeof(object);
+                var interfaces = typeof(T).IsInterface ? new[] { typeof(T) } : Type.EmptyTypes;
+                type = module.DefineType(typename, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed, baseType, interfaces);
+                var methods = typeof(T)
+                    .GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Where(x => x.IsVirtual && !x.IsFinal && x.Name is not "Finalize")
+                    .ToArray();
 
                 var jsobjectField = type.DefineField("_jsvalue", typeof(JSValue), FieldAttributes.Private);
                 var ctor = type.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(JSValue) });
@@ -292,32 +306,74 @@ namespace NiL.JS.Extensions
                     ilgen.Emit(OpCodes.Ldarg_0);
                     ilgen.Emit(OpCodes.Ldarg_1);
                     ilgen.Emit(OpCodes.Stfld, jsobjectField);
+                    ilgen.Emit(OpCodes.Ret);
                 }
 
-                var thisParameter = Expression.Parameter(type, "self");
+                var delegatesField = type.DefineField("_delegates", typeof(Delegate[]), FieldAttributes.Private | FieldAttributes.Static);
+                var delegates = new Delegate[methods.Length];
+
+                var jsValParameter = Expression.Parameter(typeof(JSValue), "jsval");
 
                 var getPropertyMethod = typeof(JSValue).GetMethod(nameof(JSValue.GetProperty), BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(JSValue), typeof(bool), typeof(PropertyScope) }, null);
 
                 for (var i = 0; i < methods.Length; i++)
                 {
+                    var paramters = methods[i].GetParameters();
                     var method = type.DefineMethod(
                         methods[i].Name,
-                        MethodAttributes.Public,
+                        methods[i].Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot),
                         methods[i].ReturnParameter.ParameterType,
-                        methods[i].GetParameters().Select(x => x.ParameterType).ToArray());
+                        paramters.Select(x => x.ParameterType).ToArray());
 
-                    //var tree = Tools.BuildJsCallTree(method.Name,
-                    //    Expression.Convert(Expression.Field(Expression.Call(Expression.Field(thisParameter, jsobjectField), getPropertyMethod,
-                    //        Expression.Constant((JSValue)method.Name), Expression.Constant(false), Expression.Constant(PropertyScope.Сommon)), "oValue"), typeof(Function)),
-                    //    thisParameter,
-                    //    methods[i],
-                    //    null);
-                    //tree.CompileToMethod(method);
+                    var functionTree = Expression.Convert(
+                        Expression.Property(
+                            Expression.Call(
+                                jsValParameter,
+                                getPropertyMethod,
+                                Expression.Constant((JSValue)(methods[i].GetCustomAttribute<JavaScriptNameAttribute>()?.Name ?? method.Name)),
+                                Expression.Constant(false),
+                                Expression.Constant(PropertyScope.Common)),
+                            nameof(JSValue.Value)),
+                        typeof(Function));
+
+                    var tree = Tools.BuildJsCallTree(
+                        context,
+                        method.Name,
+                        functionTree,
+                        jsValParameter,
+                        methods[i],
+                        null);
+
+                    var @delegate = tree.Compile();
+                    delegates[i] = @delegate;
+
+                    var ilGenerator = method.GetILGenerator();
+
+                    ilGenerator.Emit(OpCodes.Ldarg_0);
+                    ilGenerator.Emit(OpCodes.Ldfld, delegatesField);
+
+                    ilGenerator.Emit(OpCodes.Ldc_I4, i);
+
+                    ilGenerator.Emit(OpCodes.Ldelem_Ref);
+
+                    ilGenerator.Emit(OpCodes.Ldarg_0);
+                    ilGenerator.Emit(OpCodes.Ldfld, jsobjectField);
+
+                    for (var pi = 0; pi < paramters.Length; pi++)
+                        ilGenerator.Emit(OpCodes.Ldarg, pi + 1);
+
+                    var invokeMethod = @delegate.GetType().GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
+                    ilGenerator.EmitCall(OpCodes.Call, invokeMethod, null);
+
+                    ilGenerator.Emit(OpCodes.Ret);
                 }
+
+                type.CreateType().GetField(delegatesField.Name, BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, delegates);
             }
 
-            return default(T);
+            var resultType = type.CreateType();
+
+            return (T)Activator.CreateInstance(resultType, self);
         }
-#endif
     }
 }

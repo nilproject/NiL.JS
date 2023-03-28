@@ -939,7 +939,13 @@ namespace NiL.JS.BaseLibrary
 #else
             invokeMethod = delegateType.GetMethod("Invoke");
 #endif
-            var @delegate = Tools.BuildJsCallTree("<delegate>" + name, linqEx.Expression.Constant(this), null, invokeMethod, delegateType).Compile();
+            var @delegate = Tools.BuildJsCallTree(
+                Context,
+                "<delegate>" + name,
+                linqEx.Expression.Constant(this),
+                null,
+                invokeMethod,
+                delegateType).Compile();
 
             if (_delegateCache == null)
                 _delegateCache = new Dictionary<Type, Delegate>();
