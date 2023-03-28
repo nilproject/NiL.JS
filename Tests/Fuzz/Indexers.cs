@@ -27,7 +27,7 @@ namespace Tests.Fuzz
         public void IndexersFuzz()
         {
             var context = new Context();
-            var jsval = JSValue.Marshal(new TestClass());
+            var jsval = Context.CurrentGlobalContext.ProxyValue(new TestClass());
             context.DefineVariable("test").Assign(jsval);
             context.Eval(
                 "var prot = test.__proto__;" +

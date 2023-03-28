@@ -72,7 +72,7 @@ namespace Examples.Namespaces_and_external_types
         {
             var context = new Context();
             var instance = new TestClass();
-            context.DefineVariable("instance").Assign(JSValue.Wrap(instance));
+            context.DefineVariable("instance").Assign(context.GlobalContext.WrapValue(instance));
 
             example1(context);
 

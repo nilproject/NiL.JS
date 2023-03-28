@@ -77,7 +77,7 @@ import '../module3.js'
         {
             var module1 = new Module("");
             var itemProperty = module1.Exports.GetType().GetProperty("Item");
-            itemProperty.SetValue(module1.Exports, JSValue.Marshal(0x777), new object[] { "a" });
+            itemProperty.SetValue(module1.Exports, Context.CurrentGlobalContext.ProxyValue(0x777), new object[] { "a" });
 
             var module2 = new Module("module2", "import {a} from \"another module\"");
             module2.ModuleResolversChain.Add(new DelegateModuleResolver((ModuleRequest request, out Module result) =>
@@ -103,7 +103,7 @@ import '../module3.js'
         {
             var module1 = new Module("");
             var itemProperty = module1.Exports.GetType().GetProperty("Item");
-            itemProperty.SetValue(module1.Exports, JSValue.Marshal(0x777), new object[] { "a" });
+            itemProperty.SetValue(module1.Exports, Context.CurrentGlobalContext.ProxyValue(0x777), new object[] { "a" });
 
             var module2 = new Module("module2", "var m = null; import(\"another module\").then(x => m = x)");
             module2.ModuleResolversChain.Add(new DelegateModuleResolver((ModuleRequest request, out Module result) =>
@@ -138,7 +138,7 @@ import '../module3.js'
         {
             var module1 = new Module("");
             var itemProperty = module1.Exports.GetType().GetProperty("Item");
-            itemProperty.SetValue(module1.Exports, JSValue.Marshal(0x777), new object[] { string.Empty });
+            itemProperty.SetValue(module1.Exports, Context.CurrentGlobalContext.ProxyValue(0x777), new object[] { string.Empty });
 
             var module2 = new Module("module2", "var m = null; import(\"another module\").then(x => m = x)");
             module2.ModuleResolversChain.Add(new DelegateModuleResolver((ModuleRequest request, out Module result) =>
@@ -159,7 +159,7 @@ import '../module3.js'
             {
                 Thread.Sleep(1);
                 var imported = module2.Context.GetVariable("m");
-                if (!imported.Defined)
+                if (!imported.Defined || imported.IsNull)
                     continue;
 
                 if (Equals(imported["default"].Value, 0x777))

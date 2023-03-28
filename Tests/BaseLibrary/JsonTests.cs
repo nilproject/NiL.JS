@@ -80,11 +80,11 @@ namespace Tests.BaseLibrary
         [Timeout(1000)]
         public void CustomSerializer()
         {
-            var ctx = new GlobalContext();
+            var context = new GlobalContext();
 
-            JSValue obj = JSValue.Marshal(new Dummy());
+            JSValue obj = context.GlobalContext.ProxyValue(new Dummy());
 
-            ctx.ActivateInCurrentThread();
+            context.ActivateInCurrentThread();
 
             try
             {
@@ -92,7 +92,7 @@ namespace Tests.BaseLibrary
             }
             finally
             {
-                ctx.Deactivate();
+                context.Deactivate();
             }
         }
     }

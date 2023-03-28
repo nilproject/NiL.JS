@@ -29,7 +29,7 @@ namespace Tests
         {
             var testClass = new ClassWithTwoMethods();
             var context = new Context();
-            context.DefineVariable("test").Assign(testClass);
+            context.DefineVariable("test").Assign(testClass, context);
 
             context.Eval("test.Method1(1, 2, 3, 4, 5)");
 
@@ -45,7 +45,7 @@ namespace Tests
         {
             var testClass = new ClassWithTwoMethods();
             var context = new Context();
-            context.DefineVariable("test").Assign(testClass);
+            context.DefineVariable("test").Assign(testClass, context);
 
             context.Eval("test.Method1(1, 2)");
 
@@ -58,7 +58,7 @@ namespace Tests
         {
             var testClass = new ClassWithTwoMethods();
             var context = new Context();
-            context.DefineVariable("test").Assign(testClass);
+            context.DefineVariable("test").Assign(testClass, context);
 
             context.Eval("test.Method1(1, [2])");
 
@@ -72,7 +72,7 @@ namespace Tests
         {
             var testClass = new ClassWithTwoMethods();
             var context = new Context();
-            context.DefineVariable("test").Assign(testClass);
+            context.DefineVariable("test").Assign(testClass, context);
 
             context.Eval("test.Method1(1, [2], [3])");
         }
@@ -82,7 +82,7 @@ namespace Tests
         {
             var testClass = new ClassWithTwoMethods();
             var context = new Context();
-            context.DefineVariable("test").Assign(testClass);
+            context.DefineVariable("test").Assign(testClass, context);
 
             context.Eval("test.Method2(1, 2)");
 
@@ -95,7 +95,7 @@ namespace Tests
         {
             var testClass = new ClassWithTwoMethods();
             var context = new Context();
-            context.DefineVariable("test").Assign(testClass);
+            context.DefineVariable("test").Assign(testClass, context);
 
             context.Eval("test.Method2(1, [2])");
 

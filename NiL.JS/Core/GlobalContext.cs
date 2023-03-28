@@ -313,6 +313,14 @@ namespace NiL.JS.Core
                 return GetConstructor(type.MakeGenericType(parameters));
             });
         }
+        
+        public JSValue WrapValue(object value)
+        {
+            if (value is null) 
+                return JSValue.Null;
+
+            return new ObjectWrapper(value, GetPrototype(value.GetType()));
+        }
 
         public JSValue ProxyValue(object value)
         {

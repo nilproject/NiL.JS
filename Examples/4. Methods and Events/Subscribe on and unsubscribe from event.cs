@@ -32,7 +32,7 @@ namespace Examples.Methods_and_Events
             var objectWithEvent = new ClassWithEvent();
             var context = new Context();
 
-            context.DefineVariable("objectWithEvent").Assign(JSValue.Marshal(objectWithEvent));
+            context.DefineVariable("objectWithEvent").Assign(context.GlobalContext.ProxyValue(objectWithEvent));
             context.Eval(@"
 function eventHandler(sender, eventArgs) {
     console.log(eventArgs.Text);

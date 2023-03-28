@@ -29,7 +29,7 @@ namespace Examples.Pass_values_into_JavaScript_environment
         {
             var context = new Context();
 
-            context.DefineVariable(_variableName).Assign(JSValue.Marshal(_value));
+            context.DefineVariable(_variableName).Assign(context.GlobalContext.ProxyValue(_value));
 
             context.Eval(string.Format("console.log({0});", _variableName)); // Console: Hi, I'm value!
 
@@ -40,7 +40,7 @@ namespace Examples.Pass_values_into_JavaScript_environment
         {
             var context = new Context();
 
-            context.DefineVariable(_variableName).Assign(JSValue.Marshal(new ClassWithStringValue { NestedValue = _nestedValue }));
+            context.DefineVariable(_variableName).Assign(context.GlobalContext.ProxyValue(new ClassWithStringValue { NestedValue = _nestedValue }));
 
             context.Eval(string.Format("console.log({0});", _variableName)); // Console: [object ClassWithStringValue]
 

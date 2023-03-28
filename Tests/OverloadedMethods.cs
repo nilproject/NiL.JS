@@ -35,7 +35,7 @@ namespace Tests
             var context = new Context();
             var instance = new Class();
 
-            context.DefineVariable($"{nameof(instance)}").Assign(JSValue.Marshal(instance));
+            context.DefineVariable($"{nameof(instance)}").Assign(Context.CurrentGlobalContext.ProxyValue(instance));
             var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}()");
 
             Assert.AreEqual(0, result.Value);
@@ -47,7 +47,7 @@ namespace Tests
             var context = new Context();
             var instance = new Class();
 
-            context.DefineVariable($"{nameof(instance)}").Assign(JSValue.Marshal(instance));
+            context.DefineVariable($"{nameof(instance)}").Assign(context.GlobalContext.ProxyValue(instance));
             var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1)");
 
             Assert.AreEqual(1, result.Value);
@@ -59,7 +59,7 @@ namespace Tests
             var context = new Context();
             var instance = new Class();
 
-            context.DefineVariable($"{nameof(instance)}").Assign(JSValue.Marshal(instance));
+            context.DefineVariable($"{nameof(instance)}").Assign(Context.CurrentGlobalContext.ProxyValue(instance));
             var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1, 2)");
 
             Assert.AreEqual(2, result.Value);

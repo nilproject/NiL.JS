@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
-using NiL.JS.Backward;
-using System.Reflection.Emit;
-using System.Linq;
-using System.Linq.Expressions;
-using System.ComponentModel;
 
 namespace NiL.JS.Extensions
 {
@@ -250,11 +244,15 @@ namespace NiL.JS.Extensions
         {
             target.Assign(value);
         }
+        public static void Assign(this JSValue target, object value, Context context)
+        {
+            target.Assign(context.GlobalContext.ProxyValue(value));
+        }
 
-        [Obsolete("Use Assign(this JSValue target, JSValue value)")]
+        [Obsolete("Use Assign(this JSValue, JSValue) or Use Assign(this JSValue, object, Context)")]
         public static void Assign(this JSValue target, object value)
         {
-            target.Assign(JSValue.Marshal(value));
+            target.Assign(Context.CurrentGlobalContext.ProxyValue(value));
         }
 
 #if DEBUG && !(PORTABLE || NETCORE) // TODO

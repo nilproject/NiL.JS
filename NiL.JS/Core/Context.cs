@@ -65,7 +65,7 @@ namespace NiL.JS.Core
     public class Context : IEnumerable<string>
     {
         [ThreadStatic]
-        internal static List<Context> _currentContextStack;
+        private static List<Context> _currentContextStack;
 
         public static Context CurrentContext
         {
@@ -116,6 +116,9 @@ namespace NiL.JS.Core
         {
             get
             {
+                if (this is GlobalContext gcx)
+                    return gcx;
+
                 var iter = this;
                 if (iter._parent != null)
                 {

@@ -159,9 +159,9 @@ var a = new A().text;
 var b = new B().text;
 
 if (a != "A")
-    console.log("new.target works incorrectly");
+    console.log("new.target works incorrectly #1");
 if (b != "B")
-    console.log("new.target works incorrectly");
+    console.log("new.target works incorrectly #2");
 
 a = console ? 1 : 2, { test: 1 };
 

@@ -54,7 +54,7 @@
     assert(0x0504 === array[1], 1 + " " + T.name + " from ArrayBuffer 2");
 
     array = T(ab, 2, 1);
-    assert(array.length === 1, "array.length === 1 " + T.name);
+    assert(array.length === 1, "array.length === 1 " + T.name + " (" + array.length + ")");
     assert(0x0302 === array[0], i + " " + T.name + " from ArrayBuffer 3");
 
     assert(array[1] === undefined, "array[2] === undefined");

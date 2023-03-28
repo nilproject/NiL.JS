@@ -16,10 +16,10 @@ namespace Tests
         {
             var context = new Context();
 
-            context.DefineVariable("testAwaitable").Assign(JSValue.Marshal(new Func<string, Task<string>>((input) =>
+            context.DefineVariable("testAwaitable").Assign(new Func<string, Task<string>>((input) =>
             {
                 return Task.FromResult(input);
-            })));
+            }), context);
 
             context.Eval("function testAsync() { return testAwaitable('test'); }");
 
@@ -33,7 +33,7 @@ namespace Tests
         {
             var context = new Context();
 
-            context.DefineVariable("testAwaitable").Assign(JSValue.Marshal(new Func<string, Task<string>>(async (input) =>
+            context.DefineVariable("testAwaitable").Assign(context.GlobalContext.ProxyValue(new Func<string, Task<string>>(async (input) =>
             {
                 await Task.Delay(500);
 
@@ -94,11 +94,11 @@ async function script() {{
 
             context
                 .DefineVariable("fetch")
-                .Assign(JSValue.Marshal(new Func<string, Task<string>>(FetchAsync)));
+                .Assign(new Func<string, Task<string>>(FetchAsync), context);
 
             context
                 .DefineVariable("check")
-                .Assign(JSValue.Marshal(new Action<string>((value) => { Assert.AreEqual(request, value); })));
+                .Assign(new Action<string>((value) => { Assert.AreEqual(request, value); }), context);
 
             context.Eval(script);
 

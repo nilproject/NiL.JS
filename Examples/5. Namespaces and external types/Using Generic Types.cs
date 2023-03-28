@@ -16,14 +16,14 @@ namespace Examples.Namespaces_and_external_types
 
             var temp = new
             {
-                GList = JSValue.GetGenericTypeSelector(new[]
+                GList = context.GlobalContext.GetGenericTypeSelector(new[]
                 {
                     typeof(List<>),
                     typeof(ArrayList)
                 })
             };
 
-            context.DefineVariable("test").Assign(JSValue.Marshal(temp));
+            context.DefineVariable("test").Assign(context.GlobalContext.ProxyValue(temp));
             context.Eval(@"
 console.log('ArrayList');
 var list = test.GList()(); 

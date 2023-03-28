@@ -33,7 +33,7 @@ namespace Tests.Core.Functions
         {
             var context = new Context();
             var obj = new MyObject();
-            context.DefineVariable("obj").Assign(JSValue.Wrap(obj));
+            context.DefineVariable("obj").Assign(Context.CurrentGlobalContext.WrapValue(obj));
 
             context.Eval("obj.Text = undefined");
 

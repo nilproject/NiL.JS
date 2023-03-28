@@ -30,7 +30,7 @@ namespace Tests.Fuzz
             var q = new JSQuestion();
             context
                .DefineVariable("Q")
-               .Assign(JSValue.Marshal(q));
+               .Assign(Context.CurrentGlobalContext.ProxyValue(q));
 
             context.DefineConstructor(typeof(Flags));
 

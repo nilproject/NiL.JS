@@ -19,7 +19,7 @@ namespace Tests
         {
             var context = new Context();
             var list = new List<Func<string, string>>();
-            context.DefineVariable("list").Assign(JSValue.Marshal(list));
+            context.DefineVariable("list").Assign(Context.CurrentGlobalContext.ProxyValue(list));
 
             context.Eval("list.push(x => 'hi ' + x)"); // IList marshaled as NativeList with array-like interface
 
@@ -31,7 +31,7 @@ namespace Tests
         {
             var context = new Context();
             var list = new List<Func<string, string>>();
-            context.DefineVariable("list").Assign(JSValue.Wrap(list));
+            context.DefineVariable("list").Assign(Context.CurrentGlobalContext.WrapValue(list));
 
             context.Eval("list.Add(x => 'hi ' + x)");
 
@@ -62,7 +62,7 @@ namespace Tests
             module
                 .Context
                 .DefineVariable("runCSharp")
-                .Assign(JSValue.Marshal(new Func<Task<bool>>(runCSharp)));
+                .Assign(module.Context.GlobalContext.ProxyValue(new Func<Task<bool>>(runCSharp)));
 
             module.Run();
 

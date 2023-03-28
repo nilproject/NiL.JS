@@ -22,7 +22,7 @@ namespace Tests.Core
         [TestMethod]
         public void PrimitiveTypeShouldBeWrappedAsClass()
         {
-            var wrappedObject = JSValue.Wrap(1);
+            var wrappedObject = Context.CurrentGlobalContext.WrapValue(1);
 
             Assert.AreEqual(JSValueType.Object, wrappedObject.ValueType);
         }
@@ -30,7 +30,7 @@ namespace Tests.Core
         [TestMethod]
         public void PrimitiveTypeShouldBeMarshaledAsPrimitive()
         {
-            var wrappedObject = JSValue.Marshal(1);
+            var wrappedObject = Context.CurrentGlobalContext.ProxyValue(1);
 
             Assert.AreEqual(JSValueType.Integer, wrappedObject.ValueType);
         }
@@ -47,7 +47,7 @@ namespace Tests.Core
         [TestMethod]
         public void ShouldConvertStringToEnumValue()
         {
-            var convertableJsString = JSValue.Marshal(nameof(TestEnum.Second)) as IConvertible;
+            var convertableJsString = Context.CurrentGlobalContext.ProxyValue(nameof(TestEnum.Second)) as IConvertible;
 
             var enumValue = convertableJsString.ToType(typeof(TestEnum), null);
 
@@ -57,7 +57,7 @@ namespace Tests.Core
         [TestMethod]
         public void ShouldConvertNumberInStringToEnumValue()
         {
-            var convertableJsString = JSValue.Marshal(((int)(TestEnum.Second)).ToString()) as IConvertible;
+            var convertableJsString = Context.CurrentGlobalContext.ProxyValue(((int)(TestEnum.Second)).ToString()) as IConvertible;
 
             var enumValue = convertableJsString.ToType(typeof(TestEnum), null);
 
@@ -67,7 +67,7 @@ namespace Tests.Core
         [TestMethod]
         public void ShouldConvertIntToEnumValue()
         {
-            var convertableJsString = JSValue.Marshal((int)(TestEnum.Second)) as IConvertible;
+            var convertableJsString = Context.CurrentGlobalContext.ProxyValue((int)(TestEnum.Second)) as IConvertible;
 
             var enumValue = convertableJsString.ToType(typeof(TestEnum), null);
 
@@ -77,7 +77,7 @@ namespace Tests.Core
         [TestMethod]
         public void ShouldReturnNullIfCannotConvert()
         {
-            var convertableJsString = JSValue.Marshal("bazinga!") as IConvertible;
+            var convertableJsString = Context.CurrentGlobalContext.ProxyValue("bazinga!") as IConvertible;
 
             var enumValue = convertableJsString.ToType(typeof(TestEnum), null);
 

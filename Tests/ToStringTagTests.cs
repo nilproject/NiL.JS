@@ -76,7 +76,7 @@ namespace Tests
         public void ToStringTagShouldWorkForExternTypes()
         {
             var context = new Context();
-            context.DefineVariable("test").Assign(new ExternTypeWithTag());
+            context.DefineVariable("test").Assign(new ExternTypeWithTag(), context);
             var code = @"test.toString()";
 
             var stringValue = context.Eval(code);
@@ -92,7 +92,7 @@ namespace Tests
         public void ToStringShouldUseNameOfTypeIfToStringTagNotDefined()
         {
             var context = new Context();
-            context.DefineVariable("test").Assign(new ExternTypeWithoutTag());
+            context.DefineVariable("test").Assign(new ExternTypeWithoutTag(), context);
             var code = @"test.toString()";
 
             var stringValue = context.Eval(code);
@@ -104,7 +104,7 @@ namespace Tests
         public void ToStringTagShouldBeSymbol()
         {
             var context = new Context();
-            context.DefineVariable("test").Assign(new ExternTypeWithTag());
+            context.DefineVariable("test").Assign(new ExternTypeWithTag(), context);
             var code = @"test[Symbol.toStringTag]";
 
             var stringValue = context.Eval(code);

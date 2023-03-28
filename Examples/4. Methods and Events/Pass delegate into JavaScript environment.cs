@@ -10,7 +10,7 @@ namespace Examples.Methods_and_Events
             var @delegate = new Action<string>(text => System.Windows.Forms.MessageBox.Show(text));
             var context = new Context();
 
-            context.DefineVariable("alert").Assign(JSValue.Marshal(@delegate));
+            context.DefineVariable("alert").Assign(context.GlobalContext.ProxyValue(@delegate));
             context.Eval("alert('Hello, World!')"); // Message box: Hello, World!
         }
     }
