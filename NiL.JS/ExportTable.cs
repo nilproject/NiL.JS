@@ -23,24 +23,44 @@ namespace NiL.JS
 
                 return result;
             }
-            internal set
+             set
             {
                 _items[key] = value;
             }
         }
+        /// <summary>
+        /// Add object constructor to export 
+        /// </summary>
+        /// <remarks>We dont recommend to use, because api can change and its can be broken in future. Use indexers</remarks>
+        /// <param name="type">Class</param>
+        /// <param name="name"></param>
         public void DefineConstructor(Type type, string name)
         {
-            var ctor = GlobalContext.DefaultGlobalContext.GetConstructor(type);
+            var ctor = GlobalContext.CurrentGlobalContext.GetConstructor(type);
             _items.Add(name, ctor);
             ctor._attributes |= JSValueAttributesInternal.DoNotEnumerate;
         }
 
+        /// <summary>
+        /// Add object to exports 
+        /// </summary>
+        /// <remarks>We dont recommend to use, because api can change and its can be broken in future. Use indexers</remarks>
+        /// <param name="name">Name of variable in export</param>
+        /// <param name="deletable"></param>
         public JSValue DefineVariable(string name, bool deletable)
         {
-            var defineVariable = GlobalContext.DefaultGlobalContext.DefineVariable(name, deletable);
+            var defineVariable = GlobalContext.CurrentGlobalContext.DefineVariable(name, deletable);
             _items.Add(name,defineVariable);
             return defineVariable;
         }
+
+        /// <summary>
+        /// Add readonly object to exports 
+        /// </summary>
+        /// <remarks>We dont recommend to use, because api can change and its can be broken in future. Use indexers</remarks>
+        /// <param name="name">Name of variable in export</param>
+        /// <param name="value">JSValue (function, constructor, object, etc)</param>
+        /// <param name="deletable"></param>
         public JSValue DefineConstant(string name, JSValue value, bool deletable = false)
         {
             var v = DefineVariable(name, deletable);
