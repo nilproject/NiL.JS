@@ -8,6 +8,7 @@ namespace NiL.JS
     public sealed class ExportTable : IEnumerable<KeyValuePair<string, JSValue>>
     {
         private Dictionary<string, JSValue> _items = new Dictionary<string, JSValue>();
+        private readonly Context _context;
 
         public JSValue this[string key]
         {
@@ -28,6 +29,13 @@ namespace NiL.JS
                 _items[key] = value;
             }
         }
+
+
+        public ExportTable(Context moduleContext)
+        {
+            _context = moduleContext;
+        }
+
         /// <summary>
         /// Add object constructor to export 
         /// </summary>
@@ -36,7 +44,7 @@ namespace NiL.JS
         /// <param name="name"></param>
         public void DefineConstructor(Type type, string name)
         {
-            var ctor = GlobalContext.CurrentGlobalContext.GetConstructor(type);
+            var ctor = _context.GlobalContext.GetConstructor(type);
             _items.Add(name, ctor);
             ctor._attributes |= JSValueAttributesInternal.DoNotEnumerate;
         }
@@ -49,7 +57,10 @@ namespace NiL.JS
         /// <param name="deletable"></param>
         public JSValue DefineVariable(string name, bool deletable)
         {
-            var defineVariable = GlobalContext.CurrentGlobalContext.DefineVariable(name, deletable);
+            var defineVariable = new JSValue()
+            {
+                _valueType = JSValueType.Undefined
+            };
             _items.Add(name,defineVariable);
             return defineVariable;
         }

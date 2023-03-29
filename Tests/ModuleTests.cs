@@ -43,6 +43,7 @@ namespace Tests
         {
             var module = new Module("testclass","");
 
+            
             module.Exports.DefineConstructor(typeof(TestClass), "TestClass");
             var mainModule = new Module("main",@"import {TestClass} from 'testclass'
 
