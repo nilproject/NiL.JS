@@ -44,7 +44,7 @@ namespace Tests
             var module = new Module("testclass","");
 
             
-            module.Exports.DefineConstructor(typeof(TestClass), "TestClass");
+            module.Exports.AddConstructor(typeof(TestClass), "TestClass");
             var mainModule = new Module("main",@"import {TestClass} from 'testclass'
 
 var test = new TestClass('lol')
@@ -74,9 +74,9 @@ var result = test.Get()");
         {
             var module = new Module("testclass","");
 
-            module.Exports.DefineVariable("testFunc", true)
+            module.Exports.AddVariable("testFunc", true)
                 .Assign(GlobalContext.CurrentGlobalContext.ProxyValue(new Func<string>(() => "lol")));
-            module.Exports.DefineConstant("testFuncConst", new Func<string>(() => "const"));
+            module.Exports.AddConstant("testFuncConst", new Func<string>(() => "const"));
 
             var mainModule = new Module("main",@"import {testFunc, testFuncConst} from 'testclass'
 

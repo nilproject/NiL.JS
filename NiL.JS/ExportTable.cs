@@ -39,23 +39,20 @@ namespace NiL.JS
         /// <summary>
         /// Add object constructor to export 
         /// </summary>
-        /// <remarks>We dont recommend to use, because api can change and its can be broken in future. Use indexers</remarks>
         /// <param name="type">Class</param>
         /// <param name="name"></param>
-        public void DefineConstructor(Type type, string name)
+        public void AddConstructor(Type type, string name)
         {
             var ctor = _context.GlobalContext.GetConstructor(type);
             _items.Add(name, ctor);
-            ctor._attributes |= JSValueAttributesInternal.DoNotEnumerate;
         }
 
         /// <summary>
         /// Add object to exports 
         /// </summary>
-        /// <remarks>We dont recommend to use, because api can change and its can be broken in future. Use indexers</remarks>
         /// <param name="name">Name of variable in export</param>
         /// <param name="deletable"></param>
-        public JSValue DefineVariable(string name, bool deletable)
+        public JSValue AddVariable(string name, bool deletable)
         {
             var defineVariable = new JSValue()
             {
@@ -68,13 +65,12 @@ namespace NiL.JS
         /// <summary>
         /// Add readonly object to exports 
         /// </summary>
-        /// <remarks>We dont recommend to use, because api can change and its can be broken in future. Use indexers</remarks>
         /// <param name="name">Name of variable in export</param>
         /// <param name="value">JSValue (function, constructor, object, etc)</param>
         /// <param name="deletable"></param>
-        public JSValue DefineConstant(string name, JSValue value, bool deletable = false)
+        public JSValue AddConstant(string name, JSValue value, bool deletable = false)
         {
-            var v = DefineVariable(name, deletable);
+            var v = AddVariable(name, deletable);
             v.Assign(value);
             v._attributes |= JSValueAttributesInternal.ReadOnly;
             return v;
