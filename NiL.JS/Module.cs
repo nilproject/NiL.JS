@@ -32,7 +32,7 @@ namespace NiL.JS
     {
         private static readonly char[] _pathSplitChars = new[] { '\\', '/' };
 
-        public ExportTable Exports { get; } = new ExportTable();
+        public ExportTable Exports { get; }
 
         public List<IModuleResolver> ModuleResolversChain { get; } = new List<IModuleResolver>();
 
@@ -161,8 +161,8 @@ namespace NiL.JS
             Context._thisBind = new GlobalObject(Context);
 
             Script = script;
-
             Context._strict = Script.Root._strict;
+            Exports = new ExportTable(Context);
         }
 
         public Module()
