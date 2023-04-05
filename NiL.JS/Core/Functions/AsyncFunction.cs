@@ -29,7 +29,7 @@ namespace NiL.JS.Core.Functions
 
             private JSValue subscribeOrReturnValue(JSValue promiseOrValue)
             {
-                var p = promiseOrValue?.Value as Promise;
+                var p = promiseOrValue?.Value as IPromiseLike;
                 if (p == null)
                     return promiseOrValue;
 

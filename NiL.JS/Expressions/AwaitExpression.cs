@@ -46,7 +46,7 @@ namespace NiL.JS.Expressions
                 return null;
             }
 
-            if (result != null && (result._valueType < JSValueType.Object || !(result.Value is Promise)))
+            if (result != null && (result._valueType < JSValueType.Object || !(result.Value is IPromiseLike)))
                 return result;
 
             context._executionMode = ExecutionMode.Suspend;
