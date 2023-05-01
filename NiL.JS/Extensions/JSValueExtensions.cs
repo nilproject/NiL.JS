@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
+using NiL.JS.Core.Functions;
 using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Extensions
@@ -106,9 +107,11 @@ namespace NiL.JS.Extensions
                 case TypeCode.Double:
                     return GetDefinedOr<T>(self, (T)(object)double.NaN);
             }
-
+        
             return GetDefinedOr<T>(self, default(T));
         }
+        
+        
 
         public static T GetDefinedOr<T>(this JSValue self, T defaultValue)
         {

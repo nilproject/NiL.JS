@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Functions;
+using NiL.JS.Extensions;
 using NiL.JS.Statements;
 
 #if NET40
@@ -195,6 +196,7 @@ namespace NiL.JS.Core
         public Context(Context prototype)
             : this(prototype, true, Function.Empty)
         {
+            
         }
 
         public Context(Context prototype, bool strict)
@@ -207,6 +209,7 @@ namespace NiL.JS.Core
         public Context(bool strict)
             : this(CurrentGlobalContext, strict)
         {
+            
         }
 
         internal Context(Context prototype, bool createFields, Function owner)

@@ -33,8 +33,8 @@
   </PropertyGroup>
 
   <Target Name="ReleaseNotesReading" BeforeTargets="GenerateNuspec">
-    <ReadLinesFromFile File="../Release.md" >
-      <Output TaskParameter="Lines" ItemName="ReleaseNoteLines"/>
+    <ReadLinesFromFile File="../Release.md">
+      <Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
     </ReadLinesFromFile>
   </Target>
   
