@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
@@ -14,7 +15,16 @@ public sealed class ShadowRealm
 
     internal ShadowRealm(IModuleResolver[] allowedModules)
     {
-        _mod = new Module("", "");
+        GlobalContext ctx = null;
+       
+        //We spawn new thread because not possible to create new GlobalContext in current thread when we run context
+        var t = new Thread(() =>
+        {
+            ctx = new GlobalContext();
+        });
+        t.Start();
+        t.Join();
+        _mod = new Module("", Script.Parse(""), ctx);
         _mod.Context.DefineVariable("globalThis").Assign(_mod.Context.ThisBind);
         foreach (var moduleResolver in allowedModules)
         {

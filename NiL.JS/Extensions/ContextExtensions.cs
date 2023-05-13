@@ -15,12 +15,12 @@ namespace NiL.JS.Extensions
 
         
         /// <summary>
-        /// Add implementation of ShadowRealm API
+        /// Add implementation of ShadowRealm API (EXPERIMENTAL, work by workarounds)
         /// <see cref="https://github.com/tc39/proposal-shadowrealm"/>
         /// </summary>
         /// <param name="context"></param>
         /// <param name="allowedResolvers"><see cref="IModuleResolver"/> that used for importValue</param>
-        /// <remarks>At current moment not allowed to use Shadow Realm in Shadow realm</remarks>
+        /// <remarks>At current moment not allowed to use Shadow Realm in Shadow realm due to recursion</remarks>
         /// <returns>Context with ShadowRealm contructor</returns>
         public static Context AddShadowRealm(this Context context, IModuleResolver[] allowedResolvers = null)
         {
@@ -36,11 +36,12 @@ namespace NiL.JS.Extensions
         
         /// <summary>
         /// Add implementation of ShadowRealm API to module context
+        /// (EXPERIMENTAL, work by workarounds)
         /// <see cref="https://github.com/tc39/proposal-shadowrealm"/>
         /// </summary>
         /// <param name="context"></param>
         /// <param name="allowedResolvers"><see cref="IModuleResolver"/> that used for importValue. If null - used from ModuleResolversChain</param>
-        /// <remarks>At current moment not allowed to use Shadow Realm in Shadow realm</remarks>
+        /// <remarks>At current moment not allowed to use Shadow Realm in Shadow realm due to recursion</remarks>
         /// <returns>Context with ShadowRealm contructor</returns>
         public static Module AddShadowRealm(this Module module, IModuleResolver[] allowedResolvers = null)
         {

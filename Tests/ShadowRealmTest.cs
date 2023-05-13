@@ -51,6 +51,17 @@ return globalThis.lol })()`)");
 
         Assert.IsTrue(ctx.GetVariable("result").As<int>() == 123);
     }
+    [TestMethod]
+    public void ShadowRealmChangingPrimitiveInRealmDontAffectOnGlobal()
+    {
+        var ctx = new Context().AddShadowRealm();
+        ctx.Eval(@"
+const realm = new ShadowRealm()
+realm.evaluate(`Array.prototype.patch = function() {}`)
+var result = Array.prototype.patch");
+
+        Assert.IsTrue(ctx.GetVariable("result").As<Function>() == null);
+    }
 
     [TestMethod]
     public void ShadowRealmGlobalThisNotContextModuleThis()
