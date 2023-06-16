@@ -3,6 +3,7 @@ using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Expressions;
+using NiL.JS.Extensions;
 
 namespace NiL.JS.Core.Functions
 {
@@ -29,13 +30,26 @@ namespace NiL.JS.Core.Functions
 
             private JSValue subscribeOrReturnValue(JSValue promiseOrValue)
             {
-                var p = promiseOrValue?.Value as Promise;
-                if (p == null)
+                if (promiseOrValue is null)
                     return promiseOrValue;
 
-                var result = p.then(then, fail);
+                if (promiseOrValue.Value is Promise promise)
+                {
+                    var result = promise.then(then, fail);
+                    return _context.GlobalContext.ProxyValue(result);
+                }
+                else
+                {
+                    var thenFunc = promiseOrValue["then"];
+                    if (thenFunc._valueType != JSValueType.Function)
+                        return promiseOrValue;
 
-                return _context.GlobalContext.ProxyValue(result);
+                    var result = thenFunc.As<ICallable>().Call(
+                        promiseOrValue, 
+                        new() { new Func<JSValue, JSValue>(then), new Func<JSValue, JSValue>(fail) });
+
+                    return _context.GlobalContext.ProxyValue(result);
+                }
             }
 
             private JSValue fail(JSValue arg)
