@@ -1591,7 +1591,7 @@ namespace NiL.JS.BaseLibrary
 
                 var delta = System.Math.Max(0, args._iValue - 2) - (pos1 - pos0);
 
-                var key = delta > 0 ? pos1 + 1 : pos0 - 1;
+                var key = delta > 0 ? length : pos0 - 1;
 
                 var done = false;
 
