@@ -245,10 +245,6 @@ namespace NiL.JS.Extensions
         {
             return Tools.ConvertJStoObj(value, targetType, true);
         }
-        public static void Assign(this JSValue target, JSValue value)
-        {
-            target.Assign(value);
-        }
         public static void Assign(this JSValue target, object value, Context context)
         {
             target.Assign(context.GlobalContext.ProxyValue(value));
