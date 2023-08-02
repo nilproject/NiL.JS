@@ -676,6 +676,7 @@ namespace NiL.JS.Core
 
                         if (targetType.GetTypeInfo().IsEnum)
                         {
+#if NET461 || NET48
                             try
                             {
                                 return Enum.Parse(targetType, jsobj.Value.ToString());
@@ -684,12 +685,19 @@ namespace NiL.JS.Core
                             {
                                 return null;
                             }
+#else
+                            if (Enum.TryParse(targetType, jsobj.Value.ToString(), out object result))
+                                return result;
+#endif
                         }
 
                         if (targetType == typeof(Guid))
                         {
                             return Guid.Parse(jsobj.Value.ToString());
                         }
+
+                        if (targetType == typeof(bool))
+                            return bool.TryParse(jsobj.Value.ToString(), out var result) ? result : null;
                     }
 
                     if (targetType == typeof(string))
@@ -800,7 +808,9 @@ namespace NiL.JS.Core
 
                 if (value is BaseLibrary.Array array)
                 {
-                    if (hightLoyalty || elementType == typeof(JSValue))
+                    if (hightLoyalty
+                        || elementType == typeof(JSValue)
+                        || elementType == typeof(object))
                     {
                         if (targetType.IsAssignableFrom(elementType.MakeArrayType()))
                         {

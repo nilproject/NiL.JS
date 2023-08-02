@@ -18,6 +18,11 @@ namespace Tests
                 return 0;
             }
 
+            public int Method(int[] a)
+            {
+                return 3;
+            }
+
             public int Method(int a, int b)
             {
                 return 2;
@@ -63,6 +68,18 @@ namespace Tests
             var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1, 2)");
 
             Assert.AreEqual(2, result.Value);
+        }
+
+        [TestMethod]
+        public void OverloadedMethods_3()
+        {
+            var context = new Context();
+            var instance = new Class();
+
+            context.DefineVariable($"{nameof(instance)}").Assign(Context.CurrentGlobalContext.ProxyValue(instance));
+            var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}([1, 2])");
+
+            Assert.AreEqual(3, result.Value);
         }
     }
 }
