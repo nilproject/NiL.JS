@@ -343,6 +343,8 @@ namespace NiL.JS.Expressions
         {
             int i = index;
 
+            Tools.SkipSpaces(state.Code, ref i);
+
             var result = parseOperand(state, ref i, forNew, forForLoop);
             if (result == null)
                 return null;
