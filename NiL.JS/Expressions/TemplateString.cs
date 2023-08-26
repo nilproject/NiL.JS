@@ -81,6 +81,7 @@ namespace NiL.JS.Expressions
                 if (state.Code[pos] == '$')
                 {
                     pos += 2;
+                    Tools.SkipSpaces(state.Code, ref pos);
                     expressions.Add((Expression)ExpressionTree.Parse(state, ref pos));
 
                     Tools.SkipSpaces(state.Code, ref pos);

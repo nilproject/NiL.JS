@@ -52,5 +52,17 @@ namespace Tests
 
             Assert.AreEqual("This is a string such as 1234", stringValue.Value);
         }
+
+        [TestMethod]
+        public void StringInterpolationAllowsWhitespaces()
+        {
+            var context = new Context();
+            var code = @"var a=1234; `This is a string such as ${   
+    
+a   }`";
+            var stringValue = context.Eval(code);
+
+            Assert.AreEqual("This is a string such as 1234", stringValue.Value);
+        }
     }
 }
