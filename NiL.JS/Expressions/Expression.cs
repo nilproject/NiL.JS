@@ -86,12 +86,12 @@ namespace NiL.JS.Expressions
                     var res = this.Evaluate(null);
                     if (res._valueType == JSValueType.Double
                         && !NumberUtils.IsNegativeZero(res._dValue)
-                        && res._dValue == (double)(int)res._dValue)
+                        && res._dValue == (int)res._dValue)
                     {
                         res._iValue = (int)res._dValue;
                         res._valueType = JSValueType.Integer;
                     }
-                    _this = new Constant(res) as CodeNode;
+                    _this = new Constant(res);
                     return true;
                 }
                 catch (JSException e)

@@ -37,7 +37,7 @@ namespace NiL.JS.Expressions
             }
             else
             {
-                _tempContainer._dValue = (double)t;
+                _tempContainer._dValue = t;
                 _tempContainer._valueType = JSValueType.Double;
             }
             return _tempContainer;

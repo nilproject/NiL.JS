@@ -603,7 +603,7 @@ namespace NiL.JS.Statements
 
             for (int i = 0; i < _lines.Length; i++)
             {
-                var cn = _lines[i] as CodeNode;
+                var cn = _lines[i];
                 cn.Optimize(
                     ref cn,
                     owner,

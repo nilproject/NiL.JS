@@ -901,7 +901,7 @@ namespace NiL.JS.BaseLibrary
         [CLSCompliant(false)]
         public static JSValue toString(JSValue self)
         {
-            if ((self as object) is String && self._valueType == JSValueType.Object) // prototype instance
+            if (self is String && self._valueType == JSValueType.Object) // prototype instance
                 return self.BaseToString();
             if (self._valueType != JSValueType.String)
                 ExceptionHelper.Throw(new TypeError("Try to call String.toString for not string object."));
@@ -913,7 +913,7 @@ namespace NiL.JS.BaseLibrary
         [ArgumentsCount(0)]
         public static JSValue valueOf(JSValue self)
         {
-            if ((self as object) is String && self._valueType == JSValueType.Object) // prototype instance
+            if (self is String && self._valueType == JSValueType.Object) // prototype instance
                 return self.BaseToString();
             if (self._valueType != JSValueType.String)
                 ExceptionHelper.Throw(new TypeError("Try to call String.valueOf for not string object."));

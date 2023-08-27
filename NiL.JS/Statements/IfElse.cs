@@ -181,7 +181,7 @@ namespace NiL.JS.Statements
             {
                 if (message != null)
                     message(MessageLevel.Warning, condition.Position, 2, "Useless conversion. Remove double negation in condition");
-                condition = (condition as Expression)._left;
+                condition = condition._left;
             }
             
             if ((opts & Options.SuppressUselessStatementsElimination) == 0

@@ -82,7 +82,7 @@ namespace NiL.JS.Core
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return (this as IEnumerable<TValue>).GetEnumerator();
+                return this.GetEnumerator();
             }
         }
 
@@ -140,7 +140,7 @@ namespace NiL.JS.Core
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return (this as IEnumerable<TKey>).GetEnumerator();
+                return this.GetEnumerator();
             }
         }
 

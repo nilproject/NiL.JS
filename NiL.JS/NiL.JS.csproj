@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+
   <PropertyGroup>
     <Description>ECMAScript 6 (ES2015) engine</Description>
-    <AssemblyTitle>NiL.JS</AssemblyTitle>  
+    <AssemblyTitle>NiL.JS</AssemblyTitle>
     <Authors>NiLProject</Authors>
     <PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">netcoreapp3.1;net461;net48;net5.0;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">netcoreapp3.1;net48;net5.0;net6.0;net7.0</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
-	  <LangVersion>latest</LangVersion>
+    <LangVersion>latest</LangVersion>
     <AssemblyName>NiL.JS</AssemblyName>
     <AssemblyOriginatorKeyFile>keys.snk</AssemblyOriginatorKeyFile>
     <SignAssembly Condition="Exists('$(AssemblyOriginatorKeyFile)')">true</SignAssembly>
@@ -37,11 +37,11 @@
       <Output TaskParameter="Lines" ItemName="ReleaseNoteLines"/>
     </ReadLinesFromFile>
   </Target>
-  
+
   <PropertyGroup Condition="'$(VersionPrefix)' == ''">
     <VersionPrefix>2.5</VersionPrefix>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <None Include="../README.md" Pack="true" PackagePath="" />
     <None Include="../Release.md" Pack="true" PackagePath="" />

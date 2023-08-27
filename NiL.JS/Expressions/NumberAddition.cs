@@ -54,7 +54,7 @@ namespace NiL.JS.Expressions
                     else
                     {
                         _tempContainer._valueType = JSValueType.Double;
-                        _tempContainer._dValue = (double)ltemp;
+                        _tempContainer._dValue = ltemp;
                     }
                 }
                 else if (op._valueType == Core.JSValueType.Double)

@@ -2170,7 +2170,7 @@ namespace NiL.JS.BaseLibrary
             get
             {
                 notExists._valueType = JSValueType.NotExistsInObject;
-                var res = _data[(int)index] ?? notExists;
+                var res = _data[index] ?? notExists;
                 if (res._valueType < JSValueType.Undefined)
                     return __proto__.GetProperty(index, false, PropertyScope.Common);
                 return res;

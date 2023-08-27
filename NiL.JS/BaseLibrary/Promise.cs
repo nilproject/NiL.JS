@@ -211,8 +211,8 @@ namespace NiL.JS.BaseLibrary
         public Promise then(Function onFulfilment, Function onRejection)
         {
             return then(
-                onFulfilment == null ? null as Func<JSValue, JSValue> : value => onFulfilment.Call(JSValue.undefined, new Arguments { value }),
-                onRejection == null ? null as Func<JSValue, JSValue> : value => onRejection.Call(JSValue.undefined, new Arguments { value }));
+                onFulfilment == null ? null : value => onFulfilment.Call(JSValue.undefined, new Arguments { value }),
+                onRejection == null ? null : value => onRejection.Call(JSValue.undefined, new Arguments { value }));
         }
 
         [Hidden]

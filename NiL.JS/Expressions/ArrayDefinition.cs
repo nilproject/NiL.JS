@@ -67,7 +67,7 @@ namespace NiL.JS.Expressions
                     elms.Add(null);
                 }
                 else
-                    elms.Add((Expression)ExpressionTree.Parse(state, ref i, false, false));
+                    elms.Add(ExpressionTree.Parse(state, ref i, false, false));
                 if (spread)
                     elms[elms.Count - 1] = new Spread(elms[elms.Count - 1]) { Position = start, Length = i - start };
                 while (Tools.IsWhiteSpace(state.Code[i]))

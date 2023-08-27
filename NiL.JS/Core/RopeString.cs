@@ -38,14 +38,14 @@ namespace NiL.JS.Core
 
         public RopeString(object source)
         {
-            _firstPart = source ?? "" as object;
+            _firstPart = source ?? "";
             _secondPart = "";
         }
 
         public RopeString(object firstSource, object secondSource)
         {
-            _firstPart = firstSource ?? "" as object;
-            _secondPart = secondSource ?? "" as object;
+            _firstPart = firstSource ?? "";
+            _secondPart = secondSource ?? "";
 
             _length = calcLength();
 

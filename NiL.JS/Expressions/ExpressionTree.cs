@@ -343,8 +343,6 @@ namespace NiL.JS.Expressions
         {
             int i = index;
 
-            Tools.SkipSpaces(state.Code, ref i);
-
             var result = parseOperand(state, ref i, forNew, forForLoop);
             if (result == null)
                 return null;
@@ -1103,7 +1101,7 @@ namespace NiL.JS.Expressions
                 if (!root || kind != OperationType.None || second != null)
                 {
                     if (forUnary && (kind == OperationType.None) && (first is ExpressionTree))
-                        res = first as Expression;
+                        res = first;
                     else
                     {
                         if (kind == OperationType.NullishCoalescing)
@@ -1289,7 +1287,7 @@ namespace NiL.JS.Expressions
                                 if (i >= state.Code.Length)
                                     ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
 
-                                operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                                operand = Parse(state, ref i, true, true, false, true, forForLoop);
 
                                 if (((operand as Property) as object ?? (operand as Variable)) == null)
                                 {
@@ -1307,9 +1305,8 @@ namespace NiL.JS.Expressions
                             }
                             else
                             {
-                                while (Tools.IsWhiteSpace(state.Code[i]))
-                                    i++;
-                                var f = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                                Tools.SkipSpaces(state.Code, ref i);
+                                var f = Parse(state, ref i, true, true, false, true, forForLoop);
                                 operand = new ConvertToNumber(f);
                             }
                             break;
@@ -1325,7 +1322,7 @@ namespace NiL.JS.Expressions
                                 if (i >= state.Code.Length)
                                     ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
 
-                                operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                                operand = Parse(state, ref i, true, true, false, true, forForLoop);
 
                                 if (((operand as Property) as object ?? (operand as Variable)) == null)
                                 {
@@ -1341,9 +1338,8 @@ namespace NiL.JS.Expressions
                             }
                             else
                             {
-                                while (Tools.IsWhiteSpace(state.Code[i]))
-                                    i++;
-                                var f = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                                Tools.SkipSpaces(state.Code, ref i);
+                                var f = Parse(state, ref i, true, true, false, true, forForLoop);
                                 operand = new Negation(f);
                             }
                             break;
@@ -1353,7 +1349,7 @@ namespace NiL.JS.Expressions
                             do
                                 i++;
                             while (Tools.IsWhiteSpace(state.Code[i]));
-                            operand = new LogicalNegation((Expression)Parse(state, ref i, true, true, false, true, forForLoop));
+                            operand = new LogicalNegation(Parse(state, ref i, true, true, false, true, forForLoop));
                             if (operand == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -1366,7 +1362,7 @@ namespace NiL.JS.Expressions
                             do
                                 i++;
                             while (Tools.IsWhiteSpace(state.Code[i]));
-                            operand = (Expression)Parse(state, ref i, true, true, false, true, forForLoop);
+                            operand = Parse(state, ref i, true, true, false, true, forForLoop);
                             if (operand == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -1381,7 +1377,7 @@ namespace NiL.JS.Expressions
                             do
                                 i++;
                             while (Tools.IsWhiteSpace(state.Code[i]));
-                            operand = (Expression)Parse(state, ref i, true, false, false, true, forForLoop);
+                            operand = Parse(state, ref i, true, false, false, true, forForLoop);
                             if (operand == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);
@@ -1398,7 +1394,7 @@ namespace NiL.JS.Expressions
                             while (Tools.IsWhiteSpace(state.Code[i]));
 
                             operand = new Comma(
-                                (Expression)Parse(state, ref i, true, false, false, true, forForLoop),
+                                Parse(state, ref i, true, false, false, true, forForLoop),
                                 new Constant(JSValue.undefined));
 
                             if (operand == null)
@@ -1414,7 +1410,7 @@ namespace NiL.JS.Expressions
                             do
                                 i++;
                             while (Tools.IsWhiteSpace(state.Code[i]));
-                            operand = (Expression)Parse(state, ref i, true, false, false, true, forForLoop);
+                            operand = Parse(state, ref i, true, false, false, true, forForLoop);
                             if (operand == null)
                             {
                                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);

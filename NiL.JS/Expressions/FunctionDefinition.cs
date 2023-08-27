@@ -361,7 +361,7 @@ namespace NiL.JS.Expressions
                     do
                         position++;
                     while (Tools.IsWhiteSpace(code[position]));
-                    desc.initializer = ExpressionTree.Parse(state, ref position, false, false) as Expression;
+                    desc.initializer = ExpressionTree.Parse(state, ref position, false, false);
                 }
 
                 if (code[position] == ',')
@@ -578,14 +578,15 @@ namespace NiL.JS.Expressions
                     position++;
                     for (; ; )
                     {
-                        while (Tools.IsWhiteSpace(code[position]))
-                            position++;
+                        Tools.SkipSpaces(state.Code, ref position);
+
                         if (code[position] == ')')
                             break;
                         else if (code[position] == ',')
                             do
                                 position++;
                             while (Tools.IsWhiteSpace(code[position]));
+
                         args.Add(ExpressionTree.Parse(state, ref position, false, false));
                     }
 
@@ -870,7 +871,7 @@ namespace NiL.JS.Expressions
             _body.RebuildScope(_functionInfo, tempVariables, scopeBias + (_body._variables == null || _body._variables.Length == 0 || !_functionInfo.WithLexicalEnvironment ? 1 : 0));
             if (tempVariables != null)
             {
-                var block = _body as CodeBlock;
+                var block = _body;
                 if (block != null)
                 {
                     block._variables = tempVariables.Values.Where(x => !(x is ParameterDescriptor)).ToArray();

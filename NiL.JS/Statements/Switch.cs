@@ -301,7 +301,8 @@ namespace NiL.JS.Statements
             {
                 if (_body[i] == null)
                     continue;
-                var cn = _body[i] as CodeNode;
+
+                var cn = _body[i];
                 cn.Optimize(ref cn, owner, message, opts, stats);
                 _body[i] = cn;
             }

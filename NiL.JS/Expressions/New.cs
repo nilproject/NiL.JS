@@ -44,11 +44,10 @@ namespace NiL.JS.Expressions
             var i = index;
             if (!Parser.Validate(state.Code, "new", ref i) || !Parser.IsIdentifierTerminator(state.Code[i]))
                 return null;
-            
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
-            
-            var result = (Expression)ExpressionTree.Parse(state, ref i, true, false, true, true, false);
+
+            Tools.SkipSpaces(state.Code, ref i);
+
+            var result = ExpressionTree.Parse(state, ref i, true, false, true, true, false);
             if (result == null)
             {
                 var cord = CodeCoordinates.FromTextPosition(state.Code, i, 0);

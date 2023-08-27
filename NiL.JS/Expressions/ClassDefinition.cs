@@ -227,11 +227,15 @@ namespace NiL.JS.Expressions
 
                     if (Parser.Validate(state.Code, "[", ref i))
                     {
+                        Tools.SkipSpaces(state.Code, ref i);
+
                         var propertyName = ExpressionTree.Parse(state, ref i, false, false, false, true, false);
-                        while (Tools.IsWhiteSpace(state.Code[i]))
-                            i++;
+
+                        Tools.SkipSpaces(state.Code, ref i);
+
                         if (state.Code[i] != ']')
                             ExceptionHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
+                        
                         do
                             i++;
                         while (Tools.IsWhiteSpace(state.Code[i]));

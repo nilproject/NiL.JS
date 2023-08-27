@@ -67,7 +67,7 @@ namespace NiL.JS.BaseLibrary
         [Hidden]
         public Number(long value)
         {
-            if ((long)(int)(value) == value)
+            if ((int)(value) == value)
             {
                 _valueType = JSValueType.Integer;
                 _iValue = (int)value;

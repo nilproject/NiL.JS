@@ -324,13 +324,13 @@ namespace NiL.JS.Statements
             if (_catch && (catchBody == null || (catchBody is Empty)))
             {
                 if (message != null)
-                    message(MessageLevel.Warning, catchPosition, (catchBody ?? this as CodeNode).Length, "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
+                    message(MessageLevel.Warning, catchPosition, (catchBody ?? this).Length, "Empty (or reduced to empty) catch block. Do not ignore exceptions.");
             }
 
             if (finallyPosition != 0 && (finallyBody == null || (finallyBody is Empty)))
             {
                 if (message != null)
-                    message(MessageLevel.Warning, catchPosition, (catchBody ?? this as CodeNode).Length, "Empty (or reduced to empty) finally block.");
+                    message(MessageLevel.Warning, catchPosition, (catchBody ?? this).Length, "Empty (or reduced to empty) finally block.");
             }
 
             return false;

@@ -600,7 +600,7 @@ namespace NiL.JS.Core
                     }
 
                     if (targetType == typeof(int))
-                        return (int)jsobj._iValue;
+                        return jsobj._iValue;
 
                     if (targetType == typeof(uint))
                         return (uint)jsobj._iValue;
@@ -1750,8 +1750,8 @@ namespace NiL.JS.Core
                             goDeep = true;
                         }
 
-                        if (temp._data[(int)(uint)index.Key] == null)
-                            temp._data[(int)(uint)index.Key] = value;
+                        if (temp._data[(int)index.Key] == null)
+                            temp._data[(int)index.Key] = value;
 
                         prew = index.Key;
                     }

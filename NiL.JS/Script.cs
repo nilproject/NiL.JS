@@ -51,7 +51,7 @@ namespace NiL.JS
             var stat = new FunctionInfo();
             Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), codeContext, internalCallback, stat, options);
 
-            var body = root as CodeBlock;
+            var body = root;
             body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
             for (var vi = 0; vi < body._variables.Length; vi++)

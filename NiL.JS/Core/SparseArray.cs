@@ -387,7 +387,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
         var values = _values[segment];
         var navy = _navyData[segment];
 
-        var i = (int)((int)index & (SegmentSize - 1));
+        var i = (int)index & (SegmentSize - 1);
         if (i < navy.Length && navy[i].index == index)
         {
             if (i == 0 && _used[segment] == 0)
@@ -438,7 +438,7 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
 
                     if (ni >= navy.Length)
                     {
-                        var newSize = (int)ni * 2;
+                        var newSize = ni * 2;
                         Array.Resize(ref _navyData[segment], newSize);
                         Array.Resize(ref _values[segment], newSize);
 
