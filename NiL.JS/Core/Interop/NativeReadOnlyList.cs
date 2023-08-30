@@ -25,7 +25,7 @@ namespace NiL.JS.Core.Interop
                 if (!_ctors.TryGetValue(type, out var ctor))
                 {
                     var itemType = type.GetInterface(ReadOnlyInterfaceName).GetGenericArguments()[0];
-                    var listType = typeof(NativeReadOnlyList<>).MakeGenericType(typeof(int));
+                    var listType = typeof(NativeReadOnlyList<>).MakeGenericType(itemType);
                     var prm = Expression.Parameter(typeof(object));
                     _ctors[type] = ctor = Expression.Lambda<Func<object, JSObject>>(
                         Expression.New(
