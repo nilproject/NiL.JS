@@ -105,7 +105,7 @@ namespace NiL.JS.BaseLibrary
                     ref i,
                     out d,
                     0,
-                    ParseNumberOptions.Default | (Context.CurrentContext._strict ? ParseNumberOptions.RaiseIfOctal : 0))
+                    ParseNumberOptions.Default & ~ParseNumberOptions.ProcessOctalLiteralsOldSyntax)
                 && i == value.Length)
             {
                 _dValue = d;
