@@ -6,7 +6,7 @@
     <Authors>NiLProject</Authors>
     <PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">netcoreapp3.1;net48;net5.0;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">netcoreapp3.1;net461;net48;net5.0;net6.0;net7.0</TargetFrameworks>
     <DefineConstants>TRACE;INLINE</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
