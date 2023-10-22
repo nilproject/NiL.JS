@@ -6,6 +6,7 @@ using System.Runtime.ExceptionServices;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
+using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Statements
 {
@@ -233,7 +234,7 @@ namespace NiL.JS.Statements
             else
 #endif
             {
-                cvar = e is JSException ? (e as JSException).Error.CloneImpl(false) : context.GlobalContext.ProxyValue(e);
+                cvar = e is JSException ? (e as JSException).Error.CloneImpl(false) : context.GlobalContext.ProxyValue(new NativeError(e.Message) { exception = e });
             }
 
             cvar._attributes |= JSValueAttributesInternal.DoNotDelete;
