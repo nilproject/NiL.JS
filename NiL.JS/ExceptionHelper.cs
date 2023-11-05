@@ -12,6 +12,7 @@ using NiL.JS.Expressions;
 using NiL.JS.Statements;
 using System.Collections;
 using System.Runtime.ExceptionServices;
+using NiL.JS.Core.Functions;
 
 namespace NiL.JS
 {
@@ -29,6 +30,7 @@ namespace NiL.JS
             typeof(ExceptionHelper),
             typeof(ConstructorInfo),
             typeof(RuntimeMethodHandle),
+            typeof(AsyncFunction.Сontinuator),
         };
 
         internal sealed class StackTraceState
@@ -58,8 +60,9 @@ namespace NiL.JS
                 {
                     StackFrame frame = frames[i];
                     var method = frame.GetMethod();
-                    if (method != null
-                             && method.GetCustomAttribute(typeof(StackFrameOverrideAttribute)) != null)
+                    if (stack is not null
+                        && method is not null
+                        && method.GetCustomAttribute(typeof(StackFrameOverrideAttribute)) != null)
                     {
                         stackTraceTexts.RemoveRange(stackTraceTexts.Count - recordsToRemove, recordsToRemove);
                         recordsToRemove = 0;

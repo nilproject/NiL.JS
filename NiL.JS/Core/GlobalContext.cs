@@ -10,6 +10,7 @@ using NiL.JS.Extensions;
 using System.Dynamic;
 using System.Threading.Tasks;
 using NiL.JS.Backward;
+using System.Runtime.ExceptionServices;
 
 namespace NiL.JS.Core
 {
@@ -511,7 +512,18 @@ namespace NiL.JS.Core
                         Task<JSValue> result;
                         if (Tools.IsTaskOfT(value.GetType()))
                         {
-                            result = new Task<JSValue>(() => ProxyValue(value.GetType().GetMethod("get_Result", Type.EmptyTypes).Invoke(value, null)));
+                            result = new Task<JSValue>(() =>
+                            {
+                                try
+                                {
+                                    return ProxyValue(value.GetType().GetMethod("get_Result", Type.EmptyTypes).Invoke(value, null));
+                                }
+                                catch (TargetInvocationException e)
+                                {
+                                    ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+                                    throw;
+                                }
+                            });
                         }
                         else
                         {

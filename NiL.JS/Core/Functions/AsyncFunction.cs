@@ -10,7 +10,7 @@ namespace NiL.JS.Core.Functions
     [Prototype(typeof(Function), true)]
     internal sealed class AsyncFunction : Function
     {
-        private sealed class Сontinuator
+        internal sealed class Сontinuator
         {
             private readonly AsyncFunction _asyncFunction;
             private readonly Context _context;

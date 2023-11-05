@@ -170,21 +170,22 @@ namespace NiL.JS.Extensions
 
                 case TypeCode.Object:
                 {
-                    if (self is null || self.Value is null)
+                    var value = self.Value;
+                    if (self is null || value is null)
                         return default(T);
 
-                    if (self.Value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
-                        return ((Function)self.Value).MakeDelegate<T>();
+                    if (value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
+                        return ((Function)value).MakeDelegate<T>();
 
-                    if (typeof(T).IsAssignableFrom(self.Value.GetType()))
-                        return (T)self.Value;
-
-                    if (typeof(T).IsAssignableFrom(self._oValue.GetType()))
+                    if (self._oValue is not null && typeof(T).IsAssignableFrom(self._oValue.GetType()))
                         return (T)self._oValue;
+
+                    if (typeof(T).IsAssignableFrom(value.GetType()))
+                        return (T)value;
 
                     try
                     {
-                        return (T)(Tools.ConvertJStoObj(self, typeof(T), true) ?? self.Value);
+                        return (T)(Tools.ConvertJStoObj(self, typeof(T), true) ?? value);
                     }
                     catch (InvalidCastException)
                     {
