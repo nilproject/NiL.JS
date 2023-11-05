@@ -35,7 +35,7 @@ namespace NiL.JS.Core.Functions
 
                 if (promiseOrValue.Value is Promise promise)
                 {
-                    var result = promise.then(then, fail);
+                    var result = promise.then(then, fail, false);
                     return _context.GlobalContext.ProxyValue(result);
                 }
                 else

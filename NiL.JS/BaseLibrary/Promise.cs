@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using NiL.JS.Core;
@@ -81,11 +81,11 @@ namespace NiL.JS.BaseLibrary
             {
                 if (t.Status == TaskStatus.RanToCompletion)
                 {
-                    handlePromiseCascade(t.Result);
+                    handlePromiseCascade(t.Result, false);
                 }
                 else if (t.Status == TaskStatus.Faulted)
                 {
-                    _outerTask.SetException(t.Exception);
+                    _outerTask.SetException(t.Exception.GetBaseException() ?? t.Exception);
                 }
                 else
                 {
@@ -109,19 +109,28 @@ namespace NiL.JS.BaseLibrary
             _innerTask = task.ContinueWith(continuation);
         }
 
-        private void handlePromiseCascade(JSValue value)
+        private void handlePromiseCascade(JSValue value, bool error)
         {
             var task = (value?.Value as Promise)?.Task ?? value?.Value as Task<JSValue>;
             if (task != null)
             {
                 task.ContinueWith((t) =>
                 {
-                    handlePromiseCascade(t.Result);
+                    if (t.IsFaulted)
+                    {
+                        var exception = t.Exception.GetBaseException() as JSException ?? t.Exception.GetBaseException() ?? t.Exception;
+                        _outerTask.SetException(exception);
+                    }
+                    else
+                        handlePromiseCascade(t.Result, false);
                 });
             }
             else
             {
-                _outerTask.SetResult(value);
+                if (error)
+                    _outerTask.SetException(new JSException(value));
+                else
+                    _outerTask.SetResult(value);
             }
         }
 
@@ -139,7 +148,7 @@ namespace NiL.JS.BaseLibrary
                         {
                             statusSet = true;
 
-                            handlePromiseCascade(args[0]);
+                            handlePromiseCascade(args[0], false);
                         }
 
                         return null;
@@ -151,7 +160,7 @@ namespace NiL.JS.BaseLibrary
                         {
                             statusSet = true;
 
-                            handlePromiseCascade(args[0]);
+                            handlePromiseCascade(args[0], true);
                         }
 
                         return null;
@@ -173,13 +182,20 @@ namespace NiL.JS.BaseLibrary
                 throw;
             }
 
-            if (!statusSet)
-                _outerTask.SetResult(JSValue.undefined);
+            //if (!statusSet)
+            //    _outerTask.SetResult(JSValue.undefined);
         }
 
         public static Promise resolve(JSValue data)
         {
-            return new Promise(fromResult(data));
+            return data.As<Promise>() ?? new Promise(fromResult(data));
+        }
+
+        public static Promise reject(JSValue data)
+        {
+            var result = new Promise();
+            result._outerTask.SetException(new JSException(data));
+            return result;
         }
 
         public static Promise race(IIterable promises)
@@ -212,35 +228,49 @@ namespace NiL.JS.BaseLibrary
         {
             return then(
                 onFulfilment == null ? null : value => onFulfilment.Call(JSValue.undefined, new Arguments { value }),
-                onRejection == null ? null : value => onRejection.Call(JSValue.undefined, new Arguments { value }));
+                onRejection == null ? null : value => onRejection.Call(JSValue.undefined, new Arguments { value }),
+                false);
+        }
+
+        public Promise @finally(Function onFinally)
+        {
+            Func<JSValue, JSValue> func = onFinally == null ? null : value => onFinally.Call(JSValue.undefined, new Arguments { value });
+            return then(func, func, true);
         }
 
         [Hidden]
-        public Promise then(Func<JSValue, JSValue> onFulfilment, Func<JSValue, JSValue> onRejection)
+        public Promise then(Func<JSValue, JSValue> onFulfilment, Func<JSValue, JSValue> onRejection, bool rethrow)
         {
             if (onFulfilment == null && onRejection == null)
                 return resolve(JSValue.undefined);
 
-            var thenTask = onFulfilment == null ? null : _outerTask.Task.ContinueWith(task => onFulfilment(Result), TaskContinuationOptions.OnlyOnRanToCompletion);
-
-            var catchTask = onRejection == null ? null :
-                _outerTask.Task.ContinueWith(task =>
+            var catchTask = onRejection == null 
+                ? null 
+                : _outerTask.Task.ContinueWith(task =>
                 {
-                    Exception ex = task.Exception;
-                    while (ex.InnerException != null)
-                        ex = ex.InnerException;
-
-                    var jsException = ex as JSException;
-                    if (jsException != null)
+                    Exception ex = task.Exception.GetBaseException();
+                    JSValue result;
+                    if (ex is JSException jsException)
                     {
-                        return onRejection(jsException.Error);
+                        result = onRejection(jsException.Error);
                     }
                     else
                     {
-                        return onRejection(Context.CurrentGlobalContext.ProxyValue(task.Exception.GetBaseException()));
+                        result = onRejection(Context.CurrentGlobalContext.ProxyValue(ex));
                     }
+
+                    if (rethrow)
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+
+                    return result;
                 },
                 TaskContinuationOptions.NotOnRanToCompletion);
+
+            var thenTask = onFulfilment == null
+                ? null
+                : catchTask is not null
+                    ? _outerTask.Task.ContinueWith(task => onFulfilment(task.Result), TaskContinuationOptions.OnlyOnRanToCompletion)
+                    : _outerTask.Task.ContinueWith(task => onFulfilment(task.Result));
 
             if (thenTask != null)
             {
@@ -308,14 +338,24 @@ namespace NiL.JS.BaseLibrary
 
             Action<Task<JSValue>> contination = t =>
             {
-                var index = System.Array.IndexOf(tasks, t);
-                if (t.IsCanceled)
-                    throw new OperationCanceledException();
+                if (task.Task.IsCompleted)
+                    return;
 
-                result[index] = t.Result;
+                try
+                {
+                    var index = System.Array.IndexOf(tasks, t);
+                    if (t.IsCanceled)
+                        throw new OperationCanceledException();
 
-                if (Interlocked.Decrement(ref count) == 0)
-                    task.SetResult(result);
+                    result[index] = t.Result;
+
+                    if (Interlocked.Decrement(ref count) == 0)
+                        task.SetResult(result);
+                }
+                catch (Exception e)
+                {
+                    task.SetException(e.GetBaseException() ?? e);
+                }
             };
 
             for (var i = 0; i < tasks.Length; i++)

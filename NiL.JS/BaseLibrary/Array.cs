@@ -748,7 +748,7 @@ namespace NiL.JS.BaseLibrary
                 if (method.GetCustomAttribute(typeof(InstanceMemberAttribute)) != null)
                     fullMethodName += "prototype.";
                 fullMethodName += method.Name;
-                ExceptionHelper.Throw(new TypeError("Can not call " + fullMethodName + " for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Cannot call " + fullMethodName + " for null or undefined"));
 #endif
             }
 
@@ -930,7 +930,7 @@ namespace NiL.JS.BaseLibrary
                 ExceptionHelper.Throw(new TypeError("Trying to call method for for null or undefined"));
 #else
                 var stackTrace = new System.Diagnostics.StackTrace();
-                ExceptionHelper.Throw(new TypeError("Can not call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Cannot call Array.prototype." + stackTrace.GetFrame(stackTrace.FrameCount - 2).GetMethod().Name + " for null or undefined"));
 #endif
             }
 
@@ -1510,7 +1510,7 @@ namespace NiL.JS.BaseLibrary
             if (args == null)
                 throw new ArgumentNullException("args");
             if (!self.Defined || (self._valueType >= JSValueType.Object && self._oValue == null))
-                ExceptionHelper.Throw(new TypeError("Can not call Array.prototype.slice for null or undefined"));
+                ExceptionHelper.Throw(new TypeError("Cannot call Array.prototype.slice for null or undefined"));
 
             var result = new Array();
             var index = 0L;
@@ -2283,7 +2283,7 @@ namespace NiL.JS.BaseLibrary
                         if (_lengthObj != null && (_lengthObj._attributes & JSValueAttributesInternal.ReadOnly) != 0 && index >= _data.Length)
                         {
                             if (memberScope == PropertyScope.Own)
-                                ExceptionHelper.Throw(new TypeError("Can not add item into fixed size array"));
+                                ExceptionHelper.Throw(new TypeError("Cannot add item into fixed size array"));
 
                             return notExists;
                         }

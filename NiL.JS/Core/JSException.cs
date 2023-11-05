@@ -27,9 +27,14 @@ namespace NiL.JS.Core
         }
 
         public JSException(Error data)
+            : this(Context.CurrentGlobalContext.ProxyValue(data))
+        {
+        }
+
+        public JSException(JSValue data)
             : this()
         {
-            Error = Context.CurrentGlobalContext.ProxyValue(data);
+            Error = data;
         }
 
         public JSException(Error data, CodeNode exceptionMaker)
