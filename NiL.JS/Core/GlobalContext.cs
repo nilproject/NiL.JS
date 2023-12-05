@@ -29,6 +29,13 @@ namespace NiL.JS.Core
         DenyThrowException
     }
 
+    [Flags]
+    public enum MarshalinOptions
+    {
+        None = 0,
+        DictionaryAsObject = 1 << 0,
+    }
+
 #if !NETCORE
     [Serializable]
 #endif
@@ -47,6 +54,7 @@ namespace NiL.JS.Core
         public GlobalObjectsAssignMode GlobalObjectsAssignMode { get; set; }
         public JsonSerializersRegistry JsonSerializersRegistry { get; set; }
         public TimeZoneInfo CurrentTimeZone { get; set; }
+        public MarshalinOptions MarshalingOptions { get; set; }
 
         public GlobalContext()
             : this("")
@@ -314,10 +322,10 @@ namespace NiL.JS.Core
                 return GetConstructor(type.MakeGenericType(parameters));
             });
         }
-        
+
         public JSValue WrapValue(object value)
         {
-            if (value is null) 
+            if (value is null)
                 return JSValue.Null;
 
             return new ObjectWrapper(value, GetPrototype(value.GetType()));
@@ -506,6 +514,21 @@ namespace NiL.JS.Core
                         {
                             _objectPrototype = GetPrototype(typeof(DictionaryWrapper<string, object>))
                         };
+                    }
+                    else if ((MarshalingOptions & MarshalinOptions.DictionaryAsObject) != 0
+                        && value is IEnumerable
+                        && (value is IDictionary || value.GetType().GetInterfaces().Any(x => x.IsConstructedGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>))))
+                    {
+                        var dictionaryInterface = value.GetType().GetInterfaces().FirstOrDefault(x => x.IsConstructedGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+                        if (dictionaryInterface != null)
+                        {
+                            var types = dictionaryInterface.GetGenericArguments();
+                            return DictionaryWrapper.Of(types[0], types[1], value);
+                        }
+                        else
+                        {
+                            return new DictionaryWrapper<object, object>(new UntypedDictionaryWrapper(value as IDictionary));
+                        }
                     }
                     else if (value is Task)
                     {

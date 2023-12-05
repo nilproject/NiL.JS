@@ -1,13 +1,84 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using NiL.JS.Extensions;
 
 namespace NiL.JS.Core.Interop
 {
     public static class DictionaryWrapper
     {
+        internal static readonly MethodInfo OfMethod = typeof(DictionaryWrapper)
+                                .GetMethod(nameof(Of));
+
+        internal static JSObject Of(Type keyType, Type valueType, object value)
+        {
+            return (JSObject)OfMethod
+                .MakeGenericMethod(keyType, valueType)
+                .Invoke(null, new[] { value })!;
+        }
+
         public static DictionaryWrapper<TKey, TValue> Of<TKey, TValue>(IDictionary<TKey, TValue> dictionary)
             => new DictionaryWrapper<TKey, TValue>(dictionary);
+    }
+
+    public sealed class UntypedDictionaryWrapper : IDictionary<object, object>
+    {
+        private readonly IDictionary _target;
+
+        public UntypedDictionaryWrapper(IDictionary target)
+        {
+            _target = target;
+        }
+
+        public object this[object key] { get => _target[key]; set => _target[key] = value; }
+
+        public ICollection<object> Keys => _target.Keys.OfType<object>().ToList();
+
+        public ICollection<object> Values => _target.Values.OfType<object>().ToList();
+
+        public int Count => _target.Count;
+
+        public bool IsReadOnly => _target.IsReadOnly;
+
+        public void Add(object key, object value) => _target.Add(key, value);
+
+        public void Add(KeyValuePair<object, object> item) => _target.Add(item.Key, item.Value);
+
+        public void Clear() => _target.Clear();
+
+        public bool Contains(KeyValuePair<object, object> item) => _target.Contains(item.Key) && _target[item.Key].Equals(item.Value);
+
+        public bool ContainsKey(object key) => _target.Contains(key);
+
+        public void CopyTo(KeyValuePair<object, object>[] array, int arrayIndex) => _target.CopyTo(array, arrayIndex);
+
+        public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
+        {
+            for (var e = _target.GetEnumerator(); e.MoveNext();)
+                yield return new KeyValuePair<object, object>(e.Key, e.Value);
+        }
+
+        public bool Remove(object key)
+        {
+            var contains = _target.Contains(key);
+            if (contains)
+                _target.Remove(key);
+            return contains;
+        }
+
+        public bool Remove(KeyValuePair<object, object> item) => Contains(item) && Remove(item.Key);
+
+        public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value)
+        {
+            var contains = _target.Contains(key);
+            value = _target[key];
+            return contains;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => _target.GetEnumerator();
     }
 
     public sealed class DictionaryWrapper<TKey, TValue> : JSObject

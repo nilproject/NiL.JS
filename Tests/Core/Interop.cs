@@ -52,5 +52,63 @@ namespace Tests.Core
             Assert.AreEqual(1, value0);
             Assert.AreEqual(2, value1);
         }
+
+        [TestMethod]
+        public void DictionaryWrapperRaw()
+        {
+            var globalContext = new GlobalContext();
+            globalContext.MarshalingOptions |= MarshalinOptions.DictionaryAsObject;
+            globalContext.ActivateInCurrentThread();
+
+            try
+            {
+                var dict = new Dictionary<string, Dictionary<string, object>> { ["key0"] = new() { ["key1"] = 123 } };
+
+                var jsobj = globalContext.ProxyValue(dict);
+
+                var test = jsobj["key0"]["key1"];
+
+                Assert.AreEqual(123, test.As<int>());
+            }
+            finally
+            {
+                globalContext.Deactivate();
+            }
+        }
+
+        [TestMethod]
+        public void DictionaryWrapperFromCode()
+        {
+            var globalContext = new GlobalContext();
+            globalContext.MarshalingOptions |= MarshalinOptions.DictionaryAsObject;
+
+            var dict = new Dictionary<string, Dictionary<string, object>> { ["key0"] = new() { ["key1"] = 123 } };
+
+            var context = new Context(globalContext)
+            {
+                { "dict", globalContext.ProxyValue(dict) }
+            };
+
+            var test = context.Eval("dict.key0.key1");
+
+            Assert.AreEqual(123, test.As<int>());
+        }
+
+        [TestMethod]
+        public void DictionaryWrapperDisabled()
+        {
+            var globalContext = new GlobalContext();
+
+            var dict = new Dictionary<string, Dictionary<string, object>> { ["key0"] = new() { ["key1"] = 123 } };
+
+            var context = new Context(globalContext)
+            {
+                { "dict", globalContext.ProxyValue(dict) }
+            };
+
+            var test = context.Eval("dict.key0");
+
+            Assert.IsTrue(!test.Exists);
+        }
     }
 }
