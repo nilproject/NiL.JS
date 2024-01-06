@@ -188,7 +188,7 @@ namespace NiL.JS.BaseLibrary
 
         public static Promise resolve(JSValue data)
         {
-            return data.As<Promise>() ?? new Promise(fromResult(data));
+            return data.Value as Promise ?? new Promise(fromResult(data));
         }
 
         public static Promise reject(JSValue data)
