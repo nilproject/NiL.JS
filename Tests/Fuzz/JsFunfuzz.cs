@@ -5,99 +5,98 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS;
 using NiL.JS.Core;
 
-namespace Tests.Fuzz
+namespace Tests.Fuzz;
+
+[TestClass]
+public class JsFunfuzz
 {
-    [TestClass]
-    public class JsFunfuzz
+    private static readonly string JsFunfuzzScriptPath = Environment.CurrentDirectory + "/../../../../TestSets/jsfunfuzz.js";
+
+    private Module _module;
+    private StringBuilder _output;
+    private TextWriter _oldOutput;
+    private TextWriter _oldErrOutput;
+    private GlobalContext _context;
+
+    [TestInitialize]
+    public void Initialize()
     {
-        private static readonly string JsFunfuzzScriptPath = Environment.CurrentDirectory + "/../../../../TestSets/jsfunfuzz.js";
+        _context = new GlobalContext();
+        _context.ActivateInCurrentThread();
 
-        private Module _module;
-        private StringBuilder _output;
-        private TextWriter _oldOutput;
-        private TextWriter _oldErrOutput;
-        private GlobalContext _context;
-
-        [TestInitialize]
-        public void Initialize()
+        try
         {
-            _context = new GlobalContext();
-            _context.ActivateInCurrentThread();
-
-            try
+            using (var file = new FileStream(JsFunfuzzScriptPath, FileMode.Open, FileAccess.Read))
+            using (var fileReader = new StreamReader(file))
             {
-                using (var file = new FileStream(JsFunfuzzScriptPath, FileMode.Open, FileAccess.Read))
-                using (var fileReader = new StreamReader(file))
-                {
-                    _module = new Module(fileReader.ReadToEnd());
-                }
+                _module = new Module(fileReader.ReadToEnd());
             }
-            catch
-            {
-                _context.Deactivate();
-                throw;
-            }
-
-            _output = new StringBuilder();
-            _oldErrOutput = Console.Error;
-            _oldOutput = Console.Out;
-            Console.SetOut(new StringWriter(_output));
-            Console.SetError(new StringWriter(_output));
+        }
+        catch
+        {
+            _context.Deactivate();
+            throw;
         }
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            if (Context.CurrentContext == _context)
-            {
-                _context.Deactivate();
-            }
+        _output = new StringBuilder();
+        _oldErrOutput = Console.Error;
+        _oldOutput = Console.Out;
+        Console.SetOut(new StringWriter(_output));
+        Console.SetError(new StringWriter(_output));
+    }
 
-            Console.SetOut(_oldOutput);
-            Console.SetError(_oldErrOutput);
+    [TestCleanup]
+    public void Cleanup()
+    {
+        if (Context.CurrentContext == _context)
+        {
+            _context.Deactivate();
         }
 
-        [TestMethod]
-        public void AsRhino()
-        {
-            _module.Context.DefineVariable("stderr").Assign(JSValue.Null);
-            _module.Context.DefineVariable("print").Assign(new Action<object>(x => _output.AppendLine(x.ToString())));
+        Console.SetOut(_oldOutput);
+        Console.SetError(_oldErrOutput);
+    }
 
-            _module.Run();
+    [TestMethod]
+    public void AsRhino()
+    {
+        _module.Context.DefineVariable("stderr").Assign(JSValue.Null);
+        _module.Context.DefineVariable("print").Assign(new Action<object>(x => _output.AppendLine(x.ToString())));
 
-            Assert.AreEqual("", _output.ToString());
-        }
+        _module.Run();
 
-        [TestMethod]
-        public void AsJavaScriptCore()
-        {
-            _module.Context.DefineVariable("print").Assign(new Action<object>(x => _output.AppendLine(x.ToString())));
-            _module.Context.DefineVariable("debug").Assign(new Action(() => { }));
+        Assert.AreEqual("", _output.ToString());
+    }
 
-            _module.Run();
+    [TestMethod]
+    public void AsJavaScriptCore()
+    {
+        _module.Context.DefineVariable("print").Assign(new Action<object>(x => _output.AppendLine(x.ToString())));
+        _module.Context.DefineVariable("debug").Assign(new Action(() => { }));
 
-            var expected = @"***
+        _module.Run();
+
+        var expected = @"***
 Targeting JavaScriptCore / WebKit.
 
 ";
-            Assert.AreEqual(expected, _output.ToString());
-        }
+        Assert.AreEqual(expected, _output.ToString());
+    }
 
-        [TestMethod]
-        public void AsSpiderMonkey()
-        {
-            _module.Context.DefineVariable("print").Assign(new Action<object>(x => _output.AppendLine(x.ToString())));
-            _module.Context.DefineVariable("line2pc").Assign(new Action(() => { }));
-            _module.Context.DefineVariable("version").Assign(new Action(() => { }));
-            _module.Context.DefineVariable("options").Assign(new Action(() => { }));
+    [TestMethod]
+    public void AsSpiderMonkey()
+    {
+        _module.Context.DefineVariable("print").Assign(new Action<object>(x => _output.AppendLine(x.ToString())));
+        _module.Context.DefineVariable("line2pc").Assign(new Action(() => { }));
+        _module.Context.DefineVariable("version").Assign(new Action(() => { }));
+        _module.Context.DefineVariable("options").Assign(new Action(() => { }));
 
-            _module.Run();
+        _module.Run();
 
-            var expected = @"***
+        var expected = @"***
 Targeting SpiderMonkey / Gecko.
 
 ";
-            Assert.AreEqual(expected, _output.ToString());
-        }
+        Assert.AreEqual(expected, _output.ToString());
     }
 }

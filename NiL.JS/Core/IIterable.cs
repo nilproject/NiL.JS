@@ -1,10 +1,6 @@
-﻿using System;
-using NiL.JS.Core.Interop;
+﻿namespace NiL.JS.Core;
 
-namespace NiL.JS.Core
+public interface IIterable
 {
-    public interface IIterable
-    {
-        IIterator @iterator();
-    }
+    IIterator @iterator();
 }

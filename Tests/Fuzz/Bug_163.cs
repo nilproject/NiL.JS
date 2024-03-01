@@ -4,15 +4,15 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.Core;
 
-namespace Tests.Fuzz
+namespace Tests.Fuzz;
+
+[TestClass]
+public class Bug_163
 {
-    [TestClass]
-    public class Bug_163
+    [TestMethod]
+    public void CheckBug163()
     {
-        [TestMethod]
-        public void CheckBug163()
-        {
-            const string code = @"'use strict';
+        const string code = @"'use strict';
 
 function cr(n, t, i, r, u) {
     var o;
@@ -25,8 +25,7 @@ function cr(n, t, i, r, u) {
     }
     return i
 }";
-            var context = new Context(true);
-            context.Eval(code);
-        }
+        var context = new Context(true);
+        context.Eval(code);
     }
 }

@@ -6,38 +6,37 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.Core;
 
-namespace Tests.Core.Functions
+namespace Tests.Core.Functions;
+
+[TestClass]
+public class MethodProxyTests
 {
-    [TestClass]
-    public class MethodProxyTests
+    [TestInitializeAttribute]
+    public void TestInitialize()
     {
-        [TestInitializeAttribute]
-        public void TestInitialize()
-        {
-            new GlobalContext().ActivateInCurrentThread();
-        }
+        new GlobalContext().ActivateInCurrentThread();
+    }
 
-        [TestCleanup]
-        public void MyTestMethod()
-        {
-            Context.CurrentContext.GlobalContext.Deactivate();
-        }
+    [TestCleanup]
+    public void MyTestMethod()
+    {
+        Context.CurrentContext.GlobalContext.Deactivate();
+    }
 
-        public class MyObject
-        {
-            public string Text { get; set; }
-        }
+    public class MyObject
+    {
+        public string Text { get; set; }
+    }
 
-        [TestMethod]
-        public void UndefinedToStringPropertyShouldConvertToNull()
-        {
-            var context = new Context();
-            var obj = new MyObject();
-            context.DefineVariable("obj").Assign(Context.CurrentGlobalContext.WrapValue(obj));
+    [TestMethod]
+    public void UndefinedToStringPropertyShouldConvertToNull()
+    {
+        var context = new Context();
+        var obj = new MyObject();
+        context.DefineVariable("obj").Assign(Context.CurrentGlobalContext.WrapValue(obj));
 
-            context.Eval("obj.Text = undefined");
+        context.Eval("obj.Text = undefined");
 
-            Assert.IsNull(obj.Text);
-        }
+        Assert.IsNull(obj.Text);
     }
 }

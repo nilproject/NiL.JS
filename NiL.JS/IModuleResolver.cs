@@ -1,7 +1,6 @@
-﻿namespace NiL.JS
+﻿namespace NiL.JS;
+
+public interface IModuleResolver
 {
-    public interface IModuleResolver
-    {
-        bool TryGetModule(ModuleRequest moduleRequest, out Module result);
-    }
+    bool TryGetModule(ModuleRequest moduleRequest, out Module result);
 }

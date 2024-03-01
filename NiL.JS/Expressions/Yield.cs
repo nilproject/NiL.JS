@@ -1,178 +1,176 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Statements;
 using NiL.JS.Extensions;
 
-namespace NiL.JS.Expressions
-{
+namespace NiL.JS.Expressions;
+
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    public sealed class Yield : Expression
+public sealed class Yield : Expression
+{
+    private bool _reiterate;
+
+    internal override bool ResultInTempContainer
     {
-        private bool _reiterate;
-
-        internal override bool ResultInTempContainer
+        get
         {
-            get
-            {
-                return false;
-            }
+            return false;
+        }
+    }
+
+    protected internal override bool ContextIndependent
+    {
+        get
+        {
+            return false;
+        }
+    }
+
+    protected internal override bool NeedDecompose
+    {
+        get
+        {
+            return true;
+        }
+    }
+
+    public bool Reiterate
+    {
+        get
+        {
+            return _reiterate;
+        }
+    }
+
+    public Yield(Expression first, bool reiterate)
+        : base(first, null, true)
+    {
+        _reiterate = reiterate;
+    }
+
+    public static CodeNode Parse(ParseInfo state, ref int index)
+    {
+        if ((state.CodeContext & CodeContext.InGenerator) == 0)
+            ExceptionHelper.Throw(new SyntaxError("Invalid use of yield operator"));
+
+        var i = index;
+        if (!Parser.Validate(state.Code, "yield", ref i))
+            return null;
+
+        Tools.SkipSpaces(state.Code, ref i);
+
+        bool reiterate = false;
+        if (state.Code[i] == '*')
+        {
+            reiterate = true;
+            do
+                i++;
+            while (Tools.IsWhiteSpace(state.Code[i]));
         }
 
-        protected internal override bool ContextIndependent
+        var source = ExpressionTree.Parse(state, ref i, false, false, false, true, true);
+        if (source == null)
         {
-            get
-            {
-                return false;
-            }
+            ExceptionHelper.ThrowSyntaxError("Invalid prefix operation", state.Code, i);
         }
 
-        protected internal override bool NeedDecompose
+        index = i;
+
+        return new Yield(source, reiterate) { Position = index, Length = i - index };
+    }
+
+    public override JSValue Evaluate(Context context)
+    {
+        if (context._executionMode == ExecutionMode.ResumeThrow)
         {
-            get
-            {
-                return true;
-            }
+            context.SuspendData.Clear();
+            context._executionMode = ExecutionMode.Regular;
+            var exceptionData = context._executionInfo;
+            ExceptionHelper.Throw(exceptionData, this, context);
         }
 
-        public bool Reiterate
+        if (_reiterate)
         {
-            get
+            if (context._executionMode == ExecutionMode.Regular)
             {
-                return _reiterate;
+                var iterator = _left.Evaluate(context).AsIterable().iterator();
+                var iteratorResult = iterator.next();
+
+                if (iteratorResult.done)
+                    return JSValue.undefined;
+
+                context.SuspendData[this] = iterator;
+                context._executionInfo = iteratorResult.value;
+                context._executionMode = ExecutionMode.Suspend;
+                return JSValue.notExists;
             }
-        }
-
-        public Yield(Expression first, bool reiterate)
-            : base(first, null, true)
-        {
-            _reiterate = reiterate;
-        }
-
-        public static CodeNode Parse(ParseInfo state, ref int index)
-        {
-            if ((state.CodeContext & CodeContext.InGenerator) == 0)
-                ExceptionHelper.Throw(new SyntaxError("Invalid use of yield operator"));
-
-            var i = index;
-            if (!Parser.Validate(state.Code, "yield", ref i))
-                return null;
-
-            Tools.SkipSpaces(state.Code, ref i);
-
-            bool reiterate = false;
-            if (state.Code[i] == '*')
+            else if (context._executionMode == ExecutionMode.Resume)
             {
-                reiterate = true;
-                do
-                    i++;
-                while (Tools.IsWhiteSpace(state.Code[i]));
-            }
+                IIterator iterator = context.SuspendData[this] as IIterator;
+                var iteratorResult = iterator.next(context._executionInfo.Defined ? new Arguments { context._executionInfo } : null);
 
-            var source = ExpressionTree.Parse(state, ref i, false, false, false, true, true);
-            if (source == null)
-            {
-                ExceptionHelper.ThrowSyntaxError("Invalid prefix operation", state.Code, i);
-            }
+                context._executionInfo = iteratorResult.value;
 
-            index = i;
-
-            return new Yield(source, reiterate) { Position = index, Length = i - index };
-        }
-
-        public override JSValue Evaluate(Context context)
-        {
-            if (context._executionMode == ExecutionMode.ResumeThrow)
-            {
-                context.SuspendData.Clear();
-                context._executionMode = ExecutionMode.Regular;
-                var exceptionData = context._executionInfo;
-                ExceptionHelper.Throw(exceptionData, this, context);
-            }
-
-            if (_reiterate)
-            {
-                if (context._executionMode == ExecutionMode.Regular)
-                {
-                    var iterator = _left.Evaluate(context).AsIterable().iterator();
-                    var iteratorResult = iterator.next();
-
-                    if (iteratorResult.done)
-                        return JSValue.undefined;
-
-                    context.SuspendData[this] = iterator;
-                    context._executionInfo = iteratorResult.value;
-                    context._executionMode = ExecutionMode.Suspend;
-                    return JSValue.notExists;
-                }
-                else if (context._executionMode == ExecutionMode.Resume)
-                {
-                    IIterator iterator = context.SuspendData[this] as IIterator;
-                    var iteratorResult = iterator.next(context._executionInfo.Defined ? new Arguments { context._executionInfo } : null);
-
-                    context._executionInfo = iteratorResult.value;
-
-                    if (iteratorResult.done)
-                    {
-                        context._executionMode = ExecutionMode.Regular;
-                        return iteratorResult.value;
-                    }
-                    else
-                    {
-                        context.SuspendData[this] = iterator;
-                        context._executionMode = ExecutionMode.Suspend;
-                        return JSValue.notExists;
-                    }
-                }
-            }
-            else
-            {
-                if (context._executionMode == ExecutionMode.Regular)
-                {
-                    context._executionInfo = _left.Evaluate(context);
-                    context._executionMode = ExecutionMode.Suspend;
-                    return JSValue.notExists;
-                }
-                else if (context._executionMode == ExecutionMode.Resume)
+                if (iteratorResult.done)
                 {
                     context._executionMode = ExecutionMode.Regular;
-                    var result = context._executionInfo;
-                    context._executionInfo = null;
-                    return result;
+                    return iteratorResult.value;
+                }
+                else
+                {
+                    context.SuspendData[this] = iterator;
+                    context._executionMode = ExecutionMode.Suspend;
+                    return JSValue.notExists;
                 }
             }
-            throw new InvalidOperationException();
         }
-
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+        else
         {
-            stats.NeedDecompose = true;
-            return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
-        }
-
-        public override T Visit<T>(Visitor<T> visitor)
-        {
-            return visitor.Visit(this);
-        }
-
-        public override void Decompose(ref Expression self, IList<CodeNode> result)
-        {
-            _left.Decompose(ref _left, result);
-
-            if ((_codeContext & CodeContext.InExpression) != 0)
+            if (context._executionMode == ExecutionMode.Regular)
             {
-                result.Add(new StoreValue(this, false));
-                self = new ExtractStoredValue(this);
+                context._executionInfo = _left.Evaluate(context);
+                context._executionMode = ExecutionMode.Suspend;
+                return JSValue.notExists;
+            }
+            else if (context._executionMode == ExecutionMode.Resume)
+            {
+                context._executionMode = ExecutionMode.Regular;
+                var result = context._executionInfo;
+                context._executionInfo = null;
+                return result;
             }
         }
+        throw new InvalidOperationException();
+    }
 
-        public override string ToString()
+    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    {
+        stats.NeedDecompose = true;
+        return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+    }
+
+    public override T Visit<T>(Visitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
+
+    public override void Decompose(ref Expression self, IList<CodeNode> result)
+    {
+        _left.Decompose(ref _left, result);
+
+        if ((_codeContext & CodeContext.InExpression) != 0)
         {
-            return "yield" + (_reiterate ? "* " : " ") + _left;
+            result.Add(new StoreValue(this, false));
+            self = new ExtractStoredValue(this);
         }
+    }
+
+    public override string ToString()
+    {
+        return "yield" + (_reiterate ? "* " : " ") + _left;
     }
 }

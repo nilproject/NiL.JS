@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace NiL.JS.Core.Interop
+namespace NiL.JS.Core.Interop;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+internal sealed class FieldAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    internal sealed class FieldAttribute : Attribute
-    {
-    }
 }

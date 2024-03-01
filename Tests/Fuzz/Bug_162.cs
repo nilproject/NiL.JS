@@ -1,15 +1,15 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.Core;
 
-namespace Tests.Fuzz
+namespace Tests.Fuzz;
+
+[TestClass]
+public class Bug_162
 {
-    [TestClass]
-    public class Bug_162
+    [TestMethod]
+    public void CascadeIfElseShouldProcessCorrectly()
     {
-        [TestMethod]
-        public void CascadeIfElseShouldProcessCorrectly()
-        {
-            const string code = @"var arr = ['a', 'b', 'c'],
+        const string code = @"var arr = ['a', 'b', 'c'],
     num = 0
     ;
 
@@ -18,10 +18,9 @@ if (arr.length > 1)
         if (arr[i] == 'a') num += 12;
         else if (arr[i] == 'b') num += 5;
         else break;else num = -1;";
-            var context = new Context(true);
+        var context = new Context(true);
 
 
-            context.Eval(code);
-        }
+        context.Eval(code);
     }
 }

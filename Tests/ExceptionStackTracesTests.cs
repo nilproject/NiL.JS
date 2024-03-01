@@ -4,76 +4,75 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.Core;
 
-namespace Tests
+namespace Tests;
+
+[TestClass]
+public class ExceptionStackTracesTests
 {
-    [TestClass]
-    public class ExceptionStackTracesTests
+    [TestMethod]
+    public void ShouldIncludeJsMethods()
     {
-        [TestMethod]
-        public void ShouldIncludeJsMethods()
+        var context = new Context();
+
+        try
         {
-            var context = new Context();
-
-            try
-            {
-                context.Eval(@"function jsExceptionMethod() { throw 'Hello, world!'; } jsExceptionMethod()");
-            }
-            catch (Exception e)
-            {
-                var stackTrace = e.StackTrace;
-
-                Assert.IsTrue(stackTrace.Contains("jsExceptionMethod"));
-            }
+            context.Eval(@"function jsExceptionMethod() { throw 'Hello, world!'; } jsExceptionMethod()");
         }
-
-
-        [TestMethod]
-        public void ShouldProcessCodeTypeSwitch()
+        catch (Exception e)
         {
-            var context = new Context();
+            var stackTrace = e.StackTrace;
 
-            context.DefineVariable("complexEval").Assign(new Func<string, JSValue>(x => new Context().Eval(x)));
+            Assert.IsTrue(stackTrace.Contains("jsExceptionMethod"));
+        }
+    }
 
-            try
-            {
-                context.Eval(
+
+    [TestMethod]
+    public void ShouldProcessCodeTypeSwitch()
+    {
+        var context = new Context();
+
+        context.DefineVariable("complexEval").Assign(new Func<string, JSValue>(x => new Context().Eval(x)));
+
+        try
+        {
+            context.Eval(
 @"function jsExceptionMethod() {
    complexEval(""[1].map(x=> { throw 'oops!' });"")
 }
 jsExceptionMethod()");
-            }
-            catch (Exception e)
-            {
-                var stackTrace = e.StackTrace;
-
-                Assert.IsTrue(stackTrace.Contains("jsExceptionMethod"), stackTrace);
-                Assert.IsTrue(stackTrace.Contains("Array.map"), stackTrace);
-            }
         }
-
-
-        [TestMethod]
-        public void ShouldProcessCodeTypeSwitchForConstructors()
+        catch (Exception e)
         {
-            var context = new Context();
+            var stackTrace = e.StackTrace;
 
-            context.DefineVariable("complexEval").Assign(new Func<string, JSValue>(x => new Context().Eval(x)));
+            Assert.IsTrue(stackTrace.Contains("jsExceptionMethod"), stackTrace);
+            Assert.IsTrue(stackTrace.Contains("Array.map"), stackTrace);
+        }
+    }
 
-            try
-            {
-                context.Eval(
+
+    [TestMethod]
+    public void ShouldProcessCodeTypeSwitchForConstructors()
+    {
+        var context = new Context();
+
+        context.DefineVariable("complexEval").Assign(new Func<string, JSValue>(x => new Context().Eval(x)));
+
+        try
+        {
+            context.Eval(
 @"function jsExceptionMethod() {
    complexEval(""new Array(-1)"")
 }
 jsExceptionMethod()");
-            }
-            catch (Exception e)
-            {
-                var stackTrace = e.StackTrace;
+        }
+        catch (Exception e)
+        {
+            var stackTrace = e.StackTrace;
 
-                Assert.IsTrue(stackTrace.Contains("jsExceptionMethod"), stackTrace);
-                Assert.IsTrue(stackTrace.Contains("Array..ctor"), stackTrace);
-            }
+            Assert.IsTrue(stackTrace.Contains("jsExceptionMethod"), stackTrace);
+            Assert.IsTrue(stackTrace.Contains("Array..ctor"), stackTrace);
         }
     }
 }

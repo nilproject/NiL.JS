@@ -1,56 +1,55 @@
 ﻿using System;
 using NiL.JS.Core;
 
-namespace NiL.JS.Expressions
-{
+namespace NiL.JS.Expressions;
+
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    public sealed class ConvertToUnsignedInteger : Expression
+public sealed class ConvertToUnsignedInteger : Expression
+{
+    protected internal override PredictedType ResultType
     {
-        protected internal override PredictedType ResultType
+        get
         {
-            get
-            {
-                return PredictedType.Number;
-            }
+            return PredictedType.Number;
         }
+    }
 
-        internal override bool ResultInTempContainer
+    internal override bool ResultInTempContainer
+    {
+        get { return true; }
+    }
+
+    public ConvertToUnsignedInteger(Expression first)
+        : base(first, null, true)
+    {
+
+    }
+
+    public override JSValue Evaluate(Context context)
+    {
+        var t = (uint)Tools.JSObjectToInt32(_left.Evaluate(context));
+        if (t <= int.MaxValue)
         {
-            get { return true; }
+            _tempContainer._iValue = (int)t;
+            _tempContainer._valueType = JSValueType.Integer;
         }
-
-        public ConvertToUnsignedInteger(Expression first)
-            : base(first, null, true)
+        else
         {
-
+            _tempContainer._dValue = t;
+            _tempContainer._valueType = JSValueType.Double;
         }
+        return _tempContainer;
+    }
 
-        public override JSValue Evaluate(Context context)
-        {
-            var t = (uint)Tools.JSObjectToInt32(_left.Evaluate(context));
-            if (t <= int.MaxValue)
-            {
-                _tempContainer._iValue = (int)t;
-                _tempContainer._valueType = JSValueType.Integer;
-            }
-            else
-            {
-                _tempContainer._dValue = t;
-                _tempContainer._valueType = JSValueType.Double;
-            }
-            return _tempContainer;
-        }
+    public override T Visit<T>(Visitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
 
-        public override T Visit<T>(Visitor<T> visitor)
-        {
-            return visitor.Visit(this);
-        }
-
-        public override string ToString()
-        {
-            return "(" + _left + " | 0)";
-        }
+    public override string ToString()
+    {
+        return "(" + _left + " | 0)";
     }
 }

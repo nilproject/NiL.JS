@@ -1,42 +1,41 @@
 ﻿using NiL.JS.Core;
 
-namespace NiL.JS
+namespace NiL.JS;
+
+public abstract class CachedModuleResolverBase : IModuleResolver
 {
-    public abstract class CachedModuleResolverBase : IModuleResolver
+    private StringMap<Module> _modulesCache = new StringMap<Module>();
+
+    bool IModuleResolver.TryGetModule(ModuleRequest moduleRequest, out Module result)
     {
-        private StringMap<Module> _modulesCache = new StringMap<Module>();
+        var cacheKey = GetCacheKey(moduleRequest);
 
-        bool IModuleResolver.TryGetModule(ModuleRequest moduleRequest, out Module result)
+        if (_modulesCache.TryGetValue(cacheKey, out result))
+            return true;
+
+        if (TryGetModule(moduleRequest, out result))
         {
-            var cacheKey = GetCacheKey(moduleRequest);
-
-            if (_modulesCache.TryGetValue(cacheKey, out result))
-                return true;
-
-            if (TryGetModule(moduleRequest, out result))
-            {
-                _modulesCache.Add(cacheKey, result);
-                return true;
-            }
-
-            return false;
+            _modulesCache.Add(cacheKey, result);
+            return true;
         }
 
-        public abstract bool TryGetModule(ModuleRequest moduleRequest, out Module result);
+        return false;
+    }
 
-        public virtual string GetCacheKey(ModuleRequest moduleRequest)
-        {
-            return moduleRequest.AbsolutePath;
-        }
+    public abstract bool TryGetModule(ModuleRequest moduleRequest, out Module result);
 
-        public void RemoveFromCache(string key)
-        {
-            _modulesCache.Remove(key);
-        }
+    public virtual string GetCacheKey(ModuleRequest moduleRequest)
+    {
+        return moduleRequest.AbsolutePath;
+    }
 
-        public void ClearCache()
-        {
-            _modulesCache.Clear();
-        }
+    public void RemoveFromCache(string key)
+    {
+        _modulesCache.Remove(key);
+    }
+
+    public void ClearCache()
+    {
+        _modulesCache.Clear();
     }
 }

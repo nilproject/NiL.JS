@@ -5,15 +5,15 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Extensions;
 
-namespace Tests.Fuzz
+namespace Tests.Fuzz;
+
+[TestClass]
+public sealed class Bug_239
 {
-    [TestClass]
-    public sealed class Bug_239
+    [TestMethod]
+    public void IterationOfNativeList()
     {
-        [TestMethod]
-        public void IterationOfNativeList()
-        {
-            var script = Script.Parse(@"
+        var script = Script.Parse(@"
 export default class Test {
     run(ints) {
         var result = 0;
@@ -24,18 +24,17 @@ export default class Test {
     }
 }
 ");
-            var context = new GlobalContext();
-            var module = new Module($"main.js", script, context);
-            module.Run();
+        var context = new GlobalContext();
+        var module = new Module($"main.js", script, context);
+        module.Run();
 
-            var ctor = module.Exports.Default.As<Function>();
-            var instance = ctor.Construct(new Arguments());
-            var run = instance.GetProperty("run").As<Function>();
+        var ctor = module.Exports.Default.As<Function>();
+        var instance = ctor.Construct(new Arguments());
+        var run = instance.GetProperty("run").As<Function>();
 
-            var ints = new int[] { 1, 2, 3 };
-            var result = run.MakeDelegate<Func<int[], JSValue>>()(ints);
+        var ints = new int[] { 1, 2, 3 };
+        var result = run.MakeDelegate<Func<int[], JSValue>>()(ints);
 
-            Assert.AreEqual(6, result);
-        }
+        Assert.AreEqual(6, result);
     }
 }

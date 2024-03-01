@@ -3,8 +3,8 @@ using NiL.JS.Core;
 using NiL.JS.Extensions;
 using System;
 
-namespace Tests.Core
-{
+namespace Tests.Core;
+
 	[TestClass]
 	public class GuidTests
 	{
@@ -46,4 +46,3 @@ namespace Tests.Core
 			Assert.ThrowsException<FormatException>(() => jsContext.GetVariable("output").As<Guid?>());
 		}
 	}
-}

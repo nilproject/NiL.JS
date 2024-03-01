@@ -7,66 +7,66 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Extensions;
 
-namespace Tests.Fuzz
+namespace Tests.Fuzz;
+
+/// <see cref="https://github.com/nilproject/NiL.JS/issues/268"/>
+[TestClass]
+public class TypescriptServices
 {
-    /// <see cref="https://github.com/nilproject/NiL.JS/issues/268"/>
-    [TestClass]
-    public class TypescriptServices
+    private static readonly string _typescriptServicesPath = Environment.CurrentDirectory + "/../../../../TestSets/typescriptServices.js";
+
+    private Module _module;
+    private StringBuilder _output;
+    private TextWriter _oldOutput;
+    private TextWriter _oldErrOutput;
+    private GlobalContext _context;
+
+    [TestInitialize]
+    public void Initialize()
     {
-        private static readonly string _typescriptServicesPath = Environment.CurrentDirectory + "/../../../../TestSets/typescriptServices.js";
+        _context = new GlobalContext();
+        _context.ActivateInCurrentThread();
 
-        private Module _module;
-        private StringBuilder _output;
-        private TextWriter _oldOutput;
-        private TextWriter _oldErrOutput;
-        private GlobalContext _context;
-
-        [TestInitialize]
-        public void Initialize()
+        try
         {
-            _context = new GlobalContext();
-            _context.ActivateInCurrentThread();
-
-            try
+            using (var file = new FileStream(_typescriptServicesPath, FileMode.Open, FileAccess.Read))
+            using (var fileReader = new StreamReader(file))
             {
-                using (var file = new FileStream(_typescriptServicesPath, FileMode.Open, FileAccess.Read))
-                using (var fileReader = new StreamReader(file))
-                {
-                    _module = new Module(fileReader.ReadToEnd());
-                }
-
-                _module.Context.DefineVariable("window").Assign(_module.Context.ThisBind);
-                _module.Run();
-            }
-            catch
-            {
-                _context.Deactivate();
-                throw;
+                _module = new Module(fileReader.ReadToEnd());
             }
 
-            _output = new StringBuilder();
-            _oldErrOutput = Console.Error;
-            _oldOutput = Console.Out;
-            Console.SetOut(new StringWriter(_output));
-            Console.SetError(new StringWriter(_output));
+            _module.Context.DefineVariable("window").Assign(_module.Context.ThisBind);
+            _module.Run();
+        }
+        catch
+        {
+            _context.Deactivate();
+            throw;
         }
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            if (Context.CurrentContext == _context)
-            {
-                _context.Deactivate();
-            }
+        _output = new StringBuilder();
+        _oldErrOutput = Console.Error;
+        _oldOutput = Console.Out;
+        Console.SetOut(new StringWriter(_output));
+        Console.SetError(new StringWriter(_output));
+    }
 
-            Console.SetOut(_oldOutput);
-            Console.SetError(_oldErrOutput);
+    [TestCleanup]
+    public void Cleanup()
+    {
+        if (Context.CurrentContext == _context)
+        {
+            _context.Deactivate();
         }
 
-        [TestMethod]
-        public void ShouldProduceCorrectResult()
-        {
-            var transpileFunction = _module.Context.Eval(@"
+        Console.SetOut(_oldOutput);
+        Console.SetError(_oldErrOutput);
+    }
+
+    [TestMethod]
+    public void ShouldProduceCorrectResult()
+    {
+        var transpileFunction = _module.Context.Eval(@"
 input => {
     const result = ts.transpileModule(input, {
         compilerOptions: {
@@ -80,18 +80,18 @@ input => {
 };
 ");
 
-            var tsc = transpileFunction.As<Function>().MakeDelegate<Func<string, string>>();
+        var tsc = transpileFunction.As<Function>().MakeDelegate<Func<string, string>>();
 
-            var typescriptSource = @"
+        var typescriptSource = @"
 import { SampleStore } from 'utiliread';
 export default class Test {
     static inject = [SampleStore];
     constructor(private ss: SampleStore) {
     }
 }";
-            var transpiled = tsc(typescriptSource);
+        var transpiled = tsc(typescriptSource);
 
-            Assert.AreEqual(@"import { SampleStore } from 'utiliread';
+        Assert.AreEqual(@"import { SampleStore } from 'utiliread';
 export default class Test {
     constructor(ss) {
         this.ss = ss;
@@ -100,6 +100,5 @@ export default class Test {
 Test.inject = [SampleStore];
 ",
 transpiled);
-        }
     }
 }

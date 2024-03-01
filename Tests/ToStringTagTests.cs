@@ -8,108 +8,107 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tests
+namespace Tests;
+
+[TestClass]
+public sealed class ToStringTagTests
 {
-    [TestClass]
-    public sealed class ToStringTagTests
+    [TestMethod]
+    public void JSObjectMastHaveObjectTag()
     {
-        [TestMethod]
-        public void JSObjectMastHaveObjectTag()
+        var context = new Context();
+        var code = @"new Object().toString()";
+
+        var stringValue = context.Eval(code);
+
+        Assert.AreEqual("[object Object]", stringValue.Value);
+    }
+
+    [ToStringTag("Tag")]
+    private sealed class CustomObjectWithTag : JSObject
+    {
+        public CustomObjectWithTag()
         {
-            var context = new Context();
-            var code = @"new Object().toString()";
-
-            var stringValue = context.Eval(code);
-
-            Assert.AreEqual("[object Object]", stringValue.Value);
+            ValueType = JSValueType.Object;
+            Value = this;
         }
+    }
 
-        [ToStringTag("Tag")]
-        private sealed class CustomObjectWithTag : JSObject
+    [TestMethod]
+    public void ToStringTagShouldWorkForCustomObjects()
+    {
+        var context = new Context();
+        context.DefineVariable("test").Assign(new CustomObjectWithTag());
+        var code = @"test.toString()";
+
+        var stringValue = context.Eval(code);
+
+        Assert.AreEqual("[object Tag]", stringValue.Value);
+    }
+
+    private sealed class CustomObjectWithoutTag : JSObject
+    {
+        public CustomObjectWithoutTag()
         {
-            public CustomObjectWithTag()
-            {
-                ValueType = JSValueType.Object;
-                Value = this;
-            }
+            ValueType = JSValueType.Object;
+            Value = this;
         }
+    }
 
-        [TestMethod]
-        public void ToStringTagShouldWorkForCustomObjects()
-        {
-            var context = new Context();
-            context.DefineVariable("test").Assign(new CustomObjectWithTag());
-            var code = @"test.toString()";
+    [TestMethod]
+    public void ToStringShouldUseNameOfCustomObjectIfToStringTagNotDefined()
+    {
+        var context = new Context();
+        context.DefineVariable("test").Assign(new CustomObjectWithoutTag());
+        var code = @"test.toString()";
 
-            var stringValue = context.Eval(code);
+        var stringValue = context.Eval(code);
 
-            Assert.AreEqual("[object Tag]", stringValue.Value);
-        }
+        Assert.AreEqual($"[object {typeof(CustomObjectWithoutTag).Name}]", stringValue.Value);
+    }
 
-        private sealed class CustomObjectWithoutTag : JSObject
-        {
-            public CustomObjectWithoutTag()
-            {
-                ValueType = JSValueType.Object;
-                Value = this;
-            }
-        }
+    [ToStringTag("Tag")]
+    private sealed class ExternTypeWithTag
+    {
+    }
 
-        [TestMethod]
-        public void ToStringShouldUseNameOfCustomObjectIfToStringTagNotDefined()
-        {
-            var context = new Context();
-            context.DefineVariable("test").Assign(new CustomObjectWithoutTag());
-            var code = @"test.toString()";
+    [TestMethod]
+    public void ToStringTagShouldWorkForExternTypes()
+    {
+        var context = new Context();
+        context.DefineVariable("test").Assign(new ExternTypeWithTag(), context);
+        var code = @"test.toString()";
 
-            var stringValue = context.Eval(code);
+        var stringValue = context.Eval(code);
 
-            Assert.AreEqual($"[object {typeof(CustomObjectWithoutTag).Name}]", stringValue.Value);
-        }
+        Assert.AreEqual("[object Tag]", stringValue.Value);
+    }
 
-        [ToStringTag("Tag")]
-        private sealed class ExternTypeWithTag
-        {
-        }
+    private sealed class ExternTypeWithoutTag
+    {
+    }
 
-        [TestMethod]
-        public void ToStringTagShouldWorkForExternTypes()
-        {
-            var context = new Context();
-            context.DefineVariable("test").Assign(new ExternTypeWithTag(), context);
-            var code = @"test.toString()";
+    [TestMethod]
+    public void ToStringShouldUseNameOfTypeIfToStringTagNotDefined()
+    {
+        var context = new Context();
+        context.DefineVariable("test").Assign(new ExternTypeWithoutTag(), context);
+        var code = @"test.toString()";
 
-            var stringValue = context.Eval(code);
+        var stringValue = context.Eval(code);
 
-            Assert.AreEqual("[object Tag]", stringValue.Value);
-        }
+        Assert.AreEqual($"[object {typeof(ExternTypeWithoutTag).Name}]", stringValue.Value);
+    }
 
-        private sealed class ExternTypeWithoutTag
-        {
-        }
+    [TestMethod]
+    public void ToStringTagShouldBeSymbol()
+    {
+        var context = new Context();
+        context.DefineVariable("test").Assign(new ExternTypeWithTag(), context);
+        var code = @"test[Symbol.toStringTag]";
 
-        [TestMethod]
-        public void ToStringShouldUseNameOfTypeIfToStringTagNotDefined()
-        {
-            var context = new Context();
-            context.DefineVariable("test").Assign(new ExternTypeWithoutTag(), context);
-            var code = @"test.toString()";
+        var stringValue = context.Eval(code);
 
-            var stringValue = context.Eval(code);
-
-            Assert.AreEqual($"[object {typeof(ExternTypeWithoutTag).Name}]", stringValue.Value);
-        }
-
-        [TestMethod]
-        public void ToStringTagShouldBeSymbol()
-        {
-            var context = new Context();
-            context.DefineVariable("test").Assign(new ExternTypeWithTag(), context);
-            var code = @"test[Symbol.toStringTag]";
-
-            var stringValue = context.Eval(code);
-
-            Assert.AreEqual("Tag", stringValue.Value);
-        }
+        Assert.AreEqual("Tag", stringValue.Value);
     }
 }

@@ -1,88 +1,86 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Statements;
+
+public sealed class StoreValue : CodeNode
 {
-    public sealed class StoreValue : CodeNode
+    private readonly Expression _source;
+    private readonly bool _forWrite;
+
+    public override int Position
     {
-        private readonly Expression _source;
-        private readonly bool _forWrite;
-
-        public override int Position
+        get
         {
-            get
-            {
-                return _source.Position;
-            }
-            internal set
-            {
-                _source.Position = value;
-            }
+            return _source.Position;
         }
-
-        public override int Length
+        internal set
         {
-            get
-            {
-                return _source.Length;
-            }
-            internal set
-            {
-                _source.Length = value;
-            }
+            _source.Position = value;
         }
+    }
 
-        public bool ForWrite
+    public override int Length
+    {
+        get
         {
-            get
-            {
-                return _forWrite;
-            }
+            return _source.Length;
         }
-
-        public StoreValue(Expression source, bool forWrite)
+        internal set
         {
-            _source = source;
-            _forWrite = forWrite;
+            _source.Length = value;
         }
+    }
 
-        public override JSValue Evaluate(Context context)
+    public bool ForWrite
+    {
+        get
         {
-            var temp = _forWrite ? _source.EvaluateForWrite(context) : _source.Evaluate(context);
+            return _forWrite;
+        }
+    }
 
-            if (context._executionMode == ExecutionMode.Suspend)
-                return null;
-            else
-                context.SuspendData[_source] = _forWrite ? temp : temp.CloneImpl(false);
+    public StoreValue(Expression source, bool forWrite)
+    {
+        _source = source;
+        _forWrite = forWrite;
+    }
 
+    public override JSValue Evaluate(Context context)
+    {
+        var temp = _forWrite ? _source.EvaluateForWrite(context) : _source.Evaluate(context);
+
+        if (context._executionMode == ExecutionMode.Suspend)
             return null;
-        }
+        else
+            context.SuspendData[_source] = _forWrite ? temp : temp.CloneImpl(false);
 
-        public override string ToString()
-        {
-            return _source.ToString();
-        }
+        return null;
+    }
 
-        protected internal override CodeNode[] GetChildrenImpl()
-        {
-            return _source.GetChildrenImpl();
-        }
+    public override string ToString()
+    {
+        return _source.ToString();
+    }
 
-        public override T Visit<T>(Visitor<T> visitor)
-        {
-            return _source.Visit<T>(visitor);
-        }
+    protected internal override CodeNode[] GetChildrenImpl()
+    {
+        return _source.GetChildrenImpl();
+    }
 
-        public override void Decompose(ref CodeNode self)
-        {
+    public override T Visit<T>(Visitor<T> visitor)
+    {
+        return _source.Visit<T>(visitor);
+    }
 
-        }
+    public override void Decompose(ref CodeNode self)
+    {
 
-        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-        {
-            _source.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        }
+    }
+
+    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+    {
+        _source.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 }

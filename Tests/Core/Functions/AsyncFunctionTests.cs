@@ -6,53 +6,53 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 using NiL.JS.Extensions;
 
-namespace Tests
+namespace Tests;
+
+[TestClass]
+public class AsyncFunctionTests
 {
-    [TestClass]
-    public class AsyncFunctionTests
+    [TestMethod]
+    public void CompletedTaskShouldBeReturnedAsResolvedPromise()
     {
-        [TestMethod]
-        public void CompletedTaskShouldBeReturnedAsResolvedPromise()
+        var context = new Context();
+
+        context.DefineVariable("testAwaitable").Assign(new Func<string, Task<string>>((input) =>
         {
-            var context = new Context();
+            return Task.FromResult(input);
+        }), context);
 
-            context.DefineVariable("testAwaitable").Assign(new Func<string, Task<string>>((input) =>
-            {
-                return Task.FromResult(input);
-            }), context);
+        context.Eval("function testAsync() { return testAwaitable('test'); }");
 
-            context.Eval("function testAsync() { return testAwaitable('test'); }");
+        var task = context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
 
-            var task = context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
+        Assert.AreEqual("test", task.GetAwaiter().GetResult().ToString());
+    }
 
-            Assert.AreEqual("test", task.GetAwaiter().GetResult().ToString());
-        }
+    [TestMethod]
+    public async Task RejectedPromiseShouldBeReturnedAsFaultedTask()
+    {
+        var context = new Context();
 
-        [TestMethod]
-        public async Task RejectedPromiseShouldBeReturnedAsFaultedTask()
+        context.DefineVariable("testAwaitable").Assign(context.GlobalContext.ProxyValue(new Func<string, Task<string>>(async (input) =>
         {
-            var context = new Context();
+            await Task.Delay(500);
 
-            context.DefineVariable("testAwaitable").Assign(context.GlobalContext.ProxyValue(new Func<string, Task<string>>(async (input) =>
-            {
-                await Task.Delay(500);
+            throw new Exception();
+        })));
 
-                throw new Exception();
-            })));
+        context.Eval("let result = null; async function testAsync() { result = await testAwaitable('test'); }");
 
-            context.Eval("let result = null; async function testAsync() { result = await testAwaitable('test'); }");
-
-            var task = context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
-            await Assert.ThrowsExceptionAsync<JSException>(async () =>
-            {
-                await task;
-            });
-        }
-
-        [TestMethod]
-        public void AsyncFunctionWithNestedLiteralContextsShouldWorkAsExpected()
+        var task = context.GetVariable("testAsync").As<Function>().Call(new Arguments()).As<Promise>().Task;
+        await Assert.ThrowsExceptionAsync<JSException>(async () =>
         {
-            var script = Script.Parse(@"
+            await task;
+        });
+    }
+
+    [TestMethod]
+    public void AsyncFunctionWithNestedLiteralContextsShouldWorkAsExpected()
+    {
+        var script = Script.Parse(@"
 async function test() {
     const a = await Promise.resolve(123);
     if (true) {
@@ -61,22 +61,22 @@ async function test() {
     }
 }
 ");
-            var context = new Context();
-            script.Evaluate(context);
+        var context = new Context();
+        script.Evaluate(context);
 
-            var promiseValue = context.Eval("test()");
-            var promise = promiseValue.Value as Promise;
+        var promiseValue = context.Eval("test()");
+        var promise = promiseValue.Value as Promise;
 
-            Assert.AreEqual(579, promise.Task.GetAwaiter().GetResult());
-        }
+        Assert.AreEqual(579, promise.Task.GetAwaiter().GetResult());
+    }
 
-        [TestMethod]
-        public async Task AsyncMethodShouldReturnValue()
-        {
-            // Arrange
-            var request = "value";
+    [TestMethod]
+    public async Task AsyncMethodShouldReturnValue()
+    {
+        // Arrange
+        var request = "value";
 
-            var script = $@"
+        var script = $@"
 async function script() {{
     async function demo() {{
         let request = '{request}';
@@ -90,33 +90,32 @@ async function script() {{
     return result;
 }}
 ";
-            var context = new Context();
+        var context = new Context();
 
-            context
-                .DefineVariable("fetch")
-                .Assign(new Func<string, Task<string>>(FetchAsync), context);
+        context
+            .DefineVariable("fetch")
+            .Assign(new Func<string, Task<string>>(FetchAsync), context);
 
-            context
-                .DefineVariable("check")
-                .Assign(new Action<string>((value) => { Assert.AreEqual(request, value); }), context);
+        context
+            .DefineVariable("check")
+            .Assign(new Action<string>((value) => { Assert.AreEqual(request, value); }), context);
 
-            context.Eval(script);
+        context.Eval(script);
 
-            // Act
-            var result = await context.GetVariable("script")
-                .As<Function>()
-                .Call(new Arguments())
-                .As<Promise>()
-                .Task;
+        // Act
+        var result = await context.GetVariable("script")
+            .As<Function>()
+            .Call(new Arguments())
+            .As<Promise>()
+            .Task;
 
-            // Assert
-            Assert.AreEqual(request, result.Value);
-        }
+        // Assert
+        Assert.AreEqual(request, result.Value);
+    }
 
-        private async Task<string> FetchAsync(string jsRequest)
-        {
-            await Task.Delay(10);
-            return jsRequest;
-        }
+    private async Task<string> FetchAsync(string jsRequest)
+    {
+        await Task.Delay(10);
+        return jsRequest;
     }
 }

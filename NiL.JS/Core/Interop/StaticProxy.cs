@@ -1,37 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace NiL.JS.Core.Interop
+namespace NiL.JS.Core.Interop;
+
+[Prototype(typeof(JSObject), true)]
+internal sealed class StaticProxy : Proxy
 {
-    [Prototype(typeof(JSObject), true)]
-    internal sealed class StaticProxy : Proxy
+    internal override JSObject PrototypeInstance
     {
-        internal override JSObject PrototypeInstance
+        get
         {
-            get
-            {
-                return null;
-            }
+            return null;
         }
+    }
 
-        internal override bool IsInstancePrototype
+    internal override bool IsInstancePrototype
+    {
+        get
         {
-            get
-            {
-                return false;
-            }
+            return false;
         }
+    }
 
-        [Hidden]
-        public StaticProxy(GlobalContext context, Type type, bool indexersSupport)
-            : base(context, type, indexersSupport)
-        {
+    [Hidden]
+    public StaticProxy(GlobalContext context, Type type, bool indexersSupport)
+        : base(context, type, indexersSupport)
+    {
 
-        }
     }
 }

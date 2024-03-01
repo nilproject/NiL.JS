@@ -4,90 +4,89 @@ using System.Collections.ObjectModel;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
 
-namespace NiL.JS.Statements
-{
+namespace NiL.JS.Statements;
+
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    public sealed class InfinityLoop : CodeNode
+public sealed class InfinityLoop : CodeNode
+{
+    private CodeNode _body;
+    private readonly string[] _labels;
+
+    public CodeNode Body { get { return _body; } }
+    public ReadOnlyCollection<string> Labels { get { return new ReadOnlyCollection<string>(_labels); } }
+
+    internal InfinityLoop(CodeNode body, string[] labels)
     {
-        private CodeNode _body;
-        private readonly string[] _labels;
+        _body = body ?? new Empty();
+        _labels = labels;
+    }
 
-        public CodeNode Body { get { return _body; } }
-        public ReadOnlyCollection<string> Labels { get { return new ReadOnlyCollection<string>(_labels); } }
+    public override JSValue Evaluate(Context context)
+    {
+        var frame = ExceptionHelper.GetStackFrame(context, false);
 
-        internal InfinityLoop(CodeNode body, string[] labels)
+        for (;;)
         {
-            _body = body ?? new Empty();
-            _labels = labels;
-        }
+            frame.CodeNode = _body;
 
-        public override JSValue Evaluate(Context context)
-        {
-            var frame = ExceptionHelper.GetStackFrame(context, false);
+            if (context._debugging && _body is not CodeBlock)
+                context.raiseDebugger(_body);
 
-            for (;;)
+            context._lastResult = _body.Evaluate(context) ?? context._lastResult;
+            if (context._executionMode != ExecutionMode.Regular)
             {
-                frame.CodeNode = _body;
-
-                if (context._debugging && _body is not CodeBlock)
-                    context.raiseDebugger(_body);
-
-                context._lastResult = _body.Evaluate(context) ?? context._lastResult;
-                if (context._executionMode != ExecutionMode.Regular)
+                if (context._executionMode < ExecutionMode.Return)
                 {
-                    if (context._executionMode < ExecutionMode.Return)
+                    var me = context._executionInfo == null || System.Array.IndexOf(_labels, context._executionInfo._oValue.ToString()) != -1;
+                    var _break = (context._executionMode > ExecutionMode.Continue) || !me;
+                    if (me)
                     {
-                        var me = context._executionInfo == null || System.Array.IndexOf(_labels, context._executionInfo._oValue.ToString()) != -1;
-                        var _break = (context._executionMode > ExecutionMode.Continue) || !me;
-                        if (me)
-                        {
-                            context._executionMode = ExecutionMode.Regular;
-                            context._executionInfo = JSValue.notExists;
-                        }
-                        if (_break)
-                            return null;
+                        context._executionMode = ExecutionMode.Regular;
+                        context._executionInfo = JSValue.notExists;
                     }
-                    else
+                    if (_break)
                         return null;
                 }
+                else
+                    return null;
             }
         }
+    }
 
-        protected internal override CodeNode[] GetChildrenImpl()
-        {
-            return new[] { _body };
-        }
+    protected internal override CodeNode[] GetChildrenImpl()
+    {
+        return [_body];
+    }
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
-        {
-            return false;
-        }
+    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    {
+        return false;
+    }
 
-        public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
-        {
-            _body.Optimize(ref _body, owner, message, opts, stats);
-        }
+    public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
+    {
+        _body.Optimize(ref _body, owner, message, opts, stats);
+    }
 
-        public override void Decompose(ref CodeNode self)
-        {
-            _body.Decompose(ref _body);
-        }
+    public override void Decompose(ref CodeNode self)
+    {
+        _body.Decompose(ref _body);
+    }
 
-        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-        {
-            _body.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        }
+    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+    {
+        _body.RebuildScope(functionInfo, transferedVariables, scopeBias);
+    }
 
-        public override T Visit<T>(Visitor<T> visitor)
-        {
-            return visitor.Visit(this);
-        }
+    public override T Visit<T>(Visitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
 
-        public override string ToString()
-        {
-            return "for (;;)" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
-        }
+    public override string ToString()
+    {
+        return "for (;;)" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
     }
 }

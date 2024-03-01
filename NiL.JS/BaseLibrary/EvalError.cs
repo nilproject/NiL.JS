@@ -2,31 +2,30 @@
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
-namespace NiL.JS.BaseLibrary
-{
+namespace NiL.JS.BaseLibrary;
+
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    public sealed class EvalError : Error
+public sealed class EvalError : Error
+{
+    [DoNotEnumerate]
+    public EvalError()
     {
-        [DoNotEnumerate]
-        public EvalError()
-        {
 
-        }
+    }
 
-        [DoNotEnumerate]
-        public EvalError(Arguments args)
-            : base(args[0].ToString())
-        {
+    [DoNotEnumerate]
+    public EvalError(Arguments args)
+        : base(args[0].ToString())
+    {
 
-        }
+    }
 
-        [DoNotEnumerate]
-        public EvalError(string message)
-            : base(message)
-        {
+    [DoNotEnumerate]
+    public EvalError(string message)
+        : base(message)
+    {
 
-        }
     }
 }

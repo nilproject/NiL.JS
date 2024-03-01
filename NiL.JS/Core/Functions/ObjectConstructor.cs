@@ -3,71 +3,70 @@ using System.Collections.Generic;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
-namespace NiL.JS.Core.Functions
-{
+namespace NiL.JS.Core.Functions;
+
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    [Prototype(typeof(Function), true)]
-    internal class ObjectConstructor : ConstructorProxy
+[Prototype(typeof(Function), true)]
+internal class ObjectConstructor : ConstructorProxy
+{
+    public override string name
     {
-        public override string name
+        get
         {
-            get
-            {
-                return "Object";
-            }
+            return "Object";
         }
+    }
 
-        public ObjectConstructor(Context context, StaticProxy staticProxy, JSObject prototype)
-            : base(context, staticProxy, prototype)
+    public ObjectConstructor(Context context, StaticProxy staticProxy, JSObject prototype)
+        : base(context, staticProxy, prototype)
+    {
+        _length = new Number(1);
+    }
+
+    protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+    {
+        JSValue nestedValue = targetObject;
+        if (nestedValue != null && (nestedValue._attributes & JSValueAttributesInternal.ConstructingObject) == 0)
+            nestedValue = null;
+
+        if (arguments != null && arguments._iValue > 0)
+            nestedValue = arguments[0];
+
+        if (nestedValue == null)
+            return ConstructObject();
+
+        if (nestedValue._valueType >= JSValueType.Object)
         {
-            _length = new Number(1);
-        }
-
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
-        {
-            JSValue nestedValue = targetObject;
-            if (nestedValue != null && (nestedValue._attributes & JSValueAttributesInternal.ConstructingObject) == 0)
-                nestedValue = null;
-
-            if (arguments != null && arguments._iValue > 0)
-                nestedValue = arguments[0];
-
-            if (nestedValue == null)
+            if (nestedValue._oValue == null)
                 return ConstructObject();
 
-            if (nestedValue._valueType >= JSValueType.Object)
-            {
-                if (nestedValue._oValue == null)
-                    return ConstructObject();
-
-                return nestedValue;
-            }
-
-            if (nestedValue._valueType <= JSValueType.Undefined)
-                return ConstructObject();
-
-            return nestedValue.ToObject();
+            return nestedValue;
         }
 
-        protected internal override JSValue ConstructObject()
-        {
-            return JSObject.CreateObject();
-        }
+        if (nestedValue._valueType <= JSValueType.Undefined)
+            return ConstructObject();
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
+        return nestedValue.ToObject();
+    }
+
+    protected internal override JSValue ConstructObject()
+    {
+        return JSObject.CreateObject();
+    }
+
+    protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
+    {
+        var pe = _staticProxy.GetEnumerator(hideNonEnum, enumerationMode, propertyScope);
+        while (pe.MoveNext())
+            yield return pe.Current;
+
+        if (propertyScope is not PropertyScope.Own)
         {
-            var pe = _staticProxy.GetEnumerator(hideNonEnum, enumerationMode, propertyScope);
+            pe = __proto__.GetEnumerator(hideNonEnum, enumerationMode, PropertyScopeForProto(propertyScope));
             while (pe.MoveNext())
                 yield return pe.Current;
-
-            if (propertyScope is not PropertyScope.Own)
-            {
-                pe = __proto__.GetEnumerator(hideNonEnum, enumerationMode, PropertyScopeForProto(propertyScope));
-                while (pe.MoveNext())
-                    yield return pe.Current;
-            }
         }
     }
 }

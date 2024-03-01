@@ -3,349 +3,348 @@ using System.Text;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
 
-namespace NiL.JS.Statements
+namespace NiL.JS.Statements;
+
+public sealed class ExportStatement : CodeNode
 {
-    public sealed class ExportStatement : CodeNode
+    private string _reexportSourceModuleName;
+    private CodeNode _internalDefinition;
+    private readonly List<KeyValuePair<string, Expression>> _map = new List<KeyValuePair<string, Expression>>();
+
+    public string ReExportSourceModuleName => _reexportSourceModuleName;
+    public CodeNode InternalDefinition => _internalDefinition;
+    public IList<KeyValuePair<string, Expression>> ExportMap => _map.AsReadOnly();
+
+    internal static CodeNode Parse(ParseInfo state, ref int index)
     {
-        private string _reexportSourceModuleName;
-        private CodeNode _internalDefinition;
-        private readonly List<KeyValuePair<string, Expression>> _map = new List<KeyValuePair<string, Expression>>();
+        if (!Parser.Validate(state.Code, "export", ref index))
+            return null;
 
-        public string ReExportSourceModuleName => _reexportSourceModuleName;
-        public CodeNode InternalDefinition => _internalDefinition;
-        public IList<KeyValuePair<string, Expression>> ExportMap => _map.AsReadOnly();
+        Tools.SkipSpaces(state.Code, ref index);
 
-        internal static CodeNode Parse(ParseInfo state, ref int index)
+        var result = new ExportStatement();
+        var reexport = 0;
+
+        if (Parser.Validate(state.Code, "*", ref index))
         {
-            if (!Parser.Validate(state.Code, "export", ref index))
-                return null;
-
+            reexport = 1;
+        }
+        else if (Parser.Validate(state.Code, "default", ref index))
+        {
+            reexport = -1;
             Tools.SkipSpaces(state.Code, ref index);
 
-            var result = new ExportStatement();
-            var reexport = 0;
-
-            if (Parser.Validate(state.Code, "*", ref index))
+            using (state.WithCodeContext(CodeContext.InExport))
             {
-                reexport = 1;
+                var variables = VariableDefinition.Parse(state, ref index);
+
+                if (variables != null)
+                    result._internalDefinition = variables;
+                else
+                {
+                    var expression = ClassDefinition.Parse(state, ref index)
+                        ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function)
+                        ?? ExpressionTree.Parse(state, ref index);
+
+                    result._map.Add(new KeyValuePair<string, Expression>("", (Expression)expression));
+                }
             }
-            else if (Parser.Validate(state.Code, "default", ref index))
+        }
+        else if (state.Code[index] == '{')
+        {
+            parseExportMap(result, state, ref index);
+        }
+        else
+        {
+            using (state.WithCodeContext(CodeContext.InExport))
             {
                 reexport = -1;
-                Tools.SkipSpaces(state.Code, ref index);
+                var definition =
+                    VariableDefinition.Parse(state, ref index)
+                    ?? ClassDefinition.Parse(state, ref index)
+                    ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function)
+                    ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.AsyncFunction);
 
-                using (state.WithCodeContext(CodeContext.InExport))
-                {
-                    var variables = VariableDefinition.Parse(state, ref index);
+                if (definition == null)
+                    ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
 
-                    if (variables != null)
-                        result._internalDefinition = variables;
-                    else
-                    {
-                        var expression = ClassDefinition.Parse(state, ref index)
-                            ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function)
-                            ?? ExpressionTree.Parse(state, ref index);
-
-                        result._map.Add(new KeyValuePair<string, Expression>("", (Expression)expression));
-                    }
-                }
+                result._internalDefinition = definition;
             }
-            else if (state.Code[index] == '{')
+        }
+
+        Tools.SkipSpaces(state.Code, ref index);
+
+        if (Parser.Validate(state.Code, "from", ref index))
+        {
+            if (reexport == -1)
+                ExceptionHelper.ThrowSyntaxError("Reexport is not allowed with this syntax", state.Code, index - 4);
+
+            Tools.SkipSpaces(state.Code, ref index);
+
+            var start = index;
+            if (!Parser.ValidateString(state.Code, ref index, false))
+                ExceptionHelper.ThrowSyntaxError("Expected module name", state.Code, index);
+
+            result._reexportSourceModuleName = Tools.Unescape(state.Code.Substring(start + 1, index - start - 2), false);
+        }
+        else if (reexport == 1)
+            ExceptionHelper.ThrowSyntaxError("Expected 'from'", state.Code, index);
+
+        return result;
+    }
+
+    private static void parseExportMap(ExportStatement export, ParseInfo state, ref int index)
+    {
+        index++;
+        Tools.SkipSpaces(state.Code, ref index);
+
+        if (state.Code[index] == '}')
+            ExceptionHelper.ThrowSyntaxError("Empty export map", state.Code, index);
+
+        while (state.Code[index] != '}')
+        {
+            var start = index;
+            if (!Parser.ValidateName(state.Code, ref index, false, true, false))
+                ExceptionHelper.ThrowSyntaxError("Invalid export name", state.Code, index);
+
+            var name = state.Code.Substring(start, index - start);
+            Tools.SkipSpaces(state.Code, ref index);
+
+            string alias = parseAlias(state.Code, ref index) ?? name;
+            for (var i = 0; i < export._map.Count; i++)
             {
-                parseExportMap(result, state, ref index);
+                if (export._map[i].Key == name)
+                    ExceptionHelper.ThrowSyntaxError("Duplicate import", state.Code, index);
+            }
+
+            export._map.Add(
+                new KeyValuePair<string, Expression>(
+                    alias,
+                    new Variable(name, state.LexicalScopeLevel, false)
+                    {
+                        Position = start,
+                        Length = name.Length
+                    }));
+
+            if (Parser.Validate(state.Code, ",", ref index))
+                Tools.SkipSpaces(state.Code, ref index);
+        }
+
+        index++;
+    }
+
+    private static string parseAlias(string code, ref int index)
+    {
+        string alias = null;
+        if (Parser.Validate(code, "as", ref index))
+        {
+            Tools.SkipSpaces(code, ref index);
+
+            var start = index;
+            if (!Parser.ValidateName(code, ref index, false, true, false))
+                ExceptionHelper.ThrowSyntaxError("Invalid export alias", code, index);
+
+            alias = code.Substring(start, index - start);
+
+            if (alias == "default")
+                alias = "";
+
+            Tools.SkipSpaces(code, ref index);
+        }
+
+        return alias;
+    }
+
+    public override void Decompose(ref CodeNode self)
+    {
+        _internalDefinition?.Decompose(ref _internalDefinition);
+
+        for (var i = 0; i < _map.Count; i++)
+        {
+            var value = _map[i].Value;
+            value.Decompose(ref value);
+            _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, value);
+        }
+    }
+
+    public override JSValue Evaluate(Context context)
+    {
+        if (context._module == null)
+            ExceptionHelper.Throw(new BaseLibrary.Error("Module undefined"));
+
+        if (_reexportSourceModuleName != null)
+        {
+            if (string.IsNullOrEmpty(context._module.FilePath))
+                ExceptionHelper.Throw(new BaseLibrary.Error("Module must has name"));
+
+            var module = context._module.Import(_reexportSourceModuleName);
+
+            if (_map.Count == 0)
+            {
+                foreach (var item in module.Exports)
+                {
+                    context._module.Exports[item.Key] = item.Value;
+                }
             }
             else
             {
-                using (state.WithCodeContext(CodeContext.InExport))
+                for (var i = 0; i < _map.Count; i++)
                 {
-                    reexport = -1;
-                    var definition =
-                        VariableDefinition.Parse(state, ref index)
-                        ?? ClassDefinition.Parse(state, ref index)
-                        ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function)
-                        ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.AsyncFunction);
-
-                    if (definition == null)
-                        ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
-
-                    result._internalDefinition = definition;
+                    context._module.Exports[_map[i].Key] = module.Exports[_map[i].Value.ToString()];
                 }
             }
-
-            Tools.SkipSpaces(state.Code, ref index);
-
-            if (Parser.Validate(state.Code, "from", ref index))
-            {
-                if (reexport == -1)
-                    ExceptionHelper.ThrowSyntaxError("Reexport is not allowed with this syntax", state.Code, index - 4);
-
-                Tools.SkipSpaces(state.Code, ref index);
-
-                var start = index;
-                if (!Parser.ValidateString(state.Code, ref index, false))
-                    ExceptionHelper.ThrowSyntaxError("Expected module name", state.Code, index);
-
-                result._reexportSourceModuleName = Tools.Unescape(state.Code.Substring(start + 1, index - start - 2), false);
-            }
-            else if (reexport == 1)
-                ExceptionHelper.ThrowSyntaxError("Expected 'from'", state.Code, index);
-
-            return result;
         }
-
-        private static void parseExportMap(ExportStatement export, ParseInfo state, ref int index)
+        else if (_internalDefinition != null)
         {
-            index++;
-            Tools.SkipSpaces(state.Code, ref index);
+            var value = _internalDefinition.Evaluate(context);
 
-            if (state.Code[index] == '}')
-                ExceptionHelper.ThrowSyntaxError("Empty export map", state.Code, index);
-
-            while (state.Code[index] != '}')
+            if (_internalDefinition is VariableDefinition variableDef)
             {
-                var start = index;
-                if (!Parser.ValidateName(state.Code, ref index, false, true, false))
-                    ExceptionHelper.ThrowSyntaxError("Invalid export name", state.Code, index);
-
-                var name = state.Code.Substring(start, index - start);
-                Tools.SkipSpaces(state.Code, ref index);
-
-                string alias = parseAlias(state.Code, ref index) ?? name;
-                for (var i = 0; i < export._map.Count; i++)
+                for (var i = 0; i < variableDef._variables.Length; i++)
                 {
-                    if (export._map[i].Key == name)
-                        ExceptionHelper.ThrowSyntaxError("Duplicate import", state.Code, index);
+                    context._module.Exports[variableDef._variables[i].name] = variableDef._variables[i].references[0].Evaluate(context);
                 }
-
-                export._map.Add(
-                    new KeyValuePair<string, Expression>(
-                        alias,
-                        new Variable(name, state.LexicalScopeLevel, false)
-                        {
-                            Position = start,
-                            Length = name.Length
-                        }));
-
-                if (Parser.Validate(state.Code, ",", ref index))
-                    Tools.SkipSpaces(state.Code, ref index);
             }
-
-            index++;
-        }
-
-        private static string parseAlias(string code, ref int index)
-        {
-            string alias = null;
-            if (Parser.Validate(code, "as", ref index))
+            else
             {
-                Tools.SkipSpaces(code, ref index);
+                var entityDef = _internalDefinition as EntityDefinition;
 
-                var start = index;
-                if (!Parser.ValidateName(code, ref index, false, true, false))
-                    ExceptionHelper.ThrowSyntaxError("Invalid export alias", code, index);
-
-                alias = code.Substring(start, index - start);
-
-                if (alias == "default")
-                    alias = "";
-
-                Tools.SkipSpaces(code, ref index);
+                context._module.Exports[entityDef.Name] = value;
             }
-
-            return alias;
         }
-
-        public override void Decompose(ref CodeNode self)
+        else
         {
-            _internalDefinition?.Decompose(ref _internalDefinition);
-
             for (var i = 0; i < _map.Count; i++)
             {
-                var value = _map[i].Value;
-                value.Decompose(ref value);
-                _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, value);
+                context._module.Exports[_map[i].Key] = _map[i].Value.Evaluate(context);
             }
         }
 
-        public override JSValue Evaluate(Context context)
-        {
-            if (context._module == null)
-                ExceptionHelper.Throw(new BaseLibrary.Error("Module undefined"));
+        return null;
+    }
 
-            if (_reexportSourceModuleName != null)
-            {
-                if (string.IsNullOrEmpty(context._module.FilePath))
-                    ExceptionHelper.Throw(new BaseLibrary.Error("Module must has name"));
-
-                var module = context._module.Import(_reexportSourceModuleName);
-
-                if (_map.Count == 0)
-                {
-                    foreach (var item in module.Exports)
-                    {
-                        context._module.Exports[item.Key] = item.Value;
-                    }
-                }
-                else
-                {
-                    for (var i = 0; i < _map.Count; i++)
-                    {
-                        context._module.Exports[_map[i].Key] = module.Exports[_map[i].Value.ToString()];
-                    }
-                }
-            }
-            else if (_internalDefinition != null)
-            {
-                var value = _internalDefinition.Evaluate(context);
-
-                if (_internalDefinition is VariableDefinition variableDef)
-                {
-                    for (var i = 0; i < variableDef._variables.Length; i++)
-                    {
-                        context._module.Exports[variableDef._variables[i].name] = variableDef._variables[i].references[0].Evaluate(context);
-                    }
-                }
-                else
-                {
-                    var entityDef = _internalDefinition as EntityDefinition;
-
-                    context._module.Exports[entityDef.Name] = value;
-                }
-            }
-            else
-            {
-                for (var i = 0; i < _map.Count; i++)
-                {
-                    context._module.Exports[_map[i].Key] = _map[i].Value.Evaluate(context);
-                }
-            }
-
-            return null;
-        }
-
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
-        {
-            if (_reexportSourceModuleName != null)
-                return false;
-
-            codeContext &= ~CodeContext.InExpression;
-            codeContext |= CodeContext.InExport;
-
-            if (_internalDefinition != null)
-            {
-                Parser.Build(ref _internalDefinition, expressionDepth, variables, codeContext, message, stats, opts | Options.SuppressUselessStatementsElimination);
-            }
-            else
-            {
-                for (var i = 0; i < _map.Count; i++)
-                {
-                    var v = _map[i].Value;
-                    Parser.Build(ref v, expressionDepth + 1, variables, codeContext, message, stats, opts);
-                    if (v != _map[i].Value)
-                        _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, v);
-                }
-            }
-
+    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    {
+        if (_reexportSourceModuleName != null)
             return false;
-        }
 
-        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+        codeContext &= ~CodeContext.InExpression;
+        codeContext |= CodeContext.InExport;
+
+        if (_internalDefinition != null)
         {
-            if (_reexportSourceModuleName != null)
-                return;
-
-            if (_internalDefinition != null)
-            {
-                _internalDefinition.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            }
-            else
-            {
-                for (var i = 0; i < _map.Count; i++)
-                {
-                    _map[i].Value.RebuildScope(functionInfo, transferedVariables, scopeBias);
-                }
-            }
+            Parser.Build(ref _internalDefinition, expressionDepth, variables, codeContext, message, stats, opts | Options.SuppressUselessStatementsElimination);
         }
-
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
+        else
         {
-            if (_reexportSourceModuleName != null)
-                return;
-
-            if (_internalDefinition != null)
+            for (var i = 0; i < _map.Count; i++)
             {
-                CodeNode t = _internalDefinition;
-                _internalDefinition.Optimize(ref t, owner, message, opts, stats);
-                if (t != _internalDefinition)
-                    _internalDefinition = t as VariableDefinition;
-            }
-            else
-            {
-                for (var i = 0; i < _map.Count; i++)
-                {
-                    var v = _map[i].Value;
-                    _map[i].Value.Optimize(ref v, owner, message, opts, stats);
-                    if (v != _map[i].Value)
-                        _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, v);
-                }
+                var v = _map[i].Value;
+                Parser.Build(ref v, expressionDepth + 1, variables, codeContext, message, stats, opts);
+                if (v != _map[i].Value)
+                    _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, v);
             }
         }
 
-        public override string ToString()
+        return false;
+    }
+
+    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+    {
+        if (_reexportSourceModuleName != null)
+            return;
+
+        if (_internalDefinition != null)
         {
-            var result = new StringBuilder("export ");
-
-            if (_map.Count == 1 && _map[0].Key == "")
+            _internalDefinition.RebuildScope(functionInfo, transferedVariables, scopeBias);
+        }
+        else
+        {
+            for (var i = 0; i < _map.Count; i++)
             {
-                result.Append(" default ");
-                result.Append(_map[0].Value);
+                _map[i].Value.RebuildScope(functionInfo, transferedVariables, scopeBias);
             }
+        }
+    }
 
-            var i = 0;
-            if (i < _map.Count)
+    public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
+    {
+        if (_reexportSourceModuleName != null)
+            return;
+
+        if (_internalDefinition != null)
+        {
+            CodeNode t = _internalDefinition;
+            _internalDefinition.Optimize(ref t, owner, message, opts, stats);
+            if (t != _internalDefinition)
+                _internalDefinition = t as VariableDefinition;
+        }
+        else
+        {
+            for (var i = 0; i < _map.Count; i++)
             {
-                result.Append("{ ");
+                var v = _map[i].Value;
+                _map[i].Value.Optimize(ref v, owner, message, opts, stats);
+                if (v != _map[i].Value)
+                    _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, v);
+            }
+        }
+    }
 
-                for (; ; )
+    public override string ToString()
+    {
+        var result = new StringBuilder("export ");
+
+        if (_map.Count == 1 && _map[0].Key == "")
+        {
+            result.Append(" default ");
+            result.Append(_map[0].Value);
+        }
+
+        var i = 0;
+        if (i < _map.Count)
+        {
+            result.Append("{ ");
+
+            for (; ; )
+            {
+                var item = _map[i];
+
+                result.Append(item.Key);
+
+                if (item.Key != item.Value.ToString())
                 {
-                    var item = _map[i];
-
-                    result.Append(item.Key);
-
-                    if (item.Key != item.Value.ToString())
-                    {
-                        result
-                            .Append(" as ")
-                            .Append(string.IsNullOrEmpty(item.Value.ToString()) ? "default" : item.Value.ToString());
-                    }
-
-                    i++;
-
-                    if (i < _map.Count)
-                        result.Append(", ");
-                    else
-                        break;
+                    result
+                        .Append(" as ")
+                        .Append(string.IsNullOrEmpty(item.Value.ToString()) ? "default" : item.Value.ToString());
                 }
 
-                result.Append(" }");
-            }
-            else
-            {
-                if (_reexportSourceModuleName != null)
-                    result.Append(" * ");
+                i++;
+
+                if (i < _map.Count)
+                    result.Append(", ");
                 else
-                    result.Append(_internalDefinition);
+                    break;
             }
 
-            if (_reexportSourceModuleName != null)
-            {
-                result
-                    .Append(" from \"")
-                    .Append(_reexportSourceModuleName)
-                    .Append("\"");
-            }
-
-            return result.ToString();
+            result.Append(" }");
         }
+        else
+        {
+            if (_reexportSourceModuleName != null)
+                result.Append(" * ");
+            else
+                result.Append(_internalDefinition);
+        }
+
+        if (_reexportSourceModuleName != null)
+        {
+            result
+                .Append(" from \"")
+                .Append(_reexportSourceModuleName)
+                .Append("\"");
+        }
+
+        return result.ToString();
     }
 }

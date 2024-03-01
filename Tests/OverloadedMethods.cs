@@ -6,80 +6,79 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS.Core;
 
-namespace Tests
+namespace Tests;
+
+[TestClass]
+public sealed class OverloadedMethods
 {
-    [TestClass]
-    public sealed class OverloadedMethods
+    private class Class
     {
-        private class Class
+        public int Method()
         {
-            public int Method()
-            {
-                return 0;
-            }
-
-            public int Method(int[] a)
-            {
-                return 3;
-            }
-
-            public int Method(int a, int b)
-            {
-                return 2;
-            }
-
-            public int Method(int a)
-            {
-                return 1;
-            }
+            return 0;
         }
 
-        [TestMethod]
-        public void OverloadedMethods_0()
+        public int Method(int[] a)
         {
-            var context = new Context();
-            var instance = new Class();
-
-            context.DefineVariable($"{nameof(instance)}").Assign(Context.CurrentGlobalContext.ProxyValue(instance));
-            var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}()");
-
-            Assert.AreEqual(0, result.Value);
+            return 3;
         }
 
-        [TestMethod]
-        public void OverloadedMethods_1()
+        public int Method(int a, int b)
         {
-            var context = new Context();
-            var instance = new Class();
-
-            context.DefineVariable($"{nameof(instance)}").Assign(context.GlobalContext.ProxyValue(instance));
-            var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1)");
-
-            Assert.AreEqual(1, result.Value);
+            return 2;
         }
 
-        [TestMethod]
-        public void OverloadedMethods_2()
+        public int Method(int a)
         {
-            var context = new Context();
-            var instance = new Class();
-
-            context.DefineVariable($"{nameof(instance)}").Assign(Context.CurrentGlobalContext.ProxyValue(instance));
-            var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1, 2)");
-
-            Assert.AreEqual(2, result.Value);
+            return 1;
         }
+    }
 
-        [TestMethod]
-        public void OverloadedMethods_3()
-        {
-            var context = new Context();
-            var instance = new Class();
+    [TestMethod]
+    public void OverloadedMethods_0()
+    {
+        var context = new Context();
+        var instance = new Class();
 
-            context.DefineVariable($"{nameof(instance)}").Assign(Context.CurrentGlobalContext.ProxyValue(instance));
-            var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}([1, 2])");
+        context.DefineVariable($"{nameof(instance)}").Assign(Context.CurrentGlobalContext.ProxyValue(instance));
+        var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}()");
 
-            Assert.AreEqual(3, result.Value);
-        }
+        Assert.AreEqual(0, result.Value);
+    }
+
+    [TestMethod]
+    public void OverloadedMethods_1()
+    {
+        var context = new Context();
+        var instance = new Class();
+
+        context.DefineVariable($"{nameof(instance)}").Assign(context.GlobalContext.ProxyValue(instance));
+        var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1)");
+
+        Assert.AreEqual(1, result.Value);
+    }
+
+    [TestMethod]
+    public void OverloadedMethods_2()
+    {
+        var context = new Context();
+        var instance = new Class();
+
+        context.DefineVariable($"{nameof(instance)}").Assign(Context.CurrentGlobalContext.ProxyValue(instance));
+        var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}(1, 2)");
+
+        Assert.AreEqual(2, result.Value);
+    }
+
+    [TestMethod]
+    public void OverloadedMethods_3()
+    {
+        var context = new Context();
+        var instance = new Class();
+
+        context.DefineVariable($"{nameof(instance)}").Assign(Context.CurrentGlobalContext.ProxyValue(instance));
+        var result = context.Eval($"{nameof(instance)}.{nameof(instance.Method)}([1, 2])");
+
+        Assert.AreEqual(3, result.Value);
     }
 }

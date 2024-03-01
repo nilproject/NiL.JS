@@ -2,29 +2,28 @@
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
 
-namespace NiL.JS.BaseLibrary
-{
-    [Prototype(typeof(Error))]
+namespace NiL.JS.BaseLibrary;
+
+[Prototype(typeof(Error))]
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    public sealed class ReferenceError : Error
+public sealed class ReferenceError : Error
+{
+    [DoNotEnumerate]
+    public ReferenceError(Arguments args)
+        : base(args[0].ToString())
     {
-        [DoNotEnumerate]
-        public ReferenceError(Arguments args)
-            : base(args[0].ToString())
-        {
-        }
+    }
 
-        [DoNotEnumerate]
-        public ReferenceError()
-        {
-        }
+    [DoNotEnumerate]
+    public ReferenceError()
+    {
+    }
 
-        [DoNotEnumerate]
-        public ReferenceError(string message)
-            : base(message)
-        {
-        }
+    [DoNotEnumerate]
+    public ReferenceError(string message)
+        : base(message)
+    {
     }
 }

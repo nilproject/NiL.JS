@@ -1,103 +1,102 @@
 ﻿using System;
 using NiL.JS.Core;
 
-namespace NiL.JS.Expressions
-{
+namespace NiL.JS.Expressions;
+
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    public sealed class NumberMore : Expression
+public sealed class NumberMore : Expression
+{
+    protected internal override PredictedType ResultType
     {
-        protected internal override PredictedType ResultType
+        get
         {
-            get
-            {
-                return PredictedType.Bool;
-            }
+            return PredictedType.Bool;
         }
+    }
 
-        internal override bool ResultInTempContainer
+    internal override bool ResultInTempContainer
+    {
+        get { return false; }
+    }
+
+    public NumberMore(Expression first, Expression second)
+        : base(first, second, false)
+    {
+
+    }
+
+    public override JSValue Evaluate(Core.Context context)
+    {
+        int itemp;
+        double dtemp;
+        var op = _left.Evaluate(context);
+        if (op._valueType == Core.JSValueType.Integer
+        || op._valueType == Core.JSValueType.Boolean)
         {
-            get { return false; }
-        }
-
-        public NumberMore(Expression first, Expression second)
-            : base(first, second, false)
-        {
-
-        }
-
-        public override JSValue Evaluate(Core.Context context)
-        {
-            int itemp;
-            double dtemp;
-            var op = _left.Evaluate(context);
+            itemp = op._iValue;
+            op = _right.Evaluate(context);
             if (op._valueType == Core.JSValueType.Integer
             || op._valueType == Core.JSValueType.Boolean)
             {
-                itemp = op._iValue;
-                op = _right.Evaluate(context);
-                if (op._valueType == Core.JSValueType.Integer
-                || op._valueType == Core.JSValueType.Boolean)
-                {
-                    return itemp > op._iValue;
-                }
-                else if (op._valueType == Core.JSValueType.Double)
-                {
-                    return itemp > op._dValue;
-                }
-                else
-                {
-                    if (_tempContainer == null)
-                        _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
-                    _tempContainer._valueType = JSValueType.Integer;
-                    _tempContainer._iValue = itemp;
-                    return More.Check(_tempContainer, op, false);
-                }
+                return itemp > op._iValue;
             }
             else if (op._valueType == Core.JSValueType.Double)
             {
-                dtemp = op._dValue;
-                op = _right.Evaluate(context);
-                if (op._valueType == Core.JSValueType.Integer
-                || op._valueType == Core.JSValueType.Boolean)
-                {
-                    return dtemp > op._iValue;
-                }
-                else if (op._valueType == Core.JSValueType.Double)
-                {
-                    return dtemp > op._dValue;
-                }
-                else
-                {
-                    if (_tempContainer == null)
-                        _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
-                    _tempContainer._valueType = JSValueType.Double;
-                    _tempContainer._dValue = dtemp;
-                    return More.Check(_tempContainer, op, false);
-                }
+                return itemp > op._dValue;
             }
             else
             {
                 if (_tempContainer == null)
                     _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
-                var temp = _tempContainer;
-                temp.Assign(op);
-                _tempContainer = null;
-                var res = More.Check(temp, _right.Evaluate(context), false);
-                _tempContainer = temp;
-                return res;
+                _tempContainer._valueType = JSValueType.Integer;
+                _tempContainer._iValue = itemp;
+                return More.Check(_tempContainer, op, false);
             }
         }
-
-        public override T Visit<T>(Visitor<T> visitor)
+        else if (op._valueType == Core.JSValueType.Double)
         {
-            return visitor.Visit(this);
+            dtemp = op._dValue;
+            op = _right.Evaluate(context);
+            if (op._valueType == Core.JSValueType.Integer
+            || op._valueType == Core.JSValueType.Boolean)
+            {
+                return dtemp > op._iValue;
+            }
+            else if (op._valueType == Core.JSValueType.Double)
+            {
+                return dtemp > op._dValue;
+            }
+            else
+            {
+                if (_tempContainer == null)
+                    _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                _tempContainer._valueType = JSValueType.Double;
+                _tempContainer._dValue = dtemp;
+                return More.Check(_tempContainer, op, false);
+            }
         }
-
-        public override string ToString()
+        else
         {
-            return "(" + _left + " > " + _right + ")";
+            if (_tempContainer == null)
+                _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+            var temp = _tempContainer;
+            temp.Assign(op);
+            _tempContainer = null;
+            var res = More.Check(temp, _right.Evaluate(context), false);
+            _tempContainer = temp;
+            return res;
         }
+    }
+
+    public override T Visit<T>(Visitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
+
+    public override string ToString()
+    {
+        return "(" + _left + " > " + _right + ")";
     }
 }

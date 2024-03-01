@@ -2,30 +2,29 @@
 using NiL.JS;
 using NiL.JS.Core;
 
-namespace Tests
+namespace Tests;
+
+[TestClass]
+public class UselessExpressionsEliminationTests
 {
-    [TestClass]
-    public class UselessExpressionsEliminationTests
+    [TestMethod]
+    public void LastExpressionShouldKeepAliveInRootOfScript()
     {
-        [TestMethod]
-        public void LastExpressionShouldKeepAliveInRootOfScript()
-        {
-            var script = Script.Parse("42");
-            var context = new Context();
+        var script = Script.Parse("42");
+        var context = new Context();
 
-            var result = script.Evaluate(context);
+        var result = script.Evaluate(context);
 
-            Assert.AreEqual(42, result.Value);
-        }
+        Assert.AreEqual(42, result.Value);
+    }
 
-        [TestMethod]
-        public void LastExpressionShouldKeepAliveInRootOfEval()
-        {
-            var context = new Context();
+    [TestMethod]
+    public void LastExpressionShouldKeepAliveInRootOfEval()
+    {
+        var context = new Context();
 
-            var result = context.Eval("42");
+        var result = context.Eval("42");
 
-            Assert.AreEqual(42, result.Value);
-        }
+        Assert.AreEqual(42, result.Value);
     }
 }

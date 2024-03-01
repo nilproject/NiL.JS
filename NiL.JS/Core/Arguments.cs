@@ -6,335 +6,334 @@ using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 using NiL.JS.Extensions;
 
-namespace NiL.JS.Core
-{
+namespace NiL.JS.Core;
+
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    [Prototype(typeof(JSObject), true)]
-    public sealed class Arguments : JSObject, IEnumerable, IIterable
+[Prototype(typeof(JSObject), true)]
+public sealed class Arguments : JSObject, IEnumerable, IIterable
+{
+    private sealed class LengthContainer : JSValue
     {
-        private sealed class LengthContainer : JSValue
+        private readonly Arguments _owner;
+
+        public LengthContainer(Arguments owner)
         {
-            private readonly Arguments _owner;
-
-            public LengthContainer(Arguments owner)
-            {
-                _owner = owner;
-            }
-
-            public override void Assign(JSValue value)
-            {
-                base.Assign(value);
-                _owner._iValue = Tools.JSObjectToInt32(value);
-            }
+            _owner = owner;
         }
 
-        private const JSValueAttributesInternal _cloneResetMask = JSValueAttributesInternal.ReadOnly
-                    | JSValueAttributesInternal.SystemObject
-                    | JSValueAttributesInternal.Temporary
-                    | JSValueAttributesInternal.Reassign
-                    | JSValueAttributesInternal.ProxyPrototype
-                    | JSValueAttributesInternal.DoNotEnumerate
-                    | JSValueAttributesInternal.NonConfigurable
-                    | JSValueAttributesInternal.DoNotDelete;
-
-        private JSValue _a0;
-        private JSValue _a1;
-        private JSValue _a2;
-        private JSValue _a3;
-        internal JSValue _callee;
-        internal JSValue _caller;
-
-        private LengthContainer _lengthContainer;
-        private Context _context;
-
-        internal bool SuppressValuesClone { get => _dValue != 0; set => _dValue = value ? 1 : 0; } // field reuse
-
-        public int Length
+        public override void Assign(JSValue value)
         {
-            get => _iValue;
-            internal set => _iValue = value;
+            base.Assign(value);
+            _owner._iValue = Tools.JSObjectToInt32(value);
+        }
+    }
+
+    private const JSValueAttributesInternal _cloneResetMask = JSValueAttributesInternal.ReadOnly
+                | JSValueAttributesInternal.SystemObject
+                | JSValueAttributesInternal.Temporary
+                | JSValueAttributesInternal.Reassign
+                | JSValueAttributesInternal.ProxyPrototype
+                | JSValueAttributesInternal.DoNotEnumerate
+                | JSValueAttributesInternal.NonConfigurable
+                | JSValueAttributesInternal.DoNotDelete;
+
+    private JSValue _a0;
+    private JSValue _a1;
+    private JSValue _a2;
+    private JSValue _a3;
+    internal JSValue _callee;
+    internal JSValue _caller;
+
+    private LengthContainer _lengthContainer;
+    private Context _context;
+
+    internal bool SuppressValuesClone { get => _dValue != 0; set => _dValue = value ? 1 : 0; } // field reuse
+
+    public int Length
+    {
+        get => _iValue;
+        internal set => _iValue = value;
+    }
+
+    public JSValue this[int index]
+    {
+        get
+        {
+            JSValue res;
+            switch (index)
+            {
+                case 0:
+                    res = _a0;
+                    break;
+                case 1:
+                    res = _a1;
+                    break;
+                case 2:
+                    res = _a2;
+                    break;
+                case 3:
+                    res = _a3;
+                    break;
+                default:
+                    return base[index.ToString()];
+            }
+
+            if (res == null)
+                return notExists;
+
+            return res;
+        }
+        set
+        {
+            switch (index)
+            {
+                case 0:
+                    _a0 = value;
+                    break;
+                case 1:
+                    _a1 = value;
+                    break;
+                case 2:
+                    _a2 = value;
+                    break;
+                case 3:
+                    _a3 = value;
+                    break;
+                default:
+                    if (_fields == null)
+                        _fields = getFieldsContainer();
+                    _fields[index.ToString()] = value;
+                    break;
+            }
+
+        }
+    }
+
+    public Arguments(Context callerContext)
+        : this()
+    {
+        if (callerContext != null)
+        {
+            _objectPrototype = callerContext.GlobalContext._globalPrototype;
+            _context = callerContext;
+        }
+        else
+            _caller = NotExistsInObject;
+    }
+
+    private static JSValue getCaller(Context callerContext)
+    {
+        return callerContext._strict
+                && callerContext._owner != null
+                && callerContext._owner._functionDefinition._body._strict ? Function.propertiesDummySM : callerContext._owner;
+    }
+
+    public Arguments()
+    {
+        _valueType = JSValueType.Object;
+        _oValue = this;
+        _attributes = JSValueAttributesInternal.DoNotDelete
+            | JSValueAttributesInternal.DoNotEnumerate
+            | JSValueAttributesInternal.SystemObject;
+        _caller = NotExistsInObject;
+    }
+
+    public void Add(JSValue arg)
+    {
+        this[_iValue++] = arg?.CloneImpl(false, _cloneResetMask);
+    }
+
+    public void Add(object value)
+    {
+        if (value is JSValue jsval)
+        {
+            Add(jsval);
+            return;
         }
 
-        public JSValue this[int index]
+        this[_iValue++] = (_context?.GlobalContext ?? Context.CurrentGlobalContext).ProxyValue(value);
+    }
+
+    protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
+    {
+        //if (forWrite && !SuppressValuesClone)
+        //    cloneValues();
+
+        if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
         {
-            get
+            forWrite &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
+            if (key._valueType == JSValueType.Integer)
             {
-                JSValue res;
-                switch (index)
+                switch (key._iValue)
                 {
                     case 0:
-                        res = _a0;
-                        break;
+                        return (_a0 ?? (forWrite ? (_a0 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
                     case 1:
-                        res = _a1;
-                        break;
+                        return (_a1 ?? (forWrite ? (_a1 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
                     case 2:
-                        res = _a2;
-                        break;
+                        return (_a2 ?? (forWrite ? (_a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
                     case 3:
-                        res = _a3;
-                        break;
-                    default:
-                        return base[index.ToString()];
+                        return (_a3 ?? (forWrite ? (_a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
                 }
-
-                if (res == null)
-                    return notExists;
-
-                return res;
-            }
-            set
-            {
-                switch (index)
-                {
-                    case 0:
-                        _a0 = value;
-                        break;
-                    case 1:
-                        _a1 = value;
-                        break;
-                    case 2:
-                        _a2 = value;
-                        break;
-                    case 3:
-                        _a3 = value;
-                        break;
-                    default:
-                        if (_fields == null)
-                            _fields = getFieldsContainer();
-                        _fields[index.ToString()] = value;
-                        break;
-                }
-
-            }
-        }
-
-        public Arguments(Context callerContext)
-            : this()
-        {
-            if (callerContext != null)
-            {
-                _objectPrototype = callerContext.GlobalContext._globalPrototype;
-                _context = callerContext;
             }
             else
-                _caller = NotExistsInObject;
-        }
-
-        private static JSValue getCaller(Context callerContext)
-        {
-            return callerContext._strict
-                    && callerContext._owner != null
-                    && callerContext._owner._functionDefinition._body._strict ? Function.propertiesDummySM : callerContext._owner;
-        }
-
-        public Arguments()
-        {
-            _valueType = JSValueType.Object;
-            _oValue = this;
-            _attributes = JSValueAttributesInternal.DoNotDelete
-                | JSValueAttributesInternal.DoNotEnumerate
-                | JSValueAttributesInternal.SystemObject;
-            _caller = NotExistsInObject;
-        }
-
-        public void Add(JSValue arg)
-        {
-            this[_iValue++] = arg?.CloneImpl(false, _cloneResetMask);
-        }
-
-        public void Add(object value)
-        {
-            if (value is JSValue jsval)
             {
-                Add(jsval);
-                return;
-            }
-
-            this[_iValue++] = (_context?.GlobalContext ?? Context.CurrentGlobalContext).ProxyValue(value);
-        }
-
-        protected internal override JSValue GetProperty(JSValue key, bool forWrite, PropertyScope memberScope)
-        {
-            //if (forWrite && !SuppressValuesClone)
-            //    cloneValues();
-
-            if (memberScope < PropertyScope.Super && key._valueType != JSValueType.Symbol)
-            {
-                forWrite &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
-                if (key._valueType == JSValueType.Integer)
+                switch (key.ToString())
                 {
-                    switch (key._iValue)
+                    case "0":
+                        return (_a0 ?? (forWrite ? (_a0 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
+                    case "1":
+                        return (_a1 ?? (forWrite ? (_a1 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
+                    case "2":
+                        return (_a2 ?? (forWrite ? (_a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
+                    case "3":
+                        return (_a3 ?? (forWrite ? (_a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
+                    case "length":
                     {
-                        case 0:
-                            return (_a0 ?? (forWrite ? (_a0 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
-                        case 1:
-                            return (_a1 ?? (forWrite ? (_a1 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
-                        case 2:
-                            return (_a2 ?? (forWrite ? (_a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
-                        case 3:
-                            return (_a3 ?? (forWrite ? (_a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
+                        if (_lengthContainer == null)
+                            _lengthContainer = new LengthContainer(this)
+                            {
+                                _valueType = JSValueType.Integer,
+                                _iValue = _iValue,
+                                _attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.Reassign
+                            };
+                        return _lengthContainer;
                     }
-                }
-                else
-                {
-                    switch (key.ToString())
+                    case "callee":
                     {
-                        case "0":
-                            return (_a0 ?? (forWrite ? (_a0 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
-                        case "1":
-                            return (_a1 ?? (forWrite ? (_a1 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
-                        case "2":
-                            return (_a2 ?? (forWrite ? (_a2 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
-                        case "3":
-                            return (_a3 ?? (forWrite ? (_a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
-                        case "length":
+                        if (_callee == null)
+                            _callee = NotExistsInObject;
+
+                        if (forWrite && (_callee._attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {
-                            if (_lengthContainer == null)
-                                _lengthContainer = new LengthContainer(this)
-                                {
-                                    _valueType = JSValueType.Integer,
-                                    _iValue = _iValue,
-                                    _attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.Reassign
-                                };
-                            return _lengthContainer;
+                            _callee = _callee.CloneImpl(false);
+                            _callee._attributes = JSValueAttributesInternal.DoNotEnumerate;
                         }
-                        case "callee":
+
+                        return _callee;
+                    }
+                    case "caller":
+                    {
+                        if (_caller == null)
+                            _caller = getCaller(_context) ?? NotExistsInObject;
+
+                        if (forWrite && (_caller._attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {
-                            if (_callee == null)
-                                _callee = NotExistsInObject;
-
-                            if (forWrite && (_callee._attributes & JSValueAttributesInternal.SystemObject) != 0)
-                            {
-                                _callee = _callee.CloneImpl(false);
-                                _callee._attributes = JSValueAttributesInternal.DoNotEnumerate;
-                            }
-
-                            return _callee;
+                            _caller = _caller.CloneImpl(false);
+                            _caller._attributes = JSValueAttributesInternal.DoNotEnumerate;
                         }
-                        case "caller":
-                        {
-                            if (_caller == null)
-                                _caller = getCaller(_context) ?? NotExistsInObject;
 
-                            if (forWrite && (_caller._attributes & JSValueAttributesInternal.SystemObject) != 0)
-                            {
-                                _caller = _caller.CloneImpl(false);
-                                _caller._attributes = JSValueAttributesInternal.DoNotEnumerate;
-                            }
-
-                            return _caller;
-                        }
+                        return _caller;
                     }
                 }
             }
-
-            return base.GetProperty(key, forWrite, memberScope);
         }
 
-        public IIterator iterator()
-            => this.Select(x => x.Value).GetEnumerator().AsIterator();
+        return base.GetProperty(key, forWrite, memberScope);
+    }
 
-        protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
+    public IIterator iterator()
+        => this.Select(x => x.Value).GetEnumerator().AsIterator();
+
+    protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumeratorMode, PropertyScope propertyScope = PropertyScope.Common)
+    {
+        //cloneValues();
+
+        if (propertyScope is PropertyScope.Common or PropertyScope.Own)
         {
-            //cloneValues();
+            if (_a0 != null && _a0.Exists && (!hideNonEnum || (_a0._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("0", _a0);
 
-            if (propertyScope is PropertyScope.Common or PropertyScope.Own)
-            {
-                if (_a0 != null && _a0.Exists && (!hideNonEnum || (_a0._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                    yield return new KeyValuePair<string, JSValue>("0", _a0);
+            if (_a1 != null && _a1.Exists && (!hideNonEnum || (_a1._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("1", _a1);
 
-                if (_a1 != null && _a1.Exists && (!hideNonEnum || (_a1._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                    yield return new KeyValuePair<string, JSValue>("1", _a1);
+            if (_a2 != null && _a2.Exists && (!hideNonEnum || (_a2._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("2", _a2);
 
-                if (_a2 != null && _a2.Exists && (!hideNonEnum || (_a2._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                    yield return new KeyValuePair<string, JSValue>("2", _a2);
+            if (_a3 != null && _a3.Exists && (!hideNonEnum || (_a3._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("3", _a3);
 
-                if (_a3 != null && _a3.Exists && (!hideNonEnum || (_a3._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                    yield return new KeyValuePair<string, JSValue>("3", _a3);
+            if (_callee != null && _callee.Exists && (!hideNonEnum || (_callee._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("callee", _callee);
 
-                if (_callee != null && _callee.Exists && (!hideNonEnum || (_callee._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                    yield return new KeyValuePair<string, JSValue>("callee", _callee);
+            if (_caller != null && _caller.Exists && (!hideNonEnum || (_caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("caller", _caller);
 
-                if (_caller != null && _caller.Exists && (!hideNonEnum || (_caller._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                    yield return new KeyValuePair<string, JSValue>("caller", _caller);
-
-                if (_lengthContainer != null && _lengthContainer.Exists && (!hideNonEnum || (_lengthContainer._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
-                    yield return new KeyValuePair<string, JSValue>("length", _lengthContainer);
-            }
-
-            var be = base.GetEnumerator(hideNonEnum, enumeratorMode, propertyScope);
-            while (be.MoveNext())
-                yield return be.Current;
+            if (_lengthContainer != null && _lengthContainer.Exists && (!hideNonEnum || (_lengthContainer._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0))
+                yield return new KeyValuePair<string, JSValue>("length", _lengthContainer);
         }
 
-        private void cloneValues()
+        var be = base.GetEnumerator(hideNonEnum, enumeratorMode, propertyScope);
+        while (be.MoveNext())
+            yield return be.Current;
+    }
+
+    private void cloneValues()
+    {
+        if (SuppressValuesClone)
+            return;
+
+        SuppressValuesClone = true;
+
+        
+
+        for (var i = 0; i < _iValue; i++)
         {
-            if (SuppressValuesClone)
-                return;
-
-            SuppressValuesClone = true;
-
-            
-
-            for (var i = 0; i < _iValue; i++)
-            {
-                if (this[i].Exists)
-                    this[i] = this[i].CloneImpl(false, _cloneResetMask);
-            }
+            if (this[i].Exists)
+                this[i] = this[i].CloneImpl(false, _cloneResetMask);
         }
+    }
 
-        protected internal override bool DeleteProperty(JSValue name)
+    protected internal override bool DeleteProperty(JSValue name)
+    {
+        if (name._valueType == JSValueType.Integer)
         {
-            if (name._valueType == JSValueType.Integer)
+            switch (name._iValue)
             {
-                switch (name._iValue)
-                {
-                    case 0:
-                        return _a0 == null || ((_a0._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a0 = null) == null;
-                    case 1:
-                        return _a1 == null || ((_a1._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a1 = null) == null;
-                    case 2:
-                        return _a2 == null || ((_a2._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a2 = null) == null;
-                    case 3:
-                        return _a3 == null || ((_a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a3 = null) == null;
-                }
-            }
-
-            switch (name.ToString())
-            {
-                case "0":
+                case 0:
                     return _a0 == null || ((_a0._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a0 = null) == null;
-                case "1":
+                case 1:
                     return _a1 == null || ((_a1._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a1 = null) == null;
-                case "2":
+                case 2:
                     return _a2 == null || ((_a2._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a2 = null) == null;
-                case "3":
+                case 3:
                     return _a3 == null || ((_a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a3 = null) == null;
             }
-
-            return base.DeleteProperty(name);
         }
 
-        internal void Reset()
+        switch (name.ToString())
         {
-            _fields = null;
-            _iValue = 0;
-            _a0 = null;
-            _a1 = null;
-            _a2 = null;
-            _a3 = null;
-            _callee = null;
-            _caller = null;
-            _objectPrototype = null;
-            _lengthContainer = null;
-            _context = null;
-            _dValue = 0;
-            _valueType = JSValueType.Object;
-            _oValue = this;
-            _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
+            case "0":
+                return _a0 == null || ((_a0._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a0 = null) == null;
+            case "1":
+                return _a1 == null || ((_a1._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a1 = null) == null;
+            case "2":
+                return _a2 == null || ((_a2._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a2 = null) == null;
+            case "3":
+                return _a3 == null || ((_a3._attributes & JSValueAttributesInternal.DoNotDelete) == 0) && (_a3 = null) == null;
         }
+
+        return base.DeleteProperty(name);
+    }
+
+    internal void Reset()
+    {
+        _fields = null;
+        _iValue = 0;
+        _a0 = null;
+        _a1 = null;
+        _a2 = null;
+        _a3 = null;
+        _callee = null;
+        _caller = null;
+        _objectPrototype = null;
+        _lengthContainer = null;
+        _context = null;
+        _dValue = 0;
+        _valueType = JSValueType.Object;
+        _oValue = this;
+        _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject;
     }
 }

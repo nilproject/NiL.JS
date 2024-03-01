@@ -1,52 +1,51 @@
 ﻿using NiL.JS.Core;
 
-namespace NiL.JS.Expressions
+namespace NiL.JS.Expressions;
+
+public sealed class SuspendableExpression : Expression
 {
-    public sealed class SuspendableExpression : Expression
+    protected internal override bool ContextIndependent => false;
+
+    private Expression _original;
+    private CodeNode[] _parts;
+
+    internal SuspendableExpression(Expression prototype, CodeNode[] parts)
     {
-        protected internal override bool ContextIndependent => false;
+        _original = prototype;
+        _parts = parts;
+    }
 
-        private Expression _original;
-        private CodeNode[] _parts;
+    public override JSValue Evaluate(Context context)
+    {
+        var i = 0;
 
-        internal SuspendableExpression(Expression prototype, CodeNode[] parts)
+        if (context._executionMode >= ExecutionMode.Resume)
         {
-            _original = prototype;
-            _parts = parts;
+            i = (int)context.SuspendData[this];
         }
 
-        public override JSValue Evaluate(Context context)
+        for (; i < _parts.Length; i++)
         {
-            var i = 0;
-
-            if (context._executionMode >= ExecutionMode.Resume)
-            {
-                i = (int)context.SuspendData[this];
-            }
-
-            for (; i < _parts.Length; i++)
-            {
-                _parts[i].Evaluate(context);
-                if (context._executionMode == ExecutionMode.Suspend)
-                {
-                    context.SuspendData[this] = i;
-                    return null;
-                }
-            }
-
-            var result = _original.Evaluate(context);
+            _parts[i].Evaluate(context);
             if (context._executionMode == ExecutionMode.Suspend)
             {
                 context.SuspendData[this] = i;
                 return null;
             }
-
-            return result;
         }
 
-        public override string ToString()
+        var result = _original.Evaluate(context);
+        if (context._executionMode == ExecutionMode.Suspend)
         {
-            return _original.ToString();
+            context.SuspendData[this] = i;
+            return null;
         }
+
+        return result;
+    }
+
+    public override string ToString()
+    {
+        return _original.ToString();
     }
 }

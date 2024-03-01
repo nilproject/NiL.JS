@@ -3,213 +3,212 @@ using System.Collections.Generic;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
 
-namespace NiL.JS.Statements
-{
+namespace NiL.JS.Statements;
+
 #if !NETCORE
-    [Serializable]
+[Serializable]
 #endif
-    public sealed class With : CodeNode
+public sealed class With : CodeNode
+{
+    private CodeNode _scope;
+    private CodeNode _body;
+
+    public CodeNode Body { get { return _body; } }
+    public CodeNode Scope { get { return _scope; } }
+
+    internal static CodeNode Parse(ParseInfo state, ref int index)
     {
-        private CodeNode _scope;
-        private CodeNode _body;
+        int i = index;
+        if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
+            return null;
+        if (state.Strict)
+            ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
 
-        public CodeNode Body { get { return _body; } }
-        public CodeNode Scope { get { return _scope; } }
+        if (state.Message != null)
+            state.Message(MessageLevel.CriticalWarning, index, 4, "Do not use \"with\".");
 
-        internal static CodeNode Parse(ParseInfo state, ref int index)
+        var obj = Parser.Parse(state, ref i, CodeFragmentType.Expression);
+        while (Tools.IsWhiteSpace(state.Code[i]))
+            i++;
+        if (state.Code[i] != ')')
+            ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid syntax WithStatement.")));
+        do
+            i++;
+        while (Tools.IsWhiteSpace(state.Code[i]));
+
+        CodeNode body = null;
+        VariableDescriptor[] vars = null;
+        var oldVariablesCount = state.Variables.Count;
+        state.LexicalScopeLevel++;
+        using (state.WithCodeContext(CodeContext.InWith))
         {
-            int i = index;
-            if (!Parser.Validate(state.Code, "with (", ref i) && !Parser.Validate(state.Code, "with(", ref i))
-                return null;
-            if (state.Strict)
-                ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("WithStatement is not allowed in strict mode.")));
-
-            if (state.Message != null)
-                state.Message(MessageLevel.CriticalWarning, index, 4, "Do not use \"with\".");
-
-            var obj = Parser.Parse(state, ref i, CodeFragmentType.Expression);
-            while (Tools.IsWhiteSpace(state.Code[i]))
-                i++;
-            if (state.Code[i] != ')')
-                ExceptionHelper.Throw((new NiL.JS.BaseLibrary.SyntaxError("Invalid syntax WithStatement.")));
-            do
-                i++;
-            while (Tools.IsWhiteSpace(state.Code[i]));
-
-            CodeNode body = null;
-            VariableDescriptor[] vars = null;
-            var oldVariablesCount = state.Variables.Count;
-            state.LexicalScopeLevel++;
-            using (state.WithCodeContext(CodeContext.InWith))
+            try
             {
-                try
+                body = Parser.Parse(state, ref i, 0);
+                vars = CodeBlock.extractVariables(state, oldVariablesCount);
+                body = new CodeBlock([body])
                 {
-                    body = Parser.Parse(state, ref i, 0);
-                    vars = CodeBlock.extractVariables(state, oldVariablesCount);
-                    body = new CodeBlock(new[] { body })
-                    {
-                        _variables = vars,
-                        Position = body.Position,
-                        Length = body.Length
-                    };
-                }
-                finally
-                {
-                    state.LexicalScopeLevel--;
-                }
+                    _variables = vars,
+                    Position = body.Position,
+                    Length = body.Length
+                };
             }
-
-            var pos = index;
-            index = i;
-            return new With()
+            finally
             {
-                _scope = obj,
-                _body = body,
-                Position = pos,
-                Length = index - pos
-            };
+                state.LexicalScopeLevel--;
+            }
         }
 
-        [ExceptionHelper.StackFrameOverride]
-        public override JSValue Evaluate(Context context)
+        var pos = index;
+        index = i;
+        return new With()
         {
-            var frame = ExceptionHelper.GetStackFrame(context, false);
+            _scope = obj,
+            _body = body,
+            Position = pos,
+            Length = index - pos
+        };
+    }
 
-            JSValue scopeObject = null;
-            WithContext intcontext = null;
-            Action<Context> action = null;
+    [ExceptionHelper.StackFrameOverride]
+    public override JSValue Evaluate(Context context)
+    {
+        var frame = ExceptionHelper.GetStackFrame(context, false);
 
-            if (context._executionMode >= ExecutionMode.Resume)
+        JSValue scopeObject = null;
+        WithContext intcontext = null;
+        Action<Context> action = null;
+
+        if (context._executionMode >= ExecutionMode.Resume)
+        {
+            action = context.SuspendData[this] as Action<Context>;
+            if (action != null)
             {
-                action = context.SuspendData[this] as Action<Context>;
-                if (action != null)
-                {
-                    action(context);
-                    return null;
-                }
-            }
-
-            frame.CodeNode = _scope;
-
-            if (context._executionMode != ExecutionMode.Resume && context._debugging)
-                context.raiseDebugger(_scope);
-
-            scopeObject = _scope.Evaluate(context);
-            if (context._executionMode == ExecutionMode.Suspend)
-            {
-                context.SuspendData[this] = null;
+                action(context);
                 return null;
             }
+        }
 
-            intcontext = new WithContext(scopeObject, context);
-            action = (c) =>
-            {
-                ExceptionHelper.GetStackFrame(intcontext, false).CodeNode = _body;
+        frame.CodeNode = _scope;
 
-                try
-                {
-                    intcontext._executionMode = c._executionMode;
-                    intcontext._executionInfo = c._executionInfo;
-                    intcontext.Activate();
-                    c._lastResult = _body.Evaluate(intcontext) ?? intcontext._lastResult;
-                    c._executionMode = intcontext._executionMode;
-                    c._executionInfo = intcontext._executionInfo;
-                    if (c._executionMode == ExecutionMode.Suspend)
-                    {
-                        c.SuspendData[this] = action;
-                    }
-                }
-                finally
-                {
-                    intcontext.Deactivate();
-                }
-            };
+        if (context._executionMode != ExecutionMode.Resume && context._debugging)
+            context.raiseDebugger(_scope);
 
-            if (intcontext._debugging && !(_body is CodeBlock))
-                intcontext.raiseDebugger(_body);
-
-            action(context);
+        scopeObject = _scope.Evaluate(context);
+        if (context._executionMode == ExecutionMode.Suspend)
+        {
+            context.SuspendData[this] = null;
             return null;
         }
 
-        protected internal override CodeNode[] GetChildrenImpl()
+        intcontext = new WithContext(scopeObject, context);
+        action = (c) =>
         {
-            var res = new List<CodeNode>()
+            ExceptionHelper.GetStackFrame(intcontext, false).CodeNode = _body;
+
+            try
             {
-                _body,
-                _scope
-            };
-            res.RemoveAll(x => x == null);
-            return res.ToArray();
-        }
-
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
-        {
-            if (stats != null)
-                stats.ContainsWith = true;
-            Parser.Build(ref _scope, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref _body, expressionDepth, new Dictionary<string, VariableDescriptor>(), codeContext | CodeContext.InWith, message, stats, opts);
-            return false;
-        }
-
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
-        {
-            if (_scope != null)
-                _scope.Optimize(ref _scope, owner, message, opts, stats);
-
-            if (_body != null)
-                _body.Optimize(ref _body, owner, message, opts, stats);
-
-            if (_body == null)
-                _this = _scope;
-        }
-
-        public override void Decompose(ref CodeNode self)
-        {
-            if (_scope != null)
-                _scope.Decompose(ref _scope);
-            if (_body != null)
-                _body.Decompose(ref _body);
-        }
-
-        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-        {
-            _scope?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-            var tempVariables = new Dictionary<string, VariableDescriptor>();
-            _body?.RebuildScope(functionInfo, tempVariables, scopeBias + 1);
-            if (tempVariables != null)
-            {
-                var block = _body as CodeBlock;
-                if (block != null)
+                intcontext._executionMode = c._executionMode;
+                intcontext._executionInfo = c._executionInfo;
+                intcontext.Activate();
+                c._lastResult = _body.Evaluate(intcontext) ?? intcontext._lastResult;
+                c._executionMode = intcontext._executionMode;
+                c._executionInfo = intcontext._executionInfo;
+                if (c._executionMode == ExecutionMode.Suspend)
                 {
-                    var variables = new List<VariableDescriptor>();
-                    foreach (var variable in tempVariables)
-                    {
-                        if ((variable.Value is ParameterDescriptor) || !(variable.Value.initializer is FunctionDefinition))
-                        {
-                            transferedVariables.Add(variable.Key, variable.Value);
-                        }
-                        else
-                        {
-                            variables.Add(variable.Value);
-                        }
-                    }
-
-                    block._variables = variables.ToArray();
-                    block._suppressScopeIsolation = block._variables.Length == 0 ? SuppressScopeIsolationMode.Suppress : SuppressScopeIsolationMode.DoNotSuppress;
+                    c.SuspendData[this] = action;
                 }
             }
-        }
+            finally
+            {
+                intcontext.Deactivate();
+            }
+        };
 
-        public override string ToString()
-        {
-            return "with (" + _scope + ")" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
-        }
+        if (intcontext._debugging && !(_body is CodeBlock))
+            intcontext.raiseDebugger(_body);
 
-        public override T Visit<T>(Visitor<T> visitor)
+        action(context);
+        return null;
+    }
+
+    protected internal override CodeNode[] GetChildrenImpl()
+    {
+        var res = new List<CodeNode>()
         {
-            return visitor.Visit(this);
+            _body,
+            _scope
+        };
+        res.RemoveAll(x => x == null);
+        return res.ToArray();
+    }
+
+    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    {
+        if (stats != null)
+            stats.ContainsWith = true;
+        Parser.Build(ref _scope, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _body, expressionDepth, new Dictionary<string, VariableDescriptor>(), codeContext | CodeContext.InWith, message, stats, opts);
+        return false;
+    }
+
+    public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
+    {
+        if (_scope != null)
+            _scope.Optimize(ref _scope, owner, message, opts, stats);
+
+        if (_body != null)
+            _body.Optimize(ref _body, owner, message, opts, stats);
+
+        if (_body == null)
+            _this = _scope;
+    }
+
+    public override void Decompose(ref CodeNode self)
+    {
+        if (_scope != null)
+            _scope.Decompose(ref _scope);
+        if (_body != null)
+            _body.Decompose(ref _body);
+    }
+
+    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+    {
+        _scope?.RebuildScope(functionInfo, transferedVariables, scopeBias);
+
+        var tempVariables = new Dictionary<string, VariableDescriptor>();
+        _body?.RebuildScope(functionInfo, tempVariables, scopeBias + 1);
+        if (tempVariables != null)
+        {
+            var block = _body as CodeBlock;
+            if (block != null)
+            {
+                var variables = new List<VariableDescriptor>();
+                foreach (var variable in tempVariables)
+                {
+                    if ((variable.Value is ParameterDescriptor) || !(variable.Value.initializer is FunctionDefinition))
+                    {
+                        transferedVariables.Add(variable.Key, variable.Value);
+                    }
+                    else
+                    {
+                        variables.Add(variable.Value);
+                    }
+                }
+
+                block._variables = variables.ToArray();
+                block._suppressScopeIsolation = block._variables.Length == 0 ? SuppressScopeIsolationMode.Suppress : SuppressScopeIsolationMode.DoNotSuppress;
+            }
         }
+    }
+
+    public override string ToString()
+    {
+        return "with (" + _scope + ")" + (_body is CodeBlock ? "" : Environment.NewLine + "  ") + _body;
+    }
+
+    public override T Visit<T>(Visitor<T> visitor)
+    {
+        return visitor.Visit(this);
     }
 }

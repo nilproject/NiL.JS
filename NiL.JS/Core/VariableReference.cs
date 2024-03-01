@@ -1,99 +1,97 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using NiL.JS.Expressions;
 
-namespace NiL.JS.Core
-{
+namespace NiL.JS.Core;
+
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    public abstract class VariableReference : Expression
+public abstract class VariableReference : Expression
+{
+    internal VariableDescriptor _descriptor;
+    public VariableDescriptor Descriptor { get { return _descriptor; } }
+
+    internal int _scopeLevel;
+    public int ScopeLevel
     {
-        internal VariableDescriptor _descriptor;
-        public VariableDescriptor Descriptor { get { return _descriptor; } }
-
-        internal int _scopeLevel;
-        public int ScopeLevel
+        get
         {
-            get
-            {
-                return _scopeLevel;
-            }
-            internal set
-            {
-                _scopeLevel = value + _scopeBias;
-            }
+            return _scopeLevel;
         }
-
-        public bool IsCacheEnabled
+        internal set
         {
-            get
-            {
-                return _scopeLevel >= 0;
-            }
+            _scopeLevel = value + _scopeBias;
         }
+    }
 
-        private int _scopeBias;
-        public int ScopeBias
+    public bool IsCacheEnabled
+    {
+        get
         {
-            get
-            {
-                return _scopeBias;
-            }
-            internal set
-            {
-                var sign = Math.Sign(_scopeLevel);
-                _scopeLevel -= _scopeBias * sign;
-                _scopeLevel += value * sign;
-                _scopeBias = value;
-            }
+            return _scopeLevel >= 0;
         }
+    }
 
-        public abstract string Name { get; }
-
-        protected internal override bool ContextIndependent
+    private int _scopeBias;
+    public int ScopeBias
+    {
+        get
         {
-            get
-            {
-                return false;
-            }
+            return _scopeBias;
         }
-
-        internal override bool ResultInTempContainer
+        internal set
         {
-            get { return false; }
+            var sign = Math.Sign(_scopeLevel);
+            _scopeLevel -= _scopeBias * sign;
+            _scopeLevel += value * sign;
+            _scopeBias = value;
         }
+    }
 
-        protected internal override PredictedType ResultType
+    public abstract string Name { get; }
+
+    protected internal override bool ContextIndependent
+    {
+        get
         {
-            get
-            {
-                return _descriptor.lastPredictedType;
-            }
+            return false;
         }
+    }
 
-        protected VariableReference()
+    internal override bool ResultInTempContainer
+    {
+        get { return false; }
+    }
+
+    protected internal override PredictedType ResultType
+    {
+        get
         {
-
+            return _descriptor.lastPredictedType;
         }
+    }
 
-        protected internal override CodeNode[] GetChildrenImpl()
+    protected VariableReference()
+    {
+
+    }
+
+    protected internal override CodeNode[] GetChildrenImpl()
+    {
+        return null;
+    }
+
+    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
+    {
+        ScopeBias = scopeBias;
+
+        VariableDescriptor desc = null;
+        if (transferedVariables != null && transferedVariables.TryGetValue(Name, out desc))
         {
-            return null;
-        }
-
-        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-        {
-            ScopeBias = scopeBias;
-
-            VariableDescriptor desc = null;
-            if (transferedVariables != null && transferedVariables.TryGetValue(Name, out desc))
-            {
-                _descriptor?.references.Remove(this);
-                desc.references.Add(this);
-                _descriptor = desc;
-            }
+            _descriptor?.references.Remove(this);
+            desc.references.Add(this);
+            _descriptor = desc;
         }
     }
 }

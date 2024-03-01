@@ -2,118 +2,117 @@
 using System.Collections.Generic;
 using NiL.JS.Core;
 
-namespace NiL.JS.Expressions
-{
+namespace NiL.JS.Expressions;
+
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    public sealed class AssignmentOperatorCache : Expression
+public sealed class AssignmentOperatorCache : Expression
+{
+    private JSValue secondResult;
+
+    public CodeNode Source { get { return _left; } }
+
+    protected internal override bool ContextIndependent
     {
-        private JSValue secondResult;
-
-        public CodeNode Source { get { return _left; } }
-
-        protected internal override bool ContextIndependent
+        get
         {
-            get
-            {
-                return false;
-            }
+            return false;
         }
+    }
 
-        protected internal override PredictedType ResultType
+    protected internal override PredictedType ResultType
+    {
+        get
         {
-            get
-            {
-                return _left.ResultType;
-            }
+            return _left.ResultType;
         }
+    }
 
-        internal override bool ResultInTempContainer
+    internal override bool ResultInTempContainer
+    {
+        get { return false; }
+    }
+
+    internal AssignmentOperatorCache(Expression source)
+        : base(source, null, false)
+    {
+
+    }
+
+    internal protected override JSValue EvaluateForWrite(Context context)
+    {
+        var res = _left.EvaluateForWrite(context);
+        secondResult = Tools.GetPropertyOrValue(res, context._objectSource);
+        return res;
+    }
+
+    public override JSValue Evaluate(Context context)
+    {
+        var res = secondResult;
+        secondResult = null;
+        return res;
+    }
+
+    public override string ToString()
+    {
+        return _left.ToString();
+    }
+
+    public override int Length
+    {
+        get
         {
-            get { return false; }
+            return _left.Length;
         }
-
-        internal AssignmentOperatorCache(Expression source)
-            : base(source, null, false)
+        internal set
         {
-
+            _left.Length = value;
         }
+    }
 
-        internal protected override JSValue EvaluateForWrite(Context context)
+    public override int Position
+    {
+        get
         {
-            var res = _left.EvaluateForWrite(context);
-            secondResult = Tools.GetPropertyOrValue(res, context._objectSource);
-            return res;
+            return _left.Position;
         }
-
-        public override JSValue Evaluate(Context context)
+        internal set
         {
-            var res = secondResult;
-            secondResult = null;
-            return res;
+            _left.Position = value;
         }
+    }
 
-        public override string ToString()
-        {
-            return _left.ToString();
-        }
+    protected internal override CodeNode[] GetChildrenImpl()
+    {
+        return _left.Children;
+    }
 
-        public override int Length
-        {
-            get
-            {
-                return _left.Length;
-            }
-            internal set
-            {
-                _left.Length = value;
-            }
-        }
+    public override T Visit<T>(Visitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
 
-        public override int Position
-        {
-            get
-            {
-                return _left.Position;
-            }
-            internal set
-            {
-                _left.Position = value;
-            }
-        }
+    public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
+    {
+        base.Optimize(ref _this, owner, message, opts, stats);
+    }
 
-        protected internal override CodeNode[] GetChildrenImpl()
-        {
-            return _left.Children;
-        }
+    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    {
+        // second будем использовать как флаг isVisited
+        if (_right != null)
+            return false;
 
-        public override T Visit<T>(Visitor<T> visitor)
-        {
-            return visitor.Visit(this);
-        }
+        _right = _left;
 
-        public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
-        {
-            base.Optimize(ref _this, owner, message, opts, stats);
-        }
+        _codeContext = codeContext;
 
-        public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
-        {
-            // second будем использовать как флаг isVisited
-            if (_right != null)
-                return false;
-
-            _right = _left;
-
-            _codeContext = codeContext;
-
-            var left = _left as CodeNode;
-            var res = _left.Build(ref left, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            _left = left as Expression;
-            if (!res && _left is Variable)
-                (_left as Variable)._throwMode = ThrowMode.ForceThrow;
-            return res;
-        }
+        var left = _left as CodeNode;
+        var res = _left.Build(ref left, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        _left = left as Expression;
+        if (!res && _left is Variable)
+            (_left as Variable)._throwMode = ThrowMode.ForceThrow;
+        return res;
     }
 }

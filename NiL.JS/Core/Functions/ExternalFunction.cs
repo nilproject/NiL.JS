@@ -1,84 +1,81 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Core.Interop;
 
-namespace NiL.JS.Core.Functions
-{
-    /// <summary>
-    /// Представляет функцию платформы с фиксированной сигнатурой.
-    /// </summary>
-    [Prototype(typeof(Function), true)]
+namespace NiL.JS.Core.Functions;
+
+/// <summary>
+/// Представляет функцию платформы с фиксированной сигнатурой.
+/// </summary>
+[Prototype(typeof(Function), true)]
 #if !(PORTABLE || NETCORE)
-    [Serializable]
+[Serializable]
 #endif
-    public sealed class ExternalFunction : Function
+public sealed class ExternalFunction : Function
+{
+    public override string name
     {
-        public override string name
+        get
         {
-            get
-            {
 #if (PORTABLE || NETCORE)
-                return System.Reflection.RuntimeReflectionExtensions.GetMethodInfo(_delegate).Name;
+            return System.Reflection.RuntimeReflectionExtensions.GetMethodInfo(_delegate).Name;
 #else
-                return _delegate.Method.Name;
+            return _delegate.Method.Name;
 #endif
-            }
         }
-        
-        public override JSValue prototype
+    }
+    
+    public override JSValue prototype
+    {
+        get
         {
-            get
-            {
-                return null;
-            }
-            set
-            {
-            }
+            return null;
         }
-
-        private readonly ExternalFunctionDelegate _delegate;
-
-        public ExternalFunctionDelegate Delegate { get { return _delegate; } }
-
-        public ExternalFunction(ExternalFunctionDelegate @delegate)
+        set
         {
-            if (_length == null)
-                _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
+        }
+    }
+
+    private readonly ExternalFunctionDelegate _delegate;
+
+    public ExternalFunctionDelegate Delegate { get { return _delegate; } }
+
+    public ExternalFunction(ExternalFunctionDelegate @delegate)
+    {
+        if (_length == null)
+            _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 #if (PORTABLE || NETCORE)
-            var paramCountAttrbt = @delegate.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsCountAttribute), false).ToArray();
+        var paramCountAttrbt = @delegate.GetMethodInfo().GetCustomAttributes(typeof(ArgumentsCountAttribute), false).ToArray();
 #else
-            var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsCountAttribute), false);
+        var paramCountAttrbt = @delegate.Method.GetCustomAttributes(typeof(ArgumentsCountAttribute), false);
 #endif
-            _length._iValue = paramCountAttrbt.Length > 0 ? ((ArgumentsCountAttribute)paramCountAttrbt[0]).Count : 1;
-            
-            if (@delegate == null)
-                throw new ArgumentNullException();
-
-            _delegate = @delegate;
-            RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
-        }
-
-        protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
-        {
-            var res = _delegate(targetObject, arguments);
-            if (res == null)
-                return NotExists;
-            return res;
-        }
+        _length._iValue = paramCountAttrbt.Length > 0 ? ((ArgumentsCountAttribute)paramCountAttrbt[0]).Count : 1;
         
-        public override string ToString(bool headerOnly)
+        if (@delegate == null)
+            throw new ArgumentNullException();
+
+        _delegate = @delegate;
+        RequireNewKeywordLevel = BaseLibrary.RequireNewKeywordLevel.WithoutNewOnly;
+    }
+
+    protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
+    {
+        var res = _delegate(targetObject, arguments);
+        if (res == null)
+            return NotExists;
+        return res;
+    }
+    
+    public override string ToString(bool headerOnly)
+    {
+        var result = "function " + name + "()";
+
+        if (!headerOnly)
         {
-            var result = "function " + name + "()";
-
-            if (!headerOnly)
-            {
-                result += " { [native code] }";
-            }
-
-            return result;
+            result += " { [native code] }";
         }
+
+        return result;
     }
 }
