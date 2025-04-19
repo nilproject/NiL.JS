@@ -466,23 +466,21 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
                 var isZero = (virtualSegmentIndex & mask) == 0;
                 nextSegmentIndex = isZero ? segmentNavItem.SegmentZeroNext : segmentNavItem.SegmentOneNext;
 
-                if (nextSegmentIndex == 0)
-                {
-                    if (isZero)
-                    {
-                        if (alterI == -1)
-                            return (-1, -1, -1);
+                if (!isZero && segmentNavItem.SegmentZeroNext != 0)
+                    alterI = segmentNavItem.SegmentZeroNext;
 
-                        mask = int.MaxValue;
-                        i = alterI;
-
-                        continue;
-                    }
-                }
-
-                if (segmentNavigation[nextSegmentIndex].SegmentIndex > virtualSegmentIndex
+                if (nextSegmentIndex == 0
+                    || segmentNavigation[nextSegmentIndex].SegmentIndex > virtualSegmentIndex
                     || (_navigationData[nextSegmentIndex].Length > 0 && _navigationData[nextSegmentIndex][0].Index > index))
                 {
+                    if (alterI != -1 && segmentNavItem.SegmentIndex < segmentNavigation[alterI].SegmentIndex)
+                    {
+                        mask = int.MaxValue;
+                        i = alterI;
+                        alterI = -1;
+                        continue;
+                    }
+
                     realSegmentIndex = i;
 
                     if (_navigationData[realSegmentIndex].Length == 0)
@@ -504,9 +502,6 @@ public sealed class SparseArray<TValue> : IList<TValue>, IDictionary<int, TValue
                         return (realSegmentIndex, segmentNavItem.SegmentIndex, itemIndex);
                     }
                 }
-
-                if (!isZero && segmentNavItem.SegmentZeroNext != 0)
-                    alterI = segmentNavItem.SegmentZeroNext;
 
                 i = nextSegmentIndex;
                 mask >>= 1;
