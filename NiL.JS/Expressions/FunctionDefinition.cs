@@ -752,7 +752,7 @@ public sealed class FunctionDefinition : EntityDefinition
         {
             for (var i = _parameters.Length; i-- > 0;)
             {
-                if (_parameters[i].ReferenceCount == 1)
+                if (_parameters[i].ReferencesCount == 1)
                     message(MessageLevel.Recomendation, _parameters[i].references[0].Position, 0, "Unused parameter \"" + _parameters[i].name + "\"");
                 else
                     break;

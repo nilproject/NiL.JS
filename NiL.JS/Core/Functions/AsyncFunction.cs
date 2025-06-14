@@ -108,7 +108,6 @@ internal sealed class AsyncFunction : Function
 
         var internalContext = new Context(_initialContext, true, this);
         internalContext._callDepth = (Context.CurrentContext?._callDepth ?? 0) + 1;
-        internalContext._definedVariables = Body._variables;
 
         initContext(
             targetObject,

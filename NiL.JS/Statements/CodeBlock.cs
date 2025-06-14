@@ -283,7 +283,6 @@ public sealed class CodeBlock : CodeNode
                 context = new Context(context, false, context._owner)
                 {
                     SuspendData = context.SuspendData,
-                    _definedVariables = _variables,
                     _thisBind = context._thisBind,
                     _strict = context._strict,
                     _executionInfo = context._executionInfo,
@@ -537,7 +536,7 @@ public sealed class CodeBlock : CodeNode
             {
                 for (var i = 0; i < _variables.Length; i++)
                 {
-                    if (_variables[i].ReferenceCount == 1 && !(_variables[i].references[0] is ParameterReference))
+                    if (_variables[i].ReferencesCount == 1 && !(_variables[i].references[0] is ParameterReference))
                     {
                         message(
                             MessageLevel.Recomendation,
@@ -670,20 +669,20 @@ public sealed class CodeBlock : CodeNode
             || functionInfo.ContainsDebugger;
         for (var i = 0; i < _variables.Length; i++)
         {
-            var v = _variables[i];
+            var variable = _variables[i];
 
-            if (v.cacheContext != null)
+            if (variable.cacheContext != null)
             {
-                if (v.cacheContext._variables == null)
-                    v.cacheContext._variables = JSObject.getFieldsContainer();
-                v.cacheContext._variables[v.name] = v.cacheValue;
+                if (variable.cacheContext._variables == null)
+                    variable.cacheContext._variables = JSObject.getFieldsContainer();
+                variable.cacheContext._variables[variable.name] = variable.cacheValue;
             }
 
-            if (v.isLexicalScoped)
+            if (variable.isLexicalScoped)
                 continue;
 
-            var isArg = functionInfo != null && string.CompareOrdinal(v.name, "arguments") == 0;
-            if (isArg && v.initializer == null)
+            var isArg = functionInfo != null && string.CompareOrdinal(variable.name, "arguments") == 0;
+            if (isArg && variable.initializer == null)
                 continue;
 
             var f = new JSValue()
@@ -692,16 +691,24 @@ public sealed class CodeBlock : CodeNode
                 _attributes = JSValueAttributesInternal.DoNotDelete
             };
 
-            v.cacheValue = f;
-            v.cacheContext = context;
+            var contextToDefine = context;
+            variable.cacheValue = f;
+            variable.cacheContext = context;
 
-            if (v.definitionScopeLevel < 0 || v.isCaptured || cew)
-                (context._variables ?? (context._variables = JSObject.getFieldsContainer()))[v.name] = f;
+            if (variable.initializer is FunctionDefinition)
+            {
+                while (contextToDefine._parent is not null && contextToDefine._parent._owner == contextToDefine._owner)
+                    contextToDefine = contextToDefine._parent;
 
-            if (v.initializer != null)
-                f.Assign(v.initializer.Evaluate(context));
+                (contextToDefine._variables ??= JSObject.getFieldsContainer())[variable.name] = f;
+            }
+            else if (variable.definitionScopeLevel < 0 || variable.isCaptured || cew)
+                (contextToDefine._variables ??= JSObject.getFieldsContainer())[variable.name] = f;
 
-            if (v.isReadOnly)
+            if (variable.initializer != null)
+                f.Assign(variable.initializer.Evaluate(context));
+
+            if (variable.isReadOnly)
                 f._attributes |= JSValueAttributesInternal.ReadOnly;
 
             if (isArg)

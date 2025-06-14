@@ -47,7 +47,7 @@ public class VariableDescriptor
     public bool IsReadOnly { get { return isReadOnly; } }
     public Expression Initializer { get { return initializer; } }
     public string Name { get { return name; } }
-    public int ReferenceCount { get { return references.Count; } }
+    public int ReferencesCount { get { return references.Count; } }
     public bool IsLexicalScoped { get { return isLexicalScoped; } }
     public ReadOnlyCollection<Expression> Assignments { get { return assignments == null ? null : assignments.AsReadOnly(); } }
 

@@ -300,3 +300,29 @@ JSON.stringify([o, [o]]);
 Date.prototype.valueOf = () => 1;
 if (typeof (1 + (new Date())) == "number")
     throw "Priority in ToPrimitiveValue for addition with Date";
+
+function foo0() {
+    {
+        let a = 'teststr';
+        function bar() {
+            return a;
+        }
+    }
+
+    return bar() + " " + typeof a;
+}
+
+console.assert(foo0() == "teststr undefined");
+
+function foo1() {
+    return typeof bar;
+
+    {
+        let a = 'teststr';
+        function bar() {
+            return a;
+        }
+    }
+}
+
+console.assert(foo1() == "undefined");

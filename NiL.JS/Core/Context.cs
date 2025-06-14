@@ -94,7 +94,6 @@ public class Context : IEnumerable<string>
     internal Context _parent;
     internal IDictionary<string, JSValue> _variables;
     internal bool _strict;
-    internal VariableDescriptor[] _definedVariables;
     internal Module _module;
     private Dictionary<CodeNode, object> _suspendData;
 
@@ -217,7 +216,6 @@ public class Context : IEnumerable<string>
             if (owner == prototype._owner)
                 _arguments = prototype._arguments;
 
-            _definedVariables = _owner?.Body?._variables;
             _parent = prototype;
             _thisBind = prototype._thisBind;
             _debugging = prototype._debugging;
@@ -575,13 +573,13 @@ public class Context : IEnumerable<string>
                             cc = cc._parent;
                         }
 
-                        if (cc._definedVariables != null)
+                        if (body._variables is { Length: > 0 })
                         {
-                            for (var j = 0; j < cc._definedVariables.Length; j++)
+                            for (var j = 0; j < body._variables.Length; j++)
                             {
-                                if (cc._definedVariables[j].name == body._variables[i].name)
+                                if (body._variables[j].name == body._variables[i].name)
                                 {
-                                    cc._definedVariables[j].definitionScopeLevel = -1;
+                                    body._variables[j].definitionScopeLevel = -1;
                                     break;
                                 }
                             }

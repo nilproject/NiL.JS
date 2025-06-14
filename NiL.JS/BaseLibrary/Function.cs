@@ -499,7 +499,6 @@ public partial class Function : JSObject, ICallable
         {
             var internalContext = new Context(_initialContext, ceocw, this);
             internalContext._callDepth = (currentContext?._callDepth ?? 0) + 1;
-            internalContext._definedVariables = body._variables;
             internalContext.Activate();
 
             try
