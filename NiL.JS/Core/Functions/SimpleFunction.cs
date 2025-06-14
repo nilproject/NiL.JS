@@ -217,7 +217,7 @@ internal sealed class SimpleFunction : Function
         _functionDefinition._parameters[index].cacheValue = value;
         _functionDefinition._parameters[index].cacheContext = context;
 
-        if (_functionDefinition._parameters[index].isCaptured)
+        if (_functionDefinition._parameters[index].isCaptured || _functionDefinition._parameters[index].definitionScopeLevel < 0)
         {
             if (context._variables == null)
                 context._variables = getFieldsContainer();

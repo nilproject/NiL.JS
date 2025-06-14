@@ -303,16 +303,16 @@ if (typeof (1 + (new Date())) == "number")
 
 function foo0() {
     {
-        let a = 'teststr';
+        let nestedVariable = 'teststr';
         function bar() {
-            return a;
+            return nestedVariable;
         }
     }
 
-    return bar() + " " + typeof a;
+    return bar() + " " + typeof nestedVariable;
 }
 
-console.assert(foo0() == "teststr undefined");
+console.assert(foo0() == "teststr undefined", foo0());
 
 function foo1() {
     return typeof bar;

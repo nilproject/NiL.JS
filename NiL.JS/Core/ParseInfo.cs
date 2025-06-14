@@ -160,4 +160,5 @@ public sealed class FunctionInfo
     public bool ContainsTry;
     public readonly List<Expressions.Expression> Returns = new List<Expressions.Expression>();
     public PredictedType ResultType;
+    public int ScopeLevel;
 }

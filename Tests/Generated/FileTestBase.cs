@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NiL.JS;
+using NiL.JS.BaseLibrary;
 using NiL.JS.Core;
 
 namespace Tests.Generated;
@@ -44,6 +45,9 @@ public abstract class FileTestBase
         try
         {
             globalContext.ActivateInCurrentThread();
+
+            typeof(JSConsole).GetField("_assertionThrowsException", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .SetValue(globalContext.GetVariable("console").Value, true);
 
             var pass = true;
             Module module;

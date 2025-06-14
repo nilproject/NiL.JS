@@ -33,6 +33,7 @@ public class JSConsole
     private Dictionary<string, Stopwatch> _timers = new Dictionary<string, Stopwatch>();
 
     private int _tableMaxColWidth = 100;
+    internal bool _assertionThrowsException = false;
 
     /// <summary>
     /// This controls in part the maximum width (in chars) that a column printed by table can have.
@@ -123,7 +124,10 @@ public class JSConsole
             if (args.Length == 1)
                 args.Add("Assertion failed");
 
-            LogArguments(LogLevel.Log, args, 1);
+            if (_assertionThrowsException)
+                ExceptionHelper.Throw(new TypeError(args[1].ToString()));
+
+            LogArguments(LogLevel.Warn, args, 1);
         }
 
         return JSValue.undefined;

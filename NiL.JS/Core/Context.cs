@@ -569,21 +569,7 @@ public class Context : IEnumerable<string>
                         var cc = mainFunctionContext;
                         while (cc._parent._parent != null
                            && (cc._variables == null || !cc._variables.TryGetValue(body._variables[i].name, out variable)))
-                        {
                             cc = cc._parent;
-                        }
-
-                        if (body._variables is { Length: > 0 })
-                        {
-                            for (var j = 0; j < body._variables.Length; j++)
-                            {
-                                if (body._variables[j].name == body._variables[i].name)
-                                {
-                                    body._variables[j].definitionScopeLevel = -1;
-                                    break;
-                                }
-                            }
-                        }
 
                         variable = mainFunctionContext.DefineVariable(body._variables[i].name, !suppressScopeCreation);
 

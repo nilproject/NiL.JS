@@ -69,7 +69,7 @@ public class VariableDescriptor
         if (definitionScopeLevel < 0 || scopeLevel < 0)
             return context.GetVariable(name, forWrite);
 
-        if (context == cacheContext && !forWrite)
+        if (context == cacheContext && (!forWrite || !cacheValue.NeedClone))
             return cacheValue;
 
         return deepGet(context, forWrite, scopeLevel);

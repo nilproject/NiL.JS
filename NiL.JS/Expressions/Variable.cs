@@ -178,11 +178,23 @@ public class Variable : VariableReference
         else
         {
             _descriptor = desc;
-            if (!desc.references.Contains((Variable)this))
-                desc.references.Add((Variable)this);
         }
 
         ScopeLevel = scopeLevel;
+
+        if (!desc.isCaptured)
+        {
+            if (desc.definitionScopeLevel >= 0 && desc.definitionScopeLevel < scopeLevel)
+                desc.isCaptured = true;
+            else for (var i = 0; i < desc.references.Count; i++)
+                {
+                    if (desc.references[i].ScopeLevel < stats.ScopeLevel)
+                    {
+                        desc.isCaptured = true;
+                        break;
+                    }
+                }
+        }
 
         if (_variableName == "this")
         {
@@ -222,11 +234,10 @@ public class Variable : VariableReference
                 Length = Length,
                 _codeContext = codeContext,
             };
-
-            desc.references.Remove(this);
-            if (!desc.references.Contains((Variable)_this))
-                desc.references.Add((Variable)_this);
         }
+
+        if (_this is not null && !desc.references.Contains((Variable)_this))
+            desc.references.Add((Variable)_this);
 
         return false;
     }

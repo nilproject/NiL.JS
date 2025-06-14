@@ -512,17 +512,26 @@ public sealed class CodeBlock : CodeNode
             }
         }
 
-        int f = _lines.Length, t = _lines.Length - 1;
+        int f = _lines.Length, linesToRemove = _lines.Length - 1;
         for (; f-- > 0;)
         {
-            if (_lines[f] != null && _lines[t] == null)
+            if (_lines[f] != null && _lines[linesToRemove] == null)
             {
-                _lines[t] = _lines[f];
+                _lines[linesToRemove] = _lines[f];
                 _lines[f] = null;
             }
 
-            if (_lines[t] != null)
-                t--;
+            if (_lines[linesToRemove] != null)
+                linesToRemove--;
+        }
+
+        if (linesToRemove >= 0 && this == _this)
+        {
+            var newBody = new CodeNode[_lines.Length - linesToRemove - 1];
+            f = 0;
+            while (++linesToRemove < _lines.Length)
+                newBody[f++] = _lines[linesToRemove];
+            _lines = newBody;
         }
 
         if (expressionDepth > 0 && (_variables == null || _variables.Length == 0))
@@ -553,13 +562,12 @@ public sealed class CodeBlock : CodeNode
 #endif
         }
 
-        if (t >= 0 && this == _this)
+        var disableCache = stats.ContainsEval || stats.ContainsWith;
+        if (disableCache)
         {
-            var newBody = new CodeNode[_lines.Length - t - 1];
-            f = 0;
-            while (++t < _lines.Length)
-                newBody[f++] = _lines[t];
-            _lines = newBody;
+            foreach (var v in variables)
+                if (v.Value.definitionScopeLevel >= 0)
+                    v.Value.definitionScopeLevel = System.Math.Min(-v.Value.definitionScopeLevel, -1);
         }
 
         if (_variables != null && _variables.Length != 0)
@@ -695,14 +703,20 @@ public sealed class CodeBlock : CodeNode
             variable.cacheValue = f;
             variable.cacheContext = context;
 
+            bool definitionRequired = false;
             if (variable.initializer is FunctionDefinition)
             {
-                while (contextToDefine._parent is not null && contextToDefine._parent._owner == contextToDefine._owner)
-                    contextToDefine = contextToDefine._parent;
-
-                (contextToDefine._variables ??= JSObject.getFieldsContainer())[variable.name] = f;
+                if (!contextToDefine._strict)
+                {
+                    while (contextToDefine._parent is not null && contextToDefine._parent._owner == contextToDefine._owner)
+                    {
+                        contextToDefine = contextToDefine._parent;
+                        definitionRequired = true;
+                    }
+                }
             }
-            else if (variable.definitionScopeLevel < 0 || variable.isCaptured || cew)
+
+            if (definitionRequired || variable.definitionScopeLevel < 0 || variable.isCaptured || cew)
                 (contextToDefine._variables ??= JSObject.getFieldsContainer())[variable.name] = f;
 
             if (variable.initializer != null)

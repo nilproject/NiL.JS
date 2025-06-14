@@ -17,7 +17,7 @@ public sealed class ParameterDescriptor : VariableDescriptor
     public ObjectDesctructor Destructor { get; internal set; }
 
     public bool IsRest { get; private set; }
-    
+
     public override bool IsParameter => true;
 
     internal ParameterDescriptor(string name, bool rest, int depth)
@@ -669,17 +669,6 @@ public sealed class FunctionDefinition : EntityDefinition
         if ((codeContext & CodeContext.InLoop) != 0 && message != null)
             message(MessageLevel.Warning, Position, EndPosition - Position, Strings.FunctionInLoop);
 
-        /*
-            Если переменная за время построения функции получит хоть одну ссылку плюсом,
-            значит её следует пометить захваченной. Для этого необходимо запомнить количество
-            ссылок для всех пеменных
-        */
-        var numbersOfReferences = new Dictionary<string, int>();
-        foreach (var variable in variables)
-        {
-            numbersOfReferences[variable.Key] = variable.Value.references.Count;
-        }
-
         scopeLevel++;
 
         List<VariableDescriptor> descriptorsToRestore = [];
@@ -734,6 +723,7 @@ public sealed class FunctionDefinition : EntityDefinition
         }
 
         _functionInfo.ContainsRestParameters = _parameters.Length > 0 && _parameters[_parameters.Length - 1].IsRest;
+        _functionInfo.ScopeLevel = scopeLevel;
 
         var bodyCode = _body as CodeNode;
         bodyCode.Build(
@@ -759,7 +749,6 @@ public sealed class FunctionDefinition : EntityDefinition
             }
         }
 
-        checkUsings();
         if (stats != null)
         {
             stats.ContainsDebugger |= _functionInfo.ContainsDebugger;
@@ -771,6 +760,14 @@ public sealed class FunctionDefinition : EntityDefinition
             stats.UseCall |= _functionInfo.UseCall;
             stats.UseGetMember |= _functionInfo.UseGetMember;
             stats.ContainsThis |= _functionInfo.ContainsThis;
+        }
+
+        var disableCache = _functionInfo.ContainsEval || _functionInfo.ContainsWith;
+        if (disableCache)
+        {
+            foreach (var v in variables)
+                if (v.Value.definitionScopeLevel >= 0)
+                    v.Value.definitionScopeLevel = System.Math.Min(-v.Value.definitionScopeLevel, -1);
         }
 
         if (!string.IsNullOrEmpty(_name) && (_kind == FunctionKind.Function || _kind == FunctionKind.Generator))
@@ -788,20 +785,6 @@ public sealed class FunctionDefinition : EntityDefinition
             else
             {
                 variables.Remove(prm.name);
-            }
-        }
-
-        foreach (var variable in variables)
-        {
-            int count = 0;
-            if (!numbersOfReferences.TryGetValue(variable.Key, out count) || count != variable.Value.references.Count)
-            {
-                variable.Value.isCaptured = true;
-                if ((codeContext & CodeContext.InWith) != 0)
-                {
-                    for (var i = count; i < variable.Value.references.Count; i++)
-                        variable.Value.references[i].ScopeLevel = -System.Math.Abs(variable.Value.references[i].ScopeLevel);
-                }
             }
         }
 
@@ -836,29 +819,6 @@ public sealed class FunctionDefinition : EntityDefinition
             _functionInfo.ResultType = PredictedType.Undefined;
     }
 
-    private void checkUsings()
-    {
-        if (_body == null
-            || _body._lines == null
-            || _body._lines.Length == 0)
-            return;
-
-        if (_body._variables != null)
-        {
-            var containsEntities = _functionInfo.ContainsInnerEntities;
-            if (!containsEntities)
-            {
-                for (var i = 0; !containsEntities && i < _body._variables.Length; i++)
-                    containsEntities |= _body._variables[i].initializer != null;
-                _functionInfo.ContainsInnerEntities = containsEntities;
-            }
-
-            for (var i = 0; i < _body._variables.Length; i++)
-            {
-                _functionInfo.ContainsArguments |= _body._variables[i].name == "arguments";
-            }
-        }
-    }
 #if !PORTABLE
     internal override System.Linq.Expressions.Expression TryCompile(bool selfCompile, bool forAssign, Type expectedType, List<CodeNode> dynamicValues)
     {
