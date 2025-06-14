@@ -139,7 +139,7 @@ jobs:
 
     # Upload the nuget package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: NuGet Package
         path: ${{ env.Nuget_Pack_Output_Directory }}
