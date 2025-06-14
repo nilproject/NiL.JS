@@ -65,15 +65,7 @@ public sealed class TryCatch : CodeNode
                 i++;
             if (state.Code[i] != '{')
                 ExceptionHelper.Throw((new SyntaxError("Invalid catch block statement definition at " + CodeCoordinates.FromTextPosition(state.Code, i, 0))));
-            state.LexicalScopeLevel++;
-            try
-            {
-                cb = CodeBlock.Parse(state, ref i);
-            }
-            finally
-            {
-                state.LexicalScopeLevel--;
-            }
+            cb = CodeBlock.Parse(state, ref i);
             while (i < state.Code.Length && Tools.IsWhiteSpace(state.Code[i]))
                 i++;
         }
@@ -133,6 +125,8 @@ public sealed class TryCatch : CodeNode
         }
         catch (Exception e)
         {
+            ExceptionHelper.TryDropChildStackFrames(context);
+
             if (e is TargetInvocationException targetInvocationException)
             {
                 var baseException = targetInvocationException.GetBaseException();
@@ -286,12 +280,12 @@ public sealed class TryCatch : CodeNode
         catchAction(context);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (stats != null)
             stats.ContainsTry = true;
 
-        Parser.Build(ref body, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+        Parser.Build(ref body, expressionDepth, scopeLevel, variables, codeContext | CodeContext.Conditional, message, stats, opts);
         var catchPosition = Position;
         if (catchBody != null)
         {
@@ -299,8 +293,12 @@ public sealed class TryCatch : CodeNode
             catchVariableDesc.owner = this;
             variables.TryGetValue(catchVariableDesc.name, out var oldVarDesc);
             variables[catchVariableDesc.name] = catchVariableDesc;
+            catchVariableDesc.definitionScopeLevel = scopeLevel + 1;
             catchPosition = catchBody.Position;
-            Parser.Build(ref catchBody, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+            Parser.Build(ref catchBody, expressionDepth, scopeLevel + 1, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+            if (catchBody is CodeBlock codeBlock)
+                codeBlock._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
+
             if (oldVarDesc != null)
                 variables[catchVariableDesc.name] = oldVarDesc;
             else
@@ -311,7 +309,7 @@ public sealed class TryCatch : CodeNode
         if (finallyBody != null)
         {
             finallyPosition = finallyBody.Position;
-            Parser.Build(ref finallyBody, expressionDepth, variables, codeContext, message, stats, opts);
+            Parser.Build(ref finallyBody, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
         }
 
         if (body == null || (body is Empty))
@@ -372,33 +370,6 @@ public sealed class TryCatch : CodeNode
             catchBody.Decompose(ref catchBody);
         if (finallyBody != null)
             finallyBody.Decompose(ref finallyBody);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        body.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-        if (catchBody != null)
-        {
-            VariableDescriptor variableToRestore = null;
-            if (transferedVariables != null)
-            {
-                transferedVariables.TryGetValue(catchVariableDesc.name, out variableToRestore);
-                transferedVariables[catchVariableDesc.name] = catchVariableDesc;
-            }
-
-            catchBody.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-            if (transferedVariables != null)
-            {
-                if (variableToRestore != null)
-                    transferedVariables[variableToRestore.name] = variableToRestore;
-                else
-                    transferedVariables.Remove(catchVariableDesc.name);
-            }
-        }
-
-        finallyBody?.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override string ToString()

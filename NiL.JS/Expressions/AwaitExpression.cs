@@ -72,10 +72,10 @@ public sealed class AwaitExpression : Expression
         return new AwaitExpression(source);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         stats.NeedDecompose = true;
-        return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+        return base.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
     }
 
     public override void Decompose(ref Expression self, IList<CodeNode> result)

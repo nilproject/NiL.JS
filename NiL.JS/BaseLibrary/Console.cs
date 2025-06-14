@@ -119,7 +119,12 @@ public class JSConsole
     public JSValue assert(Arguments args)
     {
         if (!(bool)args[0])
+        {
+            if (args.Length == 1)
+                args.Add("Assertion failed");
+
             LogArguments(LogLevel.Log, args, 1);
+        }
 
         return JSValue.undefined;
     }
@@ -127,7 +132,6 @@ public class JSConsole
     public virtual JSValue clear(Arguments args)
     {
         _groups.Clear();
-        // Console.Clear();
 
         return JSValue.undefined;
     }

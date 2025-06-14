@@ -161,7 +161,7 @@ public sealed class VariableDefinition : CodeNode
             {
                 if (state.Variables[j].name == names[i] && state.Variables[j].definitionScopeLevel >= level)
                 {
-                    if (state.Variables[j].lexicalScope || mode > VariableKind.FunctionScope)
+                    if ((state.Variables[j].isLexicalScoped && !state.Variables[j].IsParameter) || mode > VariableKind.FunctionScope)
                         ExceptionHelper.ThrowSyntaxError(string.Format(Strings.IdentifierAlreadyDeclared, names[i]), state.Code, index);
 
                     skip = true;
@@ -176,7 +176,7 @@ public sealed class VariableDefinition : CodeNode
 
             variables[i] = new VariableDescriptor(names[i], level)
             {
-                lexicalScope = mode > VariableKind.FunctionScope,
+                isLexicalScoped = mode > VariableKind.FunctionScope,
                 isReadOnly = mode == VariableKind.ConstantInLexicalScope
             };
 
@@ -204,11 +204,11 @@ public sealed class VariableDefinition : CodeNode
         {
             for (var v = 0; v < _variables.Length; v++)
             {
-                if (context._executionMode == ExecutionMode.Regular && Kind > VariableKind.FunctionScope && _variables[v].lexicalScope)
+                if (context._executionMode == ExecutionMode.Regular && Kind > VariableKind.FunctionScope && _variables[v].isLexicalScoped)
                 {
                     var f = context.DefineVariable(_variables[v].name, false);
 
-                    _variables[v].cacheRes = f;
+                    _variables[v].cacheValue = f;
                     _variables[v].cacheContext = context;
 
                     if (Kind == VariableKind.ConstantInLexicalScope)
@@ -239,7 +239,7 @@ public sealed class VariableDefinition : CodeNode
         return res.ToArray();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (Kind > VariableKind.FunctionScope)
             stats.WithLexicalEnvironment = true;
@@ -247,7 +247,7 @@ public sealed class VariableDefinition : CodeNode
         int actualChildren = 0;
         for (int i = 0; i < _initializers.Length; i++)
         {
-            Parser.Build(ref _initializers[i], message != null ? 2 : expressionDepth, variables, codeContext, message, stats, opts);
+            Parser.Build(ref _initializers[i], message != null ? 2 : 0, scopeLevel, variables, codeContext, message, stats, opts);
             if (_initializers[i] != null)
             {
                 actualChildren++;
@@ -329,14 +329,6 @@ public sealed class VariableDefinition : CodeNode
         for (var i = 0; i < _initializers.Length; i++)
         {
             _initializers[i].Decompose(ref _initializers[i]);
-        }
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        for (var i = 0; i < _initializers.Length; i++)
-        {
-            _initializers[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
     }
 }

@@ -223,7 +223,7 @@ public sealed class ExportStatement : CodeNode
         return null;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (_reexportSourceModuleName != null)
             return false;
@@ -233,38 +233,20 @@ public sealed class ExportStatement : CodeNode
 
         if (_internalDefinition != null)
         {
-            Parser.Build(ref _internalDefinition, expressionDepth, variables, codeContext, message, stats, opts | Options.SuppressUselessStatementsElimination);
+            Parser.Build(ref _internalDefinition, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts | Options.SuppressUselessStatementsElimination);
         }
         else
         {
             for (var i = 0; i < _map.Count; i++)
             {
                 var v = _map[i].Value;
-                Parser.Build(ref v, expressionDepth + 1, variables, codeContext, message, stats, opts);
+                Parser.Build(ref v, expressionDepth + 1, scopeLevel, variables, codeContext, message, stats, opts);
                 if (v != _map[i].Value)
                     _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, v);
             }
         }
 
         return false;
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        if (_reexportSourceModuleName != null)
-            return;
-
-        if (_internalDefinition != null)
-        {
-            _internalDefinition.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        }
-        else
-        {
-            for (var i = 0; i < _map.Count; i++)
-            {
-                _map[i].Value.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            }
-        }
     }
 
     public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)

@@ -37,10 +37,10 @@ public sealed class ExpressionWrapper : Expression
         return visitor.Visit(this);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         this._codeContext = codeContext;
 
-        return node.Build(ref node, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        return node.Build(ref node, expressionDepth, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
     }
 }

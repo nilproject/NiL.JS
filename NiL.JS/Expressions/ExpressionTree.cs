@@ -1015,25 +1015,7 @@ public sealed class ExpressionTree : Expression
 
         if ((kind == OperationType.Assignment) || assign)
         {
-            var error = !canAsign || !canBeAssignee(first);
-
-            if (kind == OperationType.Assignment)
-            {
-                if (first is ObjectDefinition || first is ArrayDefinition)
-                {
-                    try
-                    {
-                        first = new ObjectDesctructor(first);
-                        error = false;
-                    }
-                    catch
-                    {
-                        // Exception will be handled in next line
-                    }
-                }
-            }
-
-            if (error)
+            if (!canAsign || !canBeAssignee(first))
                 ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment, state.Code, first.Position, first.Length);
         }
 
@@ -1136,6 +1118,7 @@ public sealed class ExpressionTree : Expression
     {
         return first is Variable
             || first is Property
+            || first is ObjectDesctructor
             || ((first is Constant) && (first.Evaluate(null).ValueType <= JSValueType.Undefined));
     }
 
@@ -1511,7 +1494,7 @@ public sealed class ExpressionTree : Expression
         return visitor.Visit(this);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         _this = getFastImpl();
         _this.Position = Position;

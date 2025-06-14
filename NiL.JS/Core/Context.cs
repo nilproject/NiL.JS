@@ -258,7 +258,10 @@ public class Context : IEnumerable<string>
         _currentContextStack.RemoveAt(_currentContextStack.Count - 1);
 
         if (dropStackFrame)
+        {
+            ExceptionHelper.TryDropChildStackFrames(this);
             while (ExceptionHelper.TryDropStackFrame(this)) ;
+        }
 
         return _currentContextStack.Count > 0 ? _currentContextStack[_currentContextStack.Count - 1] : null;
     }
@@ -537,17 +540,7 @@ public class Context : IEnumerable<string>
         var stats = new FunctionInfo();
 
         CodeNode cb = body;
-        Parser.Build(ref cb, 0, variables, (_strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, stats, Options.None);
-
-        var tv = stats.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
-        body.RebuildScope(stats, tv, body._variables.Length == 0 || !stats.WithLexicalEnvironment ? 1 : 0);
-        if (tv != null)
-        {
-            var newVarDescs = new VariableDescriptor[tv.Values.Count];
-            tv.Values.CopyTo(newVarDescs, 0);
-            body._variables = newVarDescs;
-            body._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
-        }
+        Parser.Build(ref cb, 0, 0, variables, (_strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InEval, null, stats, Options.None);
 
         body.Optimize(ref cb, null, null, Options.SuppressUselessExpressionsElimination | Options.SuppressConstantPropogation, stats);
         body = cb as CodeBlock ?? body;
@@ -572,7 +565,7 @@ public class Context : IEnumerable<string>
             {
                 for (var i = 0; i < body._variables.Length; i++)
                 {
-                    if (!body._variables[i].lexicalScope)
+                    if (!body._variables[i].isLexicalScoped)
                     {
                         JSValue variable;
                         var cc = mainFunctionContext;
@@ -597,12 +590,10 @@ public class Context : IEnumerable<string>
                         variable = mainFunctionContext.DefineVariable(body._variables[i].name, !suppressScopeCreation);
 
                         if (body._variables[i].initializer != null)
-                        {
                             variable.Assign(body._variables[i].initializer.Evaluate(context));
-                        }
 
                         // блокирует создание переменной в конктексте eval
-                        body._variables[i].lexicalScope = true;
+                        body._variables[i].isLexicalScoped = true;
 
                         // блокирует кеширование
                         body._variables[i].definitionScopeLevel = -1;

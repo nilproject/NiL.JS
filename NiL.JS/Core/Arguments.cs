@@ -77,7 +77,7 @@ public sealed class Arguments : JSObject, IEnumerable, IIterable
                     res = _a3;
                     break;
                 default:
-                    return base[index.ToString()];
+                    return base[Tools.Int32ToString(index)];
             }
 
             if (res == null)
@@ -104,7 +104,7 @@ public sealed class Arguments : JSObject, IEnumerable, IIterable
                 default:
                     if (_fields == null)
                         _fields = getFieldsContainer();
-                    _fields[index.ToString()] = value;
+                    _fields[Tools.Int32ToString(index)] = value;
                     break;
             }
 

@@ -83,11 +83,6 @@ namespace Examples.Syntax_extensions
             {
 
             }
-
-            public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> newVariables, int scopeBias)
-            {
-
-            }
         }
 
         public override void Run()

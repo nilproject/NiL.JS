@@ -43,21 +43,16 @@ public sealed class Debugger : CodeNode
         return visitor.Visit(this);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (stats != null)
             stats.ContainsDebugger = true;
-        return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+        return base.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
     }
 
     protected internal override CodeNode[] GetChildrenImpl()
     {
         return null;
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-
     }
 
     public override void Decompose(ref CodeNode self)

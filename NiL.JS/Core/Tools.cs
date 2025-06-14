@@ -946,8 +946,9 @@ public static class Tools
 
         for (var i = cacheSize; i-- > 0;)
         {
-            if (intStringCache[i].key == value)
-                return intStringCache[i].value;
+            lock (intStringCache)
+                if (intStringCache[i].key == value)
+                    return intStringCache[i].value;
         }
 
         intStrCacheIndex = (intStrCacheIndex + 1) & (cacheSize - 1);
@@ -958,7 +959,9 @@ public static class Tools
             value = value.ToString(CultureInfo.InvariantCulture)
         };
 
-        intStringCache[intStrCacheIndex] = cacheItem;
+        lock (intStringCache)
+            intStringCache[intStrCacheIndex] = cacheItem;
+
         return cacheItem.value;
     }
 

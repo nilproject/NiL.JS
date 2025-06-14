@@ -60,12 +60,12 @@ public sealed class InfinityLoop : CodeNode
         return [_body];
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         return false;
     }
 
-    public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
+    public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
     {
         _body.Optimize(ref _body, owner, message, opts, stats);
     }
@@ -73,11 +73,6 @@ public sealed class InfinityLoop : CodeNode
     public override void Decompose(ref CodeNode self)
     {
         _body.Decompose(ref _body);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        _body.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override T Visit<T>(Visitor<T> visitor)

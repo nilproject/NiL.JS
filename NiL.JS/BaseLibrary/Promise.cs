@@ -203,7 +203,7 @@ public sealed class Promise
         if (promises == null)
             return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.race(...)"))));
 
-        return new Promise(whenAny(promises.AsEnumerable().Select(convertToTask).ToArray()));
+        return new Promise(whenAny(promises.ToEnumerable().Select(convertToTask).ToArray()));
     }
 
     public static Promise all(IIterable promises)
@@ -211,7 +211,7 @@ public sealed class Promise
         if (promises == null)
             return new Promise(fromException(new JSException(new TypeError("Invalid argruments for Promise.all(...)"))));
 
-        return new Promise(whenAll(promises.AsEnumerable().Select(convertToTask).ToArray()).ContinueWith(x => new Array(x.Result as IEnumerable) as JSValue));
+        return new Promise(whenAll(promises.ToEnumerable().Select(convertToTask).ToArray()).ContinueWith(x => new Array(x.Result as IEnumerable) as JSValue));
     }
 
     private static Task<JSValue> convertToTask(JSValue arg)

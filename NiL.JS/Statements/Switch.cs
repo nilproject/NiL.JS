@@ -249,26 +249,26 @@ public sealed class Switch : CodeNode
         return null;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (expressionDepth < 1)
             throw new InvalidOperationException();
 
-        Parser.Build(ref _image, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _image, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
         for (int i = 0; i < _body.Length; i++)
-            Parser.Build(ref _body[i], 1, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+            Parser.Build(ref _body[i], 1, scopeLevel, variables, codeContext | CodeContext.Conditional, message, stats, opts);
 
         for (int i = 0; _functions != null && i < _functions.Length; i++)
         {
             CodeNode stat = _functions[i];
-            Parser.Build(ref stat, 1, variables, codeContext, message, stats, opts);
+            Parser.Build(ref stat, 1, scopeLevel, variables, codeContext, message, stats, opts);
         }
 
         _functions = null;
 
         for (int i = 1; i < _cases.Length; i++)
-            Parser.Build(ref _cases[i].statement, 2, variables, codeContext, message, stats, opts);
+            Parser.Build(ref _cases[i].statement, 2, scopeLevel, variables, codeContext, message, stats, opts);
 
         return false;
     }
@@ -354,24 +354,6 @@ public sealed class Switch : CodeNode
         for (var i = 0; i < _body.Length; i++)
         {
             _body[i].Decompose(ref _body[i]);
-        }
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        _image.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-        for (var i = 0; i < _cases.Length; i++)
-        {
-            if (_cases[i].statement != null)
-            {
-                _cases[i].statement.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            }
-        }
-
-        for (var i = 0; i < _body.Length; i++)
-        {
-            _body[i]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
     }
 }

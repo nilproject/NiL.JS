@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Statements;
 
@@ -49,19 +48,13 @@ public sealed class Script
         var root = (CodeBlock)CodeBlock.Parse(new ParseInfo(code, internalCallback) { CodeContext = codeContext | CodeContext.AllowDirectives }, ref i);
 
         var stat = new FunctionInfo();
-        Parser.Build(ref root, 0, new Dictionary<string, VariableDescriptor>(), codeContext, internalCallback, stat, options);
+        Parser.Build(ref root, 0, 0, new Dictionary<string, VariableDescriptor>(), codeContext, internalCallback, stat, options);
 
         var body = root;
         body._suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
         for (var vi = 0; vi < body._variables.Length; vi++)
-            body._variables[vi].captured = true;
-
-        var tv = stat.WithLexicalEnvironment ? null : new Dictionary<string, VariableDescriptor>();
-        body.RebuildScope(stat, tv, body._variables.Length == 0 || !stat.WithLexicalEnvironment ? 1 : 0);
-
-        if (tv != null)
-            body._variables = tv.Values.ToArray();
+            body._variables[vi].isCaptured = true;
 
         var bd = body as CodeNode;
 

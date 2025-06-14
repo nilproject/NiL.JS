@@ -81,7 +81,7 @@ public sealed class ImportStatement : CodeNode
                     result._map[i].Value,
                     state.LexicalScopeLevel)
                 {
-                    lexicalScope = true,
+                    isLexicalScoped = true,
                     isReadOnly = true
                 });
             }
@@ -214,10 +214,6 @@ public sealed class ImportStatement : CodeNode
         return null;
     }
 
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-    }
-
     public override string ToString()
     {
         var result = new StringBuilder("import ");
@@ -270,12 +266,12 @@ public sealed class ImportStatement : CodeNode
         return result.ToString();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         for (var i = 0; i < _map.Count; i++)
         {
             var v = _map[i].Value;
-            Parser.Build(ref v, 1, variables, codeContext, message, stats, opts);
+            Parser.Build(ref v, 1, scopeLevel, variables, codeContext, message, stats, opts);
         }
         return false;
     }

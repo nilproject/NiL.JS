@@ -31,8 +31,6 @@ public sealed class CodeBlock : CodeNode
         public Context Context;
     }
 
-    internal static readonly VariableDescriptor[] emptyVariables = new VariableDescriptor[0];
-
     private string _sourceCode;
 #if (NET40 || !NETSTANDARD1_3 && !NET40) && JIT
     internal Func<Context, JSObject> compiledVersion;
@@ -64,7 +62,7 @@ public sealed class CodeBlock : CodeNode
             throw new ArgumentNullException("body");
 
         _lines = body;
-        _variables = null;
+        _variables = System.Array.Empty<VariableDescriptor>();
         _strict = false;
     }
 
@@ -85,11 +83,9 @@ public sealed class CodeBlock : CodeNode
 #if DEBUG
         HashSet<string> directives = null;
 #endif
-
-        var oldFunctionScopeLevel = state.FunctionScopeLevel;
-        state.LexicalScopeLevel++;
-        if (state.AllowDirectives)
-            state.FunctionScopeLevel = state.LexicalScopeLevel;
+        bool isLexicalScope = (state.CodeContext & CodeContext.AllowDirectives) == 0;
+        if (isLexicalScope)
+            state.LexicalScopeLevel++;
 
         var oldVariablesCount = state.Variables.Count;
         VariableDescriptor[] variables = null;
@@ -197,12 +193,10 @@ public sealed class CodeBlock : CodeNode
             finally
             {
                 if (oldVariablesCount != state.Variables.Count)
-                {
                     variables = extractVariables(state, oldVariablesCount);
-                }
 
-                state.FunctionScopeLevel = oldFunctionScopeLevel;
-                state.LexicalScopeLevel--;
+                if (isLexicalScope)
+                    state.LexicalScopeLevel--;
             }
 
             if (!sroot)
@@ -213,7 +207,7 @@ public sealed class CodeBlock : CodeNode
             return new CodeBlock(body.ToArray())
             {
                 _strict = state.Strict,
-                _variables = variables ?? emptyVariables,
+                _variables = variables ?? [],
                 Position = startPos,
                 _sourceCode = state.SourceCode,
                 Length = position - startPos,
@@ -226,7 +220,7 @@ public sealed class CodeBlock : CodeNode
 
     internal static VariableDescriptor[] extractVariables(ParseInfo state, int oldVariablesCount)
     {
-        VariableDescriptor[] variables = emptyVariables;
+        VariableDescriptor[] variables = [];
         var count = 0;
         for (var i = oldVariablesCount; i < state.Variables.Count; i++)
         {
@@ -248,11 +242,12 @@ public sealed class CodeBlock : CodeNode
                     variables[targetIndex] = state.Variables[i];
                     if (declaredVariables != null)
                     {
-                        if (declaredVariables.Contains(variables[targetIndex].name) && variables[targetIndex].lexicalScope)
+                        if (declaredVariables.Contains(variables[targetIndex].name) && variables[targetIndex].isLexicalScoped)
                             ExceptionHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" already has been defined", state.Code, i);
 
                         declaredVariables.Add(variables[targetIndex].name);
                     }
+
                     targetIndex++;
                 }
                 else if (targetIndex != 0)
@@ -405,7 +400,7 @@ public sealed class CodeBlock : CodeNode
         for (var i = 0; i < _variables.Length; i++)
         {
             _variables[i].cacheContext = null;
-            _variables[i].cacheRes = null;
+            _variables[i].cacheValue = null;
         }
     }
 
@@ -421,33 +416,41 @@ public sealed class CodeBlock : CodeNode
         }
 
         if (_variables != null)
-            res.AddRange(from v in _variables where v.initializer != null && (!(v.initializer is FunctionDefinition) || (v.initializer as FunctionDefinition)._body != this) select v.initializer);
+            res.AddRange(from v in _variables
+                         where v.initializer != null && (!(v.initializer is FunctionDefinition) || (v.initializer as FunctionDefinition)._body != this)
+                         select v.initializer);
 
         return res.ToArray();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (_built)
             return false;
+
         _built = true;
 
         List<VariableDescriptor> variablesToRestore = null;
         if (_variables != null && _variables.Length != 0)
         {
+            scopeLevel++;
+            _suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
+
             for (var i = 0; i < _variables.Length; i++)
             {
                 VariableDescriptor desc = null;
-                if (variables.TryGetValue(_variables[i].name, out desc) && desc.definitionScopeLevel < _variables[i].definitionScopeLevel)
+                if (variables.TryGetValue(_variables[i].name, out desc))
                 {
                     if (variablesToRestore == null)
                         variablesToRestore = new List<VariableDescriptor>();
+
                     variablesToRestore.Add(desc);
                 }
 
                 variables[_variables[i].name] = _variables[i];
 
                 _variables[i].owner = this;
+                _variables[i].definitionScopeLevel = scopeLevel;
             }
 
             for (var i = 0; i < _variables.Length; i++)
@@ -455,6 +458,7 @@ public sealed class CodeBlock : CodeNode
                 Parser.Build(
                     ref _variables[i].initializer,
                     System.Math.Max(2, expressionDepth),
+                    scopeLevel,
                     variables,
                     (codeContext | (_strict ? CodeContext.Strict : CodeContext.None)) & ~CodeContext.InExpression,
                     message,
@@ -462,6 +466,8 @@ public sealed class CodeBlock : CodeNode
                     opts);
             }
         }
+        else
+            _suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
 
         var lastRealExp = 0;
 
@@ -491,6 +497,7 @@ public sealed class CodeBlock : CodeNode
                     Parser.Build(
                         ref cn,
                         (codeContext & CodeContext.InEval) != 0 ? 2 : System.Math.Max(1, expressionDepth),
+                        scopeLevel,
                         variables, codeContext | (_strict ? CodeContext.Strict : CodeContext.None),
                         message,
                         stats,
@@ -626,7 +633,7 @@ public sealed class CodeBlock : CodeNode
             }
         }
 
-        if (_lines.Length == 1 && _suppressScopeIsolation == SuppressScopeIsolationMode.Suppress && _variables.Length == 0)
+        if (_lines.Length == 1 && _suppressScopeIsolation == SuppressScopeIsolationMode.Suppress && _variables is null or { Length: 0 })
         {
             _this = _lines[0];
         }
@@ -653,72 +660,6 @@ public sealed class CodeBlock : CodeNode
         }
     }
 
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        if (_variables != null)
-        {
-            var initialVariables = _variables;
-
-            if (_variables.Length != 0 && !functionInfo.WithLexicalEnvironment)
-            {
-                for (var i = 0; i < _variables.Length; i++)
-                {
-                    VariableDescriptor desc;
-                    if (!transferedVariables.TryGetValue(_variables[i].name, out desc) || _variables[i].initializer != null)
-                        transferedVariables[_variables[i].name] = _variables[i];
-                }
-
-                _variables = emptyVariables;
-            }
-
-            if (_variables.Length == 0)
-            {
-                if (_suppressScopeIsolation == SuppressScopeIsolationMode.Auto)
-                    _suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
-
-                scopeBias--;
-            }
-
-            for (var i = 0; i < initialVariables.Length; i++)
-            {
-                if (initialVariables[i].definitionScopeLevel != -1)
-                {
-                    initialVariables[i].definitionScopeLevel -= initialVariables[i].scopeBias;
-                    initialVariables[i].definitionScopeLevel += scopeBias;
-                }
-
-                initialVariables[i].scopeBias = scopeBias;
-                initialVariables[i].initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            }
-        }
-        else
-            _suppressScopeIsolation = SuppressScopeIsolationMode.Suppress;
-
-        if (transferedVariables == null)
-        {
-            for (var i = 0; i < _lines.Length; i++)
-            {
-                _lines[i].RebuildScope(functionInfo, null, scopeBias);
-            }
-        }
-        else
-        {
-            bool needRerun;
-            do
-            {
-                needRerun = false;
-                for (var i = 0; i < _lines.Length; i++)
-                {
-                    var oldVariablesCount = transferedVariables.Count;
-                    _lines[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
-                    if (transferedVariables.Count > oldVariablesCount && i > 0)
-                        needRerun = true;
-                }
-            }
-            while (needRerun);
-        }
-    }
-
     internal void initVariables(Context context)
     {
         var functionInfo = context._owner?._functionDefinition?._functionInfo;
@@ -735,10 +676,10 @@ public sealed class CodeBlock : CodeNode
             {
                 if (v.cacheContext._variables == null)
                     v.cacheContext._variables = JSObject.getFieldsContainer();
-                v.cacheContext._variables[v.name] = v.cacheRes;
+                v.cacheContext._variables[v.name] = v.cacheValue;
             }
 
-            if (v.lexicalScope)
+            if (v.isLexicalScoped)
                 continue;
 
             var isArg = functionInfo != null && string.CompareOrdinal(v.name, "arguments") == 0;
@@ -750,12 +691,16 @@ public sealed class CodeBlock : CodeNode
                 _valueType = JSValueType.Undefined,
                 _attributes = JSValueAttributesInternal.DoNotDelete
             };
-            v.cacheRes = f;
+
+            v.cacheValue = f;
             v.cacheContext = context;
-            if (v.definitionScopeLevel < 0 || v.captured || cew)
+
+            if (v.definitionScopeLevel < 0 || v.isCaptured || cew)
                 (context._variables ?? (context._variables = JSObject.getFieldsContainer()))[v.name] = f;
+
             if (v.initializer != null)
                 f.Assign(v.initializer.Evaluate(context));
+
             if (v.isReadOnly)
                 f._attributes |= JSValueAttributesInternal.ReadOnly;
 

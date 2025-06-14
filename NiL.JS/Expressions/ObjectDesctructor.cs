@@ -1,8 +1,18 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using NiL.JS.Core;
 
 namespace NiL.JS.Expressions;
+
+public enum DestructuringType
+{
+    Object,
+    Array
+}
 
 #if !NETCORE
 [Serializable]
@@ -13,9 +23,9 @@ public sealed class ObjectDesctructor : Expression
     {
         private readonly Context _context;
         private readonly bool _force;
-        private readonly Expression _definition;
+        private readonly ObjectDesctructor _definition;
 
-        public DestructuringAcceptor(Expression definition, Context context, bool force)
+        public DestructuringAcceptor(ObjectDesctructor definition, Context context, bool force)
         {
             _definition = definition;
             _context = context;
@@ -24,89 +34,81 @@ public sealed class ObjectDesctructor : Expression
 
         public override void Assign(JSValue value)
         {
-            assignValues(value, _definition as ObjectDefinition);
-            assignValues(value, _definition as ArrayDefinition);
-        }
+            Arguments? arguments = null;
+            var items = _definition._destructDescription;
 
-        private void assignValues(JSValue source, ArrayDefinition targetMap)
-        {
-            if (targetMap == null)
-                return;
+            HashSet<string>? usedSrcKeys = _definition.HasRest ? [] : null;
 
-            var values = new JSValue[targetMap.Elements.Length];
-
-            for (var i = 0; i < targetMap.Elements.Length; i++)
-                values[i] = source[Tools.Int32ToString(i)].CloneImpl(false);
-
-            Arguments setterArgs = null;
-            for (var i = 0; i < targetMap.Elements.Length; i++)
+            for (var i = 0; i < items.Length; i++)
             {
-                if (targetMap.Elements[i] is ObjectDefinition)
+                if (_definition.HasRest && i == items.Length - 1)
                 {
-                    assignValues(values[i], targetMap.Elements[i] as ObjectDefinition);
-                    assignValues(values[i], targetMap.Elements[i] as ArrayDefinition);
+                    var target = items[i].Target.EvaluateForWrite(_context);
+                    if (target is DestructuringAcceptor { _definition: { HasRest: false } }
+                        || items.Length == 1)
+                    {
+                        assign(items[i].Target, target, value, ref arguments);
+                    }
+                    else if (_definition.Type is DestructuringType.Object)
+                    {
+                        var obj = JSObject.CreateObject();
+                        foreach (var kvp in value)
+                        {
+                            if (usedSrcKeys!.Contains(kvp.Key))
+                                continue;
+
+                            obj[kvp.Key] = Tools.GetPropertyOrValue(kvp.Value, value);
+                        }
+
+                        assign(items[i].Target, target, obj, ref arguments);
+                    }
+                    else if (_definition.Type is DestructuringType.Array)
+                    {
+                        var nestedArray = new BaseLibrary.Array();
+                        var srcLen = Tools.getLengthOfArraylike(value, false);
+                        for (var index = items[items.Length - 2].Key.Evaluate(null)._iValue + 1; index < srcLen; index++)
+                        {
+                            nestedArray.Add(Tools.GetPropertyOrValue(value[Tools.Int32ToString(index)], value));
+                        }
+
+                        assign(items[i].Target, target, nestedArray, ref arguments);
+                    }
+                    else throw new NotImplementedException();
                 }
                 else
                 {
-                    var target = targetMap.Elements[i].EvaluateForWrite(_context);
-                    assign(target, values[i], targetMap.Elements[i], ref setterArgs);
+                    var key = items[i].Key.Evaluate(_context).ToString();
+
+                    usedSrcKeys?.Add(key);
+
+                    var src = Tools.GetPropertyOrValue(value[key], value);
+                    if (src is { Exists: false } or null)
+                        src = items[i].Default?.Evaluate(_context);
+
+                    if (src is { Exists: true })
+                    {
+                        var target = items[i].Target.EvaluateForWrite(_context);
+                        assign(items[i].Target, target, src, ref arguments);
+                    }
                 }
             }
         }
 
-        private void assignValues(JSValue source, ObjectDefinition targetMap)
-        {
-            if (targetMap == null)
-                return;
-
-            var j = 0;
-            var values = new JSValue[targetMap.Properties.Length];
-            for (var i = 0; i < targetMap.Properties.Length; i++, j++)
-            {
-                values[j] =
-                    Tools.GetPropertyOrValue(
-                        source.GetProperty(
-                            targetMap.Properties[i].Key.Evaluate(_context),
-                            false,
-                            PropertyScope.Common),
-                        source)
-                    .CloneImpl(false);
-            }
-
-            Arguments setterArgs = null;
-            j = 0;
-            for (var i = 0; i < targetMap.Properties.Length; i++, j++)
-            {
-                if (targetMap.Properties[i].Value is ObjectDefinition)
-                {
-                    assignValues(values[j], targetMap.Properties[i].Value as ObjectDefinition);
-                    assignValues(values[j], targetMap.Properties[i].Value as ArrayDefinition);
-                }
-                else
-                {
-                    var target = targetMap.Properties[i].Value.EvaluateForWrite(_context);
-                    assign(target, values[j], targetMap.Properties[i].Value, ref setterArgs);
-                }
-            }
-        }
-
-        private void assign(JSValue target, JSValue value, object targetName, ref Arguments setterArgs)
+        private void assign(CodeNode targetExp, JSValue target, JSValue value, ref Arguments? setterArgs)
         {
             if (target._valueType == JSValueType.Property)
             {
-                if (setterArgs == null)
-                    setterArgs = new Arguments();
-
                 var fieldSource = _context._objectSource;
 
+                setterArgs ??= [];
                 setterArgs.Reset();
                 setterArgs.Add(value);
 
-                var setter = (target._oValue as Core.PropertyPair).setter;
+                var setter = (target._oValue as Core.PropertyPair)?.setter;
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (_context._strict)
-                    ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, targetName));
+                    ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, targetExp));
             }
             else
             {
@@ -119,7 +121,7 @@ public sealed class ObjectDesctructor : Expression
                         target._attributes |= JSValueAttributesInternal.ReadOnly;
                     }
                     else if (_context._strict)
-                        ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, targetName));
+                        ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, targetExp));
                 }
                 else
                     target.Assign(value);
@@ -127,7 +129,7 @@ public sealed class ObjectDesctructor : Expression
         }
     }
 
-    private readonly Expression _definition;
+    private readonly (CodeNode Key, CodeNode Target, CodeNode? Default)[] _destructDescription;
 
     protected internal override bool ContextIndependent => false;
 
@@ -135,25 +137,27 @@ public sealed class ObjectDesctructor : Expression
 
     public bool Force { get; internal set; }
 
-    public ObjectDesctructor(Expression definition)
+    public bool HasRest { get; }
+
+    public DestructuringType Type { get; }
+
+    public ObjectDesctructor((CodeNode Key, CodeNode Target, CodeNode? Default)[] expressions, bool hasRest, DestructuringType type)
     {
-        if (!(definition is ObjectDefinition) && !(definition is ArrayDefinition))
-            throw new ArgumentException(nameof(definition));
+        if (!CheckTargets(expressions, false))
+            throw new ArgumentException(nameof(expressions));
 
-        if (!CheckObjectDefinition(definition as ObjectDefinition, false) && !CheckObjectDefinition(definition as ArrayDefinition, false))
-            throw new ArgumentException(nameof(definition));
-
-        _definition = definition;
+        _destructDescription = expressions;
+        HasRest = hasRest;
+        Type = type;
     }
 
-    public static bool CheckObjectDefinition(ArrayDefinition arrayDefinition, bool @throw)
+    public static bool CheckTargets((CodeNode Key, CodeNode Target, CodeNode? Default)[] targets, bool @throw)
     {
-        if (arrayDefinition == null)
-            return true;
-
-        for (var i = 0; i < arrayDefinition.Elements.Length; i++)
+        for (var i = 0; i < targets.Length; i++)
         {
-            if (!ExpressionTree.canBeAssignee(arrayDefinition.Elements[i]))
+            if (targets[i].Target is ObjectDesctructor obj
+                ? !CheckTargets(obj._destructDescription, @throw)
+                : !ExpressionTree.canBeAssignee((Expression)targets[i].Target))
             {
                 if (@throw)
                     ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
@@ -164,87 +168,295 @@ public sealed class ObjectDesctructor : Expression
         return true;
     }
 
-    public static bool CheckObjectDefinition(ObjectDefinition objectDefinition, bool @throw)
+    internal static CodeNode Parse(ParseInfo state, ref int index)
     {
-        if (objectDefinition == null)
-            return true;
+        int pos = index;
 
-        for (var i = 0; i < objectDefinition.Properties.Length; i++)
+        var destructChar = state.Code[pos] switch
         {
-            if (!ExpressionTree.canBeAssignee(objectDefinition.Properties[i].Value))
+            '[' => ']',
+            '{' => '}',
+            _ => throw new InvalidOperationException()
+        };
+
+        var type = destructChar switch
+        {
+            ']' => DestructuringType.Array,
+            '}' => DestructuringType.Object,
+            _ => throw new InvalidOperationException()
+        };
+
+        var expressions = new List<(CodeNode? Key, CodeNode Target, CodeNode? Default)>();
+        var hasRest = false;
+
+        do
+        {
+            if (hasRest)
+                ExceptionHelper.ThrowSyntaxError("Rest parameters must be the last in parameters list", state.Code, pos);
+
+            pos++;
+            Tools.SkipSpaces(state.Code, ref pos);
+
+            while (type == DestructuringType.Array && state.Code[pos] is ',')
             {
-                if (@throw)
-                    ExceptionHelper.ThrowReferenceError(Strings.InvalidLefthandSideInAssignment);
-                return false;
+                expressions.Add(default);
+                pos++;
+                Tools.SkipSpaces(state.Code, ref pos);
             }
+
+            hasRest = Parser.Validate(state.Code, "...", ref pos);
+
+            Expression key = null!;
+
+            var nameStart = pos;
+            if (type is DestructuringType.Object)
+            {
+                if (!Parser.ValidateName(state.Code, ref pos, state.Strict))
+                {
+                    if (state.Code[pos] == '[')
+                        key = (Expression)ExpressionTree.Parse(state, ref pos);
+                    else
+                        ExceptionHelper.ThrowSyntaxError("Name expected", state.Code, pos);
+                }
+                else
+                {
+                    var name = state.Code.Substring(nameStart, pos - nameStart);
+                    key = new Constant(name)
+                    {
+                        Position = nameStart,
+                        Length = name.Length
+                    };
+                }
+
+                Tools.SkipSpaces(state.Code, ref pos);
+            }
+            else
+            {
+                key = new Constant(
+                    state.IntConstants.TryGetValue(expressions.Count, out var val)
+                    ? val
+                    : state.IntConstants[expressions.Count] = expressions.Count);
+            }
+
+            if (state.Code.Length == pos)
+                ExceptionHelper.ThrowSyntaxError("Unexpected end of code", state.Code, pos);
+
+            Expression? defaultValue = null;
+            Expression? target = null;
+
+            if (type is DestructuringType.Array || (!hasRest && state.Code[pos] is ':'))
+            {
+                if (type is DestructuringType.Object)
+                {
+                    pos++;
+                    Tools.SkipSpaces(state.Code, ref pos);
+                }
+
+                var targetStart = pos;
+                if (Parser.ValidateName(state.Code, ref pos, state.Strict))
+                {
+                    target = new Variable(state.Code.Substring(targetStart, pos - targetStart), state.LexicalScopeLevel)
+                    {
+                        Position = targetStart,
+                        Length = pos - targetStart
+                    };
+                }
+                else
+                {
+                    target = (Expression)Parse(state, ref pos);
+                }
+            }
+            else
+            {
+                if (key is not Constant)
+                    ExceptionHelper.ThrowSyntaxError("':' expected", state.Code, pos);
+
+                var keyStr = key.Evaluate(null).ToString()!;
+                target = new Variable(keyStr, state.LexicalScopeLevel)
+                {
+                    Position = nameStart,
+                    Length = keyStr.Length
+                };
+            }
+
+            Tools.SkipSpaces(state.Code, ref pos);
+            if (state.Code[pos] == '=')
+            {
+                pos++;
+                Tools.SkipSpaces(state.Code, ref pos);
+
+                defaultValue = ExpressionTree.Parse(state, ref pos, processComma: false);
+            }
+
+            expressions.Add(new(key, target, defaultValue));
+        }
+        while (state.Code[pos] == ',');
+
+        if (state.Code[pos] != destructChar)
+            ExceptionHelper.ThrowSyntaxError("Unexpected character. '" + destructChar + "' was expected", state.Code, pos);
+
+        var result = new ObjectDesctructor([.. expressions.Where(x => x.Key is not null)!], hasRest, type)
+        {
+            Position = index,
+            Length = pos - index + 1,
+        };
+
+        index = pos + 1;
+
+        return result;
+    }
+
+    public override JSValue Evaluate(Context context) => throw new InvalidOperationException();
+
+    protected internal override JSValue EvaluateForWrite(Context context) => new DestructuringAcceptor(this, context, Force);
+
+    public override bool Build(
+        ref CodeNode _this,
+        int expressionDepth, 
+        int scopeLevel,
+        Dictionary<string, VariableDescriptor> variables,
+        CodeContext codeContext,
+        InternalCompilerMessageCallback message,
+        FunctionInfo stats,
+        Options opts)
+    {
+        var result = false;
+        for (var i = 0; i < _destructDescription.Length; i++)
+        {
+            var key = _destructDescription[i].Key;
+            result |= key.Build(ref key, 2, scopeLevel, variables, codeContext, message, stats, opts);
+
+            var target = _destructDescription[i].Target;
+            result |= target.Build(ref target, 2, scopeLevel, variables, codeContext, message, stats, opts);
+
+            var @default = _destructDescription[i].Default;
+            result |= @default?.Build(ref @default, 2, scopeLevel, variables, codeContext, message, stats, opts) ?? false;
+
+            _destructDescription[i] = (key, target, @default);
         }
 
-        return true;
+        return result;
     }
 
-    public override JSValue Evaluate(Context context)
+    public void DefineVariables(Context context)
     {
-        throw new InvalidOperationException();
+        for (var i = 0; i < _destructDescription.Length; i++)
+        {
+            if (_destructDescription[i].Target is Variable v)
+            {
+                if (v.Descriptor.cacheContext != null)
+                {
+                    if (v.Descriptor.cacheContext._variables == null)
+                        v.Descriptor.cacheContext._variables = JSObject.getFieldsContainer();
+                    v.Descriptor.cacheContext._variables[v.Name] = v.Descriptor.cacheValue;
+                }
+
+                v.Descriptor.cacheContext = context;
+
+                if (context._variables is not null)
+                    v.Descriptor.cacheValue = context.DefineVariable(v.Name);
+                else
+                    v.Descriptor.cacheValue = new JSValue()
+                    {
+                        _valueType = JSValueType.Undefined,
+                        _attributes = JSValueAttributesInternal.DoNotDelete
+                    };
+            }
+            else
+                ((ObjectDesctructor)_destructDescription[i].Target).DefineVariables(context);
+        }
     }
 
-    protected internal override JSValue EvaluateForWrite(Context context)
+    internal void clearVariablesCache()
     {
-        return new DestructuringAcceptor(_definition, context, Force);
-    }
-
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
-    {
-        return _definition.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+        for (var i = 0; i < _destructDescription.Length; i++)
+        {
+            if (_destructDescription[i].Target is Variable v)
+            {
+                v.Descriptor.cacheContext = null;
+                v.Descriptor.cacheValue = null;
+            }
+            else
+                ((ObjectDesctructor)_destructDescription[i].Target).clearVariablesCache();
+        }
     }
 
     public IList<Variable> GetTargetVariables()
     {
         var result = new List<Variable>();
-        collectTargetVariables(_definition as ObjectDefinition, result);
-        collectTargetVariables(_definition as ArrayDefinition, result);
+        collectTargetVariables(this, result);
         return result;
     }
 
-    private static void collectTargetVariables(ArrayDefinition arrayDefinition, List<Variable> result)
+    private static void collectTargetVariables(ObjectDesctructor objectDesctructor, List<Variable> result)
     {
-        if (arrayDefinition == null)
-            return;
-
-        for (var i = 0; i < arrayDefinition.Elements.Length; i++)
+        for (var i = 0; i < objectDesctructor._destructDescription.Length; i++)
         {
-            if (arrayDefinition.Elements[i] is Variable)
-            {
-                result.Add((Variable)arrayDefinition.Elements[i]);
-            }
+            if (objectDesctructor._destructDescription[i].Target is Variable)
+                result.Add((Variable)objectDesctructor._destructDescription[i].Target);
             else
-            {
-                collectTargetVariables(arrayDefinition.Elements[i] as ObjectDefinition, result);
-                collectTargetVariables(arrayDefinition.Elements[i] as ArrayDefinition, result);
-            }
-        }
-    }
-
-    private static void collectTargetVariables(ObjectDefinition objectDefinition, List<Variable> result)
-    {
-        if (objectDefinition == null)
-            return;
-
-        for (var i = 0; i < objectDefinition.Properties.Length; i++)
-        {
-            if (objectDefinition.Properties[i].Value is Variable)
-            {
-                result.Add((Variable)objectDefinition.Properties[i].Value);
-            }
-            else
-            {
-                collectTargetVariables(objectDefinition.Properties[i].Value as ObjectDefinition, result);
-                collectTargetVariables(objectDefinition.Properties[i].Value as ArrayDefinition, result);
-            }
+                collectTargetVariables((ObjectDesctructor)objectDesctructor._destructDescription[i].Target, result);
         }
     }
 
     public override string ToString()
     {
-        return _definition.ToString();
+        if (Type is DestructuringType.Object)
+        {
+            return "{ "
+                + string.Join(
+                    ", ",
+                    _destructDescription.Select((x, i) =>
+                    {
+                        var key = x.Key is Constant cnstKey ? cnstKey.Value.ToString() : "[" + x.Key.ToString() + "]";
+
+                        var result = key;
+                        if (HasRest && i == _destructDescription.Length - 1)
+                            result = "..." + result;
+
+                        if (x.Target is not Variable v0 || x.Key is not Constant || v0.Name != key)
+                            result += ": " + x.Target;
+
+                        if (x.Default is not null)
+                            result += " = " + x.Default;
+
+                        return result;
+                    }))
+                + " }";
+        }
+        else
+        {
+            return "[ "
+                + string.Join(
+                    ",",
+                    _destructDescription.Select((x, i) =>
+                    {
+                        var result = string.Empty;
+                        var key = Tools.JSObjectToInt32(x.Key.Evaluate(null));
+                        if (i != key)
+                            result = new string(',', key - i);
+
+                        result += " " + x.Target;
+                        if (HasRest && i == _destructDescription.Length - 1)
+                            result = "..." + result;
+
+                        if (x.Default is not null)
+                            result += " = " + x.Default;
+
+                        return result;
+                    }))
+                + " ]";
+        }
+    }
+
+    protected internal override CodeNode[] GetChildrenImpl()
+    {
+        var src = Type switch
+        {
+            DestructuringType.Object => _destructDescription.Select(x => new CodeNode[] { x.Key, x.Target, x.Default! }),
+            DestructuringType.Array => _destructDescription.Select(x => new CodeNode[] { x.Target, x.Default! }),
+            _ => throw new NotSupportedException()
+        };
+        return src.SelectMany(x => x.Where(y => y != null)).ToArray();
     }
 }

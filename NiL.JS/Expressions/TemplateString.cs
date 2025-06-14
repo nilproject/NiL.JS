@@ -173,7 +173,7 @@ public sealed class TemplateString : Expression
             return new JSValue { _oValue = tagResult, _valueType = JSValueType.SpreadOperatorResult };
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (expressions.Length == 0)
         {
@@ -183,7 +183,7 @@ public sealed class TemplateString : Expression
         }
 
         for (var i = 0; i < expressions.Length; i++)
-            Parser.Build(ref expressions[i], expressionDepth, variables, codeContext, message, stats, opts);
+            Parser.Build(ref expressions[i], expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
 
         return false;
     }
@@ -214,12 +214,6 @@ public sealed class TemplateString : Expression
                 expressions[i] = new ExtractStoredValue(expressions[i]);
             }
         }
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        for (var i = 0; i < expressions.Length; i++)
-            expressions[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override string ToString()

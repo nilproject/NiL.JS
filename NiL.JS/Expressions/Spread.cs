@@ -35,7 +35,7 @@ public sealed class Spread : Expression
     {
         return new JSObject
         {
-            _oValue = _left.Evaluate(context).AsIterable().AsEnumerable().ToArray(),
+            _oValue = _left.Evaluate(context).ToIterable().ToEnumerable().ToArray(),
             _valueType = JSValueType.SpreadOperatorResult
         };
     }
@@ -45,10 +45,10 @@ public sealed class Spread : Expression
         return [_left];
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         CodeNode f = _left;
-        var res = _left.Build(ref f, expressionDepth,  variables, codeContext, message, stats, opts);
+        var res = _left.Build(ref f, expressionDepth, scopeLevel,  variables, codeContext, message, stats, opts);
         _left = f as Expression ?? _left;
         return res;
     }

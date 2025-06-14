@@ -149,9 +149,9 @@ public sealed class CompiledNode : Expressions.Expression
         return _original.EvaluateForWrite(context);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        return _original.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+        return _original.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
     }
 
     public override void Optimize(ref CodeNode _this, Expressions.FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)

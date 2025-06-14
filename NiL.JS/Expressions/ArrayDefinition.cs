@@ -134,12 +134,12 @@ public sealed class ArrayDefinition : Expression
         return elements;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         _codeContext = codeContext;
 
         for (int i = 0; i < elements.Length; i++)
-            Parser.Build(ref elements[i], 2,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref elements[i], 2, scopeLevel,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
         return false;
     }
 
@@ -181,14 +181,6 @@ public sealed class ArrayDefinition : Expression
                 elements[i] = new ExtractStoredValue(elements[i]);
             }
         }
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        base.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-        for (var i = 0; i < elements.Length; i++)
-            elements[i]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override string ToString()

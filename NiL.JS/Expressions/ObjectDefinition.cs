@@ -447,17 +447,17 @@ public sealed class ObjectDefinition : Expression
         return res;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         _codeContext = codeContext;
 
         for (var i = 0; i < _properties.Length; i++)
         {
             var key = _properties[i].Key;
-            Parser.Build(ref key, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref key, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
             var value = _properties[i].Value;
-            Parser.Build(ref value, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref value, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
             _properties[i] = new KeyValuePair<Expression, Expression>(key, value);
         }
@@ -476,17 +476,6 @@ public sealed class ObjectDefinition : Expression
             value.Optimize(ref value, owner, message, opts, stats);
 
             _properties[i] = new KeyValuePair<Expression, Expression>(key, value);
-        }
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        base.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-        for (var i = 0; i < _properties.Length; i++)
-        {
-            _properties[i].Key.RebuildScope(functionInfo, transferedVariables, scopeBias);
-            _properties[i].Value.RebuildScope(functionInfo, transferedVariables, scopeBias);
         }
     }
 

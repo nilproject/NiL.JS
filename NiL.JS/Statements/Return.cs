@@ -75,15 +75,15 @@ public sealed class Return : CodeNode
         return new CodeNode[0];
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        Parser.Build(ref value, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref value, expressionDepth + 1, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
         // Улучшает работу оптимизатора хвостовой рекурсии
         if (message == null && value is Conditional)
         {
             var bat = value as NiL.JS.Expressions.Conditional;
-            var bts = bat.Threads;
+            var bts = bat.Branches;
             _this = new IfElse(bat.LeftOperand, new Return(bts[0]), new Return(bts[1])) { Position = bat.Position, Length = bat.Length };
             return true;
         }
@@ -114,11 +114,6 @@ public sealed class Return : CodeNode
     {
         if (value != null)
             value.Decompose(ref value);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        value?.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
 #if !NETCORE

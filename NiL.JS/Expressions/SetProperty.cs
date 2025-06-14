@@ -101,7 +101,7 @@ public sealed class SetProperty : Expression
         return temp;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         _codeContext = codeContext;
         return false;
@@ -113,13 +113,6 @@ public sealed class SetProperty : Expression
         _value.Optimize(ref cn, owner, message, opts, stats);
         _value = cn as Expression;
         base.Optimize(ref _this, owner, message, opts, stats);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        base.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-        _value.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override T Visit<T>(Visitor<T> visitor)

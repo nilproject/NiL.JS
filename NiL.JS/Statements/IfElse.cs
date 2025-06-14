@@ -171,11 +171,11 @@ public sealed class IfElse : CodeNode
         return res.ToArray();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        Parser.Build(ref condition, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-        Parser.Build(ref then, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
-        Parser.Build(ref @else, expressionDepth, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+        Parser.Build(ref condition, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref then, expressionDepth, scopeLevel, variables, codeContext | CodeContext.Conditional, message, stats, opts);
+        Parser.Build(ref @else, expressionDepth, scopeLevel, variables, codeContext | CodeContext.Conditional, message, stats, opts);
 
         if ((opts & Options.SuppressUselessStatementsElimination) == 0 && condition is ConvertToBoolean)
         {
@@ -223,13 +223,6 @@ public sealed class IfElse : CodeNode
             then.Decompose(ref then);
         if (@else != null)
             @else.Decompose(ref @else);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        then?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        @else?.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override T Visit<T>(Visitor<T> visitor)

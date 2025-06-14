@@ -148,11 +148,11 @@ public sealed class DoWhile : CodeNode
         return res.ToArray();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         expressionDepth = System.Math.Max(1, expressionDepth);
-        Parser.Build(ref _body, expressionDepth, variables, codeContext | CodeContext.InLoop, message, stats, opts);
-        Parser.Build(ref _condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _body, expressionDepth, scopeLevel, variables, codeContext | CodeContext.InLoop, message, stats, opts);
+        Parser.Build(ref _condition, 2, scopeLevel, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
         try
         {
             if (_allowRemove
@@ -198,12 +198,6 @@ public sealed class DoWhile : CodeNode
             _condition.Decompose(ref _condition);
         if (_body != null)
             _body.Decompose(ref _body);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        _condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        _body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override string ToString()

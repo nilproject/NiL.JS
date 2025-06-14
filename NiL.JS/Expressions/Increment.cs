@@ -49,13 +49,13 @@ public sealed class Increment : Expression
                 switch (pd)
                 {
                     case PredictedType.Double:
-                        {
-                            return PredictedType.Double;
-                        }
+                    {
+                        return PredictedType.Double;
+                    }
                     default:
-                        {
-                            return PredictedType.Number;
-                        }
+                    {
+                        return PredictedType.Number;
+                    }
                 }
             }
             return pd;
@@ -82,11 +82,11 @@ public sealed class Increment : Expression
     public override JSValue Evaluate(Context context)
     {
         bool post = _type == IncrimentType.Postincriment;
-        
+
         Function setter = null;
         JSValue res = null;
         var val = _left.EvaluateForWrite(context);
-        
+
         Arguments args = null;
         if (val._valueType == JSValueType.Property)
         {
@@ -112,48 +112,48 @@ public sealed class Increment : Expression
         switch (val._valueType)
         {
             case JSValueType.Boolean:
-                {
-                    val._valueType = JSValueType.Integer;
-                    break;
-                }
+            {
+                val._valueType = JSValueType.Integer;
+                break;
+            }
             case JSValueType.String:
-                {
-                    Tools.JSObjectToNumber(val, val);
-                    break;
-                }
+            {
+                Tools.JSObjectToNumber(val, val);
+                break;
+            }
             case JSValueType.Object:
             case JSValueType.Date:
             case JSValueType.Function:
+            {
+                val.Assign(val.ToPrimitiveValue_Value_String());
+                switch (val._valueType)
                 {
-                    val.Assign(val.ToPrimitiveValue_Value_String());
-                    switch (val._valueType)
+                    case JSValueType.Boolean:
                     {
-                        case JSValueType.Boolean:
-                            {
-                                val._valueType = JSValueType.Integer;
-                                break;
-                            }
-                        case JSValueType.String:
-                            {
-                                Tools.JSObjectToNumber(val, val);
-                                break;
-                            }
-                        case JSValueType.Date:
-                        case JSValueType.Function:
-                        case JSValueType.Object: // null
-                            {
-                                val._valueType = JSValueType.Integer;
-                                val._iValue = 0;
-                                break;
-                            }
+                        val._valueType = JSValueType.Integer;
+                        break;
                     }
-                    break;
+                    case JSValueType.String:
+                    {
+                        Tools.JSObjectToNumber(val, val);
+                        break;
+                    }
+                    case JSValueType.Date:
+                    case JSValueType.Function:
+                    case JSValueType.Object: // null
+                    {
+                        val._valueType = JSValueType.Integer;
+                        val._iValue = 0;
+                        break;
+                    }
                 }
+                break;
+            }
             case JSValueType.NotExists:
-                {
-                    ExceptionHelper.ThrowIfNotExists(val, _left);
-                    break;
-                }
+            {
+                ExceptionHelper.ThrowIfNotExists(val, _left);
+                break;
+            }
         }
 
         if (post && val.Defined)
@@ -163,33 +163,33 @@ public sealed class Increment : Expression
         }
         else
             res = val;
-        
+
         switch (val._valueType)
         {
             case JSValueType.Integer:
+            {
+                if (val._iValue == 0x7FFFFFFF)
                 {
-                    if (val._iValue == 0x7FFFFFFF)
-                    {
-                        val._valueType = JSValueType.Double;
-                        val._dValue = val._iValue + 1.0;
-                    }
-                    else
-                        val._iValue++;
-                    break;
+                    val._valueType = JSValueType.Double;
+                    val._dValue = val._iValue + 1.0;
                 }
+                else
+                    val._iValue++;
+                break;
+            }
             case JSValueType.Double:
-                {
-                    val._dValue++;
-                    break;
-                }
+            {
+                val._dValue++;
+                break;
+            }
             case JSValueType.Undefined:
             case JSValueType.NotExistsInObject:
             case JSValueType.NotExists:
-                {
-                    val._valueType = JSValueType.Double;
-                    val._dValue = double.NaN;
-                    break;
-                }
+            {
+                val._valueType = JSValueType.Double;
+                val._dValue = double.NaN;
+                break;
+            }
         }
 
         if (setter != null)
@@ -204,18 +204,18 @@ public sealed class Increment : Expression
         return res;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         _codeContext = codeContext;
 
-        Parser.Build(ref _left, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
-        if (expressionDepth <= 1 && _type == IncrimentType.Postincriment)
+        Parser.Build(ref _left, expressionDepth + 1, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        if (expressionDepth < 1 && _type == IncrimentType.Postincriment)
             _type = IncrimentType.Preincriment;
         var f = _left as VariableReference ?? ((_left is AssignmentOperatorCache) ? (_left as AssignmentOperatorCache).Source as VariableReference : null);
         if (f != null)
         {
             (f.Descriptor.assignments ??
-                (f.Descriptor.assignments = new System.Collections.Generic.List<Expression>())).Add(this);
+                (f.Descriptor.assignments = [])).Add(this);
         }
         return false;
     }
@@ -231,20 +231,20 @@ public sealed class Increment : Expression
                 case PredictedType.Int:
                 case PredictedType.Number:
                 case PredictedType.Unknown:
-                    {
-                        vr._descriptor.lastPredictedType = PredictedType.Number;
-                        break;
-                    }
+                {
+                    vr._descriptor.lastPredictedType = PredictedType.Number;
+                    break;
+                }
                 case PredictedType.Double:
-                    {
-                        // кроме как double он ничем больше оказаться не может. Даже NaN это double
-                        break;
-                    }
+                {
+                    // кроме как double он ничем больше оказаться не может. Даже NaN это double
+                    break;
+                }
                 default:
-                    {
-                        vr._descriptor.lastPredictedType = PredictedType.Ambiguous;
-                        break;
-                    }
+                {
+                    vr._descriptor.lastPredictedType = PredictedType.Ambiguous;
+                    break;
+                }
             }
         }
     }

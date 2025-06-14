@@ -7,28 +7,7 @@ using NiL.JS.Core.Interop;
 
 namespace NiL.JS.Extensions;
 
-internal abstract class IterableProtocolBase
-{
-    [Hidden]
-    public override bool Equals(object obj)
-    {
-        return base.Equals(obj);
-    }
-
-    [Hidden]
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-
-    [Hidden]
-    public override string ToString()
-    {
-        return base.ToString();
-    }
-}
-
-internal sealed class EnumeratorResult : IterableProtocolBase, IIteratorResult
+internal sealed class EnumeratorResult : HiddenBase, IIteratorResult
 {
     private JSValue _value;
     private bool _done;
@@ -46,12 +25,12 @@ internal sealed class EnumeratorResult : IterableProtocolBase, IIteratorResult
     [Hidden]
     public EnumeratorResult(bool done, JSValue value)
     {
-        this._value = value;
-        this._done = done;
+        _value = value;
+        _done = done;
     }
 }
 
-internal sealed class EnumeratorToIteratorWrapper : IterableProtocolBase, IIterator, IIterable
+internal sealed class EnumeratorToIteratorWrapper : HiddenBase, IIterator, IIterable
 {
     private IEnumerator _enumerator;
     private GlobalContext _context;
@@ -63,10 +42,7 @@ internal sealed class EnumeratorToIteratorWrapper : IterableProtocolBase, IItera
         _context = Context.CurrentGlobalContext;
     }
 
-    public IIterator iterator()
-    {
-        return this;
-    }
+    public IIterator iterator() => this;
 
     public IIteratorResult next(Arguments arguments = null)
     {
@@ -76,18 +52,12 @@ internal sealed class EnumeratorToIteratorWrapper : IterableProtocolBase, IItera
             _context.ProxyValue(read ? _enumerator.Current : null));
     }
 
-    public IIteratorResult @return()
-    {
-        return new EnumeratorResult(true, null);
-    }
+    public IIteratorResult @return() => new EnumeratorResult(true, null);
 
-    public IIteratorResult @throw(Arguments arguments = null)
-    {
-        return new EnumeratorResult(true, null);
-    }
+    public IIteratorResult @throw(Arguments arguments = null) => new EnumeratorResult(true, null);
 }
 
-internal sealed class EnumerableToIterableWrapper : IterableProtocolBase, IIterable
+internal sealed class EnumerableToIterableWrapper : HiddenBase, IIterable
 {
     private IEnumerable enumerable;
 
@@ -97,13 +67,10 @@ internal sealed class EnumerableToIterableWrapper : IterableProtocolBase, IItera
         this.enumerable = enumerable;
     }
 
-    public IIterator iterator()
-    {
-        return new EnumeratorToIteratorWrapper(enumerable.GetEnumerator());
-    }
+    public IIterator iterator() => new EnumeratorToIteratorWrapper(enumerable.GetEnumerator());
 }
 
-internal sealed class IteratorItemAdapter : IterableProtocolBase, IIteratorResult
+internal sealed class IteratorItemAdapter : HiddenBase, IIteratorResult
 {
     private JSValue result;
 
@@ -113,24 +80,12 @@ internal sealed class IteratorItemAdapter : IterableProtocolBase, IIteratorResul
         this.result = result;
     }
 
-    public JSValue value
-    {
-        get
-        {
-            return Tools.GetPropertyOrValue(result["value"], result);
-        }
-    }
+    public JSValue value => Tools.GetPropertyOrValue(result["value"], result);
 
-    public bool done
-    {
-        get
-        {
-            return (bool)Tools.GetPropertyOrValue(result["done"], result);
-        }
-    }
+    public bool done => (bool)Tools.GetPropertyOrValue(result["done"], result);
 }
 
-internal sealed class IteratorAdapter : IterableProtocolBase, IIterator, IIterable
+internal sealed class IteratorAdapter : HiddenBase, IIterator
 {
     private JSValue iterator;
 
@@ -157,30 +112,23 @@ internal sealed class IteratorAdapter : IterableProtocolBase, IIterator, IIterab
         var result = iterator["throw"].As<Function>().Call(iterator, null);
         return new IteratorItemAdapter(result);
     }
-
-    IIterator IIterable.iterator()
-    {
-        return this;
-    }
 }
 
-internal sealed class IterableAdapter : IterableProtocolBase, IIterable
+internal sealed class IterableAdapter : HiddenBase, IIterable
 {
-    private JSValue source;
+    private readonly JSValue _iteratorFunction;
+    private JSValue _source;
 
     [Hidden]
-    public IterableAdapter(JSValue source)
+    public IterableAdapter(JSValue source, JSValue iteratorFunction)
     {
-        this.source = source.IsBox ? source._oValue as JSValue : source;
+        _source = source.IsBox ? source._oValue as JSValue : source;
+        _iteratorFunction = iteratorFunction;
     }
 
     public IIterator iterator()
     {
-        var iteratorFunction = source.GetProperty(Symbol.iterator, false, PropertyScope.Common);
-        if (iteratorFunction._valueType != JSValueType.Function)
-            return null;
-
-        var iterator = iteratorFunction.As<Function>().Call(source, null);
+        var iterator = _iteratorFunction.As<Function>().Call(_source, null);
         if (iterator == null)
             return null;
 
@@ -190,6 +138,34 @@ internal sealed class IterableAdapter : IterableProtocolBase, IIterable
 
 public static class IterationProtocolExtensions
 {
+    public static IEnumerator<JSValue> GetEnumerator(this IIterable iterableObject)
+    {
+        var iterator = iterableObject.iterator();
+        if (iterator is null)
+            ExceptionHelper.Throw(new TypeError("source is not iterable"));
+
+        var item = iterator.next();
+        while (!item.done)
+        {
+            yield return item.value;
+            item = iterator.next();
+        }
+    }
+
+    public static IEnumerable<JSValue> ToEnumerable(this IIterable iterableObject)
+    {
+        var iterator = iterableObject.iterator();
+        if (iterator is null)
+            ExceptionHelper.Throw(new TypeError("source is not iterable"));
+
+        var item = iterator.next();
+        while (!item.done)
+        {
+            yield return item.value;
+            item = iterator.next();
+        }
+    }
+
     public static IEnumerable<JSValue> AsEnumerable(this IIterable iterableObject)
     {
         var iterator = iterableObject.iterator();
@@ -204,12 +180,27 @@ public static class IterationProtocolExtensions
         }
     }
 
+    public static IIterable ToIterable(this JSValue source)
+    {
+        if (source == null)
+            throw new ArgumentNullException("source");
+
+        if (source.Value is IIterable iterable)
+            return iterable;
+
+        var iteratorFunction = source.GetProperty(Symbol.iterator, false, PropertyScope.Common);
+        if (iteratorFunction._valueType != JSValueType.Function)
+            ExceptionHelper.Throw(new TypeError("source is not iterable"));
+
+        return new IterableAdapter(source, iteratorFunction);
+    }
+
     public static IIterable AsIterable(this JSValue source)
     {
         if (source == null)
             throw new ArgumentNullException("source");
 
-        return source.Value as IIterable ?? new IterableAdapter(source);
+        return source.Value as IIterable ?? new IterableAdapter(source, source.GetProperty(Symbol.iterator, false, PropertyScope.Common));
     }
 
     public static bool IsIterable(this JSValue source)
@@ -220,13 +211,7 @@ public static class IterationProtocolExtensions
         return source.Value is IIterable || source.GetProperty(Symbol.iterator, false, PropertyScope.Common)._valueType == JSValueType.Function;
     }
 
-    public static IIterable AsIterable(this IEnumerable enumerable)
-    {
-        return new EnumerableToIterableWrapper(enumerable);
-    }
+    public static IIterable AsIterable(this IEnumerable enumerable) => new EnumerableToIterableWrapper(enumerable);
 
-    public static IIterator AsIterator(this IEnumerator enumerator)
-    {
-        return new EnumeratorToIteratorWrapper(enumerator);
-    }
+    public static IIterator AsIterator(this IEnumerator enumerator) => new EnumeratorToIteratorWrapper(enumerator);
 }

@@ -72,9 +72,9 @@ public sealed class Throw : CodeNode
         return res.ToArray();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        Parser.Build(ref _body, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _body, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
         return false;
     }
 
@@ -88,11 +88,6 @@ public sealed class Throw : CodeNode
     {
         if (_body != null)
             _body.Decompose(ref _body);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        _body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override T Visit<T>(Visitor<T> visitor)

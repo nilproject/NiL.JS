@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using NiL.JS.Core;
+﻿using NiL.JS.Core;
 using NiL.JS.Expressions;
 
 namespace NiL.JS.Statements;
@@ -77,10 +76,5 @@ public sealed class StoreValue : CodeNode
     public override void Decompose(ref CodeNode self)
     {
 
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        _source.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 }

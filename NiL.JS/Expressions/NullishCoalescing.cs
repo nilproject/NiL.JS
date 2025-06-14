@@ -39,9 +39,9 @@ public sealed class NullishCoalescing : Expression
             return _right.Evaluate(context);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        return base.Build(ref _this, expressionDepth,  variables, codeContext | CodeContext.Conditional, message, stats, opts);
+        return base.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext | CodeContext.Conditional, message, stats, opts);
     }
 
     public override T Visit<T>(Visitor<T> visitor)

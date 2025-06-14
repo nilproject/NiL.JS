@@ -10,15 +10,15 @@ namespace NiL.JS.Expressions;
 #endif
 public sealed class Conditional : Expression
 {
-    private Expression[] threads;
+    private Expression[] _branches;
 
     protected internal override bool ContextIndependent
     {
         get
         {
             return base.ContextIndependent
-                && (threads[0] == null || threads[0].ContextIndependent)
-                && (threads[1] == null || threads[1].ContextIndependent);
+                && (_branches[0] == null || _branches[0].ContextIndependent)
+                && (_branches[1] == null || _branches[1].ContextIndependent);
         }
     }
 
@@ -26,8 +26,8 @@ public sealed class Conditional : Expression
     {
         get
         {
-            var ftt = threads[0].ResultType;
-            var stt = threads[1].ResultType;
+            var ftt = _branches[0].ResultType;
+            var stt = _branches[1].ResultType;
             if (ftt == stt)
                 return ftt;
             if (Tools.IsEqual(ftt, stt, PredictedType.Group))
@@ -36,33 +36,27 @@ public sealed class Conditional : Expression
         }
     }
 
-    internal override bool ResultInTempContainer
-    {
-        get { return false; }
-    }
+    internal override bool ResultInTempContainer => false;
 
-    public IList<Expression> Threads { get { return new ReadOnlyCollection<Expression>(threads); } }
+    public IList<Expression> Branches => new ReadOnlyCollection<Expression>(_branches);
 
     public Conditional(Expression first, Expression[] threads)
         : base(first, null, false)
     {
-        this.threads = threads;
+        this._branches = threads;
     }
 
-    public override JSValue Evaluate(Context context)
-    {
-        return (bool)_left.Evaluate(context) ? threads[0].Evaluate(context) : threads[1].Evaluate(context);
-    }
+    public override JSValue Evaluate(Context context) => (bool)_left.Evaluate(context) ? _branches[0].Evaluate(context) : _branches[1].Evaluate(context);
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        Parser.Build(ref _left, expressionDepth + 1, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
-        Parser.Build(ref threads[0], expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
-        Parser.Build(ref threads[1], expressionDepth, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _left, expressionDepth + 1, scopeLevel, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _branches[0], expressionDepth, scopeLevel, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _branches[1], expressionDepth, scopeLevel, variables, codeContext | CodeContext.Conditional | CodeContext.InExpression, message, stats, opts);
 
-        if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && expressionDepth <= 1)
+        if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && expressionDepth < 1)
         {
-            if (threads[0] == null && threads[1] == null)
+            if (_branches[0] == null && _branches[1] == null)
             {
                 if (_left.ContextIndependent)
                 {
@@ -74,58 +68,44 @@ public sealed class Conditional : Expression
                     _this = new Comma(_left, new Constant(JSValue.undefined));
                 }
             }
-            else if (threads[0] == null)
+            else if (_branches[0] == null)
             {
-                _this = new LogicalDisjunction(_left, threads[1]) { Position = Position, Length = Length };
+                _this = new LogicalDisjunction(_left, _branches[1]) { Position = Position, Length = Length };
                 return true;
             }
-            else if (threads[1] == null)
+            else if (_branches[1] == null)
             {
-                _this = new LogicalConjunction(_left, threads[0]) { Position = Position, Length = Length };
+                _this = new LogicalConjunction(_left, _branches[0]) { Position = Position, Length = Length };
                 return true;
             }
             else if (_left.ContextIndependent)
             {
-                _this = ((bool)_left.Evaluate(null) ? threads[0] : threads[1]);
+                _this = ((bool)_left.Evaluate(null) ? _branches[0] : _branches[1]);
                 return false;
             }
         }
 
-        base.Build(ref _this, expressionDepth + 1, variables, codeContext, message, stats, opts);
+        base.Build(ref _this, expressionDepth + 1, scopeLevel, variables, codeContext, message, stats, opts);
         return false;
     }
 
     public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
     {
         base.Optimize(ref _this, owner, message, opts, stats);
-        for (var i = threads.Length; i-- > 0;)
+        for (var i = _branches.Length; i-- > 0;)
         {
-            var cn = threads[i] as CodeNode;
+            var cn = _branches[i] as CodeNode;
             cn.Optimize(ref cn, owner, message, opts, stats);
-            threads[i] = cn as Expression;
+            _branches[i] = cn as Expression;
         }
         if (message != null
-            && (threads[0] is Variable || threads[0] is Constant)
-            && (threads[1] is Variable || threads[1] is Constant)
+            && (_branches[0] is Variable || _branches[0] is Constant)
+            && (_branches[1] is Variable || _branches[1] is Constant)
             && ResultType == PredictedType.Ambiguous)
             message(MessageLevel.Warning, Position, Length, "Type of an expression is ambiguous");
     }
 
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        base.RebuildScope(functionInfo, transferedVariables, scopeBias);
+    public override T Visit<T>(Visitor<T> visitor) => visitor.Visit(this);
 
-        threads[0]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        threads[1]?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-    }
-
-    public override T Visit<T>(Visitor<T> visitor)
-    {
-        return visitor.Visit(this);
-    }
-
-    public override string ToString()
-    {
-        return "(" + _left + " ? " + threads[0] + " : " + threads[1] + ")";
-    }
+    public override string ToString() => "(" + _left + " ? " + _branches[0] + " : " + _branches[1] + ")";
 }

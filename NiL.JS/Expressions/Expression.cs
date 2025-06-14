@@ -31,7 +31,7 @@ public abstract class Expression : CodeNode
 
             if (_right != null)
                 _right.Eliminated = true;
-            
+
             base.Eliminated = value;
         }
     }
@@ -69,13 +69,13 @@ public abstract class Expression : CodeNode
             _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         _codeContext = codeContext;
         codeContext = codeContext | CodeContext.InExpression;
 
-        Parser.Build(ref _left, expressionDepth + 1, variables, codeContext, message, stats, opts);
-        Parser.Build(ref _right, expressionDepth + 1, variables, codeContext, message, stats, opts);
+        Parser.Build(ref _left, expressionDepth + 1, scopeLevel, variables, codeContext, message, stats, opts);
+        Parser.Build(ref _right, expressionDepth + 1, scopeLevel, variables, codeContext, message, stats, opts);
         if (this.ContextIndependent)
         {
             if (message != null && !(this is RegExpExpression))
@@ -171,18 +171,11 @@ public abstract class Expression : CodeNode
     protected internal override CodeNode[] GetChildrenImpl()
     {
         if (_left != null && _right != null)
-            return [
-                _left,
-                _right
-            ];
+            return [_left, _right];
         if (_left != null)
-            return [
-                _left
-            ];
+            return [_left];
         if (_right != null)
-            return [
-                _right
-            ];
+            return [ _right ];
         return null;
     }
 
@@ -224,11 +217,5 @@ public abstract class Expression : CodeNode
 
             _right.Decompose(ref _right, result);
         }
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        _left?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        _right?.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 }

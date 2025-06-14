@@ -30,10 +30,10 @@ public class VariableDescriptor
 {
     internal int definitionScopeLevel;
     internal Context cacheContext;
-    internal JSValue cacheRes;
+    internal JSValue cacheValue;
     internal readonly string name;
-    internal bool captured;
-    internal bool lexicalScope;
+    internal bool isCaptured;
+    internal bool isLexicalScoped;
     internal Expression initializer;
     internal List<Expression> assignments;
     internal readonly List<VariableReference> references;
@@ -41,7 +41,6 @@ public class VariableDescriptor
     internal PredictedType lastPredictedType;
     internal bool isReadOnly;
     internal bool isDefined;
-    internal int scopeBias;
 
     public bool IsDefined { get { return isDefined; } }
     public CodeNode Owner { get { return owner; } }
@@ -49,7 +48,7 @@ public class VariableDescriptor
     public Expression Initializer { get { return initializer; } }
     public string Name { get { return name; } }
     public int ReferenceCount { get { return references.Count; } }
-    public bool LexicalScope { get { return lexicalScope; } }
+    public bool IsLexicalScoped { get { return isLexicalScoped; } }
     public ReadOnlyCollection<Expression> Assignments { get { return assignments == null ? null : assignments.AsReadOnly(); } }
 
     public virtual bool IsParameter => false;
@@ -58,8 +57,8 @@ public class VariableDescriptor
     {
         get
         {
-            for (var i = 0; i < references.Count; i++)
-                yield return references[i];
+            foreach (var v in references)
+                yield return v;
         }
     }
 
@@ -71,7 +70,7 @@ public class VariableDescriptor
             return context.GetVariable(name, forWrite);
 
         if (context == cacheContext && !forWrite)
-            return cacheRes;
+            return cacheValue;
 
         return deepGet(context, forWrite, scopeLevel);
     }
@@ -88,9 +87,9 @@ public class VariableDescriptor
             context = context._parent;
         }
 
-        if (context != cacheContext || cacheRes == null)
+        if (context != cacheContext || cacheValue == null)
         {
-            if (lexicalScope)
+            if (isLexicalScoped)
             {
                 if (context._variables == null || !context._variables.TryGetValue(name, out res))
                     return JSValue.NotExists;
@@ -104,18 +103,18 @@ public class VariableDescriptor
                 || (res._attributes & JSValueAttributesInternal.SystemObject) == 0)
             {
                 cacheContext = context;
-                cacheRes = res;
+                cacheValue = res;
             }
         }
         else
         {
-            res = cacheRes;
+            res = cacheValue;
         }
 
         if (forWrite && res.NeedClone)
         {
             res = context.GetVariable(name, forWrite);
-            cacheRes = res;
+            cacheValue = res;
         }
 
         return res;
@@ -126,17 +125,17 @@ public class VariableDescriptor
         isDefined = true;
         this.definitionScopeLevel = definitionScopeLevel;
         this.name = name;
-        references = new List<VariableReference>();
+        references = [];
     }
 
     internal VariableDescriptor(VariableReference proto, int definitionDepth)
     {
         if (proto._descriptor != null)
-            throw new ArgumentException("proto");
+            throw new InvalidOperationException("Attempt to override descriptor");
 
         definitionScopeLevel = definitionDepth;
         name = proto.Name;
-        references = new List<VariableReference>() { proto };
+        references = [ proto ];
         proto._descriptor = this;
     }
 

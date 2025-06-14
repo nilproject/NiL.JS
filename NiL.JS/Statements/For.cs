@@ -13,40 +13,6 @@ namespace NiL.JS.Statements;
 #endif
 public sealed class For : CodeNode
 {
-    private sealed class PerIterationScopeInitializer : CodeNode
-    {
-        private VariableDescriptor[] _variables;
-
-        public PerIterationScopeInitializer(VariableDescriptor[] variables)
-        {
-            _variables = variables;
-        }
-
-        public override void Decompose(ref CodeNode self)
-        {
-
-        }
-
-        public override JSValue Evaluate(Context context)
-        {
-            if (_variables != null)
-            {
-                for (var i = 0; i < _variables.Length; i++)
-                {
-                    if (_variables[i].captured)
-                        context.DefineVariable(_variables[i].name).Assign(_variables[i].cacheRes.CloneImpl());
-                }
-            }
-
-            return null;
-        }
-
-        public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-        {
-
-        }
-    }
-
     private CodeNode _initializer;
     private CodeNode _condition;
     private CodeNode _post;
@@ -284,10 +250,13 @@ public sealed class For : CodeNode
         return res.ToArray();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        Parser.Build(ref _initializer, 1, variables, codeContext, message, stats, opts);
+        Parser.Build(ref _initializer, 1, scopeLevel, variables, codeContext, message, stats, opts);
         var initAsVds = _initializer as VariableDefinition;
+
+        if (initAsVds?.Kind is VariableKind.LexicalScope or VariableKind.ConstantInLexicalScope)
+            scopeLevel++;
 
         if ((opts & Options.SuppressUselessStatementsElimination) == 0)
         {
@@ -295,39 +264,35 @@ public sealed class For : CodeNode
                 _initializer = initAsVds._initializers[0];
         }
 
-        Parser.Build(ref _condition, 2, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _condition, 2, scopeLevel, variables, codeContext | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
 
         if (_post != null)
         {
-            Parser.Build(ref _post, 1, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _post, 1, scopeLevel, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop | CodeContext.InExpression, message, stats, opts);
             if (_post == null && message != null)
                 message(MessageLevel.Warning, Position, Length, "Last expression of for-loop was removed. Maybe, it's a mistake.");
         }
 
-        Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
+        Parser.Build(ref _body, System.Math.Max(1, expressionDepth), scopeLevel, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
 
-        if (initAsVds != null && initAsVds.Kind != VariableKind.FunctionScope && initAsVds._variables.Any(x => x.captured))
+        if (initAsVds != null 
+            && initAsVds.Kind is VariableKind.LexicalScope or VariableKind.ConstantInLexicalScope 
+            && initAsVds._variables.Any(x => x.isCaptured))
         {
             var bodyAsCodeBlock = _body as CodeBlock;
             if (bodyAsCodeBlock != null)
             {
                 var newLines = new CodeNode[bodyAsCodeBlock._lines.Length + 1];
-                System.Array.Copy(bodyAsCodeBlock._lines, newLines, bodyAsCodeBlock._lines.Length);
-                newLines[newLines.Length - 1] = new PerIterationScopeInitializer(initAsVds._variables);
+                newLines[0] = new PerIterationScopeInitializer(initAsVds._variables);
+                System.Array.Copy(bodyAsCodeBlock._lines, 0, newLines, 1, bodyAsCodeBlock._lines.Length);
                 bodyAsCodeBlock._lines = newLines;
             }
             else
             {
-                _body = bodyAsCodeBlock = new CodeBlock([_body, new PerIterationScopeInitializer(initAsVds._variables)]);
+                _body = bodyAsCodeBlock = new CodeBlock([new PerIterationScopeInitializer(initAsVds._variables), _body]);
             }
 
             bodyAsCodeBlock._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
-
-            for (var i = 0; i < initAsVds._variables.Length; i++)
-            {
-                if (initAsVds._variables[i].captured)
-                    initAsVds._variables[i].definitionScopeLevel = -1;
-            }
         }
 
         if (_condition == null)
@@ -436,14 +401,6 @@ public sealed class For : CodeNode
         _condition?.Decompose(ref _condition);
         _body?.Decompose(ref _body);
         _post?.Decompose(ref _post);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        _initializer?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        _condition?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        _body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        _post?.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override string ToString()

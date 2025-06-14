@@ -102,7 +102,7 @@ public class Assignment : Expression
         }
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
 #if GIVENAMEFUNCTION
         if (first is VariableReference && second is FunctionExpression)
@@ -112,7 +112,7 @@ public class Assignment : Expression
                 fs.name = (first as VariableReference).Name;
         }
 #endif
-        base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+        base.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
 
         var f = _left as VariableReference ?? ((_left is AssignmentOperatorCache) ? (_left as AssignmentOperatorCache).Source as VariableReference : null);
         if (f != null)
@@ -172,7 +172,7 @@ public class Assignment : Expression
             && variable._descriptor.IsDefined
             && (!variable._descriptor.IsParameter || !stats.ContainsArguments)
             && (_codeContext & CodeContext.InWith) == 0
-            && !variable._descriptor.captured
+            && !variable._descriptor.isCaptured
             && !stats.ContainsEval 
             && !stats.ContainsWith
             && (opts & Options.SuppressUselessExpressionsElimination) == 0

@@ -124,6 +124,7 @@ public static class Parser
         new List<Rule> // Сущности внутри выражения
         {
             new Rule("`", TemplateString.Parse),
+            new Rule(ValidateDestructuring(withAssignment: true), ObjectDesctructor.Parse),
             new Rule("[", ArrayDefinition.Parse),
             new Rule("{", ObjectDefinition.Parse),
             new Rule("await", AwaitExpression.Parse),
@@ -150,6 +151,136 @@ public static class Parser
         return false;
     }
 
+    private static ValidateDelegate ValidateDestructuring(bool withAssignment)
+    {
+        return (string code, int index) => validateDestructCore(code, ref index, withAssignment);
+
+        bool skipExpression(string code, ref int index, char stopChar)
+        {
+            var bracketStack = new Stack<char>();
+            while (bracketStack.Count != 0 || (code[index] != ',' && code[index] != stopChar))
+            {
+                switch (code[index])
+                {
+                    case '{' or '(' or '[':
+                        bracketStack.Push(code[index]);
+                        break;
+
+                    case '}' or ')' or ']' when (bracketStack.Count == 0 || bracketStack.Pop() != code[index]):
+                        return false;
+                }
+
+                index++;
+            }
+
+            return true;
+        }
+
+        bool validateDestructCore(string code, ref int index, bool withAssignment)
+        {
+            var destructChar = code[index] switch
+            {
+                '[' => ']',
+                '{' => '}',
+                _ => default,
+            };
+
+            if (destructChar is default(char))
+                return false;
+
+            index++;
+            Tools.SkipSpaces(code, ref index);
+
+            while (true)
+            {
+                if (Validate(code, "...", ref index))
+                {
+                    if (destructChar == ']' && code[index] is '[' or '{')
+                    {
+                        if (!validateDestructCore(code, ref index, false))
+                            return false;
+                    }
+                    else if (!ValidateName(code, ref index))
+                        return false;
+
+                    Tools.SkipSpaces(code, ref index);
+                }
+                else
+                {
+                    var expression = false;
+                    if (code[index] == '[')
+                    {
+                        index++;
+                        if (!skipExpression(code, ref index, ']'))
+                            return false;
+
+                        index++;
+                        expression = true;
+                    }
+
+                    if (expression || ValidateName(code, ref index))
+                    {
+                        Tools.SkipSpaces(code, ref index);
+                        if (code[index] is ':')
+                        {
+                            index++;
+                            Tools.SkipSpaces(code, ref index);
+
+                            var tempIndex = index;
+                            if (!validateDestructCore(code, ref tempIndex, false))
+                            {
+                                index = tempIndex;
+                                if (!ValidateName(code, ref index))
+                                    return false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (destructChar == ']' && code[index] is '[' or '{')
+                        {
+                            if (!validateDestructCore(code, ref index, false))
+                                return false;
+                        }
+                        else
+                            return false;
+                    }
+                }
+
+                if (code[index] == '=')
+                {
+                    index++;
+                    Tools.SkipSpaces(code, ref index);
+
+                    if (!skipExpression(code, ref index, destructChar))
+                        return false;
+                }
+
+                if (code[index] == destructChar)
+                {
+                    index++;
+                    if (withAssignment)
+                    {
+                        Tools.SkipSpaces(code, ref index);
+                        return code[index] is '=';
+                    }
+                    else
+                        return true;
+                }
+
+                if (code[index] is not ',')
+                    return false;
+
+                do
+                {
+                    index++;
+                    Tools.SkipSpaces(code, ref index);
+                } while (code[index] is ',');
+            }
+        }
+        ;
+    }
+
     private static bool ValidateArrow(string code, int index)
     {
         bool bracket = code[index] == '(';
@@ -173,6 +304,9 @@ public static class Parser
         {
             if (code[index] != ')')
             {
+                var destructuring = false;
+                var destructChar = default(char);
+
                 index--;
                 do
                 {
@@ -183,6 +317,28 @@ public static class Parser
                             return false;
                     }
                     while (Tools.IsWhiteSpace(code[index]));
+
+                    if (!destructuring)
+                    {
+                        destructuring = code[index] is '[' or '{';
+                        if (destructuring)
+                        {
+                            destructChar = code[index] switch
+                            {
+                                '[' => ']',
+                                '{' => '}',
+                                _ => default,
+                            };
+
+                            do
+                            {
+                                index++;
+                                if (code.Length == index)
+                                    return false;
+                            }
+                            while (Tools.IsWhiteSpace(code[index]));
+                        }
+                    }
 
                     Validate(code, "...", ref index);
 
@@ -200,17 +356,51 @@ public static class Parser
                     {
                         index++;
                         Tools.SkipSpaces(code, ref index);
-                        var balance = 0;
-                        while (balance >= 0 && (code[index] != ',' && code[index] != ')'))
+
+                        if (destructuring)
                         {
-                            if (code[index] == '(')
-                                balance++;
+                            var bracketStack = new Stack<char>();
+                            while (bracketStack.Count != 0 || (code[index] != ',' && code[index] != destructChar))
+                            {
+                                if (code[index] is '{' or '(' or '[')
+                                    bracketStack.Push(code[index]);
 
-                            if (code[index] == ')')
-                                balance--;
+                                if (code[index] is '}' or ')' or ']')
+                                {
+                                    if (bracketStack.Count == 0 || bracketStack.Pop() != code[index])
+                                        return false;
+                                }
 
-                            index++;
+                                index++;
+                            }
                         }
+                        else
+                        {
+                            var balance = 0;
+                            while (balance >= 0 && (code[index] != ',' && code[index] != ')'))
+                            {
+                                if (code[index] == '(')
+                                    balance++;
+
+                                if (code[index] == ')')
+                                    balance--;
+
+                                index++;
+                            }
+                        }
+                    }
+
+                    if (destructuring && code[index] == destructChar)
+                    {
+                        destructuring = false;
+
+                        do
+                        {
+                            index++;
+                            if (code.Length == index)
+                                return false;
+                        }
+                        while (Tools.IsWhiteSpace(code[index]));
                     }
                 }
                 while (code[index] == ',');
@@ -644,7 +834,7 @@ public static class Parser
 
                         if (index + 1 >= code.Length)
                             ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedEndOfSource);
-                        
+
                         index += 2;
                         work = true;
                         break;
@@ -788,19 +978,17 @@ public static class Parser
         return null;
     }
 
-    internal static void Build<T>(ref T self, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts) where T : CodeNode
+    internal static void Build<T>(ref T self, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts) where T : CodeNode
     {
         var t = (CodeNode)self;
-        while (t != null && t.Build(ref t, expressionDepth, variables, codeContext, message, stats, opts))
-            self = (T)t;
-
+        while (t != null && t.Build(ref t, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts)) ;
         self = (T)t;
     }
 
-    internal static void Build(ref Expression s, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    internal static void Build(ref Expression s, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         CodeNode t = s;
-        Build(ref t, expressionDepth, variables, codeContext, message, stats, opts);
+        Build(ref t, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
         if (t == null)
         {
             s = null;

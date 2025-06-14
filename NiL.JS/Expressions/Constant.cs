@@ -77,11 +77,11 @@ public sealed class Constant : Expression
         return null;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         this._codeContext = codeContext;
 
-        if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && expressionDepth <= 1)
+        if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && expressionDepth < 1)
         {
             _this = null;
             Eliminated = true;

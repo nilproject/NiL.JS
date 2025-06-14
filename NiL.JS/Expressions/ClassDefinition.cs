@@ -233,7 +233,7 @@ public sealed class ClassDefinition : EntityDefinition
 
                     if (state.Code[i] != ']')
                         ExceptionHelper.ThrowSyntaxError("Expected ']'", state.Code, i);
-                    
+
                     do
                         i++;
                     while (Tools.IsWhiteSpace(state.Code[i]));
@@ -438,7 +438,7 @@ public sealed class ClassDefinition : EntityDefinition
         return classDefinition;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (Built)
             return false;
@@ -456,15 +456,16 @@ public sealed class ClassDefinition : EntityDefinition
             variables[_name] = reference._descriptor;
         }
 
-        Parser.Build(ref _constructor, expressionDepth, variables, codeContext | CodeContext.InClassDefinition | CodeContext.InClassConstructor, message, stats, opts);
-        Parser.Build(ref _baseClass, expressionDepth, variables, codeContext, message, stats, opts);
+        Parser.Build(ref _constructor, expressionDepth, scopeLevel, variables, codeContext | CodeContext.InClassDefinition | CodeContext.InClassConstructor, message, stats, opts);
+        Parser.Build(ref _baseClass, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
 
         for (var i = 0; i < _members.Length; i++)
         {
             Parser.Build
             (
                 ref _members[i]._value,
-                expressionDepth,
+                expressionDepth, 
+                scopeLevel,
                 variables,
                 codeContext | CodeContext.InClassDefinition | (_members[i]._static ? CodeContext.InStaticMember : 0),
                 message,
@@ -475,8 +476,8 @@ public sealed class ClassDefinition : EntityDefinition
 
         for (var i = 0; i < _computedProperties.Length; i++)
         {
-            Parser.Build(ref _computedProperties[i]._name, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-            Parser.Build(ref _computedProperties[i]._value, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _computedProperties[i]._name, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _computedProperties[i]._value, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
         }
 
         if (descriptorToRestore != null)
@@ -675,24 +676,6 @@ public sealed class ClassDefinition : EntityDefinition
         {
             _computedProperties[i]._name.Optimize(ref _computedProperties[i]._name, owner, message, opts, stats);
             _computedProperties[i]._value.Optimize(ref _computedProperties[i]._value, owner, message, opts, stats);
-        }
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        base.RebuildScope(functionInfo, null, scopeBias);
-
-        _baseClass?.RebuildScope(functionInfo, null, scopeBias);
-        _constructor.RebuildScope(functionInfo, null, scopeBias);
-        for (var i = 0; i < _computedProperties.Length; i++)
-        {
-            _computedProperties[i].Name.RebuildScope(functionInfo, null, scopeBias);
-            _computedProperties[i].Value.RebuildScope(functionInfo, null, scopeBias);
-        }
-        for (var i = 0; i < _members.Length; i++)
-        {
-            _members[i].Name.RebuildScope(functionInfo, null, scopeBias);
-            _members[i].Value?.RebuildScope(functionInfo, null, scopeBias);
         }
     }
 }

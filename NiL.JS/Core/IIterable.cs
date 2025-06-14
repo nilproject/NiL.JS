@@ -1,6 +1,6 @@
 ﻿namespace NiL.JS.Core;
 
-public interface IIterable
+public interface IIterable 
 {
     IIterator @iterator();
 }

@@ -20,13 +20,13 @@ public sealed class Multiplication : Expression
             switch (pd)
             {
                 case PredictedType.Double:
-                    {
-                        return PredictedType.Double;
-                    }
+                {
+                    return PredictedType.Double;
+                }
                 default:
-                    {
-                        return PredictedType.Number;
-                    }
+                {
+                    return PredictedType.Number;
+                }
             }
         }
     }
@@ -96,9 +96,9 @@ public sealed class Multiplication : Expression
 #endif
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
+        var res = base.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
         if (!res)
         {
             var exp = _left as Constant;

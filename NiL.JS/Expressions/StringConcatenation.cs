@@ -92,9 +92,9 @@ public sealed class StringConcatenation : Expression
         return _tempContainer;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        var res = base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
+        var res = base.Build(ref _this, expressionDepth, scopeLevel,  variables, codeContext, message, stats, opts);
         if (!res)
             _right = _parts[_parts.Length - 1];
         return res;
@@ -135,14 +135,6 @@ public sealed class StringConcatenation : Expression
                 _parts[i] = new ExtractStoredValue(_parts[i]);
             }
         }
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        base.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-        for (var i = 0; i < _parts.Length; i++)
-            _parts[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override string ToString()

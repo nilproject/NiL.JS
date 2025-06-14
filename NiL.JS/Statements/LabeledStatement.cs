@@ -64,9 +64,9 @@ public sealed class LabeledStatement : CodeNode
         return [statement];
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        Parser.Build(ref statement, expressionDepth, variables, codeContext, message, stats, opts);
+        Parser.Build(ref statement, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
         if (statement == null)
         {
             _this = null;
@@ -97,10 +97,5 @@ public sealed class LabeledStatement : CodeNode
     public override void Decompose(ref CodeNode self)
     {
         statement.Decompose(ref statement);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        statement.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 }

@@ -70,9 +70,9 @@ public sealed class New : Expression
         throw new InvalidOperationException();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        if (message != null && expressionDepth <= 1)
+        if (message != null && expressionDepth < 1)
             message(MessageLevel.Warning, Position, 0, "Do not use NewOperator for side effect");
 
         (_left as Call)._callMode = CallMode.Construct;

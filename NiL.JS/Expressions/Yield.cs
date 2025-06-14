@@ -97,7 +97,7 @@ public sealed class Yield : Expression
         {
             if (context._executionMode == ExecutionMode.Regular)
             {
-                var iterator = _left.Evaluate(context).AsIterable().iterator();
+                var iterator = _left.Evaluate(context).ToIterable().iterator();
                 var iteratorResult = iterator.next();
 
                 if (iteratorResult.done)
@@ -147,10 +147,10 @@ public sealed class Yield : Expression
         throw new InvalidOperationException();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         stats.NeedDecompose = true;
-        return base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+        return base.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
     }
 
     public override T Visit<T>(Visitor<T> visitor)

@@ -264,8 +264,10 @@ public static class JSValueExtensions
     {
         if (self._oValue is T)
             return (T)self._oValue;
+        
         if (typeof(T) == typeof(IIterable))
-            return (T)self.AsIterable();
+            return (T)self.ToIterable();
+
         if (typeof(T) == typeof(IIterator))
             return (T)(object)new IteratorAdapter(self);
 

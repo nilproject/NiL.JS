@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using NiL.JS.Core;
 using NiL.JS.Core.Interop;
@@ -650,7 +649,7 @@ public sealed class Array : JSObject, IIterable
         if (arrayLike.IsIterable())
         {
             var index = 0;
-            foreach (var item in arrayLike.AsIterable().AsEnumerable())
+            foreach (var item in arrayLike.ToIterable())
             {
                 callback(item, index++, args[2], simpleFunction ? Function.Empty : args[1].As<ICallable>());
             }

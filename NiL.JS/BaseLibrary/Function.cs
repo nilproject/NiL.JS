@@ -348,6 +348,7 @@ public partial class Function : JSObject, ICallable
         {
             Parser.Build(
                 ref func,
+                0, 
                 0,
                 new Dictionary<string, VariableDescriptor>(),
                 (_initialContext._strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InExpression,
@@ -355,7 +356,6 @@ public partial class Function : JSObject, ICallable
                 null,
                 Options.None);
 
-            func.RebuildScope(null, null, 0);
             func.Optimize(ref func, null, null, Options.None, null);
             func.Decompose(ref func);
 
@@ -560,6 +560,9 @@ public partial class Function : JSObject, ICallable
 
     internal void exit(Context internalContext)
     {
+        for (var i = 0; i < _functionDefinition._parameters.Length; i++)
+            _functionDefinition._parameters[i].Destructor?.clearVariablesCache();
+
         _functionDefinition?._body?.clearVariablesCache();
         internalContext._executionMode = ExecutionMode.Return;
         internalContext.Deactivate();
@@ -581,9 +584,9 @@ public partial class Function : JSObject, ICallable
             for (var i = 0; i < _functionDefinition._parameters.Length; i++)
             {
                 if (_functionDefinition._body._strict)
-                    args[i] = _functionDefinition._parameters[i].cacheRes.CloneImpl(false);
+                    args[i] = _functionDefinition._parameters[i].cacheValue.CloneImpl(false);
                 else
-                    args[i] = _functionDefinition._parameters[i].cacheRes;
+                    args[i] = _functionDefinition._parameters[i].cacheValue;
             }
 
             context._arguments = args;
@@ -598,12 +601,12 @@ public partial class Function : JSObject, ICallable
             if (descriptor.cacheContext != null)
             {
                 var variable = descriptor.cacheContext.DefineVariable(descriptor.name);
-                variable.Assign(descriptor.cacheRes);
+                variable.Assign(descriptor.cacheValue);
                 variable._attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly;
             }
 
             descriptor.cacheContext = internalContext._parent;
-            descriptor.cacheRes = this;
+            descriptor.cacheValue = this;
         }
     }
 
@@ -647,15 +650,16 @@ public partial class Function : JSObject, ICallable
 
     internal void initParameters(Arguments args, bool storeVariablesIntoContext, Context internalContext)
     {
+        var containsDestruct = false;
         storeVariablesIntoContext |= _functionDefinition._functionInfo.ContainsArguments;
-        int min = System.Math.Min(args._iValue, _functionDefinition._parameters.Length - (_functionDefinition._functionInfo.ContainsRestParameters ? 1 : 0));
+        int min = System.Math.Min(
+            args._iValue,
+            _functionDefinition._parameters.Length - (_functionDefinition._functionInfo.ContainsRestParameters ? 1 : 0));
 
         JSValue[] defaultValues = null;
         Array restArray = null;
         if (_functionDefinition._functionInfo.ContainsRestParameters)
-        {
             restArray = new Array();
-        }
 
         for (var i = 0; i < _functionDefinition._parameters.Length; i++)
         {
@@ -710,12 +714,16 @@ public partial class Function : JSObject, ICallable
             }
 
             t._attributes &= ~JSValueAttributesInternal.Cloned;
-            if (prm.captured || storeVariablesIntoContext)
+            if (prm.isCaptured || storeVariablesIntoContext)
                 (internalContext._variables ?? (internalContext._variables = getFieldsContainer()))[prm.Name] = t;
+
             prm.cacheContext = internalContext;
-            prm.cacheRes = t;
+            prm.cacheValue = t;
+            
             if (string.CompareOrdinal(prm.name, "arguments") == 0)
                 internalContext._arguments = t;
+
+            containsDestruct |= prm.Destructor is not null;
         }
 
         for (var i = min; i < args._iValue; i++)
@@ -726,9 +734,7 @@ public partial class Function : JSObject, ICallable
             t._attributes |= JSValueAttributesInternal.Argument;
 
             if (restArray != null)
-            {
                 restArray._data.Add(t);
-            }
         }
 
         for (var i = min; i < _functionDefinition._parameters.Length; i++)
@@ -738,13 +744,13 @@ public partial class Function : JSObject, ICallable
             {
                 if (storeVariablesIntoContext || parameter.assignments != null)
                 {
-                    parameter.cacheRes = (defaultValues?[i] ?? undefined).CloneImpl(false);
+                    parameter.cacheValue = (defaultValues?[i] ?? undefined).CloneImpl(false);
                 }
                 else
                 {
-                    parameter.cacheRes = defaultValues?[i] ?? undefined;
-                    if (!parameter.cacheRes.Defined)
-                        parameter.cacheRes = undefined;
+                    parameter.cacheValue = defaultValues?[i] ?? undefined;
+                    if (!parameter.cacheValue.Defined)
+                        parameter.cacheValue = undefined;
                 }
             }
             else
@@ -752,30 +758,44 @@ public partial class Function : JSObject, ICallable
                 if (storeVariablesIntoContext || parameter.assignments != null)
                 {
                     if (i == min && restArray != null)
-                        parameter.cacheRes = restArray.CloneImpl(false);
+                        parameter.cacheValue = restArray.CloneImpl(false);
                     else
-                        parameter.cacheRes = new JSValue() { _valueType = JSValueType.Undefined };
-                    parameter.cacheRes._attributes = JSValueAttributesInternal.Argument;
+                        parameter.cacheValue = new JSValue() { _valueType = JSValueType.Undefined };
+                    parameter.cacheValue._attributes = JSValueAttributesInternal.Argument;
                 }
                 else
                 {
                     if (i == min && restArray != null)
-                        parameter.cacheRes = restArray;
+                        parameter.cacheValue = restArray;
                     else
-                        parameter.cacheRes = JSValue.undefined;
+                        parameter.cacheValue = undefined;
                 }
             }
 
             parameter.cacheContext = internalContext;
-            if (parameter.Destructor == null && (parameter.captured || storeVariablesIntoContext))
+            if (parameter.Destructor == null && (parameter.isCaptured || storeVariablesIntoContext))
             {
                 if (internalContext._variables == null)
                     internalContext._variables = getFieldsContainer();
-                internalContext._variables[parameter.Name] = parameter.cacheRes;
+                internalContext._variables[parameter.Name] = parameter.cacheValue;
             }
 
             if (string.CompareOrdinal(parameter.name, "arguments") == 0)
-                internalContext._arguments = parameter.cacheRes;
+                internalContext._arguments = parameter.cacheValue;
+
+            containsDestruct |= parameter.Destructor is not null;
+        }
+
+        if (containsDestruct)
+        {
+            for (var i = 0; i < _functionDefinition._parameters.Length; i++)
+            {
+                if (_functionDefinition._parameters[i].Destructor is ObjectDesctructor dest)
+                {
+                    dest.DefineVariables(internalContext);
+                    dest.EvaluateForWrite(internalContext).Assign(_functionDefinition._parameters[i].cacheValue);
+                }
+            }
         }
     }
 
@@ -809,7 +829,7 @@ public partial class Function : JSObject, ICallable
             if (context._variables == null)
                 context._variables = getFieldsContainer();
             for (var i = 0; i < _functionDefinition._parameters.Length; i++)
-                context._variables[_functionDefinition._parameters[i].Name] = _functionDefinition._parameters[i].cacheRes;
+                context._variables[_functionDefinition._parameters[i].Name] = _functionDefinition._parameters[i].cacheValue;
         }
     }
 

@@ -210,12 +210,12 @@ public sealed class Decrement : Expression
         ExceptionHelper.Throw(new TypeError("Cannot decrement property \"" + (_left) + "\" without setter."));
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, System.Collections.Generic.Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         _codeContext = codeContext;
 
-        Parser.Build(ref _left, expressionDepth + 1,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
-        if (expressionDepth <= 1 && _type == DecrimentType.Postdecriment)
+        Parser.Build(ref _left, expressionDepth + 1, scopeLevel,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        if (expressionDepth < 1 && _type == DecrimentType.Postdecriment)
             _type = DecrimentType.Predecriment;
         var f = _left as VariableReference ?? ((_left is AssignmentOperatorCache) ? (_left as AssignmentOperatorCache).Source as VariableReference : null);
         if (f != null)

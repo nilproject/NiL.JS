@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using NiL.JS.Core;
 using NiL.JS.BaseLibrary;
 using NiL.JS.Expressions;
+using System.Linq;
 
 namespace NiL.JS.Statements;
 
@@ -261,7 +262,7 @@ public sealed class ForIn : CodeNode
 
                     variable._valueType = JSValueType.String;
                     variable._oValue = key;
-                    
+
                     if ((keys.Current.Value._attributes & JSValueAttributesInternal.DoNotEnumerate) != 0)
                         continue;
 
@@ -323,16 +324,36 @@ public sealed class ForIn : CodeNode
         return res.ToArray();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        Parser.Build(ref _variable, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-        Parser.Build(ref _source, 2, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-        Parser.Build(ref _body, System.Math.Max(1, expressionDepth), variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
-        if (_variable is Expressions.Comma)
+        Parser.Build(ref _variable, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _source, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _body, System.Math.Max(1, expressionDepth), scopeLevel, variables, codeContext | CodeContext.Conditional | CodeContext.InLoop, message, stats, opts);
+
+        if (_variable is Comma)
         {
-            if ((_variable as Expressions.Comma).RightOperand != null)
+            if ((_variable as Comma).RightOperand != null)
                 throw new InvalidOperationException("Invalid left-hand side in for-in");
-            _variable = (_variable as Expressions.Comma).LeftOperand;
+            _variable = (_variable as Comma).LeftOperand;
+        }
+
+        if (_variable is VariableDefinition { Kind: VariableKind.LexicalScope or VariableKind.ConstantInLexicalScope } varDef
+            && varDef._variables.Any(x => x.isCaptured))
+        {
+            var bodyAsCodeBlock = _body as CodeBlock;
+            if (bodyAsCodeBlock != null)
+            {
+                var newLines = new CodeNode[bodyAsCodeBlock._lines.Length + 1];
+                newLines[0] = new PerIterationScopeInitializer(varDef._variables);
+                System.Array.Copy(bodyAsCodeBlock._lines, 0, newLines, 1, bodyAsCodeBlock._lines.Length);
+                bodyAsCodeBlock._lines = newLines;
+            }
+            else
+            {
+                _body = bodyAsCodeBlock = new CodeBlock([new PerIterationScopeInitializer(varDef._variables), _body]);
+            }
+
+            bodyAsCodeBlock._suppressScopeIsolation = SuppressScopeIsolationMode.DoNotSuppress;
         }
 
         if (message != null
@@ -362,13 +383,6 @@ public sealed class ForIn : CodeNode
         _variable.Decompose(ref _variable);
         _source.Decompose(ref _source);
         _body?.Decompose(ref _body);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        _variable.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        _source.RebuildScope(functionInfo, transferedVariables, scopeBias);
-        _body?.RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override string ToString()

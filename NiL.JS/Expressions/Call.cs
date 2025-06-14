@@ -207,7 +207,7 @@ public sealed class Call : Expression
         context._executionInfo = arguments;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (stats != null)
             stats.UseCall = true;
@@ -224,10 +224,10 @@ public sealed class Call : Expression
 
         for (var i = 0; i < _arguments.Length; i++)
         {
-            Parser.Build(ref _arguments[i], expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+            Parser.Build(ref _arguments[i], expressionDepth + 1, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
         }
 
-        base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts);
+        base.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
         if (_left is Variable)
         {
             var name = _left.ToString();
@@ -236,7 +236,7 @@ public sealed class Call : Expression
                 stats.ContainsEval = true;
                 foreach (var variable in variables)
                 {
-                    variable.Value.captured = true;
+                    variable.Value.isCaptured = true;
                 }
             }
             VariableDescriptor f = null;
@@ -307,14 +307,6 @@ public sealed class Call : Expression
                 _arguments[i] = new ExtractStoredValue(_arguments[i]);
             }
         }
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        base.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-        for (var i = 0; i < _arguments.Length; i++)
-            _arguments[i].RebuildScope(functionInfo, transferedVariables, scopeBias);
     }
 
     public override string ToString()

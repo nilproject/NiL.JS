@@ -36,41 +36,41 @@ public sealed class TypeOf : Expression
         {
             case JSValueType.Integer:
             case JSValueType.Double:
-                {
-                    return JSValue.numberString;
-                }
+            {
+                return JSValue.numberString;
+            }
             case JSValueType.NotExists:
             case JSValueType.NotExistsInObject:
             case JSValueType.Undefined:
-                {
-                    return JSValue.undefinedString;
-                }
+            {
+                return JSValue.undefinedString;
+            }
             case JSValueType.String:
-                {
-                    return JSValue.stringString;
-                }
+            {
+                return JSValue.stringString;
+            }
             case JSValueType.Symbol:
-                {
-                    return JSValue.symbolString;
-                }
+            {
+                return JSValue.symbolString;
+            }
             case JSValueType.Boolean:
-                {
-                    return JSValue.booleanString;
-                }
+            {
+                return JSValue.booleanString;
+            }
             case JSValueType.Function:
-                {
-                    return JSValue.functionString;
-                }
+            {
+                return JSValue.functionString;
+            }
             default:
-                {
-                    return JSValue.objectString;
-                }
+            {
+                return JSValue.objectString;
+            }
         }
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        base.Build(ref _this, expressionDepth,  variables, codeContext, message, stats, opts);
+        base.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
 
         if (_left is Variable variable && variable._throwMode is not ThrowMode.ForceThrow)
             variable._throwMode = ThrowMode.Suspend;

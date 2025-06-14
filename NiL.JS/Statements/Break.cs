@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using NiL.JS.Core;
 
 namespace NiL.JS.Statements;
@@ -59,11 +58,6 @@ public sealed class Break : CodeNode
     }
 
     public override void Decompose(ref CodeNode self)
-    {
-
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
     {
 
     }

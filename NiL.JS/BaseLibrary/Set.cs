@@ -31,7 +31,7 @@ public sealed class Set : IIterable
         if (iterable == null)
             return;
 
-        foreach (var value in iterable.AsEnumerable())
+        foreach (var value in iterable)
         {
             _storage.Add(value.Value);
         }

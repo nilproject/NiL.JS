@@ -124,6 +124,28 @@ internal static class ExceptionHelper
             throw new InvalidOperationException("_executionStack.Context != context");
     }
 
+    internal static bool TryDropChildStackFrames(Context parentContext)
+    {
+        if (_executionStack == null)
+            return false;
+
+        var frame = _executionStack;
+        while (frame != null)
+        { 
+            if (frame.Context == parentContext)
+            {
+                while (_executionStack != frame)
+                    _executionStack = _executionStack.PrevFrame;
+
+                return true;
+            }
+
+            frame = frame.PrevFrame;
+        }
+
+        return false;
+    }
+
     internal static bool TryDropStackFrame(Context context)
     {
         if (_executionStack == null)
@@ -145,8 +167,8 @@ internal static class ExceptionHelper
         {
             return _executionStack = new JsStackFrame
             {
+                PrevFrame = curStackHead,
                 Context = context,
-                PrevFrame = curStackHead
             };
         }
 

@@ -83,9 +83,9 @@ public class Variable : VariableReference
 
     protected internal override bool ContextIndependent => false;
 
-    internal Variable(string name, int scopeLevel, bool reserveControl = true, bool allowEscape = true)
+    internal Variable(string name, int scopeLevel, bool checkReservedWords = true, bool allowEscape = true)
     {
-        if (!Parser.ValidateName(name, 0, reserveControl, allowEscape, false))
+        if (!Parser.ValidateName(name, 0, checkReservedWords, allowEscape, false))
             throw new ArgumentException("Invalid variable name");
 
         ScopeLevel = scopeLevel;
@@ -166,38 +166,34 @@ public class Variable : VariableReference
         return visitor.Visit(this);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         _codeContext = codeContext;
 
         if (!variables.TryGetValue(_variableName, out VariableDescriptor desc) || desc == null)
         {
-            desc = new VariableDescriptor(this, 1) { isDefined = false };
+            desc = new VariableDescriptor(this, 0) { isDefined = false, definitionScopeLevel = -1 };
             variables[_variableName] = Descriptor;
         }
         else
         {
-            if (!desc.references.Contains(this))
-                desc.references.Add(this);
-
             _descriptor = desc;
+            if (!desc.references.Contains((Variable)this))
+                desc.references.Add((Variable)this);
         }
+
+        ScopeLevel = scopeLevel;
 
         if (_variableName == "this")
         {
             stats.ContainsThis = true;
             desc.definitionScopeLevel = -1;
         }
-        else if (((codeContext & CodeContext.InWith) != 0) || (stats.ContainsEval && !desc.isDefined))
-        {
-            ScopeLevel = -Math.Abs(ScopeLevel);
-            desc.definitionScopeLevel = -Math.Abs(desc.definitionScopeLevel);
-        }
 
-        if (desc.lexicalScope)
+        if (desc.isLexicalScoped)
             _throwMode = ThrowMode.ForceThrow;
 
-        if (expressionDepth >= 0 && expressionDepth < 2 && desc.IsDefined && !desc.lexicalScope && (opts & Options.SuppressUselessExpressionsElimination) == 0)
+        if (expressionDepth >= 0 && expressionDepth < 1 && desc.IsDefined && !desc.isLexicalScoped && (opts & Options.SuppressUselessExpressionsElimination) == 0)
         {
             _this = null;
             Eliminated = true;
@@ -217,7 +213,7 @@ public class Variable : VariableReference
                 _codeContext = codeContext,
             };
         }
-        else if (desc.isDefined && (codeContext & CodeContext.InWith) == 0 && !desc.lexicalScope)
+        else if (desc.isDefined && (codeContext & CodeContext.InWith) == 0 && !desc.isLexicalScoped)
         {
             _this = new RegularVariable(Name, ScopeLevel)
             {
@@ -226,6 +222,10 @@ public class Variable : VariableReference
                 Length = Length,
                 _codeContext = codeContext,
             };
+
+            desc.references.Remove(this);
+            if (!desc.references.Contains((Variable)_this))
+                desc.references.Add((Variable)_this);
         }
 
         return false;
@@ -234,7 +234,7 @@ public class Variable : VariableReference
     public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
     {
         if ((opts & Options.SuppressConstantPropogation) == 0
-            && !_descriptor.captured
+            && !_descriptor.isCaptured
             && _descriptor.isDefined
             && !stats.ContainsWith
             && !stats.ContainsEval

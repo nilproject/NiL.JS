@@ -65,9 +65,9 @@ public sealed class Delete : Expression
         return false;
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        if (base.Build(ref _this, expressionDepth, variables, codeContext, message, stats, opts))
+        if (base.Build(ref _this, expressionDepth, scopeLevel, variables, codeContext, message, stats, opts))
             return true;
         if (_left is Variable variable)
         {

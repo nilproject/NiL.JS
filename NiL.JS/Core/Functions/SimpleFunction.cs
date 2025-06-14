@@ -58,6 +58,8 @@ internal sealed class SimpleFunction : Function
             else
                 internalContext._thisBind = targetObject;
 
+            initCachedReference(internalContext);
+
             if (tailCall)
             {
                 initParameters(
@@ -74,8 +76,6 @@ internal sealed class SimpleFunction : Function
 
             // Эта строка обязательно должна находиться после инициализации параметров
             _functionDefinition.recursionDepth++;
-
-            initCachedReference(internalContext);
 
             internalContext._strict |= body._strict;
             internalContext.Activate();
@@ -210,15 +210,25 @@ internal sealed class SimpleFunction : Function
         }
         else
             value._attributes &= ~JSValueAttributesInternal.Cloned;
+
         if (!value.Defined && _functionDefinition._parameters.Length > index && _functionDefinition._parameters[index].initializer != null)
             value.Assign(_functionDefinition._parameters[index].initializer.Evaluate(context));
-        _functionDefinition._parameters[index].cacheRes = value;
+
+        _functionDefinition._parameters[index].cacheValue = value;
         _functionDefinition._parameters[index].cacheContext = context;
-        if (_functionDefinition._parameters[index].captured)
+
+        if (_functionDefinition._parameters[index].isCaptured)
         {
             if (context._variables == null)
                 context._variables = getFieldsContainer();
+
             context._variables[_functionDefinition._parameters[index].name] = value;
+        }
+
+        if (_functionDefinition._parameters[index].Destructor is ObjectDesctructor dest)
+        {
+            dest.DefineVariables(context);
+            dest.EvaluateForWrite(context).Assign(value);
         }
     }
 }

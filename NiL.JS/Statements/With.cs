@@ -143,12 +143,14 @@ public sealed class With : CodeNode
         return res.ToArray();
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         if (stats != null)
             stats.ContainsWith = true;
-        Parser.Build(ref _scope, expressionDepth + 1, variables, codeContext | CodeContext.InExpression, message, stats, opts);
-        Parser.Build(ref _body, expressionDepth, new Dictionary<string, VariableDescriptor>(), codeContext | CodeContext.InWith, message, stats, opts);
+
+        Parser.Build(ref _scope, expressionDepth + 1, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        Parser.Build(ref _body, expressionDepth, scopeLevel + 1, new Dictionary<string, VariableDescriptor>(), codeContext | CodeContext.InWith, message, stats, opts);
+        
         return false;
     }
 
@@ -170,36 +172,6 @@ public sealed class With : CodeNode
             _scope.Decompose(ref _scope);
         if (_body != null)
             _body.Decompose(ref _body);
-    }
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        _scope?.RebuildScope(functionInfo, transferedVariables, scopeBias);
-
-        var tempVariables = new Dictionary<string, VariableDescriptor>();
-        _body?.RebuildScope(functionInfo, tempVariables, scopeBias + 1);
-        if (tempVariables != null)
-        {
-            var block = _body as CodeBlock;
-            if (block != null)
-            {
-                var variables = new List<VariableDescriptor>();
-                foreach (var variable in tempVariables)
-                {
-                    if ((variable.Value is ParameterDescriptor) || !(variable.Value.initializer is FunctionDefinition))
-                    {
-                        transferedVariables.Add(variable.Key, variable.Value);
-                    }
-                    else
-                    {
-                        variables.Add(variable.Value);
-                    }
-                }
-
-                block._variables = variables.ToArray();
-                block._suppressScopeIsolation = block._variables.Length == 0 ? SuppressScopeIsolationMode.Suppress : SuppressScopeIsolationMode.DoNotSuppress;
-            }
-        }
     }
 
     public override string ToString()

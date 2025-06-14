@@ -29,7 +29,7 @@ internal sealed class EntityReference : VariableReference
         ScopeLevel = 1;
         _descriptor = new VariableDescriptor(entityDefinition._name, 1)
         {
-            lexicalScope = !entityDefinition.Hoist,
+            isLexicalScoped = !entityDefinition.Hoist,
             initializer = entityDefinition
         };
     }
@@ -64,24 +64,11 @@ public abstract class EntityDefinition : Expression
         reference = new EntityReference(this);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         _codeContext = codeContext;
         return false;
     }
 
     public override abstract void Decompose(ref Expression self, IList<CodeNode> result);
-
-    public override void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias)
-    {
-        reference.ScopeBias = scopeBias;
-        if (reference._descriptor != null)
-        {
-            if (reference._descriptor.definitionScopeLevel >= 0)
-            {
-                reference._descriptor.definitionScopeLevel = reference.ScopeLevel;
-                reference._descriptor.scopeBias = scopeBias;
-            }
-        }
-    }
 }

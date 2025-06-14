@@ -217,14 +217,20 @@ if ([1, , 2, 3][['length']] != 4)
 if (isNaN.__proto__ != Function.__proto__)
     throw "Incorrect prototype of ExternalFunction";
 
-[...new Date()];
+try {
+    [...new Date()];
+    console.log("enumeration of Date");
+}
+catch (e) {
+
+}
 
 Debug.asserta(() => Error.constructor == Function.constructor);
 Debug.asserta(() => Error.constructor().__proto__ == Function.prototype);
 Debug.asserta(() => Object.call(Error).__proto__ == Object.prototype);
 
-if ((function(a = 5) { return a })() != 5)
-    throw new 'Something wrong with default parameter value';
+if ((function (paramWithDefault = 5) { return paramWithDefault })() != 5)
+    throw 'Something wrong with default parameter value';
 
 if ("1234".substring(0, null) !== "")
     throw "null should be used as 0";

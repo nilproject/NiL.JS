@@ -24,7 +24,7 @@ public sealed class Map : IIterable
         if (iterable == null)
             return;
 
-        foreach (var item in iterable.AsEnumerable())
+        foreach (var item in iterable)
         {
             if (item._valueType < JSValueType.Object)
                 ExceptionHelper.ThrowTypeError($"Iterator value {item} is not an entry object");

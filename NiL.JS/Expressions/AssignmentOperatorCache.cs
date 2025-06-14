@@ -98,7 +98,7 @@ public sealed class AssignmentOperatorCache : Expression
         base.Optimize(ref _this, owner, message, opts, stats);
     }
 
-    public override bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         // second будем использовать как флаг isVisited
         if (_right != null)
@@ -109,7 +109,7 @@ public sealed class AssignmentOperatorCache : Expression
         _codeContext = codeContext;
 
         var left = _left as CodeNode;
-        var res = _left.Build(ref left, expressionDepth,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
+        var res = _left.Build(ref left, expressionDepth, scopeLevel,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
         _left = left as Expression;
         if (!res && _left is Variable)
             (_left as Variable)._throwMode = ThrowMode.ForceThrow;

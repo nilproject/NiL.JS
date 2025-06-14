@@ -69,7 +69,7 @@ public abstract class CodeNode
 
     public abstract JSValue Evaluate(Context context);
 
-    public virtual bool Build(ref CodeNode _this, int expressionDepth, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
+    public virtual bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         return false;
     }
@@ -87,10 +87,5 @@ public abstract class CodeNode
 
     public abstract void Decompose(ref CodeNode self);
 
-    public abstract void RebuildScope(FunctionInfo functionInfo, Dictionary<string, VariableDescriptor> transferedVariables, int scopeBias);
-
-    public virtual T Visit<T>(Visitor<T> visitor)
-    {
-        return default(T);
-    }
+    public virtual T Visit<T>(Visitor<T> visitor) => default(T);
 }
