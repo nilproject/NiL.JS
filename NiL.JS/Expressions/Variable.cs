@@ -182,19 +182,8 @@ public class Variable : VariableReference
 
         ScopeLevel = scopeLevel;
 
-        if (!desc.isCaptured)
-        {
-            if (desc.definitionScopeLevel >= 0 && desc.definitionScopeLevel < scopeLevel)
-                desc.isCaptured = true;
-            else for (var i = 0; i < desc.references.Count; i++)
-                {
-                    if (desc.references[i].ScopeLevel < stats.ScopeLevel)
-                    {
-                        desc.isCaptured = true;
-                        break;
-                    }
-                }
-        }
+        if (!desc.isCaptured && desc.definitionScopeLevel < stats.ScopeLevel)
+            desc.isCaptured = true;
 
         if (_variableName == "this")
         {

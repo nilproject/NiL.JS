@@ -2,8 +2,6 @@ param (
     [string]$type
  )
 
-echo $type
-
 $LAST_TAG=$(git tag|where{$_ -Match "^\d+.\d+.\d+$"})[-1]
 $URL=$(git remote get-url origin).Replace('.git', '') + "/commit/";
 $COMMITS=$(git cherry $LAST_TAG HEAD)
