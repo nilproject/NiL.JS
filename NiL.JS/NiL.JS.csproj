@@ -33,18 +33,17 @@
   </PropertyGroup>
 
   <Target Name="ReleaseNotesReading" BeforeTargets="GenerateNuspec">
-    <ReadLinesFromFile File="../Release.md">
+    <ReadLinesFromFile File="../ReleaseText.md">
       <Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
     </ReadLinesFromFile>
   </Target>
 
   <PropertyGroup Condition="'$(VersionPrefix)' == ''">
-    <VersionPrefix>2.5</VersionPrefix>
+    <VersionPrefix>2.6</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="../README.md" Pack="true" PackagePath="" />
-    <None Include="../Release.md" Pack="true" PackagePath="" />
     <None Include="../License" Pack="true" PackagePath="" />
     <None Include="../nil.js logo small.png" Pack="true" PackagePath="" />
     <None Include="../nil.js_logo_48.png" Pack="true" PackagePath="" />

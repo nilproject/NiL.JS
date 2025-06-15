@@ -107,6 +107,7 @@ jobs:
     - name: Build release message
       run: |
         ./buildReleaseMessage.ps1 > ./Release.md
+        ./buildReleaseMessage.ps1 simple > ./ReleaseText.md
     
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
@@ -134,7 +135,13 @@ jobs:
         echo "tag=$TAG" >> $env:GITHUB_OUTPUT
         echo $GITHUB_OUTPUT
         echo $env:GITHUB_OUTPUT
-        git tag $TAG
+
+    - name: Upload package to nuget.org
+      run: dotnet nuget push nuget/NiL.JS.${{ steps.tag.outputs.tag }}.nupkg -k ${{ secrets.NUGET_ORG_TOKEN }} -s https://nuget.org/
+
+    - name: Push release tag
+      run: |
+        git tag ${{ steps.tag.outputs.tag }}
         git push --tags
 
     - name: Make release ${{ steps.tag.outputs.tag }}
@@ -144,7 +151,3 @@ jobs:
         name: ${{ steps.tag.outputs.tag }}
         artifacts: ${{ env.Nuget_Pack_Output_Directory }}/*
         bodyFile: ./Release.md
-
-    - name: Upload package to nuget.org
-      run: dotnet nuget push nuget/NiL.JS.${{ steps.tag.outputs.tag }}.nupkg -k ${{ secrets.NUGET_ORG_TOKEN }} -s https://nuget.org/
-        

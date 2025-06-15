@@ -1,5 +1,5 @@
 $VERSION="$VERSION"
-if ($VERSION -eq "") { $VERSION="2.5" }
+if ($VERSION -eq "") { $VERSION="2.6" }
 echo $(
 rd nil.js\bin -Force -Recurse -erroraction 'silentlycontinue'
 rd nil.js\obj -Force -Recurse -erroraction 'silentlycontinue'
