@@ -183,7 +183,7 @@ public sealed class TemplateString : Expression
         }
 
         for (var i = 0; i < expressions.Length; i++)
-            Parser.Build(ref expressions[i], expressionDepth, scopeLevel, variables, codeContext, message, stats, opts);
+            Parser.Build(ref expressions[i], expressionDepth, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
         return false;
     }

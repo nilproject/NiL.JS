@@ -480,7 +480,7 @@ public sealed class FunctionDefinition : EntityDefinition
 
             if (!string.IsNullOrEmpty(name))
             {
-                func.Reference.ScopeLevel = state.LexicalScopeLevel - 1;
+                func.Reference.ScopeLevel = (state.CodeContext & CodeContext.InExpression) == 0 ? state.LexicalScopeLevel - 1 : state.LexicalScopeLevel;
                 func.Reference.Position = nameStartPos;
                 func.Reference.Length = name.Length;
 
@@ -542,20 +542,16 @@ public sealed class FunctionDefinition : EntityDefinition
             state.LexicalScopeLevel--;
         }
 
-        if ((state.CodeContext & CodeContext.InExpression) == 0
-             && (kind != FunctionKind.Arrow || (state.CodeContext & CodeContext.InEval) == 0))
+        if ((state.CodeContext & CodeContext.InExpression) == 0)
         {
-            if ((state.CodeContext & CodeContext.InExport) == 0 || !string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name))
             {
-                if (string.IsNullOrEmpty(name))
-                {
+                if ((state.CodeContext & CodeContext.InEval) == 0)
                     ExceptionHelper.ThrowSyntaxError("Function must has name", state.Code, index);
-                }
-
-                if (kind != FunctionKind.Arrow && kind != FunctionKind.Method)
-                {
-                    state.Variables.Add(func.reference._descriptor);
-                }
+            }
+            else if (kind != FunctionKind.Method)
+            {
+                state.Variables.Add(func.reference._descriptor);
             }
         }
 
@@ -680,7 +676,11 @@ public sealed class FunctionDefinition : EntityDefinition
             if (reference._descriptor != oldDesc)
                 variables[_name] = reference._descriptor;
 
-            reference._descriptor.definitionScopeLevel = scopeLevel - 1;
+            reference._descriptor.definitionScopeLevel = (_codeContext & CodeContext.InExpression) switch
+            {
+                CodeContext.InExpression => scopeLevel,
+                _ => scopeLevel - 1,
+            };
         }
 
         foreach (var prm in _parameters)

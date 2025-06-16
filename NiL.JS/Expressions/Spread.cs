@@ -48,7 +48,7 @@ public sealed class Spread : Expression
     public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
         CodeNode f = _left;
-        var res = _left.Build(ref f, expressionDepth, scopeLevel,  variables, codeContext, message, stats, opts);
+        var res = _left.Build(ref f, expressionDepth, scopeLevel,  variables, codeContext | CodeContext.InExpression, message, stats, opts);
         _left = f as Expression ?? _left;
         return res;
     }

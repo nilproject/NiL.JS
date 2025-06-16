@@ -348,7 +348,7 @@ public partial class Function : JSObject, ICallable
         {
             Parser.Build(
                 ref func,
-                0, 
+                0,
                 0,
                 new Dictionary<string, VariableDescriptor>(),
                 (_initialContext._strict ? CodeContext.Strict : CodeContext.None) | CodeContext.InExpression,
@@ -595,7 +595,9 @@ public partial class Function : JSObject, ICallable
     internal void initCachedReference(Context internalContext)
     {
         var descriptor = _functionDefinition.reference._descriptor;
-        if (descriptor != null && descriptor.name != null && descriptor.cacheContext != internalContext._parent)
+        var targetContext = (_functionDefinition._codeContext & CodeContext.InExpression) != 0 ? internalContext : internalContext._parent;
+
+        if (descriptor != null && descriptor.name != null && descriptor.cacheContext != targetContext)
         {
             if (descriptor.cacheContext != null)
             {
@@ -604,7 +606,7 @@ public partial class Function : JSObject, ICallable
                 variable._attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly;
             }
 
-            descriptor.cacheContext = internalContext._parent;
+            descriptor.cacheContext = targetContext;
             descriptor.cacheValue = this;
         }
     }
@@ -718,7 +720,7 @@ public partial class Function : JSObject, ICallable
 
             prm.cacheContext = internalContext;
             prm.cacheValue = t;
-            
+
             if (string.CompareOrdinal(prm.name, "arguments") == 0)
                 internalContext._arguments = t;
 

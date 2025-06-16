@@ -324,13 +324,13 @@ public sealed class ObjectDesctructor : Expression
         for (var i = 0; i < _destructDescription.Length; i++)
         {
             var key = _destructDescription[i].Key;
-            result |= key.Build(ref key, 2, scopeLevel, variables, codeContext, message, stats, opts);
+            result |= key.Build(ref key, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
             var target = _destructDescription[i].Target;
-            result |= target.Build(ref target, 2, scopeLevel, variables, codeContext, message, stats, opts);
+            result |= target.Build(ref target, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
 
             var @default = _destructDescription[i].Default;
-            result |= @default?.Build(ref @default, 2, scopeLevel, variables, codeContext, message, stats, opts) ?? false;
+            result |= @default?.Build(ref @default, 2, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts) ?? false;
 
             _destructDescription[i] = (key, target, @default);
         }
