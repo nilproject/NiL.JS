@@ -104,9 +104,10 @@ public sealed class Property : Expression
 
         var oldTempContainer = _tempContainer;
         _tempContainer = null;
-        if (_cachedMemberName is null)
+
+        if (source._valueType < JSValueType.Object)
         {
-            if (source._valueType < JSValueType.Object)
+            if (_cachedMemberName is null)
             {
                 if (oldTempContainer == null)
                     oldTempContainer = new JSValue();
@@ -114,10 +115,10 @@ public sealed class Property : Expression
                 oldTempContainer.Assign(source);
                 source = oldTempContainer;
             }
-            else if (source != source._oValue)
-            {
-                source = source._oValue as JSValue ?? source;
-            }
+        }
+        else if (source != source._oValue)
+        {
+            source = source._oValue as JSValue ?? source;
         }
 
         key = _cachedMemberName ?? _right.Evaluate(context);
