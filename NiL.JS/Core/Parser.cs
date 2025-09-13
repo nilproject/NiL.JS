@@ -599,7 +599,12 @@ public static class Parser
     public static bool ValidateNumber(string code, ref int index)
     {
         double fictive = 0.0;
-        return Tools.ParseJsNumber(code, ref index, out fictive, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix);
+        return Tools.ParseJsNumber(
+            code, 
+            ref index, 
+            out fictive, 
+            0, 
+            ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowSeparators);
     }
 
     public static bool ValidateRegex(string code, int index)

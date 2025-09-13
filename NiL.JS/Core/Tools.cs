@@ -25,6 +25,7 @@ public enum ParseNumberOptions
     ProcessOctalLiteralsOldSyntax = 2,
     AllowFloat = 4,
     AllowAutoRadix = 8,
+    AllowSeparators = 16,
     Default = 2 + 4 + 8
 }
 
@@ -195,10 +196,9 @@ public static class Tools
                     if (s.Length > 0 && (Tools.IsWhiteSpace(s[0]) || Tools.IsWhiteSpace(s[s.Length - 1])))
                         s = s.Trim(Tools.TrimChars);
 
-                    if (Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length)
-                        return double.NaN;
-
-                    return x;
+                    return ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix) && ix < s.Length
+                        ? double.NaN
+                        : x;
                 }
                 case JSValueType.Date:
                 case JSValueType.Function:
@@ -308,7 +308,7 @@ public static class Tools
                 int ix = 0;
                 string s = (value._oValue.ToString()).Trim();
 
-                if (!Tools.ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
+                if (!ParseJsNumber(s, ref ix, out x, 0, ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowFloat) || ix < s.Length)
                     return 0;
 
                 if (double.IsNaN(x))
@@ -1014,6 +1014,7 @@ public static class Tools
         bool processOldOctals = (options & ParseNumberOptions.ProcessOctalLiteralsOldSyntax) != 0;
         bool allowRadixDetection = (options & ParseNumberOptions.AllowAutoRadix) != 0;
         bool allowFloat = (options & ParseNumberOptions.AllowFloat) != 0;
+        bool allowSeparators = (options & ParseNumberOptions.AllowFloat) != 0;
 
         int i = index;
         while (i < code.Length && IsWhiteSpace(code[i]) && !IsLineTerminator(code[i]))
@@ -1054,10 +1055,13 @@ public static class Tools
             && (code[i] == '0')
             && (i + 1 < code.Length))
         {
+            if (code[i + 1] is '_')
+                ExceptionHelper.ThrowSyntaxError("Numeric separator can not be used after leading 0", code, i);
+
             if (NumberUtils.IsDigit(code[i + 1]))
             {
                 if (raiseOldOctalLiterals)
-                    ExceptionHelper.ThrowSyntaxError("Octal literals not allowed in strict mode", code, i);
+                    ExceptionHelper.ThrowSyntaxError("Octal literals are not allowed in strict mode", code, i);
 
                 while ((i + 1 < code.Length) && (code[i + 1] == '0'))
                 {
@@ -1092,8 +1096,7 @@ public static class Tools
 
         if (allowFloat && radix == 0)
         {
-            var len = NumberUtils.TryParse(code, i, out value);
-            if (len <= 0)
+            if (!NumberUtils.TryParse(code, i, allowSeparators, out value, out var len) || len <= 0)
                 return false;
 
             value *= sign;

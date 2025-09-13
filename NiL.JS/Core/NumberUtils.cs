@@ -64,6 +64,10 @@ public static class NumberUtils
                 pos++;
                 parsed = true;
             }
+            else if (parsed && source[pos] == '_' && source.Length > pos + 1 && IsDigit(source[pos + 1]))
+            {
+                pos++;
+            }
             else
             {
                 break;
@@ -79,7 +83,10 @@ public static class NumberUtils
         return 0;
     }
 
-    public static int TryParse(string source, int start, out double value)
+    public static bool TryParse(string source, int start, out double value)
+        => TryParse(source, start, false, out value, out _);
+
+    public static bool TryParse(string source, int start, bool allowSeparator, out double value, out int length)
     {
         var position = start;
 
@@ -97,7 +104,8 @@ public static class NumberUtils
             && source[position] != '.')
         {
             value = double.NaN;
-            return -1;
+            length = -1;
+            return false;
         }
 
         if (intPart == null)
@@ -128,10 +136,11 @@ public static class NumberUtils
         if (intPartSize <= 0 && (fracDigitsCount + fracLeadingCount) <= 0)
         {
             value = double.NaN;
-            return -1;
+            length = -1;
+            return false;
         }
 
-        var eDeg = intPartSize - intDigitsCount - intLeadingCount;
+        var eDeg = 0;
         if (position < source.Length && (source[position] == 'e' || source[position] == 'E'))
         {
             position++;
@@ -389,7 +398,8 @@ public static class NumberUtils
             value = BitConverter.Int64BitsToDouble((long)longBuffer);
         }
 
-        return position - start;
+        length = position - start;
+        return true;
     }
 
     public static int IntLog(long value)
