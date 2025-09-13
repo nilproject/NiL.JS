@@ -171,13 +171,13 @@ public static class JSValueExtensions
             case TypeCode.Object:
             {
                 var value = self.Value;
-                if (self is null || value is null)
+                if (value is null)
                     return default(T);
 
                 if (value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
                     return ((Function)value).MakeDelegate<T>();
 
-                if (self._oValue is not null && typeof(T).IsAssignableFrom(self._oValue.GetType()))
+                if (typeof(T).IsAssignableFrom(self._oValue.GetType()))
                     return (T)self._oValue;
 
                 if (typeof(T).IsAssignableFrom(value.GetType()))
@@ -185,7 +185,7 @@ public static class JSValueExtensions
 
                 try
                 {
-                    return (T)(Tools.ConvertJStoObj(self, typeof(T), true) ?? value);
+                    return (T)Tools.ConvertJStoObj(self, typeof(T), true);
                 }
                 catch (InvalidCastException)
                 {
@@ -264,7 +264,7 @@ public static class JSValueExtensions
     {
         if (self._oValue is T)
             return (T)self._oValue;
-        
+
         if (typeof(T) == typeof(IIterable))
             return (T)self.ToIterable();
 

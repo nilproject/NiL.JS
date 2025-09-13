@@ -779,7 +779,10 @@ public sealed class CodeBlock : CodeNode
         }
         else
         {
-            return '{' + _sourceCode.Substring(Position + 1, Length - 2) + '}';
+            if (Position == 0)
+                return '{' + _sourceCode.Substring(Position, Length) + '}';
+            else
+                return _sourceCode.Substring(Position, Length);
         }
     }
 }

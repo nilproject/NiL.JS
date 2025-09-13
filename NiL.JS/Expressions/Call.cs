@@ -102,8 +102,7 @@ public sealed class Call : Expression
                                               and not FunctionKind.MethodGenerator 
                                               and not FunctionKind.AnonymousGenerator))
         {
-            tailCall(context, func);
-            context._objectSource = targetObject;
+            tailCall(context, func, targetObject);
             return JSValue.undefined;
         }
         else
@@ -193,18 +192,21 @@ public sealed class Call : Expression
         return context.Eval(evalCode.ToString(), false);
     }
 
-    private void tailCall(Context context, Function func)
+    private void tailCall(Context context, Function func, JSValue targetObject)
     {
         context._executionMode = ExecutionMode.TailRecursion;
 
         var arguments = new Arguments(context);
 
         for (int i = 0; i < this._arguments.Length; i++)
+        {
+            context._objectSource = null;
             arguments.Add(Tools.EvalExpressionSafe(context, _arguments[i]));
-        context._objectSource = null;
+        }
 
         arguments._callee = func;
         context._executionInfo = arguments;
+        context._objectSource = targetObject;
     }
 
     public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
