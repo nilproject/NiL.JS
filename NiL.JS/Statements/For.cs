@@ -255,9 +255,6 @@ public sealed class For : CodeNode
         Parser.Build(ref _initializer, 1, scopeLevel, variables, codeContext, message, stats, opts);
         var initAsVds = _initializer as VariableDefinition;
 
-        if (initAsVds?.Kind is VariableKind.LexicalScope or VariableKind.ConstantInLexicalScope)
-            scopeLevel++;
-
         if ((opts & Options.SuppressUselessStatementsElimination) == 0)
         {
             if (initAsVds != null && initAsVds._initializers.Length == 1 && initAsVds.Kind == VariableKind.FunctionScope)
