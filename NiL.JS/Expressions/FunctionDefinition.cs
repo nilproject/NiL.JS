@@ -546,7 +546,7 @@ public sealed class FunctionDefinition : EntityDefinition
         {
             if (string.IsNullOrEmpty(name))
             {
-                if ((state.CodeContext & CodeContext.InEval) == 0)
+                if ((state.CodeContext & (CodeContext.InEval | CodeContext.InDefaultExport)) == 0)
                     ExceptionHelper.ThrowSyntaxError("Function must has name", state.Code, index);
             }
             else if (kind != FunctionKind.Method)

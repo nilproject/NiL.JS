@@ -418,11 +418,11 @@ public sealed class ClassDefinition : EntityDefinition
 
         if ((state.CodeContext & CodeContext.InExpression) == 0)
         {
-            if ((state.CodeContext & CodeContext.InExport) == 0 || !string.IsNullOrEmpty(name))
+            if ((state.CodeContext & CodeContext.InDefaultExport) == 0)
             {
                 if (string.IsNullOrEmpty(name))
                 {
-                    ExceptionHelper.ThrowSyntaxError("Class must have a name", state.Code, index);
+                    ExceptionHelper.ThrowSyntaxError("Class must has a name", state.Code, index);
                 }
 
                 if (state.Strict && state.FunctionScopeLevel != state.LexicalScopeLevel)

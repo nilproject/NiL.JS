@@ -26,7 +26,7 @@ public enum CodeContext
     InGenerator = 1 << 10,
     InFunction = 1 << 11,
     InAsync = 1 << 12,
-    InExport = 1 << 13,
+    InDefaultExport = 1 << 13,
     AllowDirectives = 1 << 14,
 }
 

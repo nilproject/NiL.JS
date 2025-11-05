@@ -34,7 +34,7 @@ public sealed class ExportStatement : CodeNode
             reexport = -1;
             Tools.SkipSpaces(state.Code, ref index);
 
-            using (state.WithCodeContext(CodeContext.InExport))
+            using (state.WithCodeContext(CodeContext.InDefaultExport))
             {
                 var variables = VariableDefinition.Parse(state, ref index);
 
@@ -56,20 +56,17 @@ public sealed class ExportStatement : CodeNode
         }
         else
         {
-            using (state.WithCodeContext(CodeContext.InExport))
-            {
-                reexport = -1;
-                var definition =
-                    VariableDefinition.Parse(state, ref index)
-                    ?? ClassDefinition.Parse(state, ref index)
-                    ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function)
-                    ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.AsyncFunction);
+            reexport = -1;
+            var definition =
+                VariableDefinition.Parse(state, ref index)
+                ?? ClassDefinition.Parse(state, ref index)
+                ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.Function)
+                ?? FunctionDefinition.Parse(state, ref index, BaseLibrary.FunctionKind.AsyncFunction);
 
-                if (definition == null)
-                    ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
+            if (definition == null)
+                ExceptionHelper.ThrowSyntaxError(Strings.UnexpectedToken, state.Code, index);
 
-                result._internalDefinition = definition;
-            }
+            result._internalDefinition = definition;
         }
 
         Tools.SkipSpaces(state.Code, ref index);
@@ -229,7 +226,6 @@ public sealed class ExportStatement : CodeNode
             return false;
 
         codeContext &= ~CodeContext.InExpression;
-        codeContext |= CodeContext.InExport;
 
         if (_internalDefinition != null)
         {
@@ -240,7 +236,7 @@ public sealed class ExportStatement : CodeNode
             for (var i = 0; i < _map.Count; i++)
             {
                 var v = _map[i].Value;
-                Parser.Build(ref v, expressionDepth + 1, scopeLevel, variables, codeContext, message, stats, opts);
+                Parser.Build(ref v, expressionDepth + 1, scopeLevel, variables, codeContext | (_map[i].Key is "" ? CodeContext.InDefaultExport : 0), message, stats, opts);
                 if (v != _map[i].Value)
                     _map[i] = new KeyValuePair<string, Expression>(_map[i].Key, v);
             }
