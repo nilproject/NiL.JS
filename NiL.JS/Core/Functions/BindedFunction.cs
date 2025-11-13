@@ -88,13 +88,17 @@ internal sealed class BindedFunction : Function
         {
             internalArgs = new Arguments();
 
-            internalArgs.Length = _bindedArguments.Length + arguments.Length;
+            internalArgs.Length = _bindedArguments.Length;
 
             for (var i = 0; i < _bindedArguments.Length; i++)
                 internalArgs[i] = _bindedArguments[i].CloneImpl();
 
-            for (var i = 0; i < arguments.Length; i++)
-                internalArgs[i + _bindedArguments.Length] = arguments[i];
+            if (arguments is not null)
+            {
+                internalArgs.Length += arguments.Length;
+                for (var i = 0; i < arguments.Length; i++)
+                    internalArgs[i + _bindedArguments.Length] = arguments[i];
+            }
         }
 
         if ((construct || _thisBind == null || _thisBind.IsNull || !_thisBind.Defined) && (targetObject != null && targetObject.Defined))
