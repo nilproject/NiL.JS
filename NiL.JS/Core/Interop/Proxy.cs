@@ -396,7 +396,7 @@ internal abstract class Proxy : JSObject
                 return new JSValue
                 {
                     _valueType = JSValueType.Property,
-                    _oValue = new PropertyPair(_indexerProperty.getter.bind(args), _indexerProperty.setter.bind(args))
+                    _oValue = new PropertyPair(_indexerProperty.getter?.bind(args), _indexerProperty.setter?.bind(args))
                 };
             }
             else
