@@ -155,7 +155,7 @@ public static class JSValueExtensions
 
             case TypeCode.Int16:
             {
-                return (T)(object)(Int16)Tools.JSObjectToInt32(self);
+                return (T)(object)(short)Tools.JSObjectToInt32(self);
             }
 
             case TypeCode.Int32:
@@ -170,15 +170,15 @@ public static class JSValueExtensions
 
             case TypeCode.Object:
             {
+                if (self._oValue is not null && typeof(T).IsAssignableFrom(self._oValue.GetType()))
+                    return (T)self._oValue;
+
                 var value = self.Value;
                 if (value is null)
                     return default(T);
 
                 if (value is Function && typeof(Delegate).IsAssignableFrom(typeof(T)))
                     return ((Function)value).MakeDelegate<T>();
-
-                if (typeof(T).IsAssignableFrom(self._oValue.GetType()))
-                    return (T)self._oValue;
 
                 if (typeof(T).IsAssignableFrom(value.GetType()))
                     return (T)value;
