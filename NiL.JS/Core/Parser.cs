@@ -11,9 +11,9 @@ namespace NiL.JS.Core;
 
 public enum CodeFragmentType
 {
-    Statement,
-    Expression,
-    ExpressionContinuation
+    Statement = 0,
+    Expression = 1,
+    ExpressionContinuation = 2,
 }
 
 internal class Rule
@@ -246,6 +246,8 @@ public static class Parser
                             return false;
                     }
                 }
+
+                Tools.SkipSpaces(code, ref index);
 
                 if (code[index] == '=')
                 {

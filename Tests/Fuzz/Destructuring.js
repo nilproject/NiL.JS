@@ -119,3 +119,10 @@
     }
     f();
 })();
+
+(function test11() {
+    var obj = { name: 'qwe', age: 17 }
+    const { name: n, age: a } = obj
+    console.assert(n == obj.name);
+    console.assert(a == obj.age);
+})();
