@@ -13,14 +13,23 @@ public class Bug_309
     [TestMethod]
     public void SetField91()
     {
-        var context = new Context();
+        var globalContext = new GlobalContext();
+        try
+        {
+            globalContext.ActivateInCurrentThread();
+            var context = new Context();
 
-        context.GlobalContext.IndexersSupport = IndexersSupport.ForceEnable;
-        _ = context.GlobalContext.GetConstructor(typeof(Dictionary<string, string>));
-        context.GlobalContext.IndexersSupport = IndexersSupport.WithAttributeOnly;
+            context.GlobalContext.IndexersSupport = IndexersSupport.ForceEnable;
+            _ = context.GlobalContext.GetConstructor(typeof(Dictionary<string, string>));
+            context.GlobalContext.IndexersSupport = IndexersSupport.WithAttributeOnly;
 
-        context.Add("test", new Dictionary<string, string> { ["myKey"] = "myValue" });
+            context.Add("test", new Dictionary<string, string> { ["myKey"] = "myValue" });
 
-        Assert.AreEqual(context.Eval("test.myKey").ToString(), "myValue");
+            Assert.AreEqual("myValue", context.Eval("test.myKey").ToString());
+        }
+        finally
+        {
+            globalContext.Deactivate();
+        }
     }
 }
