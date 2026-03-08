@@ -1024,11 +1024,7 @@ public sealed class String : JSObject, IIterable
 
     public IIterator iterator()
     {
-#if !NETSTANDARD
         return _oValue.ToString().GetEnumerator().AsIterator();
-#else
-        return _oValue.ToString().ToCharArray().GetEnumerator().AsIterator();
-#endif
     }
 
     public static JSValue raw(Arguments args)
