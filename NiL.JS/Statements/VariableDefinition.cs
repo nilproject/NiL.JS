@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NiL.JS.Core;
 using NiL.JS.Expressions;
 
@@ -153,9 +154,18 @@ public sealed class VariableDefinition : CodeNode
         else
             position = s;
 
+        names.Sort();
+
         var variables = new VariableDescriptor[names.Count];
-        for (int i = 0, skiped = 0; i < names.Count; i++)
+        var skiped = 0;
+        for (var i = 0; i < names.Count; i++)
         {
+            if (i > 0 && names[i] == names[i - 1])
+            {
+                skiped++;
+                continue;
+            }
+
             bool skip = false;
             for (var j = 0; j < state.Variables.Count - i + skiped; j++)
             {
@@ -183,9 +193,13 @@ public sealed class VariableDefinition : CodeNode
             state.Variables.Add(variables[i]);
         }
 
+        if (skiped > 0 && variables.Any(static x => x == null))
+            variables = [.. variables.Where(static x => x != null)];
+
+
         var pos = index;
         index = position;
-        return new VariableDefinition(variables, initializers.ToArray(), mode)
+        return new VariableDefinition(variables, [.. initializers], mode)
         {
             Position = pos,
             Length = index - pos
