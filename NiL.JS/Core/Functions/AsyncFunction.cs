@@ -39,6 +39,9 @@ internal sealed class AsyncFunction : Function
             }
             else
             {
+                if (!promiseOrValue.Defined)
+                    return promiseOrValue;
+
                 var thenFunc = promiseOrValue["then"];
                 if (thenFunc._valueType != JSValueType.Function)
                     return promiseOrValue;
@@ -99,12 +102,10 @@ internal sealed class AsyncFunction : Function
         var body = _functionDefinition._body;
         if (body._lines.Length == 0)
         {
-            notExists._valueType = JSValueType.NotExists;
-            return notExists;
+            return Context.GlobalContext.WrapValue(Promise.resolve(notExists));
         }
 
-        if (arguments == null)
-            arguments = new Arguments(Context.CurrentContext);
+        arguments ??= new Arguments(Context.CurrentContext);
 
         var internalContext = new Context(_initialContext, true, this);
         internalContext._callDepth = (Context.CurrentContext?._callDepth ?? 0) + 1;

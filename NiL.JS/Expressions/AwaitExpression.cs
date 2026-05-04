@@ -44,7 +44,7 @@ public sealed class AwaitExpression : Expression
             return null;
         }
 
-        if (result == null || result["then"]._valueType != JSValueType.Function)
+        if (result == null || !result.Defined || result["then"]._valueType != JSValueType.Function)
             return result;
 
         context._executionMode = ExecutionMode.Suspend;
