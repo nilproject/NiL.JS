@@ -1052,8 +1052,8 @@ public static class Tools
 
         bool result = false;
         if (allowRadixDetection
-            && (code[i] == '0')
-            && (i + 1 < code.Length))
+            && (i + 1 < code.Length)
+            && (code[i] == '0'))
         {
             if (code[i + 1] is '_')
                 ExceptionHelper.ThrowSyntaxError("Numeric separator can not be used after leading 0", code, i);
