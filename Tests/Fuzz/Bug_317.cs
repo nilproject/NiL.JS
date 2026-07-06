@@ -263,6 +263,42 @@ export default async function(param1, extra = 'default') {
     }
 
     // ---------------------------------------------------------------
+    // Body-variable coverage (similar place fix: CodeBlock.initVariables)
+    // ---------------------------------------------------------------
+
+    // Async functions WITHOUT any await still run concurrently when callers use
+    // Task.Yield(). Body-local variables (var x) share VariableDescriptor.cacheContext/
+    // cacheValue with all invocations. Without the initVariables fix (cew=true for
+    // async kinds) a concurrent pair would overwrite each other's cache and deepGet()
+    // would return notExists for x.
+    [TestMethod]
+    public async Task ConcurrentCalls_BodyLocalVariable_NoAwait()
+    {
+        var script = Script.Parse(@"
+export default async function(param1) {
+    var x = param1?.value;
+    return x;
+}
+");
+        var context = new GlobalContext();
+        var module = new Module("main.js", script, context);
+        module.Run();
+        var run = module.Exports.Default.As<Function>();
+
+        var tasks = Enumerable.Range(0, 10)
+            .Select(async i =>
+            {
+                await Task.Yield();
+                var result = run.Call(null, new Arguments() { new { value = "b" } });
+                return await ((Promise)result.Value).Task;
+            });
+        var values = await Task.WhenAll(tasks);
+
+        for (int i = 0; i < values.Length; i++)
+            Assert.AreEqual("b", values[i].As<string>(), $"values[{i}]");
+    }
+
+    // ---------------------------------------------------------------
     // Fix 2: `await <non-thenable>` must not throw TypeError
     // ---------------------------------------------------------------
 

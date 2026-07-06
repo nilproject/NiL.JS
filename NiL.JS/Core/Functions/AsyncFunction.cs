@@ -110,18 +110,23 @@ internal sealed class AsyncFunction : Function
         var internalContext = new Context(_initialContext, true, this);
         internalContext._callDepth = (Context.CurrentContext?._callDepth ?? 0) + 1;
 
+        // Async invocations can run concurrently on different thread-pool threads (each
+        // C# await after Task.Yield() can resume on a different thread). The shared
+        // VariableDescriptor.cacheContext/cacheValue fields on the function definition
+        // are not per-invocation, so concurrent calls overwrite each other's cache.
+        // Passing true to both initContext and initParameters forces every binding
+        // (arguments object, function name, and all parameters) into the per-invocation
+        // internalContext._variables dictionary. deepGet() then finds them via
+        // context._variables.TryGetValue() even after the cache has been overwritten.
+        // Body-variable storage is handled in CodeBlock.initVariables via the async-kind
+        // check that forces cew=true for all async function kinds.
+        // This mirrors GeneratorIterator.initContext() which also passes true for both.
         initContext(
             targetObject,
             arguments,
-            _functionDefinition._functionInfo.ContainsArguments,
+            true,
             internalContext);
 
-        // Async functions can be interleaved: while one invocation is suspended at an await,
-        // another can start and overwrite the shared VariableDescriptor.cacheContext/cacheValue
-        // fields that live on the function definition (not per-invocation). Forcing
-        // storeVariablesIntoContext=true stores every parameter in the per-invocation
-        // internalContext._variables dictionary, so deepGet() can find them via
-        // context._variables.TryGetValue() even after the cache has been stomped.
         initParameters(
             arguments,
             true,
