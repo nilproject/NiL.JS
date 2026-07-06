@@ -670,11 +670,23 @@ public sealed class CodeBlock : CodeNode
     internal void initVariables(Context context)
     {
         var functionInfo = context._owner?._functionDefinition?._functionInfo;
+        var kind = context._owner?._functionDefinition?._kind;
+        var isAsync = kind is FunctionKind.AsyncFunction
+            or FunctionKind.AsyncAnonymousFunction
+            or FunctionKind.AsyncArrow
+            or FunctionKind.AsyncMethod;
+        // Async functions can run concurrently on different thread-pool threads, so
+        // their VariableDescriptor.cacheContext/cacheValue fields (shared across all
+        // invocations of the same function definition) are not safe to rely on.
+        // Force cew=true so every variable gets its own slot in the per-invocation
+        // context._variables dictionary, making deepGet() lookups correct even after
+        // concurrent invocations overwrite the shared cache fields.
         var cew = functionInfo == null
             || functionInfo.ContainsEval
             || functionInfo.ContainsWith
             || functionInfo.NeedDecompose
-            || functionInfo.ContainsDebugger;
+            || functionInfo.ContainsDebugger
+            || isAsync;
         for (var i = 0; i < _variables.Length; i++)
         {
             var variable = _variables[i];
