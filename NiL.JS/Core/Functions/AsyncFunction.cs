@@ -116,13 +116,15 @@ internal sealed class AsyncFunction : Function
             _functionDefinition._functionInfo.ContainsArguments,
             internalContext);
 
+        // Async functions can be interleaved: while one invocation is suspended at an await,
+        // another can start and overwrite the shared VariableDescriptor.cacheContext/cacheValue
+        // fields that live on the function definition (not per-invocation). Forcing
+        // storeVariablesIntoContext=true stores every parameter in the per-invocation
+        // internalContext._variables dictionary, so deepGet() can find them via
+        // context._variables.TryGetValue() even after the cache has been stomped.
         initParameters(
             arguments,
-            _functionDefinition._functionInfo.ContainsEval
-            || _functionDefinition._functionInfo.ContainsWith
-            || _functionDefinition._functionInfo.ContainsDebugger
-            || _functionDefinition._functionInfo.NeedDecompose
-            || (internalContext?._debugging ?? false),
+            true,
             internalContext);
 
         var result = run(internalContext);
