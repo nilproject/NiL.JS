@@ -34,4 +34,20 @@ export async function a(x){
 
         Script.Parse(code);
     }
+
+    [TestMethod]
+    [DataRow("var a = 'x'// comment\nreturn a;", "x")]
+    [DataRow("var a = \"x\"// comment\nreturn a;", "x")]
+    [DataRow("var a = 'x'/* comment */\nreturn a;", "x")]
+    [DataRow("var a = 'x'// a / b\nreturn a;", "x")]
+    [DataRow("var a = '1'// '2' ? 'x'.replace(/\\D/g, '') : 0;\nreturn a;", "1")]
+    [DataRow("var a = 'x'// comment\nvar b = 4 / 2;// comment\nreturn a + b;", "x2")]
+    public void CommentRightAfterStringLiteral(string code, string expected)
+    {
+        var context = new Context();
+
+        var result = context.Eval("(function() {\n" + code + "\n})()");
+
+        Assert.AreEqual(expected, result.ToString());
+    }
 }

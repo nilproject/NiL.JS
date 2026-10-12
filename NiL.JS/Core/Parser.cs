@@ -899,9 +899,8 @@ public static class Parser
                 break;
             }
 
-            ValidateString(code, ref index, false);
-
-            index++;
+            if (!ValidateString(code, ref index, false))
+                index++;
         }
 
         return (res as object ?? code).ToString();
