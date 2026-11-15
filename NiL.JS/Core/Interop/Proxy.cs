@@ -348,66 +348,69 @@ internal abstract class Proxy : JSObject
 
         forWrite &= (_attributes & JSValueAttributesInternal.Immutable) == 0;
 
-        string name = key.ToString();
-        if (_fields.TryGetValue(name, out JSValue r) && r.Exists)
-        {
-            if (forWrite && r.NeedClone)
-                _fields[name] = r = r.CloneImpl(false);
-
-            return r;
-        }
-
-        IList<MemberInfo> m = null;
         if (key._valueType is not JSValueType.Integer and not JSValueType.Double)
-            _members.TryGetValue(name, out m);
-
-        if (m == null || m.Count == 0)
         {
-            JSValue property;
-            var protoInstanceAsJs = PrototypeInstance as JSValue;
-            if (protoInstanceAsJs != null)
-                property = protoInstanceAsJs.GetProperty(key, forWrite && !_indexersSupported, memberScope);
-            else
-                property = base.GetProperty(key, forWrite && !_indexersSupported, memberScope);
-
-            if (property.Exists)
+            string name = key.ToString();
+            if (_fields.TryGetValue(name, out JSValue r) && r.Exists)
             {
-                if (forWrite)
-                {
-                    if ((property._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly))
-                        == JSValueAttributesInternal.SystemObject)
-                    {
-                        if (protoInstanceAsJs != null)
-                            property = protoInstanceAsJs.GetProperty(key, true, memberScope);
-                        else
-                            property = base.GetProperty(key, true, memberScope);
-                    }
-                }
+                if (forWrite && r.NeedClone)
+                    _fields[name] = r = r.CloneImpl(false);
 
-                return property;
+                return r;
             }
 
-            if (_indexersSupported)
+            IList<MemberInfo> m = null;
+            if (key._valueType is not JSValueType.Integer and not JSValueType.Double)
+                _members.TryGetValue(name, out m);
+
+            if (m != null && m.Count != 0)
             {
-                var args = new Arguments { null, key };
-                return new JSValue
-                {
-                    _valueType = JSValueType.Property,
-                    _oValue = new PropertyPair(_indexerProperty.getter?.bind(args), _indexerProperty.setter?.bind(args))
-                };
+                var result = proxyMember(m);
+
+                if (forWrite && result.NeedClone)
+                    result = result.CloneImpl(false);
+
+                _fields[name] = result;
+
+                return result;
             }
-            else
-                return property;
         }
 
-        var result = proxyMember(m);
+        JSValue property;
+        var protoInstanceAsJs = PrototypeInstance as JSValue;
+        if (protoInstanceAsJs != null)
+            property = protoInstanceAsJs.GetProperty(key, forWrite && !_indexersSupported, memberScope);
+        else
+            property = base.GetProperty(key, forWrite && !_indexersSupported, memberScope);
 
-        if (forWrite && result.NeedClone)
-            result = result.CloneImpl(false);
+        if (property.Exists)
+        {
+            if (forWrite)
+            {
+                if ((property._attributes & (JSValueAttributesInternal.SystemObject | JSValueAttributesInternal.ReadOnly))
+                    == JSValueAttributesInternal.SystemObject)
+                {
+                    if (protoInstanceAsJs != null)
+                        property = protoInstanceAsJs.GetProperty(key, true, memberScope);
+                    else
+                        property = base.GetProperty(key, true, memberScope);
+                }
+            }
 
-        _fields[name] = result;
+            return property;
+        }
 
-        return result;
+        if (_indexersSupported)
+        {
+            var args = new Arguments { null, key };
+            return new JSValue
+            {
+                _valueType = JSValueType.Property,
+                _oValue = new PropertyPair(_indexerProperty._getter?.bind(args), _indexerProperty._setter?.bind(args))
+            };
+        }
+
+        return property;
     }
 
     internal JSValue proxyMember(IList<MemberInfo> m)
