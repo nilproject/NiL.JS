@@ -11,7 +11,7 @@ namespace NiL.JS;
 #if !NETCORE
 public class NamespaceProvider : CustomType
 {
-    private static BinaryTree<Type> types = new BinaryTree<Type>();
+    private static readonly BinaryTree<Type> types = new BinaryTree<Type>();
 
     private static void addTypes(System.Reflection.Assembly assembly)
     {
@@ -97,8 +97,7 @@ public class NamespaceProvider : CustomType
                         }
                         else
                         {
-                            if (ut == null)
-                                ut = new List<Type> { resultType };
+                            ut ??= new List<Type> { resultType };
 
                             ut.Add(selection.Current.Value);
                         }
@@ -114,8 +113,7 @@ public class NamespaceProvider : CustomType
             {
                 res = Context.CurrentGlobalContext.GetGenericTypeSelector(ut);
 
-                if (children == null)
-                    children = new BinaryTree<JSValue>();
+                children ??= new BinaryTree<JSValue>();
 
                 children[name] = res;
                 return res;
@@ -129,8 +127,7 @@ public class NamespaceProvider : CustomType
             {
                 res = new NamespaceProvider(reqname);
 
-                if (children == null)
-                    children = new BinaryTree<JSValue>();
+                children ??= new BinaryTree<JSValue>();
 
                 children.Add(name, res);
                 return res;

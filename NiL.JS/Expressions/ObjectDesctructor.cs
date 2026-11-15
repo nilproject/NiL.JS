@@ -104,7 +104,7 @@ public sealed class ObjectDesctructor : Expression
                 setterArgs.Reset();
                 setterArgs.Add(value);
 
-                var setter = (target._oValue as Core.PropertyPair)?.setter;
+                var setter = (target._oValue as Core.PropertyPair)?._setter;
                 if (setter != null)
                     setter.Call(fieldSource, setterArgs);
                 else if (_context._strict)

@@ -9,8 +9,8 @@ namespace NiL.JS.Core.Interop;
 
 public class JsonSerializer
 {
-    private PropertyInfo[] _properties;
-    private FieldInfo[] _fields;
+    private readonly PropertyInfo[] _properties;
+    private readonly FieldInfo[] _fields;
 
     public Type TargetType { get; }
     public int Weight { get; }

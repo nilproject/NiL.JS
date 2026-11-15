@@ -186,8 +186,7 @@ public class Equal : Expression
             case JSValueType.Symbol:
             case JSValueType.Object:
                 {
-                    if (_tempContainer == null)
-                        _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                    _tempContainer ??= new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
                     _tempContainer.Assign(temp);
                     temp = _tempContainer;
 

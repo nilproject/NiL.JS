@@ -9,7 +9,7 @@ namespace NiL.JS.BaseLibrary;
 [RequireNewKeyword]
 public sealed class Set : IIterable
 {
-    private HashSet<object> _storage;
+    private readonly HashSet<object> _storage;
 
     public int size
     {

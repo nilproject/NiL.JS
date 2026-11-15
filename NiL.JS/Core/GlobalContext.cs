@@ -257,12 +257,13 @@ public sealed class GlobalContext : Context
 
                     if (type.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false))
                         dynamicProxy._attributes |= JSValueAttributesInternal.Immutable;
+
                     constructor._attributes = dynamicProxy._attributes;
                     dynamicProxy._attributes |= JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.NonConfigurable | JSValueAttributesInternal.ReadOnly;
 
-                    if (dynamicProxy != parentPrototype && type != typeof(ConstructorProxy))
+                    if (dynamicProxy != parentPrototype && type != typeof(ConstructorProxy) && dynamicProxy is PrototypeProxy protoProxy)
                     {
-                        dynamicProxy._fields["constructor"] = constructor;
+                        protoProxy._constructor = constructor;
                     }
                 }
 
@@ -270,8 +271,7 @@ public sealed class GlobalContext : Context
 
                 if (dynamicProxy != null && typeof(JSValue).IsAssignableFrom(type))
                 {
-                    if (dynamicProxy._objectPrototype == null)
-                        dynamicProxy._objectPrototype = _globalPrototype ?? JSValue.@null;
+                    dynamicProxy._objectPrototype ??= _globalPrototype ?? JSValue.@null;
                     _ = (dynamicProxy as PrototypeProxy).PrototypeInstance;
                 }
             }
@@ -491,14 +491,14 @@ public sealed class GlobalContext : Context
             }
             default:
             {
-                if (value is Delegate)
+                if (value is Delegate valueDelegate)
                 {
                     if (value is ExternalFunctionDelegate)
                         return new ExternalFunction(value as ExternalFunctionDelegate);
                     return new MethodProxy(
                         this,
-                        ((Delegate)value).GetMethodInfo(),
-                        ((Delegate)value).Target)
+                        valueDelegate.GetMethodInfo(),
+                        valueDelegate.Target)
                     {
                         _objectPrototype = GetPrototype(typeof(MethodProxy))
                     };
@@ -553,7 +553,7 @@ public sealed class GlobalContext : Context
                     }
 
                     (value as Task).ContinueWith(task => result.Start());
-                    return new ObjectWrapper(new Promise(result), GetPrototype(typeof(Promise)));
+                    return WrapValue(new Promise(result));
                 }
 #if !NET40
                 else if (value is IEnumerable && NativeReadOnlyListCtors.IsReadOnlyList(value))

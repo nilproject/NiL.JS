@@ -76,8 +76,7 @@ public sealed class Addition : Expression
 
         var temp = _tempContainer;
         _tempContainer = null;
-        if (temp == null)
-            temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+        temp ??= new JSValue { _attributes = JSValueAttributesInternal.Temporary };
 
         temp._valueType = f._valueType;
         temp._iValue = f._iValue;
@@ -365,8 +364,8 @@ public sealed class Addition : Expression
                     _this = new StringConcatenation([_left, _right]);
                 }
 
-                _this.Position = this.Position;
-                _this.Length = this.Length;
+                _this.Position = Position;
+                _this.Length = Length;
             }
         }
 

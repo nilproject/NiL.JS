@@ -11,7 +11,7 @@ namespace NiL.JS.Core;
 #endif
 public sealed class JSException : Exception
 {
-    private ExceptionHelper.StackTraceState _stackTraceData;
+    private readonly ExceptionHelper.StackTraceState _stackTraceData;
 
     public JSValue Error { get; }
     public CodeNode ExceptionMaker { get; }
@@ -70,11 +70,11 @@ public sealed class JSException : Exception
             {
                 var n = Error.GetProperty("name");
                 if (n._valueType == JSValueType.Property)
-                    n = (n._oValue as PropertyPair).getter.Call(Error, null).ToString();
+                    n = (n._oValue as PropertyPair)._getter.Call(Error, null).ToString();
 
                 var m = Error.GetProperty("message");
                 if (m._valueType == JSValueType.Property)
-                    result = n + ": " + (m._oValue as PropertyPair).getter.Call(Error, null) + result;
+                    result = n + ": " + (m._oValue as PropertyPair)._getter.Call(Error, null) + result;
                 else
                     result = n + ": " + m + result;
             }

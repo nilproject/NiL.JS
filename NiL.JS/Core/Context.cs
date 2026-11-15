@@ -70,8 +70,7 @@ public class Context : IEnumerable<string>
     {
         get
         {
-            if (_currentContextStack == null)
-                _currentContextStack = new List<Context>();
+            _currentContextStack ??= new List<Context>();
 
             var stack = _currentContextStack;
             if (stack == null || stack.Count == 0)
@@ -235,8 +234,7 @@ public class Context : IEnumerable<string>
 
     internal bool Activate(bool addStackFrame = true)
     {
-        if (_currentContextStack == null)
-            _currentContextStack = new List<Context>();
+        _currentContextStack ??= new List<Context>();
 
         if (_currentContextStack.Count > 0 && _currentContextStack[_currentContextStack.Count - 1] == this)
             return false;
@@ -306,8 +304,7 @@ public class Context : IEnumerable<string>
     {
         if (_variables == null || !_variables.TryGetValue(name, out var res))
         {
-            if (_variables == null)
-                _variables = JSObject.getFieldsContainer();
+            _variables ??= JSObject.getFieldsContainer();
 
             res = new JSValue
             {
@@ -445,8 +442,7 @@ public class Context : IEnumerable<string>
     {
         string name;
 
-        if (_variables == null)
-            _variables = JSObject.getFieldsContainer();
+        _variables ??= JSObject.getFieldsContainer();
 
         if (moduleType.GetTypeInfo().IsGenericType)
             name = moduleType.Name.Substring(0, moduleType.Name.LastIndexOf('`'));
@@ -550,7 +546,7 @@ public class Context : IEnumerable<string>
 
         var debugging = _debugging;
         _debugging = false;
-        var runned = this.Activate();
+        var runned = Activate();
 
         try
         {

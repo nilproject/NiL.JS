@@ -173,7 +173,7 @@ public sealed class ForIn : CodeNode
             state.LexicalScopeLevel--;
         }
 
-        return new CodeBlock(new[] { result }) { _variables = vars, Position = result.Position, Length = result.Length };
+        return new CodeBlock([result]) { _variables = vars, Position = result.Position, Length = result.Length };
     }
 
     public override JSValue Evaluate(Context context)
@@ -212,8 +212,7 @@ public sealed class ForIn : CodeNode
 
             frame.CodeNode = _variable;
 
-            var varialeDefStat = _variable as VariableDefinition;
-            if (varialeDefStat != null)
+            if (_variable is VariableDefinition varialeDefStat)
             {
                 _variable.Evaluate(context);
                 variable = (varialeDefStat._initializers[0]._left ?? varialeDefStat._initializers[0]).EvaluateForWrite(context);
@@ -228,8 +227,7 @@ public sealed class ForIn : CodeNode
 
             if (context._executionMode == ExecutionMode.Suspend)
             {
-                if (suspendData == null)
-                    suspendData = new SuspendData();
+                suspendData ??= new SuspendData();
                 context.SuspendData[this] = suspendData;
                 suspendData.source = source;
                 return null;
@@ -287,8 +285,7 @@ public sealed class ForIn : CodeNode
                     }
                     else if (context._executionMode == ExecutionMode.Suspend)
                     {
-                        if (suspendData == null)
-                            suspendData = new SuspendData();
+                        suspendData ??= new SuspendData();
                         context.SuspendData[this] = suspendData;
 
                         suspendData.source = source;

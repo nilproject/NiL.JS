@@ -86,13 +86,13 @@ public sealed class Decrement : Expression
         if (val._valueType == JSValueType.Property)
         {
             var ppair = val._oValue as Core.PropertyPair;
-            setter = ppair.setter;
+            setter = ppair._setter;
             if (context._strict && setter == null)
                 raiseErrorProp();
-            if (ppair.getter == null)
+            if (ppair._getter == null)
                 val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
             else
-                val = ppair.getter.Call(context._objectSource, null).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
+                val = ppair._getter.Call(context._objectSource, null).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
         }
         else if ((val._attributes & JSValueAttributesInternal.ReadOnly) != 0)
         {
@@ -228,28 +228,27 @@ public sealed class Decrement : Expression
 
     public override void Optimize(ref CodeNode _this, FunctionDefinition owner, InternalCompilerMessageCallback message, Options opts, FunctionInfo stats)
     {
-        var vr = _left as VariableReference;
-        if (vr != null && vr._descriptor.IsDefined)
+        if (_left is VariableReference vr && vr._descriptor.IsDefined)
         {
             var pd = vr._descriptor.lastPredictedType;
             switch (pd)
             {
                 case PredictedType.Int:
                 case PredictedType.Unknown:
-                    {
-                        vr._descriptor.lastPredictedType = PredictedType.Number;
-                        break;
-                    }
+                {
+                    vr._descriptor.lastPredictedType = PredictedType.Number;
+                    break;
+                }
                 case PredictedType.Double:
-                    {
-                        // кроме как double он ничем больше оказаться не может. Даже NaN это double
-                        break;
-                    }
+                {
+                    // кроме как double он ничем больше оказаться не может. Даже NaN это double
+                    break;
+                }
                 default:
-                    {
-                        vr._descriptor.lastPredictedType = PredictedType.Ambiguous;
-                        break;
-                    }
+                {
+                    vr._descriptor.lastPredictedType = PredictedType.Ambiguous;
+                    break;
+                }
             }
         }
     }

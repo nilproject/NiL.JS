@@ -159,8 +159,8 @@ public sealed class FunctionDefinition : EntityDefinition
     internal FunctionDefinition()
         : this("anonymous")
     {
-        _parameters = new ParameterDescriptor[0];
-        _body = new CodeBlock(new CodeNode[0])
+        _parameters = [];
+        _body = new CodeBlock([])
         {
             _strict = true,
             _variables = new VariableDescriptor[0]

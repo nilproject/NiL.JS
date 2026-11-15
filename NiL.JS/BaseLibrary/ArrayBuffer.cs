@@ -16,25 +16,25 @@ public sealed class ArrayBuffer : CustomType
 #endif
     private sealed class Element : JSValue
     {
-        private int index;
-        private byte[] data;
+        private readonly int _index;
+        private readonly byte[] _data;
 
         public Element(int index, ArrayBuffer parent)
         {
-            this._valueType = JSValueType.Integer;
-            this.index = index;
-            this._iValue = parent.data[index];
-            this.data = parent.data;
-            this._attributes |= JSValueAttributesInternal.Reassign;
+            _valueType = JSValueType.Integer;
+            _index = index;
+            _iValue = parent._data[index];
+            _data = parent._data;
+            _attributes |= JSValueAttributesInternal.Reassign;
         }
 
         public override void Assign(JSValue value)
         {
-            data[index] = (byte)Tools.JSObjectToInt32(value);
+            _data[_index] = (byte)Tools.JSObjectToInt32(value);
         }
     }
 
-    internal byte[] data;
+    internal byte[] _data;
 
     [Hidden]
     public byte this[int index]
@@ -42,12 +42,12 @@ public sealed class ArrayBuffer : CustomType
         [Hidden]
         get
         {
-            return data[index];
+            return _data[index];
         }
         [Hidden]
         set
         {
-            data[index] = value;
+            _data[index] = value;
         }
     }
 
@@ -68,28 +68,25 @@ public sealed class ArrayBuffer : CustomType
     {
         if (data == null)
             throw new ArgumentNullException();
-        this.data = data;
+        this._data = data;
         _attributes |= JSValueAttributesInternal.SystemObject;
     }
 
     public int byteLength
     {
         [Hidden]
-        get
-        {
-            return data.Length;
-        }
+        get => _data.Length;
     }
 
     [Hidden]
     public ArrayBuffer slice(int begin, int end)
     {
-        if (end < begin || begin >= data.Length || end >= data.Length)
+        if (end < begin || begin >= _data.Length || end >= _data.Length)
             ExceptionHelper.Throw((new RangeError("Invalid begin or end index")));
 
         var res = new ArrayBuffer(end - begin + 1);
         for (int i = 0, j = begin; j <= end; j++, i++)
-            res.data[i] = data[j];
+            res._data[i] = _data[j];
 
         return res;
     }
@@ -97,7 +94,7 @@ public sealed class ArrayBuffer : CustomType
     [Hidden]
     public ArrayBuffer slice(int begin)
     {
-        return slice(begin, data.Length - 1);
+        return slice(begin, _data.Length - 1);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -109,7 +106,7 @@ public sealed class ArrayBuffer : CustomType
         if (l == 0)
             return this;
         if (l == 1)
-            return slice(Tools.JSObjectToInt32(args[0]), data.Length - 1);
+            return slice(Tools.JSObjectToInt32(args[0]), _data.Length - 1);
         else
             return slice(Tools.JSObjectToInt32(args[0]), Tools.JSObjectToInt32(args[1]));
     }
@@ -135,7 +132,7 @@ public sealed class ArrayBuffer : CustomType
     {
         if (index < 0)
             ExceptionHelper.Throw(new RangeError("Invalid array index"));
-        if (index >= data.Length)
+        if (index >= _data.Length)
             return undefined;
         return new Element(index, this);
     }
@@ -148,7 +145,7 @@ public sealed class ArrayBuffer : CustomType
 
         if (propertyScope is PropertyScope.Common or PropertyScope.Own)
         {
-            for (var i = 0; i < data.Length; i++)
+            for (var i = 0; i < _data.Length; i++)
                 yield return new KeyValuePair<string, JSValue>(Tools.Int32ToString(i), (int)enumerationMode > 0 ? getElement(i) : null);
         }
     }
@@ -156,6 +153,6 @@ public sealed class ArrayBuffer : CustomType
     [Hidden]
     public byte[] GetData()
     {
-        return data;
+        return _data;
     }
 }

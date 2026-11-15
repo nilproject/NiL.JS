@@ -7,7 +7,7 @@ namespace NiL.JS;
 
 public sealed class ExportTable : IEnumerable<KeyValuePair<string, JSValue>>
 {
-    private Dictionary<string, JSValue> _items = new Dictionary<string, JSValue>();
+    private readonly Dictionary<string, JSValue> _items = new Dictionary<string, JSValue>();
     private readonly Context _context;
 
     public JSValue this[string key]

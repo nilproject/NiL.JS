@@ -28,9 +28,9 @@ public class JSConsole
 
     private static Regex _lineSplitter;
 
-    private Dictionary<string, int> _counters = new Dictionary<string, int>();
-    private List<string> _groups = new List<string>();
-    private Dictionary<string, Stopwatch> _timers = new Dictionary<string, Stopwatch>();
+    private readonly Dictionary<string, int> _counters = new Dictionary<string, int>();
+    private readonly List<string> _groups = new List<string>();
+    private readonly Dictionary<string, Stopwatch> _timers = new Dictionary<string, Stopwatch>();
 
     private int _tableMaxColWidth = 100;
     internal bool _assertionThrowsException = false;
@@ -184,8 +184,7 @@ public class JSConsole
 
     public virtual JSValue table(Arguments args)
     {
-        if (_lineSplitter == null)
-            _lineSplitter = new Regex("\r\n?|\n");
+        _lineSplitter ??= new Regex("\r\n?|\n");
 
         if (args[0] == null)
             return log(args);

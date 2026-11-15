@@ -14,7 +14,7 @@ public abstract class TypedArray : JSObject
     protected sealed class Element : JSValue
     {
         private readonly TypedArray owner;
-        private int index;
+        private readonly int index;
 
         public Element(TypedArray owner, int index)
         {
@@ -115,12 +115,12 @@ public abstract class TypedArray : JSObject
             ExceptionHelper.Throw(new RangeError("buffer.byteLength is not alligned"));
         if (buffer.byteLength < byteOffset)
             ExceptionHelper.Throw(new RangeError("Invalid offset"));
-        this.byteLength = System.Math.Min(buffer.byteLength - byteOffset, length * BYTES_PER_ELEMENT);
+        byteLength = System.Math.Min(buffer.byteLength - byteOffset, length * BYTES_PER_ELEMENT);
         this.buffer = buffer;
         this.length = new Number(byteLength / BYTES_PER_ELEMENT);
         this.byteOffset = byteOffset;
-        this._valueType = JSValueType.Object;
-        this._oValue = this;
+        _valueType = JSValueType.Object;
+        _oValue = this;
     }
 
     [DoNotEnumerate]
@@ -131,11 +131,11 @@ public abstract class TypedArray : JSObject
             throw new System.OutOfMemoryException();
 
         var length = (int)src._data.Length;
-        this.buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
+        buffer = new ArrayBuffer(length * BYTES_PER_ELEMENT);
         this.length = new Number(length);
-        this.byteLength = length * BYTES_PER_ELEMENT;
-        this._valueType = JSValueType.Object;
-        this._oValue = this;
+        byteLength = length * BYTES_PER_ELEMENT;
+        _valueType = JSValueType.Object;
+        _oValue = this;
         foreach (var item in src._data.ReverseOrder)
             this[item.Key] = item.Value;
     }
@@ -169,7 +169,7 @@ public abstract class TypedArray : JSObject
             var value = src.GetProperty(index, false, PropertyScope.Common);
             if (value._valueType == JSValueType.Property)
             {
-                value = ((value._oValue as PropertyPair).getter ?? Function.Empty).Call(src, dummyArgs);
+                value = ((value._oValue as PropertyPair)._getter ?? Function.Empty).Call(src, dummyArgs);
                 dummyArgs.Reset();
             }
             this[(int)(i + offset)] = value;

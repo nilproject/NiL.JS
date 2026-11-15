@@ -9,8 +9,8 @@ namespace NiL.JS.Extensions;
 
 internal sealed class EnumeratorResult : HiddenBase, IIteratorResult
 {
-    private JSValue _value;
-    private bool _done;
+    private readonly JSValue _value;
+    private readonly bool _done;
 
     public JSValue value
     {
@@ -32,8 +32,8 @@ internal sealed class EnumeratorResult : HiddenBase, IIteratorResult
 
 internal sealed class EnumeratorToIteratorWrapper : HiddenBase, IIterator, IIterable
 {
-    private IEnumerator _enumerator;
-    private GlobalContext _context;
+    private readonly IEnumerator _enumerator;
+    private readonly GlobalContext _context;
 
     [Hidden]
     public EnumeratorToIteratorWrapper(IEnumerator enumerator)
@@ -59,7 +59,7 @@ internal sealed class EnumeratorToIteratorWrapper : HiddenBase, IIterator, IIter
 
 internal sealed class EnumerableToIterableWrapper : HiddenBase, IIterable
 {
-    private IEnumerable enumerable;
+    private readonly IEnumerable enumerable;
 
     [Hidden]
     public EnumerableToIterableWrapper(IEnumerable enumerable)
@@ -72,7 +72,7 @@ internal sealed class EnumerableToIterableWrapper : HiddenBase, IIterable
 
 internal sealed class IteratorItemAdapter : HiddenBase, IIteratorResult
 {
-    private JSValue result;
+    private readonly JSValue result;
 
     [Hidden]
     public IteratorItemAdapter(JSValue result)
@@ -87,7 +87,7 @@ internal sealed class IteratorItemAdapter : HiddenBase, IIteratorResult
 
 internal sealed class IteratorAdapter : HiddenBase, IIterator
 {
-    private JSValue iterator;
+    private readonly JSValue iterator;
 
     [Hidden]
     public IteratorAdapter(JSValue iterator)
@@ -117,7 +117,7 @@ internal sealed class IteratorAdapter : HiddenBase, IIterator
 internal sealed class IterableAdapter : HiddenBase, IIterable
 {
     private readonly JSValue _iteratorFunction;
-    private JSValue _source;
+    private readonly JSValue _source;
 
     [Hidden]
     public IterableAdapter(JSValue source, JSValue iteratorFunction)

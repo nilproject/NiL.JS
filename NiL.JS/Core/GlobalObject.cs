@@ -10,7 +10,7 @@ namespace NiL.JS.Core;
 [Prototype(typeof(JSObject), true)]
 internal sealed class GlobalObject : JSObject
 {
-    private Context _context;
+    private readonly Context _context;
 
     public GlobalObject(Context context)
         : base()

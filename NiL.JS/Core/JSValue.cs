@@ -94,7 +94,7 @@ public enum JSAttributes
 
 internal sealed class JSObjectDebugView
 {
-    private JSValue _jsObject;
+    private readonly JSValue _jsObject;
 
     public JSObjectDebugView(JSValue jsValue)
     {
@@ -893,9 +893,9 @@ public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<J
         if (_valueType == JSValueType.Property)
         {
             var tempStr = "[";
-            if ((_oValue as PropertyPair).getter != null)
+            if ((_oValue as PropertyPair)._getter != null)
                 tempStr += "Getter";
-            if ((_oValue as PropertyPair).setter != null)
+            if ((_oValue as PropertyPair)._setter != null)
                 tempStr += (tempStr.Length != 1 ? "/Setter" : "Setter");
             if (tempStr.Length == 1)
                 return "[Invalid Property]";
@@ -903,7 +903,7 @@ public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<J
             return tempStr;
         }
 
-        var res = this._valueType >= JSValueType.Object ? ToPrimitiveValue_String_Value() : this;
+        var res = _valueType >= JSValueType.Object ? ToPrimitiveValue_String_Value() : this;
         switch (res._valueType)
         {
             case JSValueType.Boolean:
@@ -1035,7 +1035,7 @@ public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<J
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return this.GetEnumerator();
+        return GetEnumerator();
     }
 
     [Hidden]
@@ -1083,7 +1083,7 @@ public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<J
     [AllowNullArguments]
     public virtual JSValue toString(Arguments args)
     {
-        var self = this._oValue as JSValue ?? this;
+        var self = _oValue as JSValue ?? this;
         switch (self._valueType)
         {
             case JSValueType.Integer:
@@ -1172,7 +1172,7 @@ public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<J
     [DoNotEnumerate]
     public virtual JSValue toLocaleString()
     {
-        var self = this._oValue as JSValue ?? this;
+        var self = _oValue as JSValue ?? this;
 
         if (self._valueType >= JSValueType.Object && self._oValue == null)
             ExceptionHelper.Throw(new TypeError("toLocaleString calling on null."));
@@ -1229,13 +1229,13 @@ public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<J
 
         var a = args[0];
         a = a.__proto__;
-        if (this._valueType >= JSValueType.Object)
+        if (_valueType >= JSValueType.Object)
         {
-            if (this._oValue != null)
+            if (_oValue != null)
             {
                 while (a != null && a._valueType >= JSValueType.Object && a._oValue != null)
                 {
-                    if (a._oValue == this._oValue)
+                    if (a._oValue == _oValue)
                         return true;
                     var pi = (a._oValue as StaticProxy)?.PrototypeInstance;
                     if (pi != null && (this == pi || this == pi._oValue))
@@ -1246,7 +1246,7 @@ public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<J
         }
         else
         {
-            if (a._oValue == this._oValue)
+            if (a._oValue == _oValue)
                 return true;
             var pi = (a._oValue as StaticProxy)?.PrototypeInstance;
             if (pi != null && (this == pi || this == pi._oValue))
@@ -1283,7 +1283,7 @@ public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<J
 
     char IConvertible.ToChar(IFormatProvider provider)
     {
-        var s = this.ToString();
+        var s = ToString();
         return s.Length > 0 ? s[0] : '\0';
     }
 
@@ -1333,7 +1333,7 @@ public class JSValue : IEnumerable<KeyValuePair<string, JSValue>>, IComparable<J
 
     string IConvertible.ToString(IFormatProvider provider)
     {
-        return this.ToString();
+        return ToString();
     }
 
     object IConvertible.ToType(Type conversionType, IFormatProvider provider)

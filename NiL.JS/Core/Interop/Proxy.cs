@@ -22,7 +22,7 @@ internal abstract class Proxy : JSObject
 
     private PropertyPair _indexerProperty;
     private bool _indexersSupported;
-    private ConstructorInfo _instanceCtor;
+    private readonly ConstructorInfo _instanceCtor;
     private JSObject _prototypeInstance;
 
     internal virtual JSObject PrototypeInstance
@@ -266,8 +266,7 @@ internal abstract class Proxy : JSObject
 
                 if (membername.StartsWith("@@"))
                 {
-                    if (_symbols == null)
-                        _symbols = new Dictionary<Symbol, JSValue>();
+                    _symbols ??= new Dictionary<Symbol, JSValue>();
                     _symbols.Add(Symbol.@for(membername.Substring(2)), proxyMember(new[] { member }));
                 }
                 else
@@ -289,8 +288,7 @@ internal abstract class Proxy : JSObject
                     IList<MemberInfo> iterator = null;
                     if (tempMembers.TryGetValue("iterator", out iterator))
                     {
-                        if (_symbols == null)
-                            _symbols = new Dictionary<Symbol, JSValue>();
+                        _symbols ??= new Dictionary<Symbol, JSValue>();
                         _symbols.Add(Symbol.iterator, proxyMember(iterator));
                         tempMembers.Remove("iterator");
                     }
@@ -302,8 +300,7 @@ internal abstract class Proxy : JSObject
 #endif
                 if (toStringTag != null)
                 {
-                    if (_symbols == null)
-                        _symbols = new Dictionary<Symbol, JSValue>();
+                    _symbols ??= new Dictionary<Symbol, JSValue>();
                     _symbols.Add(Symbol.toStringTag, toStringTag.Tag);
                 }
             }
@@ -321,14 +318,14 @@ internal abstract class Proxy : JSObject
 
                     if (getter != null)
                     {
-                        _indexerProperty.getter = (Function)proxyMember(getter);
-                        _fields["get_Item"] = _indexerProperty.getter;
+                        _indexerProperty._getter = (Function)proxyMember(getter);
+                        _fields["get_Item"] = _indexerProperty._getter;
                     }
 
                     if (setter != null)
                     {
-                        _indexerProperty.setter = (Function)proxyMember(setter);
-                        _fields["set_Item"] = _indexerProperty.setter;
+                        _indexerProperty._setter = (Function)proxyMember(setter);
+                        _fields["set_Item"] = _indexerProperty._setter;
                     }
                 }
                 else
@@ -471,7 +468,7 @@ internal abstract class Proxy : JSObject
                         };
 
                         r._attributes = JSValueAttributesInternal.Immutable | JSValueAttributesInternal.Field;
-                        if ((r._oValue as PropertyPair).setter == null)
+                        if ((r._oValue as PropertyPair)._setter == null)
                             r._attributes |= JSValueAttributesInternal.ReadOnly;
 
                     }
@@ -497,7 +494,7 @@ internal abstract class Proxy : JSObject
 
                     r._attributes = JSValueAttributesInternal.Immutable;
 
-                    if ((r._oValue as PropertyPair).setter == null)
+                    if ((r._oValue as PropertyPair)._setter == null)
                         r._attributes |= JSValueAttributesInternal.ReadOnly;
 
                     if (pinfo.IsDefined(typeof(FieldAttribute), false))

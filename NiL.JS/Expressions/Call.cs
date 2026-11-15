@@ -19,7 +19,7 @@ public enum CallMode
 #endif
 public sealed class Call : Expression
 {
-    private Expression[] _arguments;
+    private readonly Expression[] _arguments;
     internal bool _allowTCO;
     internal bool _withSpread;
     internal CallMode _callMode;
@@ -137,8 +137,7 @@ public sealed class Call : Expression
     private JSValue callCallable(Context context, JSValue targetObject, JSValue function)
     {
         var callable = function._oValue as ICallable;
-        if (callable == null)
-            callable = function.Value as ICallable;
+        callable ??= function.Value as ICallable;
 
         if (callable == null)
         {
@@ -198,7 +197,7 @@ public sealed class Call : Expression
 
         var arguments = new Arguments(context);
 
-        for (int i = 0; i < this._arguments.Length; i++)
+        for (int i = 0; i < _arguments.Length; i++)
         {
             context._objectSource = null;
             arguments.Add(Tools.EvalExpressionSafe(context, _arguments[i]));

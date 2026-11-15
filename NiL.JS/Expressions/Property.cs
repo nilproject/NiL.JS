@@ -109,8 +109,7 @@ public sealed class Property : Expression
         {
             if (_cachedMemberName is null)
             {
-                if (oldTempContainer == null)
-                    oldTempContainer = new JSValue();
+                oldTempContainer ??= new JSValue();
 
                 oldTempContainer.Assign(source);
                 source = oldTempContainer;

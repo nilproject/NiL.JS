@@ -25,20 +25,20 @@ public sealed class Float64Array : TypedArray
 
             var v = BitConverter.DoubleToInt64Bits(Tools.JSObjectToDouble(value));
             int byteIndex = index * BYTES_PER_ELEMENT + byteOffset;
-            buffer.data[byteIndex + 0] = (byte)(v >> 0);
-            buffer.data[byteIndex + 1] = (byte)(v >> 8);
-            buffer.data[byteIndex + 2] = (byte)(v >> 16);
-            buffer.data[byteIndex + 3] = (byte)(v >> 24);
-            buffer.data[byteIndex + 4] = (byte)(v >> 32);
-            buffer.data[byteIndex + 5] = (byte)(v >> 40);
-            buffer.data[byteIndex + 6] = (byte)(v >> 48);
-            buffer.data[byteIndex + 7] = (byte)(v >> 56);
+            buffer._data[byteIndex + 0] = (byte)(v >> 0);
+            buffer._data[byteIndex + 1] = (byte)(v >> 8);
+            buffer._data[byteIndex + 2] = (byte)(v >> 16);
+            buffer._data[byteIndex + 3] = (byte)(v >> 24);
+            buffer._data[byteIndex + 4] = (byte)(v >> 32);
+            buffer._data[byteIndex + 5] = (byte)(v >> 40);
+            buffer._data[byteIndex + 6] = (byte)(v >> 48);
+            buffer._data[byteIndex + 7] = (byte)(v >> 56);
         }
     }
 
     private double getValue(int index)
     {
-        return BitConverter.ToDouble(buffer.data, index * BYTES_PER_ELEMENT + byteOffset);
+        return BitConverter.ToDouble(buffer._data, index * BYTES_PER_ELEMENT + byteOffset);
     }
 
     public override int BYTES_PER_ELEMENT

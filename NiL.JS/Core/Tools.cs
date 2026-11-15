@@ -107,13 +107,13 @@ public static class Tools
     internal sealed class _ForcedEnumerator<T> : IEnumerator<T>
     {
         private int index;
-        private IEnumerable<T> owner;
+        private readonly IEnumerable<T> owner;
         private IEnumerator<T> parent;
 
         public _ForcedEnumerator(IEnumerable<T> owner)
         {
             this.owner = owner;
-            this.parent = owner.GetEnumerator();
+            parent = owner.GetEnumerator();
         }
 
         #region Члены IEnumerator<T>
@@ -1682,7 +1682,7 @@ public static class Tools
         if (reassignLen)
         {
             if (length._valueType == JSValueType.Property)
-                ((length._oValue as PropertyPair).setter ?? Function.Empty).Call(src, new Arguments { result });
+                ((length._oValue as PropertyPair)._setter ?? Function.Empty).Call(src, new Arguments { result });
             else
                 length.Assign(result);
         }
@@ -1719,7 +1719,7 @@ public static class Tools
                     }
 
                     if (evalProps && value._valueType == JSValueType.Property)
-                        value = (value._oValue as PropertyPair).getter == null ? JSValue.undefined : (value._oValue as PropertyPair).getter.Call(src, null).CloneImpl(false);
+                        value = (value._oValue as PropertyPair)._getter == null ? JSValue.undefined : (value._oValue as PropertyPair)._getter.Call(src, null).CloneImpl(false);
                     else if (clone)
                         value = value.CloneImpl(false);
 
@@ -1747,7 +1747,7 @@ public static class Tools
                     if (!value.Exists)
                         continue;
                     if (evalProps && value._valueType == JSValueType.Property)
-                        value = (value._oValue as PropertyPair).getter == null ? JSValue.undefined : (value._oValue as PropertyPair).getter.Call(src, null).CloneImpl(false);
+                        value = (value._oValue as PropertyPair)._getter == null ? JSValue.undefined : (value._oValue as PropertyPair)._getter.Call(src, null).CloneImpl(false);
                     else if (clone)
                         value = value.CloneImpl(false);
 
@@ -1848,10 +1848,10 @@ public static class Tools
             return propertyObject;
 
         var propPair = propertyObject._oValue as PropertyPair;
-        if (propPair == null || propPair.getter == null)
+        if (propPair == null || propPair._getter == null)
             return JSValue.undefined;
 
-        propertyObject = propPair.getter.Call(target, null);
+        propertyObject = propPair._getter.Call(target, null);
         if (propertyObject._valueType < JSValueType.Undefined)
             propertyObject = JSValue.undefined;
 
@@ -1868,10 +1868,10 @@ public static class Tools
         }
 
         var propPair = propertyObject._oValue as PropertyPair;
-        if (propPair == null || propPair.setter == null)
+        if (propPair == null || propPair._setter == null)
             return;
 
-        propPair.setter.Call(target, new Arguments { newValue });
+        propPair._setter.Call(target, new Arguments { newValue });
     }
 
     internal static JSValue EvalExpressionSafe(Context context, Expressions.Expression source)
@@ -2086,8 +2086,7 @@ public static class Tools
             case JSValueType.Object:
             {
                 var o = v as ObjectWrapper;
-                if (o == null)
-                    o = v._oValue as ObjectWrapper;
+                o ??= v._oValue as ObjectWrapper;
                 if (o != null)
                     return o.Value.GetType().Name;
 
@@ -2119,9 +2118,9 @@ public static class Tools
                 if (prop != null)
                 {
                     var tempStr = "";
-                    if (prop.getter != null)
+                    if (prop._getter != null)
                         tempStr += "Getter";
-                    if (prop.setter != null)
+                    if (prop._setter != null)
                         tempStr += ((tempStr.Length > 0) ? "/" : "") + "Setter";
                     if (tempStr.Length == 0)
                         tempStr = "Invalid";
@@ -2267,8 +2266,7 @@ public static class Tools
                     s.Append(" { ");
 
                     JSObject o = v as JSObject;
-                    if (o == null)
-                        o = v._oValue as JSObject;
+                    o ??= v._oValue as JSObject;
                     if (o == null)
                         return v.ToString();
 
@@ -2303,8 +2301,7 @@ public static class Tools
                 return "null";
 
             var o = v as ObjectWrapper;
-            if (o == null)
-                o = v._oValue as ObjectWrapper;
+            o ??= v._oValue as ObjectWrapper;
             if (o != null)
                 return o.Value.ToString();
         }

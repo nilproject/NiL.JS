@@ -76,14 +76,14 @@ public abstract class Expression : CodeNode
 
         Parser.Build(ref _left, expressionDepth + 1, scopeLevel, variables, codeContext, message, stats, opts);
         Parser.Build(ref _right, expressionDepth + 1, scopeLevel, variables, codeContext, message, stats, opts);
-        if (this.ContextIndependent)
+        if (ContextIndependent)
         {
             if (message != null && !(this is RegExpExpression))
                 message(MessageLevel.Warning, Position, Length, "Constant expression. Maybe, it's a mistake.");
 
             try
             {
-                var res = this.Evaluate(null);
+                var res = Evaluate(null);
                 if (res._valueType == JSValueType.Double
                     && !NumberUtils.IsNegativeZero(res._dValue)
                     && res._dValue == (int)res._dValue)

@@ -8,7 +8,7 @@ namespace NiL.JS.Core;
 #endif
 public sealed class WithContext : Context
 {
-    private JSValue @object;
+    private readonly JSValue @object;
 
     public WithContext(JSValue obj, Context prototype)
         : base(prototype, false, prototype._owner)

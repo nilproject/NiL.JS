@@ -4,9 +4,9 @@ namespace NiL.JS.Core;
 
 internal sealed class CatchContext : Context
 {
-    private JSValue errorContainer;
-    private Context prototype;
-    private string errorVariableName;
+    private readonly JSValue errorContainer;
+    private readonly Context prototype;
+    private readonly string errorVariableName;
 
     internal CatchContext(JSValue e, Context proto, string name)
         : base(proto, false, proto._owner)

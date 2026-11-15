@@ -23,21 +23,21 @@ internal class Rule
 
     public Rule(string token, ParseDelegate parseDel)
     {
-        this.Validate = (string code, int pos) => Parser.Validate(code, token, pos);
-        this.Parse = parseDel;
+        Validate = (string code, int pos) => Parser.Validate(code, token, pos);
+        Parse = parseDel;
     }
 
     public Rule(ValidateDelegate valDel, ParseDelegate parseDel)
     {
-        this.Validate = valDel;
-        this.Parse = parseDel;
+        Validate = valDel;
+        Parse = parseDel;
     }
 }
 
 public static class Parser
 {
     private static HashSet<string> customReservedWords;
-    private static List<Rule>[] rules =
+    private static readonly List<Rule>[] rules =
     [
         // 0
         new List<Rule> // Общий
@@ -283,7 +283,7 @@ public static class Parser
         ;
     }
 
-    private static bool ValidateArrow(string code, int index)
+    public static bool ValidateArrow(string code, int index)
     {
         bool bracket = code[index] == '(';
 
@@ -602,10 +602,10 @@ public static class Parser
     {
         double fictive = 0.0;
         return Tools.ParseJsNumber(
-            code, 
-            ref index, 
-            out fictive, 
-            0, 
+            code,
+            ref index,
+            out fictive,
+            0,
             ParseNumberOptions.AllowFloat | ParseNumberOptions.AllowAutoRadix | ParseNumberOptions.AllowSeparators);
     }
 
@@ -1049,8 +1049,7 @@ public static class Parser
 
         if (attribute.ReservedWords.Length != 0)
         {
-            if (customReservedWords == null)
-                customReservedWords = new HashSet<string>();
+            customReservedWords ??= new HashSet<string>();
             for (var i = 0; i < attribute.ReservedWords.Length; i++)
             {
                 if (ValidateName(attribute.ReservedWords[0], 0))

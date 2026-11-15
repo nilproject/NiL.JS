@@ -51,8 +51,7 @@ public sealed class For : CodeNode
         try
         {
             init = VariableDefinition.Parse(state, ref i, true);
-            if (init == null)
-                init = ExpressionTree.Parse(state, ref i, forForLoop: true);
+            init ??= ExpressionTree.Parse(state, ref i, forForLoop: true);
             if ((init is ExpressionTree)
                 && (init as ExpressionTree).Type == OperationType.None
                 && (init as ExpressionTree)._right == null)

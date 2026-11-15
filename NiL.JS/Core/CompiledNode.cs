@@ -21,8 +21,8 @@ public sealed class CompiledNode : Expressions.Expression
                 wrapContainerParameter
             ];
 
-    private CodeNode[] _dynamicValues;
-    private CodeNode _original;
+    private readonly CodeNode[] _dynamicValues;
+    private readonly CodeNode _original;
     private Func<Context, CodeNode[], JSValue, JSValue> _compiledTree;
     [NonSerialized]
     private Expression _tree;
@@ -79,21 +79,19 @@ public sealed class CompiledNode : Expressions.Expression
     public CompiledNode(CodeNode original, Expression tree, CodeNode[] dynamicValues)
         : base(original is Expressions.Expression ? (original as Expressions.Expression)._left : null, original is Expressions.Expression ? (original as Expressions.Expression)._right : null, (original is Expressions.Expression) && (original as Expressions.Expression)._tempContainer == null)
     {
-        if (_tempContainer == null)
-            _tempContainer = (original as Expressions.Expression)._tempContainer;
-        this._original = original;
-        this._tree = tree;
-        this._dynamicValues = dynamicValues;
+        _tempContainer ??= (original as Expressions.Expression)._tempContainer;
+        _original = original;
+        _tree = tree;
+        _dynamicValues = dynamicValues;
     }
 
     public CompiledNode(Expressions.Expression original, Expression tree, CodeNode[] dynamicValues)
         : base(original._left, original._right, original._tempContainer == null)
     {
-        if (_tempContainer == null)
-            _tempContainer = original._tempContainer;
-        this._original = original;
-        this._tree = tree;
-        this._dynamicValues = dynamicValues;
+        _tempContainer ??= original._tempContainer;
+        _original = original;
+        _tree = tree;
+        _dynamicValues = dynamicValues;
     }
 
     protected internal override CodeNode[] GetChildrenImpl()
@@ -106,17 +104,17 @@ public sealed class CompiledNode : Expressions.Expression
         if (_compiledTree == null)
         {
             Expression tree;
-            this._tree = this._tree.Reduce();
+            _tree = _tree.Reduce();
             if (_original is Expressions.Expression)
             {
-                if (typeof(JSValue).IsAssignableFrom(this._tree.Type))
-                    tree = this._tree;
+                if (typeof(JSValue).IsAssignableFrom(_tree.Type))
+                    tree = _tree;
                 else
-                    tree = Expression.Call(wrapMethod.MakeGenericMethod(this._tree.Type), this._tree, wrapContainerParameter);
+                    tree = Expression.Call(wrapMethod.MakeGenericMethod(_tree.Type), _tree, wrapContainerParameter);
             }
             else
             {
-                tree = Expression.Block(this._tree, JITHelpers.UndefinedConstant);
+                tree = Expression.Block(_tree, JITHelpers.UndefinedConstant);
             }
             //var ps = new PermissionSet(System.Security.Permissions.PermissionState.Unrestricted);
             //ps.Assert();

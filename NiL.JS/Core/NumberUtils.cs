@@ -47,8 +47,7 @@ public static class NumberUtils
                 {
                     if (digitsCount < _MaxSafeDigitsInTwoLongs)
                     {
-                        if (digits is null)
-                            digits = new ulong[2];
+                        digits ??= new ulong[2];
 
                         digits[1] = (digits[1] << 4) | (digits[0] >> 60);
                         digits[0] <<= 4;
@@ -108,8 +107,7 @@ public static class NumberUtils
             return false;
         }
 
-        if (intPart == null)
-            intPart = new ulong[2];
+        intPart ??= new ulong[2];
 
         var intPartSize = position - intPartStart;
 

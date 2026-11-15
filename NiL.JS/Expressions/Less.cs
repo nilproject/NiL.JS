@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions;
 #endif
 public class Less : Expression
 {
-    private bool _regularLess;
+    private readonly bool _regularLess;
 
     protected internal override PredictedType ResultType
     {
@@ -26,7 +26,7 @@ public class Less : Expression
     internal Less(Expression first, Expression second)
         : base(first, second, true)
     {
-        _regularLess = this.GetType() == typeof(Less);
+        _regularLess = GetType() == typeof(Less);
     }
 
     internal static bool Check(JSValue first, JSValue second)
@@ -259,8 +259,7 @@ public class Less : Expression
 
     private JSValue genericCheck(JSValueType valueType, int iValue, double dValue, object oValue, JSValue s)
     {
-        if (_tempContainer is null)
-            _tempContainer = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+        _tempContainer ??= new JSValue { _attributes = JSValueAttributesInternal.Temporary };
 
         var temp = _tempContainer;
         _tempContainer = null;

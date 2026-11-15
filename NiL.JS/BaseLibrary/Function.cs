@@ -74,7 +74,7 @@ public partial class Function : JSObject, ICallable
     internal static readonly JSValue propertiesDummySM = new JSValue()
     {
         _valueType = JSValueType.Property,
-        _oValue = new Core.PropertyPair() { getter = TTEProxy, setter = TTEProxy },
+        _oValue = new Core.PropertyPair() { _getter = TTEProxy, _setter = TTEProxy },
         _attributes = JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.Immutable | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.NonConfigurable
     };
 
@@ -195,7 +195,7 @@ public partial class Function : JSObject, ICallable
                 {
                     var res = JSObject.CreateObject(true);
                     res._attributes = JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.NonConfigurable;
-                    (res._fields["constructor"] = this.CloneImpl(false))._attributes = JSValueAttributesInternal.DoNotEnumerate;
+                    (res._fields["constructor"] = CloneImpl(false))._attributes = JSValueAttributesInternal.DoNotEnumerate;
                     _prototype = res;
                 }
             }
@@ -475,8 +475,7 @@ public partial class Function : JSObject, ICallable
         var body = _functionDefinition._body;
         if (body._lines.Length == 0)
         {
-            notExists._valueType = JSValueType.NotExists;
-            return notExists;
+            return NotExists;
         }
 
         var currentContext = Context.CurrentContext;
@@ -492,8 +491,7 @@ public partial class Function : JSObject, ICallable
             _functionDefinition.parametersStored = _functionDefinition.recursionDepth;
         }
 
-        if (arguments == null)
-            arguments = new Arguments(currentContext);
+        arguments ??= new Arguments(currentContext);
 
         for (; ; ) // tail recursion catcher
         {
@@ -670,8 +668,7 @@ public partial class Function : JSObject, ICallable
             {
                 if (prm.initializer != null)
                 {
-                    if (defaultValues == null)
-                        defaultValues = new JSValue[_functionDefinition._parameters.Length];
+                    defaultValues ??= new JSValue[_functionDefinition._parameters.Length];
                     defaultValues[i] = prm.initializer.Evaluate(internalContext);
                 }
             }
@@ -716,7 +713,7 @@ public partial class Function : JSObject, ICallable
 
             t._attributes &= ~JSValueAttributesInternal.Cloned;
             if (prm.isCaptured || storeVariablesIntoContext)
-                (internalContext._variables ?? (internalContext._variables = getFieldsContainer()))[prm.Name] = t;
+                (internalContext._variables ??= getFieldsContainer())[prm.Name] = t;
 
             prm.cacheContext = internalContext;
             prm.cacheValue = t;
@@ -776,8 +773,7 @@ public partial class Function : JSObject, ICallable
             parameter.cacheContext = internalContext;
             if (parameter.Destructor == null && (parameter.isCaptured || storeVariablesIntoContext))
             {
-                if (internalContext._variables == null)
-                    internalContext._variables = getFieldsContainer();
+                internalContext._variables ??= getFieldsContainer();
                 internalContext._variables[parameter.Name] = parameter.cacheValue;
             }
 
@@ -827,8 +823,7 @@ public partial class Function : JSObject, ICallable
         if (_functionDefinition._parameters.Length != 0)
         {
             var context = _functionDefinition._parameters[0].cacheContext;
-            if (context._variables == null)
-                context._variables = getFieldsContainer();
+            context._variables ??= getFieldsContainer();
             for (var i = 0; i < _functionDefinition._parameters.Length; i++)
                 context._variables[_functionDefinition._parameters[i].Name] = _functionDefinition._parameters[i].cacheValue;
         }
@@ -919,7 +914,7 @@ public partial class Function : JSObject, ICallable
                 ExceptionHelper.Throw(new TypeError("Argument list has wrong type."));
             var len = argsSource["length"];
             if (len._valueType == JSValueType.Property)
-                len = (len._oValue as Core.PropertyPair).getter.Call(argsSource, null);
+                len = (len._oValue as Core.PropertyPair)._getter.Call(argsSource, null);
             nargs._iValue = Tools.JSObjectToInt32(len);
             if (nargs._iValue >= 50000)
                 ExceptionHelper.Throw(new RangeError("Too many arguments."));
@@ -968,8 +963,7 @@ public partial class Function : JSObject, ICallable
             invokeMethod,
             delegateType).Compile();
 
-        if (_delegateCache == null)
-            _delegateCache = new Dictionary<Type, Delegate>();
+        _delegateCache ??= new Dictionary<Type, Delegate>();
         _delegateCache.Add(delegateType, @delegate);
 
         return @delegate;

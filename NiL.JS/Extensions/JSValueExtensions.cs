@@ -257,8 +257,8 @@ public static class JSValueExtensions
         target.Assign(Context.CurrentGlobalContext.ProxyValue(value));
     }
 
-    private static WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
-    private static WeakReference<ModuleBuilder> dynamicModule = new WeakReference<ModuleBuilder>(null);
+    private static readonly WeakReference<AssemblyBuilder> dynamicAssembly = new WeakReference<AssemblyBuilder>(null);
+    private static readonly WeakReference<ModuleBuilder> dynamicModule = new WeakReference<ModuleBuilder>(null);
 
     public static T AsImplementationOf<T>(this JSValue self, Context context) where T : class
     {

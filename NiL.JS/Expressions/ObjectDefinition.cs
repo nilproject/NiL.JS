@@ -33,7 +33,7 @@ public sealed class ObjectDefinition : Expression
     private Expression[] _values;
     private KeyValuePair<Expression, Expression>[] _computedProperties;
 
-    private KeyValuePair<Expression, Expression>[] _properties;
+    private readonly KeyValuePair<Expression, Expression>[] _properties;
 
     [Obsolete("Use " + nameof(Properties) + " instead")]
     public string[] FieldNames
@@ -405,8 +405,7 @@ public sealed class ObjectDefinition : Expression
                 {
                     symbolKey = key.As<Symbol>();
 
-                    if (res._symbols == null)
-                        res._symbols = new Dictionary<Symbol, JSValue>();
+                    res._symbols ??= new Dictionary<Symbol, JSValue>();
 
                     res._symbols.TryGetValue(symbolKey, out existedValue);
                 }
@@ -423,8 +422,8 @@ public sealed class ObjectDefinition : Expression
                     {
                         var oldGs = existedValue.As<Core.PropertyPair>();
                         var newGs = value.As<Core.PropertyPair>();
-                        oldGs.getter = newGs.getter ?? oldGs.getter;
-                        oldGs.setter = newGs.setter ?? oldGs.setter;
+                        oldGs._getter = newGs._getter ?? oldGs._getter;
+                        oldGs._setter = newGs._setter ?? oldGs._setter;
                     }
                     else
                     {

@@ -102,8 +102,7 @@ public sealed class Arguments : JSObject, IEnumerable, IIterable
                     _a3 = value;
                     break;
                 default:
-                    if (_fields == null)
-                        _fields = getFieldsContainer();
+                    _fields ??= getFieldsContainer();
                     _fields[Tools.Int32ToString(index)] = value;
                     break;
             }
@@ -192,8 +191,7 @@ public sealed class Arguments : JSObject, IEnumerable, IIterable
                         return (_a3 ?? (forWrite ? (_a3 = new JSValue() { _valueType = JSValueType.NotExistsInObject }) : notExists));
                     case "length":
                     {
-                        if (_lengthContainer == null)
-                            _lengthContainer = new LengthContainer(this)
+                        _lengthContainer ??= new LengthContainer(this)
                             {
                                 _valueType = JSValueType.Integer,
                                 _iValue = _iValue,
@@ -203,8 +201,7 @@ public sealed class Arguments : JSObject, IEnumerable, IIterable
                     }
                     case "callee":
                     {
-                        if (_callee == null)
-                            _callee = NotExistsInObject;
+                        _callee ??= NotExistsInObject;
 
                         if (forWrite && (_callee._attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {
@@ -216,8 +213,7 @@ public sealed class Arguments : JSObject, IEnumerable, IIterable
                     }
                     case "caller":
                     {
-                        if (_caller == null)
-                            _caller = getCaller(_context) ?? NotExistsInObject;
+                        _caller ??= getCaller(_context) ?? NotExistsInObject;
 
                         if (forWrite && (_caller._attributes & JSValueAttributesInternal.SystemObject) != 0)
                         {

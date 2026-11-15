@@ -31,8 +31,7 @@ public sealed class In : Expression
     public override JSValue Evaluate(Context context)
     {
         bool res;
-        if (_tempContainer == null)
-            _tempContainer = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+        _tempContainer ??= new JSValue { _attributes = JSValueAttributesInternal.Temporary };
         
         _tempContainer.Assign(_left.Evaluate(context));
         var temp = _tempContainer;

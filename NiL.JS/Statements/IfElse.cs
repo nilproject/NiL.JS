@@ -26,8 +26,8 @@ public sealed class IfElse : CodeNode
     public IfElse(Expression condition, CodeNode body, CodeNode elseBody)
     {
         this.condition = condition;
-        this.then = body;
-        this.@else = elseBody;
+        then = body;
+        @else = elseBody;
     }
 
     internal static CodeNode Parse(ParseInfo state, ref int index)

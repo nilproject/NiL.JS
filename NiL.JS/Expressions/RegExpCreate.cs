@@ -10,8 +10,8 @@ namespace NiL.JS.Expressions;
 #endif
 public sealed class RegExpExpression : Expression
 {
-    private string pattern;
-    private string flags;
+    private readonly string pattern;
+    private readonly string flags;
 
     protected internal override bool ContextIndependent
     {

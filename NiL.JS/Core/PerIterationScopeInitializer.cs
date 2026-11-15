@@ -2,7 +2,7 @@
 
 internal sealed class PerIterationScopeInitializer : CodeNode
 {
-    private VariableDescriptor[] _variables;
+    private readonly VariableDescriptor[] _variables;
 
     public PerIterationScopeInitializer(VariableDescriptor[] variables)
     {

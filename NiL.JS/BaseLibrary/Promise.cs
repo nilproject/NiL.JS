@@ -20,9 +20,9 @@ public enum PromiseState
 
 public sealed class Promise
 {
-    private Task _innerTask;
-    private Function _callback;
-    private TaskCompletionSource<JSValue> _outerTask;
+    private readonly Task _innerTask;
+    private readonly Function _callback;
+    private readonly TaskCompletionSource<JSValue> _outerTask;
 
     [Hidden]
     public PromiseState State

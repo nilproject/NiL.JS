@@ -47,7 +47,7 @@ public class Assignment : Expression
                 field._attributes = oldAttrs;
             }
             else if (context._strict)
-                throwReadOnlyError(context);
+                ThrowReadOnlyError(context);
         }
         else
         {
@@ -58,7 +58,7 @@ public class Assignment : Expression
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    protected void throwReadOnlyError(Context context)
+    protected void ThrowReadOnlyError(Context context)
     {
         ExceptionHelper.ThrowTypeError(string.Format(Strings.CannotAssignReadOnly, _left), this, context);
     }
@@ -69,15 +69,13 @@ public class Assignment : Expression
         {
             var setterArgs = _setterArgs;
             _setterArgs = null;
-            if (setterArgs == null)
-                setterArgs = new Arguments();
+            setterArgs ??= new Arguments();
 
             var temp = value;
 
             if (_saveResult)
             {
-                if (_tempContainer == null)
-                    _tempContainer = new JSValue();
+                _tempContainer ??= new JSValue();
 
                 _tempContainer.Assign(value);
                 temp = _tempContainer;
@@ -87,11 +85,11 @@ public class Assignment : Expression
             setterArgs.Reset();
             setterArgs.Add(temp);
 
-            var setter = (field._oValue as Core.PropertyPair).setter;
+            var setter = (field._oValue as Core.PropertyPair)._setter;
             if (setter != null)
                 setter.Call(fieldSource, setterArgs);
             else if (context._strict)
-                throwReadOnlyError(context);
+                ThrowReadOnlyError(context);
 
             if (_saveResult)
                 _tempContainer = temp;
@@ -194,9 +192,9 @@ public class Assignment : Expression
                 else
                 {
                     _this = _right;
-                    this._right = null;
-                    this.Eliminated = true;
-                    this._right = _this as Expression;
+                    _right = null;
+                    Eliminated = true;
+                    _right = _this as Expression;
                 }
             }
         }

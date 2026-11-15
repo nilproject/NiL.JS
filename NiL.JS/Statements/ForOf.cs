@@ -171,7 +171,7 @@ public sealed class ForOf : CodeNode
             state.LexicalScopeLevel--;
         }
 
-        return new CodeBlock(new[] { result })
+        return new CodeBlock([result])
         {
             _variables = vars,
             Position = result.Position,
@@ -231,8 +231,7 @@ public sealed class ForOf : CodeNode
 
             if (context._executionMode == ExecutionMode.Suspend)
             {
-                if (suspendData == null)
-                    suspendData = new SuspendData();
+                suspendData ??= new SuspendData();
 
                 context.SuspendData[this] = suspendData;
                 suspendData.source = source;
@@ -280,8 +279,7 @@ public sealed class ForOf : CodeNode
                 }
                 else if (context._executionMode == ExecutionMode.Suspend)
                 {
-                    if (suspendData == null)
-                        suspendData = new SuspendData();
+                    suspendData ??= new SuspendData();
                     context.SuspendData[this] = suspendData;
 
                     suspendData.source = source;

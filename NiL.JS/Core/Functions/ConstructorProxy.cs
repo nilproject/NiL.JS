@@ -32,6 +32,7 @@ internal class ConstructorProxy : Function
     private static readonly object[] _emptyObjectArray = new object[0];
     private static readonly Arguments _emptyArguments = new Arguments();
 
+    private readonly JSValueAttributesInternal _defaultAttributes;
     internal readonly StaticProxy _staticProxy;
     private readonly MethodProxy[] _constructors;
 
@@ -74,6 +75,8 @@ internal class ConstructorProxy : Function
         if (_staticProxy._hostedType.ContainsGenericParameters)
             ExceptionHelper.ThrowTypeError(_staticProxy._hostedType.Name + " can't be created because it's generic type.");
 #endif
+        _defaultAttributes = _staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
+
         var withNewOnly = staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(RequireNewKeywordAttribute), true);
         var withoutNewOnly = staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(DisallowNewKeywordAttribute), true);
 
@@ -85,8 +88,7 @@ internal class ConstructorProxy : Function
         if (withoutNewOnly)
             RequireNewKeywordLevel = RequireNewKeywordLevel.WithoutNewOnly;
 
-        if (_length == null)
-            _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
+        _length ??= new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate };
 
 #if (PORTABLE || NETCORE)
         var ctors = staticProxy._hostedType.GetTypeInfo().DeclaredConstructors.Where(x => x.IsPublic).ToArray();
@@ -272,9 +274,8 @@ internal class ConstructorProxy : Function
                 if (res._valueType < JSValueType.Object)
                 {
                     var objc = (targetObject as ObjectWrapper ?? ConstructObject()) as ObjectWrapper;
-                    objc.instance = obj;
-                    if (objc._objectPrototype == null)
-                        objc._objectPrototype = res.__proto__;
+                    objc._instance = obj;
+                    objc._objectPrototype ??= res.__proto__;
                     res = objc;
                 }
                 else if (res._oValue is JSValue)
@@ -306,10 +307,7 @@ internal class ConstructorProxy : Function
                     return res._oValue as JSValue;
             }
 
-            if (res == null)
-            {
-                res = wrapObject(targetObject, obj);
-            }
+            res ??= wrapObject(targetObject, obj);
         }
 
         return res;
@@ -318,12 +316,12 @@ internal class ConstructorProxy : Function
     private ObjectWrapper wrapObject(JSValue targetObject, object obj)
     {
         var objc = (targetObject as ObjectWrapper ?? ConstructObject()) as ObjectWrapper;
-        objc.instance = obj;
-        objc._attributes |= _staticProxy._hostedType.GetTypeInfo().IsDefined(typeof(ImmutableAttribute), false) ? JSValueAttributesInternal.Immutable : JSValueAttributesInternal.None;
+        objc._instance = obj;
+        objc._attributes |= _defaultAttributes;
         return objc;
     }
 
-    protected internal override JSValue ConstructObject() 
+    protected internal override JSValue ConstructObject()
         => new ObjectWrapper(null, Context.GlobalContext.GetPrototype(_staticProxy._hostedType));
 
     private MethodProxy findConstructor(Arguments arguments, out object[] args)
@@ -340,8 +338,8 @@ internal class ConstructorProxy : Function
                     return _constructors[i];
                 }
 
-                if (_constructors[i]._parameters.Length == paramsCount 
-                    || (_constructors[i]._parameters.Length >= paramsCount 
+                if (_constructors[i]._parameters.Length == paramsCount
+                    || (_constructors[i]._parameters.Length >= paramsCount
                         && _constructors[i]._parameters.Count(x => !x.IsOptional) <= paramsCount))
                 {
                     if (paramsCount == 0)

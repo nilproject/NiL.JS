@@ -6,7 +6,7 @@ namespace NiL.JS.Core;
 
 public sealed class RopeString
 {
-    private int _length;
+    private readonly int _length;
     private object _firstPart;
     private object _secondPart;
     private string firstPart

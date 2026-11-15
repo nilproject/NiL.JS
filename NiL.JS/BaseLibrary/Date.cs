@@ -509,12 +509,12 @@ public sealed class Date
             || (time._valueType == JSValueType.Double && (double.IsNaN(time._dValue) || double.IsInfinity(time._dValue))))
         {
             _error = true;
-            this._time = 0;
-            this._timeZoneOffset = 0;
+            _time = 0;
+            _timeZoneOffset = 0;
         }
         else
         {
-            this.offsetTimeValue(time, _time - _unixTimeBase, 1, false);
+            offsetTimeValue(time, _time - _unixTimeBase, 1, false);
         }
 
         return valueOf();
@@ -630,11 +630,11 @@ public sealed class Date
             var intMonth = Tools.JSObjectToInt64(month);
             if (intMonth < 0 || intMonth > 12)
             {
-                this._time = this._time - timeToMonthLengths[getMonthImpl(true)][isLeap(getYearImpl(true)) ? 1 : 0];
+                _time = _time - timeToMonthLengths[getMonthImpl(true)][isLeap(getYearImpl(true)) ? 1 : 0];
                 _time = dateToMilliseconds(getYearImpl(true), intMonth, getDateImpl(true), getHoursImpl(true), getMinutesImpl(true), getSecondsImpl(), getMillisecondsImpl());
             }
             else
-                this._time = this._time - timeToMonthLengths[getMonthImpl(true)][isLeap(getYearImpl(true)) ? 1 : 0] + timeToMonthLengths[intMonth][isLeap(getYearImpl(true)) ? 1 : 0];
+                _time = _time - timeToMonthLengths[getMonthImpl(true)][isLeap(getYearImpl(true)) ? 1 : 0] + timeToMonthLengths[intMonth][isLeap(getYearImpl(true)) ? 1 : 0];
         }
 
         if (day != null)
@@ -676,7 +676,7 @@ public sealed class Date
                 return Number.NaN;
             }
             _time = dateToMilliseconds(Tools.JSObjectToInt64(year), getMonthImpl(false), getDateImpl(false), getHoursImpl(false), getMinutesImpl(false), getSecondsImpl(), getMillisecondsImpl());
-            _error = this._time < 5992660800000;
+            _error = _time < 5992660800000;
         }
 
         if (!_error)
@@ -730,12 +730,12 @@ public sealed class Date
             ExceptionHelper.Throw(new RangeError("Invalid time value"));
 
         return getYearImpl(false).ToString("0000") +
-        "-" + (this.getMonthImpl(false) + 1).ToString("00") +
-        "-" + this.getDateImpl(false).ToString("00") +
-        "T" + this.getHoursImpl(false).ToString("00") +
-        ":" + this.getMinutesImpl(false).ToString("00") +
-        ":" + this.getSecondsImpl().ToString("00") +
-        "." + (this.getMillisecondsImpl() / 1000.0).ToString(".000", System.Globalization.CultureInfo.InvariantCulture).Substring(1) +
+        "-" + (getMonthImpl(false) + 1).ToString("00") +
+        "-" + getDateImpl(false).ToString("00") +
+        "T" + getHoursImpl(false).ToString("00") +
+        ":" + getMinutesImpl(false).ToString("00") +
+        ":" + getSecondsImpl().ToString("00") +
+        "." + (getMillisecondsImpl() / 1000.0).ToString(".000", System.Globalization.CultureInfo.InvariantCulture).Substring(1) +
         "Z";
     }
 

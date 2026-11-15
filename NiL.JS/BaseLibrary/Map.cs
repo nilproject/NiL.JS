@@ -9,7 +9,7 @@ namespace NiL.JS.BaseLibrary;
 [RequireNewKeyword]
 public sealed class Map : IIterable
 {
-    private Dictionary<object, object> _storage;
+    private readonly Dictionary<object, object> _storage;
     
     public int size => _storage.Count;
 

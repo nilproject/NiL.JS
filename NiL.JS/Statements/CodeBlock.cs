@@ -131,8 +131,7 @@ public sealed class CodeBlock : CodeNode
 
                                 hasDirectives = true;
 #if DEBUG
-                                if (directives == null)
-                                    directives = new HashSet<string>();
+                                directives ??= new HashSet<string>();
 
                                 directives.Add(str);
 #endif
@@ -243,7 +242,7 @@ public sealed class CodeBlock : CodeNode
                     if (declaredVariables != null)
                     {
                         if (declaredVariables.Contains(variables[targetIndex].name) && variables[targetIndex].isLexicalScoped)
-                            ExceptionHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" already has been defined", state.Code, i);
+                            ExceptionHelper.ThrowSyntaxError("Variable \"" + variables[targetIndex].name + "\" already has been declared", state.Code, i);
 
                         declaredVariables.Add(variables[targetIndex].name);
                     }
@@ -440,8 +439,7 @@ public sealed class CodeBlock : CodeNode
                 VariableDescriptor desc = null;
                 if (variables.TryGetValue(_variables[i].name, out desc))
                 {
-                    if (variablesToRestore == null)
-                        variablesToRestore = new List<VariableDescriptor>();
+                    variablesToRestore ??= new List<VariableDescriptor>();
 
                     variablesToRestore.Add(desc);
                 }
@@ -681,8 +679,7 @@ public sealed class CodeBlock : CodeNode
 
             if (variable.cacheContext != null)
             {
-                if (variable.cacheContext._variables == null)
-                    variable.cacheContext._variables = JSObject.getFieldsContainer();
+                variable.cacheContext._variables ??= JSObject.getFieldsContainer();
                 variable.cacheContext._variables[variable.name] = variable.cacheValue;
             }
 

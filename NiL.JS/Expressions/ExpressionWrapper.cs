@@ -39,7 +39,7 @@ public sealed class ExpressionWrapper : Expression
 
     public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        this._codeContext = codeContext;
+        _codeContext = codeContext;
 
         return node.Build(ref node, expressionDepth, scopeLevel, variables, codeContext | CodeContext.InExpression, message, stats, opts);
     }

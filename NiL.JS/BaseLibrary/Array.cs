@@ -17,7 +17,7 @@ namespace NiL.JS.BaseLibrary;
 #endif
 public sealed class Array : JSObject, IIterable
 {
-    private static readonly SparseArray<JSValue> emptyData = new SparseArray<JSValue>();
+    private static readonly SparseArray<JSValue> _emptyData = new SparseArray<JSValue>();
 
     internal SparseArray<JSValue> _data;
 
@@ -56,7 +56,7 @@ public sealed class Array : JSObject, IIterable
 
         _oValue = this;
         _valueType = JSValueType.Object;
-        _data = new SparseArray<JSValue>();
+        _data = [];
         _attributes |= JSValueAttributesInternal.SystemObject;
 
         if (length > 0)
@@ -133,8 +133,7 @@ public sealed class Array : JSObject, IIterable
         [Hidden]
         get
         {
-            if (_lengthObj == null)
-                _lengthObj = new LengthField(this);
+            _lengthObj ??= new LengthField(this);
 
             if (_data.Length <= int.MaxValue)
             {
@@ -210,7 +209,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue concat(JSValue self, Arguments args)
     {
-        Array res = null;
+        Array res;
         var lenObj = self?.GetProperty("length", PropertyScope.Own) ?? undefined;
         if (!lenObj.Defined)
         {
@@ -406,8 +405,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue find(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         if (self._valueType < JSValueType.Object)
             self = self.ToObject();
 
@@ -434,8 +432,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue findIndex(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         if (self._valueType < JSValueType.Object)
             self = self.ToObject();
 
@@ -477,8 +474,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue flatMap(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         if (self._valueType < JSValueType.Object)
             self = self.ToObject();
 
@@ -501,8 +497,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue flat(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         if (self._valueType < JSValueType.Object)
             self = self.ToObject();
 
@@ -525,8 +520,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue every(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         if (self._valueType < JSValueType.Object)
             self = self.ToObject();
 
@@ -547,8 +541,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue some(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         if (self._valueType < JSValueType.Object)
             self = self.ToObject();
 
@@ -568,8 +561,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue filter(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         if (self._valueType < JSValueType.Object)
             self = self.ToObject();
 
@@ -593,8 +585,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue map(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         if (self._valueType < JSValueType.Object)
             self = self.ToObject();
 
@@ -620,8 +611,7 @@ public sealed class Array : JSObject, IIterable
     {
         JSValue arrayLike = args?[0] ?? undefined;
 
-        if (arrayLike == null)
-            arrayLike = undefined;
+        arrayLike ??= undefined;
 
         if (arrayLike._valueType < JSValueType.Object)
             arrayLike = arrayLike.ToObject();
@@ -634,7 +624,7 @@ public sealed class Array : JSObject, IIterable
 
         Array result = new Array();
 
-        Func<JSValue, long, JSValue, ICallable, bool> callback = (value, index, thisBind, jsCallback) =>
+        bool callback(JSValue value, long index, JSValue thisBind, ICallable jsCallback)
         {
             value = value.CloneImpl(false);
 
@@ -644,7 +634,7 @@ public sealed class Array : JSObject, IIterable
                 result[(int)index] = jsCallback.Call(thisBind, new Arguments { value, index, arrayLike }).CloneImpl(false);
 
             return true;
-        };
+        }
 
         if (arrayLike.IsIterable())
         {
@@ -670,8 +660,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue forEach(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         if (self._valueType < JSValueType.Object)
             self = self.ToObject();
 
@@ -692,8 +681,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(1)]
     public static JSValue indexOf(JSValue self, Arguments args)
     {
-        if (self == null)
-            self = undefined;
+        self ??= undefined;
         var result = -1L;
 
         iterateImpl(self, null, null, args?[1] ?? undefined, undefined, false, (value, index, thisBind, jsCallback) =>
@@ -1078,7 +1066,7 @@ public sealed class Array : JSObject, IIterable
     private static JSValue joinImpl(JSValue self, string separator, bool locale)
     {
         var selfA = self.Value as Array;
-        selfA = selfA ?? Tools.arraylikeToArray(self, true, false, false, -1);
+        selfA ??= Tools.arraylikeToArray(self, true, false, false, -1);
 
         var _data = selfA._data;
 
@@ -1088,7 +1076,7 @@ public sealed class Array : JSObject, IIterable
         if ((_data.Length - 1) * separator.Length > int.MaxValue)
             ExceptionHelper.Throw(new RangeError("The array is too big"));
 
-        selfA._data = emptyData;
+        selfA._data = _emptyData;
 
         var sb = new System.Text.StringBuilder((int)((_data.Length - 1) * separator.Length));
         JSValue t, temp = 0;
@@ -1183,7 +1171,7 @@ public sealed class Array : JSObject, IIterable
                 res = self.GetProperty(newLen, false, PropertyScope.Common);
 
             if (res._valueType == JSValueType.Property)
-                res = ((res._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null);
+                res = ((res._oValue as PropertyPair)._getter ?? Function.Empty).Call(self, null);
 
             selfa._data.RemoveAt(newLen);
 
@@ -1198,7 +1186,7 @@ public sealed class Array : JSObject, IIterable
         var tres = self.GetProperty(length.ToString(), true, PropertyScope.Common);
 
         if (tres._valueType == JSValueType.Property)
-            res = ((tres._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null);
+            res = ((tres._oValue as PropertyPair)._getter ?? Function.Empty).Call(self, null);
         else
             res = tres.CloneImpl(false);
 
@@ -1228,8 +1216,7 @@ public sealed class Array : JSObject, IIterable
                 {
                     if (selfa._data.Length == uint.MaxValue)
                     {
-                        if (selfa._fields == null)
-                            selfa._fields = getFieldsContainer();
+                        selfa._fields ??= getFieldsContainer();
 
                         selfa._fields[uint.MaxValue.ToString()] = args[0].CloneImpl(false);
                         ExceptionHelper.Throw(new RangeError("Invalid length of array"));
@@ -1238,7 +1225,7 @@ public sealed class Array : JSObject, IIterable
                     var v = args[i];
 
                     tempKey._iValue = i;
-                    var parentProp = selfa.__proto__?.GetProperty(tempKey, false, PropertyScope.Common);
+                    var parentProp = selfa.__proto__.GetProperty(tempKey, false, PropertyScope.Common);
                     if (parentProp is null or not { _valueType: JSValueType.Property })
                         selfa._data.Add(v.CloneImpl(false));
                     else
@@ -1297,7 +1284,7 @@ public sealed class Array : JSObject, IIterable
                     item0 = selfa.__proto__[(selfa._data.Length - 1 - i).ToString()];
 
                 if (item0._valueType == JSValueType.Property)
-                    value0 = ((item0._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
+                    value0 = ((item0._oValue as PropertyPair)._getter ?? Function.Empty).Call(self, null).CloneImpl(false);
                 else
                     value0 = item0;
 
@@ -1305,17 +1292,16 @@ public sealed class Array : JSObject, IIterable
                     item1 = selfa.__proto__[i.ToString()];
 
                 if (item1._valueType == JSValueType.Property)
-                    value1 = ((item1._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
+                    value1 = ((item1._oValue as PropertyPair)._getter ?? Function.Empty).Call(self, null).CloneImpl(false);
                 else
                     value1 = item1;
 
                 if (item0._valueType == JSValueType.Property)
                 {
-                    if (args == null)
-                        args = new Arguments();
+                    args ??= new Arguments();
                     args._iValue = 1;
                     args[0] = item1;
-                    ((item0._oValue as PropertyPair).setter ?? Function.Empty).Call(self, args);
+                    ((item0._oValue as PropertyPair)._setter ?? Function.Empty).Call(self, args);
                 }
                 else if (value1.Exists)
                     selfa._data[(int)(selfa._data.Length - 1 - i)] = value1;
@@ -1324,11 +1310,10 @@ public sealed class Array : JSObject, IIterable
 
                 if (item1._valueType == JSValueType.Property)
                 {
-                    if (args == null)
-                        args = new Arguments();
+                    args ??= new Arguments();
                     args._iValue = 1;
                     args[0] = item0;
-                    ((item1._oValue as PropertyPair).setter ?? Function.Empty).Call(self, args);
+                    ((item1._oValue as PropertyPair)._setter ?? Function.Empty).Call(self, args);
                 }
                 else if (value0.Exists)
                     selfa._data[(int)i] = value0;
@@ -1349,21 +1334,20 @@ public sealed class Array : JSObject, IIterable
                 var value0 = item0;
                 var value1 = item1;
                 if (value0._valueType == JSValueType.Property)
-                    value0 = ((item0._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
+                    value0 = ((item0._oValue as PropertyPair)._getter ?? Function.Empty).Call(self, null).CloneImpl(false);
                 else
                     value0 = value0.CloneImpl(false);
                 if (value1._valueType == JSValueType.Property)
-                    value1 = ((item1._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
+                    value1 = ((item1._oValue as PropertyPair)._getter ?? Function.Empty).Call(self, null).CloneImpl(false);
                 else
                     value1 = value1.CloneImpl(false);
 
                 if (item0._valueType == JSValueType.Property)
                 {
-                    if (args == null)
-                        args = new Arguments();
+                    args ??= new Arguments();
                     args._iValue = 1;
                     args[0] = value1;
-                    ((item0._oValue as PropertyPair).setter ?? Function.Empty).Call(self, args);
+                    ((item0._oValue as PropertyPair)._setter ?? Function.Empty).Call(self, args);
                 }
                 else if (value1.Exists)
                     self.SetProperty(i0, value1, false);
@@ -1378,11 +1362,10 @@ public sealed class Array : JSObject, IIterable
                 }
                 if (item1._valueType == JSValueType.Property)
                 {
-                    if (args == null)
-                        args = new Arguments();
+                    args ??= new Arguments();
                     args._iValue = 1;
                     args[0] = value0;
-                    ((item1._oValue as PropertyPair).setter ?? Function.Empty).Call(self, args);
+                    ((item1._oValue as PropertyPair)._setter ?? Function.Empty).Call(self, args);
                 }
                 else if (value0.Exists)
                     self.SetProperty(i1, value0, false);
@@ -1674,7 +1657,7 @@ public sealed class Array : JSObject, IIterable
 
                         if (t != null && t._valueType == JSValueType.Property)
                         {
-                            ((t._oValue as PropertyPair).setter ?? Function.Empty).Call(self, new Arguments { value.CloneImpl(false) });
+                            ((t._oValue as PropertyPair)._setter ?? Function.Empty).Call(self, new Arguments { value.CloneImpl(false) });
                         }
                         else
                         {
@@ -1702,7 +1685,7 @@ public sealed class Array : JSObject, IIterable
                     ref var item = ref selfa._data.GetExistent((int)(pos0 + i - 2));
                     if (item != null && item._valueType == JSValueType.Property)
                     {
-                        ((item._oValue as PropertyPair).setter ?? Function.Empty).Call(self, new Arguments { args[i] });
+                        ((item._oValue as PropertyPair)._setter ?? Function.Empty).Call(self, new Arguments { args[i] });
                     }
                     else
                     {
@@ -1752,7 +1735,7 @@ public sealed class Array : JSObject, IIterable
                 var lenobj = self.GetProperty("length", true, PropertyScope.Common);
                 if (lenobj._valueType == JSValueType.Property)
                 {
-                    ((lenobj._oValue as PropertyPair).setter ?? Function.Empty).Call(self, new Arguments { length });
+                    ((lenobj._oValue as PropertyPair)._setter ?? Function.Empty).Call(self, new Arguments { length });
                 }
                 else
                 {
@@ -1842,7 +1825,7 @@ public sealed class Array : JSObject, IIterable
 
                     if (dst._valueType == JSValueType.Property)
                     {
-                        ((dst._oValue as PropertyPair).setter ?? Function.Empty).Call(self, new Arguments { src });
+                        ((dst._oValue as PropertyPair)._setter ?? Function.Empty).Call(self, new Arguments { src });
                     }
                     else
                     {
@@ -1966,9 +1949,9 @@ public sealed class Array : JSObject, IIterable
 
                     var v = item.Value;
                     if (v._valueType == JSValueType.Property)
-                        v = ((v._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
+                        v = ((v._oValue as PropertyPair)._getter ?? Function.Empty).Call(self, null).CloneImpl(false);
 
-                    List<JSValue> list = null;
+                    List<JSValue> list;
                     if (!tt.TryGetValue(v, out list))
                         tt[v] = list = new List<JSValue>();
 
@@ -1994,11 +1977,11 @@ public sealed class Array : JSObject, IIterable
                         continue;
                     var v = item.Value;
                     if (v._valueType == JSValueType.Property)
-                        v = ((v._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null).CloneImpl(false);
+                        v = ((v._oValue as PropertyPair)._getter ?? Function.Empty).Call(self, null).CloneImpl(false);
                     List<JSValue> list = null;
                     var key = v.ToString();
                     if (!tt.TryGetValue(key, out list))
-                        tt[key] = list = new List<JSValue>();
+                        tt[key] = list = [];
                     list.Add(item.Value);
                 }
 
@@ -2034,10 +2017,10 @@ public sealed class Array : JSObject, IIterable
                         item = item.CloneImpl(false);
                         JSValue value;
                         if (item._valueType == JSValueType.Property)
-                            value = ((item._oValue as PropertyPair).getter ?? Function.Empty).Call(self, null);
+                            value = ((item._oValue as PropertyPair)._getter ?? Function.Empty).Call(self, null);
                         else
                             value = item;
-                        List<JSValue> els = null;
+                        List<JSValue> els;
                         if (!tt.TryGetValue(value, out els))
                             tt[value] = els = new List<JSValue>();
                         els.Add(item);
@@ -2068,8 +2051,7 @@ public sealed class Array : JSObject, IIterable
                 foreach (var item in self)
                 {
                     var pindex = 0;
-                    var dindex = 0.0;
-                    if (Tools.ParseJsNumber(item.Key, ref pindex, out dindex) && (pindex == item.Key.Length)
+                    if (Tools.ParseJsNumber(item.Key, ref pindex, out double dindex) && (pindex == item.Key.Length)
                         && dindex < len)
                     {
                         keysToRemove.Add(item.Key);
@@ -2129,7 +2111,7 @@ public sealed class Array : JSObject, IIterable
     [ArgumentsCount(0)]
     public new JSValue toString(Arguments args)
     {
-        return this.ToString();
+        return ToString();
     }
 
     [DoNotEnumerate]
@@ -2197,7 +2179,7 @@ public sealed class Array : JSObject, IIterable
 
             if (res._valueType == JSValueType.Property)
             {
-                var setter = (res._oValue as PropertyPair).setter;
+                var setter = (res._oValue as PropertyPair)._setter;
                 if (setter != null)
                     setter.Call(this, new Arguments { value });
                 return;
@@ -2393,33 +2375,33 @@ public sealed class Array : JSObject, IIterable
 
     private sealed class JSComparer : IComparer<JSValue>
     {
-        private Arguments args;
-        private JSValue first;
-        private JSValue second;
-        private Function comparer;
+        private readonly Arguments args;
+        private readonly JSValue _first;
+        private readonly JSValue _second;
+        private readonly Function _comparer;
 
         public JSComparer(Arguments args, JSValue first, JSValue second, Function comparer)
         {
             this.args = args;
-            this.first = first;
-            this.second = second;
-            this.comparer = comparer;
+            _first = first;
+            _second = second;
+            _comparer = comparer;
         }
 
         public int Compare(JSValue x, JSValue y)
         {
-            first.Assign(x);
-            second.Assign(y);
-            args[0] = first;
-            args[1] = second;
-            var res = Tools.JSObjectToInt32(Math.sign(comparer.Call(undefined, args)));
+            _first.Assign(x);
+            _second.Assign(y);
+            args[0] = _first;
+            args[1] = _second;
+            var res = Tools.JSObjectToInt32(Math.sign(_comparer.Call(undefined, args)));
             return res;
         }
     }
 
     private sealed class LengthField : JSValue
     {
-        private Array array;
+        private readonly Array array;
 
         public LengthField(Array owner)
         {

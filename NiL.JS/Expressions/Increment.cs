@@ -91,15 +91,15 @@ public sealed class Increment : Expression
         if (val._valueType == JSValueType.Property)
         {
             var ppair = val._oValue as Core.PropertyPair;
-            setter = ppair.setter;
+            setter = ppair._setter;
             if (context._strict && setter == null)
                 ExceptionHelper.ThrowIncrementPropertyWOSetter(_left);
 
             args = new Arguments();
-            if (ppair.getter == null)
+            if (ppair._getter == null)
                 val = JSValue.undefined.CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
             else
-                val = ppair.getter.Call(context._objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
+                val = ppair._getter.Call(context._objectSource, args).CloneImpl(unchecked((JSValueAttributesInternal)(-1)));
         }
         else if ((val._attributes & JSValueAttributesInternal.ReadOnly) != 0)
         {

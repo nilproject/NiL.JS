@@ -13,7 +13,9 @@ namespace NiL.JS.BaseLibrary;
 public sealed class String : JSObject, IIterable
 {
     [DoNotEnumerate]
+#pragma warning disable IDE1006
     public static JSValue fromCharCode(params JSValue[] args)
+#pragma warning restore IDE1006
     {
         if (args == null || args.Length == 0)
             return new String();
@@ -304,8 +306,7 @@ public sealed class String : JSObject, IIterable
         var a0 = args[0];
         var regex = a0.Value as RegExp;
 
-        if (regex == null)
-            regex = new RegExp((a0._valueType > JSValueType.Undefined ? (object)a0 : "").ToString(), ""); // cached
+        regex ??= new RegExp((a0._valueType > JSValueType.Undefined ? (object)a0 : "").ToString(), ""); // cached
 
         if (!regex._global)
         {
@@ -681,7 +682,7 @@ public sealed class String : JSObject, IIterable
 
             var m = re.Match(selfStr, 0);
             if (!m.Success)
-                return new Array(new JSValue[] { selfStr });
+                return new Array([selfStr]);
 
             Array res = new Array();
 
@@ -708,11 +709,14 @@ public sealed class String : JSObject, IIterable
 
                 if (nindex < selfStr.Length)
                 {
-                    for (int i = 1; i < m.Groups.Count; i++)
+                    var count = m.Groups.Count;
+                    for (int i = 1; i < count; i++)
                     {
                         if (res._data.Length >= limit)
                             break;
-                        res._data.Add(m.Groups[i].Success ? m.Groups[i].Value : undefined);
+
+                        var group = m.Groups[i];
+                        res._data.Add(group.Success ? group.Value : undefined);
                     }
                 }
 
@@ -922,7 +926,7 @@ public sealed class String : JSObject, IIterable
         return self;
     }
 
-    private Number _length = null;
+    private Number _length;
 
     [Field]
     [ReadOnly]
@@ -946,7 +950,7 @@ public sealed class String : JSObject, IIterable
     [Hidden]
     public override string ToString()
     {
-        if (this._valueType != JSValueType.String)
+        if (_valueType != JSValueType.String)
             ExceptionHelper.Throw(new TypeError("Try to call String.toString for not string object."));
         return _oValue.ToString();
     }
@@ -977,7 +981,7 @@ public sealed class String : JSObject, IIterable
                 && !double.IsNaN(dindex)
                 && ((index = (int)dindex) == dindex)
                 && ((index = (int)dindex) == dindex)
-                && index < (_oValue.ToString()).Length
+                && index < _oValue.ToString().Length
                 && index >= 0)
             {
                 return this[index];

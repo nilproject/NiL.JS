@@ -226,8 +226,7 @@ public class Module
         if (module == null)
             throw new InvalidOperationException("Unable to load module \"" + request.CmdArgument + "\"");
 
-        if (module.FilePath == null)
-            module.FilePath = request.AbsolutePath;
+        module.FilePath ??= request.AbsolutePath;
 
         if (module.EvaluationState == ModuleEvaluationState.Default)
         {

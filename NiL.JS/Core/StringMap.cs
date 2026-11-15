@@ -11,7 +11,7 @@ namespace NiL.JS.Core;
 
 internal sealed class StringMapDebugView<TValue>
 {
-    private StringMap<TValue> stringMap;
+    private readonly StringMap<TValue> stringMap;
 
     public StringMapDebugView(StringMap<TValue> stringMap)
     {

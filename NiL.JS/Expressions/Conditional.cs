@@ -10,7 +10,7 @@ namespace NiL.JS.Expressions;
 #endif
 public sealed class Conditional : Expression
 {
-    private Expression[] _branches;
+    private readonly Expression[] _branches;
 
     protected internal override bool ContextIndependent
     {
@@ -43,7 +43,7 @@ public sealed class Conditional : Expression
     public Conditional(Expression first, Expression[] threads)
         : base(first, null, false)
     {
-        this._branches = threads;
+        _branches = threads;
     }
 
     public override JSValue Evaluate(Context context) => (bool)_left.Evaluate(context) ? _branches[0].Evaluate(context) : _branches[1].Evaluate(context);

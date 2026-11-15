@@ -8,7 +8,7 @@ namespace NiL.JS.Expressions;
 #endif
 public class More : Expression
 {
-    private bool _trueMore;
+    private readonly bool _trueMore;
 
     protected internal override PredictedType ResultType
     {
@@ -237,8 +237,7 @@ public class More : Expression
 
         var temp = _tempContainer;
         _tempContainer = null;
-        if (temp == null)
-            temp = new JSValue { _attributes = JSValueAttributesInternal.Temporary };
+        temp ??= new JSValue { _attributes = JSValueAttributesInternal.Temporary };
         temp._valueType = left._valueType;
         temp._iValue = left._iValue;
         temp._oValue = left._oValue;

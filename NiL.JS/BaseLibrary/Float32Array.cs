@@ -31,15 +31,15 @@ public sealed class Float32Array : TypedArray
     {
         var v = BitConverter.GetBytes(value);
         int byteIndex = index * BYTES_PER_ELEMENT + byteOffset;
-        buffer.data[byteIndex + 0] = v[0];
-        buffer.data[byteIndex + 1] = v[1];
-        buffer.data[byteIndex + 2] = v[2];
-        buffer.data[byteIndex + 3] = v[3];
+        buffer._data[byteIndex + 0] = v[0];
+        buffer._data[byteIndex + 1] = v[1];
+        buffer._data[byteIndex + 2] = v[2];
+        buffer._data[byteIndex + 3] = v[3];
     }
 
     private float getValue(int index)
     {
-        return BitConverter.ToSingle(buffer.data, index * BYTES_PER_ELEMENT + byteOffset);
+        return BitConverter.ToSingle(buffer._data, index * BYTES_PER_ELEMENT + byteOffset);
     }
 
     public override int BYTES_PER_ELEMENT

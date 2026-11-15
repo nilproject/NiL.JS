@@ -79,7 +79,7 @@ public sealed class Constant : Expression
 
     public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        this._codeContext = codeContext;
+        _codeContext = codeContext;
 
         if ((opts & Options.SuppressUselessExpressionsElimination) == 0 && expressionDepth < 1)
         {

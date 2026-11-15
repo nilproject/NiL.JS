@@ -23,7 +23,7 @@ where TKey : IComparable<TKey>
 {
     private sealed class _Values : ICollection<TValue>
     {
-        private BinaryTree<TKey, TValue> owner;
+        private readonly BinaryTree<TKey, TValue> owner;
 
         public _Values(BinaryTree<TKey, TValue> owner)
         {
@@ -80,13 +80,13 @@ where TKey : IComparable<TKey>
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
     }
 
     private sealed class _Keys : ICollection<TKey>
     {
-        private BinaryTree<TKey, TValue> owner;
+        private readonly BinaryTree<TKey, TValue> owner;
 
         public _Keys(BinaryTree<TKey, TValue> owner)
         {
@@ -138,7 +138,7 @@ where TKey : IComparable<TKey>
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
     }
 
@@ -240,7 +240,7 @@ where TKey : IComparable<TKey>
         }
     }
 
-    private IComparer<TKey> comparer;
+    private readonly IComparer<TKey> comparer;
 #if !(PORTABLE || NETCORE)
     [NonSerialized]
 #endif
@@ -248,7 +248,7 @@ where TKey : IComparable<TKey>
 #if !(PORTABLE || NETCORE)
     [NonSerialized]
 #endif
-    private Stack<Node> stack = new Stack<Node>();
+    private readonly Stack<Node> stack = new Stack<Node>();
     public int Height { get { return root == null ? 0 : root.height; } }
     public int Count { get; private set; }
     public bool IsReadOnly { get { return false; } }
@@ -256,12 +256,12 @@ where TKey : IComparable<TKey>
     [NonSerialized]
 #endif
     private ICollection<TKey> keys;
-    public ICollection<TKey> Keys { get { return keys ?? (keys = new _Keys(this)); } }
+    public ICollection<TKey> Keys { get { return keys ??= new _Keys(this); } }
 #if !(PORTABLE || NETCORE)
     [NonSerialized]
 #endif
     private ICollection<TValue> values;
-    public ICollection<TValue> Values { get { return values ?? (values = new _Values(this)); } }
+    public ICollection<TValue> Values { get { return values ??= new _Values(this); } }
     private Node root;
     internal Node Root { get { return root; } }
 

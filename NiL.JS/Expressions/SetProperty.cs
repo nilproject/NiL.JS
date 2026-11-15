@@ -12,7 +12,7 @@ public sealed class SetProperty : Expression
 {
     private JSValue _propertyNameTempContainer;
     private JSValue _sourceTempContainer;
-    private JSValue _cachedMemberName;
+    private readonly JSValue _cachedMemberName;
     private Expression _value;
 
     public Expression Source => _left;
@@ -54,8 +54,7 @@ public sealed class SetProperty : Expression
         }
         else
         {
-            if (_sourceTempContainer == null)
-                _sourceTempContainer = new JSValue();
+            _sourceTempContainer ??= new JSValue();
 
             _sourceTempContainer.Assign(source);
             source = _sourceTempContainer;
@@ -65,15 +64,13 @@ public sealed class SetProperty : Expression
         var propertyName = _cachedMemberName;
         if (propertyName == null)
         {
-            if (_propertyNameTempContainer == null)
-                _propertyNameTempContainer = new JSValue();
+            _propertyNameTempContainer ??= new JSValue();
 
             propertyName = safeGet(_propertyNameTempContainer, _right, context);
             _propertyNameTempContainer = null;
         }
 
-        if (_tempContainer == null)
-            _tempContainer = new JSValue();
+        _tempContainer ??= new JSValue();
 
         var value = safeGet(_tempContainer, _value, context);
         _tempContainer = null;

@@ -48,8 +48,7 @@ public sealed class NumberLessOrEqual : Expression
             }
             else
             {
-                if (_tempContainer == null)
-                    _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                _tempContainer ??= new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
                 _tempContainer._valueType = JSValueType.Integer;
                 _tempContainer._iValue = itemp;
                 return !More.Check(_tempContainer, op, true);
@@ -70,8 +69,7 @@ public sealed class NumberLessOrEqual : Expression
             }
             else
             {
-                if (_tempContainer == null)
-                    _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+                _tempContainer ??= new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
                 _tempContainer._valueType = JSValueType.Double;
                 _tempContainer._dValue = dtemp;
                 return !More.Check(_tempContainer, op, true);
@@ -79,8 +77,7 @@ public sealed class NumberLessOrEqual : Expression
         }
         else
         {
-            if (_tempContainer == null)
-                _tempContainer = new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
+            _tempContainer ??= new JSValue() { _attributes = JSValueAttributesInternal.Temporary };
             var temp = _tempContainer;
             temp.Assign(op);
             _tempContainer = null;

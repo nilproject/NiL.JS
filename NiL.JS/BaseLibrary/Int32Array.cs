@@ -24,19 +24,19 @@ public sealed class Int32Array : TypedArray
             if (index < 0 || index > length._iValue)
                 ExceptionHelper.Throw(new RangeError());
             var v = Tools.JSObjectToInt32(value, 0, false);
-            buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)v;
-            buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 8);
-            buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 16);
-            buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 24);
+            buffer._data[index * BYTES_PER_ELEMENT + byteOffset + 0] = (byte)v;
+            buffer._data[index * BYTES_PER_ELEMENT + byteOffset + 1] = (byte)(v >> 8);
+            buffer._data[index * BYTES_PER_ELEMENT + byteOffset + 2] = (byte)(v >> 16);
+            buffer._data[index * BYTES_PER_ELEMENT + byteOffset + 3] = (byte)(v >> 24);
         }
     }
 
     private int getValue(int index)
     {
-        return (buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 0]
-                            | (buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 1] << 8)
-                            | (buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 2] << 16)
-                            | (buffer.data[index * BYTES_PER_ELEMENT + byteOffset + 3] << 24));
+        return (buffer._data[index * BYTES_PER_ELEMENT + byteOffset + 0]
+                            | (buffer._data[index * BYTES_PER_ELEMENT + byteOffset + 1] << 8)
+                            | (buffer._data[index * BYTES_PER_ELEMENT + byteOffset + 2] << 16)
+                            | (buffer._data[index * BYTES_PER_ELEMENT + byteOffset + 3] << 24));
     }
 
     public override int BYTES_PER_ELEMENT

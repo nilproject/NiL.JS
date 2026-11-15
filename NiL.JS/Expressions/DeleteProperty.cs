@@ -9,7 +9,7 @@ namespace NiL.JS.Expressions;
 #endif
 public sealed class DeleteProperty : Expression
 {
-    private JSValue cachedMemberName;
+    private readonly JSValue cachedMemberName;
 
     public Expression Source { get { return _left; } }
     public Expression PropertyName { get { return _right; } }

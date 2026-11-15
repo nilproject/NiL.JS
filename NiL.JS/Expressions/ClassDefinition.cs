@@ -109,10 +109,10 @@ public sealed class ClassDefinition : EntityDefinition
         }
     }
 
-    private MemberDescriptor[] _members;
+    private readonly MemberDescriptor[] _members;
     private Expression _baseClass;
     private FunctionDefinition _constructor;
-    private MemberDescriptor[] _computedProperties;
+    private readonly MemberDescriptor[] _computedProperties;
 
     public IEnumerable<MemberDescriptor> Members { get { return _members; } }
     public Expression BaseClass { get { return _baseClass; } }
@@ -124,10 +124,10 @@ public sealed class ClassDefinition : EntityDefinition
     private ClassDefinition(string name, Expression baseType, MemberDescriptor[] fields, FunctionDefinition ctor, MemberDescriptor[] computedProperties)
         : base(name)
     {
-        this._baseClass = baseType;
-        this._constructor = ctor;
-        this._members = fields;
-        this._computedProperties = computedProperties;
+        _baseClass = baseType;
+        _constructor = ctor;
+        _members = fields;
+        _computedProperties = computedProperties;
     }
 
     internal static CodeNode Parse(ParseInfo state, ref int index)
@@ -555,8 +555,7 @@ public sealed class ClassDefinition : EntityDefinition
             if (key.Is<Symbol>())
             {
                 symbolKey = key.As<Symbol>();
-                if (target._symbols == null)
-                    target._symbols = new Dictionary<Symbol, JSValue>();
+                target._symbols ??= new Dictionary<Symbol, JSValue>();
 
                 if (!target._symbols.TryGetValue(symbolKey, out existedValue))
                     target._symbols[symbolKey] = existedValue = value;
@@ -574,8 +573,8 @@ public sealed class ClassDefinition : EntityDefinition
                 {
                     var egs = existedValue.As<Core.PropertyPair>();
                     var ngs = value.As<Core.PropertyPair>();
-                    egs.getter = ngs.getter ?? egs.getter;
-                    egs.setter = ngs.setter ?? egs.setter;
+                    egs._getter = ngs._getter ?? egs._getter;
+                    egs._setter = ngs._setter ?? egs._setter;
                 }
                 else
                 {

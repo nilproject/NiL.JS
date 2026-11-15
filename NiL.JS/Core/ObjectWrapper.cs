@@ -16,21 +16,21 @@ namespace NiL.JS.Core;
 /// </remarks>
 internal sealed class ObjectWrapper : JSObject
 {
-    internal object instance;
+    internal object _instance;
 
     [Hidden]
     public override object Value
     {
         get
         {
-            return instance ?? base.Value;
+            return _instance ?? base.Value;
         }
     }
 
     [Hidden]
     public ObjectWrapper(object instance, JSObject proto)
     {
-        this.instance = instance;
+        _instance = instance;
         if (instance is Date)
             _valueType = JSValueType.Date;
         else
@@ -55,7 +55,7 @@ internal sealed class ObjectWrapper : JSObject
 
     protected internal override JSValue GetProperty(JSValue name, bool forWrite, PropertyScope memberScope)
     {
-        var t = instance as JSValue;
+        var t = _instance as JSValue;
         if (t != null)
             return t.GetProperty(name, forWrite, memberScope);
 
@@ -64,7 +64,7 @@ internal sealed class ObjectWrapper : JSObject
 
     protected internal override void SetProperty(JSValue name, JSValue value, PropertyScope memberScope, bool strict)
     {
-        var t = instance as JSValue;
+        var t = _instance as JSValue;
         if (t != null)
             t.SetProperty(name, value, memberScope, strict);
         else
@@ -73,7 +73,7 @@ internal sealed class ObjectWrapper : JSObject
 
     protected internal override bool DeleteProperty(JSValue name)
     {
-        var t = instance as JSValue;
+        var t = _instance as JSValue;
         if (t != null)
             return t.DeleteProperty(name);
 
@@ -82,7 +82,7 @@ internal sealed class ObjectWrapper : JSObject
 
     protected internal override IEnumerator<KeyValuePair<string, JSValue>> GetEnumerator(bool hideNonEnum, EnumerationMode enumerationMode, PropertyScope propertyScope = PropertyScope.Common)
     {
-        var t = instance as JSValue;
+        var t = _instance as JSValue;
         if (t != null)
             return t.GetEnumerator(hideNonEnum, enumerationMode, propertyScope);
 

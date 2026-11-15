@@ -15,9 +15,9 @@ namespace NiL.JS.Core.Functions;
 #endif
 internal sealed class BindedFunction : Function
 {
-    private Function _target;
-    private JSValue _thisBind;
-    private JSValue[] _bindedArguments;
+    private readonly Function _target;
+    private readonly JSValue _thisBind;
+    private readonly JSValue[] _bindedArguments;
 
     public override JSValue caller
     {
@@ -60,8 +60,7 @@ internal sealed class BindedFunction : Function
     public BindedFunction(Function proto, Arguments args)
         : base(proto.Context, proto._functionDefinition)
     {
-        if (_length == null)
-            _length = new Number(0);
+        _length ??= new Number(0);
 
         _length._iValue = proto.length._iValue;
         _target = proto;

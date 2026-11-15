@@ -219,8 +219,7 @@ internal sealed class SimpleFunction : Function
 
         if (_functionDefinition._parameters[index].isCaptured || _functionDefinition._parameters[index].definitionScopeLevel < 0)
         {
-            if (context._variables == null)
-                context._variables = getFieldsContainer();
+            context._variables ??= getFieldsContainer();
 
             context._variables[_functionDefinition._parameters[index].name] = value;
         }

@@ -12,7 +12,7 @@ namespace NiL.JS.Statements;
 public sealed class Throw : CodeNode
 {
     private Expression _body;
-    private Exception _exception;
+    private readonly Exception _exception;
 
     public Throw(Exception e)
     {

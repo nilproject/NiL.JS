@@ -12,7 +12,7 @@ namespace NiL.JS.Expressions;
 #endif
 public sealed class Yield : Expression
 {
-    private bool _reiterate;
+    private readonly bool _reiterate;
 
     internal override bool ResultInTempContainer
     {

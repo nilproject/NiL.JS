@@ -67,8 +67,7 @@ internal sealed class MethodProxy : Function
                 _name = _name.Substring(2);
         }
 
-        if (_length == null)
-            _length = new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
+        _length ??= new Number(0) { _attributes = JSValueAttributesInternal.ReadOnly | JSValueAttributesInternal.DoNotDelete | JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.SystemObject };
 
         if (methodBase.IsDefined(typeof(ArgumentsCountAttribute), false))
         {
@@ -85,8 +84,7 @@ internal sealed class MethodProxy : Function
             if (_parameters[i].IsDefined(typeof(ConvertValueAttribute), false))
             {
                 var t = _parameters[i].GetCustomAttributes(typeof(ConvertValueAttribute), false).First();
-                if (_paramsConverters == null)
-                    _paramsConverters = new ConvertValueAttribute[_parameters.Length];
+                _paramsConverters ??= new ConvertValueAttribute[_parameters.Length];
                 _paramsConverters[i] = t as ConvertValueAttribute;
             }
         }
@@ -670,8 +668,7 @@ internal sealed class MethodProxy : Function
             if (value == null && !jsValue.IsNull)
                 return null;
 
-            if (res == null)
-                res = new object[targetCount];
+            res ??= new object[targetCount];
 
             res[i] = value;
         }
@@ -681,8 +678,7 @@ internal sealed class MethodProxy : Function
 
     protected internal override JSValue Invoke(bool construct, JSValue targetObject, Arguments arguments)
     {
-        if (arguments == null)
-            arguments = new Arguments();
+        arguments ??= new Arguments();
 
         var result = invokeMethod(targetObject, null, arguments, Context);
 

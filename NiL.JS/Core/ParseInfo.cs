@@ -136,7 +136,7 @@ public sealed class ParseInfo
     public IDisposable WithNewLabelsScope()
     {
         var result = new LabelsReseter(this, Labels);
-        this.Labels = new List<string>();
+        Labels = new List<string>();
         return result;
     }
 }

@@ -22,13 +22,13 @@ public sealed class Uint8ClampedArray : TypedArray
         {
             if (index < 0 || index > length._iValue)
                 ExceptionHelper.Throw(new RangeError());
-            buffer.data[index + byteOffset] = (byte)System.Math.Min(255, System.Math.Max(0, Tools.JSObjectToInt32(value, 0, false)));
+            buffer._data[index + byteOffset] = (byte)System.Math.Min(255, System.Math.Max(0, Tools.JSObjectToInt32(value, 0, false)));
         }
     }
 
     private byte getValue(int index)
     {
-        return buffer.data[index + byteOffset];
+        return buffer._data[index + byteOffset];
     }
 
     public override int BYTES_PER_ELEMENT

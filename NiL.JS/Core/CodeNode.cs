@@ -54,7 +54,7 @@ public abstract class CodeNode
     public int EndPosition { get { return Position + Length; } }
 
     private CodeNode[] children;
-    public CodeNode[] Children { get { return children ?? (children = GetChildrenImpl() ?? emptyCodeNodeArray); } }
+    public CodeNode[] Children { get { return children ??= GetChildrenImpl() ?? emptyCodeNodeArray; } }
 
     protected internal virtual CodeNode[] GetChildrenImpl()
     {

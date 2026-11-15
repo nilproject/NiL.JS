@@ -120,8 +120,7 @@ public sealed class ArrayDefinition : Expression
                 }
                 else
                 {
-                    if (writableNotExists == null)
-                        writableNotExists = new JSValue() { _valueType = JSValueType.NotExistsInObject, _attributes = JSValueAttributesInternal.SystemObject };
+                    writableNotExists ??= new JSValue() { _valueType = JSValueType.NotExistsInObject, _attributes = JSValueAttributesInternal.SystemObject };
                     res._data[targetIndex] = writableNotExists;
                 }
             }

@@ -6,8 +6,8 @@ public sealed class SuspendableExpression : Expression
 {
     protected internal override bool ContextIndependent => false;
 
-    private Expression _original;
-    private CodeNode[] _parts;
+    private readonly Expression _original;
+    private readonly CodeNode[] _parts;
 
     internal SuspendableExpression(Expression prototype, CodeNode[] parts)
     {

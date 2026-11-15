@@ -14,7 +14,7 @@ public sealed class NativeList : CustomType, IIterable
     private sealed class Element : JSValue
     {
         private readonly NativeList _owner;
-        private int _index;
+        private readonly int _index;
 
         public Element(NativeList owner, int index)
         {

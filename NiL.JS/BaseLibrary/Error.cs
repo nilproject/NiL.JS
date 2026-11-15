@@ -35,7 +35,7 @@ public class Error
     [DoNotEnumerate]
     public Error()
     {
-        name = this.GetType().Name;
+        name = GetType().Name;
         message = "";
 #if CALLSTACKTOSTRING
         makeCallStack();
@@ -45,7 +45,7 @@ public class Error
     [DoNotEnumerate]
     public Error(Arguments args)
     {
-        name = this.GetType().Name;
+        name = GetType().Name;
         message = args[0].ToString();
 #if CALLSTACKTOSTRING
         makeCallStack();
@@ -55,7 +55,7 @@ public class Error
     [DoNotEnumerate]
     public Error(string message)
     {
-        name = this.GetType().Name;
+        name = GetType().Name;
         this.message = message;
 #if CALLSTACKTOSTRING
         makeCallStack();

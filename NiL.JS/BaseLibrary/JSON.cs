@@ -464,8 +464,7 @@ public static class JSON
                 return obj.ToString();
             }
 
-            if (processed == null)
-                processed = new HashSet<JSValue>();
+            processed ??= new HashSet<JSValue>();
 
             if (processed.Contains(obj))
                 ExceptionHelper.Throw(new TypeError("Unable to convert circular structure to JSON."));

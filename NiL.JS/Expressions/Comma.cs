@@ -50,7 +50,7 @@ public sealed class Comma : Expression
 
     public override bool Build(ref CodeNode _this, int expressionDepth, int scopeLevel, Dictionary<string, VariableDescriptor> variables, CodeContext codeContext, InternalCompilerMessageCallback message, FunctionInfo stats, Options opts)
     {
-        this._codeContext = codeContext;
+        _codeContext = codeContext;
 
         if (message != null && expressionDepth < 1 && _left != null && _right != null)
             message(MessageLevel.Warning, Position, 0, "Do not use comma as a statements delimiter");

@@ -38,11 +38,11 @@ internal sealed class GeneratorIterator : IIterator, IIterable
 {
     private static readonly Arguments _emptyArguments = new Arguments();
 
-    private Context _initialContext;
+    private readonly Context _initialContext;
     private Context _generatorContext;
-    private Arguments _initialArgs;
-    private Function _generator;
-    private JSValue _targetObject;
+    private readonly Arguments _initialArgs;
+    private readonly Function _generator;
+    private readonly JSValue _targetObject;
 
     [Hidden]
     public GeneratorIterator(GeneratorFunction generator, JSValue self, Arguments args)
@@ -144,8 +144,8 @@ internal sealed class GeneratorIterator : IIterator, IIterable
 
 internal sealed class GeneratorResult : IIteratorResult
 {
-    private JSValue _value;
-    private bool _done;
+    private readonly JSValue _value;
+    private readonly bool _done;
 
     [Field]
     public JSValue value

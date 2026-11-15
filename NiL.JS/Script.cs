@@ -75,8 +75,7 @@ public sealed class Script
 
         lock (_scriptStackLock)
         {
-            if (_scriptsStack == null)
-                _scriptsStack = new();
+            _scriptsStack ??= new();
 
             _scriptsStack.Push(this);
         }

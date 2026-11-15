@@ -32,7 +32,7 @@ public sealed class Switch : CodeNode
     }
 
     private FunctionDefinition[] _functions;
-    private CodeNode[] _body;
+    private readonly CodeNode[] _body;
     private SwitchCase[] _cases;
     private CodeNode _image;
 

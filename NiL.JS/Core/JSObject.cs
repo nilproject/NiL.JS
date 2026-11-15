@@ -43,8 +43,7 @@ public class JSObject : JSValue
             if (_objectPrototype == null || _objectPrototype._valueType < JSValueType.Object)
             {
                 _objectPrototype = GetDefaultPrototype();
-                if (_objectPrototype == null)
-                    _objectPrototype = @null;
+                _objectPrototype ??= @null;
             }
 
             if (_objectPrototype._oValue == null)
@@ -136,12 +135,12 @@ public class JSObject : JSValue
         }
         else
         {
-            if (forWrite || _fields != null)
+            if (forWrite || _fields is { Count: > 0 })
                 name = key.ToString();
 
             fromProto =
                 (propertyScope >= PropertyScope.Super
-                    || _fields == null
+                    || _fields is null or { Count: 0 }
                     || !_fields.TryGetValue(name, out res)
                     || res._valueType < JSValueType.Undefined)
                 && ((proto = __proto__)._oValue != null);
@@ -165,10 +164,9 @@ public class JSObject : JSValue
                 }
 
                 res = new JSValue { _valueType = JSValueType.NotExistsInObject };
-                
-                if (_fields == null)
-                    _fields = getFieldsContainer();
-                
+
+                _fields ??= getFieldsContainer();
+
                 _fields[name] = res;
             }
             else if (forWrite)
@@ -183,8 +181,7 @@ public class JSObject : JSValue
                         if ((res._attributes & JSValueAttributesInternal.Field) == 0)
                             res._attributes &= ~(JSValueAttributesInternal.DoNotEnumerate | JSValueAttributesInternal.DoNotDelete);
 
-                        if (_fields == null)
-                            _fields = getFieldsContainer();
+                        _fields ??= getFieldsContainer();
 
                         _fields[name] = res;
                     }
@@ -219,8 +216,7 @@ public class JSObject : JSValue
                 return notExists;
 
             res = new JSValue { _valueType = JSValueType.NotExistsInObject };
-            if (_symbols == null)
-                _symbols = new Dictionary<Symbol, JSValue>();
+            _symbols ??= new Dictionary<Symbol, JSValue>();
             _symbols[symbol] = res;
         }
         else if (forWrite)
@@ -231,8 +227,7 @@ public class JSObject : JSValue
                     && (res._valueType != JSValueType.Property || memberScope == PropertyScope.Own))
                 {
                     res = res.CloneImpl(false);
-                    if (_symbols == null)
-                        _symbols = new Dictionary<Symbol, JSValue>();
+                    _symbols ??= new Dictionary<Symbol, JSValue>();
                     _symbols[symbol] = res;
                 }
             }
@@ -259,7 +254,7 @@ public class JSObject : JSValue
         field = GetProperty(key, true, PropertyScope.Common);
         if (field._valueType == JSValueType.Property)
         {
-            var setter = (field._oValue as PropertyPair).setter;
+            var setter = (field._oValue as PropertyPair)._setter;
             if (setter != null)
                 setter.Call(this, new Arguments { value });
             else if (throwOnError)
@@ -392,7 +387,7 @@ public class JSObject : JSValue
                 var desc = item.Value;
                 if (desc._valueType == JSValueType.Property)
                 {
-                    var getter = (desc._oValue as PropertyPair).getter;
+                    var getter = (desc._oValue as PropertyPair)._getter;
                     if (getter == null || getter._oValue == null)
                         ExceptionHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
                     desc = (getter._oValue as Function).Call(members, null);
@@ -456,14 +451,14 @@ public class JSObject : JSValue
                     Function setter = null, getter = null;
                     if (obj._valueType == JSValueType.Property)
                     {
-                        setter = (obj._oValue as PropertyPair).setter;
-                        getter = (obj._oValue as PropertyPair).getter;
+                        setter = (obj._oValue as PropertyPair)._setter;
+                        getter = (obj._oValue as PropertyPair)._getter;
                     }
                     obj._valueType = JSValueType.Property;
                     obj._oValue = new PropertyPair
                     {
-                        setter = set.Exists ? set._oValue as Function : setter,
-                        getter = get.Exists ? get._oValue as Function : getter
+                        _setter = set.Exists ? set._oValue as Function : setter,
+                        _getter = get.Exists ? get._oValue as Function : getter
                     };
                 }
                 else if ((bool)writable)
@@ -498,7 +493,7 @@ public class JSObject : JSValue
                 var desc = item.Value;
                 if (desc._valueType == JSValueType.Property)
                 {
-                    var getter = (desc._oValue as PropertyPair).getter;
+                    var getter = (desc._oValue as PropertyPair)._getter;
                     if (getter == null || getter._oValue == null)
                         ExceptionHelper.Throw(new TypeError("Invalid property descriptor for property " + item.Key + " ."));
                     desc = (getter._oValue as Function).Call(members, null);
@@ -637,14 +632,14 @@ public class JSObject : JSValue
 
             if (obj._valueType == JSValueType.Property && (obj._attributes & JSValueAttributesInternal.Field) == 0
                 && set.Exists
-                && (((obj._oValue as PropertyPair).setter != null && (obj._oValue as PropertyPair).setter._oValue != set._oValue)
-                    || ((obj._oValue as PropertyPair).setter == null && set.Defined)))
+                && (((obj._oValue as PropertyPair)._setter != null && (obj._oValue as PropertyPair)._setter._oValue != set._oValue)
+                    || ((obj._oValue as PropertyPair)._setter == null && set.Defined)))
                 ExceptionHelper.Throw(new TypeError("Cannot redefine setter of not configurable property."));
 
             if (obj._valueType == JSValueType.Property && (obj._attributes & JSValueAttributesInternal.Field) == 0
                 && get.Exists
-                && (((obj._oValue as PropertyPair).getter != null && (obj._oValue as PropertyPair).getter._oValue != get._oValue)
-                    || ((obj._oValue as PropertyPair).getter == null && get.Defined)))
+                && (((obj._oValue as PropertyPair)._getter != null && (obj._oValue as PropertyPair)._getter._oValue != get._oValue)
+                    || ((obj._oValue as PropertyPair)._getter == null && get.Defined)))
                 ExceptionHelper.Throw(new TypeError("Cannot redefine getter of not configurable property."));
         }
 
@@ -669,14 +664,14 @@ public class JSObject : JSValue
             Function setter = null, getter = null;
             if (obj._valueType == JSValueType.Property)
             {
-                setter = (obj._oValue as PropertyPair).setter;
-                getter = (obj._oValue as PropertyPair).getter;
+                setter = (obj._oValue as PropertyPair)._setter;
+                getter = (obj._oValue as PropertyPair)._getter;
             }
             obj._valueType = JSValueType.Property;
             obj._oValue = new PropertyPair
             {
-                setter = set.Exists ? set._oValue as Function : setter,
-                getter = get.Exists ? get._oValue as Function : getter
+                _setter = set.Exists ? set._oValue as Function : setter,
+                _getter = get.Exists ? get._oValue as Function : getter
             };
         }
         else if (newProp)
@@ -737,14 +732,14 @@ public class JSObject : JSValue
 
         if (field._valueType == JSValueType.Property)
         {
-            (field._oValue as PropertyPair).getter = args[1].Value as Function;
+            (field._oValue as PropertyPair)._getter = args[1].Value as Function;
         }
         else
         {
             field._valueType = JSValueType.Property;
             field._oValue = new PropertyPair
             {
-                getter = args[1].Value as Function
+                _getter = args[1].Value as Function
             };
         }
     }
@@ -763,13 +758,13 @@ public class JSObject : JSValue
         if ((field._attributes & JSValueAttributesInternal.ReadOnly) != 0)
             ExceptionHelper.Throw(new TypeError("Cannot change value of readonly peoperty."));
         if (field._valueType == JSValueType.Property)
-            (field._oValue as PropertyPair).setter = args[1]._oValue as Function;
+            (field._oValue as PropertyPair)._setter = args[1]._oValue as Function;
         else
         {
             field._valueType = JSValueType.Property;
             field._oValue = new PropertyPair
             {
-                setter = args[1].Value as Function
+                _setter = args[1].Value as Function
             };
         }
     }
@@ -780,7 +775,7 @@ public class JSObject : JSValue
     {
         var field = GetProperty(args[0], false, PropertyScope.Common);
         if (field._valueType == JSValueType.Property)
-            return (field._oValue as PropertyPair).getter;
+            return (field._oValue as PropertyPair)._getter;
         return null;
     }
 
@@ -790,7 +785,7 @@ public class JSObject : JSValue
     {
         var field = GetProperty(args[0], false, PropertyScope.Common);
         if (field._valueType == JSValueType.Property)
-            return (field._oValue as PropertyPair).getter;
+            return (field._oValue as PropertyPair)._getter;
         return null;
     }
 
@@ -974,15 +969,15 @@ public class JSObject : JSValue
         if (obj._valueType != JSValueType.Property || (obj._attributes & JSValueAttributesInternal.Field) != 0)
         {
             if (obj._valueType == JSValueType.Property)
-                res["value"] = (obj._oValue as PropertyPair).getter.Call(source, null);
+                res["value"] = (obj._oValue as PropertyPair)._getter.Call(source, null);
             else
                 res["value"] = obj;
             res["writable"] = obj._valueType < JSValueType.Undefined || (obj._attributes & JSValueAttributesInternal.ReadOnly) == 0;
         }
         else
         {
-            res["set"] = (obj._oValue as PropertyPair).setter;
-            res["get"] = (obj._oValue as PropertyPair).getter;
+            res["set"] = (obj._oValue as PropertyPair)._setter;
+            res["get"] = (obj._oValue as PropertyPair)._getter;
         }
         res["configurable"] = (obj._attributes & JSValueAttributesInternal.NonConfigurable) == 0 || (obj._attributes & JSValueAttributesInternal.DoNotDelete) == 0;
         res["enumerable"] = (obj._attributes & JSValueAttributesInternal.DoNotEnumerate) == 0;

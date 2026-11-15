@@ -20,8 +20,8 @@ public sealed class TemplateString : Expression
         public object result;
     }
 
-    private Expression[] expressions;
-    private string[] strings;
+    private readonly Expression[] expressions;
+    private readonly string[] strings;
 
     public IEnumerable<string> Strings => strings;
     public IEnumerable<Expression> Expressions => expressions;
@@ -46,7 +46,7 @@ public sealed class TemplateString : Expression
     internal TemplateString(string[] strings, Expression[] expression)
     {
         this.strings = strings;
-        this.expressions = expression;
+        expressions = expression;
     }
 
     public static CodeNode Parse(ParseInfo state, ref int index)

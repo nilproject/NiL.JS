@@ -22,7 +22,7 @@ public sealed class RegExp : CustomType
             this.re = re;
         }
     }
-    private static RegExpCacheItem[] _cache = new RegExpCacheItem[_cacheSize];
+    private static readonly RegExpCacheItem[] _cache = new RegExpCacheItem[_cacheSize];
     private static int _cacheIndex = -1;
     private const int _cacheSize = 16;
 
@@ -587,7 +587,7 @@ public sealed class RegExp : CustomType
         [Hidden]
         get
         {
-            return _lastIndex ?? (_lastIndex = 0);
+            return _lastIndex ??= 0;
         }
         [Hidden]
         set
