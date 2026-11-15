@@ -448,7 +448,7 @@ public static class NumberUtils
         return log;
     }
 
-    public static string DoubleToString(double d, int digitsLimit = _ToStringDigitsLimit, bool trailingZeros = false)
+    public static string DoubleToString(double d, int digitsLimit = _ToStringDigitsLimit, int fractionalPartDigitsLimit = int.MaxValue, bool trailingZeros = false)
     {
         if (d == 0.0)
             return "0";
@@ -465,12 +465,15 @@ public static class NumberUtils
             var abs = Math.Abs(d);
             int neg = (d < 0.0 || (d == -0.0 && NumberUtils.IsNegativeZero(d))) ? 1 : 0;
 
-            if (digitsLimit == _ToStringDigitsLimit && !trailingZeros)
+            if (digitsLimit == _ToStringDigitsLimit && fractionalPartDigitsLimit == int.MaxValue && !trailingZeros)
             {
-                for (var i = 8; i-- > 0;)
+                if (digitsLimit == _ToStringDigitsLimit)
                 {
-                    if (_CachedDoubleString[i].key == d)
-                        return _CachedDoubleString[i].value;
+                    for (var i = 8; i-- > 0;)
+                    {
+                        if (_CachedDoubleString[i].key == d)
+                            return _CachedDoubleString[i].value;
+                    }
                 }
 
                 if (abs < 0.000001)
@@ -480,23 +483,26 @@ public static class NumberUtils
                 else if (abs >= 1e+18)
                     res = ((ulong)(abs / 1000.0)).ToString(CultureInfo.InvariantCulture) + "000";
                 else
-                    res = lowLevelFormat(_ToStringDigitsLimit, false, abs);
+                    res = lowLevelFormat(_ToStringDigitsLimit, int.MaxValue, false, abs);
             }
             else
-                res = lowLevelFormat(digitsLimit, trailingZeros, abs);
+                res = lowLevelFormat(digitsLimit, fractionalPartDigitsLimit, trailingZeros, abs);
 
             if (neg == 1)
                 res = "-" + res;
 
-            _CachedDoubleString[_CachedDoubleStringsIndex].key = d;
-            _CachedDoubleString[_CachedDoubleStringsIndex].value = res;
-            _CachedDoubleStringsIndex = (_CachedDoubleStringsIndex + 1) & 7;
+            if (digitsLimit == _ToStringDigitsLimit && fractionalPartDigitsLimit == _ToStringDigitsLimit && !trailingZeros)
+            {
+                _CachedDoubleString[_CachedDoubleStringsIndex].key = d;
+                _CachedDoubleString[_CachedDoubleStringsIndex].value = res;
+                _CachedDoubleStringsIndex = (_CachedDoubleStringsIndex + 1) & 7;
+            }
         }
 
         return res;
     }
 
-    private static string lowLevelFormat(int digitsLimit, bool trailingZeros, double abs)
+    private static string lowLevelFormat(int digitsLimit, int fractionalPartDigitsLimit, bool trailingZeros, double abs)
     {
         string res;
         var highestBit = 1UL << 52;
@@ -508,12 +514,16 @@ public static class NumberUtils
         var intPart = e > 63 ? 0 : e <= 0 ? m : m >> e;
         var fracPart = e < 0 ? 0 : e >= 63 ? m : (m & ((1ul << e) - 1));
         var fracSize = 0;
+        var intPartSize = 0;
 
         var str = new ulong[] { 1 };
         var temp = new ulong[] { 1 };
         var intBuffer = new ulong[] { 0 };
         var fracBuffer = new ulong[] { 0 };
-        var alterFracBuffer = default(ulong[]);
+        var alterFracBuffer = Array.Empty<ulong>();
+
+        if (fractionalPartDigitsLimit == 0)
+            trailingZeros = false;
 
         if (intPart != 0)
         {
@@ -540,6 +550,15 @@ public static class NumberUtils
                 Array.Clear(str, 0, str.Length);
                 str[str.Length - 1] = 1;
             }
+
+            for (var pi = intBuffer.Length; pi-- > 0;)
+            {
+                intPartSize = digitsCount(intBuffer[pi]);
+                if (intPartSize != 0)
+                {
+                    break;
+                }
+            }
         }
 
         if (fracPart != 0)
@@ -553,7 +572,7 @@ public static class NumberUtils
 
             var fracPartSize = Math.Min(53, e);
 
-            for (var b = 0; b <= fracPartSize; b++, curBit++)
+            for (var b = 0; b <= fracPartSize && fracPart != 0; b++, curBit++)
             {
                 if ((fracPart & highestBit) != 0 || b == fracPartSize)
                 {
@@ -583,29 +602,68 @@ public static class NumberUtils
                 fracPart <<= 1;
             }
 
-            var fracLen = 0;
-            var alterLen = 0;
-            var fracSizeLimit = digitsLimit;
+            var fracLen = fracSize;
+            var alterLen = fracSize;
+            var numberSize = intPartSize;
+            var alterNumberSize = intPartSize;
 
-            for (var pi = intBuffer.Length; pi-- > 0;)
-            {
-                var count = digitsCount(intBuffer[pi]);
-                if (count != 0)
-                    fracSizeLimit -= count + pi * 16;
-            }
-
-            for (var di = fracSize; di-- > 0 && fracSize - di < fracSizeLimit;)
+            for (var di = fracSize; di-- > 0 && fracSize - di < fractionalPartDigitsLimit && (numberSize < digitsLimit || alterNumberSize < digitsLimit);)
             {
                 if (fracBuffer.Length > di / 16 && ((fracBuffer[di / 16] >> ((di % 16) * 4)) & 0xf) != 0)
+                {
+                    numberSize++;
                     fracLen = fracSize - di;
+                }
+                else if (numberSize > 0)
+                {
+                    numberSize++;
+                }
 
                 if (alterFracBuffer.Length > di / 16 && ((alterFracBuffer[di / 16] >> ((di % 16) * 4)) & 0xf) != 0)
+                {
+                    alterNumberSize++;
                     alterLen = fracSize - di;
+                }
+                else if (alterNumberSize > 0)
+                {
+                    alterNumberSize++;
+                }
             }
 
             if (alterLen < fracLen)
             {
                 fracBuffer = alterFracBuffer;
+                fracLen = alterLen;
+            }
+
+            if (fractionalPartDigitsLimit <= fracLen)
+            {
+                var nextFracDigit = (fracBuffer[(fracSize - 1 - fractionalPartDigitsLimit) / 16] >> ((fracSize - 1 - fractionalPartDigitsLimit) % 16 * 4)) & 0xf;
+                if (nextFracDigit >= 5)
+                {
+                    fracBuffer[(fracSize - 1 - fractionalPartDigitsLimit) / 16] += (10 - nextFracDigit) << ((fracSize - 1 - fractionalPartDigitsLimit) % 16 * 4);
+                    numStrSum(fracBuffer, [], ref fracBuffer);
+
+                    if (((fracBuffer[fracSize / 16] >> (fracSize % 16 * 4)) & 0xf) != 0)
+                    {
+                        intBuffer[0] += 1;
+                        numStrSum(intBuffer, [], ref intBuffer);
+                        fracBuffer[fracSize / 16] -= 1ul << (fracSize % 16 * 4);
+                    }
+
+                    for (var pi = intBuffer.Length; pi-- > 0;)
+                    {
+                        intPartSize = digitsCount(intBuffer[pi]);
+                        if (intPartSize != 0)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (!trailingZeros && fracLen < fractionalPartDigitsLimit)
+            {
+                fractionalPartDigitsLimit = fracLen;
             }
         }
 
@@ -619,8 +677,8 @@ public static class NumberUtils
             var v = (intBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
             if (v != 0 || write)
             {
-                write = true;
                 buffer[bufferPos++] = (char)((char)v + '0');
+                write = true;
                 nonZeroDigits++;
             }
         }
@@ -630,14 +688,13 @@ public static class NumberUtils
 
         var lastRealSign = bufferPos;
 
-        if (fracSize != 0)
+        if (fracSize > 0 && nonZeroDigits < digitsLimit && fractionalPartDigitsLimit > 0)
         {
             buffer[bufferPos++] = '.';
             for (var i = fracSize; i-- > 0;)
             {
                 var v = fracBuffer.Length <= i / 16 ? 0 : (fracBuffer[i / 16] >> 4 * (i % 16)) & 0xf;
-                buffer[bufferPos] = (char)((char)v + '0');
-                bufferPos++;
+                buffer[bufferPos++] = (char)((char)v + '0');
 
                 if (v != 0)
                 {
@@ -646,21 +703,25 @@ public static class NumberUtils
                 }
 
                 if (write)
+                {
                     nonZeroDigits++;
+                }
 
-                if (nonZeroDigits == digitsLimit || bufferPos == buffer.Length)
+                if (--fractionalPartDigitsLimit == 0 || nonZeroDigits == digitsLimit || bufferPos == buffer.Length)
                     break;
+            }
+
+            if (trailingZeros)
+            {
+                while (nonZeroDigits < digitsLimit && fractionalPartDigitsLimit-- > 0)
+                {
+                    buffer[bufferPos++] = '0';
+                    nonZeroDigits++;
+                }
             }
         }
 
-        res = new string(buffer, 0, trailingZeros ? bufferPos : lastRealSign);
-        if (res.Length < digitsLimit && trailingZeros)
-        {
-            if (fracSize == 0)
-                res += '.';
-
-            res = res.PadRight(digitsLimit + 1, '0');
-        }
+        res = new string(buffer, 0, bufferPos);
 
         return res;
     }

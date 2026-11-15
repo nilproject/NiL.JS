@@ -9,7 +9,7 @@ using System;
 namespace Tests.Core;
 
 [TestClass]
-public sealed class NumberUtilsTests
+public sealed partial class NumberUtilsTests
 {
     [TestMethod]
     public void LongNumberShouldParsedCorrectly()

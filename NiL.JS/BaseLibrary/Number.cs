@@ -130,7 +130,7 @@ public sealed class Number : JSObject
             ExceptionHelper.Throw(new RangeError("toPrecision() argument must be between 1 and 100"));
 
         double d = Tools.JSObjectToDouble(self);
-        return NumberUtils.DoubleToString(d, size, true);
+        return NumberUtils.DoubleToString(d, size, 16, true);
     }
 
     [DoNotEnumerate]
@@ -141,22 +141,22 @@ public sealed class Number : JSObject
         switch (self._valueType)
         {
             case JSValueType.Integer:
-                {
-                    res = self._iValue;
-                    break;
-                }
+            {
+                res = self._iValue;
+                break;
+            }
             case JSValueType.Double:
-                {
-                    res = self._dValue;
-                    break;
-                }
+            {
+                res = self._dValue;
+                break;
+            }
             case JSValueType.Object:
-                {
-                    if (typeof(Number) != self.GetType())
-                        ExceptionHelper.Throw((new TypeError("Try to call Number.toExponential on not number object.")));
-                    res = self._iValue == 0 ? self._dValue : self._iValue;
-                    break;
-                }
+            {
+                if (typeof(Number) != self.GetType())
+                    ExceptionHelper.Throw((new TypeError("Try to call Number.toExponential on not number object.")));
+                res = self._iValue == 0 ? self._dValue : self._iValue;
+                break;
+            }
             default:
                 throw new InvalidOperationException();
         }
@@ -164,34 +164,34 @@ public sealed class Number : JSObject
         switch ((digits ?? JSValue.undefined)._valueType)
         {
             case JSValueType.Integer:
-                {
-                    dgts = digits._iValue;
-                    break;
-                }
+            {
+                dgts = digits._iValue;
+                break;
+            }
             case JSValueType.Double:
-                {
-                    dgts = (int)digits._dValue;
-                    break;
-                }
+            {
+                dgts = (int)digits._dValue;
+                break;
+            }
             case JSValueType.String:
-                {
-                    double d = 0;
-                    int i = 0;
-                    if (Tools.ParseJsNumber(digits._oValue.ToString(), ref i, out d, ParseNumberOptions.Default))
-                        dgts = (int)d;
-                    break;
-                }
+            {
+                double d = 0;
+                int i = 0;
+                if (Tools.ParseJsNumber(digits._oValue.ToString(), ref i, out d, ParseNumberOptions.Default))
+                    dgts = (int)d;
+                break;
+            }
             case JSValueType.Object:
-                {
-                    var d = digits[0].ToPrimitiveValue_Value_String();
-                    if (d._valueType == JSValueType.String)
-                        goto case JSValueType.String;
-                    if (d._valueType == JSValueType.Integer)
-                        goto case JSValueType.Integer;
-                    if (d._valueType == JSValueType.Double)
-                        goto case JSValueType.Double;
-                    break;
-                }
+            {
+                var d = digits[0].ToPrimitiveValue_Value_String();
+                if (d._valueType == JSValueType.String)
+                    goto case JSValueType.String;
+                if (d._valueType == JSValueType.Integer)
+                    goto case JSValueType.Integer;
+                if (d._valueType == JSValueType.Double)
+                    goto case JSValueType.Double;
+                break;
+            }
             default:
                 return res.ToString("e", System.Globalization.CultureInfo.InvariantCulture);
         }
@@ -203,37 +203,43 @@ public sealed class Number : JSObject
     [ArgumentsCount(1)]
     public static JSValue toFixed(JSValue self, Arguments digits)
     {
+        if (self._valueType is not JSValueType.Integer and not JSValueType.Double)
+        {
+            if (typeof(Number) != self.GetType())
+                ExceptionHelper.Throw((new TypeError("Try to call Number.toFixed on not number object.")));
+        }
+
+        int dgts = Tools.JSObjectToInt32(digits[0], true);
+        if (dgts < 0 || dgts > 20)
+            ExceptionHelper.Throw((new RangeError("toFixed() digits argument must be between 0 and 20")));
+
         double res = 0;
         switch (self._valueType)
         {
             case JSValueType.Integer:
-                {
-                    res = self._iValue;
-                    break;
-                }
+            {
+                return self._iValue + (dgts > 0 ? "." + new string('0', dgts) : "");
+            }
             case JSValueType.Double:
-                {
-                    res = self._dValue;
-                    break;
-                }
+            {
+                res = self._dValue;
+                break;
+            }
             case JSValueType.Object:
-                {
-                    if (typeof(Number) != self.GetType())
-                        ExceptionHelper.Throw((new TypeError("Try to call Number.toFixed on not number object.")));
-                    res = self._iValue == 0 ? self._dValue : self._iValue;
-                    break;
-                }
+            {
+                res = self._iValue == 0 ? self._dValue : self._iValue;
+                break;
+            }
             default:
                 throw new InvalidOperationException();
         }
-        int dgts = Tools.JSObjectToInt32(digits[0], true);
-        if (dgts < 0 || dgts > 20)
-            ExceptionHelper.Throw((new RangeError("toFixed() digits argument must be between 0 and 20")));
+
         if (System.Math.Abs(self._dValue) >= 1e+21)
             return self._dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
-        if (dgts > 0)
-            dgts++;
-        return System.Math.Round(res, dgts).ToString("0.00000000000000000000".Substring(0, dgts + 1), System.Globalization.CultureInfo.InvariantCulture);
+
+        var str = NumberUtils.DoubleToString(res, 20, dgts, true);
+
+        return str;
     }
 
     [DoNotEnumerate]
@@ -266,27 +272,27 @@ public sealed class Number : JSObject
                 {
                     case JSValueType.Integer:
                     case JSValueType.Boolean:
-                        {
-                            r = ar._iValue;
-                            break;
-                        }
+                    {
+                        r = ar._iValue;
+                        break;
+                    }
                     case JSValueType.Double:
-                        {
-                            r = (int)ar._dValue;
-                            break;
-                        }
+                    {
+                        r = (int)ar._dValue;
+                        break;
+                    }
                     case JSValueType.NotExistsInObject:
                     case JSValueType.NotExists:
                     case JSValueType.Undefined:
-                        {
-                            r = 10;
-                            break;
-                        }
+                    {
+                        r = 10;
+                        break;
+                    }
                     default:
-                        {
-                            r = Tools.JSObjectToInt32(ar);
-                            break;
-                        }
+                    {
+                        r = Tools.JSObjectToInt32(ar);
+                        break;
+                    }
                 }
             }
             if (r < 2 || r > 36)
