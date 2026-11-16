@@ -359,36 +359,19 @@ public static class Parser
                         index++;
                         Tools.SkipSpaces(code, ref index);
 
-                        if (destructuring)
+                        var bracketStack = new Stack<char>();
+                        while (bracketStack.Count != 0 || (code[index] != ',' && code[index] != destructChar))
                         {
-                            var bracketStack = new Stack<char>();
-                            while (bracketStack.Count != 0 || (code[index] != ',' && code[index] != destructChar))
+                            if (code[index] is '{' or '(' or '[')
+                                bracketStack.Push(code[index]);
+
+                            if (code[index] is '}' or ')' or ']')
                             {
-                                if (code[index] is '{' or '(' or '[')
-                                    bracketStack.Push(code[index]);
-
-                                if (code[index] is '}' or ')' or ']')
-                                {
-                                    if (bracketStack.Count == 0 || bracketStack.Pop() != code[index])
-                                        return false;
-                                }
-
-                                index++;
+                                if (bracketStack.Count == 0 || bracketStack.Pop() != code[index])
+                                    return false;
                             }
-                        }
-                        else
-                        {
-                            var balance = 0;
-                            while (balance >= 0 && (code[index] != ',' && code[index] != ')'))
-                            {
-                                if (code[index] == '(')
-                                    balance++;
 
-                                if (code[index] == ')')
-                                    balance--;
-
-                                index++;
-                            }
+                            index++;
                         }
                     }
 
