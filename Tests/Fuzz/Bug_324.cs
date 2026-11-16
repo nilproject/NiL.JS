@@ -22,5 +22,6 @@ public sealed partial class NumberUtilsTests
         Assert.AreEqual("1.00", context.Eval("(1.005).toFixed(2)").ToString());
         Assert.AreEqual("1.100", context.Eval("(1.100).toFixed(3)").ToString());
         Assert.AreEqual("1.01", context.Eval("(1.00500000000000001).toFixed(2)").ToString());
+        Assert.AreEqual("1.11", context.Eval("1.106.toFixed(2)").ToString());
     }
 }

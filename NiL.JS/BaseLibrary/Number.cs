@@ -237,7 +237,7 @@ public sealed class Number : JSObject
         if (System.Math.Abs(self._dValue) >= 1e+21)
             return self._dValue.ToString("0.####e+0", System.Globalization.CultureInfo.InvariantCulture);
 
-        var str = NumberUtils.DoubleToString(res, 20, dgts, true);
+        var str = NumberUtils.DoubleToString(res, 20, dgts, true, false);
 
         return str;
     }
