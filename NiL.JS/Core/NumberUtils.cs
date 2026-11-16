@@ -645,17 +645,21 @@ public static class NumberUtils
                         firstMeaningZeroDigit = -2;
                     }
 
-                    var lowerDigit = (lowerFracBuffer[(fracSize - 1 - i) / 16] >> ((fracSize - 1 - i) % 16 * 4)) & 0xf;
+                    var lowerDigit = (fracSize - 1 - i) / 16 < lowerFracBuffer.Length
+                        ? (lowerFracBuffer[(fracSize - 1 - i) / 16] >> ((fracSize - 1 - i) % 16 * 4)) & 0xf
+                        : 0;
                     if (digit != lowerDigit)
                     {
                         if (lowerDifferentDigit == -1)
                             lowerDifferentDigit = i;
 
-                        if (lowerDigit != 0 && lowerZeroDigit == -1)
+                        if (lowerDigit == 0 && lowerZeroDigit == -1)
                             lowerZeroDigit = i;
                     }
 
-                    var upperDigit = (upperFracBuffer[(fracSize - 1 - i) / 16] >> ((fracSize - 1 - i) % 16 * 4)) & 0xf;
+                    var upperDigit = (fracSize - 1 - i) / 16 < upperFracBuffer.Length
+                        ? (upperFracBuffer[(fracSize - 1 - i) / 16] >> ((fracSize - 1 - i) % 16 * 4)) & 0xf
+                        : 0;
                     if (digit != upperDigit)
                     {
                         if (upperDifferentDigit == -1)
@@ -686,7 +690,7 @@ public static class NumberUtils
                     }
                     else
                     {
-                        fractionalPartDigitsLimit = Math.Max(upperDifferentDigit + 1 + (intPartSize is 0 ? firstMeaningDigit : -intPartSize), 0);
+                        fractionalPartDigitsLimit = Math.Max(upperDifferentDigit + 1, 0);
                         digitsLimit = intPartSize + fractionalPartDigitsLimit;
                     }
                 }
